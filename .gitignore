@@ -1,2 +1,8 @@
+<<<<<<< HEAD
 rank/
 node_modules/
+=======
+# Add any directories, files, or patterns you don't want to be tracked by version control
+node_modules/
+rank/
+>>>>>>> d9237ee17d4c0a6b06463316227a419cbf0b04b1
