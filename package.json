@@ -1,0 +1,20 @@
+{
+  "name": "lootbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lootBot.js",
+  "dependencies": {
+    "mysql": "^2.11.1",
+    "node-schedule": "^1.1.1",
+    "node-telegram-bot-api": "^0.27.0",
+    "telegram-api": "^0.7.6",
+    "toobusy-js": "^0.5.1",
+    "util": "^0.10.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
