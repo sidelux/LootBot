@@ -127,7 +127,7 @@ function checkSpam(message){
 		}
 	}
 	timevar[message.from.id] = Math.round(new Date()/1000);
-	
+
 	return isOk;
 }
 
@@ -208,7 +208,7 @@ bot.onText(/^\/start/, function(message) {
 bot.onText(/^\/birra/, function(message) {
 	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function(err, rows, fields) {
 		if (err) throw err;
-		
+
 		var player_id = rows[0].id;
 		var money = rows[0].money;
 
@@ -229,7 +229,7 @@ bot.onText(/^\/birra/, function(message) {
 			bot.sendMessage(message.chat.id, "...", back)
 			return;
 		}
-		
+
 		if (money < 1){
 			bot.sendMessage(message.chat.id, "Non puoi permetterti nemmeno una birra >_>");
 		}else{
@@ -2526,7 +2526,7 @@ bot.onText(/^\/estrazione/, function(message) {
 		return;
 	}
 	*/
-	
+
 	if (!checkSpam(message)){
 		return;
 	}
@@ -2635,35 +2635,29 @@ bot.onText(/^\/lotterie/, function(message) {
 
 		var player_id = rows[0].id;
 
-		connection.query('SELECT player.nickname, item.name, public_lottery.price FROM player, item, public_lottery WHERE public_lottery.item_id = item.id AND public_lottery.creator_id = player.id', function(err, rows, fields) {
+		connection.query('SELECT player.nickname, item.name, P.price, (SELECT COUNT(id) FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = P.id) As subs FROM player, item, public_lottery P WHERE P.item_id = item.id AND P.creator_id = player.id', function(err, rows, fields) {
 			if (err) throw err;
 			var text = "Non ci sono lotterie disponibili";
 			var p = "";
+			var s = "";
 			if (Object.keys(rows).length > 0){
-				text = "Lotterie disponibili:\n";
+				text = "<b>Lotterie disponibili:</b>\n";
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					if (rows[i].price == 0){
 						p = "";
 					}else{
 						p = " (" + rows[i].price + "§)";
 					}
-					text += "> " + rows[i].nickname + " - " + rows[i].name + p + "\n";
+					if (rows[i].subs == 0){
+						s = "";
+					}else{
+						s = " ✅";
+					}
+					text += "> " + rows[i].nickname + " - " + rows[i].name + p + s + "\n";
 				}
 
-				connection.query('SELECT item.name FROM item, public_lottery, public_lottery_players WHERE public_lottery.item_id = item.id AND public_lottery_players.player_id = ' + player_id + ' AND public_lottery.id = public_lottery_players.lottery_id', function (err, rows, fields){
-					if (err) throw err;
-
-					if (Object.keys(rows).length > 0){
-						text += "\nIscrizioni:\n";
-						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-							text += "> " + rows[i].name + "\n";
-						}
-					}else{
-						text += "\nNon sei iscritto a nessuna lotteria";
-					}
-
-					bot.sendMessage(message.chat.id, text);
-				});
+				text += "\nPer iscriverti ad una lotteria usa /lotteria o /lotteriap";
+				bot.sendMessage(message.chat.id, text, html);
 			}
 		});
 	});
@@ -3172,9 +3166,13 @@ bot.onText(/^\/aste/, function(message) {
 
 bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function(message, match) {
 
+	if (!checkSpam(message)){
+		return;
+	}
+
 	var nickname = match[1];
 	if ((nickname == undefined) || (nickname == "")){
-		bot.sendMessage(message.chat.id, "Per partecipare ad una lotteria utilizza la seguente sintassi: /lotteria @nickname, mentre /crealotteria per iniziarne una nuova");
+		bot.sendMessage(message.chat.id, "Per partecipare ad una lotteria utilizza la seguente sintassi: /lotteria @nickname, mentre /crealotteria per iniziarne una nuova. Puoi anche usare /lotteria tutte");
 		return;
 	}	
 
@@ -3200,6 +3198,47 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function(message, match) {
 
 		if (rows[0].holiday == 1){
 			bot.sendMessage(message.chat.id, "...", back)
+			return;
+		}
+
+		if (nickname == "tutte"){
+			connection.query('SELECT id, price FROM public_lottery WHERE price = 0 AND creator_id != ' + player_id, function(err, rows, fields) {
+				if (err) throw err;
+
+				var len = Object.keys(rows).length;
+				var count = 0;
+
+				if (Object.keys(rows).length == 0){
+					bot.sendMessage(message.chat.id, "Non ci sono lotterie gratuite disponibili!");
+					return;
+				}
+
+				var lottery_id = 0;
+				var one = 0;
+
+				for (var i = 0; i < len; i++) {
+					lottery_id = rows[i].id;
+
+					connection.query('SELECT * FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = ' + lottery_id, function(err, rows, fields) {
+						if (err) throw err;
+						if (Object.keys(rows).length == 0){
+							one = 1;
+							connection.query('INSERT INTO public_lottery_players (lottery_id, player_id) VALUES (' + this.lottery_id + ',' + this.player_id + ')', function(err, rows, fields) {
+								if (err) throw err;
+
+								count++;
+
+								if (this.i+1 == this.len){
+									bot.sendMessage(message.chat.id, "Ti sei registrato correttamente a " + count + " lotterie gratuite!");
+								};
+							}.bind( {i: this.i, len: this.len} ));
+						}
+						if ((this.i+1 == this.len) && (one == 0)){
+							bot.sendMessage(message.chat.id, "Sei già registrato a tutte le lotterie gratuite!");
+						};
+					}.bind( {player_id: player_id, lottery_id: lottery_id, i: i, len: len} ));
+				}
+			});
 			return;
 		}
 
@@ -3380,7 +3419,7 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function(message, match) {
 
 	var nickname = match[1];
 	if ((nickname == undefined) || (nickname == "")){
-		bot.sendMessage(message.chat.id, "Per partecipare ad una lotteria utilizza la seguente sintassi: /lotteria @nickname, mentre /crealotteria per iniziarne una nuova");
+		bot.sendMessage(message.chat.id, "Per partecipare ad una lotteria utilizza la seguente sintassi: /lotteria @nickname, mentre /crealotteria per iniziarne una nuova. Puoi anche usare /lotteriap tutte");
 		return;
 	}	
 
@@ -3406,6 +3445,74 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function(message, match) {
 
 		if (rows[0].holiday == 1){
 			bot.sendMessage(message.chat.id, "...", back)
+			return;
+		}
+
+		if (nickname == "tutte"){
+
+			/*
+			if (message.from.username != "fenix45"){
+				return;
+			}
+			*/
+			connection.query('SELECT L.id, L.price, (SELECT COUNT(id) FROM public_lottery_players P WHERE P.lottery_id = L.id AND P.player_id = ' + player_id + ') As sub FROM public_lottery L WHERE L.price > 0 AND L.creator_id != ' + player_id + ' HAVING sub = 0', function(err, rows, fields) {
+				if (err) throw err;
+
+				if ((Object.keys(rows).length == 0) || (rows[0].tot == 0)){
+					bot.sendMessage(message.chat.id, "Non ci sono lotterie a pagamento disponibili!");
+					return;
+				}
+
+				var tot = 0;
+
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+					tot += rows[i].price;
+					console.log(rows[i].price);
+				}
+
+				if (money < tot){
+					bot.sendMessage(message.chat.id, "Non hai abbastanza monete per partecipare a tutte le lotterie, ti servono " + formatNumber(tot) + " §!");
+					return;
+				}
+
+				var len = Object.keys(rows).length;
+				var count = 0;
+
+				var lottery_id = 0;
+				var price = 0;
+				var one = 0;
+
+				for (var i = 0; i < len; i++) {
+					lottery_id = rows[i].id;
+					price = rows[i].price;
+
+					connection.query('SELECT * FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = ' + lottery_id, function(err, rows, fields) {
+						if (err) throw err;
+						if (Object.keys(rows).length == 0){
+							one = 1;
+							connection.query('INSERT INTO public_lottery_players (lottery_id, player_id) VALUES (' + this.lottery_id + ',' + this.player_id + ')', function(err, rows, fields) {
+								if (err) throw err;
+
+								count++;
+
+								connection.query('UPDATE public_lottery SET money = money+' + this.price + ' WHERE id = ' + this.lottery_id, function(err, rows, fields) {
+									if (err) throw err;
+								});
+
+								if (this.i+1 == this.len){
+									bot.sendMessage(message.chat.id, "Ti sei registrato correttamente a " + count + " lotterie a pagamento spendendo " + formatNumber(tot) + " §!");
+									connection.query('UPDATE player SET money = money-' + tot + ' WHERE id = ' + player_id, function(err, rows, fields) {
+										if (err) throw err;
+									});
+								};
+							}.bind( {i: this.i, len: this.len, price: this.price, lottery_id: this.lottery_id} ));
+						}
+						if ((this.i+1 == this.len) && (one == 0)){
+							bot.sendMessage(message.chat.id, "Sei già registrato a tutte le lotterie a pagamento!");
+						};
+					}.bind( {player_id: player_id, lottery_id: lottery_id, i: i, len: len, price: price} ));
+				}
+			});
 			return;
 		}
 
@@ -3771,9 +3878,9 @@ bot.onText(/^\/oggetti (.+)|^\/oggetti/, function(message, match) {
 		var ogg = "";
 		var query = "";
 		var part = "";
-		
+
 		intro += "<b>" + message.from.username + "</b> possiedi:";
-		
+
 		for (var i = 0; i < len; i++) {
 			ogg = oggetti[i].trim();
 			part = 'like "%' + ogg + '%"';
@@ -4071,17 +4178,17 @@ bot.onText(/^\/totale (.+)|^\/totale/, function(message, match) {
 });
 
 function rebSym(reborn){
-	var rebSym = "🔰";
+	var rebSym = "";
 	if (reborn == 1){
-		rebSym = "🔅";
+		rebSym = "✨";
 	}else if (reborn == 2){
 		rebSym = "🔆";
 	}else if (reborn == 3){
 		rebSym = "💫";
 	}else if (reborn == 4){
-		rebSym = "🔱";
+		rebSym = "⭐️";
 	}else if (reborn == 5){
-		rebSym = "⚜";
+		rebSym = "🌟";
 	}
 	return rebSym;
 }
@@ -4186,7 +4293,7 @@ function getInfo(message, player, myhouse_id, from, account_id){
 												rows[0].damage += 25;
 												rows[0].critical += 10;
 											}
-											
+
 											if ((class_id == 7) && (reborn > 1)){
 												rows[0].claws += rows[0].claws*0.5;
 											}
@@ -4206,11 +4313,11 @@ function getInfo(message, player, myhouse_id, from, account_id){
 												rows[0].critical += 7;
 											}
 
-											dragon_name = rows[0].name.replace(new RegExp("_", "g"), " ").trim() + " " + rows[0].type;
+											dragon_name = rows[0].name.trim() + " " + rows[0].type;
 											dragon_level = rows[0].level;
-											dragon_damage = "+" + (rows[0].damage + rows[0].claws);
-											dragon_defense = "-" + (rows[0].defense + rows[0].saddle);
-											dragon_critical = rows[0].critical + "%";
+											dragon_damage = "+" + Math.round(rows[0].damage + rows[0].claws);
+											dragon_defense = "-" + Math.round(rows[0].defense + rows[0].saddle);
+											dragon_critical = Math.round(rows[0].critical) + "%";
 
 											dragon_claws = parseInt(rows[0].claws);
 
@@ -4307,11 +4414,13 @@ function getInfo(message, player, myhouse_id, from, account_id){
 																rows[0].weapon2_crit += 5;
 															}
 															if ((class_id == 2) && (reborn >= 4)){
-																rows[0].weapon2_crit += 5;
-																rows[0].weapon3_crit += 5;
+																rows[0].weapon2_crit += 7;
+																rows[0].weapon3_crit += 7;
 															}
 															if ((class_id == 4) && (reborn == 3)){
 																rows[0].weapon_crit += 2;
+																rows[0].weapon2_crit += 2;
+																rows[0].weapon3_crit += 2;
 															}
 															if ((class_id == 4) && (reborn >= 4)){
 																rows[0].weapon2_crit += 7;
@@ -4358,11 +4467,11 @@ function getInfo(message, player, myhouse_id, from, account_id){
 																rows[0].weapon_crit += 7;
 																rows[0].weapon3_crit += 7;
 															}
-															
+
 															if ((class_id == 7) && (reborn == 5)){
 																rows[0].weapon_crit += dragon_critical/2;
 															}
-															
+
 															if ((class_id == 8) && (reborn > 1)){
 																rows[0].weapon += rows[0].weapon*0.1;
 															}
@@ -4372,7 +4481,7 @@ function getInfo(message, player, myhouse_id, from, account_id){
 															if ((class_id == 8) && ((reborn == 3) || (reborn >= 4))){
 																rows[0].weapon += rows[0].weapon*0.07;
 															}
-															
+
 															//Descrizioni
 
 															var weapon_desc = "";
