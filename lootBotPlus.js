@@ -23,6 +23,7 @@ var check = [];
 var qnt = [];
 var globaltime = Math.round(new Date()/1000);
 var timevar = [];
+var timevarSpam = [];
 var rankList = [20,50,75,100,150,200,500,1000];
 
 var mysql      = require('mysql');
@@ -118,15 +119,14 @@ function cutText(text){
 
 function checkSpam(message){
 	var isOk = true;
-	if (timevar[message.from.id] != undefined){
-		diff = new Date()/1000 - timevar[message.from.id];
-		if (diff < 2){
-			//bot.sendMessage(message.chat.id, "Non spammare!");
+	if (timevarSpam[message.from.id] != undefined){
+		diff = new Date()/1000 - timevarSpam[message.from.id];
+		if (diff < 1){
 			console.log("SPAM Utente " + message.from.username + " - " + diff);
 			isOk = false;
 		}
 	}
-	timevar[message.from.id] = Math.round(new Date()/1000);
+	timevarSpam[message.from.id] = Math.round(new Date()/1000);
 
 	return isOk;
 }
@@ -237,7 +237,7 @@ bot.onText(/^\/birra/, function(message) {
 				if (err) throw err;
 				bot.sendMessage(message.chat.id, "🍺");
 			});
-			connection.query('UPDATE config SET beer = beer+1', function(err, rows, fields) {
+			connection.query('UPDATE config SET food = food+1', function(err, rows, fields) {
 				if (err) throw err;
 			});
 		}
@@ -276,7 +276,7 @@ bot.onText(/^\/duebirre/, function(message) {
 				if (err) throw err;
 				bot.sendMessage(message.chat.id, "🍻");
 			});
-			connection.query('UPDATE config SET beer = beer+2', function(err, rows, fields) {
+			connection.query('UPDATE config SET food = food+2', function(err, rows, fields) {
 				if (err) throw err;
 			});
 		}
@@ -315,14 +315,95 @@ bot.onText(/^\/popcorn/, function(message) {
 				if (err) throw err;
 				bot.sendMessage(message.chat.id, "🍿");
 			});
+			connection.query('UPDATE config SET food = food+1', function(err, rows, fields) {
+				if (err) throw err;
+			});
 		}
 	});
 });
 
-bot.onText(/^\/birre/, function(message) {
-	connection.query('SELECT beer FROM config', function(err, rows, fields) {
+bot.onText(/^\/ovetto/, function(message) {
+	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function(err, rows, fields) {
 		if (err) throw err;
-		bot.sendMessage(message.chat.id, "Sono state acquistate " + formatNumber(rows[0].beer) + "🍻, per un totale di " + formatNumber(rows[0].beer*100) + " §!");
+
+		var player_id = rows[0].id;
+		var money = rows[0].money;
+
+		var account_id = (rows[0].account_id).toString();
+		if (banlist_id.indexOf(account_id) != -1){
+			console.log("BANNATO! (" + message.from.username + ")");
+			var text = "...";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+
+		if (rows[0].market_ban == 1){
+			bot.sendMessage(message.chat.id, "...", mark);
+			return;
+		}
+
+		if (rows[0].holiday == 1){
+			bot.sendMessage(message.chat.id, "...", back)
+			return;
+		}
+
+		if (money < 100){
+			bot.sendMessage(message.chat.id, "Ma che bello cucinare senza comprare le uova :>");
+		}else{
+			connection.query('UPDATE player SET money = money-100 WHERE id = ' + player_id, function(err, rows, fields) {
+				if (err) throw err;
+				bot.sendMessage(message.chat.id, "🍳");
+			});
+			connection.query('UPDATE config SET food = food+1', function(err, rows, fields) {
+				if (err) throw err;
+			});
+		}
+	});
+});
+
+bot.onText(/^\/whisky/, function(message) {
+	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function(err, rows, fields) {
+		if (err) throw err;
+
+		var player_id = rows[0].id;
+		var money = rows[0].money;
+
+		var account_id = (rows[0].account_id).toString();
+		if (banlist_id.indexOf(account_id) != -1){
+			console.log("BANNATO! (" + message.from.username + ")");
+			var text = "...";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+
+		if (rows[0].market_ban == 1){
+			bot.sendMessage(message.chat.id, "...", mark);
+			return;
+		}
+
+		if (rows[0].holiday == 1){
+			bot.sendMessage(message.chat.id, "...", back)
+			return;
+		}
+
+		if (money < 100){
+			bot.sendMessage(message.chat.id, "Vorresti eh, ubriacone");
+		}else{
+			connection.query('UPDATE player SET money = money-100 WHERE id = ' + player_id, function(err, rows, fields) {
+				if (err) throw err;
+				bot.sendMessage(message.chat.id, "🥃");
+			});
+			connection.query('UPDATE config SET food = food+1', function(err, rows, fields) {
+				if (err) throw err;
+			});
+		}
+	});
+});
+
+bot.onText(/^\/cibi/, function(message) {
+	connection.query('SELECT food FROM config', function(err, rows, fields) {
+		if (err) throw err;
+		bot.sendMessage(message.chat.id, "Sono state acquistati cibi " + formatNumber(rows[0].food) + " per un totale di " + formatNumber(rows[0].food*100) + " §!");
 	});
 });
 
@@ -456,7 +537,8 @@ bot.onText(/^\/gruppi/, function(message) {
 					bot.getChatMembersCount(-1001050988033).then(function(data) {
 						var c5 = data;
 
-						bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
+						if (message.chat.id < 0)
+							bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
 
 						bot.sendMessage(message.from.id, 	"<b>Ufficiali</b>\n" +
 										"Canale principale per aggiornamenti: @xxxAvvisi\n" +
@@ -484,7 +566,7 @@ bot.onText(/^\/gruppi/, function(message) {
 
 										"\n<b>Canali</b>\n" +
 										"@xxxbotquestions - Domande e sondaggi su xxxlandia!\n" +
-										"@xxxwiki - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
+										"@xxxbotwiki - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
 										"@xxxPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
 										"@LootReport - Segnala un comportamento scorretto nella community!\n" +
 
@@ -497,15 +579,14 @@ bot.onText(/^\/gruppi/, function(message) {
 });
 
 bot.onText(/^\/mercatini/, function(message) {
-
-	bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
+	if (message.chat.id < 0)
+		bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
 
 	bot.sendMessage(message.from.id, 	"<b>Mercatini</b>\n" +
 					"@LEMPORIOdiLootbot - Il primo negozio di Loot!\n" +
 					"@AlienStore - Lo store alieno di Loot!\n" +
 					"@LaPulceNellOrecchio | @ciarpamemistico - I mercanti del male\n" +
 					"@ElCanton - Da oggi senza olio di palma!\n" +
-					"@chinatownxxxbot - Prezzi vantaggiosi Made in China!\n" +
 					"@zainoRobNoah - Vendo tacchini a prezzi pazzi!\n" +
 					"@LHStore - Lo store onesto e di qualità\n" +
 					"@bricoxxx - Il mercato per tutti e di tutti!\n" +
@@ -514,8 +595,6 @@ bot.onText(/^\/mercatini/, function(message) {
 					"@sephishop - L'evoluzione digitale del vostro amato sephistore. Sempre conveniente, ora fai-da-te.\n" +
 					"@fancazzisti_shop - Vendita oggetti per grandi, piccini e poveri\n" +
 					"@lapiccolafiammiferaiaxxxbot - Comprate signori comprate! Prezzi modici, bassi e fissi\n" +
-					"@freeitem - Troverete qui solamente oggetti a prezzi da Pozzi\n" +
-					"@ecoxxxshop - Prezzi convenienti per utenti convenienti!\n" +
 					"@xxxonlymychael - Chi non ha niente da fare è gentilmente pregato di andare a farlo da un’altra parte.\n" +
 					"@GaiusBazaar - Un bel negozietto per veri intenditori!\n" +
 					"@SoloCoseBellee - Prezzi belli per veri poverelli!\n" +
@@ -524,7 +603,6 @@ bot.onText(/^\/mercatini/, function(message) {
 					"@PaopuShop - Vieni a condividere il legame del Paopu con noi e non te ne pentirai\n" +
 					"@dogestore - Such Prices! So Cheap! Much Items! #DogeCraft\n" +
 					"@LoShopDiCodast - Accorrete numerosi!!\n" +
-					"@LOOTshop - dove potete acquistare oggetti interessanti a basso prezzo\n" +
 					"@xxxspar - il risparmio è dietro l'angolo\n" +
 					"@ignorantxxxstore - Prezzi bassi e offerte nuove ogni giorno!\n" +
 					"@AngoloRotturexxx - Tutte le rarità a basso costo!\n" +
@@ -1521,7 +1599,7 @@ bot.onText(/^\/negozi$/, function(message, match) {
 					isPublic = "Pubblico";
 				}
 
-				text += rows[0].code + " (Scadenza: " + toDate("it",d) + ") _" + isPublic + "_\n";
+				text += "<code>" + rows[0].code + "</code> (Scadenza: " + toDate("it",d) + ") <i>" + isPublic + "</i>\n";
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {	
 					if ((i > 0) && (rows[i].code != rows[i-1].code)){
 						d = new Date(rows[i].time_end);
@@ -1530,14 +1608,14 @@ bot.onText(/^\/negozi$/, function(message, match) {
 						}else{
 							isPublic = "Pubblico";
 						}
-						text += "\n" + rows[i].code + " (Scadenza: " + toDate("it",d) + ") _" + isPublic + "_\n";
+						text += "\n<code>" + rows[i].code + "</code> (Scadenza: " + toDate("it",d) + ") <i>" + isPublic + "</i>\n";
 					}
 					text += "> " + rows[i].quantity + "x " + rows[i].name + " (" + rows[i].price + "§)\n";
 				}
 				if (Object.keys(text).length > 4000){
 					text = "Hai troppi negozi aperti, cancellane cercando il codice nei messaggi, oppure tutti insieme attraverso l'apposito comando";
 				}
-				bot.sendMessage(message.chat.id, text, mark);
+				bot.sendMessage(message.chat.id, text, html);
 			}else{
 				bot.sendMessage(message.chat.id, "Non hai nessun negozio aperto");
 			}
@@ -1735,13 +1813,14 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			var code = 0;
 			for (var i = 0; i < arrLen; i++) {
 				code = elements[i];
+				console.log(code, elements);
 				connection.query('SELECT * FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id, function(err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0){
 						connection.query('UPDATE public_shop SET time_end = "' + long_date + '" WHERE code = ' + this.code, function(err, rows, fields) {
 							if (err) throw err;
 							bot.sendMessage(message.chat.id, "Negozio " + this.code + " rinnovato per 4 giorni");
-						});
+						}.bind( {code: code} ));
 					}else{
 						bot.sendMessage(message.chat.id, "Impossibile rinnovare il negozio con codice " + this.code);
 					}
@@ -2051,6 +2130,12 @@ bot.onText(/^\/cancellanegozio (.+)|^\/cancellanegozio$/, function(message, matc
 });
 
 bot.on('callback_query', function (message) {
+	/*
+	if (!checkSpam(message)){
+		return;
+	}
+	*/
+	
 	if (message.data.indexOf("asta") != -1){	
 		var split = message.data.split(":");
 		var auction_id = parseInt(split[1]);
@@ -4106,7 +4191,7 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, function(message, match) {
 						if (Object.keys(rows).length > 0){
 							text += "\n<b>Negozi</b> per " + this.itemName + ":\n";
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-								text += "> " + rows[i].nickname + " (" + formatNumber(rows[i].price) + "§ - " + rows[i].code + ")\n";
+								text += "> " + rows[i].nickname + " (" + formatNumber(rows[i].price) + "§ - <code>" + rows[i].code + "</code>)\n";
 							}
 						}
 
@@ -4387,12 +4472,9 @@ function getInfo(message, player, myhouse_id, from, account_id){
 										var dragon_damage = "-";
 										var dragon_defense = "-";
 										var dragon_critical = "-";
-
 										var dragon_clawsid = 0;
 										var dragon_saddleid = 0;
-
 										var dragon_claws = 0;
-
 										var dragon = 0;
 
 										if (Object.keys(rows).length > 0){
@@ -4426,7 +4508,7 @@ function getInfo(message, player, myhouse_id, from, account_id){
 											dragon_level = rows[0].level;
 											dragon_damage = "+" + Math.round(rows[0].damage + rows[0].claws);
 											dragon_defense = "-" + Math.round(rows[0].defense + rows[0].saddle);
-											dragon_critical = Math.round(rows[0].critical) + "%";
+											dragon_critical = Math.round(rows[0].critical);
 
 											dragon_claws = parseInt(rows[0].claws);
 
@@ -4579,7 +4661,7 @@ function getInfo(message, player, myhouse_id, from, account_id){
 															}
 
 															if ((class_id == 7) && (reborn == 5)){
-																rows[0].weapon_crit += dragon_critical/2;
+																rows[0].weapon_crit += Math.round(dragon_critical/2);
 															}
 
 															if ((class_id == 8) && (reborn > 1)){
@@ -4701,7 +4783,7 @@ function getInfo(message, player, myhouse_id, from, account_id){
 																			(dragon ? "\n<b>" + dragon_name + " (L" + dragon_level + ")</b> 🐉\n" : "") +
 																			(dragon ? dragon_claws_n + " (" + dragon_damage + ")\n" : "") +
 																			(dragon ? dragon_saddle_n + " (" + dragon_defense + ")\n" : "") +
-																			(dragon ? "CRIT " + dragon_critical + "\n" : "") +
+																			(dragon ? "CRIT " + dragon_critical + "%\n" : "") +
 
 																			"\n<b>Altro</b> 💱\n" +
 																			referral +
