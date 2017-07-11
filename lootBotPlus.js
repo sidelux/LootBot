@@ -582,7 +582,8 @@ bot.onText(/^\/mercatini/, function(message) {
 	if (message.chat.id < 0)
 		bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
 
-	bot.sendMessage(message.from.id, 	"<b>Mercatini</b>\n" +
+	bot.sendMessage(message.from.id, 	"<b>Valutazione Mercatini</b>\n@xxxadvisor\n\n" +
+					"<b>Mercatini</b>\n" +
 					"@LEMPORIOdiLootbot - Il primo negozio di Loot!\n" +
 					"@AlienStore - Lo store alieno di Loot!\n" +
 					"@LaPulceNellOrecchio | @ciarpamemistico - I mercanti del male\n" +
@@ -5262,6 +5263,7 @@ function setFinishedLottery(element, index, array) {
 
 		connection.query('SELECT player_id FROM public_lottery_players WHERE lottery_id = ' + lottery_id, function(err, rows, fields) {
 			if (err) throw err;
+			var num = Object.keys(rows).length;
 			if (Object.keys(rows).length < 5){
 				connection.query('SELECT player_id FROM public_lottery_players WHERE lottery_id = ' + lottery_id, function(err, rows, fields) {
 					if (err) throw err;
@@ -5303,7 +5305,13 @@ function setFinishedLottery(element, index, array) {
 				connection.query('SELECT item.name FROM item WHERE id = ' + item_id, function(err, rows, fields) {
 					if (err) throw err;
 					var itemName = rows[0].name;
-					bot.sendMessage(chat_id, "Estrazione per " + itemName + "!\n\nIl vincitore è: @" + nickname + "!");
+					var extra = "";
+					if (money > 0){
+						extra = " ed un ammontare pari a " + money + "§";
+					}
+					bot.sendMessage(chat_id, "Estrazione automatica per " + itemName + " con " + num + " partecipanti" + extra + "!\n\nIl vincitore è: @" + nickname + "!");
+					
+					//bot.sendMessage(chat_id, "Estrazione automatica per " + itemName + "!\n\nIl vincitore è: @" + nickname + "!");
 
 					connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + element.creator_id, function(err, rows, fields) {
 						if (err) throw err;
