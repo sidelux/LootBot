@@ -1514,70 +1514,6 @@ bot.onText(/^\/asta(?!p) ([^\s]+) (.+)|^\/asta(?!p)/, function(message, match) {
 	});
 });
 
-/*
-bot.onText(/^\/termina/, function(message) {
-	connection.query('SELECT id, account_id, market_ban FROM player WHERE nickname = "' + message.from.username + '"', function(err, rows, fields) {
-		if (err) throw err;
-		var player_id = rows[0].id;
-
-		var account_id = (rows[0].account_id).toString();
-                if (banlist_id.indexOf(account_id) != -1){
-			console.log("BANNATO! (" + message.from.username + ")");
-                	var text = "...";
-                        bot.sendMessage(message.chat.id, text, mark);
-                        return;
-                }
-		if (rows[0].market_ban == 1){
-			bot.sendMessage(message.chat.id, "...", mark);
-			return;
-		}
-
-		connection.query('SELECT id, item_id, last_price, last_player FROM auction_list WHERE creator_id = ' + player_id, function(err, rows, fields) {
-			if (err) throw err;
-			if (Object.keys(rows).length == 0){
-				bot.sendMessage(message.chat.id, "Non esiste nessuna asta creata da te");
-				return;
-			}
-
-			var auction_id = rows[0].id;
-			var item_id = rows[0].item_id;
-			var money = rows[0].last_price;
-			var last_player = rows[0].last_player;
-
-			connection.query('SELECT * FROM player WHERE id = ' + last_player, function(err, rows, fields) {
-				if (err) throw err;
-				if (Object.keys(rows).length == 0){
-					bot.sendMessage(message.chat.id, "Non puoi terminare senza offerte!");
-					return;
-				}
-				var nickname = rows[0].nickname;
-				connection.query('INSERT INTO inventory (player_id, item_id) VALUES (' + last_player + ',' + item_id + ')', function(err, rows, fields) {
-					if (err) throw err;
-				});
-				connection.query('SELECT item.name FROM item WHERE id = ' + item_id, function(err, rows, fields) {
-					if (err) throw err;
-					var itemName = rows[0].name;
-					bot.sendMessage(message.chat.id, "Asta terminata per " + itemName + "!\n\nIl vincitore è: @" + nickname + " con l'offerta di " + money + "§!");
-
-					connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + player_id, function(err, rows, fields) {
-						if (err) throw err;
-						console.log("Consegnati " + money + "§ al creatore");
-					});
-
-					connection.query('INSERT INTO auction_history (creator_id, player_id, price, item_id) VALUES (' + player_id + ',' + last_player + ',' + money + ',' + item_id + ')', function(err, rows, fields) {
-						if (err) throw err;
-					});
-
-					connection.query('DELETE FROM auction_list WHERE id = ' + auction_id, function(err, rows, fields) {
-						if (err) throw err;
-					});
-				});
-			});
-		});
-	});
-});
-*/
-
 bot.onText(/^\/negozi$/, function(message, match) {
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function(err, rows, fields) {
 		if (err) throw err;
@@ -2772,8 +2708,11 @@ bot.onText(/^\/estrazione/, function(message) {
 							if (err) throw err;
 							console.log("Consegnati " + money + "§ al creatore");
 						});
+						
+						var d = new Date();
+						var long_date = d.getFullYear() + "-" + addZero(d.getMonth()+1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-						connection.query('INSERT INTO public_lottery_history (creator_id, player_id, item_id, money) VALUES (' + player_id + ',' + extracted + ',' + item_id + ',' + money + ')', function(err, rows, fields) {
+						connection.query('INSERT INTO public_lottery_history (creator_id, player_id, item_id, money, time) VALUES (' + player_id + ',' + extracted + ',' + item_id + ',' + money + ',"' + long_date + '")', function(err, rows, fields) {
 							if (err) throw err;
 						});
 
@@ -3313,7 +3252,7 @@ bot.onText(/^\/accettas (.+)|^\/accettas/i, function(message, match) {
 
 									var d = new Date();
 									var long_date = d.getFullYear() + "-" + addZero(d.getMonth()+1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-									connection.query('INSERT INTO market_history (item_1a, item_2a, item_3a, item_1b, item_2b, item_3b, time, from_id, to_id, buyer) VALUES (' + item1 + ',0,0,' + item2 + ',0,0,"' + long_date + '",' + player_id2 + ',' + player_id + ',' + buyer_id + ')', function(err, rows, fields) {
+									connection.query('INSERT INTO market_history (item_1, item_2, time, from_id, to_id, buyer) VALUES (' + item1 + ',' + item2 + ',"' + long_date + '",' + player_id2 + ',' + player_id + ',' + buyer_id + ')', function(err, rows, fields) {
 										if (err) throw err;
 									});
 
@@ -3797,7 +3736,7 @@ bot.onText(/^\/faq/, function(message) {
 					"- *Cosa rimane?*\n" +
 					"Il drago con tutto il suo equipaggiamento\n" +
 					"Il tuo equipaggiamento\n" +
-					"I gettoni/gemme e le missioni/viaggi in corso\n" +
+					"Le monete lunari/gemme e le missioni/viaggi in corso\n" +
 					"Gli incantesimi e il mana\n" +
 					"- *Cosa ottengo?*\n" +
 					"La possibilità di creare oggetti di qualità superiore\n" +
@@ -3824,6 +3763,9 @@ bot.onText(/^\/faq/, function(message) {
 });
 
 bot.onText(/^\/statistiche/, function(message) {
+	
+	bot.sendMessage(message.chat.id, "Pazienta...");
+	
 	connection.query('SELECT MAX(id) As tot, SUM(achievement_count) As achievement, SUM(dungeon_count) As dungeon_tot, SUM(money) As money, SUM(craft_count) As craft, SUM(mission_count) As miss2 FROM player', function(err, rows, fields) {
 		if (err) throw err;
 		var tot = rows[0].tot;
@@ -3907,15 +3849,21 @@ bot.onText(/^\/statistiche/, function(message) {
 																							connection.query('SELECT `AUTO_INCREMENT` As search FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "xxx" AND TABLE_NAME = "search_history"', function(err, rows, fields) {
 																								if (err) throw err;
 																								var search = rows[0].search;
+																								connection.query('SELECT SUM(value) As totval FROM inventory_rarity', function(err, rows, fields) {
+																									if (err) throw err;
+																									var totval = rows[0].totval;
+																									connection.query('SELECT COUNT(id) As shop_tot FROM market_direct_history WHERE type = 2', function(err, rows, fields) {
+																									if (err) throw err;
+																									var shop_tot = rows[0].shop_tot;
 
-																								bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
-
+																									bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
 																												"*Giocatori registrati:* " + formatNumber(tot) + "\n" +
 																												"*Missioni in corso*: " + miss + "\n" +
 																												"*Missioni completate*: " + formatNumber(miss2) + "\n" +
 																												"*Viaggi in corso*: " + travel + "\n" +
 																												"*Utenti attivi (1):* " + formatNumber(act) + "\n" +
-																												"*Monete attuali*: " + formatNumber(money) + "§\n" +
+																												"*Monete attuali*: " + formatNumber(money) + " §\n" +
+																												"*Valore zaino complessivo*: " + formatNumber(totval) + " §\n" +
 																												"*Oggetti*: " + formatNumber(inv) + "\n" + 
 																												"*Scrigni attuali*: " + formatNumber(chest) + "\n" +
 																												"*Creazioni*: " + formatNumber(craft) + "\n" +
@@ -3925,6 +3873,7 @@ bot.onText(/^\/statistiche/, function(message) {
 																												"*Danni ai boss attuali:* " + formatNumber(dmg) + "\n" +
 																												"*Lotterie:* " + formatNumber(lottery) + "\n" +
 																												"*Oggetti nei negozi:* " + formatNumber(shop) + "\n" +
+																												"*Oggetti acquistati:* " + formatNumber(shop_tot) + "\n" +
 																												"*Scrigni giornalieri consegnati:* " + formatNumber(daily) + "\n" +
 																												"*Dungeon completati:* " + formatNumber(dungeon_tot) + "\n" +
 																												"*Dungeon creati:* " + formatNumber(dungeon) + "\n" +
@@ -3941,6 +3890,8 @@ bot.onText(/^\/statistiche/, function(message) {
 																												"*Membri nei gruppi:* " + formatNumber(members) + "\n" +
 
 																												"\n(1) Utenti che hanno inviato un comando oggi", mark);
+																									});
+																								});
 																							});
 																						});
 																					});
@@ -4770,7 +4721,7 @@ function getInfo(message, player, myhouse_id, from, account_id){
 																			stars + " " + lev + " (" + rows[0].exp + " xp)\n\n" +
 																			"🏹 " + class_name + "\n" +
 																			"💎 " + rows[0].gems + "\n" +
-																			"🌝 " + rows[0].token + "\n" +
+																			"🌕 " + rows[0].moon_coin + "\n" +
 																			"💰 " + formatNumber(rows[0].money) + "§\n" +
 																			"❤️ " + rows[0].life + " / " + rows[0].total_life + " hp\n" +
 																			"📦 " + rows[0].craft_count + " (" + rows[0].craft_week + ")\n" +
@@ -5223,8 +5174,11 @@ function setFinishedAuction(element, index, array) {
 					if (err) throw err;
 					console.log("Consegnati " + money + "§ al creatore");
 				});
+				
+				var d = new Date();
+				var long_date = d.getFullYear() + "-" + addZero(d.getMonth()+1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-				connection.query('INSERT INTO auction_history (creator_id, player_id, price, item_id) VALUES (' + element.creator_id + ',' + last_player + ',' + last_price + ',' + item_id + ')', function(err, rows, fields) {
+				connection.query('INSERT INTO auction_history (creator_id, player_id, price, item_id, time) VALUES (' + element.creator_id + ',' + last_player + ',' + last_price + ',' + item_id + ',"' + long_date + '")', function(err, rows, fields) {
 					if (err) throw err;
 				});
 
@@ -5263,7 +5217,7 @@ function setFinishedLottery(element, index, array) {
 
 		connection.query('SELECT player_id FROM public_lottery_players WHERE lottery_id = ' + lottery_id, function(err, rows, fields) {
 			if (err) throw err;
-			var num = Object.keys(rows).length;
+			var members_num = Object.keys(rows).length;
 			if (Object.keys(rows).length < 5){
 				connection.query('SELECT player_id FROM public_lottery_players WHERE lottery_id = ' + lottery_id, function(err, rows, fields) {
 					if (err) throw err;
@@ -5309,7 +5263,7 @@ function setFinishedLottery(element, index, array) {
 					if (money > 0){
 						extra = " ed un ammontare pari a " + money + "§";
 					}
-					bot.sendMessage(chat_id, "Estrazione automatica per " + itemName + " con " + num + " partecipanti" + extra + "!\n\nIl vincitore è: @" + nickname + "!");
+					bot.sendMessage(chat_id, "Estrazione automatica per " + itemName + " con " + members_num + " partecipanti" + extra + "!\n\nIl vincitore è: @" + nickname + "!");
 					
 					//bot.sendMessage(chat_id, "Estrazione automatica per " + itemName + "!\n\nIl vincitore è: @" + nickname + "!");
 
@@ -5335,8 +5289,11 @@ function setFinishedLottery(element, index, array) {
 							});
 						});
 					});
+					
+					var d = new Date();
+					var long_date = d.getFullYear() + "-" + addZero(d.getMonth()+1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-					connection.query('INSERT INTO public_lottery_history (creator_id, player_id, item_id, money) VALUES (' + element.creator_id + ',' + extracted + ',' + item_id + ',' + money + ')', function(err, rows, fields) {
+					connection.query('INSERT INTO public_lottery_history (creator_id, player_id, item_id, money, time) VALUES (' + element.creator_id + ',' + extracted + ',' + item_id + ',' + money + ',"' + time + '")', function(err, rows, fields) {
 						if (err) throw err;
 					});
 				});
