@@ -563,6 +563,7 @@ bot.onText(/^\/gruppi/, function(message) {
 										"@LootNotturno - Per i giocatori notturni\n" +
 										"<a href='https://telegram.me/joinchat/CMLXoEDzSXixQrX0CHrTkA'>Maxx the Looter</a> - Competizioni, aste e gare per vincere oggetti esclusivi!\n" +
 										"<a href='https://telegram.me/joinchat/EXFobEDH8FbDpQ4MTmw-mQ'>xxx School</a> - Impara le basi del gioco per iniziare con una marcia in più!\n" + 
+										"@LootScommesse - Scommetti sul contenuto degli scrigni\n" +
 
 										"\n<b>Canali</b>\n" +
 										"@xxxbotquestions - Domande e sondaggi su xxxlandia!\n" +
@@ -609,6 +610,7 @@ bot.onText(/^\/mercatini/, function(message) {
 					"@AngoloRotturexxx - Tutte le rarità a basso costo!\n" +
 					"@disadattatishop - Vendita oggetti di xxxbot!\n" +
 					"@negoziopercaso - Negozio specializzato nel risparmio e nella cura dei nuovi giocatori nessuna fregatura solo prezzi basissimi\n" +
+					"@xxxmedia - Ciao ragazzi ciao a tutti, sono zeb89 e malvenuti su xxxmedia, lo store più fiero di xxxbot.\n" +
 
 					"\nVisita anche /gruppi. Per comparire qua chiedi all'amministratore.", html);
 });
@@ -3849,9 +3851,6 @@ bot.onText(/^\/statistiche/, function(message) {
 																							connection.query('SELECT `AUTO_INCREMENT` As search FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "xxx" AND TABLE_NAME = "search_history"', function(err, rows, fields) {
 																								if (err) throw err;
 																								var search = rows[0].search;
-																								connection.query('SELECT SUM(value) As totval FROM inventory_rarity', function(err, rows, fields) {
-																									if (err) throw err;
-																									var totval = rows[0].totval;
 																									connection.query('SELECT COUNT(id) As shop_tot FROM market_direct_history WHERE type = 2', function(err, rows, fields) {
 																									if (err) throw err;
 																									var shop_tot = rows[0].shop_tot;
@@ -3863,7 +3862,6 @@ bot.onText(/^\/statistiche/, function(message) {
 																												"*Viaggi in corso*: " + travel + "\n" +
 																												"*Utenti attivi (1):* " + formatNumber(act) + "\n" +
 																												"*Monete attuali*: " + formatNumber(money) + " §\n" +
-																												"*Valore zaino complessivo*: " + formatNumber(totval) + " §\n" +
 																												"*Oggetti*: " + formatNumber(inv) + "\n" + 
 																												"*Scrigni attuali*: " + formatNumber(chest) + "\n" +
 																												"*Creazioni*: " + formatNumber(craft) + "\n" +
@@ -3891,7 +3889,6 @@ bot.onText(/^\/statistiche/, function(message) {
 
 																												"\n(1) Utenti che hanno inviato un comando oggi", mark);
 																									});
-																								});
 																							});
 																						});
 																					});
@@ -5072,12 +5069,17 @@ function setFinishedShopErr(element, index, array) {
 				connection.query('DELETE FROM inventory WHERE player_id = ' + to_id + ' AND item_id = ' + item_id + ' LIMIT ' + quantity, function(err, rows, fields) {
 					if (err) throw err;
 				});
+				connection.query('UPDATE player SET money = money - ' + price + ' WHERE id = ' + player_id, function(err, rows, fields) {
+					if (err) throw err;
+				});
+				/*
 				connection.query('UPDATE player SET money = money + ' + price + ' WHERE id = ' + to_id, function(err, rows, fields) {
 					if (err) throw err;
 				});
 				connection.query('INSERT INTO inventory (player_id, item_id) VALUES (' + player_id + ',' + item_id + ')', function(err, rows, fields) {
 					if (err) throw err;
 				});
+				*/
 			}
 			connection.query('DELETE FROM public_shop WHERE id = ' + shop_id, function(err, rows, fields) {
 				if (err) throw err;
@@ -5293,7 +5295,7 @@ function setFinishedLottery(element, index, array) {
 					var d = new Date();
 					var long_date = d.getFullYear() + "-" + addZero(d.getMonth()+1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-					connection.query('INSERT INTO public_lottery_history (creator_id, player_id, item_id, money, time) VALUES (' + element.creator_id + ',' + extracted + ',' + item_id + ',' + money + ',"' + time + '")', function(err, rows, fields) {
+					connection.query('INSERT INTO public_lottery_history (creator_id, player_id, item_id, money, time) VALUES (' + element.creator_id + ',' + extracted + ',' + item_id + ',' + money + ',"' + long_date + '")', function(err, rows, fields) {
 						if (err) throw err;
 					});
 				});
