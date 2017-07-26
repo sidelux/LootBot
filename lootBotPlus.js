@@ -434,6 +434,50 @@ bot.onText(/^\/banlist/, function(message, match) {
 	bot.sendMessage(message.chat.id, "Banlist aggiornata");
 });
 
+bot.onText(/^\/gban ([^\s]+) (.+)/, function(message, match) {
+	if ((message.from.username == "fenix45") || (message.from.username == "LastSoldier95")){
+		match[1] = match[1].replace("@","");
+		connection.query('SELECT nickname, id, account_id FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields){
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0){
+				bot.sendMessage(message.chat.id, "Non ho trovato nessun utente con quel nickname.");
+				return;
+			}
+			
+			var nick = rows[0].nickname;
+			var account_id = rows[0].account_id;
+
+			fs.appendFile('banlist.txt', "\r\n" + rows[0].account_id + '|' + match[2], function (err) {
+				if (err) throw err;
+
+				reloadBans();
+
+				connection.query('DELETE FROM market_direct WHERE nickname = "' + nick + '"', function (err, rows, fields){
+					if (err) throw err;
+				});
+				connection.query('DELETE FROM market WHERE nickname = "' + nick + '"', function (err, rows, fields){
+					if (err) throw err;
+				});
+				connection.query('DELETE FROM public_shop WHERE player_id = ' + rows[0].id, function (err, rows, fields){
+					if (err) throw err;
+				});
+				connection.query('UPDATE player SET market_ban = 1 WHERE id = ' + rows[0].id, function (err, rows, fields){
+					if (err) throw err;
+				});
+				connection.query('DELETE FROM team_player WHERE player_id = ' + rows[0].id, function (err, rows, fields){
+					if (err) throw err;
+				});
+				
+				bot.kickChatMember(message.chat.id, account_id).then(result => {
+					bot.sendMessage(message.chat.id, nick + " (" + account_id + ") bannato da chat e game.");
+					bot.sendMessage(account_id, "Sei stato bannato dal bot, _Bye_.", mark);
+				});
+			});
+		});
+	};
+});
+
 bot.onText(/^\/det (.+)/, function(message, match) {
 	var nick = match[1];
 
@@ -483,6 +527,9 @@ bot.onText(/^\/pic (.+)/, function(message, match) {
 
 bot.onText(/^\/info$/, function(message) {
 	var reply = "";
+	
+	console.log(message.chat);
+	
 	if (message.reply_to_message != undefined){
 		var date2 = new Date(message.reply_to_message.date*1000);
 		reply = 			"\n*REPLY TO*\n" +
@@ -491,22 +538,22 @@ bot.onText(/^\/info$/, function(message) {
 			"User Name: " + message.reply_to_message.from.first_name + "\n" +
 			"User @: " + message.reply_to_message.from.username + "\n" +
 			"Chat ID: " + message.reply_to_message.chat.id + "\n" +
-			"Chat Name: " + message.reply_to_message.chat.first_name + "\n" +
-			"Chat @: " + message.reply_to_message.chat.username + "\n" +
+			"Chat Name: " + ((message.reply_to_message.chat.first_name == "undefined") ? "???" : message.reply_to_message.chat.first_name) + "\n" +
+			"Chat @: " + ((message.reply_to_message.chat.username == "undefined") ? "???" : message.reply_to_message.chat.username) + "\n" +
 			"Chat Type: " + message.reply_to_message.chat.type + "\n" +
 			"Date: " + toDate("it",date2);
 	}
 
 	var date = new Date(message.date*1000);
 	bot.sendMessage(message.chat.id, 	"Message ID: " + message.message_id + "\n" +
-					"User ID: " + message.from.id + "\n" +
-					"User Name: " + message.from.first_name + "\n" +
-					"User @: " + message.from.username + "\n" +
-					"Chat ID: " + message.chat.id + "\n" +
-					"Chat Name: " + message.chat.first_name + "\n" +
-					"Chat @: " + message.chat.username + "\n" +
-					"Chat Type: " + message.chat.type + "\n" +
-					"Date: " + toDate("it",date) + "\n" + reply, mark);
+			"User ID: " + message.from.id + "\n" +
+			"User Name: " + message.from.first_name + "\n" +
+			"User @: " + message.from.username + "\n" +
+			"Chat ID: " + message.chat.id + "\n" +
+			"Chat Name: " + message.chat.first_name + "\n" +
+			"Chat @: " + ((message.chat.username == "undefined") ? "???" : message.chat.username) + "\n" +
+			"Chat Type: " + ((message.chat.type == "undefined") ? "???" : message.chat.type) + "\n" +
+			"Date: " + toDate("it",date) + "\n" + reply, mark);
 });
 
 function toDate(lang,  d) {
@@ -2360,56 +2407,38 @@ bot.on('callback_query', function (message) {
 						var item_name = rows[0].name;
 
 						connection.query('DELETE FROM inventory WHERE item_id = ' + item_id + ' AND player_id = ' + player_id2 + ' LIMIT 1', function(err, rows, fields) {
-							if (err) {
+							if (err) throw err;
+							if (rows.affectedRows == 0){
 								bot.answerCallbackQuery(message.id, 'Errore durante l\'acquisto, riprova');
-								connection.rollback(function() {
-									console.log("Rollback negozio 1");
-								});
-								throw err;
-							};
+								return;
+							}
 							connection.query('INSERT INTO inventory (player_id, item_id) VALUES (' + player_id + ',' + item_id + ')', function(err, rows, fields) {
-								if (err) {
-									bot.answerCallbackQuery(message.id, 'Errore durante l\'acquisto, riprova');
-									connection.rollback(function() {
-										console.log("Rollback negozio 2");
-									});
-									throw err;
-								};
+								if (err) throw err;
 								connection.query('UPDATE player SET money = money + ' + price + ' WHERE id = ' + player_id2, function(err, rows, fields) {
-									if (err) {
-										bot.answerCallbackQuery(message.id, 'Errore durante l\'acquisto, riprova');
-										connection.rollback(function() {
-											console.log("Rollback negozio 3");
-										});
-										throw err;
-									};
-									connection.query('UPDATE player SET money = money - ' + price + ' WHERE id = ' + player_id, function(err, rows, fields) {
-										if (err) {
+									if (err) throw err;
+									connection.query('UPDATE player SET money = money - ' + price + ' WHERE money > 0 AND id = ' + player_id, function(err, rows, fields) {
+										if (err) throw err;
+										if (rows.affectedRows == 0){
 											bot.answerCallbackQuery(message.id, 'Errore durante l\'acquisto, riprova');
 											connection.rollback(function() {
-												console.log("Rollback negozio 4");
+												console.log("Rollback negozio 1");
 											});
-											throw err;
-										};
-										connection.query('UPDATE public_shop SET quantity = quantity - 1 WHERE id = ' + shop_id, function(err, rows, fields) {
-											if (err) {
+											return;
+										}
+										connection.query('UPDATE public_shop SET quantity = quantity - 1 WHERE quantity > 0 AND id = ' + shop_id, function(err, rows, fields) {
+											if (err) throw err;
+											if (rows.affectedRows == 0){
 												bot.answerCallbackQuery(message.id, 'Errore durante l\'acquisto, riprova');
 												connection.rollback(function() {
-													console.log("Rollback negozio 5");
+													console.log("Rollback negozio 2");
 												});
-												throw err;
-											};
+												return;
+											}
 
 											var d2 = new Date();
 											var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth()+1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
 											connection.query('INSERT INTO market_direct_history (item_id, price, time, from_id, to_id, type) VALUES (' + item_id + ',' + price + ',"' + long_date + '",' + player_id2 + ',' + player_id + ',2)', function (err, rows, fields) {
-												if (err) {
-													bot.answerCallbackQuery(message.id, 'Errore durante l\'acquisto, riprova');
-													connection.rollback(function() {
-														console.log("Rollback negozio 6");
-													});
-													throw err;
-												};
+												if (err) throw err;
 											});
 
 											bot.answerCallbackQuery(message.id, 'Hai comprato ' + item_name + ' per ' + price + '§!');
