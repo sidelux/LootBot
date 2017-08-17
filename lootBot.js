@@ -354,7 +354,7 @@ var back = {
 	disable_web_page_preview: true,
 	reply_markup: {
 		resize_keyboard: true,
-		one_time_keyboard: true,
+		//one_time_keyboard: true,
 		"keyboard": [["Torna al menu"]]
 	}
 };
@@ -364,7 +364,7 @@ var back_html = {
 	disable_web_page_preview: true,
 	reply_markup: {
 		resize_keyboard: true,
-		one_time_keyboard: true,
+		//one_time_keyboard: true,
 		"keyboard": [["Torna al menu"]]
 	}
 };
@@ -374,7 +374,7 @@ var yesno = {
 	reply_markup: {
 		"force_reply": true,
 		"resize_keyboard": true,
-		"one_time_keyboard": true,
+		"//one_time_keyboard": true,
 		"keyboard": [["Si"],["Torna al menu"]]
 	}
 };
@@ -383,7 +383,7 @@ var conf = {
 	parse_mode: "Markdown",
 	reply_markup: {
 		resize_keyboard: true,
-		one_time_keyboard: true,
+		//one_time_keyboard: true,
 		"keyboard": [["Conferma"],["Torna al menu"]]
 	}
 };
@@ -392,7 +392,7 @@ var abort_travel = {
 	parse_mode: "Markdown",
 	reply_markup: {
 		resize_keyboard: true,
-		one_time_keyboard: true,
+		//one_time_keyboard: true,
 		"keyboard": [["Ritorna"],["Torna al menu"]]
 	}
 };
@@ -401,7 +401,7 @@ var abort_travel_2 = {
 	parse_mode: "Markdown",
 	reply_markup: {
 		resize_keyboard: true,
-		one_time_keyboard: true,
+		//one_time_keyboard: true,
 		"keyboard": [["Ritorna"],["Concludi immediatamente"],["Torna al menu"]]
 	}
 };
@@ -410,7 +410,7 @@ var abort_mission = {
 	parse_mode: "HTML",
 	reply_markup: {
 		resize_keyboard: true,
-		one_time_keyboard: true,
+		//one_time_keyboard: true,
 		"keyboard": [["Termina subito"],["Torna al menu"]]
 	}
 };
@@ -419,7 +419,7 @@ var team = {
 	parse_mode: "Markdown",
 	reply_markup: {
 		resize_keyboard: true,
-		one_time_keyboard: true,
+		//one_time_keyboard: true,
 		"keyboard": [["Torna al Team"],["Torna al menu"]]
 	}
 };
@@ -428,7 +428,7 @@ var team_html = {
 	parse_mode: "HTML",
 	reply_markup: {
 		resize_keyboard: true,
-		one_time_keyboard: true,
+		//one_time_keyboard: true,
 		"keyboard": [["Torna al Team"],["Torna al menu"]]
 	}
 };
@@ -442,7 +442,7 @@ var revive = {
 	parse_mode: "Markdown",
 	reply_markup: {
 		resize_keyboard: true,
-		one_time_keyboard: true,
+		//one_time_keyboard: true,
 		"keyboard": [["Torna in Vita"],["Torna al menu"]]
 	}
 };
@@ -451,7 +451,7 @@ var keyrank = {
 	parse_mode: "HTML",
 	reply_markup: {
 		resize_keyboard: true,
-		one_time_keyboard: true,
+		//one_time_keyboard: true,
 		"keyboard": [['Top'],['Torna al menu']]
 	}
 };
@@ -460,7 +460,7 @@ var kb_heist = {
 	parse_mode: "Markdown",
 	reply_markup: {
 		resize_keyboard: true,
-		one_time_keyboard: true,
+		//one_time_keyboard: true,
 		"keyboard": [["Completa immediatamente"],["Torna al menu"]]
 	}
 };
@@ -475,7 +475,7 @@ var no_preview_back = {
 	disable_web_page_preview: true,
 	reply_markup: {
 		resize_keyboard: true,
-		one_time_keyboard: true,
+		//one_time_keyboard: true,
 		"keyboard": [["Torna al menu"]]
 	}
 };
@@ -644,7 +644,7 @@ function checkKeyboard(){
 		disable_web_page_preview: true,
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": mainKeys
 		}
 	};
@@ -654,7 +654,7 @@ function checkKeyboard(){
 		disable_web_page_preview: true,
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": mainKeys
 		}
 	};
@@ -664,7 +664,7 @@ function checkKeyboard(){
 		disable_web_page_preview: true,
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": mainKeysR
 		}
 	};
@@ -674,7 +674,7 @@ function checkKeyboard(){
 		disable_web_page_preview: true,
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": mainKeysR
 		}
 	};
@@ -684,7 +684,7 @@ function checkKeyboard(){
 		disable_web_page_preview: true,
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": mainKeysR2
 		}
 	};
@@ -694,7 +694,7 @@ function checkKeyboard(){
 		disable_web_page_preview: true,
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": mainKeysR2
 		}
 	};
@@ -704,7 +704,7 @@ function checkKeyboard(){
 		disable_web_page_preview: true,
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": mainKeysR3
 		}
 	};
@@ -714,7 +714,7 @@ function checkKeyboard(){
 		disable_web_page_preview: true,
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": mainKeysR3
 		}
 	};
@@ -815,46 +815,42 @@ bot.onText(/^\/endglobal$/, function(message, match) {
 								connection.query('SELECT P.nickname, P.chat_id, A.player_id, SUM(A.value) As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id GROUP BY A.player_id ORDER BY val DESC', function (err, rows, fields){
 									if (err) throw err;
 									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-
-										if (rows[i].val > (rows[0].val/4)){
-
+										if (rows[i].val >= (rows[0].val/4)){
 											connection.query('INSERT INTO inventory (player_id, item_id) VALUES (' + rows[i].player_id + ',' + item_1id + ')', function (err, rows, fields){
 												if (err) throw err;
 											});
 											bot.sendMessage(rows[i].chat_id, "Al termine dell'Impresa Globale hai ricevuto una *" + item_1 + "*!", mark);
-
-											console.log(rows[i].nickname + " 1");
 										}
-										if (rows[i].val > (rows[0].val/100)){
-
+										if (rows[i].val >= (rows[0].val/100)){
 											connection.query('INSERT INTO inventory (player_id, item_id) VALUES (' + rows[i].player_id + ',' + item_2id + ')', function (err, rows, fields){
 												if (err) throw err;
 											});
 											bot.sendMessage(rows[i].chat_id, "Al termine dell'Impresa Globale hai ricevuto una *" + item_2 + "*!", mark);
-
-											console.log(rows[i].nickname + " 2");
 										}
-
 										connection.query('INSERT INTO inventory (player_id, item_id) VALUES (' + rows[i].player_id + ',' + item_3id + ')', function (err, rows, fields){
 											if (err) throw err;
 										});
 										bot.sendMessage(rows[i].chat_id, "Al termine dell'Impresa Globale hai ricevuto una *" + item_3 + "*!", mark);
-
-										console.log(rows[i].nickname + " 3");
-
-										connection.query('UPDATE player SET global_event = global_event+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields){
-											if (err) throw err;
-										});
 									}
+								});
+								connection.query('SELECT P.nickname, P.chat_id, A.player_id, SUM(A.value) As val, global_event FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.global_event < 5 GROUP BY A.player_id ORDER BY val DESC LIMIT 100', function (err, rows, fields){
+									if (err) throw err;
+									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+											connection.query('UPDATE player SET global_event = global_event+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields){
+												if (err) throw err;
+											});
+											bot.sendMessage(rows[i].chat_id, "Inoltre per il tuo posizionamento in classifica la tua impresa globale viene conteggiata nelle statistiche!", mark);
+									}
+								});
+								
+								/*
+								connection.query('DELETE FROM achievement_global', function (err, rows, fields){
+									if (err) throw err;
+								});
+								*/
 
-									connection.query('UPDATE config SET global_eventon = 0', function (err, rows, fields){
-										if (err) throw err;
-									});
-									/*
-									connection.query('DELETE FROM achievement_global', function (err, rows, fields){
-										if (err) throw err;
-									});
-									*/
+								connection.query('UPDATE config SET global_eventon = 0', function (err, rows, fields){
+									if (err) throw err;
 								});
 							}
 						}
@@ -1311,7 +1307,7 @@ bot.onText(/Donazioni/i, function(message) {
 		disable_web_page_preview: true,
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Donatori"],["Torna al menu"]]
 		}
 	};
@@ -1370,7 +1366,7 @@ bot.onText(/fineEstraz/, function(message) {
 				disable_web_page_preview: true,
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Scrigno di Consolazione"],["Torna al menu"]]
 				}
 			};
@@ -2570,6 +2566,7 @@ function mainMenu(message){
 		var holiday = rows[0].holiday;
 		var boost_id = rows[0].boost_id;
 		var market_pack = rows[0].market_pack;
+		var heist_protection = rows[0].heist_protection;
 
 		var mission_time_end = rows[0].mission_time_end;
 		var mission_special_time_end = rows[0].mission_special_time_end;
@@ -2599,7 +2596,6 @@ function mainMenu(message){
 				}
 			}
 
-
 			if (crazyMode == 0){
 				if (market_pack == 0){
 					msgtext += "\n👝 1 pacchetto dal Mercante Pazzo";
@@ -2609,7 +2605,6 @@ function mainMenu(message){
 					msgtext += "\n👝 3 pacchetti dal Mercante Pazzo";
 				}
 			}
-
 
 			connection.query('SELECT wait_time FROM heist_progress WHERE from_id = ' + player_id, function(err, rows, fields) {
 				if (err) throw err;
@@ -2621,6 +2616,11 @@ function mainMenu(message){
 						var wait_time = new Date(rows[0].wait_time);
 						msgtext += "\n🔦 Gnomo in esplorazione fino alle " + addZero(wait_time.getHours()) + ":" + addZero(wait_time.getMinutes());
 					}
+				}
+
+				if (heist_protection != null){
+					var prot_time = new Date(heist_protection);
+					msgtext += "\n🚷 Protetto fino alle " + addZero(prot_time.getHours()) + ":" + addZero(prot_time.getMinutes());
 				}
 
 				connection.query('SELECT zone_id FROM event_mana_status WHERE time_start IS NOT NULL AND player_id = ' + player_id, function(err, rows, fields) {
@@ -2697,7 +2697,7 @@ function mainMenu(message){
 													if ((d.getHours() > 8) && (d.getHours() < 23)){
 														if (rows[0].time_end != null){
 															var time_end = new Date(rows[0].time_end);
-															var short_date = addZero(time_end.getHours()) + ":" + addZero(time_end.getMinutes()) + ":" + addZero(time_end.getSeconds());
+															var short_date = addZero(time_end.getHours()) + ":" + addZero(time_end.getMinutes());
 															if (time_end.getHours() < 23)
 																msgtext = msgtext + "\n💬 Contrabbandiere assente fino alle " + short_date;
 														}else{
@@ -2946,415 +2946,441 @@ function getInfo(message, player, myhouse_id){
 					abBonus = rows[0].ability_level*rows[0].val;
 				}
 
-				connection.query('SELECT name, description FROM item WHERE id = ' + charm_id, function(err, rows, fields) {
+				connection.query('SELECT COUNT(item_id) As cnt FROM artifacts WHERE player_id = ' + player_id, function(err, rows, fields) {
 					if (err) throw err;
-					var talismano = "-";
-					var talismano_desc = "";
-					if (Object.keys(rows).length > 0){
-						talismano = rows[0].name;
-						talismano_desc = " (" + rows[0].description + ")";
-					};
 
-					connection.query('SELECT name FROM house WHERE grade = ' + house_id, function(err, rows, fields) {
+					var artifacts = "";
+					if (rows[0].cnt == 0){
+						artifacts = "-";
+					}
+					if (rows[0].cnt >= 1){
+						artifacts += "🥉";
+					}
+					if (rows[0].cnt >= 2){
+						artifacts += "🥈";
+					}
+					if (rows[0].cnt >= 3){
+						artifacts += "🥇";
+					}
+					if (rows[0].cnt >= 4){
+						artifacts += "🎖";
+					}
+					if (rows[0].cnt >= 5){
+						artifacts += "🏅";
+					}
+
+					connection.query('SELECT name, description FROM item WHERE id = ' + charm_id, function(err, rows, fields) {
 						if (err) throw err;
-						var rifugio = "-";
+						var talismano = "-";
+						var talismano_desc = "";
 						if (Object.keys(rows).length > 0){
-							if (house_id >= 5){
-								if (custom_name_h != null){
-									rifugio = "Rifugio " + custom_name_h + " (" + house_id + ")";
+							talismano = rows[0].name;
+							talismano_desc = " (" + rows[0].description + ")";
+						};
+
+						connection.query('SELECT name FROM house WHERE grade = ' + house_id, function(err, rows, fields) {
+							if (err) throw err;
+							var rifugio = "-";
+							if (Object.keys(rows).length > 0){
+								if (house_id >= 5){
+									if (custom_name_h != null){
+										rifugio = "Rifugio " + custom_name_h + " (" + house_id + ")";
+									}else{
+										rifugio = rows[0].name + " (" + house_id + ")";
+									}
 								}else{
 									rifugio = rows[0].name + " (" + house_id + ")";
 								}
-							}else{
-								rifugio = rows[0].name + " (" + house_id + ")";
-							}
-						};
-
-						connection.query('SELECT name FROM player, team, team_player WHERE player.id = ' + player_id + ' AND team.id = team_player.team_id AND team_player.player_id = player.id', function(err, rows, fields) {
-							if (err) throw err;
-							var team_desc = "";
-							if (Object.keys(rows).length > 0){
-								team_desc = " (" + rows[0].name.trim() + ")";
 							};
 
-							connection.query('SELECT name FROM house WHERE id = ' + house_id, function(err, rows, fields) {
+							connection.query('SELECT name FROM player, team, team_player WHERE player.id = ' + player_id + ' AND team.id = team_player.team_id AND team_player.player_id = player.id', function(err, rows, fields) {
 								if (err) throw err;
-								var house_name = rows[0].name;
+								var team_desc = "";
+								if (Object.keys(rows).length > 0){
+									team_desc = " (" + rows[0].name.trim() + ")";
+								};
 
-								connection.query('SELECT name FROM item WHERE id = ' + weapon2_id, function(err, rows, fields) {
+								connection.query('SELECT name FROM house WHERE id = ' + house_id, function(err, rows, fields) {
 									if (err) throw err;
-									var weapon2 = "-";
-									if (Object.keys(rows).length > 0){
-										if ((weapon2_id == 688) || (weapon2_id == 689) || (weapon2_id == 690)){
-											if (custom_name2 != null){
-												weapon2 = rows[0].name.replace("Necro", custom_name2);
+									var house_name = rows[0].name;
+
+									connection.query('SELECT name FROM item WHERE id = ' + weapon2_id, function(err, rows, fields) {
+										if (err) throw err;
+										var weapon2 = "-";
+										if (Object.keys(rows).length > 0){
+											if ((weapon2_id == 688) || (weapon2_id == 689) || (weapon2_id == 690)){
+												if (custom_name2 != null){
+													weapon2 = rows[0].name.replace("Necro", custom_name2);
+												}else{
+													weapon2 = rows[0].name;
+												}
 											}else{
 												weapon2 = rows[0].name;
 											}
-										}else{
-											weapon2 = rows[0].name;
 										}
-									}
 
-									connection.query('SELECT name FROM item WHERE id = ' + weapon3_id, function(err, rows, fields) {
-										if (err) throw err;
-										var weapon3 = "-";
-										if (Object.keys(rows).length > 0){
-											if ((weapon3_id == 671) || (weapon3_id == 672) || (weapon3_id == 673)){
-												if (custom_name3 != null){
-													weapon3 = rows[0].name.replace("Necro", custom_name3);
+										connection.query('SELECT name FROM item WHERE id = ' + weapon3_id, function(err, rows, fields) {
+											if (err) throw err;
+											var weapon3 = "-";
+											if (Object.keys(rows).length > 0){
+												if ((weapon3_id == 671) || (weapon3_id == 672) || (weapon3_id == 673)){
+													if (custom_name3 != null){
+														weapon3 = rows[0].name.replace("Necro", custom_name3);
+													}else{
+														weapon3 = rows[0].name;
+													}
 												}else{
 													weapon3 = rows[0].name;
 												}
-											}else{
-												weapon3 = rows[0].name;
-											}
-										}
-
-										connection.query('SELECT dragon.* FROM player, dragon WHERE player.id = dragon.player_id AND player.id = ' + player_id, function(err, rows, fields) {
-											if (err) throw err;
-											var dragon_name = "-";
-											var dragon_level = "-";
-											var dragon_damage = "-";
-											var dragon_defense = "-";
-											var dragon_critical = "-";
-											var dragon_clawsid = 0;
-											var dragon_saddleid = 0;
-											var dragon_claws = 0;
-											var dragon = 0;
-
-											if (Object.keys(rows).length > 0){
-												dragon = 1;
-
-												if (charm_id == 602){
-													rows[0].damage += 25;
-													rows[0].critical += 10;
-												}
-
-												if ((class_id == 7) && (reborn > 1)){
-													rows[0].claws += rows[0].claws*0.5;
-												}
-												if ((class_id == 7) && (reborn > 1)){
-													rows[0].saddle += rows[0].saddle*0.5;
-												}
-												if ((class_id == 7) && (reborn >= 4)){
-													rows[0].damage += rows[0].damage*0.5;
-												}
-												if ((class_id == 7) && (reborn >= 4)){
-													rows[0].defense += rows[0].defense*0.5;
-												}
-												if ((class_id == 7) && (reborn == 3)){
-													rows[0].critical += 5;
-												}
-												if ((class_id == 7) && (reborn >= 4)){
-													rows[0].critical += 7;
-												}
-
-												dragon_name = rows[0].name.trim() + " " + rows[0].type;
-												dragon_level = rows[0].level;
-												dragon_damage = "+" + Math.round(rows[0].damage + rows[0].claws);
-												dragon_defense = "-" + Math.round(rows[0].defense + rows[0].saddle);
-												dragon_critical = Math.round(rows[0].critical);
-
-												dragon_claws = parseInt(rows[0].claws);
-
-												dragon_clawsid = rows[0].claws_id;
-												dragon_saddleid = rows[0].saddle_id;
 											}
 
-											connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_clawsid, function(err, rows, fields) {
+											connection.query('SELECT dragon.* FROM player, dragon WHERE player.id = dragon.player_id AND player.id = ' + player_id, function(err, rows, fields) {
 												if (err) throw err;
+												var dragon_name = "-";
+												var dragon_level = "-";
+												var dragon_damage = "-";
+												var dragon_defense = "-";
+												var dragon_critical = "-";
+												var dragon_clawsid = 0;
+												var dragon_saddleid = 0;
+												var dragon_claws = 0;
+												var dragon = 0;
 
-												var dragon_claws_n = "-";
-												if (rows[0].num > 0){
-													dragon_claws_n = rows[0].name;
-												}
+												if (Object.keys(rows).length > 0){
+													dragon = 1;
 
-												connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_saddleid, function(err, rows, fields) {
-													if (err) throw err;
-
-													var dragon_saddle_n = "-";
-													if (rows[0].num > 0){
-														dragon_saddle_n = rows[0].name;
+													if (charm_id == 602){
+														rows[0].damage += 25;
+														rows[0].critical += 10;
+													}
+													if (charm_id == 695){
+														rows[0].damage += 30;
+														rows[0].critical += 15;
 													}
 
-													connection.query('SELECT P1.nickname As player, P2.nickname As new, time FROM referral_list INNER JOIN player P1 ON P1.id = player_id INNER JOIN player P2 ON P2.id = new_player WHERE P2.id = ' + player_id, function(err, rows, fields) {
+													if ((class_id == 7) && (reborn > 1)){
+														rows[0].claws += rows[0].claws*0.5;
+													}
+													if ((class_id == 7) && (reborn > 1)){
+														rows[0].saddle += rows[0].saddle*0.5;
+													}
+													if ((class_id == 7) && (reborn >= 4)){
+														rows[0].damage += rows[0].damage*0.5;
+													}
+													if ((class_id == 7) && (reborn >= 4)){
+														rows[0].defense += rows[0].defense*0.5;
+													}
+													if ((class_id == 7) && (reborn == 3)){
+														rows[0].critical += 5;
+													}
+													if ((class_id == 7) && (reborn >= 4)){
+														rows[0].critical += 7;
+													}
+
+													dragon_name = rows[0].name.trim() + " " + rows[0].type;
+													dragon_level = rows[0].level;
+													dragon_damage = "+" + Math.round(rows[0].damage + rows[0].claws);
+													dragon_defense = "-" + Math.round(rows[0].defense + rows[0].saddle);
+													dragon_critical = Math.round(rows[0].critical);
+
+													dragon_claws = parseInt(rows[0].claws);
+
+													dragon_clawsid = rows[0].claws_id;
+													dragon_saddleid = rows[0].saddle_id;
+												}
+
+												connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_clawsid, function(err, rows, fields) {
+													if (err) throw err;
+
+													var dragon_claws_n = "-";
+													if (rows[0].num > 0){
+														dragon_claws_n = rows[0].name;
+													}
+
+													connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_saddleid, function(err, rows, fields) {
 														if (err) throw err;
 
-														var referral = "";
-														if (Object.keys(rows).length > 0){
-															var d = new Date(rows[0].time);
-															var short_date = addZero(d.getDate()) + "/" + addZero(d.getMonth()+1) + "/" + d.getFullYear();
-															referral = "Invitato da: " + rows[0].player + " (" + short_date + ")\n";
+														var dragon_saddle_n = "-";
+														if (rows[0].num > 0){
+															dragon_saddle_n = rows[0].name;
 														}
 
-														connection.query('SELECT class.name FROM player, class WHERE player.id = ' + player_id + ' AND player.class = class.id', function(err, rows, fields) {
+														connection.query('SELECT P1.nickname As player, P2.nickname As new, time FROM referral_list INNER JOIN player P1 ON P1.id = player_id INNER JOIN player P2 ON P2.id = new_player WHERE P2.id = ' + player_id, function(err, rows, fields) {
 															if (err) throw err;
 
-															var class_name = "-";
+															var referral = "";
 															if (Object.keys(rows).length > 0){
-																class_name = rows[0].name;
+																var d = new Date(rows[0].time);
+																var short_date = addZero(d.getDate()) + "/" + addZero(d.getMonth()+1) + "/" + d.getFullYear();
+																referral = "Invitato da: " + rows[0].player + " (" + short_date + ")\n";
 															}
 
-															connection.query('SELECT * FROM player WHERE id = ' + player_id, function(err, rows, fields) {
+															connection.query('SELECT class.name FROM player, class WHERE player.id = ' + player_id + ' AND player.class = class.id', function(err, rows, fields) {
 																if (err) throw err;
-																var stars = rebSym(reborn);
 
-																if (player_id == 1){
-																	stars = "👑";
-																}
-
-																//Talismani
-
-																if (charm_id == 62){
-																	rows[0].weapon += 5;
-																}
-																if (charm_id == 184){
-																	rows[0].weapon += 15;
-																}
-																if (charm_id == 188){
-																	rows[0].weapon += 20;
-																}
-																if (charm_id == 63){
-																	rows[0].weapon2 -= 5;
-																}
-																if (charm_id == 186){
-																	rows[0].weapon2 -= 15;
-																}
-																if (charm_id == 189){
-																	rows[0].weapon2 -= 20;
-																}
-																if (charm_id == 404){
-																	rows[0].weapon_crit += 6;
-																}
-																if (charm_id == 493){
-																	rows[0].weapon_crit += 2;
-																}
-																if (charm_id == 494){
-																	rows[0].weapon_crit += 4;
-																}
-																if (charm_id == 495){
-																	rows[0].weapon2_crit += 3;
-																}
-																if (charm_id == 496){
-																	rows[0].weapon3_crit += 3;
-																}
-																if (abBonus > 0){
-																	rows[0].weapon_crit += abBonus;
-																	rows[0].weapon2_crit += abBonus;
-																	rows[0].weapon3_crit += abBonus;
+																var class_name = "-";
+																if (Object.keys(rows).length > 0){
+																	class_name = rows[0].name;
 																}
 
-																//Vocazioni
+																connection.query('SELECT * FROM player WHERE id = ' + player_id, function(err, rows, fields) {
+																	if (err) throw err;
+																	var stars = rebSym(reborn);
 
-																if ((class_id == 2) && (reborn == 3)){
-																	rows[0].weapon2_crit += 5;
-																}
-																if ((class_id == 2) && (reborn >= 4)){
-																	rows[0].weapon2_crit += 7;
-																	rows[0].weapon3_crit += 7;
-																}
-																if ((class_id == 4) && (reborn == 3)){
-																	rows[0].weapon_crit += 2;
-																	rows[0].weapon2_crit += 2;
-																	rows[0].weapon3_crit += 2;
-																}
-																if ((class_id == 4) && (reborn >= 4)){
-																	rows[0].weapon_crit += 7;
-																	rows[0].weapon2_crit += 7;
-																	rows[0].weapon3_crit += 7;
-																}
-																if ((class_id == 5) && (reborn == 3)){
-																	rows[0].weapon3_crit += 3;
-																}
-																if ((class_id == 5) && (reborn >= 4)){
-																	rows[0].weapon3_crit += 5;
-																}
-																if ((class_id == 6) && (reborn == 3)){
-																	rows[0].weapon2_crit += 2;
-																}
-																if ((class_id == 6) && (reborn == 3)){
-																	rows[0].weapon3_crit += 2;
-																}
-																if ((class_id == 6) && (reborn >= 4)){
-																	rows[0].weapon2_crit += 7;
-																}
-																if ((class_id == 6) && (reborn >= 4)){
-																	rows[0].weapon3_crit += 7;
-																}
-																if ((class_id == 6) && (reborn == 5)){
-																	rows[0].weapon2_crit += 7;
-																}
-																if ((class_id == 6) && (reborn == 5)){
-																	rows[0].weapon3_crit += 7;
-																}
-																if ((class_id == 8) && (reborn == 3)){
-																	rows[0].weapon3_crit += 5;
-																}
-																if ((class_id == 8) && (reborn >= 4)){
-																	rows[0].weapon3_crit += 7;
-																}
-																if ((class_id == 8) && (reborn == 5)){
-																	rows[0].weapon_crit += 7;
-																}
-																if ((class_id == 9) && (reborn == 3)){
-																	rows[0].weapon_crit += 2;
-																	rows[0].weapon3_crit += 2;
-																}
-																if ((class_id == 9) && (reborn >= 4)){
-																	rows[0].weapon_crit += 7;
-																	rows[0].weapon3_crit += 7;
-																}
-
-																if ((class_id == 7) && (reborn == 5)){
-																	rows[0].weapon_crit += Math.round(dragon_critical/2);
-																}
-
-																if ((class_id == 8) && (reborn > 1)){
-																	rows[0].weapon += rows[0].weapon*0.1;
-																}
-																if ((class_id == 8) && (reborn == 5)){
-																	rows[0].weapon += rows[0].weapon*0.1;
-																}
-																if ((class_id == 8) && ((reborn == 3) || (reborn >= 4))){
-																	rows[0].weapon += rows[0].weapon*0.07;
-																}
-
-																//Descrizioni
-
-																var weapon_desc = "";
-																if (weapon != "-"){
-																	weapon_desc = " (+" + Math.round(rows[0].weapon) + ", " + rows[0].weapon_crit + "%, " + rows[0].weapon_enchant + ")";
-																}
-																var weapon2_desc = "";
-																if (weapon2 != "-"){
-																	weapon2_desc = " (" + Math.round(rows[0].weapon2) + ", " + rows[0].weapon2_crit + "%, " + rows[0].weapon2_enchant + ")";
-																}
-																var weapon3_desc = "";
-																if (weapon3 != "-"){
-																	weapon3_desc = " (" + Math.round(rows[0].weapon3) + ", " + rows[0].weapon3_crit + "%, " + rows[0].weapon3_enchant + ")";
-																}
-
-																var nickname = rows[0].nickname;
-																var weapon_d = parseInt(rows[0].weapon);
-																var lev = Math.floor(rows[0].exp/10);
-																var player_atk = (lev+weapon_d+rows[0].weapon_enchant) + " - " + ((lev+weapon_d+rows[0].weapon_enchant)+(weapon_d+rows[0].weapon_enchant+dragon_claws));
-																var player_description = rows[0].player_description;
-
-																var Keys = []
-
-																if (player == message.from.username){
-																	Keys.push(["Vocazione 🏹"]);
-																	Keys.push(["Link Invito 🗣","Statistiche Personali 📊"]);
-																	if ((weapon_id == 638) || (weapon_id == 639) || (weapon_id == 640) ||
-																		(weapon2_id == 688) || (weapon2_id == 689) || (weapon2_id == 690) ||
-																		(weapon3_id == 671) || (weapon3_id == 672) || (weapon3_id == 673)) {
-																		Keys.push(["Nomina Equip/Rifugio 🏷"]);
+																	if (player_id == 1){
+																		stars = "👑";
 																	}
-																	Keys.push(["Descrizione Personale 💬","Vacanza ⛱ "]);
-																}else{
-																	if (myhouse_id == 1){
-																		rows[0].life = "?";
-																		rows[0].total_life = "?";
-																		rows[0].heist_count = "?";
-																		rows[0].spy_count = "?";
-																		rows[0].money = "?";
-																		rows[0].exp = "?";
-																		lev = "?";
-																		weapon = "?";
-																		weapon_desc = "";
-																		weapon2 = "?";
-																		weapon2_desc = "";
-																		weapon3 = "?";
-																		weapon3_desc = "";
-																		talismano = "?";
-																		talismano_desc = "";
-																		dragon_name = "?";
-																		dragon_level = "?";
-																		dragon_claws_n = "?";
-																		dragon_damage = "?";
-																		dragon_saddle_n = "?";
-																		dragon_defense = "?";
-																		dragon_critical = "?";
-																	}else if (myhouse_id == 2){
-																		rows[0].heist_count = "?";
-																		rows[0].spy_count = "?";
-																		rows[0].money = "?";
-																		weapon = "?";
-																		weapon_desc = "";
-																		weapon2 = "?";
-																		weapon2_desc = "";
-																		weapon3 = "?";
-																		weapon3_desc = "";
-																		talismano = "?";
-																		talismano_desc = "";
-																		dragon_name = "?";
-																		dragon_level = "?";
-																		dragon_claws_n = "?";
-																		dragon_damage = "?";
-																		dragon_saddle_n = "?";
-																		dragon_defense = "?";
-																		dragon_critical = "?";
-																	}else if (myhouse_id == 3){
-																		rows[0].heist_count = "?";
-																		rows[0].spy_count = "?";
-																		rows[0].money = "?";
-																		talismano = "?";
-																		talismano_desc = "";
-																		dragon_name = "?";
-																		dragon_level = "?";
-																		dragon_claws_n = "?";
-																		dragon_damage = "?";
-																		dragon_saddle_n = "?";
-																		dragon_defense = "?";
-																		dragon_critical = "?";
-																	}else if (myhouse_id == 4){
-																		rows[0].heist_count = "?";
-																		rows[0].spy_count = "?";
-																		rows[0].money = "?";
-																	}else if (myhouse_id == 5){
-																		rows[0].money = "?";
+
+																	//Talismani
+
+																	if (charm_id == 62){
+																		rows[0].weapon += 5;
 																	}
-																}
-																Keys.push(["Torna al menu"]);
-
-																var kb = {
-																	parse_mode: "HTML",
-																	reply_markup: {
-																		resize_keyboard: true,
-																		one_time_keyboard: true,
-																		"keyboard": Keys
+																	if (charm_id == 184){
+																		rows[0].weapon += 15;
 																	}
-																};
+																	if (charm_id == 188){
+																		rows[0].weapon += 20;
+																	}
+																	if (charm_id == 404){
+																		rows[0].weapon_crit += 6;
+																	}
+																	if (charm_id == 493){
+																		rows[0].weapon_crit += 2;
+																	}
+																	if (charm_id == 494){
+																		rows[0].weapon_crit += 4;
+																	}
+																	if (charm_id == 495){
+																		rows[0].weapon2_crit += 3;
+																	}
+																	if (charm_id == 496){
+																		rows[0].weapon3_crit += 3;
+																	}
+																	if (charm_id == 696){
+																		rows[0].weapon_crit += 5;
+																		rows[0].weapon2_crit += 5;
+																		rows[0].weapon3_crit += 3;
+																	}
+																	if (charm_id == 698){
+																		rows[0].weapon += 30;
+																	}
+																	if (abBonus > 0){
+																		rows[0].weapon_crit += abBonus;
+																		rows[0].weapon2_crit += abBonus;
+																		rows[0].weapon3_crit += abBonus;
+																	}
 
-																bot.sendMessage(message.chat.id, "<b>Giocatore</b> 👤\n" +
-																				nickname + team_desc + "\n" +
-																				stars + " " + lev + " (" + rows[0].exp + " xp)" + "\n\n" +
-																				"🏹 " + class_name + "\n" +
-																				"💎 " + rows[0].gems + "\n" +
-																				"🌕 " + rows[0].moon_coin + "\n" +
-																				"🗝 " + rows[0].mkeys + "\n" +
-																				"💰 " + formatNumber(rows[0].money) + " §\n" +
-																				"❤️ " + rows[0].life + " / " + rows[0].total_life + " hp\n" +
-																				"📦 " + rows[0].craft_count + " (" + rows[0].craft_week + ")\n" +
-																				"🏕 " + rifugio + "\n" +
-																				"\n<b>Equipaggiamento</b> ⚔️\n" +
-																				"🗡 " + weapon + weapon_desc + "\n" +
-																				"🥋 " + weapon2 + weapon2_desc + "\n" +
-																				"🛡 " + weapon3 + weapon3_desc + "\n" +
-																				"📿 " + talismano + "\n" +
-																				"💥 " + player_atk + "\n" +
+																	//Vocazioni
 
-																				(dragon ? "\n<b>" + dragon_name + " (L" + dragon_level + ")</b> 🐉\n" : "") +
-																				(dragon ? dragon_claws_n + " (" + dragon_damage + ")\n" : "") +
-																				(dragon ? dragon_saddle_n + " (" + dragon_defense + ")\n" : "") +
-																				(dragon ? "CRIT " + dragon_critical + "%\n" : "") +
+																	if ((class_id == 2) && (reborn == 3)){
+																		rows[0].weapon2_crit += 5;
+																	}
+																	if ((class_id == 2) && (reborn >= 4)){
+																		rows[0].weapon2_crit += 7;
+																		rows[0].weapon3_crit += 7;
+																	}
+																	if ((class_id == 4) && (reborn == 3)){
+																		rows[0].weapon_crit += 2;
+																		rows[0].weapon2_crit += 2;
+																		rows[0].weapon3_crit += 2;
+																	}
+																	if ((class_id == 4) && (reborn >= 4)){
+																		rows[0].weapon_crit += 7;
+																		rows[0].weapon2_crit += 7;
+																		rows[0].weapon3_crit += 7;
+																	}
+																	if ((class_id == 5) && (reborn == 3)){
+																		rows[0].weapon3_crit += 3;
+																	}
+																	if ((class_id == 5) && (reborn >= 4)){
+																		rows[0].weapon3_crit += 5;
+																	}
+																	if ((class_id == 6) && (reborn == 3)){
+																		rows[0].weapon2_crit += 2;
+																	}
+																	if ((class_id == 6) && (reborn == 3)){
+																		rows[0].weapon3_crit += 2;
+																	}
+																	if ((class_id == 6) && (reborn >= 4)){
+																		rows[0].weapon2_crit += 7;
+																	}
+																	if ((class_id == 6) && (reborn >= 4)){
+																		rows[0].weapon3_crit += 7;
+																	}
+																	if ((class_id == 6) && (reborn == 5)){
+																		rows[0].weapon2_crit += 7;
+																	}
+																	if ((class_id == 6) && (reborn == 5)){
+																		rows[0].weapon3_crit += 7;
+																	}
+																	if ((class_id == 8) && (reborn == 3)){
+																		rows[0].weapon3_crit += 5;
+																	}
+																	if ((class_id == 8) && (reborn >= 4)){
+																		rows[0].weapon3_crit += 7;
+																	}
+																	if ((class_id == 8) && (reborn == 5)){
+																		rows[0].weapon_crit += 7;
+																	}
+																	if ((class_id == 9) && (reborn == 3)){
+																		rows[0].weapon_crit += 2;
+																		rows[0].weapon3_crit += 2;
+																	}
+																	if ((class_id == 9) && (reborn >= 4)){
+																		rows[0].weapon_crit += 7;
+																		rows[0].weapon3_crit += 7;
+																	}
 
-																				"\n<b>Altro</b> 💱\n" +
-																				referral +
-																				"Abilità: " + rows[0].ability + "\n" +
-																				"Rango: " + getRankName(rows[0].rank, 0) + " (" + rows[0].rank + ")\n" +
-																				(player_description != null ? "\n<i>" + player_description  + "</i>" : ""), kb);
+																	if ((class_id == 7) && (reborn == 5)){
+																		rows[0].weapon_crit += Math.round(dragon_critical/2);
+																	}
+
+																	if ((class_id == 8) && (reborn > 1)){
+																		rows[0].weapon += rows[0].weapon*0.1;
+																	}
+																	if ((class_id == 8) && (reborn == 5)){
+																		rows[0].weapon += rows[0].weapon*0.1;
+																	}
+																	if ((class_id == 8) && ((reborn == 3) || (reborn >= 4))){
+																		rows[0].weapon += rows[0].weapon*0.07;
+																	}
+
+																	//Descrizioni
+
+																	var weapon_desc = "";
+																	if (weapon != "-"){
+																		weapon_desc = " (+" + Math.round(rows[0].weapon) + ", " + rows[0].weapon_crit + "%, " + rows[0].weapon_enchant + ")";
+																	}
+																	var weapon2_desc = "";
+																	if (weapon2 != "-"){
+																		weapon2_desc = " (" + Math.round(rows[0].weapon2) + ", " + rows[0].weapon2_crit + "%, " + rows[0].weapon2_enchant + ")";
+																	}
+																	var weapon3_desc = "";
+																	if (weapon3 != "-"){
+																		weapon3_desc = " (" + Math.round(rows[0].weapon3) + ", " + rows[0].weapon3_crit + "%, " + rows[0].weapon3_enchant + ")";
+																	}
+
+																	var nickname = rows[0].nickname;
+																	var weapon_d = parseInt(rows[0].weapon);
+																	var lev = Math.floor(rows[0].exp/10);
+																	var player_atk = (lev+weapon_d+rows[0].weapon_enchant) + " - " + ((lev+weapon_d+rows[0].weapon_enchant)+(weapon_d+rows[0].weapon_enchant+dragon_claws));
+																	var player_description = rows[0].player_description;
+
+																	var Keys = []
+
+																	if (player == message.from.username){
+																		Keys.push(["Vocazione 🏹"]);
+																		Keys.push(["Link Invito 🗣","Statistiche Personali 📊"]);
+																		if ((weapon_id == 638) || (weapon_id == 639) || (weapon_id == 640) ||
+																			(weapon2_id == 688) || (weapon2_id == 689) || (weapon2_id == 690) ||
+																			(weapon3_id == 671) || (weapon3_id == 672) || (weapon3_id == 673)) {
+																			Keys.push(["Nomina Equip/Rifugio 🏷"]);
+																		}
+																		Keys.push(["Descrizione Personale 💬","Vacanza ⛱ "]);
+																	}else{
+																		if (myhouse_id == 1){
+																			rows[0].life = "?";
+																			rows[0].total_life = "?";
+																			rows[0].heist_count = "?";
+																			rows[0].spy_count = "?";
+																			rows[0].money = "?";
+																			rows[0].exp = "?";
+																			lev = "?";
+																			weapon = "?";
+																			weapon_desc = "";
+																			weapon2 = "?";
+																			weapon2_desc = "";
+																			weapon3 = "?";
+																			weapon3_desc = "";
+																			talismano = "?";
+																			talismano_desc = "";
+																			dragon_name = "?";
+																			dragon_level = "?";
+																			dragon_claws_n = "?";
+																			dragon_damage = "?";
+																			dragon_saddle_n = "?";
+																			dragon_defense = "?";
+																			dragon_critical = "?";
+																		}else if (myhouse_id == 2){
+																			rows[0].heist_count = "?";
+																			rows[0].spy_count = "?";
+																			rows[0].money = "?";
+																			weapon = "?";
+																			weapon_desc = "";
+																			weapon2 = "?";
+																			weapon2_desc = "";
+																			weapon3 = "?";
+																			weapon3_desc = "";
+																			talismano = "?";
+																			talismano_desc = "";
+																			dragon_name = "?";
+																			dragon_level = "?";
+																			dragon_claws_n = "?";
+																			dragon_damage = "?";
+																			dragon_saddle_n = "?";
+																			dragon_defense = "?";
+																			dragon_critical = "?";
+																		}else if (myhouse_id == 3){
+																			rows[0].heist_count = "?";
+																			rows[0].spy_count = "?";
+																			rows[0].money = "?";
+																			talismano = "?";
+																			talismano_desc = "";
+																			dragon_name = "?";
+																			dragon_level = "?";
+																			dragon_claws_n = "?";
+																			dragon_damage = "?";
+																			dragon_saddle_n = "?";
+																			dragon_defense = "?";
+																			dragon_critical = "?";
+																		}else if (myhouse_id == 4){
+																			rows[0].heist_count = "?";
+																			rows[0].spy_count = "?";
+																			rows[0].money = "?";
+																		}else if (myhouse_id == 5){
+																			rows[0].money = "?";
+																		}
+																	}
+																	Keys.push(["Torna al menu"]);
+
+																	var kb = {
+																		parse_mode: "HTML",
+																		reply_markup: {
+																			resize_keyboard: true,
+																			//one_time_keyboard: true,
+																			"keyboard": Keys
+																		}
+																	};
+
+																	bot.sendMessage(message.chat.id, "<b>Giocatore</b> 👤\n" +
+																					nickname + team_desc + "\n" +
+																					stars + " " + lev + " (" + rows[0].exp + " xp)" + "\n\n" +
+																					"🏹 " + class_name + "\n" +
+																					"💎 " + rows[0].gems + " " + "🌕 " + rows[0].moon_coin + " " + "🗝 " + rows[0].mkeys + "\n" +
+																					"💰 " + formatNumber(rows[0].money) + " §\n" +
+																					"❤️ " + rows[0].life + " / " + rows[0].total_life + " hp\n" +
+																					"📦 " + rows[0].craft_count + " (" + rows[0].craft_week + ")\n" +
+																					"🏕 " + rifugio + "\n" +
+																					"\n<b>Equipaggiamento</b> ⚔️\n" +
+																					"🗡 " + weapon + weapon_desc + "\n" +
+																					"🥋 " + weapon2 + weapon2_desc + "\n" +
+																					"🛡 " + weapon3 + weapon3_desc + "\n" +
+																					"📿 " + talismano + "\n" +
+																					"💥 " + player_atk + "\n" +
+
+																					(dragon ? "\n<b>" + dragon_name + " (L" + dragon_level + ")</b> 🐉\n" : "") +
+																					(dragon ? dragon_claws_n + " (" + dragon_damage + ")\n" : "") +
+																					(dragon ? dragon_saddle_n + " (" + dragon_defense + ")\n" : "") +
+																					(dragon ? "Critico (" + dragon_critical + "%)\n" : "") +
+
+																					"\n<b>Altro</b> 💱\n" +
+																					referral +
+																					"Artefatti: " + artifacts + "\n" +
+																					"Abilità: " + rows[0].ability + "\n" +
+																					"Rango: " + getRankName(rows[0].rank, 0) + " (" + rows[0].rank + ")\n" +
+																					(player_description != null ? "\n<i>" + player_description  + "</i>" : ""), kb);
+																});
 															});
 														});
 													});
@@ -3419,7 +3445,7 @@ bot.onText(/trasmogrificazione/i, function(message) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["Procedi"],["Torna al menu"]]
 					}
 				};
@@ -3521,7 +3547,7 @@ bot.onText(/trasmogrificazione/i, function(message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Necrolama"],["Corazza Necro"],["Scudo Necro"],["Torna al menu"]]
 				}
 			};
@@ -3530,7 +3556,7 @@ bot.onText(/trasmogrificazione/i, function(message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Rossa"],["Gialla"],["Blu"],["Torna al menu"]]
 				}
 			};
@@ -3640,7 +3666,7 @@ bot.onText(/nomina equip/i, function(message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Nomina Necrolama"],["Nomina Corazza Necro"],["Nomina Scudo Necro"],["Nomina Rifugio"],["Torna al menu"]]
 		}
 	};
@@ -3910,7 +3936,7 @@ bot.onText(/casa dei giochi/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Numero Fortunato 🥇","Combo Craft 💎"],["Carte e Pirata 📃"],["Torna al menu"]]
 			}
 		};
@@ -3919,7 +3945,7 @@ bot.onText(/casa dei giochi/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Torna alla casa dei giochi"],["Torna al menu"]]
 			}
 		};
@@ -3928,7 +3954,7 @@ bot.onText(/casa dei giochi/i, function(message) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Torna alla casa dei giochi"],["Torna al menu"]]
 			}
 		};
@@ -3946,7 +3972,7 @@ bot.onText(/casa dei giochi/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Gioca Numeri"],["Torna al menu"]]
 			}
 		};
@@ -3955,7 +3981,7 @@ bot.onText(/casa dei giochi/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Vedi la Carta 📃"],["Classifica","Tabella Premi"],["Torna alla casa dei giochi"],["Torna al menu"]]
 			}
 		};
@@ -3964,7 +3990,7 @@ bot.onText(/casa dei giochi/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Si"],["Torna alla casa dei giochi"],["Torna al menu"]]
 			}
 		};
@@ -4113,7 +4139,7 @@ bot.onText(/gioca numeri/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Tutti i pari","Tutti i dispari"],["Primi 12","Secondi 12","Ultimi 12"],["Torna alla casa dei giochi"],["Torna al menu"]]
 			}
 		};
@@ -4122,7 +4148,7 @@ bot.onText(/gioca numeri/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Torna alla casa dei giochi"],["Torna al menu"]]
 			}
 		};
@@ -4131,7 +4157,7 @@ bot.onText(/gioca numeri/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Gioca Numeri"],["Torna alla casa dei giochi"],["Torna al menu"]]
 			}
 		};
@@ -4147,6 +4173,11 @@ bot.onText(/gioca numeri/i, function(message) {
 
 		bot.sendMessage(message.chat.id, "Seleziona i numeri che vuoi giocare, separati da virgola. Oppure indica i gruppi di numeri attraverso i pulsanti.", kbChoice).then(function() {
 			answerCallbacks[message.chat.id] = function(answer) {
+
+				if (answer.text == "Torna alla casa dei giochi"){
+					return;
+				}
+
 				if (answer.text == "Tutti i pari"){
 					answer.text = "2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36";
 				}else if (answer.text == "Tutti i dispari"){
@@ -4325,7 +4356,7 @@ bot.onText(/gira rotelle/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna alla casa dei giochi"],["Torna al menu"]]
 		}
 	};
@@ -4479,7 +4510,7 @@ bot.onText(/gira rotelle/i, function(message) {
 											var name = rows[0].name;
 											connection.query('INSERT INTO inventory  (player_id, item_id) VALUES (' + player_id + ',' + rows[0].id + ')', function(err, rows, fields) {
 												if (err) throw err;
-												bot.sendMessage(message.chat.id, "Con questa particolare combinazione hai ottenuto un: *" + name + "*!", mark);
+												bot.sendMessage(message.chat.id, "Con questa particolare combinazione hai ottenuto: *" + name + "*!", mark);
 											});
 										});
 									}else if (rand < 99){
@@ -4561,7 +4592,7 @@ bot.onText(/vedi la carta/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Torna alla casa dei giochi"],["Torna al menu"]]
 			}
 		};
@@ -4570,7 +4601,7 @@ bot.onText(/vedi la carta/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Più bassa ⬇️","Più alta ⬆️"],["Torna alla casa dei giochi"],["Torna al menu"]]
 			}
 		};
@@ -4579,7 +4610,7 @@ bot.onText(/vedi la carta/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Vedi la Carta 📃"],["Torna alla casa dei giochi"],["Torna al menu"]]
 			}
 		};
@@ -4784,7 +4815,7 @@ bot.onText(/vocazioni|vocazione/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": iKeys
 				}
 			};
@@ -4793,7 +4824,7 @@ bot.onText(/vocazioni|vocazione/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Torna alle vocazioni"]]
 				}
 			};
@@ -4802,7 +4833,7 @@ bot.onText(/vocazioni|vocazione/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Cambia Vocazione"],["Torna al menu"]]
 				}
 			};
@@ -4811,7 +4842,7 @@ bot.onText(/vocazioni|vocazione/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Si"],["Torna alle vocazioni"]]
 				}
 			};
@@ -4860,7 +4891,7 @@ bot.onText(/vocazioni|vocazione/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Genera Pozioni","Genera Piuma"],["Cambia Vocazione"],["Torna al menu"]]
 						}
 					};					
@@ -5007,7 +5038,7 @@ bot.onText(/cambia vocazione/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Torna alle vocazioni"]]
 			}
 		};
@@ -5015,7 +5046,7 @@ bot.onText(/cambia vocazione/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Si"],["Torna alle vocazioni"]]
 			}
 		};
@@ -5051,7 +5082,7 @@ bot.onText(/cambia vocazione/i, function(message) {
 	});
 });
 
-bot.onText(/statistiche personali/i, function(message) {
+bot.onText(/statistiche/i, function(message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function(err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
@@ -5151,7 +5182,7 @@ bot.onText(/statistiche personali/i, function(message) {
 																						"*Lotterie vinte*: " + lotterieVinte + "\n" +
 																						"*Talenti sbloccati*: " + abilita + "\n" +
 																						"*Scalate personali*: " + scalate + "\n" +
-																						"*Imprese globali completate*: " + global_event + "\n" +
+																						"*Imprese globali (partecipando attivamente)*: " + global_event + "\n" +
 																						"*Offerte contrabbandiere accettate*: " + contrabbandiere + "\n" +
 																						"*Livelli Talenti raggiunti*: " + talenti + "\n";
 
@@ -5243,7 +5274,7 @@ bot.onText(/dungeon/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna al dungeon"],["Torna al menu"]]
 		}
 	};
@@ -5252,7 +5283,7 @@ bot.onText(/dungeon/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Si"],["Torna al dungeon"]]
 		}
 	};
@@ -5346,7 +5377,7 @@ bot.onText(/dungeon/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": iKeys
 							}
 						};
@@ -5400,7 +5431,7 @@ bot.onText(/dungeon/i, function(message) {
 										parse_mode: "Markdown",
 										reply_markup: {
 											resize_keyboard: true,
-											one_time_keyboard: true,
+											//one_time_keyboard: true,
 											"keyboard": [["Si"],["Prosegui il dungeon"],["Torna al menu"]]
 										}
 									};
@@ -5486,7 +5517,7 @@ bot.onText(/dungeon/i, function(message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														one_time_keyboard: true,
+														//one_time_keyboard: true,
 														"keyboard": iKeys
 													}
 												};
@@ -5620,7 +5651,7 @@ bot.onText(/dungeon/i, function(message) {
 																			parse_mode: "HTML",
 																			reply_markup: {
 																				resize_keyboard: true,
-																				one_time_keyboard: true,
+																				//one_time_keyboard: true,
 																				"keyboard": [["Si"],["Torna al dungeon"]]
 																			}
 																		};
@@ -5693,7 +5724,7 @@ bot.onText(/dungeon/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": [["Si"],["Prosegui il dungeon"],["Torna al menu"]]
 							}
 						};
@@ -5731,7 +5762,7 @@ bot.onText(/dungeon/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["☠️","⬆️","🔑"],["⬅️","⚒","➡️"],["Scappa","Torna al menu"]]
 						}
 					};
@@ -5740,7 +5771,7 @@ bot.onText(/dungeon/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Prosegui il dungeon"],["Torna al menu"]]
 						}
 					};
@@ -5749,7 +5780,7 @@ bot.onText(/dungeon/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Prosegui"],["Torna al menu"]]
 						}
 					};
@@ -5758,7 +5789,7 @@ bot.onText(/dungeon/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Entra nel dungeon"],["Torna al menu"]]
 						}
 					};
@@ -5767,7 +5798,7 @@ bot.onText(/dungeon/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Attacca","Scappa"],["Torna al menu"]]
 						}
 					};
@@ -5776,7 +5807,7 @@ bot.onText(/dungeon/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Prendi"],["Torna al menu"]]
 						}
 					};
@@ -5785,7 +5816,7 @@ bot.onText(/dungeon/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Aiuta","Ignora"],["Torna al menu"]]
 						}
 					};
@@ -5794,7 +5825,7 @@ bot.onText(/dungeon/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Segui la Vecchia","Ignora"],["Torna al menu"]]
 						}
 					};
@@ -5803,7 +5834,7 @@ bot.onText(/dungeon/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["1","2","3"],["4","5","6"],["Scappa"],["Torna al menu"]]
 						}
 					};
@@ -5812,7 +5843,7 @@ bot.onText(/dungeon/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Tipo 1: Scorciatoia"],["Tipo 2: Rivelazione"],["Torna al dungeon"]]
 						}
 					};
@@ -6297,7 +6328,7 @@ bot.onText(/dungeon/i, function(message) {
 														parse_mode: "Markdown",
 														reply_markup: {
 															resize_keyboard: true,
-															one_time_keyboard: true,
+															//one_time_keyboard: true,
 															"keyboard": iKeys
 														}
 													};
@@ -6345,7 +6376,7 @@ bot.onText(/dungeon/i, function(message) {
 																							parse_mode: "Markdown",
 																							reply_markup: {
 																								resize_keyboard: true,
-																								one_time_keyboard: true,
+																								//one_time_keyboard: true,
 																								"keyboard": iKeys2
 																							}
 																						};
@@ -6806,7 +6837,7 @@ bot.onText(/dungeon/i, function(message) {
 														parse_mode: "Markdown",
 														reply_markup: {
 															resize_keyboard: true,
-															one_time_keyboard: true,
+															//one_time_keyboard: true,
 															"keyboard": iKeys
 														}
 													};
@@ -6895,7 +6926,7 @@ bot.onText(/dungeon/i, function(message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														one_time_keyboard: true,
+														//one_time_keyboard: true,
 														"keyboard": [["Sinistra","Centro","Destra"],["Torna al menu"]]
 													}
 												};
@@ -7037,7 +7068,7 @@ bot.onText(/dungeon/i, function(message) {
 																		var itemName = rows[0].name;
 																		connection.query('INSERT INTO inventory (player_id, item_id) VALUES (' + player_id + ',' + rows[0].id + ')', function (err, rows, fields){
 																			if (err) throw err;
-																			bot.sendMessage(message.chat.id, "Decidi di toccare la persona davanti a te, si gira e ti ringrazia per averla trovata, regalandoti un *" + itemName + "*!", dNext);
+																			bot.sendMessage(message.chat.id, "Decidi di toccare la persona davanti a te, si gira e ti ringrazia per averla trovata, regalandoti: *" + itemName + "*!", dNext);
 																		});
 																	});
 																}
@@ -7249,7 +7280,7 @@ bot.onText(/dungeon/i, function(message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														one_time_keyboard: true,
+														//one_time_keyboard: true,
 														"keyboard": [["Più Raro","Meno Raro"],["Ignora"]]
 													}
 												};
@@ -7382,7 +7413,7 @@ bot.onText(/dungeon/i, function(message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														one_time_keyboard: true,
+														//one_time_keyboard: true,
 														"keyboard": [["Accumula Monete","Estrai Spada"],["Torna al menu"]]
 													}
 												};
@@ -7506,7 +7537,7 @@ bot.onText(/dungeon/i, function(message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														one_time_keyboard: true,
+														//one_time_keyboard: true,
 														"keyboard": [["Esamina"],["Torna al menu"]]
 													}
 												};
@@ -7639,7 +7670,7 @@ bot.onText(/dungeon/i, function(message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														one_time_keyboard: true,
+														//one_time_keyboard: true,
 														"keyboard": [["Inserisci Monete"],["Inserisci Moneta Lunare"],["Sfonda il Muro"],["Torna al menu"]]
 													}
 												};
@@ -7732,7 +7763,7 @@ bot.onText(/dungeon/i, function(message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														one_time_keyboard: true,
+														//one_time_keyboard: true,
 														"keyboard": [["Procedi"],["Torna al menu"]]
 													}
 												};
@@ -7920,7 +7951,7 @@ bot.onText(/dungeon/i, function(message) {
 														parse_mode: "HTML",
 														reply_markup: {
 															resize_keyboard: true,
-															one_time_keyboard: true,
+															//one_time_keyboard: true,
 															"keyboard": iKeys
 														}
 													};
@@ -7929,7 +7960,7 @@ bot.onText(/dungeon/i, function(message) {
 														parse_mode: "HTML",
 														reply_markup: {
 															resize_keyboard: true,
-															one_time_keyboard: true,
+															//one_time_keyboard: true,
 															"keyboard": [["Si"],["Torna al dungeon"]]
 														}
 													};
@@ -8020,7 +8051,7 @@ bot.onText(/dungeon/i, function(message) {
 													parse_mode: "HTML",
 													reply_markup: {
 														resize_keyboard: true,
-														one_time_keyboard: true,
+														//one_time_keyboard: true,
 														"keyboard": [["Fai un Tentativo"],["Torna al menu"]]
 													}
 												};
@@ -8115,7 +8146,7 @@ bot.onText(/dungeon/i, function(message) {
 														parse_mode: "Markdown",
 														reply_markup: {
 															resize_keyboard: true,
-															one_time_keyboard: true,
+															//one_time_keyboard: true,
 															"keyboard": iKeys
 														}
 													};
@@ -8177,7 +8208,7 @@ bot.onText(/dungeon/i, function(message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														one_time_keyboard: true,
+														//one_time_keyboard: true,
 														"keyboard": [["Medita"],["Termina Meditazione"],["Torna al menu"]]
 													}
 												};
@@ -8266,7 +8297,7 @@ bot.onText(/dungeon/i, function(message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														one_time_keyboard: true,
+														//one_time_keyboard: true,
 														"keyboard": [["Tornare in piena salute"],["Avere uno zaino pieno zeppo"],["Essere ricco sfondato"],["Completare il dungeon velocemente"],["Torna al menu"]]
 													}
 												};
@@ -8362,12 +8393,17 @@ bot.onText(/dungeon/i, function(message) {
 																	connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
-																	connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
-																		if (err) throw err;
-																	});
 																	connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function(err, rows, fields) {
 																		if (err) throw err;
 																	});
+																	connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function(err, rows, fields) {
+																		if (err) throw err;
+																	});
+																	if (player_rank > 0){
+																		connection.query('UPDATE player SET rank = rank-1 WHERE id = ' + player_id, function(err, rows, fields) {
+																			if (err) throw err;
+																		});
+																	}
 																}else{
 																	room_id -= 2;
 																	bot.sendMessage(message.chat.id, "Hai espresso il tuo desiderio... Ma non è stato ascoltato! Retrocedi di due stanze!", dNext);
@@ -8389,7 +8425,7 @@ bot.onText(/dungeon/i, function(message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														one_time_keyboard: true,
+														//one_time_keyboard: true,
 														"keyboard": [["Attacca con il Drago"],["Ignora"],["Torna al menu"]]
 													}
 												};
@@ -8445,7 +8481,7 @@ bot.onText(/dungeon/i, function(message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														one_time_keyboard: true,
+														//one_time_keyboard: true,
 														"keyboard": [["..."],["Torna al menu"]]
 													}
 												};
@@ -8509,7 +8545,7 @@ bot.onText(/dungeon/i, function(message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														one_time_keyboard: true,
+														//one_time_keyboard: true,
 														"keyboard": [["Punta"],["Ignora"],["Torna al menu"]]
 													}
 												};
@@ -8518,7 +8554,7 @@ bot.onText(/dungeon/i, function(message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														one_time_keyboard: true,
+														//one_time_keyboard: true,
 														"keyboard": [["Gioca"],["Torna al menu"]]
 													}
 												};
@@ -8645,7 +8681,7 @@ bot.onText(/dungeon/i, function(message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														one_time_keyboard: true,
+														//one_time_keyboard: true,
 														"keyboard": [["Porta Normale"],["Porta Misteriosa"],["Torna al menu"]]
 													}
 												};
@@ -8675,7 +8711,7 @@ bot.onText(/dungeon/i, function(message) {
 																	var min = room_id-10;
 																	var max = room_id+10;
 
-																	if (min < 0){
+																	if (min <= 0){
 																		min = 1;
 																	}
 																	if (max > rooms){
@@ -8727,13 +8763,15 @@ bot.onText(/dungeon/i, function(message) {
 														parse_mode: "Markdown",
 														reply_markup: {
 															resize_keyboard: true,
-															one_time_keyboard: true,
+															//one_time_keyboard: true,
 															"keyboard": [[min + " §"],["Prova a raccoglierle"],["Torna al menu"]]
 														}
 													};
 
 													var text = "";
-													if (stored_money < 10000){
+													if (stored_money == 0){
+														text = "_Neanche l'ombra di una monetina..._";
+													}else if (stored_money < 10000){
 														text = "_Una piccola quantità di monetine..._";
 													}else if (stored_money < 50000){
 														text = "_Alcune monetine..._";
@@ -8920,7 +8958,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function(message, match) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Si"],["Torna al dungeon"]]
 		}
 	};
@@ -8972,6 +9010,11 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function(message, match) {
 			critical_armor += 3;
 		}
 		if (player_charm_id == 496){
+			critical_shield += 3;
+		}
+		if (charm_id == 696){
+			critical += 5;
+			critical_armor += 5;
 			critical_shield += 3;
 		}
 		if ((class_id == 2) && (reborn == 3)){
@@ -9052,12 +9095,15 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function(message, match) {
 		}
 
 		if (charm_id == 62){
-			danno = danno+5;
+			danno += 5;
 		}else if (charm_id == 184){
-			danno = danno+15;
+			danno += 15;
 		}else if (charm_id == 188){
-			danno = danno+20;
+			danno += 20;
+		}else if (charm_id == 698){
+			danno += 30;
 		}
+
 		var bonus = 0;
 		if (rows[0].weapon2 < 0){
 			var bonus = Math.abs(rows[0].weapon2)+Math.abs(rows[0].weapon3)+rows[0].weapon3_enchant+rows[0].weapon2_enchant;
@@ -9148,6 +9194,10 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function(message, match) {
 				}
 
 				var automagic = 0;
+
+				if (charm_id == 698){
+					boost_cast += 3;
+				}
 
 				if (magic == 0){
 					var magicrand = Math.random()*100;
@@ -9284,6 +9334,15 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function(message, match) {
 								bonus += parseInt(rows[0].defense);
 								bonus += parseInt(rows[0].saddle);
 								var dragon_crit = rows[0].critical;
+								if (charm_id == 602){
+									danno += 25;
+									dragon_crit += 10;
+								}
+								if (charm_id == 695){
+									danno += 30;
+									dragon_crit += 15;
+								}
+
 								if ((class_id == 7) && (reborn == 3)){
 									dragon_crit += 5;
 								}
@@ -9392,7 +9451,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function(message, match) {
 														parse_mode: "Markdown",
 														reply_markup: {
 															resize_keyboard: true,
-															one_time_keyboard: true,
+															//one_time_keyboard: true,
 															"keyboard": [["Attacca " + monster_name],["Incantesimi"],["Scappa","⚒","Torna al menu"]]
 														}
 													};
@@ -9401,7 +9460,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function(message, match) {
 														parse_mode: "Markdown",
 														reply_markup: {
 															resize_keyboard: true,
-															one_time_keyboard: true,
+															//one_time_keyboard: true,
 															"keyboard": [["Prosegui il dungeon"],["Torna al menu"]]
 														}
 													};
@@ -9410,7 +9469,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function(message, match) {
 														parse_mode: "Markdown",
 														reply_markup: {
 															resize_keyboard: true,
-															one_time_keyboard: true,
+															//one_time_keyboard: true,
 															"keyboard": [["Attacca"],["Torna al menu"]]
 														}
 													};
@@ -9674,13 +9733,24 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function(message, match) {
 																if (charm_id == 496){
 																	en_crit3 += 3;
 																}
+																if (charm_id == 696){
+																	en_crit += 5;
+																	en_crit2 += 5;
+																	en_crit3 += 3;
+																}
 
 																if (charm_id == 63){
-																	danno = danno-5;
+																	damage = damage-5;
 																}else if (charm_id == 186){
-																	danno = danno-15;
+																	damage = damage-15;
 																}else if (charm_id == 189){
-																	danno = danno-20;
+																	damage = damage-20;
+																}
+
+																if (player_charm_id == 698){
+																	en_crit -= 5;
+																	en_crit2 -= 5;
+																	en_crit3 -= 5;
 																}
 
 																var critical_rand2 = Math.round(Math.random()*100)+1;
@@ -9702,11 +9772,13 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function(message, match) {
 																}
 
 																if (charm_id == 62){
-																	damage = damage+5;
+																	damage += 5;
 																}else if (charm_id == 184){
-																	damage = damage+15;
+																	damage += 15;
 																}else if (charm_id == 188){
-																	damage = damage+20;
+																	damage += 20;
+																}else if (charm_id == 698){
+																	damage += 30;
 																}
 
 																if ((class_id == 2) && (reborn > 1)){
@@ -10154,7 +10226,7 @@ bot.onText(/cassa rinascita|torna alla cassa/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Torna alla cassa"]]
 			}
 		};
@@ -10163,7 +10235,7 @@ bot.onText(/cassa rinascita|torna alla cassa/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Conferma"],["Torna alla cassa"]]
 			}
 		};
@@ -10185,7 +10257,7 @@ bot.onText(/cassa rinascita|torna alla cassa/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["Recupera Rarità C","Recupera Rarità NC"],["Recupera Rarità R","Recupera Rarità UR"],["Recupera Rarità L","Recupera Rarità E"],["Torna al menu"]]
 					}
 				};
@@ -10282,7 +10354,7 @@ bot.onText(/cassa rinascita|torna alla cassa/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Salva Rarità C","Salva Rarità NC"],["Salva Rarità R","Salva Rarità UR"],["Salva Rarità L","Salva Rarità E"],["Torna al menu"]]
 				}
 			};
@@ -10445,7 +10517,7 @@ bot.onText(/rinasci/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Avvia Rinascita " + reborn],["Cassa Rinascita"],["Torna al menu"]]
 			}
 		};
@@ -10454,7 +10526,7 @@ bot.onText(/rinasci/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Si"],["Torna al menu"]]
 			}
 		};
@@ -10859,7 +10931,7 @@ bot.onText(/Scomponi/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Niente"]]
 			}
 		};
@@ -10957,6 +11029,12 @@ bot.onText(/Scomponi/i, function(message) {
 */
 
 bot.onText(/Scomponi/i, function(message) {
+
+	if (eventFestival == 1){
+		bot.sendMessage(message.chat.id, "Durante il festival non è possibile utilizzare questa funzione!", back);
+		return;
+	}
+
 	connection.query('SELECT id, exp, reborn, holiday, gems, account_id, craft_count FROM player WHERE nickname="' + message.from.username + '"', function(err, rows, fields) {
 		if (err) throw err;
 
@@ -10984,7 +11062,7 @@ bot.onText(/Scomponi/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Niente"]]
 			}
 		};
@@ -11181,7 +11259,7 @@ bot.onText(/^Incanta/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": iKeys
 					}
 				};
@@ -11226,7 +11304,7 @@ bot.onText(/^Incanta/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["Gemma"],["Runa"],["Torna al menu"]]
 					}
 				};
@@ -11300,7 +11378,7 @@ bot.onText(/^Incanta/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Incanta Arma","Incanta Armatura","Incanta Scudo"],["Torna al menu"]]
 			}
 		};
@@ -11424,7 +11502,7 @@ bot.onText(/fai nascere il drago|accudisci drago|nutri ancora|^drago|torna al dr
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["Dai un nome al drago!"],["Torna al menu"]]
 					}
 				};
@@ -11478,7 +11556,7 @@ bot.onText(/fai nascere il drago|accudisci drago|nutri ancora|^drago|torna al dr
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									one_time_keyboard: true,
+									//one_time_keyboard: true,
 									"keyboard": iKeys
 								}
 							};
@@ -11716,7 +11794,7 @@ bot.onText(/^bevande|torna alle bevande/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Attiva","Scarta"],["Torna al menu"]]
 						}
 					};
@@ -11725,7 +11803,7 @@ bot.onText(/^bevande|torna alle bevande/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Torna alle bevande"],["Torna al menu"]]
 						}
 					};
@@ -11762,7 +11840,7 @@ bot.onText(/^bevande|torna alle bevande/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Inizia Produzione"],["Torna al menu"]]
 				}
 			};
@@ -11842,7 +11920,7 @@ bot.onText(/cambia tipo/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["dei Mari"],["dei Ghiacci"],["Infernale"],["dei Cieli"],["delle Montagne"],["dell'Oscurità"],["Torna al menu"]]
 				}
 			};
@@ -12027,7 +12105,7 @@ bot.onText(/dai pietra/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Nutri Ancora"],["Torna al menu"]]
 		}
 	};
@@ -12102,7 +12180,7 @@ bot.onText(/dai pietra/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["1"],[cnt],["Torna al menu"]]
 						}
 					};
@@ -12111,7 +12189,7 @@ bot.onText(/dai pietra/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["1"],["Torna al menu"]]
 						}
 					};
@@ -12238,7 +12316,7 @@ function checkDragon(player_id){
 		var dragon_evolved = rows[0].evolved;
 		var dragon_level = rows[0].level;
 		var dragon_exp = rows[0].exp;
-		
+
 		var dragon_claws_id = rows[0].claws_id;
 		var dragon_saddle_id = rows[0].saddle_id;
 
@@ -12294,7 +12372,7 @@ bot.onText(/dai tutte/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Nutri Ancora"],["Torna al menu"]]
 		}
 	};
@@ -12489,7 +12567,7 @@ bot.onText(/equipaggia drago/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": Keys
 					}
 				};
@@ -12498,7 +12576,7 @@ bot.onText(/equipaggia drago/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["Torna al menu"],["Torna al drago"]]
 					}
 				};
@@ -12809,7 +12887,7 @@ bot.onText(/vette dei dragoni|vetta/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [['Inizia Ascesa'],['Torna al menu']]
 				}
 			};
@@ -12818,7 +12896,7 @@ bot.onText(/vette dei dragoni|vetta/i, function(message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [['Entra nella Vetta'],['Torna al menu']]
 				}
 			};
@@ -12827,7 +12905,7 @@ bot.onText(/vette dei dragoni|vetta/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [['Torna alla vetta'],['Torna al menu']]
 				}
 			};
@@ -12836,7 +12914,7 @@ bot.onText(/vette dei dragoni|vetta/i, function(message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [['Entra in combattimento'],['Torna al menu']]
 				}
 			};
@@ -12845,7 +12923,7 @@ bot.onText(/vette dei dragoni|vetta/i, function(message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [['Si'],['Torna alla vetta']]
 				}
 			};
@@ -12929,7 +13007,7 @@ bot.onText(/vette dei dragoni|vetta/i, function(message) {
 									parse_mode: "HTML",
 									reply_markup: {
 										resize_keyboard: true,
-										one_time_keyboard: true,
+										//one_time_keyboard: true,
 										"keyboard": [['Combatti'],['Riposa','Abbandona'],['Torna al menu']]
 									}
 								};
@@ -12937,7 +13015,7 @@ bot.onText(/vette dei dragoni|vetta/i, function(message) {
 									parse_mode: "HTML",
 									reply_markup: {
 										resize_keyboard: true,
-										one_time_keyboard: true,
+										//one_time_keyboard: true,
 										"keyboard": [['1','2','3','4'],['5','6','7','8'],['9','10'],['Torna al menu']]
 									}
 								};
@@ -13077,7 +13155,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function(message) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [['Torna alla vetta'],['Torna al menu']]
 			}
 		};
@@ -13086,7 +13164,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [['Continua a Combattere'],['Torna al menu']]
 			}
 		};
@@ -13130,7 +13208,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": move
 					}
 				};
@@ -13395,7 +13473,7 @@ bot.onText(/team/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [['Fonda nuovo'],['Entra in uno esistente'],['Liste Membri','Hall of Fame'],['Torna al menu']]
 					}
 				};
@@ -13635,7 +13713,7 @@ bot.onText(/team/i, function(message) {
 												parse_mode: "HTML",
 												reply_markup: {
 													resize_keyboard: true,
-													one_time_keyboard: true,
+													//one_time_keyboard: true,
 													"keyboard": iKeys
 												}
 											};
@@ -13778,7 +13856,7 @@ bot.onText(/Potenziamenti Anima/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": [["Unione Fatale (40/200 🦋)"],
 											 ["Bottino Ricco (60/300 🦋)"],
 											 ["Formazione Impenetrabile (50/250 🦋)"],
@@ -13792,7 +13870,7 @@ bot.onText(/Potenziamenti Anima/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": [["Temporaneo"],["Permanente"],["Torna ai potenziamenti anima"]]
 							}
 						};
@@ -13801,7 +13879,7 @@ bot.onText(/Potenziamenti Anima/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": [["Si"],["Torna ai potenziamenti anima"]]
 							}
 						};
@@ -13810,7 +13888,7 @@ bot.onText(/Potenziamenti Anima/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": [["Torna ai potenziamenti anima"]]
 							}
 						};
@@ -13971,7 +14049,7 @@ bot.onText(/Liste membri/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Nessuno"]]
 		}
 	};
@@ -14214,7 +14292,7 @@ bot.onText(/Entra in uno esistente|Pagina (.+)/i, function(message, match) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": iKeys
 					}
 				};
@@ -14434,7 +14512,7 @@ bot.onText(/Gestisci Membri/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": iKeys
 						}
 					};
@@ -14443,7 +14521,7 @@ bot.onText(/Gestisci Membri/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Espelli","Sospendi"],["Sposta in Madre"],["Sposta in Accademia"],["Torna al menu"]]
 						}
 					};
@@ -14452,7 +14530,7 @@ bot.onText(/Gestisci Membri/i, function(message) {
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Gestisci membri"],["Torna al team"],["Torna al menu"]]
 						}
 					};
@@ -14737,7 +14815,7 @@ bot.onText(/^Accademia/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Scollega"],["Annulla"]]
 						}
 					};
@@ -15078,7 +15156,7 @@ bot.onText(/cambia admin/i, function(message) {
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									one_time_keyboard: true,
+									//one_time_keyboard: true,
 									"keyboard": iKeys
 								}
 							};
@@ -15138,7 +15216,7 @@ bot.onText(/^aumenta posti/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": [['Conferma'],['Torna al Team']]
 							}
 						};
@@ -15327,7 +15405,7 @@ bot.onText(/^Robot/i, function(message) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Continua"],["Torna al menu"]]
 			}
 		};
@@ -15348,7 +15426,7 @@ bot.onText(/^Robot/i, function(message) {
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [[rows[0].r1],[rows[0].r2],[rows[0].r3],["Torna al menu"]]
 						}
 					};
@@ -15414,7 +15492,7 @@ bot.onText(/^Villa|Villa di TheLast|Torna alla Villa|Entra nella Villa/i, functi
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Invia una Cassa 📦"],["Chiedi 💎 a fenix45!"],["Torna al menu"]]
 		}
 	};
@@ -15423,7 +15501,7 @@ bot.onText(/^Villa|Villa di TheLast|Torna alla Villa|Entra nella Villa/i, functi
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Entra nella Villa 🏰"],["Torna al menu"]]
 		}
 	};
@@ -15432,7 +15510,7 @@ bot.onText(/^Villa|Villa di TheLast|Torna alla Villa|Entra nella Villa/i, functi
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna alla Villa"],["Torna al menu"]]
 		}
 	};
@@ -15441,7 +15519,7 @@ bot.onText(/^Villa|Villa di TheLast|Torna alla Villa|Entra nella Villa/i, functi
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Chiedi a fenix45!"],["Torna alla Villa"],["Torna al menu"]]
 		}
 	};
@@ -15606,7 +15684,7 @@ bot.onText(/Casa Stregata/i, function(message) {
 	var kbEnd = {
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Calderone"],["Torna al menu"]]
 		}
 	};
@@ -15639,7 +15717,7 @@ bot.onText(/Casa Stregata/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Esplorazione della Zucca"],["Dolcetto o Scherzetto"],["Calderone"],["Il Fantasma di Lootville 💎 "],["Torna al menu"]]
 		}
 	};
@@ -15648,7 +15726,7 @@ bot.onText(/Casa Stregata/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna alla Casa Stregata"],["Torna al menu"]]
 		}
 	};
@@ -15657,7 +15735,7 @@ bot.onText(/Casa Stregata/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["A caso"],["Torna alla Casa Stregata"]]
 		}
 	};
@@ -15666,7 +15744,7 @@ bot.onText(/Casa Stregata/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Chiedi di forgiare una Gemma"],["Torna alla Casa Stregata"]]
 		}
 	};
@@ -15860,7 +15938,7 @@ bot.onText(/Calderone/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna al Calderone"],["Torna alla Casa Stregata"],["Torna al menu"]]
 		}
 	};
@@ -15909,7 +15987,7 @@ bot.onText(/Calderone/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": iKeys
 					}
 				};
@@ -16040,6 +16118,12 @@ bot.onText(/festival/i, function(message) {
 		return;
 	}
 
+	var today = new Date();
+	if ((today.getDay() != 6) && (today.getDay() != 0)){
+		bot.sendMessage(message.chat.id, "L'evento non è più disponibile!", back);
+		return;
+	}
+
 	connection.query('SELECT id, holiday, account_id FROM player WHERE nickname = "' + message.from.username + '"', function(err, rows, fields) {
 		if (err) throw err;
 
@@ -16063,17 +16147,8 @@ bot.onText(/festival/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Entra nel festival"],["Torna al menu"]]
-				}
-			};
-
-			var rKb = {
-				parse_mode: "Markdown",
-				reply_markup: {
-					resize_keyboard: true,
-					one_time_keyboard: true,
-					"keyboard": [["Aggiorna festival"],["Torna al menu"]]
 				}
 			};
 
@@ -16098,7 +16173,16 @@ bot.onText(/festival/i, function(message) {
 							plur = "a";
 						}
 
-						bot.sendMessage(message.chat.id, "L'oggetto da creare è:\n\n*" + rows[0].name + " (" + rows[0].rarity + ")* per *" + rows[0].price + " §*\n\nCreato " + rows[0].cnt + " volt" + plur + ", verrà aggiornato alle *" + short_date + "*!", rKb);
+						var rKb = {
+							parse_mode: "Markdown",
+							reply_markup: {
+								resize_keyboard: true,
+								//one_time_keyboard: true,
+								"keyboard": [["Aggiorna festival"],["Cerca " + rows[0].name],["Crea " + rows[0].name],["Torna al menu"]]
+							}
+						};
+
+						bot.sendMessage(message.chat.id, "L'oggetto da creare è:\n\n*" + rows[0].name + " (" + rows[0].rarity + ")* per *" + rows[0].price + " §*\n\nCreato " + rows[0].cnt + " volt" + plur + ", verrà aggiornato alle *" + short_date + "*!\n\nPer evitare troppo carico è stato inserito un Antiflood per la creazione, non siate troppo frettolosi.", rKb);
 					}
 				});
 			}
@@ -16116,7 +16200,7 @@ bot.onText(/Miniere di Mana|Raccolta/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Sintesi"],["Torna al menu"]]
 		}
 	};
@@ -16152,7 +16236,7 @@ bot.onText(/Miniere di Mana|Raccolta/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Torna alla Raccolta"],["Torna al menu"]]
 			}
 		};
@@ -16161,7 +16245,7 @@ bot.onText(/Miniere di Mana|Raccolta/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Si"],["Torna alla Raccolta"],["Torna al menu"]]
 			}
 		};
@@ -16169,7 +16253,7 @@ bot.onText(/Miniere di Mana|Raccolta/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Si"],["Sintesi"],["Torna al menu"]]
 			}
 		};
@@ -16181,7 +16265,7 @@ bot.onText(/Miniere di Mana|Raccolta/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Inizia Raccolta"],["Torna al menu"]]
 				}
 			};
@@ -16286,7 +16370,7 @@ bot.onText(/Miniere di Mana|Raccolta/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": iKeys
 						}
 					};
@@ -16382,7 +16466,7 @@ bot.onText(/generatore di polvere|torna al generatore/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Torna al Generatore di Polvere"],["Torna al menu"]]
 			}
 		};
@@ -16391,7 +16475,7 @@ bot.onText(/generatore di polvere|torna al generatore/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Si"],["Torna al Generatore di Polvere"]]
 			}
 		};
@@ -16400,7 +16484,7 @@ bot.onText(/generatore di polvere|torna al generatore/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Vai al Generatore di Polvere"],["Torna al menu"]]
 			}
 		};
@@ -16409,7 +16493,7 @@ bot.onText(/generatore di polvere|torna al generatore/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Aziona Generatore"],["Aumenta Deposito","Utilizza Polvere"],["Genera Scaglia Evolutiva"],["Torna al menu"]]
 			}
 		};
@@ -16418,7 +16502,7 @@ bot.onText(/generatore di polvere|torna al generatore/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Ritira","Spegni"],["Torna al menu"]]
 			}
 		};
@@ -16735,7 +16819,7 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Inizia Sintesi"],["Sintetizza Materiali Finali"],["Torna al menu"]]
 				}
 			};
@@ -16744,7 +16828,7 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Torna alla Sintesi"],["Torna al menu"]]
 				}
 			};
@@ -16753,7 +16837,7 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Si"],["Torna alla Sintesi"]]
 				}
 			};
@@ -16762,7 +16846,7 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["0","10","20"],["50","100","200"],["Annulla"]]
 				}
 			};
@@ -16798,7 +16882,7 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function(message) {
 									parse_mode: "Markdown",
 									reply_markup: {
 										resize_keyboard: true,
-										one_time_keyboard: true,
+										//one_time_keyboard: true,
 										"keyboard": iKeys
 									}
 								};
@@ -17068,7 +17152,7 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function(
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Iscrizione dal Bardo"],["Torna al menu"]]
 						}
 					};
@@ -17077,7 +17161,7 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function(
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Torna al menu"]]
 						}
 					};
@@ -17086,7 +17170,7 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function(
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Invia Scrittura"],["Torna al menu"]]
 						}
 					};
@@ -17095,7 +17179,7 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function(
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Torna dal Bardo"],["Torna al menu"]]
 						}
 					};
@@ -17104,7 +17188,7 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function(
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Torna dal Bardo"]]
 						}
 					};
@@ -17267,7 +17351,7 @@ bot.onText(/ricercato|evento/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Vai all'Evento"],["Torna al menu"]]
 				}
 			};
@@ -17276,7 +17360,7 @@ bot.onText(/ricercato|evento/i, function(message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Torna al menu"]]
 				}
 			};
@@ -17285,7 +17369,7 @@ bot.onText(/ricercato|evento/i, function(message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Torna al Ricercato"],["Torna al menu"]]
 				}
 			};
@@ -17355,7 +17439,7 @@ bot.onText(/ricercato|evento/i, function(message) {
 							parse_mode: "HTML",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": [["Ispeziona: " + nick],["I più pericolosi"],["Torna al menu"]]
 							}
 						};
@@ -17436,7 +17520,7 @@ bot.onText(/Il Tesoro di Arthur|Evento/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Vai all'Evento"],["Torna al menu"]]
 				}
 			};
@@ -17448,7 +17532,7 @@ bot.onText(/Il Tesoro di Arthur|Evento/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["Iscriviti al Registro"],["Torna al menu"]]
 					}
 				};
@@ -17600,7 +17684,7 @@ bot.onText(/Il Tesoro di Arthur|Evento/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [[c1],[c2],[c3],["Torna al menu"]]
 						}
 					};
@@ -17635,7 +17719,7 @@ bot.onText(/^Iscriviti al Registro$/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Vai all'evento"],["Torna al menu"]]
 		}
 	};
@@ -17694,7 +17778,7 @@ bot.onText(/[1-9][.] [a-z1-9\s]+/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Riscatta ricompensa evento"],["Torna al menu"]]
 						}
 					};
@@ -17797,7 +17881,7 @@ bot.onText(/piazza di xxxia|piazza/i, function(message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": iKeys
 		}
 	};
@@ -17806,6 +17890,11 @@ bot.onText(/piazza di xxxia|piazza/i, function(message) {
 });
 
 bot.onText(/contrabbandiere|vedi incarichi/i, function(message) {
+
+	if (message.text == "Classifica Contrabbandiere"){
+		return;
+	}
+
 	connection.query('SELECT account_id, market_ban, holiday, id FROM player WHERE nickname = "' + message.from.username + '"', function(err, rows, fields) {
 		if (err) throw err;
 
@@ -17842,7 +17931,7 @@ bot.onText(/contrabbandiere|vedi incarichi/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["Vedi Incarichi"],["Torna al menu"]]
 					}
 				};
@@ -17863,19 +17952,10 @@ bot.onText(/contrabbandiere|vedi incarichi/i, function(message) {
 					var time_end = new Date(rows[0].time_end);
 					var short_date = addZero(time_end.getHours()) + ":" + addZero(time_end.getMinutes()) + ":" + addZero(time_end.getSeconds());
 
-					var kb = {
-						parse_mode: "Markdown",
-						reply_markup: {
-							resize_keyboard: true,
-							one_time_keyboard: true,
-							"keyboard": [["Classifica Offerte"],["Torna al menu"]]
-						}
-					};
-
 					if ((time_end.getHours() > 22) || (day_cnt >= merchant_limit)){
-						bot.sendMessage(message.chat.id, "Il Contrabbandiere non ha ancora nulla per te, riprova domani", kb);
+						bot.sendMessage(message.chat.id, "Il Contrabbandiere non ha ancora nulla per te, riprova domani", back);
 					}else{
-						bot.sendMessage(message.chat.id, "Il Contrabbandiere non ha ancora nulla per te, riprova alle " + short_date, kb);
+						bot.sendMessage(message.chat.id, "Il Contrabbandiere non ha ancora nulla per te, riprova alle " + short_date, back);
 					}
 					return;
 				}
@@ -17897,8 +17977,8 @@ bot.onText(/contrabbandiere|vedi incarichi/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
-								"keyboard": [["Accetta Vendita di " + name],["Cambia offerta","Classifica Offerte"],["Cerca " + name],["Torna al menu"]]
+								//one_time_keyboard: true,
+								"keyboard": [["Accetta Vendita di " + name],["Cambia offerta"],["Cerca " + name],["Torna al menu"]]
 							}
 						};
 
@@ -17906,7 +17986,7 @@ bot.onText(/contrabbandiere|vedi incarichi/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": [["Si"],["Torna dal contrabbandiere"],["Torna al menu"]]
 							}
 						};
@@ -17915,7 +17995,7 @@ bot.onText(/contrabbandiere|vedi incarichi/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": [["Torna dal contrabbandiere"],["Torna al menu"]]
 							}
 						};
@@ -17924,7 +18004,7 @@ bot.onText(/contrabbandiere|vedi incarichi/i, function(message) {
 							parse_mode: "HTML",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": [["Torna dal contrabbandiere"],["Torna al menu"]]
 							}
 						};
@@ -17933,7 +18013,7 @@ bot.onText(/contrabbandiere|vedi incarichi/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": [["Istantaneo","Aspetta 4 ore"],["Torna al menu"]]
 							}
 						};
@@ -18000,21 +18080,23 @@ bot.onText(/contrabbandiere|vedi incarichi/i, function(message) {
 														return;
 													}
 
-													if ((total_cnt % 50 == 0) && (total_cnt > 0)){
+													var isC = 0;
+													if ((total_cnt % 40 == 0) && (total_cnt > 0)){
 														connection.query('INSERT INTO inventory (player_id, item_id) VALUES (' + player_id + ',677)', function(err, rows, fields) {
 															if (err) throw err;
 															bot.sendMessage(message.chat.id, "Per la tua costanza il contrabbandiere ti regala un *Coupon*, valido immediatamente!", mark);
 														});
+														isC = 1;
 													}
 
 													connection.query('SELECT COUNT(id) As cnt FROM inventory WHERE player_id = ' + player_id + ' AND item_id = 677', function(err, rows, fields) {
 
 														var bonus = ""
-														if (rows[0].cnt > 0){
+														if ((rows[0].cnt > 0) || (isC == 1)){
 															price = price+Math.round(price/3);
 															bonus = ", aumentati grazie al Coupon";
 															var rand = Math.random()*100;
-															if (rand < 30){
+															if ((rand < 30) && (isC == 0)){
 																bonus += " (Appena Scaduto)";
 																connection.query('DELETE FROM inventory WHERE player_id = ' + player_id + ' AND item_id = 677 LIMIT 1', function(err, rows, fields) {
 																	if (err) throw err;
@@ -18042,7 +18124,7 @@ bot.onText(/contrabbandiere|vedi incarichi/i, function(message) {
 														var now = new Date();
 														now.setMinutes(now.getMinutes() + 30);
 														var long_date = now.getFullYear() + "-" + addZero(now.getMonth()+1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
-														var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes()) + ":" + addZero(now.getSeconds());
+														var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
 
 														var extra = "\nTorna tra 30 minuti per provare a commerciare di nuovo!";
 														if ((day_cnt+1) >= merchant_limit){
@@ -18081,13 +18163,13 @@ bot.onText(/contrabbandiere|vedi incarichi/i, function(message) {
 	});
 });
 
-bot.onText(/Classifica Offerte/i, function(message) {
+bot.onText(/Classifica Contrabbandiere/i, function(message) {
 
 	var kbBack2 = {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna dal contrabbandiere"],["Torna al menu"]]
 		}
 	};
@@ -18391,7 +18473,7 @@ bot.onText(/mercato/i, function(message) {
 			disable_web_page_preview: true,
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": iKeys
 			}
 		};
@@ -18464,7 +18546,7 @@ bot.onText(/offerte Giornaliere|^mercante Pazzo|mercante/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": iKeys
 				}
 			};
@@ -18518,7 +18600,7 @@ bot.onText(/offerte Giornaliere|^mercante Pazzo|mercante/i, function(message) {
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									one_time_keyboard: true,
+									//one_time_keyboard: true,
 									"keyboard": [["Accetta"],["Torna dal mercante"],["Torna al menu"]]
 								}
 							};
@@ -18653,6 +18735,12 @@ bot.onText(/Regala un oggetto$/, function(message) {
 												}
 												var msg = answer.text;
 
+												var reg = new RegExp("[<>]+");
+												if (reg.test(msg) == true){
+													bot.sendMessage(message.chat.id, "Non utilizzare caratteri come <, o >", back);
+													return;
+												}
+
 												bot.sendMessage(message.chat.id, "Confermi?", yesno).then(function() {
 													answerCallbacks[message.chat.id] = function(answer) {
 														if (answer.text.toLowerCase() == "si"){
@@ -18750,7 +18838,7 @@ bot.onText(/cronologia/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Torna al Mercato"],["Torna al menu"]]
 				}
 			};
@@ -18836,7 +18924,7 @@ function cercaTermine(message, param, player_id){
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Cerca Ancora"],["Torna al menu"]]
 		}
 	};
@@ -18853,12 +18941,11 @@ function cercaTermine(message, param, player_id){
 		var prev = 0;
 		var prevtxt = "";
 		if (Object.keys(rows).length == 2){
-			//	console.log("Ricerca precedente: " + rows[1].term);
 			prevtxt = "Torna a " + rows[1].term;
 			prev = 1;
 		}
 
-		connection.query('SELECT * FROM player WHERE id = ' + player_id, function(err, rows, fields) {
+		connection.query('SELECT exp, weapon_id, weapon2_id, weapon3_id, charm_id FROM player WHERE id = ' + player_id, function(err, rows, fields) {
 			if (err) throw err;
 			var lev = Math.floor(rows[0].exp/10);
 
@@ -18869,54 +18956,60 @@ function cercaTermine(message, param, player_id){
 
 			param = param.trim();
 
-			if ((Object.keys(param).length <= 3) && ( (param.startsWith("C") || param.startsWith("NC") || param.startsWith("R") || param.startsWith("UR") || param.startsWith("L") || param.startsWith("E") || param.startsWith("S") || param.startsWith("UE") || param.startsWith("U") || param.startsWith("X")) )){
+			var rarity = ["C","NC","R","UR","L","E","S","UE","U","X","IN"];
+			var check = rarity.indexOf(param.split(" ")[0]);
 
-				var craftable = -1;
-				var extra = "";
-				var extra_txt = "";
-				if (param.indexOf(" ") != -1){
-					craftable = param.substring(Object.keys(param).length-1, Object.keys(param).length);
-					extra = " AND craftable = " + craftable;
-					if (craftable == 1){
-						extra_txt = " creabili";
-					}else{
-						extra_txt = " base"
+			//console.log(check, param);
+
+			if ((Object.keys(param).length <= 4) && (check != -1)){
+				if (param.startsWith(rarity[check])){
+					var craftable = -1;
+					var extra = "";
+					var extra_txt = "";
+					if (param.indexOf(" ") != -1){
+						craftable = param.substring(Object.keys(param).length-1, Object.keys(param).length);
+						extra = " AND craftable = " + craftable;
+						if (craftable == 1){
+							extra_txt = " creabili";
+						}else{
+							extra_txt = " base"
+						}
+						param = param.slice(0, -2);
 					}
-					param = param.slice(0, -2);
-				}
 
-				connection.query('SELECT name, rarity FROM item WHERE rarity = "' + param + '"' + extra + ' ORDER BY name', function(err, rows, fields) {
-					if (err) throw err;
-					if (Object.keys(rows).length > 0){
-						var bottext = "Risultati per rarità '" + param + "'" + extra_txt + ":\n";
-						var iKeys = [];
-						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-							bottext = bottext + rows[i].name + " (" + rows[0].rarity + ")\n";
-							iKeys.push(["Cerca " + rows[i].name]);
-						}
-
-						iKeys.push(["Torna a Crea"]);				
-						iKeys.push(["Cerca Ancora"]);
-						if (prev == 1){
-							iKeys.push([prevtxt]);
-						}
-						iKeys.push(["Torna al menu"]);
-
-						var kb2 = {
-							parse_mode: "Markdown",
-							reply_markup: {
-								resize_keyboard: true,
-								one_time_keyboard: true,
-								"keyboard": iKeys
+					connection.query('SELECT name, rarity FROM item WHERE rarity = "' + param + '"' + extra + ' ORDER BY name', function(err, rows, fields) {
+						if (err) throw err;
+						if (Object.keys(rows).length > 0){
+							var bottext = "Risultati per rarità '" + param + "'" + extra_txt + ":\n";
+							var iKeys = [];
+							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+								bottext = bottext + rows[i].name + " (" + rows[0].rarity + ")\n";
+								iKeys.push(["Cerca " + rows[i].name]);
 							}
-						};
 
-						bot.sendMessage(message.chat.id, bottext, kb2);
-					}else{
-						bot.sendMessage(message.chat.id, "Non ci sono oggetti creabili con quel livello di rarità.", search);
-					}
-				});
-				return;
+							iKeys.push(["Torna a Crea"]);				
+							iKeys.push(["Cerca Ancora"]);
+							if (prev == 1){
+								iKeys.push([prevtxt]);
+							}
+							iKeys.push(["Torna al menu"]);
+
+							var kb2 = {
+								parse_mode: "Markdown",
+								reply_markup: {
+									resize_keyboard: true,
+									//one_time_keyboard: true,
+									"keyboard": iKeys
+								}
+							};
+
+							bot.sendMessage(message.chat.id, bottext, kb2);
+						}else{
+							bot.sendMessage(message.chat.id, "Non ci sono oggetti" + extra_txt + " con quel livello di rarità.", search);
+						}
+					});
+					return;
+				}
 			}
 
 			if (param == "Armi"){
@@ -18944,7 +19037,7 @@ function cercaTermine(message, param, player_id){
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": iKeys
 							}
 						};
@@ -18981,7 +19074,7 @@ function cercaTermine(message, param, player_id){
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": iKeys
 							}
 						};
@@ -19018,7 +19111,7 @@ function cercaTermine(message, param, player_id){
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": iKeys
 							}
 						};
@@ -19050,7 +19143,7 @@ function cercaTermine(message, param, player_id){
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": iKeys
 							}
 						};
@@ -19083,7 +19176,7 @@ function cercaTermine(message, param, player_id){
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": iKeys
 							}
 						};
@@ -19116,7 +19209,7 @@ function cercaTermine(message, param, player_id){
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": iKeys
 							}
 						};
@@ -19149,7 +19242,7 @@ function cercaTermine(message, param, player_id){
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": iKeys
 							}
 						};
@@ -19178,7 +19271,7 @@ function cercaTermine(message, param, player_id){
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": iKeys
 						}
 					};
@@ -19419,7 +19512,7 @@ function cercaTermine(message, param, player_id){
 														parse_mode: "Markdown",
 														reply_markup: {
 															resize_keyboard: true,
-															one_time_keyboard: true,
+															//one_time_keyboard: true,
 															"keyboard": iKeys2
 														}
 													};
@@ -19581,7 +19674,7 @@ function cercaTermine(message, param, player_id){
 																		parse_mode: "Markdown",
 																		reply_markup: {
 																			resize_keyboard: true,
-																			one_time_keyboard: true,
+																			//one_time_keyboard: true,
 																			"keyboard": iKeys3
 																		}
 																	};
@@ -19657,7 +19750,7 @@ bot.onText(/lista ricerche/i, function(message) {
 				var kb = {
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": iKeys
 					}
 				};
@@ -19679,7 +19772,7 @@ function cerca(message){
 		var kb = {
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": iKeys
 			}
 		};
@@ -19694,7 +19787,7 @@ bot.onText(/alchimia/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [['Sintesi ✨', 'Crea 📦'],['Incanta 💎 ','Scomponi 💎 '],['Utilizza Polvere 🌪','Trasmogrificazione 🌀'],['Torna allo zaino'],['Torna al menu']]
 		}		
 	}
@@ -19730,7 +19823,7 @@ bot.onText(/genera scaglia evolutiva/i, function(message){
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Si"],["Torna all'alchimia"],['Torna al menu']]
 			}		
 		}
@@ -19739,7 +19832,7 @@ bot.onText(/genera scaglia evolutiva/i, function(message){
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Torna all'alchimia"],['Torna al generatore'],['Torna al menu']]
 			}		
 		}
@@ -19803,7 +19896,7 @@ bot.onText(/utilizza polvere/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Torna all'alchimia"],['Torna al generatore'],['Torna al menu']]
 			}		
 		}
@@ -19812,7 +19905,7 @@ bot.onText(/utilizza polvere/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Genera Oggetto"],['Genera Scaglia Evolutiva'],["Torna all'alchimia"],['Torna al menu']]
 			}		
 		}
@@ -19821,7 +19914,7 @@ bot.onText(/utilizza polvere/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Si"],["Torna al Generatore di Polvere"]]
 			}
 		};
@@ -19937,7 +20030,7 @@ bot.onText(/filtro/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [['Solo Base','Solo Creati'],['Solo C','Solo NC','Solo R'],['Solo UR','Solo L','Solo E'],['Solo UE','Solo U','Solo S'],['Solo I','Solo IN'],['Torna allo zaino']]
 		}
 	};
@@ -19951,7 +20044,7 @@ bot.onText(/cambia visualizzazione/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna allo Zaino"],["Torna al menu"]]
 		}
 	};
@@ -19985,7 +20078,7 @@ bot.onText(/zaino/i, function(message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [['Filtro','Pozioni'],['Equipaggia','Set','Rimuovi'],['Cambia Visualizzazione'],['Torna al menu']]
 		}
 	};
@@ -19994,7 +20087,7 @@ bot.onText(/zaino/i, function(message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna allo Zaino"],["Torna al menu"]]
 		}
 	};
@@ -20162,7 +20255,7 @@ bot.onText(/^set$|torna ai set|^Imposta (.+)/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Torna ai set"],["Torna al menu"]]
 			}
 		};
@@ -20171,7 +20264,7 @@ bot.onText(/^set$|torna ai set|^Imposta (.+)/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Si"],["Elimina"],["Torna ai set"],["Torna al menu"]]
 			}
 		};
@@ -20180,7 +20273,7 @@ bot.onText(/^set$|torna ai set|^Imposta (.+)/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Si"],["Torna ai set"],["Torna al menu"]]
 			}
 		};
@@ -20402,7 +20495,7 @@ bot.onText(/^set$|torna ai set|^Imposta (.+)/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": iKeys
 				}
 			};
@@ -20578,7 +20671,7 @@ bot.onText(/^solo (.+)/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna allo Zaino"],["Torna al menu"]]
 		}
 	};
@@ -20687,8 +20780,8 @@ bot.onText(/^Top|Torna alle top/i, function(message) {
 	var kb = {
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
-			"keyboard": [['Le Mie Classifiche'],['Creazioni','Settimanale'],['Abilità','Rango'],['Per Livello','Draghi'],['Imprese Completate','Missioni'],['Collezione Artefatti','Cambia Top'],['Torna al menu']]
+			//one_time_keyboard: true,
+			"keyboard": [['Le Mie Classifiche'],['Creazioni','Settimanale'],['Abilità','Rango'],['Per Livello','Draghi'],['Imprese Completate','Missioni'],['Collezione Artefatti','Classifica Contrabbandiere'],['Impresa Globale'],['Cambia Top','Torna al menu']]
 		}
 	};
 
@@ -20700,7 +20793,7 @@ bot.onText(/^Cambia Top/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna alle Top"],["Torna al menu"]]
 		}
 	};
@@ -20866,7 +20959,7 @@ bot.onText(/^Le Mie Classifiche/i, function(message) {
 											parse_mode: "Markdown",
 											reply_markup: {
 												resize_keyboard: true,
-												one_time_keyboard: true,
+												//one_time_keyboard: true,
 												"keyboard": [['Top'],['Torna al menu']]
 											}
 										};
@@ -20917,6 +21010,10 @@ bot.onText(/^Collezione Artefatti$/i, function(message) {
 
 bot.onText(/^Per Livello$/i, function(message) {
 	getRankLev(message, 20);
+});
+
+bot.onText(/^Impresa Globale$/i, function(message) {
+	getRankAch(message, 20);
 });
 
 function getRank(message, size, type){
@@ -21212,6 +21309,97 @@ function getRankArt(message, size){
 	});
 };
 
+function getRankAch(message, size){
+	var text = "Classifica Impresa Globale:\n";
+	var c = 1;
+	var mypnt = 0;
+	var totpnt = 0;
+	var mypos = 0;
+
+	var banned_join = banlist_id.join();
+
+	connection.query('SELECT top_min, global_event FROM player WHERE nickname = "' + message.from.username + '"', function(err, rows, fields) {
+		if (err) throw err;
+		
+		var global_event = rows[0].global_event;
+
+		if (rows[0].top_min == 1){
+			connection.query('SELECT nickname, SUM(value) As cnt FROM achievement_global A, player P WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function(err, rows, fields) {
+				if (err) throw err;
+
+				if (Object.keys(rows).length == 0){
+					bot.sendMessage(message.chat.id, "La classifica è ancora vuota", keyrank);
+					return;
+				}
+
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+					if (c < size+1){
+						text += c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].cnt) + ")\n";
+					}
+					if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()){
+						mypnt = rows[i].cnt;
+						mypos = c;
+					}
+					c++;
+				}
+				text += "\nTu:\n" + mypos + "° " + message.from.username + " (" + formatNumber(mypnt) + ")";
+
+				if (global_event < 5){
+					if (mypos <= 100){
+						text += "\n\nA questo punteggio la partecipazione all'impresa <b>verrà considerata</b> nelle tue statistiche!";
+					}else{
+						text += "\n\nA questo punteggio la partecipazione all'impresa <b>NON verrà</b> considerata nelle tue statistiche, impegnati di più per aumentare i tuoi punti!";
+					}
+				}
+
+				bot.sendMessage(message.chat.id, text, keyrank);
+			});
+		}else{
+			connection.query('SELECT nickname, SUM(value) As cnt FROM achievement_global A, player P WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function(err, rows, fields) {
+				if (err) throw err;
+
+				if (Object.keys(rows).length == 0){
+					bot.sendMessage(message.chat.id, "La classifica è ancora vuota", keyrank);
+					return;
+				}
+
+				var range = 5;
+
+				var nickname = [];
+				var point = [];
+				var mypos = 0;
+
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+					nickname.push(rows[i].nickname);
+					point.push(rows[i].cnt);
+					if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase()){
+						mypos = i;
+					}
+				}
+				for (var i = (mypos-range); i < (mypos+(range+1)); i++) {
+					if (nickname[i] != undefined){
+						if (i == mypos){
+							text += (i+1) + "° <b>" + nickname[i] + "</b> (" + formatNumber(point[i]) + ")\n";
+						}else{
+							text += (i+1) + "° " + nickname[i] + " (" + formatNumber(point[i]) + ")\n";
+						}
+					}
+				}
+
+				if (global_event < 5){
+					if (mypos <= 100){
+						text += "\nA questo punteggio la partecipazione all'impresa <b>verrà considerata</b> nelle tue statistiche!";
+					}else{
+						text += "\nA questo punteggio la partecipazione all'impresa <b>NON verrà</b> considerata nelle tue statistiche, impegnati di più per aumentare i tuoi punti!";
+					}
+				}
+
+				bot.sendMessage(message.chat.id, text, keyrank);
+			});
+		}
+	});
+}
+
 bot.onText(/negozio/i, function(message) {
 	var oggetto = "";
 	var iKeys = [];
@@ -21252,7 +21440,7 @@ bot.onText(/negozio/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Compra","Vendi","Ricicla"],["Torna al menu"]]
 			}
 		};
@@ -21295,7 +21483,7 @@ bot.onText(/negozio/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": iKeys
 							}
 						};
@@ -21307,7 +21495,7 @@ bot.onText(/negozio/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Valore < 1000","Valore < 2000"],["Valore < 7000","Valore < 10000"],["Valore < 20000","Valore > 20000"],["Vendi C","Vendi NC"],["Vendi R","Vendi UR"],["Vendi L","Vendi E"],["Torna al negozio"],["Torna al menu"]]
 						}
 					};
@@ -21348,7 +21536,7 @@ bot.onText(/negozio/i, function(message) {
 										parse_mode: "Markdown",
 										reply_markup: {
 											resize_keyboard: true,
-											one_time_keyboard: true,
+											//one_time_keyboard: true,
 											"keyboard": iKeys
 										}
 									};
@@ -21360,7 +21548,7 @@ bot.onText(/negozio/i, function(message) {
 										parse_mode: "Markdown",
 										reply_markup: {
 											resize_keyboard: true,
-											one_time_keyboard: true,
+											//one_time_keyboard: true,
 											"keyboard": [["Torna al negozio"],["Torna al menu"]]
 										}
 									};
@@ -21398,7 +21586,7 @@ bot.onText(/ricicla/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["C","NC","R"],["UR","L","E"],["Torna al negozio"],["Torna al menu"]]
 			}
 		};
@@ -21437,7 +21625,7 @@ bot.onText(/ricicla/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": iKeys
 						}
 					};
@@ -21446,7 +21634,7 @@ bot.onText(/ricicla/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Ricicla Ancora"],["Torna al menu"]]
 						}
 					};
@@ -21455,7 +21643,7 @@ bot.onText(/ricicla/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Stessa Rarità"],["Rarità Superiore"],["Torna al menu"]]
 						}
 					};
@@ -21570,7 +21758,7 @@ bot.onText(/^vendi/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Conferma"],["Torna al negozio"]]
 		}
 	};
@@ -21578,7 +21766,7 @@ bot.onText(/^vendi/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna al negozio"]]
 		}
 	};
@@ -21587,7 +21775,7 @@ bot.onText(/^vendi/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["1"],["2"],["3"],["4"],["5"],["10"],["Torna al menu"]]
 		}
 	};
@@ -21793,7 +21981,7 @@ bot.onText(/compra/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Torna al negozio"],["Torna al menu"]]
 			}
 		};
@@ -21829,7 +22017,7 @@ bot.onText(/compra/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["1"],["2"],["3"],["4"],["5"],["10"],["Torna al menu"]]
 						}
 					};
@@ -21896,7 +22084,7 @@ bot.onText(/compra/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["1"],["2"],["3"],["4"],["5"],["10"],["Torna al menu"]]
 						}
 					};
@@ -22017,7 +22205,7 @@ bot.onText(/compra/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["1"],["2"],["3"],["4"],["5"],["10"],["Torna al menu"]]
 						}
 					};
@@ -22083,7 +22271,7 @@ bot.onText(/compra/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["1"],["2"],["3"],["4"],["5"],["10"],["Torna al menu"]]
 					}
 				};
@@ -22153,7 +22341,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Artefatto Fiammeggiante"],["Artefatto Elettrico"],["Artefatto Tempesta"],["Artefatto Buio"],["Artefatto Divinatorio"],["Torna al menu"]]
 		}
 	};
@@ -22162,7 +22350,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Ottieni Artefatto"],["Torna agli artefatti"],["Torna al menu"]]
 		}		
 	};
@@ -22434,10 +22622,10 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function(message) {
 
 							bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
 											"> Raggiungere il livello 1000\n" +
-											"> Aver raggiunto rango 500\n" +
+											"> Aver raggiunto rango 400\n" +
 											"> Aver completato 20 scalate complete nello stesso team\n" +
-											"> Aver venduto 100 oggetti al Contrabbandiere\n" +
-											"> Aver partecipato e aiutato a vincere 3 imprese globali\n\n" +
+											"> Aver venduto almeno 300 oggetti al Contrabbandiere\n" +
+											"> Aver partecipato e aiutato a vincere 5 imprese globali\n\n" +
 											"L'artefatto è pronto ma non può essere ancora ottenuto in quanto potrebbe essere aggiornato lievemente", get).then(function() {
 								answerCallbacks[message.chat.id] = function(answer) {
 									if (answer.text == "Ottieni Artefatto"){
@@ -22482,7 +22670,7 @@ bot.onText(/^Edificio/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Indaga oltre"],["Torna al menu"]]
 			}		
 		};
@@ -22491,7 +22679,7 @@ bot.onText(/^Edificio/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Déjà vu"],["Torna al menu"]]
 			}		
 		};
@@ -22500,7 +22688,7 @@ bot.onText(/^Edificio/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Edificio"],["Torna al menu"]]
 			}		
 		};
@@ -22544,7 +22732,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Albero Talenti"],["Torna al menu"]]
 		}		
 	};
@@ -22553,7 +22741,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna all'Albero"],["Torna al menu"]]
 		}		
 	};
@@ -22562,7 +22750,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Conferma"],["Torna all'Albero"]]
 		}		
 	};
@@ -22615,7 +22803,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": iKeys
 					}
 				};
@@ -23163,7 +23351,7 @@ bot.onText(/equipaggia/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Equipaggia Ancora"],["Torna allo zaino"],["Torna al menu"]]
 		}
 	};
@@ -23454,7 +23642,7 @@ bot.onText(/equipaggia/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": iKeys
 					}
 				};
@@ -23477,7 +23665,7 @@ bot.onText(/rimuovi/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Equipaggia"],["Rimuovi"],["Torna allo zaino"],["Torna al menu"]]
 		}
 	};
@@ -23620,7 +23808,7 @@ bot.onText(/rimuovi/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Rimuovi Arma","Rimuovi Armatura"],["Rimuovi Scudo","Rimuovi Talismano"],["Rimuovi Tutto"],["Torna allo zaino"],["Torna al menu"]]
 			}
 		};
@@ -23691,7 +23879,7 @@ bot.onText(/torna a crea|crea (.+)/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": iKeys
 							}
 						};
@@ -23735,7 +23923,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn){
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Cerca " + oggetto],["Crea Ancora"],["Torna al menu"]]
 			}
 		};
@@ -23881,14 +24069,14 @@ function creaOggetto(message, player_id, oggetto, money, reborn){
 																		});
 																	}
 
-																	iKeys.push(["Torna a " + oggetto]);
+																	iKeys.push(["Torna a *" + oggetto]);
 																	iKeys.push(["Torna al menu"]);
 
 																	var craft = {
 																		parse_mode: "Markdown",
 																		reply_markup: {
 																			resize_keyboard: true,
-																			one_time_keyboard: true,
+																			//one_time_keyboard: true,
 																			"keyboard": iKeys
 																		}
 																	};
@@ -23917,7 +24105,10 @@ function creaOggetto(message, player_id, oggetto, money, reborn){
 
 															setAchievement(message.chat.id, player_id, 10, craftexp);
 															setAchievement(message.chat.id, player_id, 12, 1, matR);
-															checkFestival(message.chat.id, player_id, matR);
+															var today = new Date();
+															if ((today.getDay() == 6) || (today.getDay() == 0)){
+																checkFestival(message.chat.id, player_id, matR);
+															}
 														});
 													});
 												});
@@ -24185,7 +24376,7 @@ bot.onText(/^scrigni|torna agli scrigni/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": iKeys
 					}
 				};
@@ -24234,7 +24425,7 @@ bot.onText(/^apri/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Scrigni"],["Torna al menu"]]
 			}
 		};
@@ -24258,7 +24449,11 @@ bot.onText(/^apri/i, function(message) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0){
-				bot.sendMessage(message.chat.id, "Non possiedi lo scrigno selezionato", chestMore);
+				if (scrigno != "tutti"){
+					bot.sendMessage(message.chat.id, "Non possiedi lo scrigno selezionato", chestMore);
+				}else{
+					bot.sendMessage(message.chat.id, "Non possiedi nessuno scrigno apribile", chestMore);
+				}
 				return;
 			}
 
@@ -24272,12 +24467,12 @@ bot.onText(/^apri/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Si"],["Torna agli scrigni"],["Torna al menu"]]
 						}
 					};
 
-					bot.sendMessage(message.chat.id, "Vuoi aprire lo Scrigno Mistico? Conterrà un oggetto base da R a E e ti costerà 15 Chiavi Mistiche 🗝\nNe possiedi: " + mkeys, chestYesNo).then(function() {
+					bot.sendMessage(message.chat.id, "Vuoi aprire lo Scrigno Mistico? Conterrà un oggetto Base (R-E) di alto valore ed una 💎. Ti costerà 15 🗝 (" + mkeys + ").", chestYesNo).then(function() {
 						answerCallbacks[message.chat.id] = function(answer) {
 							var resp = answer.text;
 							if ((resp == "Torna al menu") || (resp == "Torna agli scrigni")){
@@ -24295,14 +24490,18 @@ bot.onText(/^apri/i, function(message) {
 										if (err) throw err;
 										connection.query('UPDATE player SET mkeys = mkeys-15 WHERE id = ' + player_id, function(err, rows, fields) {
 											if (err) throw err;
-											connection.query('SELECT name, id FROM item WHERE craftable = 0 AND rarity IN ("R","UR","L","E") ORDER BY RAND()', function(err, rows, fields) {
+											connection.query('SELECT shortname FROM rarity WHERE id > 2 AND id < 7 ORDER BY RAND()', function(err, rows, fields) {
 												if (err) throw err;
-												bot.sendMessage(message.chat.id, "Nello Scrigno Mistico hai trovato *" + rows[0].name + "* ed una 💎!", back);
-												connection.query('INSERT INTO inventory (player_id, item_id) VALUES (' + player_id + ',' + rows[0].id + ')', function(err, rows, fields) {
+												var rarity = rows[0].shortname;
+												connection.query('SELECT I.name, I.id, I.estimate FROM item I INNER JOIN (SELECT id FROM item WHERE craftable = 0 AND rarity = "' + rarity + '" ORDER BY estimate DESC LIMIT 20) I2 ON I.id = I2.id ORDER BY RAND()', function(err, rows, fields) {
 													if (err) throw err;
-												});
-												connection.query('UPDATE player SET gems = gems+1 WHERE id = ' + player_id, function(err, rows, fields) {
-													if (err) throw err;
+													bot.sendMessage(message.chat.id, "Nello Scrigno Mistico hai trovato *" + rows[0].name + "* ed una 💎!", back);
+													connection.query('INSERT INTO inventory (player_id, item_id) VALUES (' + player_id + ',' + rows[0].id + ')', function(err, rows, fields) {
+														if (err) throw err;
+													});
+													connection.query('UPDATE player SET gems = gems+1 WHERE id = ' + player_id, function(err, rows, fields) {
+														if (err) throw err;
+													});
 												});
 											});
 										});
@@ -24320,7 +24519,7 @@ bot.onText(/^apri/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["Si"],["Torna al menu"]]
 					}
 				};
@@ -24329,7 +24528,7 @@ bot.onText(/^apri/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["1"],["150"],[qnt],["Torna al menu"]]
 					}
 				};
@@ -24338,7 +24537,7 @@ bot.onText(/^apri/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["1"],[qnt],["Torna al menu"]]
 					}
 				};
@@ -24347,7 +24546,7 @@ bot.onText(/^apri/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["1"],["Torna al menu"]]
 					}
 				};
@@ -24519,7 +24718,7 @@ bot.onText(/evento della luna/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna al menu"]]
 		}
 	};
@@ -24528,7 +24727,7 @@ bot.onText(/evento della luna/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna all'evento della luna"],["Torna al menu"]]
 		}
 	};
@@ -24537,7 +24736,7 @@ bot.onText(/evento della luna/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Si"],["Torna all'evento della luna"],["Torna al menu"]]
 		}
 	};
@@ -24582,7 +24781,7 @@ bot.onText(/ruota della luna|ruota/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna al menu"]]
 		}
 	};
@@ -24591,7 +24790,7 @@ bot.onText(/ruota della luna|ruota/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna alla ruota"],["Torna al menu"]]
 		}
 	};
@@ -24600,7 +24799,7 @@ bot.onText(/ruota della luna|ruota/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Si"],["Torna alla ruota"],["Torna al menu"]]
 		}
 	};
@@ -24846,7 +25045,7 @@ bot.onText(/arena/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Continua all'arena"],["Torna al menu"]]
 			}
 		};
@@ -24854,7 +25053,7 @@ bot.onText(/arena/i, function(message) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Scegli Drago 1","Scegli Drago 2"],["Punta Pietre"],["Torna al menu"]]
 			}
 		};
@@ -24862,7 +25061,7 @@ bot.onText(/arena/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Entra nell'arena"],["Torna al menu"]]
 			}
 		};
@@ -24870,7 +25069,7 @@ bot.onText(/arena/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Torna all'arena"],["Torna al menu"]]
 			}
 		};
@@ -25168,6 +25367,11 @@ function setFinishedArena(element, index, array){
 					myDmg += 25;
 					myCrit += 10;
 				}
+				if (charm_id == 695){
+					myDmg += 30;
+					myCrit += 15;
+				}
+
 				if ((class_id == 7) && (reborn == 3)){
 					myCrit += 5;
 				}
@@ -25200,6 +25404,10 @@ function setFinishedArena(element, index, array){
 						if (enemyCharm_id == 602){
 							enemyDmg += 25;
 							enemyCrit += 10;
+						}
+						if (enemyCharm_id == 695){
+							enemyDmg += 30;
+							enemyDmg += 15;
 						}
 						if ((class_id2 == 7) && (reborn2 == 3)){
 							enemyCrit += 5;
@@ -25619,7 +25827,7 @@ bot.onText(/affronta boss|^boss 🐗 |^boss/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Affronta Boss"],["Torna al menu"]]
 		}
 	};
@@ -25628,7 +25836,7 @@ bot.onText(/affronta boss|^boss 🐗 |^boss/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Visualizza Boss"],["Torna al menu"]]
 		}
 	};
@@ -25819,7 +26027,7 @@ bot.onText(/affronta boss|^boss 🐗 |^boss/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": iKeys
 							}
 						};
@@ -25853,7 +26061,7 @@ bot.onText(/affronta boss|^boss 🐗 |^boss/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": [["Attacco Leggero","Attacco Pesante"],["Incantesimi"],["Utilizzabili Boss"],["Visualizza Boss"],["Torna al menu"]]
 							}
 						};
@@ -25928,7 +26136,7 @@ bot.onText(/^Incantesimi$/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": iKeys
 						}
 					};
@@ -25946,7 +26154,7 @@ bot.onText(/^Incantesimi$/i, function(message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": [["Affronta Boss"],["Dungeon"],["Torna al menu"]]
 						}
 					};
@@ -25964,7 +26172,7 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Affronta Boss"],["Torna al menu"]]
 		}
 	};
@@ -26045,6 +26253,11 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 		if (charm_id == 496){
 			critical_shield += 3;
 		}
+		if (charm_id == 696){
+			critical += 5;
+			critical_armor += 5;
+			critical_shield += 3;
+		}
 		if ((class_id == 2) && (reborn == 3)){
 			critical_armor += 5;
 		}
@@ -26111,12 +26324,15 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 		var player_exp = rows[0].exp;
 
 		if (charm_id == 62){
-			danno = danno+5;
+			danno += 5;
 		}else if (charm_id == 184){
-			danno = danno+15;
+			danno += 15;
 		}else if (charm_id == 188){
-			danno = danno+20;
+			danno += 20;
+		}else if (charm_id == 698){
+			danno += 30;
 		}
+
 		var bonus = 0;
 		if (rows[0].weapon2 < 0){
 			var bonus = Math.abs(rows[0].weapon2)+Math.abs(rows[0].weapon3)+rows[0].weapon2_enchant+rows[0].weapon3_enchant;
@@ -26208,6 +26424,10 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 				}
 
 				var automagic = 0;
+
+				if (charm_id == 698){
+					boost_cast += 3;
+				}
 
 				if (magic == 0){
 					var magicrand = Math.random()*100;
@@ -26383,10 +26603,15 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 											danno += parseInt(rows[0].claws);
 											bonus += parseInt(rows[0].defense);
 											bonus += parseInt(rows[0].saddle);
+											var dragon_crit = rows[0].critical;
 											if (charm_id == 602){
 												danno += 25;
+												dragon_crit += 10;
 											}
-											var dragon_crit = rows[0].critical;
+											if (charm_id == 695){
+												danno += 30;
+												dragon_crit += 15;
+											}
 											if ((class_id == 7) && (reborn == 3)){
 												dragon_crit += 5;
 											}
@@ -26561,7 +26786,7 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 														parse_mode: "Markdown",
 														reply_markup: {
 															resize_keyboard: true,
-															one_time_keyboard: true,
+															//one_time_keyboard: true,
 															"keyboard": [["Attacco Leggero","Attacco Pesante"],["Incantesimi"],["Utilizzabili Boss"],["Visualizza Boss"],["Torna al menu"]]
 														}
 													};
@@ -26570,7 +26795,7 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 														parse_mode: "Markdown",
 														reply_markup: {
 															resize_keyboard: true,
-															one_time_keyboard: true,
+															//one_time_keyboard: true,
 															"keyboard": [["Continua"],["Torna al menu"]]
 														}
 													};
@@ -26945,8 +27170,6 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 																	var max = Math.round((boss_drop/15)*1.5);
 																	var min = Math.round((boss_drop/16)*1.5);
 																	damage = Math.round(Math.random()*max+min)-bonus;
-																	//var prop = 100*magicPow/200000;
-																	//var heal = Math.round(player_total_life*prop);
 																	var heal = Math.round(Math.max(player_total_life*(magicPow/1000), (player_total_life*((magicPow/900)+0.2)) - damage));
 																	damage = damage-extra_bonus;
 
@@ -26979,20 +27202,8 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 																		damage = damage-20;
 																	}
 
-																	//var dmg = damage*Math.max(1, (4.5-(2*boss_total_life/1000000)));
 																	var dmg = damage*Math.max(1, 1.5 - ((2*boss_total_life)/1000000) + ((3*boss_num)/31));
 																	damage = dmg;
-																	//console.log("DAMAGE " + dmg + " - " + boss_total_life);
-
-																	/*
-																		if (multi >= 2.5){
-																			damage = damage*2.5;
-																		}else{
-																			damage = damage*multi;
-																		}
-																		*/
-
-																	//console.log("DAMAGE_OLD " + damage + " - " + boss_total_life);
 
 																	if (double == 1){
 																		damage = damage*1.5;
@@ -27283,7 +27494,7 @@ bot.onText(/visualizza boss/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Affronta Boss"],["Torna al menu"]]
 		}
 	};
@@ -27389,7 +27600,7 @@ bot.onText(/Torna in Vita/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["Piuma di Fenice (" + piume + ")"],["Cenere di Fenice (" + ceneri + ")"],["Intervento Divino"],["Torna al menu"]]
 					}
 				};
@@ -27398,7 +27609,7 @@ bot.onText(/Torna in Vita/i, function(message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["Affronta Boss"],["Dungeon"],["Torna al menu"]]
 					}
 				};
@@ -27519,7 +27730,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": itemKeys
 				}
 			};
@@ -27528,7 +27739,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Usa Ancora"],["Affronta Boss","Torna al dungeon"],["Torna al menu"]]
 				}
 			};
@@ -27536,7 +27747,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Usa Ancora"],["Torna al dungeon"],["Torna al menu"]]
 				}
 			};
@@ -27688,7 +27899,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 									parse_mode: "Markdown",
 									reply_markup: {
 										resize_keyboard: true,
-										one_time_keyboard: true,
+										//one_time_keyboard: true,
 										"keyboard": [["1"],["2"],["3"],["4"],["5"],["10"],["Torna al menu"]]
 									}
 								};
@@ -27825,7 +28036,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 									parse_mode: "Markdown",
 									reply_markup: {
 										resize_keyboard: true,
-										one_time_keyboard: true,
+										//one_time_keyboard: true,
 										"keyboard": [["1"],["2"],["3"],["4"],["5"],["10"],["Torna al menu"]]
 									}
 								};
@@ -27917,7 +28128,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": Keys
 					}
 				};
@@ -27934,7 +28145,7 @@ bot.onText(/spia rifugio|spia:/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Nessuno"]]
 		}
 	};
@@ -28098,7 +28309,7 @@ bot.onText(/xxxteria/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["1 Biglietto (750 §)","5 Biglietti (3000 §)"],["20 Biglietti (10.000 §)"],["Torna al menu"]]
 		}
 	};
@@ -28299,7 +28510,7 @@ bot.onText(/necro del destino|prova necro/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": iKeys
 				}
 			};
@@ -28308,7 +28519,7 @@ bot.onText(/necro del destino|prova necro/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Torna alla prova necro"],["Torna al menu"]]
 				}
 			};
@@ -28392,7 +28603,7 @@ bot.onText(/Sfide del Destino/i, function(message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Ruota della Luna 🌕"],["Necro del Destino 🔮"],["Torna al menu"]]
 		}
 	};
@@ -28439,7 +28650,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo/i, function(message) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["Cambia Rune","Tieni Combinazione"],["Rinuncia","Regole"],["Torna al Rifugio"]]
 					}
 				};
@@ -28448,7 +28659,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo/i, function(message) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["Torna dallo Gnomo","Torna al Rifugio"],["Torna al menu"]]
 					}
 				};
@@ -28457,7 +28668,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo/i, function(message) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						one_time_keyboard: true,
+						//one_time_keyboard: true,
 						"keyboard": [["Si"],["Torna dallo Gnomo"]]
 					}
 				};
@@ -28792,7 +29003,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo/i, function(message) {
 											triple2 = triple;
 
 											if (triple_a2 == triple_b2){
-												if (triple_a1 > triple_b1){
+												if (triple_a1 >= triple_b1){
 													triple_d1 = triple_a1;
 													triple_d2 = 0;
 												}else{
@@ -28800,7 +29011,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo/i, function(message) {
 													triple_d2 = triple_b1;
 												}
 											}else{
-												if (triple_a2 > triple_b2){
+												if (triple_a2 >= triple_b2){
 													triple_d1 = triple_a2;
 													triple_d2 = 0;
 												}else{
@@ -29208,7 +29419,7 @@ bot.onText(/^rifugio|Torna al rifugio/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": iKeys
 				}
 			};
@@ -29217,7 +29428,7 @@ bot.onText(/^rifugio|Torna al rifugio/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": [["Matchmaking (100 §)"],["Inserisci il Nickname (200 §)"],["Torna al Rifugio"]]
 				}
 			};
@@ -29612,7 +29823,7 @@ bot.onText(/^prelevazione/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Preleva","Estrai"],["Torna al menu"]]
 			}
 		};
@@ -29621,7 +29832,7 @@ bot.onText(/^prelevazione/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Prelevazione"],["Torna al menu"]]
 			}
 		};
@@ -30041,7 +30252,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source){
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Matchmaking"],["Torna al menu"]]
 			}
 		};
@@ -30117,7 +30328,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source){
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							one_time_keyboard: true,
+							//one_time_keyboard: true,
 							"keyboard": iKeys
 						}
 					};
@@ -30303,7 +30514,7 @@ bot.onText(/itinerario propizio|itinerari|regioni/i, function(message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					one_time_keyboard: true,
+					//one_time_keyboard: true,
 					"keyboard": iKeys
 				}
 			};
@@ -30335,7 +30546,7 @@ bot.onText(/itinerario propizio|itinerari|regioni/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": iKeys
 							}
 						};
@@ -30344,7 +30555,7 @@ bot.onText(/itinerario propizio|itinerari|regioni/i, function(message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								one_time_keyboard: true,
+								//one_time_keyboard: true,
 								"keyboard": [["Si"],["Torna agli itinerari"],["Torna al menu"]]
 							}
 						};
@@ -30607,6 +30818,8 @@ bot.onText(/Missione/i, function(message) {
 								duration = duration - (duration/100*10);
 							}else if (charm_id == 188){
 								duration = duration - (duration/100*15);
+							}else if (charm_id == 697){
+								duration = duration - (duration/100*20);
 							}else{
 								extra1 = "❌";
 							}
@@ -30952,7 +31165,7 @@ bot.onText(/^vacanza/i, function(message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [[btn],["Torna al menu"]]
 			}
 		};
@@ -31124,7 +31337,7 @@ bot.onText(/viaggi/i, function(message) {
 											parse_mode: "Markdown",
 											reply_markup: {
 												resize_keyboard: true,
-												one_time_keyboard: true,
+												//one_time_keyboard: true,
 												"keyboard": iKeys
 											}
 										};
@@ -31151,10 +31364,10 @@ bot.onText(/viaggi/i, function(message) {
 												if ((boost_id == 3) && (boost_mission > 0)){
 													boost_text = "\nBevanda: ✅";
 												}
-												if (charm_id == 603){
-													boost_text += "\nTalismano Nutriente: ✅";
+												if ((charm_id == 603) || (charm_id == 695)){
+													boost_text += "\nTalismano bonus pietre: ✅";
 												}else{
-													boost_text += "\nTalismano Nutriente: ❌";
+													boost_text += "\nTalismano bonus pietre: ❌";
 												}											
 											}
 
@@ -32579,7 +32792,7 @@ function setFinishedGnome(element, index, array){
 
 	connection.query('DELETE FROM heist_progress WHERE id = ' + element.progressId, function(err, rows, fields) {
 		if (err) throw err;
-		bot.sendMessage(element.chat_id, "Il tuo gnomo è stato troppo tempo fuori! E' tornato al tuo rifugio senza aver indovinato la parola.");
+		bot.sendMessage(chat_id, "Il tuo gnomo è stato troppo tempo fuori! E' tornato al tuo rifugio senza aver indovinato la parola.");
 	});
 };
 
@@ -33076,6 +33289,8 @@ function setFinishedMission(element, index, array) {
 						bonus = 10;
 					}else if(charm_id == 189){
 						bonus = 15;
+					}else if(charm_id == 697){
+						bonus = 20;
 					}
 
 					if ((class_id == 3) && (reborn >= 4)){
@@ -33272,6 +33487,10 @@ function setFinishedMission(element, index, array) {
 
 									if (boost_id == 7){
 										money = money*2;
+									}
+
+									if (charm_id == 697){
+										money += money*0.2;
 									}
 
 									var exp = 0;
@@ -33543,7 +33762,7 @@ function setFinishedHeistProgress(element, index, array) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			one_time_keyboard: true,
+			//one_time_keyboard: true,
 			"keyboard": [["Torna al Rifugio"],["Torna al menu"]]
 		}
 	};
@@ -33681,7 +33900,7 @@ function setFinishedHeist(element, index, array) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				one_time_keyboard: true,
+				//one_time_keyboard: true,
 				"keyboard": [["Contatta lo Gnomo"],["Torna al menu"]]
 			}
 		};
@@ -33950,11 +34169,14 @@ function setFinishedCave(element, index, array) {
 
 		var rand = 0;
 		var stone_id = 0;
-		var charm_id = parseInt(element.charm_id);
+		var charm_id = element.charm_id;
 
 		var caveid = parseInt(element.cave_id)+2;
 		if (charm_id == 603){
 			caveid += 2;
+		}
+		if (charm_id == 695){
+			caveid += 5;
 		}
 
 		if (luckyMode == 1){
