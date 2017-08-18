@@ -106,8 +106,10 @@ bot.on('message', function (message) {
 		});
 		
 		if ((msg.chat.id == "-1001069842056") || (msg.chat.id == "-1001064571576")){
-			if (msg.text.toLowerCase().indexOf("@fenix45") != -1){
-				console.log("Admin taggato");
+			if (msg.text != undefined){
+				if (msg.text.toLowerCase().indexOf("@fenix45") != -1){
+					console.log("Admin taggato");
+				}
 			}
 		}
 	}else{
@@ -665,10 +667,12 @@ bot.onText(/^\/gb (.+)|^\/gb/, function(message, match) {
 							if (err) throw err;
 						});
 					}else{
+						/*
 						bot.sendMessage(message.chat.id, nick + " (" + account_id + ") sbannato dai gruppi.");
 						connection.query('UPDATE player SET group_ban = 0 WHERE id = ' + rows[0].id, function (err, rows, fields){
 							if (err) throw err;
 						});
+						*/
 					}
 				});
 			};
@@ -1261,7 +1265,7 @@ function checkStatus(message, n, accountid, type){
 			var min = rows[0].min_lev;
 			var max = rows[0].max_lev;
 			var lon = rows[0].level;
-			var levReal = 0;
+			var levReal = lev;
 
 			if (lon == 1){
 				if (exist == 1){
@@ -1287,7 +1291,7 @@ function checkStatus(message, n, accountid, type){
 					if ((levReal < min) || (levReal > max)){
 						bot.kickChatMember(message.chat.id, accountid).then(result => {
 							if (result != "False"){
-								bot.sendMessage(message.chat.id, n + " non rispetta i requisiti del livello (" + lev + "), l'ho bannato");
+								bot.sendMessage(message.chat.id, n + " non rispetta i requisiti del livello (" + levReal + "), l'ho bannato");
 							}
 						});
 						return;
@@ -1395,6 +1399,8 @@ bot.onText(/^\/test (.+)/i, function(message, match) {
 	var full2 = 0;
 	var quad1 = 0;
 	var quad2 = 0;
+	var dquad1 = 0;
+	var dquad2 = 0;
 	var penta1 = 0;
 	var penta2 = 0;
 	var scalef1 = 0;
@@ -1428,19 +1434,24 @@ bot.onText(/^\/test (.+)/i, function(message, match) {
 
 		if (end_num == 0){
 			//Quattro di un tipo
+			var dquad = 0;
 			if ((num[0] == num[1]) && (num[1] == num[2]) && (num[2] == num[3])){
 				end = "Quattro di un tipo";
 				end_num = 7;
+				dquad = num[4];
 			}
 			if ((num[1] == num[2]) && (num[2] == num[3]) && (num[3] == num[4])){
 				end = "Quattro di un tipo";
 				end_num = 7;
+				dquad = [0];
 			}
 
 			if ((i == 0) && (end_num == 7)){
 				quad1 = num[1];
+				dquad1 = dquad;
 			}else{
 				quad2 = num[1];
+				dquad2 = dquad;
 			}
 		}
 
@@ -1766,10 +1777,14 @@ bot.onText(/^\/test (.+)/i, function(message, match) {
 		}
 	}
 	if ((final1 == 7) && (final2 == 7)){	//Quattro uguali
-		if (quad1 >= quad2){
+		if (quad1 > quad2){
 			final1++;
 		}else{
-			final2++;
+			if (dquad1 >= dquad2){
+				final1++;
+			}else{
+				final2++;
+			}
 		}
 	}
 	if ((final1 == 8) && (final2 == 8)){	//Cinque uguali
@@ -4693,6 +4708,10 @@ bot.onText(/^\/valorezaino (.+)|^\/valorezaino/, function(message, match) {
 	if (match[1] == undefined){
 		connection.query('SELECT SUM(value) as val FROM inventory_rarity WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function(err, rows, fields) {
 			if (err) throw err;
+			
+			if (rows[0].val == null)
+				rows[0].val = 0;
+			
 			bot.sendMessage(message.chat.id, message.from.username + ", il tuo zaino vale <b>" + formatNumber(rows[0].val) + "</b> §", html);
 		});
 	}else{
@@ -5643,6 +5662,8 @@ bot.onText(/^\/spia/, function(message) {
 	if (!checkSpam(message)){
 		return;
 	}
+	
+	//console.log(message.reply_to_message);
 
 	var player = message.reply_to_message.from.username;
 
