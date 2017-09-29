@@ -794,7 +794,7 @@ bot.onText(/^\/gruppi/, function(message) {
 		bot.getChatMembersCount(-1001064571576).then(function(data) {
 			var c2 = data;	//mercato
 
-			bot.getChatMembersCount(-1001097502362).then(function(data) {
+			bot.getChatMembersCount(-1001087936894).then(function(data) {
 				var c3 = data;	//xxxteria
 
 				bot.getChatMembersCount(-1001078754923).then(function(data) {
@@ -852,7 +852,7 @@ bot.onText(/^\/gruppi/, function(message) {
 																			"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
 																			"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
 																			"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
-																			"<a href='https://t.me/joinchat/ClcvD0Fqjprf4n3qNmkQng'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
+																			"@xxxterianew2 (" + c3 + ") - Riservato alle Lotterie\n" +
 																			"<a href='https://t.me/joinchat/AAAAAEBMfmv2x_z3vAVNeg'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
 																			"<a href='https://telegram.me/joinchat/DOs98T6kzgEjsbbxh9Xv9g'>Sala Aste</a> (" + c5 + ") - Gestione delle aste!\n" +
 																			"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
@@ -3967,7 +3967,7 @@ bot.onText(/^\/offri/i, function(message) {
 					timeout_id = rows[0].player_id;
 				}
 
-				connection.query('SELECT item.allow_sell, item.value, item.id FROM item, inventory WHERE item.id = inventory.item_id AND item.name = "' + item + '" AND inventory.player_id = ' + player_id, function(err, rows, fields) {
+				connection.query('SELECT item.allow_sell, item.value, item.id, item.name FROM item, inventory WHERE item.id = inventory.item_id AND item.name = "' + item + '" AND inventory.player_id = ' + player_id, function(err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0){
 						if (rows[0].craftable == 1){
@@ -3985,19 +3985,23 @@ bot.onText(/^\/offri/i, function(message) {
 						bot.sendMessage(message.chat.id, "Questo oggetto non può essere venduto");
 						return;
 					}
+					
+					var item_name = rows[0].name;
 
 					var d2 = new Date();
 					d2.setMinutes(d2.getMinutes() + 30);
 					var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth()+1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
 					var short_date = addZero(d2.getHours()) + ':' + addZero(d2.getMinutes());
 
-					connection.query('SELECT COUNT(nickname) As cnt, id FROM player WHERE nickname = "' + buyer + '"', function(err, rows, fields) {
+					connection.query('SELECT COUNT(nickname) As cnt, id, nickname FROM player WHERE nickname = "' + buyer + '"', function(err, rows, fields) {
 						if (err) throw err;
 
 						if (rows[0].cnt == 0){
 							bot.sendMessage(message.from.id, "L'acquirente inserito non esiste");
 							return;
 						}
+						
+						var nick = rows[0].nickname;
 
 						if (price < item_val){
 							bot.sendMessage(message.from.id, "Prezzo impostato al minimo: " + item_val + " §");
@@ -4040,7 +4044,7 @@ bot.onText(/^\/offri/i, function(message) {
 									if (err) throw err;
 									connection.query('INSERT INTO market_direct VALUES (DEFAULT, ' + player_id + ',"' + item_id + '",' + price + ',"' + long_date + '",' + toId + ')', function(err, rows, fields) {
 										if (err) throw err;
-										bot.sendMessage(message.chat.id, "La messa in vendita è stata registrata, verrà eliminata alle " + short_date + "\nPuoi annullarla con /annullav");
+										bot.sendMessage(message.chat.id, "La messa in vendita da parte di " + message.from.username + " per " + item_name + " a " + formatNumber(price) + " § verso " + nick + " è stata registrata (scadenza: " + short_date + ")\nPuoi annullarla con /annullav");
 									});
 								});
 							});
@@ -4270,13 +4274,14 @@ bot.onText(/^\/scambia/i, function(message) {
 
 								var item2_id = rows[0].id;
 
-								connection.query('SELECT chat_id, account_id, id FROM player WHERE nickname = "' + buyer + '"', function(err, rows, fields) {
+								connection.query('SELECT chat_id, account_id, id, nickname FROM player WHERE nickname = "' + buyer + '"', function(err, rows, fields) {
 									if (err) throw err;
 
 									bot.sendMessage(rows[0].account_id, message.from.username + " vuole completare con te questo scambio:\n" +
 													"> " + item1 + " per " + item2 + "\n" +
 													"Usa /accettas o /rifiutas");
 									var buyer_id = rows[0].id;
+									var nick = rows[0].nickname;
 
 									connection.query('INSERT INTO market VALUES (DEFAULT, ' + player_id + ', ' + item1_id + ',' + item2_id + ',"' + long_date + '",' + buyer_id + ')', function(err, rows, fields) {
 										if (err) throw err;
@@ -4285,7 +4290,7 @@ bot.onText(/^\/scambia/i, function(message) {
 											if (err) throw err;
 										});
 
-										bot.sendMessage(message.chat.id, "Lo scambio è stata registrato, verrà eliminato alle " + short_date + "\nPuoi annullarlo con /annullas");
+										bot.sendMessage(message.chat.id, "Lo scambio dove " + message.from.username + " offre " + item1 + " e " + nick + " offre " + item2 + " è stato registrato (scadenza: " + short_date + ")\nPuoi annullarlo con /annullas");
 									});
 								});
 							});
@@ -6094,6 +6099,7 @@ function getInfo(message, player, myhouse_id, from, account_id){
 												var dragon_armsid = 0;
 												var dragon_claws = 0;
 												var dragon = 0;
+												var dragon_status = "In salute";
 
 												if (Object.keys(rows).length > 0){
 													dragon = 1;
@@ -6137,6 +6143,13 @@ function getInfo(message, player, myhouse_id, from, account_id){
 													dragon_clawsid = rows[0].claws_id;
 													dragon_saddleid = rows[0].saddle_id;
 													dragon_armsid = rows[0].arms_id;
+													
+													if (rows[0].life <= 0){
+														dragon_status = "Esausto";
+													}
+													if (rows[0].sleep_h > 0){
+														dragon_status = "Dorme";
+													}
 												}
 
 												connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_clawsid, function(err, rows, fields) {
@@ -6349,6 +6362,7 @@ function getInfo(message, player, myhouse_id, from, account_id){
 																				dragon_saddle_n = "?";
 																				dragon_defense = "?";
 																				dragon_critical = "?";
+																				dragon_status = "?";
 																			}else if (myhouse_id == 2){
 																				rows[0].heist_count = "?";
 																				rows[0].spy_count = "?";
@@ -6412,6 +6426,7 @@ function getInfo(message, player, myhouse_id, from, account_id){
 																						//"💥 " + player_atk + "\n" +
 
 																						(dragon ? "\n<b>" + dragon_name + " (L" + dragon_level + ")</b> 🐉\n" : "") +
+																						(dragon ? "Stato: " + dragon_status + "\n" : "") +
 																						(dragon ? dragon_claws_n + " (" + dragon_damage + ")\n" : "") +
 																						(dragon ? dragon_saddle_n + " (" + dragon_defense + ")\n" : "") +
 																						(dragon ? dragon_arms_n + "\n": "") +
