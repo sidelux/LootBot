@@ -8,7 +8,6 @@
     "node-mysql-deadlock-retries": "^2.1.0",
     "node-schedule": "^1.2.4",
     "node-telegram-bot-api": "^0.28.0",
-    "telegram-api": "^0.7.9",
     "toobusy-js": "^0.5.1",
     "util": "^0.10.3"
   },

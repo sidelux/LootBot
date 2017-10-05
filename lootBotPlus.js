@@ -4769,7 +4769,7 @@ bot.onText(/^\/dlotteria(?!p) (.+)|^\/dlotteria(?!p)/, function(message, match) 
 					}
 					connection.query('DELETE FROM public_lottery_players WHERE lottery_id = ' + lottery_id + ' AND player_id = ' + player_id, function(err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Hai rimosso la registrazioen alla lotteria!");
+						bot.sendMessage(message.chat.id, "Hai rimosso la registrazione alla lotteria!");
 
 						connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + creator_id + ' AND type = 1', function(err, rows, fields) {
 							if (err) throw err;
