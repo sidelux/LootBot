@@ -2924,9 +2924,15 @@ bot.onText(/^\/cancellanegozio (.+)|^\/cancellanegozio$/, function(message, matc
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
+		
+		if (message.reply_to_message != undefined){
+			var cod = message.reply_to_message.text.match(/[0-9]{11}/g);
+			if (cod[0] != undefined)
+				code = cod[0];
+		}
 
 		if ((code == undefined) || (code == "")){
-			bot.sendMessage(message.chat.id, "La sintassi è: /cancellanegozio CODICE, puoi anche usare /cancellanegozio tutti");
+			bot.sendMessage(message.chat.id, "La sintassi è: /cancellanegozio CODICE, puoi anche usare /cancellanegozio tutti. Se usato in risposta il messaggio principale deve contenere il codice negozio intero");
 			return;
 		}
 
@@ -3203,7 +3209,7 @@ bot.on('callback_query', function (message) {
 	connection.beginTransaction(function(err) {
 		if (err) throw err;
 
-		connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function(err, rows, fields) {
+		connection.query('SELECT id, money, account_id, market_ban, holiday FROM player WHERE nickname = "' + message.from.username + '"', function(err, rows, fields) {
 			if (err) throw err;
 
 			var player_id = rows[0].id;
@@ -3217,6 +3223,10 @@ bot.on('callback_query', function (message) {
 			}
 
 			if (rows[0].market_ban == 1){
+				return;
+			}
+			
+			if (rows[0].holiday == 1){
 				return;
 			}
 
@@ -6507,16 +6517,14 @@ bot.onText(/^\/spia/, function(message) {
 			return;
 		}
 
-		connection.query('SELECT COUNT(*) As num, datetime FROM heist WHERE from_id = ' + player_id, function(err, rows, fields) {
-			if (err) throw err;
-			if (rows[0].num == 0){
-				connection.query('SELECT id, heist_protection, chat_id, account_id, house_id FROM player WHERE nickname = "' + player + '"', function(err, rows, fields) {
-					if (err) throw err;
-					if (Object.keys(rows).length > 0){
-						var chat_id = rows[0].chat_id;
-						var house_id = rows[0].house_id;
-
+			connection.query('SELECT id, heist_protection, chat_id, account_id, house_id FROM player WHERE nickname = "' + player + '"', function(err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length > 0){
+					var chat_id = rows[0].chat_id;
+					var house_id = rows[0].house_id;
 						if (rows[0].id == 1){
+
+
 							bot.sendMessage(account_id, "Guardone :>");
 							return;
 						}
@@ -6561,12 +6569,8 @@ bot.onText(/^\/spia/, function(message) {
 						}
 					}else{
 						bot.sendMessage(account_id, "Giocatore non trovato.");
-					}
-				});
-			}else{
-				bot.sendMessage(account_id, "Non puoi spiare mentre ispezioni");
-			}
-		});
+				}
+			});
 	});
 });
 
