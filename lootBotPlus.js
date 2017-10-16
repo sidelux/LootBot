@@ -2386,7 +2386,7 @@ bot.onText(/^\/negozi$/, function(message, match) {
 		var player_id = rows[0].id;
 		var text = "I tuoi negozi:\n\n";
 
-		connection.query('SELECT item.name, public_shop.public, public_shop.code, public_shop.price, public_shop.time_end, public_shop.quantity FROM public_shop, item WHERE item.id = public_shop.item_id AND player_id = ' + player_id + ' ORDER BY code', function(err, rows, fields) {
+		connection.query('SELECT item.name, public_shop.public, public_shop.code, public_shop.price, public_shop.time_end, public_shop.quantity FROM public_shop, item WHERE item.id = public_shop.item_id AND player_id = ' + player_id + ' ORDER BY time_end, code ASC', function(err, rows, fields) {
 			if (err) throw err;
 
 			var d = new Date();
@@ -5358,7 +5358,7 @@ bot.onText(/^\/statistiche/, function(message) {
 																				connection.query('SELECT TRUNCATE(SUM(CASE WHEN fail = 0 THEN 1 ELSE 0 END)/COUNT(*)*100,0) As perc FROM heist_history', function (err, rows, fields){
 																					if (err) throw err;
 																					var perc = rows[0].perc;
-																					connection.query('SELECT COUNT(*) As groups, SUM(members) As members FROM plus_groups', function(err, rows, fields) {
+																					connection.query('SELECT COUNT(*) As groups, SUM(members) As members FROM plus_groups WHERE last_update < NOW() - INTERVAL 1 WEEK', function(err, rows, fields) {
 																						if (err) throw err;
 																						var groups = rows[0].groups;
 																						var members = rows[0].members;
@@ -5410,10 +5410,10 @@ bot.onText(/^\/statistiche/, function(message) {
 																															"*Imprese completate:* " + formatNumber(achievement) + "\n" +
 																															"*Spese Casa dei Giochi:* " + formatNumber(house_tot) + "\n" +
 
-																															"\n*Gruppi:* " + formatNumber(groups) + "\n" +
-																															"*Membri nei gruppi:* " + formatNumber(members) + "\n" +
+																															"\n*Gruppi attivi (2):* " + formatNumber(groups) + "\n" +
+																															"*Membri nei gruppi attivi (2):* " + formatNumber(members) + "\n" +
 
-																															"\n(1) Utenti che hanno inviato un comando oggi", mark);
+																															"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark);
 																										});
 																									});
 																								});
