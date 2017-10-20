@@ -3906,11 +3906,15 @@ bot.onText(/^\/offri/i, function(message) {
 		return;
 	}
 
-	if (message.reply_to_message != undefined){
-		text = text + "," + message.reply_to_message.from.username;
-	}
-
 	var elements = text.split(",");
+	
+	if (Object.keys(elements).length == 1){
+		elements.push("1");	
+	}
+	
+	if (message.reply_to_message != undefined){
+		elements.push(message.reply_to_message.from.username);
+	}
 
 	if (Object.keys(elements).length != 3){
 		bot.sendMessage(message.from.id, "Numero parametri errato nell'offerta: " + Object.keys(elements).length + " su 3\n" + syntax);
@@ -4014,7 +4018,7 @@ bot.onText(/^\/offri/i, function(message) {
 						var nick = rows[0].nickname;
 
 						if (price < item_val){
-							bot.sendMessage(message.from.id, "Prezzo impostato al minimo: " + item_val + " §");
+							bot.sendMessage(message.from.id, "Prezzo per " + item_name + " impostato al minimo: " + item_val + " §");
 							price = item_val;
 						}
 
@@ -5371,49 +5375,54 @@ bot.onText(/^\/statistiche/, function(message) {
 																								connection.query('SELECT `AUTO_INCREMENT` As search FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "xxx" AND TABLE_NAME = "search_history"', function(err, rows, fields) {
 																									if (err) throw err;
 																									var search = rows[0].search;
-																									connection.query('SELECT COUNT(id) As shop_tot FROM market_direct_history WHERE type = 2', function(err, rows, fields) {
+																									connection.query('SELECT `AUTO_INCREMENT` As top_log FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "xxx" AND TABLE_NAME = "dragon_top_log"', function(err, rows, fields) {
 																										if (err) throw err;
-																										var shop_tot = rows[0].shop_tot;
-
-																										connection.query('SELECT SUM(pay) As cnt FROM game_house_stats', function(err, rows, fields) {
+																										var top_log = rows[0].top_log;
+																										connection.query('SELECT COUNT(id) As shop_tot FROM market_direct_history WHERE type = 2', function(err, rows, fields) {
 																											if (err) throw err;
+																											var shop_tot = rows[0].shop_tot;
 
-																											var house_tot = rows[0].cnt;
+																											connection.query('SELECT SUM(pay) As cnt FROM game_house_stats', function(err, rows, fields) {
+																												if (err) throw err;
 
-																											bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
-																															"*Giocatori registrati:* " + formatNumber(tot) + "\n" +
-																															"*Missioni in corso*: " + miss + "\n" +
-																															"*Missioni completate*: " + formatNumber(miss2) + "\n" +
-																															"*Viaggi in corso*: " + travel + "\n" +
-																															"*Utenti attivi (1):* " + formatNumber(act) + "\n" +
-																															"*Monete attuali*: " + formatNumber(money) + " §\n" +
-																															"*Oggetti*: " + formatNumber(inv) + "\n" + 
-																															"*Scrigni attuali*: " + formatNumber(chest) + "\n" +
-																															"*Creazioni*: " + formatNumber(craft) + "\n" +
-																															"*Draghi*: " + formatNumber(dragon) + "\n" +
-																															"*Team:* " + formatNumber(teamn) + "\n" +
-																															"*Ispezioni/In corso/Rapporto:* " + formatNumber(heist) + "/" + heistn + "/" + perc + "%\n" +
-																															"*Danni ai boss attuali:* " + formatNumber(dmg) + "\n" +
-																															"*Lotterie:* " + formatNumber(lottery) + "\n" +
-																															"*Oggetti nei negozi:* " + formatNumber(shop) + "\n" +
-																															"*Oggetti acquistati:* " + formatNumber(shop_tot) + "\n" +
-																															"*Scrigni giornalieri consegnati:* " + formatNumber(daily) + "\n" +
-																															"*Dungeon completati:* " + formatNumber(dungeon_tot) + "\n" +
-																															"*Dungeon creati:* " + formatNumber(dungeon) + "\n" +
-																															"*Stanze create:* " + formatNumber(room) + "\n" +
-																															"*Livelli skill:* " + formatNumber(ablevel) + "\n" +
-																															"*Utenti invitati:* " + formatNumber(invite) + "\n" +
-																															"*Mana grezzo:* " + formatNumber(mana) + "\n" +
-																															"*Polvere:* " + formatNumber(dust) + "\n" +
-																															"*Incantesimi:* " + formatNumber(magic) + "\n" +
-																															"*Oggetti cercati:* " + formatNumber(search) + "\n" +
-																															"*Imprese completate:* " + formatNumber(achievement) + "\n" +
-																															"*Spese Casa dei Giochi:* " + formatNumber(house_tot) + "\n" +
+																												var house_tot = rows[0].cnt;
 
-																															"\n*Gruppi attivi (2):* " + formatNumber(groups) + "\n" +
-																															"*Membri nei gruppi attivi (2):* " + formatNumber(members) + "\n" +
+																												bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
+																																"*Giocatori registrati:* " + formatNumber(tot) + "\n" +
+																																"*Missioni in corso*: " + miss + "\n" +
+																																"*Missioni completate*: " + formatNumber(miss2) + "\n" +
+																																"*Viaggi in corso*: " + travel + "\n" +
+																																"*Utenti attivi (1):* " + formatNumber(act) + "\n" +
+																																"*Monete attuali*: " + formatNumber(money) + " §\n" +
+																																"*Oggetti*: " + formatNumber(inv) + "\n" + 
+																																"*Scrigni attuali*: " + formatNumber(chest) + "\n" +
+																																"*Creazioni*: " + formatNumber(craft) + "\n" +
+																																"*Draghi*: " + formatNumber(dragon) + "\n" +
+																																"*Team:* " + formatNumber(teamn) + "\n" +
+																																"*Ispezioni/In corso/Rapporto:* " + formatNumber(heist) + "/" + heistn + "/" + perc + "%\n" +
+																																"*Danni ai boss attuali:* " + formatNumber(dmg) + "\n" +
+																																"*Lotterie:* " + formatNumber(lottery) + "\n" +
+																																"*Oggetti nei negozi:* " + formatNumber(shop) + "\n" +
+																																"*Oggetti acquistati:* " + formatNumber(shop_tot) + "\n" +
+																																"*Scrigni giornalieri consegnati:* " + formatNumber(daily) + "\n" +
+																																"*Dungeon completati:* " + formatNumber(dungeon_tot) + "\n" +
+																																"*Dungeon creati:* " + formatNumber(dungeon) + "\n" +
+																																"*Stanze create:* " + formatNumber(room) + "\n" +
+																																"*Livelli skill:* " + formatNumber(ablevel) + "\n" +
+																																"*Utenti invitati:* " + formatNumber(invite) + "\n" +
+																																"*Mana grezzo:* " + formatNumber(mana) + "\n" +
+																																"*Polvere:* " + formatNumber(dust) + "\n" +
+																																"*Incantesimi:* " + formatNumber(magic) + "\n" +
+																																"*Oggetti cercati:* " + formatNumber(search) + "\n" +
+																																"*Imprese completate:* " + formatNumber(achievement) + "\n" +
+																																"*Spese Casa dei Giochi:* " + formatNumber(house_tot) + "\n" +
+																																"*Battaglie nella Vetta:* " + formatNumber(top_log) + "\n" +
 
-																															"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark);
+																																"\n*Gruppi attivi (2):* " + formatNumber(groups) + "\n" +
+																																"*Membri nei gruppi attivi (2):* " + formatNumber(members) + "\n" +
+
+																																"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark);
+																											});
 																										});
 																									});
 																								});
