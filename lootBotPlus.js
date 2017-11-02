@@ -34,7 +34,7 @@ var globaltime = Math.round(new Date()/1000);
 var timevar = [];
 var timevarSpam = [];
 var timevarFlood = [];
-var rankList = [20,50,75,100,150,200,500,1000];
+var rankList = [20,50,75,100,150,200,500,750,1000];
 
 var mysql      = require('mysql');
 var connection = mysql.createConnection({
@@ -89,7 +89,7 @@ bot.on('message', function (message) {
 					var d = new Date();
 					var long_date = d.getFullYear() + "-" + addZero(d.getMonth()+1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-					connection.query('UPDATE plus_groups SET name = "' + msg.chat.title + '", members = ' + cnt + ', last_update = "' + long_date + '" WHERE chat_id = ' + msg.chat.id, function(err, rows, fields) {
+					connection.query('UPDATE plus_groups SET name = "' + connection.escape(msg.chat.title) + '", members = ' + cnt + ', last_update = "' + long_date + '" WHERE chat_id = ' + msg.chat.id, function(err, rows, fields) {
 						if (err) throw err;
 						//console.log("Gruppo aggiornato");
 					});
@@ -916,7 +916,8 @@ bot.onText(/^\/mercatini/, function(message) {
 					"@disadattatishop - Vendita oggetti di xxxbot!\n" +
 					"@negoziopercaso - Negozio specializzato nel risparmio e nella cura dei nuovi giocatori nessuna fregatura solo prezzi basissimi\n" +
 					"@xxxmedia - Ciao ragazzi ciao a tutti, sono zeb89 e malvenuti su xxxmedia, lo store più fiero di xxxbot.\n" +
-					"@roomxxxbot - \n" +
+					"@roomxxxbot - Un mercatino che sembra una stanza!\n" +
+					"@Zaino_Dell_Imperatore - Prezzi basati sul bot Loot Quotazioni!\n" +
 
 					"\nVisita anche /gruppi. Per comparire qua chiedi all'amministratore.", html);
 });
@@ -984,7 +985,7 @@ bot.onText(/^\/comandigruppo/, function(message) {
 					"*Filtro livello*\n" +
 					"/setmin livello - Imposta il livello minimo\n" +
 					"/setmax livello - Imposta il livello massimo\n" +
-					"/livello on-off - Abilita o disabilita il filtro livello\n" +
+					"/level on-off - Abilita o disabilita il filtro livello\n" +
 					"Per specificare la rinascita incrementare il livello di 100, 250 o 450 a seconda della rinascita\n\n" +
 					"*Filtro bannato*\n" +
 					"/kickbanned on-off - Abilita o disabilita il filtro bannato\n\n" +
@@ -1442,22 +1443,36 @@ function checkStatus(message, n, accountid, type){
 	});
 };
 
-/*
-bot.onText(/^\/test2/i, function(message, match) {
-	var options = {
-		"parse_mode": "Markdown",
-		"reply_markup": JSON.stringify({
-			"keyboard": [
-				[{ text: "Posizione", request_location:true }],
-				[{ text: "Contatto", request_contact: true }]
-			],
-			"one_time_keyboard" : true
-		})
-	};
+bot.onText(/^\/test3 (.+)/i, function(message, match) {
+	connection.query('SELECT id, base_sum, price_sum, name, value FROM item WHERE name = "' + match[1] + '"', function(err, rows, fields) {
+		if (err) throw err;
+		var val = parseInt(rows[0].base_sum);
+		var price_sum = parseInt(rows[0].price_sum);
 
-	bot.sendMessage(message.chat.id, "Accetti?", options);
+		var price = val+price_sum+rows[0].value;
+		var mid = price;
+		price = price*(1.3+(Math.random()*0.6));
+
+		bot.sendMessage(message.chat.id, "Somma base: " + formatNumber(val) + " + " + "Somma costi: " + formatNumber(price_sum) + " + Valore: " + formatNumber(rows[0].value) + "\n= " + formatNumber(mid) + "\n * random(1.3-1.9)\n= " + formatNumber(Math.round(price)));
+	});
 });
-*/
+
+bot.onText(/^\/test2 ([^\s]+) ([^\s]+)/i, function(message, match) {
+	var x = 0;
+	var y = 0;
+	for (i=0;i<match[1];i++) {
+		y = x;
+		x += funz(x)*match[2];
+	}
+
+	var res = Math.round(x);
+	var unit = Math.round(x-y);
+	bot.sendMessage(message.chat.id, "Punti: " + formatNumber(res) + " (" + formatNumber(unit) + ")\nExp: " + formatNumber(res*30) + " (" + formatNumber(unit*30) + ")\nMonete: " + formatNumber(res*1000000) + " (" + formatNumber(unit*1000000) + ")");
+});
+
+function funz(x){
+	return 1+(Math.pow(x,1.8))/100000;
+}
 
 bot.onText(/^\/test (.+)/i, function(message, match) {
 
@@ -2924,7 +2939,7 @@ bot.onText(/^\/cancellanegozio (.+)|^\/cancellanegozio$/, function(message, matc
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
-		
+
 		if (message.reply_to_message != undefined){
 			var cod = message.reply_to_message.text.match(/[0-9]{11}/g);
 			if (cod[0] != undefined)
@@ -2989,7 +3004,7 @@ bot.on('callback_query', function (message) {
 			if (err) throw err;
 
 			var player_id = rows[0].id;
-			
+
 			var account_id = (rows[0].account_id).toString();
 			if (banlist_id.indexOf(account_id) != -1){
 				console.log("BANNATO! (" + message.from.username + ")");
@@ -3024,7 +3039,7 @@ bot.on('callback_query', function (message) {
 			if (err) throw err;
 
 			var player_id = rows[0].id;
-			
+
 			var account_id = (rows[0].account_id).toString();
 			if (banlist_id.indexOf(account_id) != -1){
 				console.log("BANNATO! (" + message.from.username + ")");
@@ -3225,7 +3240,7 @@ bot.on('callback_query', function (message) {
 			if (rows[0].market_ban == 1){
 				return;
 			}
-			
+
 			if (rows[0].holiday == 1){
 				return;
 			}
@@ -3907,11 +3922,11 @@ bot.onText(/^\/offri/i, function(message) {
 	}
 
 	var elements = text.split(",");
-	
+
 	if (Object.keys(elements).length == 1){
 		elements.push("1");	
 	}
-	
+
 	if (message.reply_to_message != undefined){
 		elements.push(message.reply_to_message.from.username);
 	}
@@ -3999,7 +4014,7 @@ bot.onText(/^\/offri/i, function(message) {
 						bot.sendMessage(message.chat.id, "Questo oggetto non può essere venduto");
 						return;
 					}
-					
+
 					var item_name = rows[0].name;
 
 					var d2 = new Date();
@@ -4014,7 +4029,7 @@ bot.onText(/^\/offri/i, function(message) {
 							bot.sendMessage(message.from.id, "L'acquirente inserito non esiste");
 							return;
 						}
-						
+
 						var nick = rows[0].nickname;
 
 						if (price < item_val){
@@ -4422,7 +4437,7 @@ bot.onText(/^\/rifiutas/i, function(message) {
 				connection.query('DELETE FROM market WHERE player_id = ' + creator_id, function(err, rows, fields) {
 					if (err) throw err;
 					bot.sendMessage(message.from.id, "Scambio rifiutato!");
-					connection.query('SELECT chat_id FROM player WHERE id = ' + creator_id, function(err, rows, fields) {
+					connection.query('SELECT id, chat_id FROM player WHERE id = ' + creator_id, function(err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(rows[0].chat_id, message.from.username + " ha rifiutato il tuo scambio!");
 
@@ -4842,7 +4857,7 @@ bot.onText(/^\/statolotteria (.+)|^\/statolotteria/, function(message, match) {
 			var itemId = rows[0].item_id;
 			var priceText = "No";
 			if (price > 0){
-				priceText = "Si (" + price + " §)";
+				priceText = "Si (" + formatNumber(price) + " §)";
 			}
 
 			var lottery_id = rows[0].id;
@@ -4936,7 +4951,7 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function(message, match) {
 	if ((message.chat.id == "-1001069842056") || (message.chat.id == "-1001064571576")){
 		return;
 	}
-	
+
 	if (!checkSpam(message)){
 		return;
 	}
@@ -5135,7 +5150,7 @@ bot.onText(/^\/dlotteriap (.+)|^\/dlotteriap/, function(message, match) {
 	if ((message.chat.id == "-1001069842056") || (message.chat.id == "-1001064571576")){
 		return;
 	}
-	
+
 	if (!checkSpam(message)){
 		return;
 	}
@@ -5456,8 +5471,6 @@ bot.onText(/^\/valorezaino (.+)|^\/valorezaino/, function(message, match) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
-		console.log(player_id);
-
 		if (match[1] == undefined){
 			connection.query('SELECT SUM(I.value) As val FROM item I, inventory IV WHERE I.id = IV.item_id AND IV.player_id = ' + player_id, function(err, rows, fields) {
 				if (err) throw err;
@@ -6162,7 +6175,7 @@ function getInfo(message, player, myhouse_id, from, account_id){
 													dragon_clawsid = rows[0].claws_id;
 													dragon_saddleid = rows[0].saddle_id;
 													dragon_armsid = rows[0].arms_id;
-													
+
 													if (rows[0].life <= 0){
 														dragon_status = "Esausto";
 													}
@@ -6526,60 +6539,60 @@ bot.onText(/^\/spia/, function(message) {
 			return;
 		}
 
-			connection.query('SELECT id, heist_protection, chat_id, account_id, house_id FROM player WHERE nickname = "' + player + '"', function(err, rows, fields) {
-				if (err) throw err;
-				if (Object.keys(rows).length > 0){
-					var chat_id = rows[0].chat_id;
-					var house_id = rows[0].house_id;
-						if (rows[0].id == 1){
+		connection.query('SELECT id, heist_protection, chat_id, account_id, house_id FROM player WHERE nickname = "' + player + '"', function(err, rows, fields) {
+			if (err) throw err;
+			if (Object.keys(rows).length > 0){
+				var chat_id = rows[0].chat_id;
+				var house_id = rows[0].house_id;
+				if (rows[0].id == 1){
 
 
-							bot.sendMessage(account_id, "Guardone :>");
-							return;
-						}
-
-						if (rows[0].id == 3){
-							bot.sendMessage(message.chat.id, "Non si fanno ste cose :c", back);
-							return;
-						}
-
-						if (player_id == rows[0].id){
-							bot.sendMessage(message.chat.id, "Per visualizzare il tuo equipaggiamento utilizza il comando /giocatore", back);
-							return;
-						}
-
-						var account_id2 = (rows[0].account_id).toString();
-						if (banlist_id.indexOf(account_id2) != -1){
-							bot.sendMessage(account_id, "Non puoi spiare un giocatore bannato");
-							return;
-						}
-
-						if (rows[0].heist_protection != null){
-							bot.sendMessage(account_id, "Il bersaglio è sotto protezione");
-							return;
-						}
-
-						getInfo(message, player, myhouse, 1, account_id);
-
-						connection.query('UPDATE player SET spy_count = spy_count+1, money=money-500 WHERE nickname="' + message.from.username + '"', function(err, rows, fields) {
-							if (err) throw err;
-						});
-
-						if (message.from.username != "fenix45"){
-							if (house_id == 1){
-								bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno ha spiato il tuo rifugio!");
-							}else if (house_id == 2){
-								bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno *di livello " + level + "* ha spiato il tuo rifugio!", mark);
-							}else if ((house_id == 3) || (house_id == 4)){
-								bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che *un livello " + level + ", con +" + power + " di danno* ha spiato il tuo rifugio!", mark);									
-							}else if (house_id >= 5){
-								bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che <b>" + message.from.username + "</b> ha spiato il tuo rifugio!", html);
-							}
-						}
-					}else{
-						bot.sendMessage(account_id, "Giocatore non trovato.");
+					bot.sendMessage(account_id, "Guardone :>");
+					return;
 				}
-			});
+
+				if (rows[0].id == 3){
+					bot.sendMessage(message.chat.id, "Non si fanno ste cose :c");
+					return;
+				}
+
+				if (player_id == rows[0].id){
+					bot.sendMessage(message.chat.id, "Per visualizzare il tuo equipaggiamento utilizza il comando /giocatore");
+					return;
+				}
+
+				var account_id2 = (rows[0].account_id).toString();
+				if (banlist_id.indexOf(account_id2) != -1){
+					bot.sendMessage(account_id, "Non puoi spiare un giocatore bannato");
+					return;
+				}
+
+				if (rows[0].heist_protection != null){
+					bot.sendMessage(account_id, "Il bersaglio è sotto protezione");
+					return;
+				}
+
+				getInfo(message, player, myhouse, 1, account_id);
+
+				connection.query('UPDATE player SET spy_count = spy_count+1, money=money-500 WHERE nickname="' + message.from.username + '"', function(err, rows, fields) {
+					if (err) throw err;
+				});
+
+				if (message.from.username != "fenix45"){
+					if (house_id == 1){
+						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno ha spiato il tuo rifugio!");
+					}else if (house_id == 2){
+						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno *di livello " + level + "* ha spiato il tuo rifugio!", mark);
+					}else if ((house_id == 3) || (house_id == 4)){
+						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che *un livello " + level + ", con +" + power + " di danno* ha spiato il tuo rifugio!", mark);									
+					}else if (house_id >= 5){
+						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che <b>" + message.from.username + "</b> ha spiato il tuo rifugio!", html);
+					}
+				}
+			}else{
+				bot.sendMessage(account_id, "Giocatore non trovato.");
+			}
+		});
 	});
 });
 
@@ -6598,8 +6611,12 @@ function getRankName(rank){
 		text = "Avventuriero Forestiero";
 	}else if (rank <= rankList[5]){
 		text = "Avventuriero della Notte";
-	}else if (rank <= rankList[6]){
+	}else if (rank <= rankList[6]){	//500
 		text = "Avventuriero Impavido";
+	}else if (rank <= rankList[7]){	//750
+		text = "Avventuriero Eroico";
+	}else{	//1000
+		text = "Eroe delle Esplorazioni";
 	}
 
 	return text;
