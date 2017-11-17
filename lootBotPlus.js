@@ -1,3 +1,5 @@
+process.env["NTBA_FIX_319"] = 1;
+
 process.on('uncaughtException', function (err) {
 	console.error(err);
 });
@@ -1457,6 +1459,110 @@ function checkStatus(message, n, accountid, type){
 		});	
 	});
 };
+
+function getRealLevel(reb, lev){
+	if (reb == 2){
+		lev += 100;
+	}
+	if (reb == 3){
+		lev += 100;
+		lev += 150;
+	}
+	if (reb == 4){
+		lev += 100;
+		lev += 150;
+		lev += 200;
+	}
+	if (reb == 5){
+		lev += 100;
+		lev += 150;
+		lev += 200;
+		lev += 300;
+	}
+	return lev;
+}
+
+bot.onText(/^\/teamall/i, function(message, match) {
+	connection.query('SELECT id FROM team WHERE players > 1', function(err, rows, fields) {
+		if (err) throw err;
+		for (var j = 0, len = Object.keys(rows).length; j < len; j++) {
+			connection.query('SELECT team.name, player.reborn, player.nickname, FLOOR(player.exp/10) As level FROM team, team_player, player WHERE team.id = team_player.team_id AND team_player.player_id = player.id AND team.id = ' + rows[j].id + ' ORDER BY player.reborn, player.exp DESC', function(err, rows, fields) {
+				if (err) throw err;
+				var mediaTeam = 0;
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+					mediaTeam += parseInt(getRealLevel(rows[i].reborn, rows[i].level));
+				}
+				mediaTeam = mediaTeam/Object.keys(rows).length;
+
+				var sup = 0;
+				var sum = 0;
+				var lev = 0;
+				var dev = 0;
+				var calc = 0;
+				var text = rows[0].name + ": ";
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+					lev = getRealLevel(rows[i].reborn, rows[i].level);
+					sum += Math.pow(Math.abs(mediaTeam-lev), 2);
+				}
+				dev = Math.sqrt(sum/Object.keys(rows).length);
+
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+					lev = getRealLevel(rows[i].reborn, rows[i].level);
+					calc = Math.round((lev-mediaTeam)/dev*100)/100;
+					if (isNaN(calc) || (calc < 0))
+						calc = 0;
+					if (calc > 2.9){
+						text += rows[i].nickname + " (" + lev + ", " + calc + ")\n";
+						sup++;
+					}
+				}
+
+				if (sup > 0)
+					bot.sendMessage(message.chat.id, text, html);
+			});
+		};
+	});
+});
+
+bot.onText(/^\/team (.+)/i, function(message, match) {
+	connection.query('SELECT team.name, player.reborn, player.nickname, FLOOR(player.exp/10) As level FROM team, team_player, player WHERE team.id = team_player.team_id AND team_player.player_id = player.id AND team.name = "' + match[1] + '" ORDER BY player.reborn, player.exp DESC', function(err, rows, fields) {
+		if (err) throw err;
+		var mediaTeam = 0;
+		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+			mediaTeam += parseInt(getRealLevel(rows[i].reborn, rows[i].level));
+		}
+		mediaTeam = mediaTeam/Object.keys(rows).length;
+		
+		var sup = 0;
+		var sum = 0;
+		var lev = 0;
+		var dev = 0;
+		var calc = 0;
+		var text = rows[0].name + " (" + Math.round(mediaTeam) + "):\n\n";
+		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+			lev = getRealLevel(rows[i].reborn, rows[i].level);
+			sum += Math.pow(Math.abs(mediaTeam-lev), 2);
+		}
+		dev = Math.sqrt(sum/Object.keys(rows).length);
+		
+		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+			lev = getRealLevel(rows[i].reborn, rows[i].level);
+			calc = Math.round((lev-mediaTeam)/dev*100)/100;
+			if (isNaN(calc) || (calc < 0))
+				calc = 0;
+			if (calc > 2.9){
+				text += rows[i].nickname + " (" + lev + ", " + calc + ")\n";
+				sup++;
+			}else{
+				text += rows[i].nickname + " (" + lev + ", " + calc + ")\n";
+			}
+		}
+		text += "\nNon validi: " + sup + "/" + Object.keys(rows).length;
+		text += "\nDeviazione: " + Math.round(dev);
+		
+		bot.sendMessage(message.chat.id, text, html);
+	});
+});
 
 bot.onText(/^\/contrabb (.+)/i, function(message, match) {
 	connection.query('SELECT id, base_sum, price_sum, name, value FROM item WHERE name = "' + match[1] + '"', function(err, rows, fields) {
