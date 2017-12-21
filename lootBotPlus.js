@@ -17,7 +17,6 @@ var activity_timestamp = [];
 var TelegramBot = require('node-telegram-bot-api');
 var fs = require('fs')
 const https = require('https');
-var md5 = require('md5');
 
 const token = '236880746:AAEolJ-Dpe_gQdnGxksGFTb1ubMj03PVhw4';
 //var bot = new TelegramBot(token, {polling: true});

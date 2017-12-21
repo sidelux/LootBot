@@ -3643,10 +3643,10 @@ function getInfo(message, player, myhouse_id) {
 																	var short_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
 																	referral = "Invitato da: " + rows[0].player + " (" + short_date + ")\n";
 																}
-																
+
 																connection.query('SELECT COUNT(DISTINCT inventory.item_id) As cnt FROM inventory, item WHERE inventory.item_id = item.id AND player_id = '  + player_id + ' AND rarity = "IN"', function (err, rows, fields) {
 																	if (err) throw err;
-																
+
 																	var inest = rows[0].cnt;
 
 																	connection.query('SELECT class.name FROM player, class WHERE player.id = ' + player_id + ' AND player.class = class.id', function (err, rows, fields) {
@@ -6151,6 +6151,8 @@ bot.onText(/dungeon/i, function (message) {
 		return;
 	}
 
+	var max_rooms_neg = 14;		// Diventa negativo dopo
+
 	var dBack = {
 		parse_mode: "Markdown",
 		reply_markup: {
@@ -6830,21 +6832,27 @@ bot.onText(/dungeon/i, function (message) {
 								//	Predone scambio: -4
 								//	Meditazione: -5
 								//	Desideri: -6
-								//	Drago di TheLast: -7
+								//	Drago di Last: -7
+								//	Stanza vuota: -8
+								//	Marinaio: -9
+								//	Porta misteriosa: -10
+								//	Pozzo: -11
+								//	Anziano saggio: -12
+								// 	Mappatore distratto: -13
+								//	Specchio magico: -14
 
 								var arr = [];
 								var p1 = Math.round((rooms * 3) / 100 * 60);
 								var rand = 0;
-								var limitS = 0; //Limitazione spawn spade
 
-								console.log("Generazione nuovo dungeon con " + rooms + " stanze...");
+								console.log("Generazione dungeon con " + rooms + " stanze...");
 
 								for (var i = 0; i < (rooms * 3); i++) {
 									if (i < p1) {
 										rand = Math.round(Math.random() * 10 + (rooms + 1)); //per evitare che venga generato 10, cioè un errore dove non trova il mostro
 										arr.push([rand]);
 									} else {
-										rand = Math.round(Math.random() * 21 - 11); //-11 a +10
+										rand = Math.round(Math.random() * (max_rooms_neg+10) - max_rooms_neg);	//minimo = max_rooms_neg, massimo = 10
 										arr.push([rand]);
 									}
 								}
@@ -9758,6 +9766,207 @@ bot.onText(/dungeon/i, function (message) {
 														}
 													});
 												});
+											} else if (dir == -12) {
+
+												var dOptions = {
+													parse_mode: "Markdown",
+													reply_markup: {
+														resize_keyboard: true,
+														//one_time_keyboard: true,
+														"keyboard": [["Consegna un punto anima"], ["Ignora"], ["Torna al menu"]]
+													}
+												};
+
+												bot.sendMessage(message.chat.id, "Al centro della stanza vedi un signore anziano con gli occhi sbarrati, si alza e ti porge la mano con un simbolo disegnato sopra: 🦋. Cosa fai?", dOptions).then(function () {
+													answerCallbacks[message.chat.id] = function (answer) {
+														if (answer.text.indexOf("Consegna") != -1) {
+
+															connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+																var team_id = 0;
+																if (Object.keys(rows).length > 0) {
+																	team_id = rows[0].team_id;
+																	connection.query('SELECT point FROM team WHERE id = ' + team_id, function (err, rows, fields) {
+																		if (err) throw err;
+
+																		if (rows[0].point < 1){
+																			bot.sendMessage(message.chat.id, "Non hai abbastanza punti anima, ignori l'anziano saggio e prosegui", dNext);
+
+																			connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+																				if (err) throw err;
+																			});
+																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																				if (err) throw err;
+																			});
+																		}else{
+																			connection.query('UPDATE team SET point = point-1 WHERE id = ' + team_id, function (err, rows, fields) {
+																				if (err) throw err;
+
+																				var rand = Math.round(Math.random()*2);
+																				var sage_dir = "";
+																				var text_dir = "";
+																				if (rand == 0){
+																					sage_dir = "dir_top";
+																					text_dir = "dritto";
+																				}else if (rand == 1){
+																					sage_dir = "dir_left";
+																					text_dir = "sinistra";
+																				}else if (rand == 2){
+																					sage_dir = "dir_right";
+																					text_dir = "destra";
+																				}
+
+																				connection.query('SELECT room_id, ' + sage_dir + ' As dir FROM dungeon_rooms WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND ' + sage_dir + ' < 11 ORDER BY RAND()', function (err, rows, fields) {
+																					if (err) throw err;
+																					if (Object.keys(rows).length > 0) {
+																						bot.sendMessage(message.chat.id, "L'anziano si concentra e un'aura azzurrina si forma attorno a lui, dopo alcuni secondi spalanca gli occhi urlando: " + dungeonToDesc(rows[0].dir).toUpperCase() + " " + text_dir.toUpperCase() + " " + rows[0].room_id + "!!\nDopo di che se ne va a passo lento...", dNext);
+
+																						connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																						connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																					}else{
+																						bot.sendMessage(message.chat.id, "L'anziano purtroppo non riesce a vedere alcuna stanza particolare davanti a te, ti restituisce il Punto Anima e ti congeda con un po' di malinconia sul volto...", dNext);
+
+																						connection.query('UPDATE team SET point = point+1 WHERE id = ' + team_id, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+
+																						connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																						connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																					}
+																				});
+																			});
+																		}
+																	});
+																} else {
+																	bot.sendMessage(message.chat.id, "Entra in un team per possedere i punti anima, ignori l'anziano saggio e prosegui", dNext);
+
+																	connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+																		if (err) throw err;
+																	});
+																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																		if (err) throw err;
+																	});
+																}
+															});
+														}else if (answer.text == "Ignora"){
+
+															bot.sendMessage(message.chat.id, "Hai ignorato l'anziano saggio", dNext);
+
+															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
+														}
+													}
+												});
+											} else if (dir == -13) {
+
+												var dOptions = {
+													parse_mode: "Markdown",
+													reply_markup: {
+														resize_keyboard: true,
+														//one_time_keyboard: true,
+														"keyboard": [["Disturba"], ["Torna al menu"]]
+													}
+												};
+
+												bot.sendMessage(message.chat.id, "_Ehy amico lo sai chi sono?_. Si presenta così un tipo strano in un angolino della stanza. _Posso fare solo ciò che non vorresti!_. Si gira di schiena e digita qualcosa su un marchingegno strano...", dOptions).then(function () {
+													answerCallbacks[message.chat.id] = function (answer) {
+														if (answer.text == "Disturba") {
+															connection.query('SELECT id, room_id FROM dungeon_rooms WHERE dungeon_id = ' + dungeon_id + ' AND room_id != ' + room_id + ' ORDER BY RAND()', function (err, rows, fields) {
+																if (err) throw err;
+																connection.query('UPDATE dungeon_rooms SET room_id = ' + rows[0].room_id + ' WHERE id = ' + rows[1].id, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+																connection.query('UPDATE dungeon_rooms SET room_id = ' + rows[1].room_id + ' WHERE id = ' + rows[0].id, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+																bot.sendMessage(message.chat.id, "Tocchi lo strano tipo sulla schiena. Si gira di scatto: _Amico ho appena invertito la stanza " + rows[0].room_id + " con un'altra, buon divertimento! ihih..._ Ti giri e continui seguendo il corridoio...", dNext);
+
+																connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+															});
+														}
+													}
+												});
+											} else if (dir == -14) {
+
+												var dOptions = {
+													parse_mode: "Markdown",
+													reply_markup: {
+														resize_keyboard: true,
+														//one_time_keyboard: true,
+														"keyboard": [["Si", "No"], ["Torna al menu"]]
+													}
+												};
+
+												bot.sendMessage(message.chat.id, "Entri in una stanza con un piccolo specchio al centro, toccandolo senti che è morbido, attraversabile, ti fai attirare?", dOptions).then(function () {
+													answerCallbacks[message.chat.id] = function (answer) {
+														if (answer.text == "Si") {
+															var new_dir = 0;
+															if (Math.round(Math.random()) == 1){
+																new_dir = Math.round(Math.random() * 10 + (room_num + 1));
+															}else{
+																new_dir = Math.round(Math.random() * 21 - max_rooms_neg);
+															}
+
+															var my_dir = "";
+															if (dir == dir_top){
+																my_dir = "dir_top";
+															}else if (dir == dir_right){
+																my_dir = "dir_right";
+															}else if (dir == dir_left){
+																my_dir = "dir_left";
+															}else{
+																bot.sendMessage(message.chat.id, "Errore, contatta l'admin (" + dir + ", " + room_id + ")", dBack);
+																return;
+															}
+
+															bot.sendMessage(message.chat.id, "Entri nello specchio, guardi verso il cielo e appare una scritta: _" + dungeonToDesc(new_dir) + "_.\nContinui a camminare per poi ritrovarti alla stanza precedente!", dNext);
+
+															connection.query('UPDATE dungeon_rooms SET ' + my_dir + ' = ' + new_dir + ' WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
+
+															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
+															if (room_id > 1){
+																connection.query('UPDATE dungeon_status SET room_id = room_id-1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+															}else{
+																connection.query('UPDATE dungeon_status SET last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+															}
+														}else if (answer.text == "No") {
+
+															bot.sendMessage(message.chat.id, "Ignori lo specchio e prosegui", dNext);
+
+															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
+														}
+													}
+												});
 											} else {
 												bot.sendMessage(message.chat.id, "Direzione non valida, segnala a @fenix45 questo valore: " + dir, dBack);
 											}
@@ -9787,15 +9996,15 @@ function dungeonToDesc(d) {
 	} else if (d == 5) {
 		return "Leve";
 	} else if (d == 6) {
-		return "Persona in pericolo";
+		return "Persona in Pericolo";
 	} else if (d == 7) {
 		return "Vecchina";
 	} else if (d == 8) {
 		return "Pulsantiera";
 	} else if (d == 9) {
-		return "Stanza divisa in due";
+		return "Stanza Divisa in Due";
 	} else if (d == 10) {
-		return "Spada o bottino";
+		return "Spada o Bottino";
 	} else if (d == 0) {
 		return "Fontana di Mana";
 	} else if (d == -1) {
@@ -9803,7 +10012,7 @@ function dungeonToDesc(d) {
 	} else if (d == -2) {
 		return "Ascia Gigante";
 	} else if (d == -3) {
-		return "Tre incisioni";
+		return "Tre Incisioni";
 	} else if (d == -4) {
 		return "Predone";
 	} else if (d == -5) {
@@ -9815,11 +10024,17 @@ function dungeonToDesc(d) {
 	} else if (d == -8) {
 		return "Stanza Vuota";
 	} else if (d == -9) {
-		return "Marinaio ed il dado";
+		return "Marinaio e Dado";
 	} else if (d == -10) {
 		return "Due Porte";
 	} else if (d == -11) {
 		return "Pozzo Ricco";
+	} else if (d == -12) {
+		return "Anziano Saggio";
+	} else if (d == -13) {
+		return "Mappatore Distratto";
+	} else if (d == -14) {
+		return "Specchio Magico";
 	}
 }
 
@@ -20108,7 +20323,7 @@ bot.onText(/Calderone/i, function (message) {
 	});
 });
 
-bot.onText(/Casa nella Neve|Torna alla Casa|Entra nella Casa/i, function (message) {
+bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$/i, function (message) {
 
 	if ((snowHouse == 0) && (message.from.username != "fenix45")){
 		bot.sendMessage(message.chat.id, "Oh oh oh, buon xxxnatale!", back);
@@ -20158,7 +20373,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa|Entra nella Casa/i, function (messag
 				"keyboard": [["Casuale"], ["Torna alla Casa"]]
 			}
 		};
-		
+
 		var kb3 = {
 			parse_mode: "HTML",
 			reply_markup: {
@@ -20346,10 +20561,10 @@ bot.onText(/Casa nella Neve|Torna alla Casa|Entra nella Casa/i, function (messag
 								};
 							});
 						}else if (answer.text == "Classifica 🔝"){
-							
+
 							var banned_join = banlist_id.join();
 							var text = "Classifica per Pupazzi di Neve in vita:\n";
-							
+
 							connection.query('SELECT P.nickname, COUNT(E.id) As points FROM event_snowball_list E, player P WHERE P.id = E.player_id AND P.account_id NOT IN (' + banned_join + ') AND P.nickname != "LastSoldier95" AND P.nickname != "fenix45" GROUP BY E.player_id', function (err, rows, fields) {
 								if (err) throw err;
 
@@ -20357,7 +20572,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa|Entra nella Casa/i, function (messag
 								var nickname = [];
 								var points = [];
 								var mypos = 0;
-								
+
 								if (Object.keys(rows).length < 100){
 									bot.sendMessage(message.chat.id, "La classifica sarà disponibile con più giocatori iscritti!", kbBack);
 									return;
@@ -29061,8 +29276,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1) {
 		var prevtxt = "";
 		var iKeys = [];
 
-		iKeys.push(["Crea " + oggetto]);
-		iKeys.push(["Crea Ancora"]);
+		iKeys.push(["Crea " + oggetto,"Crea " + oggetto + ", 3"]);
 
 		if (Object.keys(rows).length == 2) {
 			prevtxt = "Torna a " + rows[1].term;
@@ -29074,7 +29288,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1) {
 			reply_markup: {
 				resize_keyboard: true,
 				//one_time_keyboard: true,
-				"keyboard": [["Cerca " + oggetto], ["Crea Ancora"], ["Torna al menu"]]
+				"keyboard": [["Cerca " + oggetto], ["Torna al menu"]]
 			}
 		};
 
@@ -36621,7 +36835,7 @@ bot.onText(/^imprese/i, function (message) {
 					if (progLev[end] == undefined) {
 						text += "Imprese per livello completate ✅\n";
 					} else {
-						text += "Livello " + getRealLevel(reb, lev) + " su " + progLev[end] + " totali (" + formatNumber(progLevRew[end]) + " §)\n";
+						text += "Livello " + formatNumber(getRealLevel(reb, lev)) + " su " + formatNumber(progLev[end]) + " totali (" + formatNumber(progLevRew[end]) + " §)\n";
 					}
 
 					end = 0;
@@ -36633,7 +36847,7 @@ bot.onText(/^imprese/i, function (message) {
 					if (progMis[end] == undefined) {
 						text += "Imprese per missioni completate ✅\n";
 					} else {
-						text += mission_count + " su " + progMis[end] + " missioni completate (" + formatNumber(progMisRew[end]) + " §)\n";
+						text += formatNumber(mission_count) + " su " + formatNumber(progMis[end]) + " missioni completate (" + formatNumber(progMisRew[end]) + " §)\n";
 					}
 
 					end = 0;
@@ -36645,7 +36859,7 @@ bot.onText(/^imprese/i, function (message) {
 					if (progDung[end] == undefined) {
 						text += "Imprese per dungeon completate ✅\n";
 					} else {
-						text += dungeon_count + " su " + progDung[end] + " dungeon completati (" + formatNumber(progDungRew[end]) + " §)\n";
+						text += formatNumber(dungeon_count) + " su " + formatNumber(progDung[end]) + " dungeon completati (" + formatNumber(progDungRew[end]) + " §)\n";
 					}
 
 					end = 0;
@@ -36657,7 +36871,7 @@ bot.onText(/^imprese/i, function (message) {
 					if (progCraft[end] == undefined) {
 						text += "Imprese di creazione completate ✅\n";
 					} else {
-						text += craft_count + " su " + progCraft[end] + " punti creazione (" + formatNumber(progCraftRew[end]) + " §)\n";
+						text += formatNumber(craft_count) + " su " + formatNumber(progCraft[end]) + " punti creazione (" + formatNumber(progCraftRew[end]) + " §)\n";
 					}
 
 					var time_start = new Date("2018-01-01 16:00:00");
@@ -36690,7 +36904,7 @@ bot.onText(/^imprese/i, function (message) {
 							text += "Progresso: <b>" + formatNumber(globalVal) + "</b>/<b>" + cap + "</b> monete ottenute dalla vendita all'emporio\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
 						}
 					}
-					bot.sendMessage(message.chat.id, text + "\n<b>Imprese giornaliere completate</b>: " + cnt + "\nLe imprese giornaliere con il * in caso di cap raggiunto (livello drago, talenti, ecc.), verranno completate automaticamente accedendo alla relativa sezione!", back_html);
+					bot.sendMessage(message.chat.id, text + "\n<b>Imprese giornaliere completate</b>: " + formatNumber(cnt) + "\nLe imprese giornaliere con il * in caso di cap raggiunto (livello drago, talenti, ecc.), verranno completate automaticamente accedendo alla relativa sezione!", back_html);
 				});
 			});
 		});
