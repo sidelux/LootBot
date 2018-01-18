@@ -16,15 +16,14 @@ var activity_timestamp = [];
 
 var TelegramBot = require('node-telegram-bot-api');
 var fs = require('fs')
-const https = require('https');
+var https = require('https');
 
-const token = '236880746:AAEolJ-Dpe_gQdnGxksGFTb1ubMj03PVhw4';
-//var bot = new TelegramBot(token, {polling: true});
-
-const bot = new TelegramBot(token, {
+var token = '236880746:AAEolJ-Dpe_gQdnGxksGFTb1ubMj03PVhw4';
+var bot = new TelegramBot(token, {
 	polling: {
 		params: {
 			"allowed_updates": ["inline_query", "chosen_inline_result", "callback_query"],
+			"limit": 80
 		}
 	}
 });
@@ -48,7 +47,7 @@ connection.connect();
 
 var mysqlRetry = require('node-mysql-deadlock-retries');
 mysqlRetry(connection, 5, 100, 1000);
-const ms = require("ms");
+var ms = require("ms");
 
 bot.on('message', function (message) {
 
@@ -123,16 +122,28 @@ bot.on('message', function (message) {
 		}
 	}
 
-	connection.query('SELECT account_id FROM plus_players WHERE account_id = ' + msg.from.id, function (err, rows, fields) {
+	connection.query('SELECT account_id FROM plus_players WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0) {
-			connection.query('INSERT INTO plus_players (account_id, nickname) VALUES (' + msg.from.id + ',"' + msg.from.username + '")', function (err, rows, fields) {
+			connection.query('INSERT INTO plus_players (account_id, nickname) VALUES (' + message.from.id + ',"' + message.from.username + '")', function (err, rows, fields) {
 				if (err) throw err;
-				console.log(msg.from.username + " aggiunto");
+				console.log(message.from.username + " aggiunto");
 			});
-		} else {
-			connection.query('UPDATE plus_players SET nickname = "' + msg.from.username + '" WHERE account_id = ' + msg.from.id, function (err, rows, fields) {
+		}else{
+			connection.query('SELECT real_name, gender FROM player WHERE account_id = "' + message.from.id + '"', function (err, rows, fields) {
 				if (err) throw err;
+				
+				if (Object.keys(rows).length > 0) {
+					if ((rows[0].real_name == null) || (rows[0].gender == null)){
+						connection.query('UPDATE plus_players SET nickname = "' + message.from.username + '" WHERE account_id = ' + message.from.id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+					}else{
+						connection.query('UPDATE plus_players SET nickname = "' + message.from.username + '", gender = "' + rows[0].gender + '", real_name = "' + rows[0].real_name + '" WHERE account_id = ' + message.from.id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+					}
+				}
 			});
 		}
 	});
@@ -763,6 +774,16 @@ bot.onText(/^\/pic (.+)/, function (message, match) {
 	};
 });
 
+bot.onText(/^\/pinfo (.+)/, function (message, match) {
+	if (message.from.username != "fenix45"){
+		return;
+	}
+	connection.query('SELECT * FROM plus_players WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
+		if (err) throw err;
+		bot.sendMessage(message.from.id, "<b>Account ID:</b> " + rows[0].account_id + "\n<b>Nickname:</b> " + rows[0].nickname + "\n<b>Last update:</b> " + toDate("it", rows[0].last_update) + "\n<b>Real name:</b> " + rows[0].real_name + "\n<b>Gender:</b> " + rows[0].gender, html);
+	});
+});
+
 bot.onText(/^\/info$/, function (message) {
 	var reply = "";
 
@@ -868,6 +889,7 @@ bot.onText(/^\/gruppi/, function (message) {
 																		"Calcolo Loot Combat Rating: @xxxcrbot\n" +
 																		"Tool per mercato e cronologie: @ToolsForxxx\n" +
 																		"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
+																		"@DichisUtilityBot\n" +
 
 																		"\n<b>Documenti</b>\n" +
 																		"<a href='telegra.ph/Mini-Guida-alle-xxx-API-11-24'>xxx Api</a>\n" +
@@ -888,12 +910,14 @@ bot.onText(/^\/gruppi/, function (message) {
 																		"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
 																		"<a href='https://t.me/joinchat/CGfawEL89rdjylRx72zprQ'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
 																		"@xxxgelateria (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
+																		"<a href='https://t.me/joinchat/HOnifE60M2VM7XIBMDHQmg'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
 
 																		"\n<b>Canali</b>\n" +
 																		"@wikixxxbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
 																		"@xxxPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
 																		"@LootReport - Segnala un comportamento scorretto nella community!\n" +
 																		"@YellowBetsLoot - YellowPlay for YellowWin\n" +
+																		"@yellowxxxshop - Join for eventi free!\n" +
 
 																		"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
 													});
@@ -946,7 +970,6 @@ bot.onText(/^\/mercatini/, function (message) {
 					"@roomxxxbot - Un mercatino che sembra una stanza!\n" +
 					"@Zaino_Dell_Imperatore - Prezzi basati sul bot Loot Quotazioni!\n" +
 					"@paupershop - Un negozio di xxx per poveri\n" +
-					"@yellowxxxshop - Canale tarocco pieno di eventi e offerte!\n" +
 
 					"\nVisita anche /gruppi. Per comparire qua chiedi all'amministratore.", html);
 });
@@ -4308,7 +4331,7 @@ bot.onText(/^\/offri/i, function (message) {
 									if (err) throw err;
 									connection.query('INSERT INTO market_direct VALUES (DEFAULT, ' + player_id + ',"' + item_id + '",' + price + ',"' + long_date + '",' + toId + ')', function (err, rows, fields) {
 										if (err) throw err;
-										bot.sendMessage(message.chat.id, "La messa in vendita da parte di " + message.from.username + " per " + item_name + " a " + formatNumber(price) + " § verso " + nick + " è stata registrata (scadenza: " + short_date + ")\nPuoi annullarla con /annullav");
+										bot.sendMessage(message.chat.id, "La messa in vendita da parte di " + message.from.username + " per " + item_name + " a " + formatNumber(price) + " § verso " + nick + " è stata registrata (scadenza: " + short_date + ")\n" + message.from.username + "può annullarla con /annullav");
 									});
 								});
 							});
@@ -4554,7 +4577,7 @@ bot.onText(/^\/scambia/i, function (message) {
 											if (err) throw err;
 										});
 
-										bot.sendMessage(message.chat.id, "Lo scambio dove " + message.from.username + " offre " + item1 + " e " + nick + " offre " + item2 + " è stato registrato (scadenza: " + short_date + ")\nPuoi annullarlo con /annullas");
+										bot.sendMessage(message.chat.id, "Lo scambio dove " + message.from.username + " offre " + item1 + " e " + nick + " offre " + item2 + " è stato registrato (scadenza: " + short_date + ")\n" + message.from.username + " può annullarlo con /annullas");
 									});
 								});
 							});
@@ -6284,11 +6307,16 @@ function rebSym(reborn) {
 }
 
 function getInfo(message, player, myhouse_id, from, account_id) {
-	connection.query('SELECT id, house_id, custom_name, custom_name2, custom_name3, reborn, class, weapon_id, weapon2_id, weapon3_id, custom_name_h, charm_id FROM player WHERE nickname="' + player + '"', function (err, rows, fields) {
+	connection.query('SELECT id, house_id, custom_name, custom_name2, custom_name3, reborn, class, weapon_id, weapon2_id, weapon3_id, custom_name_h, charm_id, gender FROM player WHERE nickname="' + player + '"', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0) {
 			bot.sendMessage(message.chat.id, "Il giocatore non esiste.");
 			return;
+		}
+		
+		var gender_text = "Giocatore";
+		if (rows[0].gender == "F"){
+			gender_text = "Giocatrice";
 		}
 
 		var player_id = rows[0].id;
@@ -6445,17 +6473,15 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 														rows[0].critical += 15;
 													}
 
-													if ((class_id == 7) && (reborn > 1)) {
+													if ((class_id == 7) && (reborn > 1) && (reborn == 5)) {
+														rows[0].claws += rows[0].claws * 1;
+													}else if ((class_id == 7) && (reborn > 1)) {
 														rows[0].claws += rows[0].claws * 0.5;
 													}
-													if ((class_id == 7) && (reborn > 1)) {
+													if ((class_id == 7) && (reborn > 1) && (reborn == 5)) {
+														rows[0].saddle += rows[0].saddle * 1;
+													}else if ((class_id == 7) && (reborn > 1)) {
 														rows[0].saddle += rows[0].saddle * 0.5;
-													}
-													if ((class_id == 7) && (reborn == 5)) {
-														rows[0].damage += rows[0].damage * 0.5;
-													}
-													if ((class_id == 7) && (reborn == 5)) {
-														rows[0].defense += rows[0].defense * 0.5;
 													}
 													if ((class_id == 7) && (reborn == 3)) {
 														rows[0].critical += 5;
@@ -6751,7 +6777,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																				message.chat.id = account_id;
 																			}
 
-																			bot.sendMessage(message.chat.id, "<b>Giocatore</b> 👤\n" +
+																			bot.sendMessage(message.chat.id, "<b>" + gender_text + "</b> 👤\n" +
 																							nickname + team_desc + "\n" +
 																							stars + " " + formatNumber(lev) + " (" + formatNumber(rows[0].exp) + " xp)\n\n" +
 																							"🏹 " + class_name + "\n" +
