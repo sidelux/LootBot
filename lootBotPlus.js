@@ -1625,7 +1625,7 @@ bot.onText(/^\/contrabb (.+)/i, function (message, match) {
 		var mid = price;
 		price = price * (1.5 + (Math.random() * 0.5));
 
-		bot.sendMessage(message.chat.id, "Somma base: " + formatNumber(val) + " + " + "Somma costi: " + formatNumber(price_sum) + " + Valore: " + formatNumber(rows[0].value) + "\n= " + formatNumber(mid) + "\n * random(1.5-2.0)\n= " + formatNumber(Math.round(price)));
+		bot.sendMessage(message.chat.id, "Somma base: " + formatNumber(val) + " + " + "Somma costi: " + formatNumber(price_sum) + "\n= " + formatNumber(mid) + "\n * random(1.5-2.0)\n= " + formatNumber(Math.round(price)));
 	});
 });
 
@@ -4331,7 +4331,7 @@ bot.onText(/^\/offri/i, function (message) {
 									if (err) throw err;
 									connection.query('INSERT INTO market_direct VALUES (DEFAULT, ' + player_id + ',"' + item_id + '",' + price + ',"' + long_date + '",' + toId + ')', function (err, rows, fields) {
 										if (err) throw err;
-										bot.sendMessage(message.chat.id, "La messa in vendita da parte di " + message.from.username + " per " + item_name + " a " + formatNumber(price) + " § verso " + nick + " è stata registrata (scadenza: " + short_date + ")\n" + message.from.username + "può annullarla con /annullav");
+										bot.sendMessage(message.chat.id, "La messa in vendita da parte di " + message.from.username + " per " + item_name + " a " + formatNumber(price) + " § verso " + nick + " è stata registrata (scadenza: " + short_date + ")\n" + message.from.username + " può annullarla con /annullav");
 									});
 								});
 							});
