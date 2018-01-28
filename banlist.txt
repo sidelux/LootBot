@@ -175,3 +175,7 @@
 405244315|Sospetto
 531041099|bravo
 
+
+69059587|Violazione della regola 1 (account schiavi, zaini, account secondari)
+71686992|Violazione della regola 1 (account schiavi, zaini, account secondari)
+474828365|Ciao Noz

@@ -113,13 +113,6 @@ bot.on('message', function (message) {
 				checkStatus(msg, msg.new_chat_member.username, msg.new_chat_member.id, 0);
 			}
 		});
-		if ((msg.chat.id == "-1001069842056") || (msg.chat.id == "-1001064571576")) {
-			if (msg.text != undefined) {
-				if (msg.text.toLowerCase().indexOf("@fenix45") != -1) {
-					//console.log("Admin taggato");
-				}
-			}
-		}
 	}
 
 	connection.query('SELECT account_id FROM plus_players WHERE account_id = ' + message.from.id, function (err, rows, fields) {
@@ -149,6 +142,9 @@ bot.on('message', function (message) {
 	});
 	if (checkFlood(message) == false) {
 		// ban?
+	}
+	if (message.text.indexOf("Errore") != -1){
+		bot.sendMessage("@lnotify", "#Mtproto " + message.from.username + ": " + message.text);
 	}
 });
 
@@ -7675,19 +7671,19 @@ function setFinishedMarketDirect(element, index, array) {
 		var player_id = rows[0].id;
 		var item1 = element.item_id;
 
-		connection.query('INSERT INTO `inventory`(player_id, item_id) VALUES (' + player_id + ',' + item1 + ')', function (err, rows, fields) {
+		connection.query('INSERT INTO inventory (player_id, item_id) VALUES (' + player_id + ',' + item1 + ')', function (err, rows, fields) {
 			if (err) throw err;
 		});
 
 		connection.query('DELETE FROM market_direct WHERE id = ' + element.id, function (err, rows, fields) {
 			if (err) throw err;
-			bot.sendMessage(chat_id, "Lo scambio è scaduto, l'oggetto è tornato nell'inventario.");
+			bot.sendMessage(chat_id, "L'offerta è scaduta, l'oggetto è tornato nell'inventario.");
 		});
 	});
 }
 
 function checkMarketDirect() {
-	connection.query('SELECT * FROM `market_direct` WHERE time_end < NOW()', function (err, rows, fields) {
+	connection.query('SELECT * FROM market_direct WHERE time_end < NOW()', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
