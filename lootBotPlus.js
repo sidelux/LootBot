@@ -64,11 +64,11 @@ bot.on('message', function (message) {
 		if (user != "fenix45") {
 			if (chat_id == -1001097316494) {
 				if (!text.startsWith("Negozio di")) {
-					bot.kickChatMember(message.chat.id, account_id, {until_date: Date.now() + ms("7 days")}).then(result => {
+					bot.kickChatMember(message.chat.id, account_id, {until_date: Date.now() + ms("7 days")}).then(function (result) {
 						bot.sendMessage(chat_id, user + ", non puoi scrivere in questo gruppo, sei stato bannato per 7 giorni.");
 						bot.sendMessage(account_id, "Sei stato bannato dal gruppo Loot Negozi per 7 giorni perchè non hai postato un negozio");
 					});
-					bot.deleteMessage(chat_id, message.message_id).then(result => {
+					bot.deleteMessage(chat_id, message.message_id).then(function (result) {
 						if (result != true) {
 							console.log("Errore cancellazione messaggio " + chat_id + " " + message.message_id);
 						}
@@ -663,7 +663,7 @@ bot.onText(/^\/gban ([^\s]+) (.+)|^\/gban/, function (message, match) {
 					if (err) throw err;
 				});
 
-				bot.kickChatMember(message.chat.id, account_id).then(result => {
+				bot.kickChatMember(message.chat.id, account_id).then(function (result) {
 					bot.sendMessage(message.chat.id, nick + " (" + account_id + ") bannato da chat e game.");
 					//bot.sendMessage(account_id, "Sei stato bannato dal bot, _Bye_.", mark);
 				});
@@ -701,7 +701,7 @@ bot.onText(/^\/gb (.+)|^\/gb/, function (message, match) {
 
 					if (rows[0].group_ban == 0) {
 						bot.sendMessage(message.chat.id, nick + " (" + account_id + ") bannato dai gruppi.");
-						bot.kickChatMember(message.chat.id, account_id).then(result => {
+						bot.kickChatMember(message.chat.id, account_id).then(function (result) {
 							console.log(nick + " bannato dai gruppi");
 						});
 						connection.query('UPDATE player SET group_ban = 1 WHERE id = ' + rows[0].id, function (err, rows, fields) {
@@ -1393,7 +1393,7 @@ function checkStatus(message, n, accountid, type) {
 			var non = rows[0].kickreg;
 			if (non == 1) {
 				if (exist == 0) {
-					bot.kickChatMember(message.chat.id, accountid).then(result => {
+					bot.kickChatMember(message.chat.id, accountid).then(function (result) {
 						if (result != "False") {
 							bot.sendMessage(message.chat.id, n + " non è iscritto, l'ho bannato");
 							bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa del fatto che non sei registrato al gioco");
@@ -1405,7 +1405,7 @@ function checkStatus(message, n, accountid, type) {
 
 			if ((chat_id == "-1001069842056") || (chat_id == "-1001064571576") || (chat_id == "-1001050459665") || (chat_id == "-1001097316494") || (chat_id == "-1001086845014")) {
 				if (group_ban == 1) {
-					bot.kickChatMember(message.chat.id, accountid).then(result => {
+					bot.kickChatMember(message.chat.id, accountid).then(function (result) {
 						if (result != "False") {
 							bot.sendMessage(message.chat.id, n + " è bannato dai gruppi, l'ho bannato");
 							bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa del ban da tutti i gruppi");
@@ -1419,7 +1419,7 @@ function checkStatus(message, n, accountid, type) {
 			if (bon == 1) {
 				if (exist == 1) {
 					if (banlist_id.indexOf(accountid) != -1) {
-						bot.kickChatMember(message.chat.id, accountid).then(result => {
+						bot.kickChatMember(message.chat.id, accountid).then(function (result) {
 							if (result != "False") {
 								bot.sendMessage(message.chat.id, n + " è bannato dal gioco, l'ho bannato");
 								bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa del ban dal gioco");
@@ -1457,7 +1457,7 @@ function checkStatus(message, n, accountid, type) {
 					}
 
 					if ((levReal < min) || (levReal > max)) {
-						bot.kickChatMember(message.chat.id, accountid).then(result => {
+						bot.kickChatMember(message.chat.id, accountid).then(function (result) {
 							if (result != "False") {
 								bot.sendMessage(message.chat.id, n + " non rispetta i requisiti del livello (" + levReal + "), l'ho bannato");
 								bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa dei requisiti relativi al livello minimo o massimo");
@@ -2083,6 +2083,16 @@ bot.onText(/^\/rune (.+)/i, function (message, match) {
 			final1++;
 		} else {
 			final2++;
+		}
+	}
+	
+	if ((final1 == 0) && (final2 == 0)){
+		var n1 = my_comb.split("").sort().join("");
+		var n2 = combi.split("").sort().join("");
+		if (n2 > n1){
+			final2++;
+		}else{
+			final1++;
 		}
 	}
 
@@ -6621,10 +6631,10 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																				rows[0].weapon3_crit += 7;
 																			}
 																			if ((class_id == 5) && (reborn == 3)) {
-																				rows[0].weapon3_crit += 3;
+																				rows[0].weapon3_crit += 4;
 																			}
 																			if ((class_id == 5) && (reborn >= 4)) {
-																				rows[0].weapon3_crit += 5;
+																				rows[0].weapon3_crit += 8;
 																			}
 																			if ((class_id == 6) && (reborn == 3)) {
 																				rows[0].weapon2_crit += 2;
@@ -6651,7 +6661,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																				rows[0].weapon3_crit += 7;
 																			}
 																			if ((class_id == 8) && (reborn == 5)) {
-																				rows[0].weapon_crit += 7;
+																				rows[0].weapon_crit += 10;
 																			}
 																			if ((class_id == 9) && (reborn == 3)) {
 																				rows[0].weapon_crit += 2;
@@ -6666,14 +6676,14 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																				rows[0].weapon_crit += Math.round(dragon_critical / 2);
 																			}
 
-																			if ((class_id == 8) && (reborn > 1)) {
-																				rows[0].weapon += rows[0].weapon * 0.1;
-																			}
-																			if ((class_id == 8) && (reborn == 5)) {
-																				rows[0].weapon += rows[0].weapon * 0.1;
-																			}
-																			if ((class_id == 8) && ((reborn == 3) || (reborn >= 4))) {
-																				rows[0].weapon += rows[0].weapon * 0.07;
+																			if ((class_id == 8) && (reborn == 2)) {
+																				rows[0].weapon += rows[0].weapon * 0.10;
+																			}else if ((class_id == 8) && (reborn == 3)) {
+																				rows[0].weapon += rows[0].weapon * 0.15;
+																			}else if ((class_id == 8) && (reborn == 4)) {
+																				rows[0].weapon += rows[0].weapon * 0.17;
+																			}else if ((class_id == 8) && (reborn == 5)) {
+																				rows[0].weapon += rows[0].weapon * 0.30;
 																			}
 
 																			//Descrizioni
