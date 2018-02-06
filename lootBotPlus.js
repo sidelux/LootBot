@@ -92,8 +92,10 @@ bot.on('message', function (message) {
 				bot.getChatMembersCount(msg.chat.id).then(function (cnt) {
 					var d = new Date();
 					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+					
+					msg.chat.title = msg.chat.title.replace(/[^\w\s]/gi, '');
 
-					connection.query('UPDATE plus_groups SET name = "' + connection.escape(msg.chat.title) + '", members = ' + cnt + ', last_update = "' + long_date + '" WHERE chat_id = ' + msg.chat.id, function (err, rows, fields) {
+					connection.query('UPDATE plus_groups SET name = "' + msg.chat.title + '", members = ' + cnt + ', last_update = "' + long_date + '" WHERE chat_id = ' + msg.chat.id, function (err, rows, fields) {
 						if (err) throw err;
 					});
 				});
@@ -101,16 +103,15 @@ bot.on('message', function (message) {
 		});
 		connection.query('SELECT always FROM plus_groups WHERE chat_id = ' + msg.chat.id, function (err, rows, fields) {
 			if (err) throw err;
-			var checked = 0;
-			if (Object.keys(rows).length > 0) {
-				if (rows[0].always == 1) {
-					checkStatus(message, user, account_id, 1);
-					checked = 1;
-				}
-			}
 
 			if (msg.new_chat_members != undefined) {
 				checkStatus(msg, msg.new_chat_member.username, msg.new_chat_member.id, 0);
+			}else{
+				if (Object.keys(rows).length > 0) {
+					if (rows[0].always == 1) {
+						checkStatus(message, user, account_id, 1);
+					}
+				}
 			}
 		});
 	}
@@ -249,10 +250,6 @@ var html = {
 	parse_mode: "HTML",
 	disable_web_page_preview: true
 };
-
-callNTimes(1000, function () {
-	checkShopErr();
-});
 
 callNTimes(60000, function () {
 	checkLottery();
@@ -844,78 +841,84 @@ bot.onText(/^\/gruppi/, function (message) {
 
 						bot.getChatMembersCount(-1001086845014).then(function (data) {
 							var c6 = data; //scuola
-							console.log("Next Notturno");
+							console.log("Next Contest");
+							
+							bot.getChatMembersCount(-1001296261308).then(function (data) {
+								var c7 = data; //contest
+								console.log("Next Notturno");
 
-							bot.getChatMembersCount(-1001075644786).then(function (data) {
-								var c8 = data; //notturno
-								console.log("Next Scommesse");
+								bot.getChatMembersCount(-1001075644786).then(function (data) {
+									var c8 = data; //notturno
+									console.log("Next Scommesse");
 
-								bot.getChatMembersCount(-1001124038417).then(function (data) {
-									var c9 = data; //scommesse
-									console.log("Next Contrabbandiere");
+									bot.getChatMembersCount(-1001124038417).then(function (data) {
+										var c9 = data; //scommesse
+										console.log("Next Contrabbandiere");
 
-									bot.getChatMembersCount(-1001123874487).then(function (data) {
-										var c10 = data; //contrabbando
-										console.log("Next Raffles");
+										bot.getChatMembersCount(-1001123874487).then(function (data) {
+											var c10 = data; //contrabbando
+											console.log("Next Raffles");
 
-										bot.getChatMembersCount(-1001131584245).then(function (data) {
-											var c11 = data; //raffles
-											console.log("Next Negozi");
+											bot.getChatMembersCount(-1001131584245).then(function (data) {
+												var c11 = data; //raffles
+												console.log("Next Negozi");
 
-											bot.getChatMembersCount(-1001097316494).then(function (data) {
-												var c12 = data; //negozi
-												console.log("Next Test");
+												bot.getChatMembersCount(-1001097316494).then(function (data) {
+													var c12 = data; //negozi
+													console.log("Next Test");
 
-												bot.getChatMembersCount(-1001050459665).then(function (data) {
-													var c13 = data; //testi
-													console.log("Next Gelateria");
+													bot.getChatMembersCount(-1001050459665).then(function (data) {
+														var c13 = data; //testi
+														console.log("Next Gelateria");
 
-													bot.getChatMembersCount(-1001127554674).then(function (data) {
-														var c14 = data; //gelateria
+														bot.getChatMembersCount(-1001127554674).then(function (data) {
+															var c14 = data; //gelateria
 
-														if (message.chat.id < 0)
-															bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
+															if (message.chat.id < 0)
+																bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
 
-														bot.sendMessage(message.from.id, "<b>Ufficiali</b>\n" +
-																		"Canale principale per aggiornamenti: @xxxAvvisi\n" +
+															bot.sendMessage(message.from.id, "<b>Ufficiali</b>\n" +
+																			"Canale principale per aggiornamenti: @xxxAvvisi\n" +
 
-																		"\n<b>Bot</b>\n" +
-																		"Liste oggetti e alberi automatici: @craftxxxbot\n" +
-																		"Qualcuno sempre a disposizione: @Oracoloxxx\n" +
-																		"Calcolo Loot Combat Rating: @xxxcrbot\n" +
-																		"Tool per mercato e cronologie: @ToolsForxxx\n" +
-																		"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
-																		"@DichisUtilityBot\n" +
+																			"\n<b>Bot</b>\n" +
+																			"Liste oggetti e alberi automatici: @craftxxxbot\n" +
+																			"Qualcuno sempre a disposizione: @Oracoloxxx\n" +
+																			"Calcolo Loot Combat Rating: @xxxcrbot\n" +
+																			"Tool per mercato e cronologie: @ToolsForxxx\n" +
+																			"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
+																			"@DichisUtilityBot\n" +
 
-																		"\n<b>Documenti</b>\n" +
-																		"<a href='telegra.ph/Mini-Guida-alle-xxx-API-11-24'>xxx Api</a>\n" +
+																			"\n<b>Documenti</b>\n" +
+																			"<a href='telegra.ph/Mini-Guida-alle-xxx-API-11-24'>xxx Api</a>\n" +
 
-																		"\n<b>Siti</b>\n" +
-																		"<a href='http://beegotsy.altervista.org/xxxbot/'>#SonoPoveroFaccioGuide</a> - Materiali necessari, guida, e altre funzionalità in sviluppo\n" +
+																			"\n<b>Siti</b>\n" +
+																			"<a href='http://beegotsy.altervista.org/xxxbot/'>#SonoPoveroFaccioGuide</a> - Materiali necessari, guida, e altre funzionalità in sviluppo\n" +
 
-																		"\n<b>Gruppi</b>\n" +
-																		"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
-																		"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
-																		"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
-																		"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
-																		"@xxxterianew2 (" + c3 + ") - Riservato alle Lotterie\n" +
-																		"<a href='https://t.me/joinchat/AAAAAEBMfmv2x_z3vAVNeg'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
-																		"@LootAste2 (" + c5 + ") - Aste di oggetti per tutti i giocatori commercianti! (Livello minimo: 15)\n" +
-																		"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
-																		"<a href='https://telegram.me/joinchat/EXFobEDH8FbDpQ4MTmw-mQ'>xxx School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
-																		"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
-																		"<a href='https://t.me/joinchat/CGfawEL89rdjylRx72zprQ'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
-																		"@xxxgelateria (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
-																		"<a href='https://t.me/joinchat/HOnifE60M2VM7XIBMDHQmg'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
+																			"\n<b>Gruppi</b>\n" +
+																			"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
+																			"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
+																			"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
+																			"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
+																			"@xxxterianew2 (" + c3 + ") - Riservato alle Lotterie\n" +
+																			"<a href='https://t.me/joinchat/AAAAAEBMfmv2x_z3vAVNeg'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
+																			"@LootAste2 (" + c5 + ") - Aste di oggetti per tutti i giocatori commercianti! (Livello minimo: 15)\n" +
+																			"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
+																			"<a href='https://telegram.me/joinchat/EXFobEDH8FbDpQ4MTmw-mQ'>xxx School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
+																			"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
+																			"<a href='https://t.me/joinchat/CGfawEL89rdjylRx72zprQ'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
+																			"@xxxgelateria (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
+																			"<a href='https://t.me/joinchat/HOnifE60M2VM7XIBMDHQmg'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
+																			"<a href='https://t.me/joinchat/AlRpFQvjnQ7twa4tmw_03Q'>Loot Contest</a> (" + c7 + ") - ENTRATE PER VINCERE TANTI PREMI LOOTTOSI!!\n" +
 
-																		"\n<b>Canali</b>\n" +
-																		"@wikixxxbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
-																		"@xxxPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
-																		"@LootReport - Segnala un comportamento scorretto nella community!\n" +
-																		"@YellowBetsLoot - YellowPlay for YellowWin\n" +
-																		"@yellowxxxshop - Join for eventi free!\n" +
+																			"\n<b>Canali</b>\n" +
+																			"@wikixxxbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
+																			"@xxxPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
+																			"@LootReport - Segnala un comportamento scorretto nella community!\n" +
+																			"@YellowBetsLoot - YellowPlay for YellowWin\n" +
+																			"@yellowxxxshop - Join for eventi free!\n" +
 
-																		"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
+																			"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
+														});
 													});
 												});
 											});
@@ -3700,7 +3703,6 @@ bot.on('callback_query', function (message) {
 											if (Object.keys(check).length > 1000) {
 												check = [];
 											}
-											checkShopErr();
 										});
 									});
 								});
@@ -7354,78 +7356,8 @@ function setFinishedShopNotification(element, index, array) {
 		var chat_id = rows[0].chat_id;
 		connection.query('UPDATE public_shop SET notified = 1 WHERE code = ' + code, function (err, rows, fields) {
 			if (err) throw err;
-			bot.sendMessage(chat_id, "Il negozio con codice " + code + " verrà eliminato a breve, aggiornalo o cancellalo");
+			bot.sendMessage(chat_id, "Il negozio con codice <code>" + code + "</code> verrà eliminato a breve, aggiornalo o cancellalo", html);
 		});
-	});
-};
-
-function checkShopErr() {
-	connection.query('SELECT public_shop.id, player_id, code, quantity, nickname, item.name, price, item.id As item_id FROM public_shop, player, item WHERE item.id = public_shop.item_id AND player.id = public_shop.player_id AND quantity < 0 GROUP BY public_shop.player_id', function (err, rows, fields) {
-		if (err) throw err;
-		if (Object.keys(rows).length > 0) {
-			var text = "Allarme negozi:\n\n";
-			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-				text += rows[i].name + " nel negozio di " + rows[i].nickname + " " + rows[i].code + " " + rows[i].quantity + " pezzi\n";
-			}
-			bot.sendMessage("@lnotify", text);
-			rows.forEach(setFinishedShopErr);
-		}
-	});
-};
-
-function setFinishedShopErr(element, index, array) {
-	var code = element.code;
-	var player_id = element.player_id; //Chi vende
-	var code = element.code;
-	var price = element.price;
-	var item_id = element.item_id;
-	var quantity = element.quantity;
-	var shop_id = element.id;
-
-	connection.query('SELECT to_id, time FROM market_direct_history WHERE item_id = ' + item_id + ' AND price = ' + price + ' AND from_id = ' + player_id + ' ORDER BY id DESC LIMIT 1', function (err, rows, fields) {
-		if (err) throw err;
-		if (Object.keys(rows).length > 0) {
-			var to_id = rows[0].to_id;
-			quantity = Math.abs(quantity);
-
-			for (var i = 0; i < quantity; i++) {
-				connection.query('DELETE FROM inventory WHERE player_id = ' + to_id + ' AND item_id = ' + item_id + ' LIMIT ' + quantity, function (err, rows, fields) {
-					if (err) throw err;
-				});
-				connection.query('UPDATE player SET money = money - ' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
-					if (err) throw err;
-				});
-				/*
-				connection.query('UPDATE player SET money = money + ' + price + ' WHERE id = ' + to_id, function(err, rows, fields) {
-					if (err) throw err;
-				});
-				connection.query('INSERT INTO inventory (player_id, item_id) VALUES (' + player_id + ',' + item_id + ')', function(err, rows, fields) {
-					if (err) throw err;
-				});
-				*/
-			}
-			connection.query('DELETE FROM public_shop WHERE id = ' + shop_id, function (err, rows, fields) {
-				if (err) throw err;
-				connection.query('SELECT chat_id, market_warn FROM player WHERE id = ' + to_id, function (err, rows, fields) {
-					if (err) throw err;
-					if (parseInt(rows[0].market_warn) + 1 >= 3) {
-						bot.sendMessage(rows[0].chat_id, "E' stato rilevato un problema al negozio in cui hai appena acquistato, dopo 3 warning ricevuti, sei stato bannato");
-						connection.query('UPDATE player SET market_warn = 0, market_ban = 1 WHERE id = ' + to_id, function (err, rows, fields) {
-							if (err) throw err;
-						});
-					} else {
-						bot.sendMessage(rows[0].chat_id, "E' stato rilevato un problema al negozio in cui hai appena acquistato, hai ricevuto 1 warning, la prossima volta fai più attenzione");
-						connection.query('UPDATE player SET market_warn = market_warn+1 WHERE id = ' + to_id, function (err, rows, fields) {
-							if (err) throw err;
-						});
-					}
-				});
-				connection.query('SELECT chat_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
-					if (err) throw err;
-					bot.sendMessage(rows[0].chat_id, "E' stato rilevato e risolto un problema ad un negozio che gestisci");
-				});
-			});
-		}
 	});
 };
 
@@ -7454,7 +7386,7 @@ function setFinishedShop(element, index, array) {
 
 		connection.query('DELETE FROM public_shop WHERE code = ' + code, function (err, rows, fields) {
 			if (err) throw err;
-			bot.sendMessage(chat_id, "Il negozio " + code + " è scaduto ed è stato eliminato");
+			bot.sendMessage(chat_id, "Il negozio <code>" + code + "</code> è scaduto ed è stato eliminato", html);
 		});
 	});
 };
