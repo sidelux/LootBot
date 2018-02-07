@@ -7259,29 +7259,33 @@ bot.onText(/^\/zaino (.+)|^\/zaino/, function (message, match) {
 		var player_id = rows[0].id;
 
 		if (match[1].toLowerCase() == "i") {
-			var bottext = message.from.username + ", ecco i tuoi incantesimi:\n\n";
-
-			connection.query('SELECT type, power, quantity FROM magic WHERE player_id = ' + player_id, function (err, rows, fields) {
+			connection.query('DELETE FROM magic WHERE quantity <= 0 AND player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
+			
+				var bottext = message.from.username + ", ecco i tuoi incantesimi:\n\n";
 
-				if (Object.keys(rows).length > 0) {
-					var n = "";
-					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-						if (rows[i].type == 1) {
-							n = "Furia dei Mari";
-						} else if (rows[i].type == 2) {
-							n = "Tempesta Folgorante";
-						} else if (rows[i].type == 3) {
-							n = "Impeto di Fiamme";
-						} else if (rows[i].type == 4) {
-							n = "Ira Astrale";
+				connection.query('SELECT type, power, quantity FROM magic WHERE player_id = ' + player_id, function (err, rows, fields) {
+					if (err) throw err;
+
+					if (Object.keys(rows).length > 0) {
+						var n = "";
+						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+							if (rows[i].type == 1) {
+								n = "Furia dei Mari";
+							} else if (rows[i].type == 2) {
+								n = "Tempesta Folgorante";
+							} else if (rows[i].type == 3) {
+								n = "Impeto di Fiamme";
+							} else if (rows[i].type == 4) {
+								n = "Ira Astrale";
+							}
+							bottext = bottext + "> " + n + " " + rows[i].power + " (" + rows[i].quantity + ")\n";
 						}
-						bottext = bottext + "> " + n + " " + rows[i].power + " (" + rows[i].quantity + ")\n";
+					} else {
+						bottext = bottext + "Nessun incantesimo disponibile\n";
 					}
-				} else {
-					bottext = bottext + "Nessun incantesimo disponibile\n";
-				}
-				bot.sendMessage(message.chat.id, bottext, html);
+					bot.sendMessage(message.chat.id, bottext, html);
+				});
 			});
 		} else {
 			connection.query('SELECT shortname FROM rarity WHERE shortname = "' + match[1] + '"', function (err, rows, fields) {
