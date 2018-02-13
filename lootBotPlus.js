@@ -39,7 +39,7 @@ var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000];
 var mysql = require('mysql');
 var connection = mysql.createConnection({
 	host: 'xxx',
-	user: 'root',
+	user: 'xxx',
 	password: 'xxx',
 	database: 'xxx'
 });
@@ -3322,10 +3322,6 @@ bot.on('callback_query', function (message) {
 
 				if (Object.keys(rows).length == 0) {
 					bot.answerCallbackQuery(message.id, {text: 'L\'asta non esiste più'});
-					bot.editMessageText(">> L'asta non esiste più <<", {
-						chat_id: message.message.chat.id,
-						message_id: message.message.message_id
-					});
 					return;
 				}
 
@@ -7098,7 +7094,7 @@ bot.onText(/^\/spia/, function (message) {
 			return;
 		}
 
-		if (rows[0].spy_count >= 15) {
+		if (rows[0].spy_count >= 25) {
 			bot.sendMessage(message.chat.id, "Hai raggiunto il limite giornaliero.");
 			return;
 		}
