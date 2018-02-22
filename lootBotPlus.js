@@ -45,6 +45,18 @@ var connection = mysql.createConnection({
 });
 connection.connect();
 
+process.on('SIGINT', function() {
+	console.log("Spegnimento bot...");
+	connection.end();
+	process.exit();
+});
+
+process.on('SIGTERM', function() {
+	console.log("Spegnimento bot...");
+	connection.end();
+	process.exit();
+});
+
 var mysqlRetry = require('node-mysql-deadlock-retries');
 mysqlRetry(connection, 5, 100, 1000);
 var ms = require("ms");
