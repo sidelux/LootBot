@@ -69,7 +69,7 @@ bot.on('message', function (message) {
 	var user = msg.from.username;
 	var chat_id = msg.chat.id;
 	var account_id = msg.from.id;
-	if ((text != "undefined") && (text != undefined)) {
+	if (text != undefined) {
 		if (text.startsWith("/")) {
 			console.log(getNow("it") + " - " + user + ": " + text);
 		}
@@ -104,7 +104,7 @@ bot.on('message', function (message) {
 				bot.getChatMembersCount(msg.chat.id).then(function (cnt) {
 					var d = new Date();
 					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-					
+
 					msg.chat.title = msg.chat.title.replace(/[^\w\s]/gi, '');
 
 					connection.query('UPDATE plus_groups SET name = "' + msg.chat.title + '", members = ' + cnt + ', last_update = "' + long_date + '" WHERE chat_id = ' + msg.chat.id, function (err, rows, fields) {
@@ -138,7 +138,7 @@ bot.on('message', function (message) {
 		}else{
 			connection.query('SELECT real_name, gender FROM player WHERE account_id = "' + message.from.id + '"', function (err, rows, fields) {
 				if (err) throw err;
-				
+
 				if (Object.keys(rows).length > 0) {
 					if ((rows[0].real_name == null) || (rows[0].gender == null)){
 						connection.query('UPDATE plus_players SET nickname = "' + message.from.username + '" WHERE account_id = ' + message.from.id, function (err, rows, fields) {
@@ -854,7 +854,7 @@ bot.onText(/^\/gruppi/, function (message) {
 						bot.getChatMembersCount(-1001086845014).then(function (data) {
 							var c6 = data; //scuola
 							console.log("Next Contest");
-							
+
 							bot.getChatMembersCount(-1001296261308).then(function (data) {
 								var c7 = data; //contest
 								console.log("Next Notturno");
@@ -885,51 +885,57 @@ bot.onText(/^\/gruppi/, function (message) {
 
 														bot.getChatMembersCount(-1001127554674).then(function (data) {
 															var c14 = data; //gelateria
+															console.log("Next Loot Game");
 
-															if (message.chat.id < 0)
-																bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
+															bot.getChatMembersCount(-1001338869829).then(function (data) {
+																var c15 = data; //xxx game
 
-															bot.sendMessage(message.from.id, "<b>Ufficiali</b>\n" +
-																			"Canale principale per aggiornamenti: @xxxAvvisi\n" +
+																if (message.chat.id < 0)
+																	bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
 
-																			"\n<b>Bot</b>\n" +
-																			"Liste oggetti e alberi automatici: @craftxxxbot\n" +
-																			"Qualcuno sempre a disposizione: @Oracoloxxx\n" +
-																			"Calcolo Loot Combat Rating: @xxxcrbot\n" +
-																			"Tool per mercato e cronologie: @ToolsForxxx\n" +
-																			"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
-																			"@DichisUtilityBot\n" +
+																bot.sendMessage(message.from.id, "<b>Ufficiali</b>\n" +
+																				"Canale principale per aggiornamenti: @xxxAvvisi\n" +
 
-																			"\n<b>Documenti</b>\n" +
-																			"<a href='telegra.ph/Mini-Guida-alle-xxx-API-11-24'>xxx Api</a>\n" +
+																				"\n<b>Bot</b>\n" +
+																				"Liste oggetti e alberi automatici: @craftxxxbot\n" +
+																				"Qualcuno sempre a disposizione: @Oracoloxxx\n" +
+																				"Calcolo Loot Combat Rating: @xxxcrbot\n" +
+																				"Tool per mercato e cronologie: @ToolsForxxx\n" +
+																				"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
+																				"@DichisUtilityBot\n" +
 
-																			"\n<b>Siti</b>\n" +
-																			"<a href='http://beegotsy.altervista.org/xxxbot/'>#SonoPoveroFaccioGuide</a> - Materiali necessari, guida, e altre funzionalità in sviluppo\n" +
+																				"\n<b>Documenti</b>\n" +
+																				"<a href='telegra.ph/Mini-Guida-alle-xxx-API-11-24'>xxx Api</a>\n" +
 
-																			"\n<b>Gruppi</b>\n" +
-																			"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
-																			"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
-																			"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
-																			"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
-																			"@xxxterianew2 (" + c3 + ") - Riservato alle Lotterie\n" +
-																			"<a href='https://t.me/joinchat/AAAAAEBMfmv2x_z3vAVNeg'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
-																			"@LootAste2 (" + c5 + ") - Aste di oggetti per tutti i giocatori commercianti! (Livello minimo: 15)\n" +
-																			"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
-																			"<a href='https://telegram.me/joinchat/EXFobEDH8FbDpQ4MTmw-mQ'>xxx School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
-																			"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
-																			"<a href='https://t.me/joinchat/CGfawEL89rdjylRx72zprQ'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
-																			"@xxxgelateria (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
-																			"<a href='https://t.me/joinchat/HOnifE60M2VM7XIBMDHQmg'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
-																			"<a href='https://t.me/joinchat/AlRpFQvjnQ7twa4tmw_03Q'>Loot Contest</a> (" + c7 + ") - ENTRATE PER VINCERE TANTI PREMI LOOTTOSI!!\n" +
+																				"\n<b>Siti</b>\n" +
+																				"<a href='http://beegotsy.altervista.org/xxxbot/'>#SonoPoveroFaccioGuide</a> - Materiali necessari, guida, e altre funzionalità in sviluppo\n" +
 
-																			"\n<b>Canali</b>\n" +
-																			"@wikixxxbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
-																			"@xxxPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
-																			"@LootReport - Segnala un comportamento scorretto nella community!\n" +
-																			"@YellowBetsLoot - YellowPlay for YellowWin\n" +
-																			"@yellowxxxshop - Join for eventi free!\n" +
+																				"\n<b>Gruppi</b>\n" +
+																				"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
+																				"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
+																				"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
+																				"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
+																				"@xxxterianew2 (" + c3 + ") - Riservato alle Lotterie\n" +
+																				"<a href='https://t.me/joinchat/AAAAAEBMfmv2x_z3vAVNeg'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
+																				"@LootAste2 (" + c5 + ") - Aste di oggetti per tutti i giocatori commercianti! (Livello minimo: 15)\n" +
+																				"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
+																				"<a href='https://telegram.me/joinchat/EXFobEDH8FbDpQ4MTmw-mQ'>xxx School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
+																				"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
+																				"<a href='https://t.me/joinchat/CGfawEL89rdjylRx72zprQ'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
+																				"@xxxgelateria (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
+																				"<a href='https://t.me/joinchat/CXTRTAtsjVG_AhJb3FjW5w'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
+																				"<a href='https://t.me/joinchat/AlRpFQvjnQ7twa4tmw_03Q'>Loot Contest</a> (" + c7 + ") - ENTRATE PER VINCERE TANTI PREMI LOOTTOSI!!\n" +
+																				"<a href='https://telegram.me/LootGame'>LootGame</a> (" + c15 + ") - Potete divertivi giocando e vincendo soldi :>\n" +
 
-																			"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
+																				"\n<b>Canali</b>\n" +
+																				"@wikixxxbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
+																				"@xxxPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
+																				"@LootReport - Segnala un comportamento scorretto nella community!\n" +
+																				"@YellowBetsLoot - YellowPlay for YellowWin\n" +
+																				"@yellowxxxshop - Join for eventi free!\n" +
+
+																				"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
+															});
 														});
 													});
 												});
@@ -983,6 +989,63 @@ bot.onText(/^\/mercatini/, function (message) {
 					"@paupershop - Un negozio di xxx per poveri\n" +
 
 					"\nVisita anche /gruppi. Per comparire qua chiedi all'amministratore.", html);
+});
+
+bot.onText(/^\/chiamaparty/, function (message, match) {
+
+	if (!checkSpam(message)) {
+		return;
+	}
+
+	if (message.chat.id > 0){
+		bot.sendMessage(message.from.id, "Questo comando può essere usato solo nei gruppi");
+		return;
+	}
+
+	connection.query('SELECT team_id, party_id, player_id FROM mission_team_party_player WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0){
+			bot.sendMessage(message.from.id, "Non sei in team o in un party");
+			return;
+		}
+
+		var party_id = rows[0].party_id;
+		var team_id = rows[0].team_id;
+		var player_id = rows[0].player_id;
+
+		connection.query('SELECT wait, assigned_to FROM mission_team_party WHERE party_id = ' + party_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0){
+				console.log("Errore party");
+				return;	
+			}
+			/*
+			if (rows[0].assigned_to == null){
+				bot.sendMessage(message.chat.id, "Puoi usare questo comando solo quando stai svolgendo un incarico");
+				return;
+			}
+
+			if (rows[0].wait == 1){
+				bot.sendMessage(message.chat.id, "Puoi usare questo comando solo quando sei in attesa di votazione");
+				return;
+			}
+			*/
+
+			connection.query('SELECT P.chat_id, P.nickname FROM mission_team_party_player T, player P WHERE T.player_id = P.id AND T.party_id = ' + party_id + ' AND T.team_id = ' + team_id + ' AND P.id != ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+
+				var nicklist = "";
+
+				for (i = 0; i < Object.keys(rows).length; i++) {
+					nicklist += "@" + rows[i].nickname + " ";
+				}
+
+				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> chiama i suoi compagni di party!\n" + nicklist, html);
+			});
+		});
+	});
 });
 
 bot.onText(/^\/cid/, function (message) {
@@ -2100,7 +2163,7 @@ bot.onText(/^\/rune (.+)/i, function (message, match) {
 			final2++;
 		}
 	}
-	
+
 	if ((final1 == 0) && (final2 == 0)){
 		var n1 = my_comb.split("").sort().join("");
 		var n2 = combi.split("").sort().join("");
@@ -5700,44 +5763,49 @@ bot.onText(/^\/statistiche/, function (message) {
 
 																											connection.query('SELECT SUM(pay) As cnt FROM game_house_stats', function (err, rows, fields) {
 																												if (err) throw err;
-
 																												var house_tot = rows[0].cnt;
 
-																												bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
-																																"*Giocatori registrati:* " + formatNumber(tot) + "\n" +
-																																"*Missioni in corso*: " + miss + "\n" +
-																																"*Missioni completate*: " + formatNumber(miss2) + "\n" +
-																																"*Viaggi in corso*: " + travel + "\n" +
-																																"*Utenti attivi (1):* " + formatNumber(act) + "\n" +
-																																"*Monete attuali*: " + formatNumber(money) + " §\n" +
-																																"*Oggetti*: " + formatNumber(inv) + "\n" +
-																																"*Scrigni attuali*: " + formatNumber(chest) + "\n" +
-																																"*Creazioni*: " + formatNumber(craft) + "\n" +
-																																"*Draghi*: " + formatNumber(dragon) + "\n" +
-																																"*Team:* " + formatNumber(teamn) + "\n" +
-																																"*Ispezioni/In corso/Rapporto:* " + formatNumber(heist) + "/" + heistn + "/" + perc + "%\n" +
-																																"*Danni ai boss attuali:* " + formatNumber(dmg) + "\n" +
-																																"*Lotterie:* " + formatNumber(lottery) + "\n" +
-																																"*Oggetti nei negozi:* " + formatNumber(shop) + "\n" +
-																																"*Oggetti acquistati:* " + formatNumber(shop_tot) + "\n" +
-																																"*Scrigni giornalieri consegnati:* " + formatNumber(daily) + "\n" +
-																																"*Dungeon completati:* " + formatNumber(dungeon_tot) + "\n" +
-																																"*Dungeon creati:* " + formatNumber(dungeon) + "\n" +
-																																"*Stanze create:* " + formatNumber(room) + "\n" +
-																																"*Livelli skill:* " + formatNumber(ablevel) + "\n" +
-																																"*Utenti invitati:* " + formatNumber(invite) + "\n" +
-																																"*Mana grezzo:* " + formatNumber(mana) + "\n" +
-																																"*Polvere:* " + formatNumber(dust) + "\n" +
-																																"*Incantesimi:* " + formatNumber(magic) + "\n" +
-																																"*Oggetti cercati:* " + formatNumber(search) + "\n" +
-																																"*Imprese completate:* " + formatNumber(achievement) + "\n" +
-																																"*Spese Casa dei Giochi:* " + formatNumber(house_tot) + "\n" +
-																																"*Battaglie nella Vetta:* " + formatNumber(top_log) + "\n" +
+																												connection.query('SELECT SUM(mission_count) As cnt FROM team', function (err, rows, fields) {
+																													if (err) throw err;
+																													var mission_team = rows[0].cnt;
 
-																																"\n*Gruppi attivi (2):* " + formatNumber(groups) + "\n" +
-																																"*Membri nei gruppi attivi (2):* " + formatNumber(members) + "\n" +
+																													bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
+																																	"*Giocatori registrati:* " + formatNumber(tot) + "\n" +
+																																	"*Missioni in corso*: " + miss + "\n" +
+																																	"*Missioni completate*: " + formatNumber(miss2) + "\n" +
+																																	"*Viaggi in corso*: " + travel + "\n" +
+																																	"*Utenti attivi (1):* " + formatNumber(act) + "\n" +
+																																	"*Monete attuali*: " + formatNumber(money) + " §\n" +
+																																	"*Oggetti*: " + formatNumber(inv) + "\n" +
+																																	"*Scrigni attuali*: " + formatNumber(chest) + "\n" +
+																																	"*Creazioni*: " + formatNumber(craft) + "\n" +
+																																	"*Draghi*: " + formatNumber(dragon) + "\n" +
+																																	"*Team:* " + formatNumber(teamn) + "\n" +
+																																	"*Ispezioni/In corso/Rapporto:* " + formatNumber(heist) + "/" + heistn + "/" + perc + "%\n" +
+																																	"*Danni ai boss attuali:* " + formatNumber(dmg) + "\n" +
+																																	"*Lotterie:* " + formatNumber(lottery) + "\n" +
+																																	"*Oggetti nei negozi:* " + formatNumber(shop) + "\n" +
+																																	"*Oggetti acquistati:* " + formatNumber(shop_tot) + "\n" +
+																																	"*Scrigni giornalieri consegnati:* " + formatNumber(daily) + "\n" +
+																																	"*Dungeon completati:* " + formatNumber(dungeon_tot) + "\n" +
+																																	"*Dungeon creati:* " + formatNumber(dungeon) + "\n" +
+																																	"*Stanze create:* " + formatNumber(room) + "\n" +
+																																	"*Livelli skill:* " + formatNumber(ablevel) + "\n" +
+																																	"*Utenti invitati:* " + formatNumber(invite) + "\n" +
+																																	"*Mana grezzo:* " + formatNumber(mana) + "\n" +
+																																	"*Polvere:* " + formatNumber(dust) + "\n" +
+																																	"*Incantesimi:* " + formatNumber(magic) + "\n" +
+																																	"*Oggetti cercati:* " + formatNumber(search) + "\n" +
+																																	"*Imprese completate:* " + formatNumber(achievement) + "\n" +
+																																	"*Spese Casa dei Giochi:* " + formatNumber(house_tot) + "\n" +
+																																	"*Battaglie nella Vetta:* " + formatNumber(top_log) + "\n" +
+																																	"*Incarichi completati:* " + formatNumber(mission_team) + "\n" +
 
-																																"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark);
+																																	"\n*Gruppi attivi (2):* " + formatNumber(groups) + "\n" +
+																																	"*Membri nei gruppi attivi (2):* " + formatNumber(members) + "\n" +
+
+																																	"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark);
+																												});
 																											});
 																										});
 																									});
@@ -6329,7 +6397,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 			bot.sendMessage(message.chat.id, "Il giocatore non esiste.");
 			return;
 		}
-		
+
 		var gender_text = "Giocatore";
 		if (rows[0].gender == "F"){
 			gender_text = "Giocatrice";
@@ -6426,7 +6494,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 								if (err) throw err;
 								var team_desc = "";
 								if (Object.keys(rows).length > 0) {
-									team_desc = " (" + rows[0].name.trim() + ")";
+									team_desc = "⚜️ " + rows[0].name.trim() + "\n";
 								};
 
 								connection.query('SELECT name FROM house WHERE id = ' + house_id, function (err, rows, fields) {
@@ -6578,7 +6646,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																			var stars = rebSym(rows[0].reborn);
 
 																			if (player_id == 1) {
-																				stars = " 👑";
+																				stars = "👑";
 																			}
 
 																			//Talismani
@@ -6721,6 +6789,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																			var lev = Math.floor(rows[0].exp / 10);
 																			var player_atk = (lev + weapon_d + rows[0].weapon_enchant) + " - " + ((lev + weapon_d + rows[0].weapon_enchant) + (weapon_d + rows[0].weapon_enchant + dragon_claws));
 																			var player_description = rows[0].player_description;
+																			var player_custom_nickname = rows[0].player_custom_nickname;
 
 																			if (player != message.from.username) {
 																				if (myhouse_id == 1) {
@@ -6794,7 +6863,8 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																			}
 
 																			bot.sendMessage(message.chat.id, "<b>" + gender_text + "</b> 👤\n" +
-																							nickname + team_desc + "\n" +
+																							"👤 " + nickname + (player_custom_nickname != null ? " <i>" + player_custom_nickname + "</i>": "") + "\n" +
+																							team_desc + 
 																							stars + " " + formatNumber(lev) + " (" + formatNumber(rows[0].exp) + " xp)\n\n" +
 																							"🏹 " + class_name + "\n" +
 																							"💎 " + rows[0].gems + " 🌕 " + rows[0].moon_coin + " 🗝 " + rows[0].mkeys + " 🏆 " + inest + "\n" +
@@ -6861,12 +6931,12 @@ bot.onText(/^\/ispeziona/, function (message) {
 	}
 
 	var usr = message.reply_to_message.from.username;
-	
+
 	if (usr == message.from.username){
 		bot.sendMessage(message.from.id, "Non puoi ispezionare te stesso");
 		return;
 	}
-	
+
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -6894,6 +6964,7 @@ bot.onText(/^\/ispeziona/, function (message) {
 		var house_id = rows[0].house_id;
 		var money = rows[0].money;
 		var heist_count = rows[0].heist_count;
+		var global_end = rows[0].global_end;
 
 		if ((lev < 15) && (reborn == 1)) {
 			bot.sendMessage(message.from.id, "Il tuo livello è ancora troppo basso.");
@@ -6918,52 +6989,52 @@ bot.onText(/^\/ispeziona/, function (message) {
 					return;
 				}
 
-					if (money < 3000) {
-						bot.sendMessage(message.from.id, "Non hai abbastanza monete!");
-						return;
-					}
+				if (money < 3000) {
+					bot.sendMessage(message.from.id, "Non hai abbastanza monete!");
+					return;
+				}
 
-					connection.query('SELECT id, account_id, reborn, holiday FROM player WHERE nickname="' + usr + '"', function (err, rows, fields) {
-						if (err) throw err;
-						if (Object.keys(rows).length > 0) {
-							if (banlist_id.indexOf((rows[0].account_id).toString()) != -1) {
-								bot.sendMessage(message.from.id, "Non puoi ispezionare un giocatore bannato");
-								return;
-							}
-
-							var d = new Date();
-							var time = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate());
-
-							if (reborn > rows[0].reborn) {
-								bot.sendMessage(message.from.id, "Puoi ispezionare solamente un giocatore con una rinascita pari o superiore alla tua");
-								return;
-							}
-							if (heist_count >= 10) {
-								bot.sendMessage(message.from.id, "Puoi ispezionare un rifugio solamente 10 volte al giorno, riprova domani dalle 3.");
-								return;
-							}
-
-							if (rows[0].holiday == 1) {
-								bot.sendMessage(message.from.id, "Non puoi ispezionare un giocatore in modalità vacanza.");
-								return;
-							}
-
-							connection.query('SELECT id FROM heist_history WHERE from_id = ' + from_id + ' AND to_id = ' + rows[0].id + ' AND time LIKE "' + time + '%"', function (err, rows, fields) {
-								if (err) throw err;
-								if (Object.keys(rows).length <= 2) {
-									attack(usr, message, from_id, weapon_bonus, 3000, 0, account_id);
-								} else {
-									bot.sendMessage(message.from.id, "Hai ispezionato troppe volte questo giocatore, riprova domani.");
-								}
-							});
+				connection.query('SELECT id, account_id, reborn, holiday FROM player WHERE nickname="' + usr + '"', function (err, rows, fields) {
+					if (err) throw err;
+					if (Object.keys(rows).length > 0) {
+						if (banlist_id.indexOf((rows[0].account_id).toString()) != -1) {
+							bot.sendMessage(message.from.id, "Non puoi ispezionare un giocatore bannato");
+							return;
 						}
+
+						var d = new Date();
+						var time = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate());
+
+						if (reborn > rows[0].reborn) {
+							bot.sendMessage(message.from.id, "Puoi ispezionare solamente un giocatore con una rinascita pari o superiore alla tua");
+							return;
+						}
+						if (heist_count >= 10) {
+							bot.sendMessage(message.from.id, "Puoi ispezionare un rifugio solamente 10 volte al giorno, riprova domani dalle 3.");
+							return;
+						}
+
+						if (rows[0].holiday == 1) {
+							bot.sendMessage(message.from.id, "Non puoi ispezionare un giocatore in modalità vacanza.");
+							return;
+						}
+
+						connection.query('SELECT id FROM heist_history WHERE from_id = ' + from_id + ' AND to_id = ' + rows[0].id + ' AND time LIKE "' + time + '%"', function (err, rows, fields) {
+							if (err) throw err;
+							if (Object.keys(rows).length <= 2) {
+								attack(usr, message, from_id, weapon_bonus, 3000, 0, account_id, global_end);
+							} else {
+								bot.sendMessage(message.from.id, "Hai ispezionato troppe volte questo giocatore, riprova domani.");
+							}
+						});
+					}
 				});
 			});
 		});
 	});
 });
 
-function attack(nickname, message, from_id, weapon_bonus, cost, source, account_id) {
+function attack(nickname, message, from_id, weapon_bonus, cost, source, account_id, global_end) {
 	connection.query('SELECT exp, ability, chat_id, heist_count, heist_limit, heist_protection, house_id, custom_name_h, id, money FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var chat_id_nickname = rows[0].chat_id;
@@ -7041,39 +7112,43 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, account_
 					var house_name = rows[0].name;
 					var grade = rows[0].grade;
 					var rooms = rows[0].rooms;
-					
-						connection.query('UPDATE player SET money = money-' + cost + ' WHERE id = ' + from_id, function (err, rows, fields) {
-							if (err) throw err;
-						});
 
-						var method = 1;	//piedelesto default
-						var query = "";
-						//Secondi (massimo 6*600 + 100)
-						var totTime = (grade * 900);
-						var rate = 50;
+					connection.query('UPDATE player SET money = money-' + cost + ' WHERE id = ' + from_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
 
-						if (method == 1) {
-							totTime = Math.round(totTime * 0.6);
-							rate = 40;
-						} else if (method == 3) {
-							totTime = Math.round(totTime * 1.2);
-							rate = 60;
-						}
-						
-						var now = new Date();
-						now.setSeconds(now.getSeconds() + totTime);
-						var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
-						var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
+					var method = 1;	//piedelesto default
+					var query = "";
+					//Secondi (massimo 6*600 + 100)
+					var totTime = (grade * 900);
+					var rate = 50;
 
-						connection.query('INSERT INTO heist (from_id, to_id, datetime, rate1, grade, matchmaking) ' +
-										 'VALUES (' + from_id + ',' + to_id + ',"' + long_date + '",' + rate + ',' + grade + ',' + isMatch + ')',
-										 function (err, rows, fields) {
-							if (err) throw err;
-							bot.sendMessage(message.chat.id, "Hai inviato Piedelesto all'ispezione del rifugio di " + nickname + ", tornerà alle " + short_date + "!");
-						});
-						connection.query('UPDATE player SET heist_count = heist_count+1 WHERE id = ' + from_id, function (err, rows, fields) {
-							if (err) throw err;
-						});
+					if (method == 1) {
+						totTime = Math.round(totTime * 0.6);
+						rate = 40;
+					} else if (method == 3) {
+						totTime = Math.round(totTime * 1.2);
+						rate = 60;
+					}
+
+					if (global_end == 1){
+						totTime = Math.round(totTime / 2);
+					}
+
+					var now = new Date();
+					now.setSeconds(now.getSeconds() + totTime);
+					var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
+					var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
+
+					connection.query('INSERT INTO heist (from_id, to_id, datetime, rate1, grade, matchmaking) ' +
+									 'VALUES (' + from_id + ',' + to_id + ',"' + long_date + '",' + rate + ',' + grade + ',' + isMatch + ')',
+									 function (err, rows, fields) {
+						if (err) throw err;
+						bot.sendMessage(message.chat.id, "Hai inviato Piedelesto all'ispezione del rifugio di " + nickname + ", tornerà alle " + short_date + "!");
+					});
+					connection.query('UPDATE player SET heist_count = heist_count+1 WHERE id = ' + from_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
 				});
 			});
 		});
@@ -7249,7 +7324,7 @@ bot.onText(/^\/zaino (.+)|^\/zaino/, function (message, match) {
 		return;
 	}
 
-	if ((match[1] == undefined) || (match[1] == "undefined")) {
+	if (match[1] == undefined) {
 		bot.sendMessage(message.chat.id, "La sintassi è la seguente: /zaino rarità (esempio: /zaino E)");
 		return;
 	}
@@ -7269,7 +7344,7 @@ bot.onText(/^\/zaino (.+)|^\/zaino/, function (message, match) {
 		if (match[1].toLowerCase() == "i") {
 			connection.query('DELETE FROM magic WHERE quantity <= 0 AND player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
-			
+
 				var bottext = message.from.username + ", ecco i tuoi incantesimi:\n\n";
 
 				connection.query('SELECT type, power, quantity FROM magic WHERE player_id = ' + player_id, function (err, rows, fields) {
