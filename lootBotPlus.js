@@ -1,11 +1,12 @@
 process.env["NTBA_FIX_319"] = 1;
 
-process.on('uncaughtException', function (err) {
-	console.error("\x1b[31mException: " + err.message + "\x1b[0m\n" + err.stack);
+process.on('uncaughtException', function (error) {
+	console.log("\x1b[31m", "Exception: ", error, "\x1b[0m");
 });
 
-process.on('unhandledRejection', function (reason, p) {
-	console.log("\x1b[31mError: " + reason.message + "\x1b[0m");
+process.on('unhandledRejection', function (error, p) {
+	if ((error.message.indexOf("Too Many Requests") == -1) && (error.message.indexOf("message is not modified") == -1))
+		console.log("\x1b[31m","Error: ", error.message, "\x1b[0m");
 });
 
 //Globali
@@ -45,6 +46,14 @@ var connection = mysql.createConnection({
 });
 connection.connect();
 
+var mysql_sync = require('sync-mysql');
+var connection_sync = new mysql_sync({
+	host: 'xxx',
+	user: 'xxx',
+	password: 'xxx',
+	database: 'xxx'
+});
+
 process.on('SIGINT', function() {
 	console.log("Spegnimento bot...");
 	connection.end();
@@ -55,6 +64,10 @@ process.on('SIGTERM', function() {
 	console.log("Spegnimento bot...");
 	connection.end();
 	process.exit();
+});
+
+bot.on('polling_error', function(error) {
+  	console.log(error);
 });
 
 var mysqlRetry = require('node-mysql-deadlock-retries');
@@ -87,6 +100,9 @@ bot.on('message', function (message) {
 					});
 				}
 			}
+		}
+		if (message.text.toLowerCase().indexOf("errore:") != -1){
+			bot.sendMessage("@lnotify", "#Mtproto " + message.from.username + ": " + message.text);
 		}
 	}
 
@@ -155,9 +171,6 @@ bot.on('message', function (message) {
 	});
 	if (checkFlood(message) == false) {
 		// ban?
-	}
-	if (message.text.indexOf("Errore") != -1){
-		bot.sendMessage("@lnotify", "#Mtproto " + message.from.username + ": " + message.text);
 	}
 });
 
@@ -274,6 +287,17 @@ callNTimes(60000, function () {
 
 bot.onText(/^\/start/, function (message) {
 	bot.sendMessage(message.chat.id, "Questo è un bot di supporto a @xxxgamebot, è utile nei gruppi. Scrivi / per visualizzare tutti i comandi disponibili!");
+});
+
+bot.onText(/^\/calcola (.+)|^\/calcola/, function (message, match) {
+	
+	if (match[1] == undefined){
+		bot.sendMessage(message.chat.id, "Inserisci un operazione da risolvere. Esempio: /calcola 1+2");
+		return;
+	}
+	
+	var evalValue = match[1].replace(/[^\-\+\/\*\^0-9]/g, "");
+	bot.sendMessage(message.chat.id, eval(evalValue));
 });
 
 bot.onText(/^\/birra/, function (message) {
@@ -766,17 +790,8 @@ bot.onText(/^\/last (.+)/, function (message, match) {
 	};
 });
 
-bot.onText(/^\/pic (.+)/, function (message, match) {
-	if (message.from.username == "fenix45") {
-		connection.query('SELECT account_id FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
-			if (err) throw err;
-			if (Object.keys(rows).length > 0) {
-				bot.sendPhoto(message.chat.id, "propic/" + rows[0].account_id + ".jpg");
-			} else {
-				bot.sendMessage(message.chat.id, "Boh!");
-			}
-		});
-	};
+bot.onText(/^\/ping/, function (message, match) {
+	bot.sendMessage(message.chat.id, "_Pong_", mark);
 });
 
 bot.onText(/^\/pinfo (.+)/, function (message, match) {
@@ -1451,7 +1466,6 @@ function checkStatus(message, n, accountid, type) {
 		}
 
 		accountid = (accountid).toString();
-		//console.log(message.from.username  + " - " + accountid);
 
 		connection.query('SELECT * FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 			if (err) throw err;
@@ -1472,7 +1486,7 @@ function checkStatus(message, n, accountid, type) {
 			if (non == 1) {
 				if (exist == 0) {
 					bot.kickChatMember(message.chat.id, accountid).then(function (result) {
-						if (result != "False") {
+						if (result != false) {
 							bot.sendMessage(message.chat.id, n + " non è iscritto, l'ho bannato");
 							bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa del fatto che non sei registrato al gioco");
 						}
@@ -1484,12 +1498,33 @@ function checkStatus(message, n, accountid, type) {
 			if ((chat_id == "-1001069842056") || (chat_id == "-1001064571576") || (chat_id == "-1001050459665") || (chat_id == "-1001097316494") || (chat_id == "-1001086845014")) {
 				if (group_ban == 1) {
 					bot.kickChatMember(message.chat.id, accountid).then(function (result) {
-						if (result != "False") {
+						if (result != false) {
 							bot.sendMessage(message.chat.id, n + " è bannato dai gruppi, l'ho bannato");
 							bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa del ban da tutti i gruppi");
 						}
 					});
 					return;
+				}
+			}
+			
+			if ((chat_id == "-1001069842056") || (chat_id == "-1001064571576")){
+				if (message.photo != undefined){
+					if (getRealLevel(reb, lev) < 50){
+						bot.deleteMessage(chat_id, message.message_id).then(function (result) {
+							if (result != false) {
+								bot.sendMessage(message.chat.id, "Devi aver superato il livello 50 per postare foto in questo gruppo.");
+							}
+						});
+					}
+				}
+				if (message.document != undefined){
+					if (getRealLevel(reb, lev) < 50){
+						bot.deleteMessage(chat_id, message.message_id).then(function (result) {
+							if (result != false) {
+								bot.sendMessage(message.chat.id, "Devi aver superato il livello 50 per postare documenti in questo gruppo.");
+							}
+						});
+					}
 				}
 			}
 
@@ -1498,7 +1533,7 @@ function checkStatus(message, n, accountid, type) {
 				if (exist == 1) {
 					if (banlist_id.indexOf(accountid) != -1) {
 						bot.kickChatMember(message.chat.id, accountid).then(function (result) {
-							if (result != "False") {
+							if (result != false) {
 								bot.sendMessage(message.chat.id, n + " è bannato dal gioco, l'ho bannato");
 								bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa del ban dal gioco");
 							}
@@ -1511,29 +1546,10 @@ function checkStatus(message, n, accountid, type) {
 			var min = rows[0].min_lev;
 			var max = rows[0].max_lev;
 			var lon = rows[0].level;
-			var levReal = lev;
+			var levReal = getRealLevel(reb, lev);
 
 			if (lon == 1) {
 				if (exist == 1) {
-					if (reb == 2) {
-						levReal += 100;
-					}
-					if (reb == 3) {
-						levReal += 100;
-						levReal += 150;
-					}
-					if (reb == 4) {
-						levReal += 100;
-						levReal += 150;
-						levReal += 200;
-					}
-					if (reb == 5) {
-						levReal += 100;
-						levReal += 150;
-						levReal += 200;
-						levReal += 300;
-					}
-
 					if ((levReal < min) || (levReal > max)) {
 						bot.kickChatMember(message.chat.id, accountid).then(function (result) {
 							if (result != "False") {
@@ -2811,7 +2827,12 @@ bot.onText(/^\/privacy (.+)/, function (message, match) {
 			}
 
 			var public = rows[0].public;
-
+			
+			code = parseInt(code);
+			if (isNaN(code)){
+				bot.sendMessage(message.chat.id, "Non sei l'amministratore del negozio");
+				return;
+			}
 			if (public == 0) {
 				connection.query('UPDATE public_shop SET public = 1 WHERE code = ' + code, function (err, rows, fields) {
 					if (err) throw err;
@@ -3598,15 +3619,19 @@ bot.on('callback_query', function (message) {
 					var d = new Date();
 					var short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
 
-					var text = "Negozio di " + rows[0].nickname + " aggiornato alle " + short_date + "!";
-
-					bot.editMessageText(text, {
-						inline_message_id: message.inline_message_id,
-						reply_markup: {
-							inline_keyboard: iKeys
-						}
-					});
-					bot.answerCallbackQuery(message.id, {text: 'Negozio aggiornato!'});
+					var newtext = "Negozio di " + rows[0].nickname + " aggiornato alle " + short_date + "!";
+					var checktext = newtext.replaceAll("[\*\_]", "").trim();
+					//if (message.message.text != checktext){
+						bot.editMessageText(newtext, {
+							inline_message_id: message.inline_message_id,
+							reply_markup: {
+								inline_keyboard: iKeys
+							}
+						});
+						bot.answerCallbackQuery(message.id, {text: 'Aggiornato!'});
+					//}else{
+					//	bot.answerCallbackQuery(message.id, {text: 'Nessuna novità'});
+					//}
 				});
 				check.splice(index, 1);
 				connection.commit(function () {
@@ -5881,15 +5906,21 @@ bot.onText(/^\/checkmarket (.+)/, function (message, match) {
 		return;
 	}
 
-	connection.query('SELECT id FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
+	connection.query('SELECT id, nickname FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
+		var nickname = rows[0].nickname;
 
 		connection.query('SELECT P1.nickname As fromNick, P2.nickname As toNick, COUNT(from_id) As transac, (SELECT COUNT(to_id) FROM market_direct_history H WHERE H.type = 2 AND (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + ')) As tot, ROUND(COUNT(from_id)/(SELECT COUNT(to_id) FROM market_direct_history H WHERE H.type = 2 AND (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + '))*100, 2) As perc FROM market_direct_history H INNER JOIN player P1 ON P1.id = H.from_id INNER JOIN player P2 ON P2.id = H.to_id WHERE H.type = 2 AND (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + ') GROUP BY from_id, to_id ORDER BY perc DESC', function (err, rows, fields) {
 			if (err) throw err;
+			
+			if (Object.keys(rows).length == 0){
+				bot.sendMessage(message.chat.id, "Nessuna transazione");
+				return;
+			}
 
-			var text = "";
+			var text = "Transazioni per " + nickname + ":\n";
 			var len = Object.keys(rows).length;
 			if (len > 50)
 				len = 50;
@@ -5898,6 +5929,50 @@ bot.onText(/^\/checkmarket (.+)/, function (message, match) {
 			}
 			bot.sendMessage(message.chat.id, text);
 		});
+	});
+});
+
+bot.onText(/^\/checkmarketAll (.+)/, function (message, match) {
+
+	if (message.from.username != "fenix45") {
+		return;
+	}
+	
+	var player_id = 0;
+	var nickname = "";
+	var text = "Transazioni sospette (>= " + match[1] + "%, almeno 50) per gli utenti attivi:\n";
+	var len = 0;
+	var cnt = 0;
+
+	connection.query('SELECT P.id, P.nickname FROM last_command L, player P WHERE L.account_id = P.account_id AND L.time > NOW() - INTERVAL 1 WEEK', function (err, rows, fields) {
+		if (err) throw err;
+		
+		console.log("Controllo transazioni sospette per " + Object.keys(rows).length + " utenti");
+		for (var j = 0; j < Object.keys(rows).length; j++) {
+			
+			player_id = rows[j].id;
+			nickname = rows[j].nickname;
+			
+			var transactions = connection_sync.query('SELECT P1.nickname As fromNick, P2.nickname As toNick, COUNT(from_id) As transac, (SELECT COUNT(to_id) FROM market_direct_history H WHERE H.type = 2 AND (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + ')) As tot, ROUND(COUNT(from_id)/(SELECT COUNT(to_id) FROM market_direct_history H WHERE H.type = 2 AND (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + '))*100, 2) As perc FROM market_direct_history H INNER JOIN player P1 ON P1.id = H.from_id INNER JOIN player P2 ON P2.id = H.to_id WHERE H.type = 2 AND (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + ') GROUP BY from_id, to_id ORDER BY perc DESC');
+			
+			len = Object.keys(transactions).length;
+			if (len > 50)
+				len = 50;
+			var transaction = "";
+			for (var i = 0; i < len; i++) {
+				if ((transactions[i].perc > match[1]) && (transactions[i].transac > 50)){
+					transaction = transactions[i].fromNick + " > " + transactions[i].toNick + " (" + transactions[i].transac + ") " + transactions[i].perc + "%";
+					text += transaction + "\n";
+					console.log(transaction);
+				}
+				cnt++;
+			}
+		}
+		if (cnt > 0)
+			bot.sendMessage(message.chat.id, text);
+		else
+			bot.sendMessage(message.chat.id, text + "Nessun risultato");
+		console.log("Fine");
 	});
 });
 
@@ -6489,7 +6564,6 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 								}
 							};
 
-
 							connection.query('SELECT name FROM player, team, team_player WHERE player.id = ' + player_id + ' AND team.id = team_player.team_id AND team_player.player_id = player.id', function (err, rows, fields) {
 								if (err) throw err;
 								var team_desc = "";
@@ -6648,6 +6722,31 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																			if (player_id == 1) {
 																				stars = "👑";
 																			}
+																			
+																			var enchant1 = "";
+																			if (rows[0].weapon_enchant == 1){
+																				enchant1 = " ⚡️";
+																			}else if (rows[0].weapon_enchant == 2){
+																				enchant1 = " 🔥";
+																			}else if (rows[0].weapon_enchant == 3){
+																				enchant1 = " 🌊";
+																			}
+																			var enchant2 = "";
+																			if (rows[0].weapon2_enchant == 1){
+																				enchant2 = " ⚡️";
+																			}else if (rows[0].weapon2_enchant == 2){
+																				enchant2 = " 🔥";
+																			}else if (rows[0].weapon2_enchant == 3){
+																				enchant2 = " 🌊";
+																			}
+																			var enchant3 = "";
+																			if (rows[0].weapon3_enchant == 1){
+																				enchant3 = " ⚡️";
+																			}else if (rows[0].weapon3_enchant == 2){
+																				enchant3 = " 🔥";
+																			}else if (rows[0].weapon3_enchant == 3){
+																				enchant3 = " 🌊";
+																			}
 
 																			//Talismani
 
@@ -6770,18 +6869,18 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																			if (weapon != "-") {
 																				rows[0].weapon += rows[0].power_dmg;
 																				rows[0].weapon_crit += rows[0].power_weapon;
-																				weapon_desc = " (+" + Math.round(rows[0].weapon) + ", " + rows[0].weapon_crit + "%, " + rows[0].weapon_enchant + ")";
+																				weapon_desc = " (+" + Math.round(rows[0].weapon) + ", " + rows[0].weapon_crit + "%, " + rows[0].weapon_enchant + enchant1 + ")";
 																			}
 																			var weapon2_desc = "";
 																			if (weapon2 != "-") {
 																				rows[0].weapon2 -= rows[0].power_def;
 																				rows[0].weapon2_crit += rows[0].power_armor;
-																				weapon2_desc = " (" + Math.round(rows[0].weapon2) + ", " + rows[0].weapon2_crit + "%, " + rows[0].weapon2_enchant + ")";
+																				weapon2_desc = " (" + Math.round(rows[0].weapon2) + ", " + rows[0].weapon2_crit + "%, " + rows[0].weapon2_enchant + enchant2 + ")";
 																			}
 																			var weapon3_desc = "";
 																			if (weapon3 != "-") {
 																				rows[0].weapon2_crit += rows[0].power_shield;
-																				weapon3_desc = " (" + Math.round(rows[0].weapon3) + ", " + rows[0].weapon3_crit + "%, " + rows[0].weapon3_enchant + ")";
+																				weapon3_desc = " (" + Math.round(rows[0].weapon3) + ", " + rows[0].weapon3_crit + "%, " + rows[0].weapon3_enchant + enchant3 + ")";
 																			}
 
 																			var nickname = rows[0].nickname;
@@ -7589,9 +7688,7 @@ function setFinishedLottery(element, index, array) {
 				return;
 			}
 			var rand = Math.round(Math.random() * (Object.keys(rows).length - 1));
-			console.log("Estrazione: " + rand);
 			var extracted = rows[rand].player_id;
-			console.log(extracted);
 			connection.query('SELECT * FROM player WHERE id = ' + extracted, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
@@ -7615,7 +7712,7 @@ function setFinishedLottery(element, index, array) {
 
 					connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + element.creator_id, function (err, rows, fields) {
 						if (err) throw err;
-						console.log("Consegnati " + money + " § al creatore");
+						//console.log("Consegnati " + money + " § al creatore");
 					});
 
 					connection.query('SELECT nickname, account_id, chat_id FROM public_lottery_players, player WHERE player.id = player_id AND lottery_id = ' + lottery_id, function (err, rows, fields) {
@@ -7784,3 +7881,8 @@ function findInArray(array, str) {
 	}
 	return false;
 }
+
+String.prototype.replaceAll = function (search, replacement) {
+	var target = this;
+	return target.replace(new RegExp(search, 'g'), replacement);
+};

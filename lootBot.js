@@ -2,17 +2,16 @@ process.env["NTBA_FIX_319"] = 1;
 process.env["NTBA_FIX_350"] = 1;
 
 process.on('uncaughtException', function (error) {
-	console.log("\x1b[31mException: " + error.stack + "\x1b[0m");
-	console.log("1 > " + error);
+	console.log("\x1b[31m", "Exception: ", error, "\x1b[0m");
 });
 
-process.on('unhandledRejection', function (error) {
-	console.log("\x1b[31mError: " + error.message + "\x1b[0m");
+process.on('unhandledRejection', function (error, p) {
+	if (error.message.indexOf("Too Many Requests") == -1)
+		console.log("\x1b[31m","Error: ", error.message, "\x1b[0m");
 });
 
 //Globali
 var max_mission_id = 290;
-var firstStart = 0;
 var banlist_id = [];
 var banlist_tx = [];
 var timevar = [];
@@ -28,7 +27,7 @@ var autoEstrazione = 0;
 var halloween = 0;
 var villa = 0;
 var mistery = 0;
-var wanted = 0;		//controlla anche lo /ispeziona nel plus
+var wanted = 0;
 var eventStory = 0;
 var eventMana = 0;
 var eventFestival = 0;
@@ -40,7 +39,7 @@ var snowHouseEnd = 0;
 
 var teamMission = 1;
 var missionDayLimit = 5;
-var checkDragonTopOn = 0;
+var checkDragonTopOn = 1;
 var sconto = 10;
 var sconto_evento = 0;
 var max_duration = 5;
@@ -284,7 +283,10 @@ process.on('SIGTERM', function() {
 	process.exit();
 });
 
-refreshBosses();
+bot.on('polling_error', function(error) {
+	console.log(error);
+});
+
 reloadBans();
 
 var d = new Date();
@@ -1338,14 +1340,14 @@ bot.onText(/^\/sendmsg/, function (message, match) {
 	if (message.from.username == "fenix45") {
 		connection.query('DELETE FROM global_msg', function (err, rows, fields) {
 			if (err) throw err;
-		//	connection.query('ALTER TABLE global_msg AUTO_INCREMENT=1', function (err, rows, fields) {
-		//		if (err) throw err;
-				var banned_join = banlist_id.join();
-				connection.query('INSERT INTO global_msg (chat_id) SELECT P.chat_id FROM last_command L, player P WHERE L.account_id = P.account_id AND L.time > NOW() - INTERVAL 1 WEEK AND P.global_msg = 1 AND P.account_id NOT IN (' + banned_join + ')', function (err, rows, fields) {
-					if (err) throw err;
-					bot.sendMessage(message.chat.id, "Inserite " + rows.affectedRows + " voci");
-				});
-		//	});
+			//	connection.query('ALTER TABLE global_msg AUTO_INCREMENT=1', function (err, rows, fields) {
+			//		if (err) throw err;
+			var banned_join = banlist_id.join();
+			connection.query('INSERT INTO global_msg (chat_id) SELECT P.chat_id FROM last_command L, player P WHERE L.account_id = P.account_id AND L.time > NOW() - INTERVAL 1 WEEK AND P.global_msg = 1 AND P.account_id NOT IN (' + banned_join + ')', function (err, rows, fields) {
+				if (err) throw err;
+				bot.sendMessage(message.chat.id, "Inserite " + rows.affectedRows + " voci");
+			});
+			//	});
 		});
 	}
 });
@@ -4058,6 +4060,31 @@ function getInfo(message, player, myhouse_id) {
 																				stars = "👑";
 																			}
 
+																			var enchant1 = "";
+																			if (rows[0].weapon_enchant == 1){
+																				enchant1 = " ⚡️";
+																			}else if (rows[0].weapon_enchant == 2){
+																				enchant1 = " 🔥";
+																			}else if (rows[0].weapon_enchant == 3){
+																				enchant1 = " 🌊";
+																			}
+																			var enchant2 = "";
+																			if (rows[0].weapon2_enchant == 1){
+																				enchant2 = " ⚡️";
+																			}else if (rows[0].weapon2_enchant == 2){
+																				enchant2 = " 🔥";
+																			}else if (rows[0].weapon2_enchant == 3){
+																				enchant2 = " 🌊";
+																			}
+																			var enchant3 = "";
+																			if (rows[0].weapon3_enchant == 1){
+																				enchant3 = " ⚡️";
+																			}else if (rows[0].weapon3_enchant == 2){
+																				enchant3 = " 🔥";
+																			}else if (rows[0].weapon3_enchant == 3){
+																				enchant3 = " 🌊";
+																			}
+
 																			//Talismani
 
 																			if (charm_id == 62) {
@@ -4179,18 +4206,18 @@ function getInfo(message, player, myhouse_id) {
 																			if (weapon != "-") {
 																				rows[0].weapon += rows[0].power_dmg;
 																				rows[0].weapon_crit += rows[0].power_weapon;
-																				weapon_desc = " (+" + Math.round(rows[0].weapon) + ", " + rows[0].weapon_crit + "%, " + rows[0].weapon_enchant + ")";
+																				weapon_desc = " (+" + Math.round(rows[0].weapon) + ", " + rows[0].weapon_crit + "%, " + rows[0].weapon_enchant + enchant1 + ")";
 																			}
 																			var weapon2_desc = "";
 																			if (weapon2 != "-") {
 																				rows[0].weapon2 -= rows[0].power_def;
 																				rows[0].weapon2_crit += rows[0].power_armor;
-																				weapon2_desc = " (" + Math.round(rows[0].weapon2) + ", " + rows[0].weapon2_crit + "%, " + rows[0].weapon2_enchant + ")";
+																				weapon2_desc = " (" + Math.round(rows[0].weapon2) + ", " + rows[0].weapon2_crit + "%, " + rows[0].weapon2_enchant + enchant2 + ")";
 																			}
 																			var weapon3_desc = "";
 																			if (weapon3 != "-") {
 																				rows[0].weapon2_crit += rows[0].power_shield;
-																				weapon3_desc = " (" + Math.round(rows[0].weapon3) + ", " + rows[0].weapon3_crit + "%, " + rows[0].weapon3_enchant + ")";
+																				weapon3_desc = " (" + Math.round(rows[0].weapon3) + ", " + rows[0].weapon3_crit + "%, " + rows[0].weapon3_enchant + enchant3 + ")";
 																			}
 
 																			var nickname = rows[0].nickname;
@@ -4680,15 +4707,15 @@ bot.onText(/descrizione personale/i, function (message) {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text != "Torna al menu") {
 					var resp = answer.text;
-					
-					if (resp == "cancella"){
+
+					if (resp.toLowerCase() == "cancella"){
 						bot.sendMessage(message.chat.id, "Descrizione personaggio rimossa", back);
 						connection.query('UPDATE player SET player_description = NULL WHERE id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 						});
 						return;
 					}
-					
+
 					var reg = new RegExp("^[a-zA-Zàèìòùé.,\\\?\!\'\@\(\) ]{1,500}$");
 					if (reg.test(resp) == false) {
 						bot.sendMessage(message.chat.id, "Descrizione non valida, riprova", back);
@@ -4708,7 +4735,7 @@ bot.onText(/soprannome/i, function (message) {
 	connection.query('SELECT id, exp FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
-		
+
 		if (Math.floor(rows[0].exp/10) < 1000){
 			bot.sendMessage(message.chat.id, "Puoi impostare il soprannome solo al livello 1.000", back);
 			return;
@@ -4718,15 +4745,15 @@ bot.onText(/soprannome/i, function (message) {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text != "Torna al menu") {
 					var resp = answer.text;
-					
-					if (resp == "cancella"){
+
+					if (resp.toLowerCase() == "cancella"){
 						bot.sendMessage(message.chat.id, "Soprannome rimosso", back);
 						connection.query('UPDATE player SET player_custom_nickname = NULL WHERE id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 						});
 						return;
 					}
-					
+
 					var reg = new RegExp("^[a-zA-Zàèìòùé.,\\\?\!\'\@\(\) ]{1,20}$");
 					if (reg.test(resp) == false) {
 						bot.sendMessage(message.chat.id, "Soprannome non valido, riprova", back);
@@ -5366,10 +5393,10 @@ bot.onText(/casa dei giochi/i, function (message) {
 					bot.sendMessage(message.chat.id, "*Numero Fortunato*\n\nIn questo gioco puoi puntare su uno o più numeri e offrire una certa somma di §, quando avrai specificato entrambe le informazioni, la _Sfera Tempesta_ verrà fatta girare nel grosso campo da gioco e si fermerà su uno dei 36 numeri (37 considerando lo 0, che però è sempre perdente). Se almeno una delle tue previsioni sarà corretta, otterrai una vincita pari a quanto puntato per il numero di previsioni.\n\nAl momento possiedi " + formatNumber(myMoney) + " §", kbNum);
 				} else if ((answer.text.indexOf("Combo Craft") != -1)) {
 					var price = 1000;
-					bot.sendMessage(message.chat.id, "*Combo di Craft*\n\nIn questo gioco puoi tentare la fortuna facendo girare le 3 _Rotelle X_ e tentare di vincere qualcosa. Quando tutte e 3 segneranno lo stesso simbolo, otterrai oggetti o strumenti particolari. Ogni giocata ti costerà " + price + " §, procedi?", kbRote);
+					bot.sendMessage(message.chat.id, "*Combo di Craft*\n\nIn questo gioco puoi tentare la fortuna facendo girare le 3 _Rotelle X_ e tentare di vincere qualcosa. Quando tutte e 3 segneranno lo stesso simbolo, otterrai oggetti o strumenti particolari. Ogni giocata ti costerà " + price + " §, procedi?\n\nAl momento possiedi " + formatNumber(myMoney) + " §", kbRote);
 				} else if ((answer.text.indexOf("Carte e Pirata") != -1)) {
 					var price = 500;
-					bot.sendMessage(message.chat.id, "*Carte e Pirata*\n\nIn questo gioco dovrai sfidare il Pirata a _Carte Stropicciate_ e indovinare più volte possibili di fila se la carta successiva sarà più alta o più bassa della precedente. Le carte hanno un valore che varia casualmente tra 1 e 20. Giocare ti costerà " + price + " § a carta, il gioco finisce quando non indovini e riceverai un premio partendo dalle 5 vittorie di fila, procedi?", kbCard).then(function () {
+					bot.sendMessage(message.chat.id, "*Carte e Pirata*\n\nIn questo gioco dovrai sfidare il Pirata a _Carte Stropicciate_ e indovinare più volte possibili di fila se la carta successiva sarà più alta o più bassa della precedente. Le carte hanno un valore che varia casualmente tra 1 e 20. Giocare ti costerà " + price + " § a carta, il gioco finisce quando non indovini e riceverai un premio partendo dalle 5 vittorie di fila, procedi?\n\nAl momento possiedi " + formatNumber(myMoney) + " §", kbCard).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							if (answer.text == "Classifica") {
 
@@ -6128,7 +6155,7 @@ bot.onText(/$vocazioni|vocazione|torna alle vocazioni/i, function (message) {
 		var changed = rows[0].class_changed;
 
 		if (reborn == 1) {
-			bot.sendMessage(message.chat.id, "Non puoi selezionare una vocazione fino alla Rinascita 1 (Livello 100). Potrai scegliere la strada che il tuo eroe desidera intraprendere ottenendo particolari abilità!", back);
+			bot.sendMessage(message.chat.id, "Non puoi selezionare una vocazione fino alla Rinascita 1 (Livello 100). Potrai scegliere la strada che il tuo eroe desidera intraprendere ottenendo particolari abilità!\nPuoi visualizzare le Vocazioni e le loro descrizione in questo documento: http://telegra.ph/Lista-Vocazioni-di-Loot-01-26", back);
 			return;
 		}
 
@@ -6519,7 +6546,7 @@ function globalAchievement(player_id, value = 1) {
 				} else {
 					connection.query('INSERT INTO achievement_global (player_id, value) VALUES (' + player_id + ', ' + value + ')', function (err, rows, fields) {
 						if (err) throw err;
-						console.log("Impresa +" + value);
+						//console.log("Impresa +" + value);
 					});
 				}
 			});
@@ -8752,7 +8779,7 @@ bot.onText(/dungeon/i, function (message) {
 												var acc_money = param_arr[0];
 												var acc_life = param_arr[1];
 
-												bot.sendMessage(message.chat.id, "Entri in una stanza piena d'oro luccicante e una spada conficcata nel muro, puoi decidere di prendere oro ma un messaggio su un cartello raccomanda di non essere troppo avido, cosa fai?\nFin ora hai accumulato " + acc_money + " §.", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, "Entri in una stanza piena d'oro luccicante e una spada conficcata nel muro, puoi decidere di raccogliere monete ma un messaggio su un cartello raccomanda di non essere troppo avido, cosa fai?\nFin ora hai accumulato " + formatNumber(acc_money) + " §.", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = function (answer) {
 														if ((answer.text == "Accumula Monete") || (answer.text == "Estrai Spada")) {
 
@@ -8763,27 +8790,20 @@ bot.onText(/dungeon/i, function (message) {
 																	player_rank = 1;
 																}
 
-																//console.log("Spade per rango " + player_rank);
-
 																var middle = Math.pow(player_rank, 0.55) * 1000
 																var min = middle * 0.66;
 																var max = middle * 1.33;
 																var rand = Math.round(Math.random() * (max - min + 1) + min);
 
-																//console.log("Spade v2: " + rand)
-
-																/*
-																var min = player_rank*100;
-																var max = player_rank*85;
-																var rand = Math.round(Math.random()*(min))+(max);
-
-																console.log("Spade: " + rand)
-																*/
-
 																acc_money = parseInt(acc_money) + rand;
 
 																if (acc_life == 90) {
 																	bot.sendMessage(message.chat.id, "Non ci sono più monete nella stanza!", dNext);
+																	return;
+																}
+
+																if (player_life - damage <= 0) {
+																	bot.sendMessage(message.chat.id, "Sei troppo stanco per riuscire a portare altre monete!", dNext);
 																	return;
 																}
 
@@ -8793,11 +8813,6 @@ bot.onText(/dungeon/i, function (message) {
 																		if (err) throw err;
 																		bot.sendMessage(message.chat.id, "In mezzo ai mucchi trovi un *Kit Fuga*!", dNext);
 																	});
-																}
-
-																if (player_life - damage <= 0) {
-																	bot.sendMessage(message.chat.id, "Sei troppo stanco per riuscire a portare altre monete!", dNext);
-																	return;
 																}
 
 																acc_life = parseInt(acc_life) + 10;
@@ -11909,7 +11924,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																		var mylifesum = player_life - damage;
 																		if (mylifesum <= 0) {
-																			connection.query('UPDATE player SET life = life-' + damage + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																			connection.query('UPDATE player SET life = life-' + damage + ', paralyzed = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																				connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
@@ -14913,7 +14928,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 			}
 
 			if (checkDragonTopOn == 0) {
-				bot.sendMessage(message.chat.id, "\nProssima stagione: 5 marzo 12:00 - 12 marzo 12:00\nSe hai partecipato alla stagione precedente, riceverai i premi a breve!", back_html);
+				bot.sendMessage(message.chat.id, "\nProssima stagione: 4 aprile 12:00 - 11 aprile 12:00\nSe hai partecipato alla stagione precedente, riceverai i premi a breve!", back_html);
 				return;
 			}
 
@@ -18367,11 +18382,19 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 																				}
 
 																				if (team_id != 2){
-																					var inMissTxt = "Membri impegnati in missione:\n" + inMiss + "\n\n";
-																					var inTravelTxt = "Membri impegnati in viaggio:\n" + inTravel + "\n\n";
-																					var inCaveTxt = "Membri impegnati in cava:\n" + inCave + "\n\n";
-																					var inHolidayTxt = "Membri in vacanza:\n" + inHoliday + "\n\n";
-																						
+																					var inMissTxt = "";
+																					if (inMiss != "")
+																						inMissTxt = "Membri impegnati in missione:\n" + inMiss + "\n";
+																					var inTravelTxt = "";
+																					if (inTravel != "")
+																						inTravelTxt = "Membri impegnati in viaggio:\n" + inTravel + "\n";
+																					var inCaveTxt = "";
+																					if (inCave != "")
+																						inCaveTxt = "Membri impegnati in cava:\n" + inCave + "\n";
+																					var inHolidayTxt = "";
+																					if (inHoliday != "")
+																						inHolidayTxt = "Membri in vacanza:\n" + inHoliday + "\n";
+
 																					if ((inMiss != "") || (inTravel != "") || (inCave != "") || (inHoliday != "")){
 																						bot.sendMessage(message.chat.id, inMissTxt + inTravelTxt + inCaveTxt + inHolidayTxt, kbBack);
 																						return;
@@ -22363,116 +22386,119 @@ bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
 			}
 		};
 
-		connection.query('SELECT * FROM event_dust_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('UPDATE event_dust_status SET `generated` = max_qnt WHERE `generated` > max_qnt AND player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
-			if (Object.keys(rows).length == 0) {
-				connection.query('INSERT INTO event_dust_status (player_id) VALUES (' + player_id + ')', function (err, rows, fields) {
-					if (err) throw err;
-					bot.sendMessage(message.chat.id, "Hai ricevuto il tuo *Generatore di Polvere*!\nPotrai utilizzare la polvere prodotta per generare un oggetto a tua scelta, il cui costo aumenterà in base al valore dello stesso, è disponibile ogni lunedì e martedì!", eventKb);
-					return;
-				});
-			} else {
-				var max_qnt = parseInt(rows[0].max_qnt);
-				var qnt = parseInt(rows[0].qnt);
+			connection.query('SELECT * FROM event_dust_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
 
-				if (rows[0].extracting == 1) {
-					var generated = rows[0].generated;
-					var updateTime = rows[0].last_update;
-					bot.sendMessage(message.chat.id, "Hai generato fin ora " + generated + "/" + max_qnt + " unità di polvere, vuoi spegnere il generatore o ritirarla?\n\nUltima attività: " + toDate("it", updateTime), eventKb3).then(function () {
-						answerCallbacks[message.chat.id] = function (answer) {
-							if (answer.text == "Torna al menu") {
-								return;
-							}
-							if (answer.text == "Ritira") {
-								connection.query('SELECT `generated` FROM event_dust_status WHERE player_id = ' + player_id, function (err, rows, fields) {
-									if (err) throw err;
-
-									if (rows[0].generated == 0) {
-										bot.sendMessage(message.chat.id, "Non c'è ancora abbastanza Polvere per poterla ritirare!", gBack);
-										return;
-									}
-
-									for (var i = 0, len = rows[0].generated; i < len; i++) {
-										connection.query('INSERT INTO inventory (player_id, item_id) VALUES (' + player_id + ',646)', function (err, rows, fields) {
-											if (err) throw err;
-										});
-									}
-									var d = new Date();
-									var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-									connection.query('UPDATE event_dust_status SET `generated` = 0, notified = 0, last_update = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
-										if (err) throw err;
-									});
-									bot.sendMessage(message.chat.id, "Hai ottenuto " + rows[0].generated + "x Polvere!", gBack);
-								});
-							} else if (answer.text == "Spegni") {
-								connection.query('UPDATE event_dust_status SET extracting = 0, last_update = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-									if (err) throw err;
-									bot.sendMessage(message.chat.id, "Hai spento il generatore", gBack);
-								});
-							}
-						};
+				if (Object.keys(rows).length == 0) {
+					connection.query('INSERT INTO event_dust_status (player_id) VALUES (' + player_id + ')', function (err, rows, fields) {
+						if (err) throw err;
+						bot.sendMessage(message.chat.id, "Hai ricevuto il tuo *Generatore di Polvere*!\nPotrai utilizzare la polvere prodotta per generare un oggetto a tua scelta, il cui costo aumenterà in base al valore dello stesso, è disponibile ogni lunedì e martedì!", eventKb);
+						return;
 					});
 				} else {
+					var max_qnt = parseInt(rows[0].max_qnt);
+					var qnt = parseInt(rows[0].qnt);
 
-					connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 14', function (err, rows, fields) {
-						if (err) throw err;
+					if (rows[0].extracting == 1) {
+						var generated = rows[0].generated;
+						var updateTime = rows[0].last_update;
+						bot.sendMessage(message.chat.id, "Hai generato fin ora " + generated + "/" + max_qnt + " unità di polvere, vuoi spegnere il generatore o ritirarla?\n\nUltima attività: " + toDate("it", updateTime), eventKb3).then(function () {
+							answerCallbacks[message.chat.id] = function (answer) {
+								if (answer.text == "Torna al menu") {
+									return;
+								}
+								if (answer.text == "Ritira") {
+									connection.query('SELECT `generated` FROM event_dust_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
 
-						if (Object.keys(rows).length > 0) {
-							qnt += parseInt(rows[0].ability_level);
-						}
-
-						connection.query('SELECT COUNT(id) As qnt FROM inventory WHERE item_id = 646 AND player_id = ' + player_id, function (err, rows, fields) {
-							if (err) throw err;
-
-							var unit = rows[0].qnt;
-
-							bot.sendMessage(message.chat.id, "*Gestione Generatore*\n\nProdurrai " + qnt + "x Polvere/ora e il deposito ti consente massimo " + max_qnt + " unità\n" +
-											"Al momento possiedi " + unit + " unità nello zaino", eventKb2).then(function () {
-								answerCallbacks[message.chat.id] = function (answer) {
-									if (answer.text == "Torna al menu") {
-										return;
-									}
-									if (answer.text == "Aziona Generatore") {
-										var d = new Date();
-										var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-										connection.query('UPDATE event_dust_status SET extracting = 1, last_update = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
-											if (err) throw err;
-											bot.sendMessage(message.chat.id, "Generatore azionato! Torna tra un po' di tempo per ritirare la polvere prodotta!", back);
-										});
-									} else if (answer.text == "Aumenta Deposito") {
-										if (max_qnt >= 54) {
-											bot.sendMessage(message.chat.id, "Il deposito del generatore è già potenziato al massimo", gBack);
+										if (rows[0].generated == 0) {
+											bot.sendMessage(message.chat.id, "Non c'è ancora abbastanza Polvere per poterla ritirare!", gBack);
 											return;
 										}
 
-										bot.sendMessage(message.chat.id, "Aggiungere 2 unità al tuo deposito ti costerà 50.000 §, procedi?", gYesNo).then(function () {
-											answerCallbacks[message.chat.id] = function (answer) {
-												if (answer.text.toLowerCase() == "si") {
-													connection.query('SELECT money FROM player WHERE id = ' + player_id, function (err, rows, fields) {
-														if (err) throw err;
-														if (rows[0].money < 50000) {
-															bot.sendMessage(message.chat.id, "Non hai abbastanza monete", gBack);
-															return;
-														}
-														connection.query('UPDATE player SET money = money-50000 WHERE id = ' + player_id, function (err, rows, fields) {
+										for (var i = 0, len = rows[0].generated; i < len; i++) {
+											connection.query('INSERT INTO inventory (player_id, item_id) VALUES (' + player_id + ',646)', function (err, rows, fields) {
+												if (err) throw err;
+											});
+										}
+										var d = new Date();
+										var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+										connection.query('UPDATE event_dust_status SET `generated` = 0, notified = 0, last_update = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+										});
+										bot.sendMessage(message.chat.id, "Hai ottenuto " + rows[0].generated + "x Polvere!", gBack);
+									});
+								} else if (answer.text == "Spegni") {
+									connection.query('UPDATE event_dust_status SET extracting = 0, last_update = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+										bot.sendMessage(message.chat.id, "Hai spento il generatore", gBack);
+									});
+								}
+							};
+						});
+					} else {
+						connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 14', function (err, rows, fields) {
+							if (err) throw err;
+
+							if (Object.keys(rows).length > 0) {
+								qnt += parseInt(rows[0].ability_level);
+							}
+
+							connection.query('SELECT COUNT(id) As qnt FROM inventory WHERE item_id = 646 AND player_id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+
+								var unit = rows[0].qnt;
+
+								bot.sendMessage(message.chat.id, "*Gestione Generatore*\n\nProdurrai " + qnt + "x Polvere/ora e il deposito ti consente massimo " + max_qnt + " unità\n" +
+												"Al momento possiedi " + unit + " unità nello zaino", eventKb2).then(function () {
+									answerCallbacks[message.chat.id] = function (answer) {
+										if (answer.text == "Torna al menu") {
+											return;
+										}
+										if (answer.text == "Aziona Generatore") {
+											var d = new Date();
+											var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+											connection.query('UPDATE event_dust_status SET extracting = 1, last_update = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+												bot.sendMessage(message.chat.id, "Generatore azionato! Torna tra un po' di tempo per ritirare la polvere prodotta!", back);
+											});
+										} else if (answer.text == "Aumenta Deposito") {
+											if (max_qnt >= 54) {
+												bot.sendMessage(message.chat.id, "Il deposito del generatore è già potenziato al massimo", gBack);
+												return;
+											}
+
+											bot.sendMessage(message.chat.id, "Aggiungere 2 unità al tuo deposito ti costerà 50.000 §, procedi?", gYesNo).then(function () {
+												answerCallbacks[message.chat.id] = function (answer) {
+													if (answer.text.toLowerCase() == "si") {
+														connection.query('SELECT money FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
-															connection.query('UPDATE event_dust_status SET max_qnt = max_qnt + 2 WHERE player_id = ' + player_id, function (err, rows, fields) {
+															if (rows[0].money < 50000) {
+																bot.sendMessage(message.chat.id, "Non hai abbastanza monete", gBack);
+																return;
+															}
+															connection.query('UPDATE player SET money = money-50000 WHERE id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
-																bot.sendMessage(message.chat.id, "Hai potenziato il deposito e hai raggiunto " + (max_qnt + 2) + " unità di spazio disponibile!", gBack);
+																connection.query('UPDATE event_dust_status SET max_qnt = max_qnt + 2 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+																	bot.sendMessage(message.chat.id, "Hai potenziato il deposito e hai raggiunto " + (max_qnt + 2) + " unità di spazio disponibile!", gBack);
+																});
 															});
 														});
-													});
+													}
 												}
-											}
-										});
-									}
-								};
+											});
+										}
+									};
+								});
 							});
 						});
-					});
+					}
 				}
-			}
+			});
 		});
 	});
 });
@@ -23316,10 +23342,15 @@ bot.onText(/ricercato|evento/i, function (message) {
 							var len = Object.keys(rows).length;
 							var rand = Math.round(Math.random() * len - 1);
 
+							if (len < 2){
+								bot.sendMessage(message.chat.id, "Non ci sono abbastanza cacciatori, torna tra qualche minuto!!", back);
+								return;
+							}
+
 							var sel = rows[rand].from_id;
 							connection.query('UPDATE event_wanted_status SET wanted_id = ' + sel + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
-								bot.sendMessage(message.chat.id, "Il tuo ricercato non è ancora disponibile, torna tra qualche secondo!", back);
+								bot.sendMessage(message.chat.id, "Il ricercato non è ancora stato reso pubblico, torna tra qualche secondo!", back);
 							});
 						});
 						return;
@@ -25488,24 +25519,25 @@ function cercaTermine(message, param, player_id) {
 							} else if (rows[0].id == 94) {
 								cons_pnt = " - Vita: 20%";
 							}
-
-							/*
-							if (rows[0].id == 7) {
-								cons_pnt = " - Danno: 100-300";
-							} else if (rows[0].id == 17) {
-								cons_pnt = " - Danno: 500";
-							} else if (rows[0].id == 95) {
-								cons_pnt = " - Danno: 600";
-							} else if (rows[0].id == 38) {
-								cons_pnt = " - Danno: 3000-7000";
-							} else if (rows[0].id == 106) {
-								cons_pnt = " - Danno: 900-1000";
-							} else if (rows[0].id == 107) {
-								cons_pnt = " - Danno: 3500-4000";
-							} else if (rows[0].id == 108) {
-								cons_pnt = " - Danno: 7000-8000";
+							if (rows[0].id == "17") {
+								cons_pnt = " - " + (0.2*10) + " Gigatoni";
+							} else if (rows[0].id == "95") { 
+								cons_pnt = " - " + (0.5*10) + " Gigatoni";
+							} else if (rows[0].id == "7") {
+								cons_pnt = " - " + (0.1*10) + " Gigatoni";
+							} else if (rows[0].id == "38") {
+								cons_pnt = " - " + (1*10) + " Gigatoni";
+							} else if (rows[0].id == "106") {
+								cons_pnt = " - " + (0.8*10) + " Gigatoni";
+							} else if (rows[0].id == "107") {
+								cons_pnt = " - " + (2*10) + " Gigatoni";
+							} else if (rows[0].id == "108") {
+								cons_pnt = " - " + (3*10) + " Gigatoni";
+							} else if (rows[0].id == "751") {
+								cons_pnt = " - " + (5*10) + " Gigatoni";
+							} else if (rows[0].id == "752") {
+								cons_pnt = " - " + (7*10) + " Gigatoni";
 							}
-							*/
 						}
 
 						if (category == 2) {
@@ -34736,7 +34768,7 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 
 																				setAchievement(message.chat.id, player_id, 30, damage);
 
-																				connection.query('UPDATE `player` SET `life`=life-' + damage + ' WHERE id=' + player_id, function (err, rows, fields) {
+																				connection.query('UPDATE player SET life = life-' + damage + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
 
 																					if (magic == 3) {
@@ -34789,6 +34821,11 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 																								msg = "Essendo paralizzato non riesci a colpire, invece il boss ti " + extra + " con un colpo mortale da *" + formatNumber(damage) + "* hp!" + restored;
 																							}
 																						}
+
+																						connection.query('UPDATE player SET life = 0, paralyzed = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+
 																						bot.sendMessage(message.chat.id, msg, revive);
 																						return;
 																					}
@@ -35346,7 +35383,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 										reply_markup: {
 											resize_keyboard: true,
 											//one_time_keyboard: true,
-											"keyboard": [["1"], ["2"], ["3"], ["4"], ["5"], ["10"], ["Torna al menu"]]
+											"keyboard": [["1", "2", "3"], ["4", "5", "10"], ["Torna al menu"]]
 										}
 									};
 								} else if (item_id == 93) {
@@ -35355,7 +35392,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 										reply_markup: {
 											resize_keyboard: true,
 											//one_time_keyboard: true,
-											"keyboard": [["1"], ["2"], ["3"], ["8"], ["9"], ["Torna al menu"]]
+											"keyboard": [["1", "2", "3"], ["7", "8", "9"], ["Torna al menu"]]
 										}
 									};
 								} else {
@@ -35364,7 +35401,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 										reply_markup: {
 											resize_keyboard: true,
 											//one_time_keyboard: true,
-											"keyboard": [["1"], ["2"], ["3"], ["4"], ["5"], ["Torna al menu"]]
+											"keyboard": [["1", "2", "3"], ["4", "5"], ["Torna al menu"]]
 										}
 									};
 								}
@@ -35495,7 +35532,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 									reply_markup: {
 										resize_keyboard: true,
 										//one_time_keyboard: true,
-										"keyboard": [["1"], ["5"], ["10"], ["50"], ["100"], ["Torna al menu"]]
+										"keyboard": [["1", "5", "10"], ["25", "50", "100"], ["Torna al menu"]]
 									}
 								};
 
@@ -35526,7 +35563,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 												}
 												return;
 											}
-											
+
 											var item_name = rows[0].name;
 
 											connection.query('SELECT boss_id FROM boss_team WHERE id = ' + boss_id, function (err, rows, fields) {
@@ -35680,9 +35717,11 @@ bot.onText(/spia rifugio|spia:/i, function (message) {
 						return;
 					}
 
-					if (rows[0].heist_protection != null) {
-						bot.sendMessage(message.chat.id, "Il bersaglio è sotto protezione", back);
-						return;
+					if (player_id != 1){
+						if (rows[0].heist_protection != null) {
+							bot.sendMessage(message.chat.id, "Il bersaglio è sotto protezione", back);
+							return;
+						}
 					}
 
 					if (rows[0].id == 1) {
@@ -35742,9 +35781,11 @@ bot.onText(/spia rifugio|spia:/i, function (message) {
 							return;
 						}
 
-						if (rows[0].heist_protection != null) {
-							bot.sendMessage(message.chat.id, "Il bersaglio è sotto protezione", back);
-							return;
+						if (player_id != 1){
+							if (rows[0].heist_protection != null) {
+								bot.sendMessage(message.chat.id, "Il bersaglio è sotto protezione", back);
+								return;
+							}
 						}
 
 						if (rows[0].id == 1) {
@@ -37003,7 +37044,7 @@ bot.onText(/^rifugio|Torna al rifugio/i, function (message) {
 					rifugio = rows[0].name + " (" + house_id + ")";
 				}
 
-				bot.sendMessage(message.chat.id, "Bentornat" + gender_text + " nel tuo *" + rifugio + "*, possiedi *" + ability + "* punti abilità! Cosa vuoi fare?\nPuoi ancora effettuare " + ((10 - heist_count) < 0 ? 0 : (10 - heist_count)) + " ispezioni e spiare " + (25 - spy_count) + " giocatori", kb).then(function () {
+				bot.sendMessage(message.chat.id, "Bentornat" + gender_text + " nel tuo *" + rifugio + "*, possiedi *" + ability + "* punti abilità!\nPuoi ancora effettuare " + ((10 - heist_count) < 0 ? 0 : (10 - heist_count)) + " ispezioni e spiare " + (25 - spy_count) + " giocatori.", kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text == "Ispezione") {
 
@@ -37012,7 +37053,7 @@ bot.onText(/^rifugio|Torna al rifugio/i, function (message) {
 								return;
 							}
 
-							bot.sendMessage(message.chat.id, "Invia uno gnomo ad un rifugio di un altro giocatore per cercare di ottenere il suo bottino e una Chiave Mistica, puoi usare il Matchmaking per sceglierlo casualmente in base alla tua abilità oppure inserire il suo nickname", kb2);
+							bot.sendMessage(message.chat.id, "Invia uno gnomo ad un rifugio di un altro giocatore per cercare di ottenere il suo bottino e una Chiave Mistica, puoi usare il Matchmaking per sceglierlo casualmente (esclusi i compagni di team, di accademia o madre) in base alla tua abilità oppure inserire il suo nickname", kb2);
 						}
 					};
 				});
@@ -37098,45 +37139,54 @@ bot.onText(/matchmaking/i, function (message) {
 					if (err) throw err;
 
 					var team_id = 0;
+					var my_team_id = 0;
 					var heist_limit = 3;
 					if (Object.keys(rows).length > 0) {
 						team_id = rows[0].team_id;
+						my_team_id = rows[0].team_id;
 						heist_limit = 10;
 					}
 
-					connection.query('SELECT child_team FROM team WHERE id = ' + team_id, function (err, rows, fields) {
+					connection.query('SELECT child_team FROM team WHERE id = ' + my_team_id, function (err, rows, fields) {
 						if (err) throw err;
 						if (Object.keys(rows).length > 0) {
 							if (rows[0].child_team != 0)
 								team_id += "," + rows[0].child_team;
 						}
 
-						var offset = Math.round(myab / 2);
-						var offset2 = Math.round(myab / 3);
-						var limit = 50;
-						var count = 100;
-						var i = 0;
-						var banned_join = banlist_id.join();
-						var minexp = 150;
-						var found = 0;
-
-						for(i = 0; i < 10; i++){
-							var rows = connection_sync.query("SELECT nickname, exp, team_player.team_id FROM player, team_player WHERE player.heist_limit < " + heist_limit + " AND player.account_id NOT IN (" + banned_join + ",1,3) AND team_player.player_id = player.id AND team_player.team_id NOT IN (" + team_id + ") AND heist_protection IS NULL AND ability BETWEEN " + (myab - offset) + " AND " + (myab + offset2) + " AND nickname <> '" + message.from.username + "' AND money > 0 AND exp > " + minexp + " AND holiday = 0 AND player.id != " + last_mm + " ORDER BY ability DESC, heist_limit ASC, RAND() LIMIT " + limit);
-
-							if (Object.keys(rows).length < 10) {
-								offset += i*10;
-								offset2 += i*10;
-							}else{
-								var rand;
-								rand = Math.floor(Math.random() * Object.keys(rows).length); //0 sono io
-								attack(rows[rand].nickname, message, from_id, weapon_bonus, 2000, 1, global_end);
-								found = 1;
-								break;
+						connection.query('SELECT id FROM team WHERE child_team = ' + my_team_id, function (err, rows, fields) {
+							if (err) throw err;
+							if (Object.keys(rows).length > 0) {
+								team_id += "," + rows[0].id;
 							}
-						}
 
-						if (found == 0)
-							bot.sendMessage(message.chat.id, "Nessun giocatore adatto trovato, riprova.", back);
+							var offset = Math.round(myab / 2);
+							var offset2 = Math.round(myab / 3);
+							var limit = 50;
+							var count = 100;
+							var i = 0;
+							var banned_join = banlist_id.join();
+							var minexp = 150;
+							var found = 0;
+
+							for(i = 0; i < 10; i++){
+								var rows = connection_sync.query("SELECT nickname, exp, team_player.team_id FROM player, team_player WHERE player.heist_limit < " + heist_limit + " AND player.account_id NOT IN (" + banned_join + ",1,3) AND team_player.player_id = player.id AND team_player.team_id NOT IN (" + team_id + ") AND heist_protection IS NULL AND ability BETWEEN " + (myab - offset) + " AND " + (myab + offset2) + " AND nickname <> '" + message.from.username + "' AND money > 0 AND exp > " + minexp + " AND holiday = 0 AND player.id != " + last_mm + " ORDER BY ability DESC, heist_limit ASC, RAND() LIMIT " + limit);
+
+								if (Object.keys(rows).length < 10) {
+									offset += i*10;
+									offset2 += i*10;
+								}else{
+									var rand;
+									rand = Math.floor(Math.random() * Object.keys(rows).length); //0 sono io
+									attack(rows[rand].nickname, message, from_id, weapon_bonus, 2000, 1, global_end);
+									found = 1;
+									break;
+								}
+							}
+
+							if (found == 0)
+								bot.sendMessage(message.chat.id, "Nessun giocatore adatto trovato, riprova.", back);
+						});
 					});
 				});
 			});
@@ -37917,10 +37967,6 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 							}
 						}
 
-						connection.query('UPDATE player SET money = money-' + cost + ' WHERE id = ' + from_id, function (err, rows, fields) {
-							if (err) throw err;
-						});
-
 						var dragon_text = "";
 						if (dragon_lev > 0) {
 							dragon_text = " ed il drago 🐉 <b>" + dragon_name + "</b> (" + dragon_lev + ") sorveglia la sua entrata";
@@ -37933,6 +37979,12 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 						var text = "Stai per inviare uno gnomo servitore al rifugio di <b>" + nickname + player_custom_nickname + "</b> (" + team_name + ") con abilità " + ability + ".\nAlloggia in un 🏕 <b>" + house_name + "</b> (" + house_id + ")" + dragon_text + ". Seleziona quale gnomo servitore vuoi inviare.";
 						if (isWanted == 1) {
 							text = "Stai per inviare uno gnomo servitore alla cattura di <b>" + nickname + "</b>, seleziona quale gnomo esploratore vuoi inviare";
+						}
+
+						if (isWanted == 0) {
+							connection.query('UPDATE player SET money = money-' + cost + ' WHERE id = ' + from_id, function (err, rows, fields) {
+								if (err) throw err;
+							});
 						}
 
 						bot.sendMessage(message.chat.id, text, option).then(function () {
@@ -37997,9 +38049,11 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 										bot.sendMessage(message.chat.id, "Hai inviato il tuo gnomo esploratore alla cattura del ricercato, torna alle " + short_date + " per scoprirne l'esito", kb_heist);
 									}
 								});
-								connection.query('UPDATE player SET heist_count = heist_count+1 WHERE id = ' + from_id, function (err, rows, fields) {
-									if (err) throw err;
-								});
+								if (isWanted == 0) {
+									connection.query('UPDATE player SET heist_count = heist_count+1 WHERE id = ' + from_id, function (err, rows, fields) {
+										if (err) throw err;
+									});
+								}
 							};
 						});
 					});
@@ -38194,7 +38248,7 @@ bot.onText(/itinerario propizio|itinerari|regioni/i, function (message) {
 											duration -= duration * 0.2;
 										} else {
 											extra1 = "❌";
-										}
+										} 
 										if ((class_id == 3) && (reborn == 3)) {
 											duration -= (duration * 0.05);
 										}
@@ -38791,7 +38845,7 @@ bot.onText(/^imprese/i, function (message) {
 							if (globalw == 1){
 								text += "L'impresa sta raccogliendo dati, pazienta fino al 01/03 alle 12:00!\n";
 							}else{
-								cap = "???";		// con global_wait = 0, global_on = 1
+								//cap = "???";		// con global_wait = 0, global_on = 1
 								text += "Progresso: <b>" + formatNumber(globalVal) + "</b>/<b>" + cap + "</b> Gigatoni lanciati contro i boss (oggetti lanciabili)\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
 							}
 						}
@@ -39234,10 +39288,9 @@ function refreshBosses() {
 				if (Object.keys(rows).length > 0) {
 					rows.forEach(respawnBoss);
 				}
-				//console.log("Respawn boss per team " + rows[0].team_id);
 			});
 
-			connection.query('SELECT player_id, chat_id FROM `team_player`, player WHERE team_player.player_id = player.id AND team_id = ' + team_id + ' ORDER BY team_player.id', function (err, rows, fields) {
+			connection.query('SELECT player_id, chat_id FROM team_player, player WHERE team_player.player_id = player.id AND team_id = ' + team_id + ' ORDER BY team_player.id', function (err, rows, fields) {
 				if (err) throw err;
 
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
@@ -40674,12 +40727,7 @@ function setDust(element, index, array) {
 function checkMissions() {
 	connection.query('SELECT nickname, id, mission_id, chat_id, charm_id, class, global_end, mission_auto_id, boost_id, boost_mission, reborn, exp, mission_gem, mission_count, global_end FROM player WHERE mission_time_end < NOW() AND mission_time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
-		if (Object.keys(rows).length == 0) {
-			if (firstStart == 0) {
-				console.log("\x1b[31mxxx Online: " + getNow("it") + "\x1b[0m");
-				firstStart = 1;
-			}
-		} else {
+		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1) {
 				console.log(getNow("it") + "\x1b[32m 1 missione terminata\x1b[0m");
 			} else {
