@@ -1512,7 +1512,7 @@ function checkStatus(message, n, accountid, type) {
 					if (getRealLevel(reb, lev) < 50){
 						bot.deleteMessage(chat_id, message.message_id).then(function (result) {
 							if (result != false) {
-								bot.sendMessage(message.chat.id, "Devi aver superato il livello 50 per postare foto in questo gruppo.");
+								bot.sendMessage(message.chat.id, message.from.username + ", devi aver superato il livello 50 per postare foto in questo gruppo.");
 							}
 						});
 					}
@@ -1521,7 +1521,7 @@ function checkStatus(message, n, accountid, type) {
 					if (getRealLevel(reb, lev) < 50){
 						bot.deleteMessage(chat_id, message.message_id).then(function (result) {
 							if (result != false) {
-								bot.sendMessage(message.chat.id, "Devi aver superato il livello 50 per postare documenti in questo gruppo.");
+								bot.sendMessage(message.chat.id, message.from.username + ", devi aver superato il livello 50 per postare documenti in questo gruppo.");
 							}
 						});
 					}
@@ -6966,7 +6966,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																							team_desc + 
 																							stars + " " + formatNumber(lev) + " (" + formatNumber(rows[0].exp) + " xp)\n\n" +
 																							"🏹 " + class_name + "\n" +
-																							"💎 " + rows[0].gems + " 🌕 " + rows[0].moon_coin + " 🗝 " + rows[0].mkeys + " 🏆 " + inest + "\n" +
+																							"💎 " + rows[0].gems + " 🏆 " + inest + "\n" +
 																							"💰 " + formatNumber(rows[0].money) + " §\n" +
 																							"❤️ " + formatNumber(rows[0].life) + " / " + formatNumber(rows[0].total_life) + " hp\n" +
 																							"📦 " + formatNumber(rows[0].craft_count) + " (" + formatNumber(rows[0].craft_week) + ")\n" +
