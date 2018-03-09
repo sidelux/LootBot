@@ -4112,7 +4112,7 @@ bot.onText(/^\/lotterie/, function (message) {
 					if (rows[i].price == 0) {
 						p = "";
 					} else {
-						p = " (" + rows[i].price + " §)";
+						p = " (" + formatNumber(rows[i].price) + " §)";
 					}
 					if (rows[i].subs == 0) {
 						s = "";
