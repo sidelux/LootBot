@@ -1,0 +1,53 @@
+0000000000000000000000000000000000000000 5a170c92aa5de7cd82f982cd1faf58c5062cb813 root <root@ns3027133.ip-151-80-230.eu> 1496996768 +0200	commit (initial): First release
+5a170c92aa5de7cd82f982cd1faf58c5062cb813 2f0d841125b906e2406e2c1e426087d093b59221 Edoardo Cortese <redfenix45@gmail.com> 1496996819 +0200	commit (amend): First release
+2f0d841125b906e2406e2c1e426087d093b59221 5620f0d1b420065c9a9fceb843bc7c83f95bcf26 Edoardo Cortese <redfenix45@gmail.com> 1496997360 +0200	commit (merge): Merge branch 'master' of https://bitbucket.org/sidelux/lootbot
+5620f0d1b420065c9a9fceb843bc7c83f95bcf26 652c76f1fe3f4c3bda239b3515cc3364ab6b5b41 Edoardo Cortese <redfenix45@gmail.com> 1497362511 +0200	commit: Update 13/06/17
+652c76f1fe3f4c3bda239b3515cc3364ab6b5b41 129b021edd87da698ebaeea01c7fe8c4bc7c32b4 Edoardo Cortese <redfenix45@gmail.com> 1497362932 +0200	commit: Update 13/06/17
+129b021edd87da698ebaeea01c7fe8c4bc7c32b4 40013e32270cb365c4a7bdd74bcbcc339fa7fd73 Edoardo Cortese <redfenix45@gmail.com> 1498145091 +0200	commit: Update 22/06/2017
+40013e32270cb365c4a7bdd74bcbcc339fa7fd73 442008d3f6bd1e16b98f52ac202b22a66061dfd2 Edoardo Cortese <redfenix45@gmail.com> 1498145158 +0200	commit: Update 22/06/2017b
+442008d3f6bd1e16b98f52ac202b22a66061dfd2 4d59d5f4d2fefd6b31fc982863a3822b21b2ff6c Edoardo Cortese <redfenix45@gmail.com> 1498207296 +0200	commit: Update fix, new event
+4d59d5f4d2fefd6b31fc982863a3822b21b2ff6c 6372c5c315c04ddc42b9e8681b3452186b393cd2 Edoardo Cortese <redfenix45@gmail.com> 1498657772 +0200	commit: Cut market price, new merchant_offer
+6372c5c315c04ddc42b9e8681b3452186b393cd2 4cc0e4c31452da1b90fb1bb130221bce2668d470 Edoardo Cortese <redfenix45@gmail.com> 1499088377 +0200	commit: New items
+4cc0e4c31452da1b90fb1bb130221bce2668d470 112ab073d8447afa0c07b1e6315e2e6aed2409ee Edoardo Cortese <redfenix45@gmail.com> 1499513375 +0200	commit: New event, fix
+112ab073d8447afa0c07b1e6315e2e6aed2409ee cef8c688e8e2e421936bf758f126bfca9f349a52 Edoardo Cortese <redfenix45@gmail.com> 1499785390 +0200	commit: Fix
+cef8c688e8e2e421936bf758f126bfca9f349a52 ca0e93d91c02943fdac196253d08c0415a405808 Edoardo Cortese <redfenix45@gmail.com> 1500029516 +0200	commit: Event update, fix
+ca0e93d91c02943fdac196253d08c0415a405808 acbcba2e16f65988f6b194d8c45ab7e250761c71 Edoardo Cortese <redfenix45@gmail.com> 1500454989 +0200	commit: House of games, fix
+acbcba2e16f65988f6b194d8c45ab7e250761c71 8dade63ccc4e8b474676a67c71893b52114319d9 Edoardo Cortese <redfenix45@gmail.com> 1500647539 +0200	commit: Fix, 1/2 boss update
+8dade63ccc4e8b474676a67c71893b52114319d9 4ca7a2e57c352692ccc344768d3939e74f8d3c14 Edoardo Cortese <redfenix45@gmail.com> 1501078722 +0200	commit: Fix and balance
+4ca7a2e57c352692ccc344768d3939e74f8d3c14 f4a03e7ade1333eb52d514caab858738426a5a9c Edoardo Cortese <redfenix45@gmail.com> 1501229430 +0200	commit: Start dragon func, boss/scomp fix
+f4a03e7ade1333eb52d514caab858738426a5a9c e2d6e4df4730ad2db535b9809fef9db739308124 Edoardo Cortese <redfenix45@gmail.com> 1501771901 +0200	commit: Heist update
+e2d6e4df4730ad2db535b9809fef9db739308124 cdb77dcfa1e6d9880eae303c577f2a5f09d4e5d3 Edoardo Cortese <redfenix45@gmail.com> 1502460258 +0200	commit: Fix
+cdb77dcfa1e6d9880eae303c577f2a5f09d4e5d3 afe7d54f55e3d5dc93c7c470b306f4205baa084a Edoardo Cortese <redfenix45@gmail.com> 1502955631 +0200	commit: Onetime keyboard removed, global achievement fix
+afe7d54f55e3d5dc93c7c470b306f4205baa084a ea25471728f661ac265813bddf6e861902b2de79 Edoardo Cortese <redfenix45@gmail.com> 1503069097 +0200	commit: Events balancing
+ea25471728f661ac265813bddf6e861902b2de79 c6342051f1371f422b456a9ddcf09315d99fee4d Edoardo Cortese <redfenix45@gmail.com> 1504002439 +0200	commit: Plus commands, fix, autoclean inactive, api
+c6342051f1371f422b456a9ddcf09315d99fee4d b73ce4c3041dd09da455474d7bc759e04fbf5c07 Edoardo Cortese <redfenix45@gmail.com> 1505731685 +0200	commit: Release after holiday, fix, boss balance
+b73ce4c3041dd09da455474d7bc759e04fbf5c07 c89be778a80249b124e141cbe1055c6ee25fd5b0 Edoardo Cortese <redfenix45@gmail.com> 1506347451 +0200	commit: Added dragon equip and new event code
+c89be778a80249b124e141cbe1055c6ee25fd5b0 a031fa945695f9ed63eb6e3c3d63aa3c906891fe Edoardo Cortese <redfenix45@gmail.com> 1506696524 +0200	commit: Fix for new function
+a031fa945695f9ed63eb6e3c3d63aa3c906891fe 3e452c8c67c11a311536f9f1d85527660d62f3ce Edoardo Cortese <redfenix45@gmail.com> 1507208350 +0200	commit: Fix after bug, balance
+3e452c8c67c11a311536f9f1d85527660d62f3ce 3f431dd957c841a85bd71f2ef83c4dd6e6f0df2b Edoardo Cortese <redfenix45@gmail.com> 1507626747 +0200	commit: Fix and balance
+3f431dd957c841a85bd71f2ef83c4dd6e6f0df2b 7cfa71f571451b186e46314d0e793e7952ee36fe Edoardo Cortese <redfenix45@gmail.com> 1508163635 +0200	commit: New func fix
+7cfa71f571451b186e46314d0e793e7952ee36fe 9c50fa8a96a1c69ea6bafd91c0f81101f2ed1598 Edoardo Cortese <redfenix45@gmail.com> 1508509891 +0200	commit: New function release and balance
+9c50fa8a96a1c69ea6bafd91c0f81101f2ed1598 831756fada0b32544e450ca747f7cee0e8f58dbd Edoardo Cortese <redfenix45@gmail.com> 1509635226 +0100	commit: Post artifact func, dungeon balance, fix
+831756fada0b32544e450ca747f7cee0e8f58dbd 082efed533e45bac4a9f9bbe6cf39fbe24a3a2d9 Edoardo Cortese <redfenix45@gmail.com> 1510648741 +0100	commit: Balance and fix
+082efed533e45bac4a9f9bbe6cf39fbe24a3a2d9 42a5466c0c0a8b7af8d93fda54bdca80fbb5cffa Edoardo Cortese <redfenix45@gmail.com> 1510934095 +0100	commit: New team function start, fix
+42a5466c0c0a8b7af8d93fda54bdca80fbb5cffa 9c8c4df4687f2d543df5a5d8b81e066ea7031943 Edoardo Cortese <redfenix45@gmail.com> 1512470828 +0100	commit: Fix and team mission working
+9c8c4df4687f2d543df5a5d8b81e066ea7031943 d1e2a5c0276d8db965a5af7c62cd9b7cb9e6dcbd Edoardo Cortese <redfenix45@gmail.com> 1513590985 +0100	commit: Fix and christmas event (?)
+d1e2a5c0276d8db965a5af7c62cd9b7cb9e6dcbd 96877d19e52e93c6f8f9af0445fccbedbe57135b Edoardo Cortese <redfenix45@gmail.com> 1513776078 +0100	commit: Christmas event, forever to pm2
+96877d19e52e93c6f8f9af0445fccbedbe57135b 4e469b215b7506a3996d649e76baacd82890afff Edoardo Cortese <redfenix45@gmail.com> 1513872799 +0100	commit: 3 new dungeon rooms
+4e469b215b7506a3996d649e76baacd82890afff b6221866f5ca4cf893bb9e13239a4b1a9781d6ab Edoardo Cortese <redfenix45@gmail.com> 1515592182 +0100	commit: First update of the year, fix for events
+b6221866f5ca4cf893bb9e13239a4b1a9781d6ab 845285d25585c916a76b9a422d2e18a226c992e3 Edoardo Cortese <redfenix45@gmail.com> 1516275534 +0100	commit: Balance, fix and mission team progress
+845285d25585c916a76b9a422d2e18a226c992e3 0417a5dc168ce5d27628da9be94c3e169229acad Edoardo Cortese <redfenix45@gmail.com> 1516720969 +0100	commit: Fix
+0417a5dc168ce5d27628da9be94c3e169229acad 9b6c3ba77c86835f80c9eebec01b4f779ac3d2a0 Edoardo Cortese <redfenix45@gmail.com> 1517159271 +0100	commit: Classes fix
+9b6c3ba77c86835f80c9eebec01b4f779ac3d2a0 5428f25b0e7c8ee3814c13c8289e482a6b80db76 Edoardo Cortese <redfenix45@gmail.com> 1517588694 +0100	commit: Damage items rework and fixes
+5428f25b0e7c8ee3814c13c8289e482a6b80db76 f55f6018bf422ebed150b2911ba311024746edf6 Edoardo Cortese <redfenix45@gmail.com> 1517933105 +0100	commit: Fix and query optimization
+f55f6018bf422ebed150b2911ba311024746edf6 0969393e0c67e8d364f28e7b971e7cddc068a6fd Edoardo Cortese <redfenix45@gmail.com> 1518016469 +0100	commit: Debian 9, php 7 upgrade
+0969393e0c67e8d364f28e7b971e7cddc068a6fd a635ceba52b34c5b992e5c0c3020a60addce2ad1 Edoardo Cortese <redfenix45@gmail.com> 1518539179 +0100	commit: Team mission fix
+a635ceba52b34c5b992e5c0c3020a60addce2ad1 e3cd7791f25f0bf753d2becc59820dc7efe5b413 Edoardo Cortese <redfenix45@gmail.com> 1518793243 +0100	commit: Team mission ready and some tips implemented
+e3cd7791f25f0bf753d2becc59820dc7efe5b413 c83b318db21fe076ae5c43e6b2770243cb827e8b Edoardo Cortese <redfenix45@gmail.com> 1519312023 +0100	commit: Team mission fix and ready to test
+c83b318db21fe076ae5c43e6b2770243cb827e8b 2a7ba6898e8fcc1acd7df4547adb8d59f33b13de Edoardo Cortese <redfenix45@gmail.com> 1519917087 +0100	commit: Fix and balance, new global event
+2a7ba6898e8fcc1acd7df4547adb8d59f33b13de 6f5b061d57ffa9193d96b0faaad8ff8d29b7e3e6 Edoardo Cortese <redfenix45@gmail.com> 1520349570 +0100	commit: Fix
+6f5b061d57ffa9193d96b0faaad8ff8d29b7e3e6 5c50d61390a95a7a791812b7b5b485524559ae10 Edoardo Cortese <redfenix45@gmail.com> 1520526217 +0100	commit: Added last Necro weapon and Necro function updated
+5c50d61390a95a7a791812b7b5b485524559ae10 20a58cc3f670975d4df5c6f4bc91177dafef80c1 Edoardo Cortese <redfenix45@gmail.com> 1520611454 +0100	commit: Necro fix and global achievement fix
+20a58cc3f670975d4df5c6f4bc91177dafef80c1 29476f892f22f3d4337e9d3f7dc05731a49a4411 Edoardo Cortese <redfenix45@gmail.com> 1521040478 +0100	commit: Dragon top dummy, inventory and inventory_chest fix in progress
+29476f892f22f3d4337e9d3f7dc05731a49a4411 48f3e09bb8ac9ed5b9dc2558e6af36abf4f5084b Edoardo Cortese <redfenix45@gmail.com> 1521129165 +0100	commit: Inventory migration almost ready
+48f3e09bb8ac9ed5b9dc2558e6af36abf4f5084b 9793324b10e90b2bdf9b95bb4962fcbb0efc2c2f Edoardo Cortese <redfenix45@gmail.com> 1521186987 +0100	commit: Separate file for dbconn and .gitignore
