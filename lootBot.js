@@ -12,8 +12,6 @@ process.on('unhandledRejection', function (error, p) {
 
 //Globali
 var max_mission_id = 290;
-var banlist_id = [];
-var banlist_tx = [];
 var timevar = [];
 var timevarFlood = [];
 var answerCallbacks = {};
@@ -21,8 +19,8 @@ var answerCallbacks = {};
 var crazyMode = 0;
 var luckyMode = 0;
 var arena = 0;
-var xxxteria = 0;
-var xxxteriaBlock = 0;
+var lootteria = 0;
+var lootteriaBlock = 0;
 var autoEstrazione = 0;
 var halloween = 0;
 var villa = 0;
@@ -67,10 +65,15 @@ var re4 = new RegExp("^[a-zA-Z0-9àèìòù ]{1,40}$");
 var re5 = new RegExp("^[a-zA-Z0-9!?,.àèéìòù@ ]{1,255}$");
 var re6 = new RegExp("^[a-zA-Z0-9àèéìòù\\'\\-\\* ]{1,255}$");
 
+var dbconfig = require('./dbconfig.js');
 var TelegramBot = require('node-telegram-bot-api');
 var fs = require('fs')
 var Schedule = require('node-schedule');
 var request = require('request');
+var readline = require('readline');
+var mysql = require('mysql');
+var mysql_sync = require('sync-mysql');
+var mysqlRetry = require('node-mysql-deadlock-retries');
 
 var token = '171514820:AAHSsAF-_bkpB5Du5NLvRqlUpzgSntwz22c';
 var bot = new TelegramBot(token, {
@@ -81,9 +84,6 @@ var bot = new TelegramBot(token, {
 		}
 	}
 });
-
-var Schedule = require('node-schedule');
-var exec = require('child_process').exec;
 
 var j = Schedule.scheduleJob('00 3 * * *', function () { //3 notte
 	refreshHeists();
@@ -233,12 +233,13 @@ callNTimes(3600000, function () { //Ogni ora
 	checkTeamPlayers();
 });
 
+/*
 function reloadBans() {
 	banlist_id = [];
 	banlist_tx = [];
 
-	var lineReader = require('readline').createInterface({
-		input: require('fs').createReadStream('banlist.txt')
+	var lineReader = readline.createInterface({
+		input: fs.createReadStream('banlist.txt')
 	});
 
 	lineReader.on('line', function (line) {
@@ -250,12 +251,10 @@ function reloadBans() {
 	});
 	console.log('Banlist caricata');
 };
+*/
 
 console.log('Avvio bot...');
 
-var dbconfig = require('./dbconfig.js');
-
-var mysql = require('mysql');
 var connection = mysql.createConnection({
 	host: dbconfig.dbhost,
 	user: dbconfig.dbuser,
@@ -264,7 +263,6 @@ var connection = mysql.createConnection({
 });
 connection.connect();
 
-var mysql_sync = require('sync-mysql');
 var connection_sync = new mysql_sync({
 	host: dbconfig.dbhost,
 	user: dbconfig.dbuser,
@@ -272,7 +270,6 @@ var connection_sync = new mysql_sync({
 	database: dbconfig.dbdatabase
 });
 
-var mysqlRetry = require('node-mysql-deadlock-retries');
 mysqlRetry(connection, 5, 100, 1000);
 
 process.on('SIGINT', function() {
@@ -290,8 +287,6 @@ process.on('SIGTERM', function() {
 bot.on('polling_error', function(error) {
 	console.log(error);
 });
-
-reloadBans();
 
 var d = new Date();
 
@@ -630,7 +625,7 @@ bot.onText(/^\/eventon (.+)|^\/eventon|^\/eventoff (.+)|^\/eventoff/, function (
 		if (event == "mana") {
 			eventMana = onoff;
 		} else if (event == "lotteria") {
-			xxxteria = onoff;
+			lootteria = onoff;
 		} else if (event == "crazy") {
 			crazyMode = onoff;
 		} else if (event == "lucky") {
@@ -680,7 +675,7 @@ function checkKeyboard() {
 		mainKeysR.splice(1, 0, ['⛏ Miniere di Mana (Evento) ⛰ ']);
 		mainKeysR2.splice(1, 0, ['⛏ Miniere di Mana (Evento) ⛰ ']);
 	}
-	if (xxxteria == 1) {
+	if (lootteria == 1) {
 		mainKeys.splice(0, 0, ['💎 Lootteria (Evento) 💰 ']);
 		mainKeysR.splice(1, 0, ['💎 Lootteria (Evento) 💰 ']);
 		mainKeysR2.splice(1, 0, ['💎 Lootteria (Evento) 💰 ']);
@@ -892,8 +887,6 @@ bot.onText(/^\/stopglobal$/, function (message, match) {
 bot.onText(/^\/endglobal$/, function (message, match) {
 	if (message.from.username == "fenix45") {
 
-		var banned_join = banlist_id.join();
-
 		connection.query('SELECT I.id As id1, I.name As name1, I2.id As id2, I2.name As name2, I3.id As id3, I3.name As name3 FROM config C INNER JOIN item I ON C.global_item1 = I.id INNER JOIN item I2 ON C.global_item2 = I2.id INNER JOIN item I3 ON C.global_item3 = I3.id', function (err, rows, fields) {
 			if (err) throw err;
 
@@ -916,7 +909,7 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 					bot.sendMessage(message.chat.id, "Il valore attuale è " + formatNumber(rows[0].val) + " per " + formatNumber(tot) + " persone, sicuro di chiudere l'impresa? Ricorda il messaggio e il valore del bonus", yesno).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							if (answer.text.toLowerCase() == "si") {
-								connection.query('SELECT P.nickname, P.chat_id, A.player_id, SUM(A.value) As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (' + banned_join + ') GROUP BY A.player_id ORDER BY val DESC', function (err, rows, fields) {
+								connection.query('SELECT P.nickname, P.chat_id, A.player_id, SUM(A.value) As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (SELECT account_id FROM banlist) GROUP BY A.player_id ORDER BY val DESC', function (err, rows, fields) {
 									if (err) throw err;
 
 									var minValue = 2000;
@@ -949,7 +942,7 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 										bot.sendMessage(rows[i].chat_id, "Per il completamento dell'*Impresa Globale* hai ricevuto:\n" + text, mark);
 									}
 								});
-								connection.query('(SELECT A.player_id, chat_id, nickname, SUM(A.value) As val, global_event FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (' + banned_join + ') GROUP BY A.player_id ORDER BY SUM(A.value) DESC LIMIT 100) UNION (SELECT A.player_id, chat_id, nickname, SUM(A.value) As val, global_event FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (' + banned_join + ') AND P.global_event < 5 GROUP BY A.player_id ORDER BY SUM(A.value) DESC LIMIT 100)', function (err, rows, fields) {
+								connection.query('(SELECT A.player_id, chat_id, nickname, SUM(A.value) As val, global_event FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) GROUP BY A.player_id ORDER BY SUM(A.value) DESC LIMIT 100) UNION (SELECT A.player_id, chat_id, nickname, SUM(A.value) As val, global_event FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 GROUP BY A.player_id ORDER BY SUM(A.value) DESC LIMIT 100)', function (err, rows, fields) {
 									if (err) throw err;
 									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 										connection.query('UPDATE player SET global_event = global_event+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
@@ -978,8 +971,6 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 bot.onText(/^\/failglobal/, function (message, match) {
 	if (message.from.username == "fenix45") {
 
-		var banned_join = banlist_id.join();
-
 		connection.query('SELECT COUNT(DISTINCT player_id) As cnt FROM achievement_global', function (err, rows, fields) {
 			if (err) throw err;
 
@@ -995,7 +986,7 @@ bot.onText(/^\/failglobal/, function (message, match) {
 							var minText = "monete da vendite";
 							var text = "i tempi delle cave sono incrementati del 30%";
 
-							connection.query('SELECT P.nickname, P.chat_id, A.player_id, SUM(A.value) As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.reborn > 1 AND P.account_id NOT IN (' + banned_join + ') GROUP BY A.player_id HAVING SUM(A.value) < ' + minValue + ' ORDER BY val DESC', function (err, rows, fields) {
+							connection.query('SELECT P.nickname, P.chat_id, A.player_id, SUM(A.value) As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.reborn > 1 AND P.account_id NOT IN (SELECT account_id FROM banlist) GROUP BY A.player_id HAVING SUM(A.value) < ' + minValue + ' ORDER BY val DESC', function (err, rows, fields) {
 								if (err) throw err;
 								for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 									connection.query('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
@@ -1255,11 +1246,11 @@ bot.onText(/^\/refreshEstimate/i, function (message) {
 bot.onText(/^\/comandi/, function (message, match) {
 	if ((message.from.username == "fenix45") || (message.from.username == "LastSoldier95")) {
 		bot.sendMessage(message.chat.id, "Lista comandi\n" +
-						"/ban nick | motivo\n" +
+						"/ban nick motivo\n" +
+						"/unban nick\n" +
 						"/marketban nick\n" +
 						"/setwarn nick n\n" +
 						"/setmsg messaggio\n" +
-						"/banlist\n" +
 						"/save\n" +
 						"/active\n" +
 						"/festival\n" +
@@ -1282,30 +1273,6 @@ bot.onText(/^\/comandi/, function (message, match) {
 	} else {
 		bot.sendMessage(message.chat.id, "Piacerebbe :D");
 	}
-});
-
-bot.onText(/^\/unban ([^\s]+)/, function (message, match) {
-	if (message.from.username == "fenix45") {
-		var lineReader = require('readline').createInterface({
-			input: require('fs').createReadStream('banlist.txt')
-		});
-
-		var account_id = match[1];
-		var i = 0;
-		var text = "";
-
-		lineReader.on('line', function (line) {
-			if (line != "") {
-				if (elem[0] != account_id) {
-					text += line;
-				}
-			}
-		});
-		fs.appendFile('banlist2.txt', text, function (err) {
-			if (err) throw err;
-			bot.sendMessage(message.chat.id, account_id + " sbannato!");
-		});
-	};
 });
 
 bot.onText(/^\/marketban (.+)/, function (message, match) {
@@ -1340,14 +1307,13 @@ bot.onText(/^\/sendmsg/, function (message, match) {
 	if (message.from.username == "fenix45") {
 		connection.query('DELETE FROM global_msg', function (err, rows, fields) {
 			if (err) throw err;
-			//	connection.query('ALTER TABLE global_msg AUTO_INCREMENT=1', function (err, rows, fields) {
-			//		if (err) throw err;
-			var banned_join = banlist_id.join();
-			connection.query('INSERT INTO global_msg (chat_id) SELECT P.chat_id FROM last_command L, player P WHERE L.account_id = P.account_id AND L.time > NOW() - INTERVAL 1 WEEK AND P.global_msg = 1 AND P.account_id NOT IN (' + banned_join + ')', function (err, rows, fields) {
+			connection.query('ALTER TABLE global_msg AUTO_INCREMENT=1', function (err, rows, fields) {
 				if (err) throw err;
-				bot.sendMessage(message.chat.id, "Inserite " + rows.affectedRows + " voci");
+				connection.query('INSERT INTO global_msg (chat_id) SELECT P.chat_id FROM last_command L, player P WHERE L.account_id = P.account_id AND L.time > NOW() - INTERVAL 1 WEEK AND P.global_msg = 1 AND P.account_id NOT IN (SELECT account_id FROM banlist)', function (err, rows, fields) {
+					if (err) throw err;
+					bot.sendMessage(message.chat.id, "Inserite " + rows.affectedRows + " voci");
+				});
 			});
-			//	});
 		});
 	}
 });
@@ -1411,10 +1377,15 @@ bot.onText(/^\/setwarn ([^\s]+) (.+)/, function (message, match) {
 	};
 });
 
-bot.onText(/^\/ban ([^\s]+) (.+)/, function (message, match) {
+bot.onText(/^\/ban ([^\s]+) (.+)|^\/ban/, function (message, match) {
 	if ((message.from.username == "fenix45") || (message.from.username == "LastSoldier95")) {
-		match[1] = match[1].replace("@", "");
-		connection.query('SELECT nickname, id, account_id FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
+		
+		if (match[1] == undefined){
+			bot.sendMessage(message.chat.id, "Sintassi: /ban nickname motivo");
+			return;
+		}
+		
+		connection.query('SELECT nickname, id, account_id FROM player WHERE nickname = "' + match[1].replace("@", "") + '"', function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
@@ -1422,37 +1393,52 @@ bot.onText(/^\/ban ([^\s]+) (.+)/, function (message, match) {
 				return;
 			}
 
-			fs.appendFile('banlist.txt', "\r\n" + rows[0].account_id + '|' + match[2], function (err) {
+			connection.query('INSERT INTO banlist (account_id, reason) VALUES (' + rows[0].account_id + ',"' + match[2] + '")', function (err, rows, fields) {
 				if (err) throw err;
-
-				reloadBans();
-
-				connection.query('DELETE FROM public_shop WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
-					if (err) throw err;
-				});
-				connection.query('UPDATE player SET market_ban = 1 WHERE id = ' + rows[0].id, function (err, rows, fields) {
-					if (err) throw err;
-				});
-				connection.query('DELETE FROM team_player WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
-					if (err) throw err;
-				});
-				connection.query('UPDATE token SET token = NULL, status = "REVOKED" WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
-					if (err) throw err;
-				});
-
-				bot.sendMessage(message.chat.id, rows[0].nickname + " (" + rows[0].account_id + ") bannato.");
-				//bot.sendMessage(rows[0].account_id, "Sei stato bannato dal bot, _Bye_.", mark);
 			});
+
+			connection.query('DELETE FROM public_shop WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+			connection.query('UPDATE player SET market_ban = 1 WHERE id = ' + rows[0].id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+			connection.query('DELETE FROM team_player WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+			connection.query('UPDATE token SET token = NULL, status = "REVOKED" WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+
+			bot.sendMessage(message.chat.id, rows[0].nickname + " (" + rows[0].account_id + ") bannato.");
 		});
 	};
 });
 
-bot.onText(/^\/banlist/, function (message, match) {
-	if (message.from.username != "fenix45") {
-		return;
-	}
-	reloadBans();
-	bot.sendMessage(message.chat.id, "Banlist aggiornata");
+
+bot.onText(/^\/unban (.+)|^\/unban/, function (message, match) {
+	if (message.from.username == "fenix45") {
+		
+		if (match[1] == undefined){
+			bot.sendMessage(message.chat.id, "Sintassi: /unban nickname");
+			return;
+		}
+		
+		var nickname = match[1].replace("@", "");
+		connection.query('SELECT nickname, account_id FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
+			if (err) throw err;
+			
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Non ho trovato nessun utente con quel nickname.");
+				return;
+			}
+			
+			connection.query('DELETE FROM banlist WHERE account_id = ' + rows[0].account_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+			bot.sendMessage(message.chat.id, rows[0].nickname + " sbannato!");
+		});
+	};
 });
 
 bot.onText(/^\/save/, function (message, match) {
@@ -2434,9 +2420,9 @@ bot.onText(/^\/m (.+)|^\/m$/, function (message, match) {
 	connection.query('SELECT account_id, id, exp, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -2468,8 +2454,8 @@ bot.onText(/^\/m (.+)|^\/m$/, function (message, match) {
 					return;
 				}
 
-				var account_id = (rows[0].account_id).toString();
-				if (banlist_id.indexOf(account_id) != -1) {
+				var banReason = isBanned(rows[0].account_id);
+				if (banReason != null) {
 					bot.sendMessage(message.chat.id, "Il giocatore è bannato");
 					return;
 				}
@@ -2522,9 +2508,9 @@ bot.onText(/^\/r (.+)|^\/r$/, function (message, match) {
 	connection.query('SELECT account_id, id, exp, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -2561,8 +2547,8 @@ bot.onText(/^\/r (.+)|^\/r$/, function (message, match) {
 					return;
 				}
 
-				var account_id = (rows[0].account_id).toString();
-				if (banlist_id.indexOf(account_id) != -1) {
+				var banReason = isBanned(rows[0].account_id);
+				if (banReason != null) {
 					bot.sendMessage(message.chat.id, "Il giocatore è bannato");
 					return;
 				}
@@ -2805,9 +2791,9 @@ bot.onText(/\/messaggio (.+)|\/messaggio/, function (message, match) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -2850,9 +2836,9 @@ bot.onText(/\/migrazione/, function (message, match) {
 	connection.query('SELECT * FROM player WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -2872,9 +2858,9 @@ bot.onText(/\/migrazione/, function (message, match) {
 							return;
 						}
 
-						var account_id = (rows[0].account_id).toString();
-						if (banlist_id.indexOf(account_id) != -1) {
-							var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+						var banReason = isBanned(rows[0].account_id);
+						if (banReason != null) {
+							var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 							bot.sendMessage(message.chat.id, text, mark);
 							return;
 						}
@@ -2909,9 +2895,9 @@ bot.onText(/\/riscatta (.+)/, function (message, match) {
 	connection.query('SELECT account_id, id FROM player WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -3223,15 +3209,15 @@ function printStart(message) {
 		}else{
 			gender_text = "a";
 		}
-		bot.sendMessage(message.chat.id, '⚡️ Benvenut' + gender_text + ' nel <b>xxx</b>!⚡️ \n\n' +
+		bot.sendMessage(message.chat.id, '⚡️ Benvenut' + gender_text + ' nel <b>LootBot</b>!⚡️ \n\n' +
 						'Benvenut' + gender_text + ' nel bot più divertente di Telegram! Dal 15 Maggio 2016 intrattiene migliaia di giocatori italiani ogni giorno, entra anche tu nel mondo di Lootia, intraprendi missioni, esplora i misteriosi dungeon ed affronta ogni tipo di creatura del mondo di Lootia!\n\n' +
 						'Il tuo nickname da avventurier' + gender_text + ' è: <b>' + message.from.username + '</b>.\n' +
 						'Se modifichi il nickname perderai i dati di gioco! Usa il comando /migrazione per modificarlo automaticamente.\n' +
 						'Rispetta la community e sarai rispettato, gioca consapevolmente.\n\n' +
 						'<b>Per iniziare</b> 🗡\n' +
 						'- Leggi i <a href="http://telegra.ph/Introduzione-a-Loot-Bot-12-15">Suggerimenti per i nuovi avventurieri</a>\n' +
-						'- Segui il canale @wikixxxbot\n' +
-						'- Visualizza i /gruppi e le /faq avviando l\'importantissimo bot di supporto @xxxplusbot\n' +
+						'- Segui il canale @wikilootbot\n' +
+						'- Visualizza i /gruppi e le /faq avviando l\'importantissimo bot di supporto @lootplusbot\n' +
 						'- Entra nella <a href="https://t.me/joinchat/AAAAAEDH8FbelcVFTmw-mQ">Lootbot School</a> per imparare le basi\n' +
 						'- Cerca un team per imparare ulteriormente le strategie per iniziare avvantaggiato\n\n' +
 						'<b>Regolamento</b> 🚫\n' +
@@ -3241,7 +3227,7 @@ function printStart(message) {
 						'- Dopo 6 mesi di inattività il tuo account sarà eliminato senza possibilità di ripristinarlo.\n' +
 						'- Come ultima attività si intende un qualsiasi comando inviato tramite il bot principale o il Plus.\n\n' +
 						'<b>Link Utili</b> 📃\n' +
-						'- Vota il bot nello <a href="https://storebot.me/bot/xxxgamebot">Storebot</a>\n' +
+						'- Vota il bot nello <a href="https://storebot.me/bot/lootgamebot">Storebot</a>\n' +
 						'- Per aiutarmi a mantenere il server, <a href="http://fenixweb.net/">fai una donazione</a>, riceverai delle Monete Lunari 🌕!\n\n' +
 						'<b>Crediti</b> 👑\n' +
 						'- Edoardo Cortese @fenix45\n' +
@@ -3282,12 +3268,12 @@ function mainMenu(message) {
 		} else if (n == 2) {
 			price_drop_msg = "\n🍀 Oggi giornata <b>fortunata</b>!";
 		} else {
-			var links = ["<a href='http://telegram.me/storebot?start=xxxgamebot'>Vota</a> il bot!",
+			var links = ["<a href='http://telegram.me/storebot?start=lootgamebot'>Vota</a> il bot!",
 						 "Entra nella <a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a>!",
 						 "Commercia nel <a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a>!",
-						 "Iscriviti a @xxxAvvisi per seguire le novità!",
+						 "Iscriviti a @LootBotAvvisi per seguire le novità!",
 						 "<a href='https://www.paypal.me/EdoardoCortese'>Dona</a> e riceverai alcune monete lunari per tentare la fortuna!",
-						 "Aggiungi @xxxplusbot al tuo gruppo!",
+						 "Aggiungi @lootplusbot al tuo gruppo!",
 						 ((n != 6) && (n != 0) ? "Ricordati di completare le Imprese Giornaliere!" : "In settimana completa le Imprese Giornaliere!")];
 			var rand = Math.round(Math.random() * (Object.keys(links).length - 1));
 			price_drop_msg = "\n " + links[rand];
@@ -3316,9 +3302,9 @@ function mainMenu(message) {
 			return;
 		}
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -4444,9 +4430,9 @@ bot.onText(/Rimodulatore di Flaridion|Torna dal rimodulatore|^rimodulatore$/i, f
 			}
 			*/
 
-			var account_id = (rows[0].account_id).toString();
-			if (banlist_id.indexOf(account_id) != -1) {
-				var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+			var banReason = isBanned(rows[0].account_id);
+			if (banReason != null) {
+				var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 				bot.sendMessage(message.chat.id, text, mark);
 				return;
 			}
@@ -5273,9 +5259,9 @@ bot.onText(/casa dei giochi/i, function (message) {
 	connection.query('SELECT account_id, market_ban, holiday, id, reborn, money, exp, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -5416,9 +5402,7 @@ bot.onText(/casa dei giochi/i, function (message) {
 								var mypos = 0;
 								var size = 20;
 
-								var banned_join = banlist_id.join();
-
-								connection.query('SELECT nickname, record FROM game_house_stats, player WHERE account_id NOT IN (' + banned_join + ') AND game_house_stats.player_id = player.id AND nickname != "fenix45" AND nickname != "LastSoldier95" AND game_house_stats.type = 3 ORDER BY record DESC', function (err, rows, fields) {
+								connection.query('SELECT nickname, record FROM game_house_stats, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND game_house_stats.player_id = player.id AND nickname != "fenix45" AND nickname != "LastSoldier95" AND game_house_stats.type = 3 ORDER BY record DESC', function (err, rows, fields) {
 									if (err) throw err;
 									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 										if (c < size + 1) {
@@ -5483,9 +5467,9 @@ bot.onText(/gioca numeri/i, function (message) {
 	connection.query('SELECT account_id, market_ban, holiday, id, reborn, money, exp FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -5747,9 +5731,9 @@ bot.onText(/gira rotelle/i, function (message) {
 	connection.query('SELECT account_id, market_ban, holiday, id, reborn, money, exp FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -5930,9 +5914,9 @@ bot.onText(/vedi la carta/i, function (message) {
 	connection.query('SELECT account_id, market_ban, holiday, id, reborn, money, exp FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -6141,9 +6125,9 @@ bot.onText(/$vocazioni|vocazione|torna alle vocazioni/i, function (message) {
 
 	connection.query('SELECT * FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -6257,9 +6241,9 @@ bot.onText(/$vocazioni|vocazione|torna alle vocazioni/i, function (message) {
 bot.onText(/cambia vocazione/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -6601,9 +6585,9 @@ bot.onText(/dungeon/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -7332,7 +7316,7 @@ bot.onText(/dungeon/i, function (message) {
 								}
 
 								console.log("Generazione dungeon con " + rooms + " stanze completata");
-								
+
 								connection.query('UPDATE dungeon_status SET room_id = 1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
 									bot.sendMessage(message.chat.id, "Il dungeon è stato creato, ora inizia l'esplorazione!", dStart);
@@ -10545,9 +10529,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 	connection.query('SELECT * FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -11376,7 +11360,6 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																		if ((critical_rand2 <= critical_armor) && (meParalyzed == 0)) {
 																			damage = damage / 1.5;
-																			damage = damage / 1.5;
 																			crit_txt2 = ", ridotti grazie alla tua corazza";
 																			setAchievement(message.chat.id, player_id, 31, 1);
 																		}
@@ -11907,9 +11890,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 bot.onText(/cassa rinascita|torna alla cassa/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -11990,9 +11973,9 @@ bot.onText(/rinasci/i, function (message) {
 
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -12227,7 +12210,7 @@ bot.onText(/link invito/i, function (message) {
 	connection.query('SELECT id, invite_code, exp, reborn FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
-		code = "*Il tuo codice invito*: https://telegram.me/xxxgamebot?start=" + rows[0].invite_code + "\n\nAssicurati che il nickname sia impostato prima di  utilizzare il link!";
+		code = "*Il tuo codice invito*: https://telegram.me/lootgamebot?start=" + rows[0].invite_code + "\n\nAssicurati che il nickname sia impostato prima di  utilizzare il link!";
 		bot.sendMessage(message.chat.id, code, no_preview_back).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text == "Torna al menu") {
@@ -12491,9 +12474,9 @@ bot.onText(/Scomponi/i, function (message) {
 	connection.query('SELECT id, exp, reborn, holiday, gems, account_id, craft_count FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -12675,9 +12658,9 @@ bot.onText(/^Incanta/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -12987,9 +12970,9 @@ bot.onText(/fai nascere il drago|accudisci drago|nutri ancora|^drago$|^drago �
 	connection.query('SELECT holiday, id, exp, charm_id, account_id FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -13241,9 +13224,9 @@ bot.onText(/Dai un nome al drago/i, function (message) {
 	connection.query('SELECT id, holiday, exp, account_id FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -13332,9 +13315,9 @@ bot.onText(/^bevande|torna alle bevande/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -13515,9 +13498,9 @@ bot.onText(/cambia tipo/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -13590,9 +13573,9 @@ bot.onText(/rinomina drago/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -13649,9 +13632,9 @@ bot.onText(/cambia nome/i, function (message) {
 		if (err) throw err;
 		var player_id = rows[0].id;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -13725,9 +13708,9 @@ bot.onText(/slogan/i, function (message) {
 		if (err) throw err;
 		var player_id = rows[0].id;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -13810,9 +13793,9 @@ bot.onText(/dai pietra/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -14103,9 +14086,9 @@ bot.onText(/dai tutte/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -14215,9 +14198,9 @@ bot.onText(/dai tutte/i, function (message) {
 bot.onText(/equipaggia drago/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -14669,9 +14652,9 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 	connection.query('SELECT id, account_id, reborn, top_first, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -15258,9 +15241,9 @@ bot.onText(/riposa/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -15463,9 +15446,9 @@ bot.onText(/^Risorse/i, function (message) {
 	connection.query('SELECT account_id, id, reborn, charm_id, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -15678,9 +15661,9 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 	connection.query('SELECT account_id, id, reborn, charm_id, holiday, class FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -17477,9 +17460,9 @@ bot.onText(/team/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -17604,7 +17587,7 @@ bot.onText(/team/i, function (message) {
 											att_boss = rows[0].id;
 										}
 
-										connection.query('SELECT team_player.player_id, role, boss_damage.boss_id, SUM(damage) As dmg, COUNT(damage) As dmg_cnt FROM boss_damage RIGHT JOIN team_player ON team_player.player_id = boss_damage.player_id WHERE team_player.team_id = ' + team_id + ' AND boss_damage.boss_id = ' + att_boss + ' GROUP BY team_player.player_id', function (err, rows, fields) {
+										connection.query('SELECT team_player.player_id, role, boss_damage.boss_id, SUM(damage) As dmg, COUNT(damage) As dmg_cnt FROM player, boss_damage RIGHT JOIN team_player ON team_player.player_id = boss_damage.player_id WHERE player.id = team_player.player_id AND team_player.team_id = ' + team_id + ' AND boss_damage.boss_id = ' + att_boss + ' GROUP BY team_player.player_id ORDER BY player.reborn DESC, player.exp DESC', function (err, rows, fields) {
 											if (err) throw err;
 
 											var list_dmg = [];
@@ -17617,7 +17600,7 @@ bot.onText(/team/i, function (message) {
 												}
 											}
 
-											connection.query('SELECT mission_team_party_player.party_id, team.mission_count, team.slogan, team.kill_num1, team.kill_num2, team.boost_id, team.point, class.name As class_name, team_player.*, last_command.time, team.craft_count As team_craft, (SELECT COUNT(*) FROM team_player WHERE team_id = ' + team_id + ') As cnt, player.id As player_id, player.rank, player.weapon, player.mission_time_end, player.travel_time_end, player.cave_time_end, player.holiday, player.ability, player.reborn, player.nickname, player.craft_count, player.life, player.total_life, player.exp, team.name, team.players, team.details, team.max_players, team.boss_count, team.level, team.closed, SUM(boss_damage.damage) As dmg, COUNT(boss_damage.damage) As dmg_cnt FROM last_command, team_player LEFT JOIN boss_damage ON boss_damage.player_id = team_player.player_id LEFT JOIN mission_team_party_player ON team_player.player_id = mission_team_party_player.player_id, player, team, class WHERE player.class = class.id AND team.id = team_player.team_id AND team_player.player_id = player.id AND team_player.team_id = ' + team_id + ' AND player.account_id = last_command.account_id GROUP BY nickname ORDER BY team_player.role = 0, team_player.role, team_player.id', function (err, rows, fields) {
+											connection.query('SELECT mission_team_party_player.party_id, team.mission_count, team.slogan, team.kill_num1, team.kill_num2, team.boost_id, team.point, class.name As class_name, team_player.*, last_command.time, team.craft_count As team_craft, (SELECT COUNT(*) FROM team_player WHERE team_id = ' + team_id + ') As cnt, player.id As player_id, player.rank, player.weapon, player.mission_time_end, player.travel_time_end, player.cave_time_end, player.holiday, player.ability, player.reborn, player.nickname, player.craft_count, player.life, player.total_life, player.exp, team.name, team.players, team.details, team.max_players, team.boss_count, team.level, team.closed, SUM(boss_damage.damage) As dmg, COUNT(boss_damage.damage) As dmg_cnt FROM last_command, team_player LEFT JOIN boss_damage ON boss_damage.player_id = team_player.player_id LEFT JOIN mission_team_party_player ON team_player.player_id = mission_team_party_player.player_id, player, team, class WHERE player.class = class.id AND team.id = team_player.team_id AND team_player.player_id = player.id AND team_player.team_id = ' + team_id + ' AND player.account_id = last_command.account_id GROUP BY nickname ORDER BY team_player.role = 0, team_player.role, player.reborn DESC, player.exp DESC', function (err, rows, fields) {
 												if (err) throw err;
 												var iKeys = [];
 												var teamName = rows[0].name;
@@ -17757,11 +17740,11 @@ bot.onText(/team/i, function (message) {
 														"📦 " + craft_count + " pnt creazione\n" +
 														"🔦 " + ability + " abilità\n" +
 														"🛡 " + rank + " rango\n" +
-														"📈 " + dmg + " dmg/" + dmg_cnt + " scalata\n" +
-														"🐗 " + dmg2 + " dmg/" + dmg_cnt2 + " boss attuale\n\n";
+														"📈 " + dmg + " danni/" + dmg_cnt + " colpi scalata\n" +
+														"🐗 " + dmg2 + " danni/" + dmg_cnt2 + " colpi boss attuale\n\n";
 
 													partial_text += admin + "<i>" + nickname + "</i> " + stars + " " + lev + " \n" +
-														act_line + "🐗 " + dmg2 + " dmg/" + dmg_cnt2 + " boss attuale\n\n";
+														act_line + "🐗 " + dmg2 + " danni/" + dmg_cnt2 + " colpi boss attuale\n\n";
 
 													if (i < 10) {
 														user_text += base_text;
@@ -19153,9 +19136,9 @@ bot.onText(/liste membri/i, function (message) {
 
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -19243,9 +19226,9 @@ bot.onText(/liste membri/i, function (message) {
 bot.onText(/Fonda nuovo/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -19334,9 +19317,9 @@ bot.onText(/Fonda nuovo/i, function (message) {
 bot.onText(/Entra in uno esistente|^Pagina (.+)/i, function (message, match) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -19600,9 +19583,9 @@ bot.onText(/Gestisci Membri/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -19937,9 +19920,9 @@ bot.onText(/^limite$/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -20010,9 +19993,9 @@ bot.onText(/^Accademia/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -20139,9 +20122,9 @@ bot.onText(/^Lascia/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -20211,9 +20194,9 @@ bot.onText(/^Notifiche/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -20272,9 +20255,9 @@ bot.onText(/Sciogli/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -20360,9 +20343,9 @@ bot.onText(/cambia admin/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -20631,9 +20614,9 @@ bot.onText(/Entra in(?! uno esistente)/i, function (message) {
 	connection.query('SELECT id, team_time, holiday, account_id, exp, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -20745,9 +20728,9 @@ bot.onText(/^Robot/i, function (message) {
 	connection.query('SELECT id, holiday, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -20891,9 +20874,9 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 		var player_id = rows[0].id;
 		var reborn = rows[0].reborn;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -21026,9 +21009,9 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 
 		var player_id = rows[0].id;
 
-		var account_id = rows[0].account_id.toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -21282,10 +21265,9 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 									});
 								}else if (answer.text == "Classifica 🔝"){
 
-									var banned_join = banlist_id.join();
 									var text = "Classifica per Pupazzi di Neve in vita:\n";
 
-									connection.query('SELECT P.nickname, COUNT(E.id) As points FROM event_snowball_list E, player P WHERE P.id = E.player_id AND P.account_id NOT IN (' + banned_join + ') AND P.nickname != "LastSoldier95" AND P.nickname != "fenix45" GROUP BY E.player_id ORDER BY points DESC', function (err, rows, fields) {
+									connection.query('SELECT P.nickname, COUNT(E.id) As points FROM event_snowball_list E, player P WHERE P.id = E.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.nickname != "LastSoldier95" AND P.nickname != "fenix45" GROUP BY E.player_id ORDER BY points DESC', function (err, rows, fields) {
 										if (err) throw err;
 
 										var range = 10;
@@ -21367,9 +21349,9 @@ bot.onText(/festival/i, function (message) {
 	connection.query('SELECT id, holiday, account_id, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = rows[0].account_id.toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -21498,9 +21480,9 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 	connection.query('SELECT id, class, reborn, holiday, account_id, travel_id, cave_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = rows[0].account_id.toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -21728,9 +21710,9 @@ bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
 	connection.query('SELECT id, class, reborn, holiday, account_id, travel_id, cave_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = rows[0].account_id.toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -21911,9 +21893,9 @@ bot.onText(/^\/sintesi (.+),(.+),(.+)|^\/sintesi/i, function (message, match) {
 	connection.query('SELECT id, holiday, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = rows[0].account_id.toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -22087,9 +22069,9 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 	connection.query('SELECT id, holiday, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = rows[0].account_id.toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -22435,9 +22417,9 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function 
 	connection.query('SELECT id, holiday, account_id, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = rows[0].account_id.toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -22666,9 +22648,9 @@ bot.onText(/ricercato|evento/i, function (message) {
 	connection.query('SELECT id, holiday, account_id, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = rows[0].account_id.toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -22716,10 +22698,8 @@ bot.onText(/ricercato|evento/i, function (message) {
 				}
 			};
 
-			var banned_join = banlist_id.join();
-
 			if (Object.keys(rows).length == 0) {
-				connection.query('SELECT nickname, from_id, COUNT(from_id) FROM heist_history, player, event_wanted_status WHERE account_id NOT IN (' + banned_join + ') AND fail = 0 AND event_wanted_status.player_id = player.id AND player.id = heist_history.from_id AND player.id != ' + player_id + ' AND time between DATE_SUB(now(),INTERVAL 2 MONTH) AND NOW() GROUP BY from_id ORDER BY COUNT(from_id) DESC LIMIT 200', function (err, rows, fields) {
+				connection.query('SELECT nickname, from_id, COUNT(from_id) FROM heist_history, player, event_wanted_status WHERE account_id NOT IN (SELECT account_id FROM banlist) AND fail = 0 AND event_wanted_status.player_id = player.id AND player.id = heist_history.from_id AND player.id != ' + player_id + ' AND time between DATE_SUB(now(),INTERVAL 2 MONTH) AND NOW() GROUP BY from_id ORDER BY COUNT(from_id) DESC LIMIT 200', function (err, rows, fields) {
 					if (err) throw err;
 
 					var len = Object.keys(rows).length;
@@ -22738,7 +22718,7 @@ bot.onText(/ricercato|evento/i, function (message) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length == 0) {
-						connection.query('SELECT nickname, from_id, COUNT(from_id) FROM heist_history, player, event_wanted_status WHERE account_id NOT IN (' + banned_join + ') AND fail = 0 AND event_wanted_status.player_id = player.id AND player.id = heist_history.from_id AND player.id != ' + player_id + ' AND time between DATE_SUB(now(),INTERVAL 2 MONTH) AND NOW() GROUP BY from_id ORDER BY COUNT(from_id) DESC LIMIT 200', function (err, rows, fields) {
+						connection.query('SELECT nickname, from_id, COUNT(from_id) FROM heist_history, player, event_wanted_status WHERE account_id NOT IN (SELECT account_id FROM banlist) AND fail = 0 AND event_wanted_status.player_id = player.id AND player.id = heist_history.from_id AND player.id != ' + player_id + ' AND time between DATE_SUB(now(),INTERVAL 2 MONTH) AND NOW() GROUP BY from_id ORDER BY COUNT(from_id) DESC LIMIT 200', function (err, rows, fields) {
 							if (err) throw err;
 
 							var len = Object.keys(rows).length;
@@ -22848,9 +22828,9 @@ bot.onText(/Il Tesoro di Arthur|Evento/i, function (message) {
 	connection.query('SELECT id, holiday, account_id, mission_id, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = rows[0].account_id.toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -23218,7 +23198,7 @@ function randomChest() {
 	return rarity;
 }
 
-bot.onText(/piazza di xxxia|piazza/i, function (message) {
+bot.onText(/piazza di lootia|piazza/i, function (message) {
 
 	if (message.text == "Piazza degli Affilamenti") {
 		return;
@@ -23232,9 +23212,9 @@ bot.onText(/piazza di xxxia|piazza/i, function (message) {
 			return;
 		}
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -23285,9 +23265,9 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 	connection.query('SELECT account_id, market_ban, holiday, id, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -23944,9 +23924,9 @@ bot.onText(/offerte giornaliere|^mercante pazzo|mercante/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -24084,9 +24064,9 @@ bot.onText(/^Poste/, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -25277,9 +25257,9 @@ bot.onText(/genera scaglia evolutiva/i, function (message) {
 	connection.query('SELECT id, class, reborn, holiday, account_id, travel_id, cave_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = rows[0].account_id.toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -25348,9 +25328,9 @@ bot.onText(/utilizza polvere/i, function (message) {
 	connection.query('SELECT id, class, reborn, holiday, account_id, travel_id, cave_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = rows[0].account_id.toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -25623,9 +25603,9 @@ bot.onText(/zaino/i, function (message) {
 	connection.query('SELECT id, holiday, total_life, life, account_id, bag_min, money, gems, mkeys, moon_coin, necro_pnt, gain_exp FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -25711,9 +25691,9 @@ bot.onText(/zaino completo/i, function (message) {
 	connection.query('SELECT id, holiday, total_life, life, account_id, bag_min FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -25807,9 +25787,9 @@ bot.onText(/^set$|^set 💣$|torna ai set|^Imposta (.+)/i, function (message) {
 	connection.query('SELECT id, holiday, account_id, exp, reborn FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -26542,8 +26522,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 	var mypnt = 0;
 	var mypos = 0;
 
-	var banned_join = banlist_id.join();
-	connection.query('SELECT nickname, craft_count As points FROM player WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, craft_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+	connection.query('SELECT nickname, craft_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, craft_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 		if (err) throw err;
 		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 			if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
@@ -26557,7 +26536,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 		mypnt = 0;
 		mypos = 0;
 
-		connection.query('SELECT nickname, craft_week As points FROM player WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, craft_week, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+		connection.query('SELECT nickname, craft_week As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, craft_week, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 			if (err) throw err;
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 				if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
@@ -26571,7 +26550,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 			mypnt = 0;
 			mypos = 0;
 
-			connection.query('SELECT nickname, rank As points FROM player WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, rank, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+			connection.query('SELECT nickname, rank As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, rank, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 				if (err) throw err;
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
@@ -26585,7 +26564,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 				mypnt = 0;
 				mypos = 0;
 
-				connection.query('SELECT nickname, achievement_count As points FROM player WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, achievement_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+				connection.query('SELECT nickname, achievement_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, achievement_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 					if (err) throw err;
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 						if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
@@ -26599,7 +26578,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 					mypnt = 0;
 					mypos = 0;
 
-					connection.query('SELECT nickname, mission_count As points FROM player WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, mission_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+					connection.query('SELECT nickname, mission_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, mission_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 						if (err) throw err;
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 							if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
@@ -26613,7 +26592,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 						mypnt = 0;
 						mypos = 0;
 
-						connection.query('SELECT nickname, ability As points FROM player WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, ability, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+						connection.query('SELECT nickname, ability As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, ability, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 							if (err) throw err;
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 								if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
@@ -26627,7 +26606,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 							mypnt = 0;
 							mypos = 0;
 
-							connection.query('SELECT nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (' + banned_join + ') AND merchant_offer.player_id = player.id AND nickname != "fenix45" AND nickname != "LastSoldier95" ORDER BY total_cnt DESC', function (err, rows, fields) {
+							connection.query('SELECT nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND nickname != "fenix45" AND nickname != "LastSoldier95" ORDER BY total_cnt DESC', function (err, rows, fields) {
 								if (err) throw err;
 								for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 									if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
@@ -26641,7 +26620,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 								mypnt = 0;
 								mypos = 0;
 
-								connection.query('SELECT nickname, SUM(value) As cnt FROM achievement_global A, player P WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
+								connection.query('SELECT nickname, SUM(value) As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "LastSoldier95" AND nickname != "fenix45" AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
 									if (err) throw err;
 									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 										if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
@@ -26663,7 +26642,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 										mypnt = 0;
 										mypos = 0;
 
-										connection.query('SELECT nickname, global_event As points FROM player WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, global_event, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+										connection.query('SELECT nickname, global_event As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, global_event, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 											if (err) throw err;
 											for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 												if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
@@ -26677,7 +26656,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 											mypnt = 0;
 											mypos = 0;
 
-											connection.query('SELECT nickname, ((power_dmg*2)+(power_def*1)+(power_weapon*20)+(power_armor*20)+(power_shield*35)) As total_cnt FROM player WHERE account_id NOT IN (' + banned_join + ') AND nickname != "fenix45" AND nickname != "LastSoldier95" HAVING total_cnt > 0 ORDER BY total_cnt DESC', function (err, rows, fields) {
+											connection.query('SELECT nickname, ((power_dmg*2)+(power_def*1)+(power_weapon*20)+(power_armor*20)+(power_shield*35)) As total_cnt FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "fenix45" AND nickname != "LastSoldier95" HAVING total_cnt > 0 ORDER BY total_cnt DESC', function (err, rows, fields) {
 												if (err) throw err;
 												for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 													if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
@@ -26790,13 +26769,11 @@ function getRank(message, size, type) {
 	var totpnt = 0;
 	var mypos = 0;
 
-	var banned_join = banlist_id.join();
-
 	connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (rows[0].top_min == 1) {
-			connection.query('SELECT nickname, ' + t + ' As points FROM player WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, ' + t + ', exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+			connection.query('SELECT nickname, ' + t + ' As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, ' + t + ', exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 				if (err) throw err;
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					if (c < size + 1) {
@@ -26814,7 +26791,7 @@ function getRank(message, size, type) {
 				bot.sendMessage(message.chat.id, text, keyrank);
 			});
 		} else {
-			connection.query('SELECT nickname, ' + t + ' As points FROM player WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, ' + t + ', exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+			connection.query('SELECT nickname, ' + t + ' As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "LastSoldier95" AND nickname != "fenix45" GROUP BY nickname, ' + t + ', exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 				if (err) throw err;
 
 				var range = 5;
@@ -26855,13 +26832,11 @@ function getRankAt(message, size) {
 	var myinfo = 0;
 	var size = 20;
 
-	var banned_join = banlist_id.join();
-
 	connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (rows[0].top_min == 1) {
-			connection.query('SELECT nickname, ((power_dmg*2)+(power_def*1)+(power_weapon*20)+(power_armor*20)+(power_shield*35)) As total_cnt FROM player WHERE account_id NOT IN (' + banned_join + ') AND nickname != "fenix45" AND nickname != "LastSoldier95" HAVING total_cnt > 0 ORDER BY total_cnt DESC', function (err, rows, fields) {
+			connection.query('SELECT nickname, ((power_dmg*2)+(power_def*1)+(power_weapon*20)+(power_armor*20)+(power_shield*35)) As total_cnt FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "fenix45" AND nickname != "LastSoldier95" HAVING total_cnt > 0 ORDER BY total_cnt DESC', function (err, rows, fields) {
 				if (err) throw err;
 
 				if (Object.keys(rows).length == 0) {
@@ -26886,7 +26861,7 @@ function getRankAt(message, size) {
 				bot.sendMessage(message.chat.id, text, keyrank);
 			});
 		} else {
-			connection.query('SELECT nickname, ((power_dmg*2)+(power_def*1)+(power_weapon*20)+(power_armor*20)+(power_shield*35)) As total_cnt FROM player WHERE account_id NOT IN (' + banned_join + ') AND nickname != "fenix45" AND nickname != "LastSoldier95" HAVING total_cnt > 0 ORDER BY total_cnt DESC', function (err, rows, fields) {
+			connection.query('SELECT nickname, ((power_dmg*2)+(power_def*1)+(power_weapon*20)+(power_armor*20)+(power_shield*35)) As total_cnt FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "fenix45" AND nickname != "LastSoldier95" HAVING total_cnt > 0 ORDER BY total_cnt DESC', function (err, rows, fields) {
 				if (err) throw err;
 
 				if (Object.keys(rows).length == 0) {
@@ -26923,148 +26898,11 @@ function getRankAt(message, size) {
 	});
 }
 
-/*
-function getRankLev(message, size){
-	var text = "Classifica basata sul livello:\n";
-	var c = 1;
-	var mypnt = 0;
-	var totpnt = 0;
-	var mypos = 0;
-
-	var banned_join = banlist_id.join();
-
-	connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function(err, rows, fields) {
-		if (err) throw err;
-
-		if (rows[0].top_min == 1){
-			connection.query('SELECT nickname, exp, reborn, case reborn when 1 then FLOOR(exp/10) when 2 then FLOOR(exp/10)+100 when 3 then FLOOR(exp/10)+100+150 when 4 then FLOOR(exp/10)+100+150+200 when 5 then FLOOR(exp/10)+100+150+200+300 end as lev FROM player WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" ORDER BY lev DESC', function(err, rows, fields) {
-				if (err) throw err;
-				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					if (c < size+1){
-						text = text + c + "° " + rows[i].nickname + " (" + Math.floor(rows[i].exp/10) + " R" + (rows[i].reborn-1) + ")\n";
-					}
-					if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()){
-						mypnt = Math.floor(rows[i].exp/10) + " R" + (rows[i].reborn-1);
-						mypos = c;
-					}
-					c++;
-				}
-				text = text + "\nTu:\n" + mypos + "° " + message.from.username + " (" + mypnt + ")";
-
-				bot.sendMessage(message.chat.id, text, keyrank);
-			});
-		}else{
-			connection.query('SELECT nickname, exp, reborn, case reborn when 1 then FLOOR(exp/10) when 2 then FLOOR(exp/10)+100 when 3 then FLOOR(exp/10)+100+150 when 4 then FLOOR(exp/10)+100+150+200 when 5 then FLOOR(exp/10)+100+150+200+300 end as lev FROM player WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" ORDER BY lev DESC', function(err, rows, fields) {
-				if (err) throw err;
-
-				var range = 5;
-
-				var nickname = [];
-				var exp = [];
-				var reborn = [];
-				var mypos = 0;
-
-				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					nickname.push(rows[i].nickname);
-					exp.push(rows[i].exp);
-					reborn.push(rows[i].reborn);
-					if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase()){
-						mypos = i;
-					}
-				}
-				for (var i = (mypos-range); i < (mypos+(range+1)); i++) {
-					if (nickname[i] != undefined){
-						if (i == mypos){
-							text += (i+1) + "° <b>" + nickname[i] + "</b> (" + Math.floor(exp[i]/10) + " R" + (reborn[i]-1) + ")\n";
-						}else{
-							text += (i+1) + "° " + nickname[i] + " (" + Math.floor(exp[i]/10) + " R" + (reborn[i]-1) + ")\n";
-						}
-					}
-				}
-
-				bot.sendMessage(message.chat.id, text, keyrank);
-			});
-		}
-	});
-}
-*/
-
-/*
-function getRankDr(message, size){
-	var text = "Classifica draghi:\n";
-	var c = 1;
-	var mypnt = 0;
-	var totpnt = 0;
-	var myinfo = 0;
-
-	var banned_join = banlist_id.join();
-
-	connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function(err, rows, fields) {
-		if (err) throw err;
-
-		if (rows[0].top_min == 1){
-			connection.query('SELECT dragon.name, dragon.type, dragon.level, player.nickname FROM dragon, player WHERE player.account_id NOT IN (' + banned_join + ') AND player_id = player.id AND player_id != 1 AND player_id != 3 ORDER BY level DESC', function(err, rows, fields) {
-				if (err) throw err;
-				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					if (c < size+1){
-						text = text + c + "° " + rows[i].name + " " + rows[i].type + " (" + rows[i].level + ", " + rows[i].nickname + ")\n";
-					}
-					if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()){
-						mypnt = rows[i].points;
-						myinfo = c + "° " + rows[i].name + " " + rows[i].type + " (" + rows[i].level + ", " + rows[i].nickname + ")\n";
-					}
-					c++;
-				}
-				text = text + "\nTu:\n" + myinfo;
-
-				bot.sendMessage(message.chat.id, text, keyrank);
-			});
-		}else{
-			connection.query('SELECT dragon.name, dragon.type, dragon.level, player.nickname FROM dragon, player WHERE player.account_id NOT IN (' + banned_join + ') AND player_id = player.id AND player_id != 1 AND player_id != 3 ORDER BY level DESC', function(err, rows, fields) {
-				if (err) throw err;
-
-				var range = 5;
-
-				var nickname = [];
-				var name = [];
-				var type = [];
-				var level = [];
-				var mypos = 0;
-
-				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					nickname.push(rows[i].nickname);
-					name.push(rows[i].name);
-					type.push(rows[i].type);
-					level.push(rows[i].level);
-					if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase()){
-						mypos = i;
-					}
-				}
-				for (var i = (mypos-range); i < (mypos+(range+1)); i++) {
-					if (nickname[i] != undefined){
-						if (i == mypos){
-							text += (i+1) + "° <b>" + name[i] + " " + type[i] + "</b> (" + level[i] + ", " + nickname[i] + ")\n";
-						}else{
-							text += (i+1) + "° " + name[i] + " " + type[i] + " (" + level[i] + ", " + nickname[i] + ")\n";
-						}
-					}
-				}
-
-				bot.sendMessage(message.chat.id, text, keyrank);
-			});
-		}
-
-	});
-};
-*/
-
 function getRankArt(message, size) {
 	var text = "Albo artefatti:\n";
 	var totpnt = 0;
 
-	var banned_join = banlist_id.join();
-
-	connection.query('SELECT P.nickname, A.get_date FROM artifacts A, player P WHERE P.account_id NOT IN (' + banned_join + ') AND P.nickname != "fenix45" AND P.nickname != "LastSoldier95" AND A.player_id = P.id AND item_id = 675', function (err, rows, fields) {
+	connection.query('SELECT P.nickname, A.get_date FROM artifacts A, player P WHERE P.account_id NOT IN (SELECT account_id FROM banlist) AND P.nickname != "fenix45" AND P.nickname != "LastSoldier95" AND A.player_id = P.id AND item_id = 675', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0) {
@@ -27100,8 +26938,6 @@ function getRankAch(message, size) {
 			return;
 		}
 
-		var banned_join = banlist_id.join();
-
 		connection.query('SELECT top_min, global_event, id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 			if (err) throw err;
 
@@ -27118,7 +26954,7 @@ function getRankAch(message, size) {
 				}
 
 				if (top_min == 1) {
-					connection.query('SELECT nickname, SUM(value) As cnt FROM achievement_global A, player P WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
+					connection.query('SELECT nickname, SUM(value) As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "LastSoldier95" AND nickname != "fenix45" AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
 						if (err) throw err;
 
 						if (Object.keys(rows).length == 0) {
@@ -27138,7 +26974,7 @@ function getRankAch(message, size) {
 						}
 						text += "\nTu:\n" + mypos + "° " + message.from.username + " (" + formatNumber(mypnt) + ")";
 
-						connection.query('(SELECT nickname, SUM(A.value) As cnt FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (' + banned_join + ') GROUP BY A.player_id ORDER BY SUM(A.value) DESC LIMIT 100) UNION (SELECT nickname, SUM(A.value) As cnt FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (' + banned_join + ') AND P.global_event < 5 GROUP BY A.player_id ORDER BY SUM(A.value) DESC LIMIT 100)', function (err, rows, fields) {
+						connection.query('(SELECT nickname, SUM(A.value) As cnt FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) GROUP BY A.player_id ORDER BY SUM(A.value) DESC LIMIT 100) UNION (SELECT nickname, SUM(A.value) As cnt FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 GROUP BY A.player_id ORDER BY SUM(A.value) DESC LIMIT 100)', function (err, rows, fields) {
 							if (err) throw err;
 
 							var found = 0;
@@ -27159,7 +26995,7 @@ function getRankAch(message, size) {
 						});
 					});
 				} else {
-					connection.query('SELECT nickname, SUM(value) As cnt FROM achievement_global A, player P WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
+					connection.query('SELECT nickname, SUM(value) As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "LastSoldier95" AND nickname != "fenix45" AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
 						if (err) throw err;
 
 						if (Object.keys(rows).length == 0) {
@@ -27191,7 +27027,7 @@ function getRankAch(message, size) {
 							}
 						}
 
-						connection.query('(SELECT nickname, SUM(A.value) As cnt FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (' + banned_join + ') GROUP BY A.player_id ORDER BY SUM(A.value) DESC LIMIT 100) UNION (SELECT nickname, SUM(A.value) As cnt FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (' + banned_join + ') AND P.global_event < 5 GROUP BY A.player_id ORDER BY SUM(A.value) DESC LIMIT 100)', function (err, rows, fields) {
+						connection.query('(SELECT nickname, SUM(A.value) As cnt FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) GROUP BY A.player_id ORDER BY SUM(A.value) DESC LIMIT 100) UNION (SELECT nickname, SUM(A.value) As cnt FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 GROUP BY A.player_id ORDER BY SUM(A.value) DESC LIMIT 100)', function (err, rows, fields) {
 							if (err) throw err;
 
 							var found = 0;
@@ -27225,13 +27061,11 @@ bot.onText(/Classifica Contrabbandiere/i, function (message) {
 	var myinfo = 0;
 	var size = 20;
 
-	var banned_join = banlist_id.join();
-
 	connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (rows[0].top_min == 1) {
-			connection.query('SELECT nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (' + banned_join + ') AND merchant_offer.player_id = player.id AND nickname != "fenix45" AND nickname != "LastSoldier95" ORDER BY total_cnt DESC', function (err, rows, fields) {
+			connection.query('SELECT nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND nickname != "fenix45" AND nickname != "LastSoldier95" ORDER BY total_cnt DESC', function (err, rows, fields) {
 				if (err) throw err;
 
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
@@ -27251,7 +27085,7 @@ bot.onText(/Classifica Contrabbandiere/i, function (message) {
 				bot.sendMessage(message.chat.id, text, keyrank);
 			});
 		} else {
-			connection.query('SELECT nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (' + banned_join + ') AND merchant_offer.player_id = player.id AND nickname != "fenix45" AND nickname != "LastSoldier95" ORDER BY total_cnt DESC', function (err, rows, fields) {
+			connection.query('SELECT nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND nickname != "fenix45" AND nickname != "LastSoldier95" ORDER BY total_cnt DESC', function (err, rows, fields) {
 				if (err) throw err;
 
 				var range = 5;
@@ -27309,9 +27143,9 @@ bot.onText(/emporio/i, function (message) {
 	connection.query('SELECT id, holiday, money, account_id, mission_id FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -27461,9 +27295,9 @@ bot.onText(/ricicla/i, function (message) {
 	connection.query('SELECT id, holiday, money, account_id, mission_id FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -27894,9 +27728,9 @@ bot.onText(/^vendi/i, function (message) {
 					connection.query('SELECT id, holiday, money, account_id, mission_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 
-						var account_id = (rows[0].account_id).toString();
-						if (banlist_id.indexOf(account_id) != -1) {
-							var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+						var banReason = isBanned(rows[0].account_id);
+						if (banReason != null) {
+							var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 							bot.sendMessage(message.chat.id, text, mark);
 							return;
 						}
@@ -28414,9 +28248,9 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -28954,9 +28788,9 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -29812,9 +29646,9 @@ bot.onText(/equipaggia/i, function (message) {
 		connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 			if (err) throw err;
 
-			var account_id = (rows[0].account_id).toString();
-			if (banlist_id.indexOf(account_id) != -1) {
-				var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+			var banReason = isBanned(rows[0].account_id);
+			if (banReason != null) {
+				var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 				bot.sendMessage(message.chat.id, text, mark);
 				return;
 			}
@@ -30010,9 +29844,9 @@ bot.onText(/equipaggia/i, function (message) {
 		var weapon3_id = rows[0].weapon3_id;
 		var noequip = 0;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -30130,9 +29964,9 @@ bot.onText(/rimuovi/i, function (message) {
 		var weapon3_id = rows[0].weapon3_id;
 		var charm_id = rows[0].charm_id;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -30304,9 +30138,9 @@ bot.onText(/torna a crea|crea (.+)/i, function (message) {
 
 	connection.query('SELECT id, holiday, money, reborn, account_id FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -30848,9 +30682,9 @@ bot.onText(/^scrigni|torna agli scrigni|vai agli scrigni/i, function (message) {
 			return;
 		}
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -30914,9 +30748,9 @@ bot.onText(/^apri/i, function (message) {
 		var reborn = rows[0].reborn;
 		var mkeys = rows[0].mkeys;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -31320,9 +31154,9 @@ bot.onText(/evento della luna/i, function (message) {
 	connection.query('SELECT id, holiday, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -31390,9 +31224,9 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 		var player_id = rows[0].id;
 		var lev = Math.floor(rows[0].exp / 10);
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -31579,9 +31413,7 @@ bot.onText(/arena/i, function (message) {
 		var mypos = 0;
 		var size = 20;
 
-		var banned_join = banlist_id.join();
-
-		connection.query('SELECT nickname, win As points FROM event_arena_status, player WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" AND player.id = event_arena_status.player_id ORDER BY win DESC', function (err, rows, fields) {
+		connection.query('SELECT nickname, win As points FROM event_arena_status, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "LastSoldier95" AND nickname != "fenix45" AND player.id = event_arena_status.player_id ORDER BY win DESC', function (err, rows, fields) {
 			if (err) throw err;
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 				if (c < size + 1) {
@@ -31600,7 +31432,7 @@ bot.onText(/arena/i, function (message) {
 
 			text += "\n\nClassifica sconfitte:\n";
 
-			connection.query('SELECT nickname, lose As points FROM event_arena_status, player WHERE account_id NOT IN (' + banned_join + ') AND nickname != "LastSoldier95" AND nickname != "fenix45" AND player.id = event_arena_status.player_id ORDER BY lose DESC', function (err, rows, fields) {
+			connection.query('SELECT nickname, lose As points FROM event_arena_status, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND nickname != "LastSoldier95" AND nickname != "fenix45" AND player.id = event_arena_status.player_id ORDER BY lose DESC', function (err, rows, fields) {
 				if (err) throw err;
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					if (c < size + 1) {
@@ -31624,9 +31456,9 @@ bot.onText(/arena/i, function (message) {
 	connection.query('SELECT id, holiday, account_id, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -32464,9 +32296,9 @@ bot.onText(/affronta boss|^scalata boss|^boss/i, function (message) {
 				var class_id = rows[0].class;
 				var kill_streak_ok = rows[0].kill_streak_ok;
 
-				var account_id = (rows[0].account_id).toString();
-				if (banlist_id.indexOf(account_id) != -1) {
-					var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+				var banReason = isBanned(rows[0].account_id);
+				if (banReason != null) {
+					var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 					bot.sendMessage(message.chat.id, text, mark);
 					return;
 				}
@@ -32721,9 +32553,9 @@ bot.onText(/^Incantesimi$/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -32837,9 +32669,9 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 			return;
 		}
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -34102,6 +33934,12 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 																							extra += " recuperando " + heal_enemy + " hp";
 																						}
 																					}
+																					if ((special != "") && (enemy_magic != "")){
+																						extra = "colpisce con *" + special + "* e *" + enemy_magic + "*";
+																						if (heal_enemy != 0) {
+																							extra += " recuperando " + heal_enemy + " hp";
+																						}
+																					}
 
 																					var magic_txt2 = "";
 
@@ -34218,9 +34056,9 @@ bot.onText(/visualizza boss/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -34578,7 +34416,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 										reply_markup: {
 											resize_keyboard: true,
 											//one_time_keyboard: true,
-											"keyboard": [["1", "2", "3"], ["4", "5", "10"], ["Torna al menu"]]
+											"keyboard": [["1", "2", "3"], ["19", "20"], ["Torna al menu"]]
 										}
 									};
 								} else if (item_id == 93) {
@@ -34587,7 +34425,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 										reply_markup: {
 											resize_keyboard: true,
 											//one_time_keyboard: true,
-											"keyboard": [["1", "2", "3"], ["7", "8", "9"], ["Torna al menu"]]
+											"keyboard": [["1", "2", "3"], ["9", "10"], ["Torna al menu"]]
 										}
 									};
 								} else {
@@ -34872,9 +34710,9 @@ bot.onText(/spia rifugio|spia:/i, function (message) {
 
 	connection.query('SELECT * FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -34916,8 +34754,8 @@ bot.onText(/spia rifugio|spia:/i, function (message) {
 					var house_id = rows[0].house_id;
 
 					if (player_id != 1){
-						var account_id = (rows[0].account_id).toString();
-						if (banlist_id.indexOf(account_id) != -1) {
+						var banReason = isBanned(rows[0].account_id);
+						if (banReason != null) {
 							bot.sendMessage(message.chat.id, "Non puoi spiare un giocatore bannato", back);
 							return;
 						}
@@ -34980,8 +34818,8 @@ bot.onText(/spia rifugio|spia:/i, function (message) {
 						var house_id = rows[0].house_id;
 
 						if (player_id != 1){
-							var account_id = (rows[0].account_id).toString();
-							if (banlist_id.indexOf(account_id) != -1) {
+							var banReason = isBanned(rows[0].account_id);
+							if (banReason != null) {
 								bot.sendMessage(message.chat.id, "Non puoi spiare un giocatore bannato", back);
 								return;
 							}
@@ -35033,9 +34871,9 @@ bot.onText(/spia rifugio|spia:/i, function (message) {
 	});
 });
 
-bot.onText(/xxxteria/i, function (message) {
-	if ((message.from.username != "fenix45") && (xxxteria == 0)) {
-		bot.sendMessage(message.chat.id, "Lo xxxteria è ancora chiusa!", back);
+bot.onText(/lootteria/i, function (message) {
+	if ((message.from.username != "fenix45") && (lootteria == 0)) {
+		bot.sendMessage(message.chat.id, "Lo lootteria è ancora chiusa!", back);
 		return;
 	}
 
@@ -35050,16 +34888,16 @@ bot.onText(/xxxteria/i, function (message) {
 
 	var today = new Date();
 	if ((today.getDay() != 6) && (today.getDay() != 0)) {
-		bot.sendMessage(message.chat.id, "Oggi la xxxteria è chiusa! Torna nel weekend!", back);
+		bot.sendMessage(message.chat.id, "Oggi la lootteria è chiusa! Torna nel weekend!", back);
 		return;
 	}
 
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -35069,12 +34907,12 @@ bot.onText(/xxxteria/i, function (message) {
 		}
 
 		if ((rows[0].exp / 10 < 25) && (rows[0].reborn == 1)) {
-			bot.sendMessage(message.chat.id, "Devi essere almeno livello 25 per partecipare alla xxxteria", back)
+			bot.sendMessage(message.chat.id, "Devi essere almeno livello 25 per partecipare alla lootteria", back)
 			return;
 		}
 
 		if (rows[0].craft_count <= 100) {
-			bot.sendMessage(message.chat.id, "Devi possedere almeno 100 punti creazione per partecipare alla xxxteria", back)
+			bot.sendMessage(message.chat.id, "Devi possedere almeno 100 punti creazione per partecipare alla lootteria", back)
 			return;
 		}
 
@@ -35104,15 +34942,15 @@ bot.onText(/xxxteria/i, function (message) {
 });
 
 bot.onText(/bigliett/i, function (message) {
-	if ((message.from.username != "fenix45") && (xxxteria == 0)) {
-		bot.sendMessage(message.chat.id, "Lo xxxteria è chiusa!", back);
+	if ((message.from.username != "fenix45") && (lootteria == 0)) {
+		bot.sendMessage(message.chat.id, "Lo lootteria è chiusa!", back);
 		return;
 	}
 
-	if (xxxteria == 1) {
+	if (lootteria == 1) {
 		var today = new Date();
 		if ((today.getDay() != 6) && (today.getDay() != 0)) {
-			bot.sendMessage(message.chat.id, "Oggi la xxxteria è chiusa! Torna nel weekend!", back);
+			bot.sendMessage(message.chat.id, "Oggi la lootteria è chiusa! Torna nel weekend!", back);
 			return;
 		}
 	}
@@ -35124,7 +34962,7 @@ bot.onText(/bigliett/i, function (message) {
 		return;
 	}
 
-	if (xxxteriaBlock == 1) {
+	if (lootteriaBlock == 1) {
 		bot.sendMessage(message.chat.id, "Non è momentaneamente possibile acquistare biglietti", back);
 		return;
 	}
@@ -35148,12 +34986,12 @@ bot.onText(/bigliett/i, function (message) {
 						var money = rows[0].money;
 
 						if (rows[0].craft_count <= 100) {
-							bot.sendMessage(message.chat.id, "Non hai abbastanza punti creazione per partecipare alla xxxteria", back)
+							bot.sendMessage(message.chat.id, "Non hai abbastanza punti creazione per partecipare alla lootteria", back)
 							return;
 						}
 
 						if ((rows[0].exp / 10 < 25) && (rows[0].reborn == 1)) {
-							bot.sendMessage(message.chat.id, "Devi essere almeno livello 25 per partecipare alla xxxteria", back)
+							bot.sendMessage(message.chat.id, "Devi essere almeno livello 25 per partecipare alla lootteria", back)
 							return;
 						}
 
@@ -35206,9 +35044,9 @@ bot.onText(/necro del destino/i, function (message) {
 
 	connection.query('SELECT id, account_id, holiday, necro_pnt, reborn FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -35501,9 +35339,9 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -36318,9 +36156,9 @@ bot.onText(/^rifugio|Torna al rifugio/i, function (message) {
 			return;
 		}
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -36421,9 +36259,9 @@ bot.onText(/matchmaking/i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -36519,12 +36357,11 @@ bot.onText(/matchmaking/i, function (message) {
 							var limit = 50;
 							var count = 100;
 							var i = 0;
-							var banned_join = banlist_id.join();
 							var minexp = 150;
 							var found = 0;
 
 							for(i = 0; i < 10; i++){
-								var rows = connection_sync.query("SELECT nickname, exp, team_player.team_id FROM player, team_player WHERE player.heist_limit < " + heist_limit + " AND player.account_id NOT IN (" + banned_join + ",1,3) AND team_player.player_id = player.id AND team_player.team_id NOT IN (" + team_id + ") AND heist_protection IS NULL AND ability BETWEEN " + (myab - offset) + " AND " + (myab + offset2) + " AND nickname <> '" + message.from.username + "' AND money > 0 AND exp > " + minexp + " AND holiday = 0 AND player.id != " + last_mm + " ORDER BY ability DESC, heist_limit ASC, RAND() LIMIT " + limit);
+								var rows = connection_sync.query("SELECT nickname, exp, team_player.team_id FROM player, team_player WHERE player.heist_limit < " + heist_limit + " AND player.account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) AND team_player.player_id = player.id AND team_player.team_id NOT IN (" + team_id + ") AND heist_protection IS NULL AND ability BETWEEN " + (myab - offset) + " AND " + (myab + offset2) + " AND nickname <> '" + message.from.username + "' AND money > 0 AND exp > " + minexp + " AND holiday = 0 AND player.id != " + last_mm + " ORDER BY ability DESC, heist_limit ASC, RAND() LIMIT " + limit);
 
 								if (Object.keys(rows).length < 10) {
 									offset += i*10;
@@ -36552,9 +36389,9 @@ bot.onText(/inserisci il nickname|ispeziona: /i, function (message) {
 	connection.query('SELECT * FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -36631,8 +36468,8 @@ bot.onText(/inserisci il nickname|ispeziona: /i, function (message) {
 						connection.query('SELECT id, account_id, reborn, holiday FROM player WHERE nickname="' + usr + '"', function (err, rows, fields) {
 							if (err) throw err;
 							if (Object.keys(rows).length > 0) {
-								var account_id = (rows[0].account_id).toString();
-								if (banlist_id.indexOf(account_id) != -1) {
+								var banReason = isBanned(rows[0].account_id);
+								if (banReason != null) {
 									bot.sendMessage(message.chat.id, "Non puoi ispezionare un giocatore bannato", back);
 									return;
 								}
@@ -36688,8 +36525,8 @@ bot.onText(/inserisci il nickname|ispeziona: /i, function (message) {
 								if (err) throw err;
 								if (Object.keys(rows).length > 0) {
 
-									var account_id = (rows[0].account_id).toString();
-									if (banlist_id.indexOf(account_id) != -1) {
+									var banReason = isBanned(rows[0].account_id);
+									if (banReason != null) {
 										bot.sendMessage(message.chat.id, "Non puoi ispezionare un giocatore bannato", back);
 										return;
 									}
@@ -36803,8 +36640,8 @@ bot.onText(/^prelevazione/i, function (message) {
 			}
 		};
 
-		if (xxxteria == 1) {
-			bot.sendMessage(message.chat.id, "Durante la xxxteria non puoi usare la capsula, monello 🌝", back);
+		if (lootteria == 1) {
+			bot.sendMessage(message.chat.id, "Durante la lootteria non puoi usare la capsula, monello 🌝", back);
 			return;
 		}
 
@@ -37069,7 +36906,7 @@ bot.onText(/migliora rifugio/i, function (message) {
 		var check1 = "✅";
 		var check2 = "✅";
 		var check3 = "✅";
-		
+
 		if (getItemCnt(from_id, level[0]) == 0)
 			check1 = "";
 
@@ -37374,9 +37211,9 @@ bot.onText(/itinerario propizio|itinerari|regioni/i, function (message) {
 			return;
 		}
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -37600,9 +37437,9 @@ bot.onText(/missione/i, function (message) {
 			return;
 		}
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -37996,9 +37833,9 @@ bot.onText(/^imprese/i, function (message) {
 	connection.query('SELECT id, account_id, achievement_count, dungeon_count, mission_count, craft_count, exp, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -38216,9 +38053,9 @@ bot.onText(/^vacanza/i, function (message) {
 	connection.query('SELECT account_id, holiday, id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -38320,9 +38157,9 @@ bot.onText(/viaggi/i, function (message) {
 			return;
 		}
 
-		var account_id = (rows[0].account_id).toString();
-		if (banlist_id.indexOf(account_id) != -1) {
-			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banlist_tx[banlist_id.indexOf(account_id)] + "_";
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
@@ -42166,9 +42003,7 @@ function setFinishedHeist(element, index, array) {
 											if (err) throw err;
 										});
 
-										var banned_join = banlist_id.join();
-
-										connection.query('SELECT nickname, from_id, COUNT(from_id) FROM heist_history, player, event_wanted_status WHERE account_id NOT IN (' + banned_join + ') AND fail = 0 AND event_wanted_status.player_id = player.id AND player.id = heist_history.from_id AND player.id != ' + fromId + ' AND time between DATE_SUB(now(),INTERVAL 2 MONTH) AND NOW() GROUP BY from_id ORDER BY COUNT(from_id) DESC LIMIT 200', function (err, rows, fields) {
+										connection.query('SELECT nickname, from_id, COUNT(from_id) FROM heist_history, player, event_wanted_status WHERE account_id NOT IN (SELECT account_id FROM banlist) AND fail = 0 AND event_wanted_status.player_id = player.id AND player.id = heist_history.from_id AND player.id != ' + fromId + ' AND time between DATE_SUB(now(),INTERVAL 2 MONTH) AND NOW() GROUP BY from_id ORDER BY COUNT(from_id) DESC LIMIT 200', function (err, rows, fields) {
 											if (err) throw err;
 
 											var len = Object.keys(rows).length;
@@ -42750,6 +42585,16 @@ function delAllChestInventory(player_id) {
 function getChestCnt(player_id, item_id) {
 	var item = connection_sync('SELECT COUNT(id) As cnt FROM inventory_chest WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
 	return item[0].cnt;
+}
+
+function isBanned(account_id){
+	var banned = connection_sync.query('SELECT reason FROM banlist WHERE account_id = ' + account_id);
+	if (Object.keys(banned).length == 0){
+		return null;
+	}else{
+		console.log(account_id + " è bannato");
+		return banned[0].reason;
+	}
 }
 
 function calcLife(message) {
