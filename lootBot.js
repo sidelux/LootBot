@@ -253,21 +253,23 @@ function reloadBans() {
 
 console.log('Avvio bot...');
 
+var dbconfig = require('./dbconfig.js');
+
 var mysql = require('mysql');
 var connection = mysql.createConnection({
-	host: 'xxx',
-	user: 'xxx',
-	password: 'xxx',
-	database: 'xxx'
+	host: dbconfig.dbhost,
+	user: dbconfig.dbuser,
+	password: dbconfig.dbpassword,
+	database: dbconfig.dbdatabase
 });
 connection.connect();
 
 var mysql_sync = require('sync-mysql');
 var connection_sync = new mysql_sync({
-	host: 'xxx',
-	user: 'xxx',
-	password: 'xxx',
-	database: 'xxx'
+	host: dbconfig.dbhost,
+	user: dbconfig.dbuser,
+	password: dbconfig.dbpassword,
+	database: dbconfig.dbdatabase
 });
 
 var mysqlRetry = require('node-mysql-deadlock-retries');
@@ -7251,8 +7253,6 @@ bot.onText(/dungeon/i, function (message) {
 								var p1 = Math.round((rooms * 3) / 100 * 60);
 								var rand = 0;
 
-								console.log("Generazione dungeon con " + rooms + " stanze...");
-
 								for (var i = 0; i < (rooms * 3); i++) {
 									if (i < p1) {
 										rand = Math.round(Math.random() * 10 + (rooms + 1)); //per evitare che venga generato 10, cioè un errore dove non trova il mostro
@@ -7331,8 +7331,8 @@ bot.onText(/dungeon/i, function (message) {
 									}
 								}
 
-								console.log("Generazione completata");
-
+								console.log("Generazione dungeon con " + rooms + " stanze completata");
+								
 								connection.query('UPDATE dungeon_status SET room_id = 1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
 									bot.sendMessage(message.chat.id, "Il dungeon è stato creato, ora inizia l'esplorazione!", dStart);
@@ -28191,9 +28191,7 @@ bot.onText(/compra/i, function (message) {
 
 								connection.query('UPDATE player SET money = money-' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
-									for (var i = 0; i < quantity; i++) {
-										addItem(player_id, potion_id, quantity);
-									};
+									addItem(player_id, potion_id, quantity);
 									bot.sendMessage(message.chat.id, "Acquisto completato con successo! Hai speso " + price + " §" + bonus_text, store);
 								});
 							});
@@ -40191,9 +40189,6 @@ function setFinishedTeamMission(element, index, array) {
 		if (err) throw err;
 
 		if ((Object.keys(rows).length == 0) && (new_part_id > 1)){
-
-			console.log("Fine incarico");
-
 			connection.query('SELECT pnt, text FROM mission_team_report WHERE report_id = ' + report_id, function (err, rows, fields) {
 				if (err) throw err;
 
@@ -40263,7 +40258,7 @@ function setFinishedTeamMission(element, index, array) {
 							return;
 						}
 
-						console.log("Reward: " + rewardStr + " - " + qnt)
+						console.log("Reward incarico: " + rewardStr + " - " + qnt)
 
 						connection.query('SELECT P.chat_id, T.team_id, P.id, TP.suspended FROM mission_team_party_player T, player P, team_player TP WHERE TP.player_id = P.id AND T.player_id = P.id AND T.party_id = ' + party_id + ' AND T.team_id = ' + team_id, function (err, rows, fields) {
 							if (err) throw err;
@@ -40411,7 +40406,7 @@ bot.onText(/^\/incarico/, function (message, match) {
 			var part_id = rows[0].part_id;
 			var report_id = rows[0].report_id;
 
-			console.log("Richiamo manuale incarico per party " + party_id + " e team " + team_id);
+			//console.log("Richiamo manuale incarico per party " + party_id + " e team " + team_id);
 
 			connection.query('SELECT question, answ1, answ2, answ3 FROM mission_team_list_part WHERE list_id = ' + assigned_to + ' AND part_id = ' + part_id, function (err, rows, fields) {
 				if (err) throw err;

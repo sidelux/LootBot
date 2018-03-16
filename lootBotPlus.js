@@ -37,21 +37,23 @@ var timevarSpam = [];
 var timevarFlood = [];
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000];
 
+var dbconfig = require('./dbconfig.js');
+
 var mysql = require('mysql');
 var connection = mysql.createConnection({
-	host: 'xxx',
-	user: 'xxx',
-	password: 'xxx',
-	database: 'xxx'
+	host: dbconfig.dbhost,
+	user: dbconfig.dbuser,
+	password: dbconfig.dbpassword,
+	database: dbconfig.dbdatabase
 });
 connection.connect();
 
 var mysql_sync = require('sync-mysql');
 var connection_sync = new mysql_sync({
-	host: 'xxx',
-	user: 'xxx',
-	password: 'xxx',
-	database: 'xxx'
+	host: dbconfig.dbhost,
+	user: dbconfig.dbuser,
+	password: dbconfig.dbpassword,
+	database: dbconfig.dbdatabase
 });
 
 process.on('SIGINT', function() {
