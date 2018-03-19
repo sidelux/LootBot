@@ -6310,7 +6310,7 @@ bot.onText(/cambia vocazione/i, function (message) {
 });
 
 bot.onText(/statistiche/i, function (message) {
-	connection.query('SELECT id, mission_count, achievement_count, dungeon_count, global_event, kill_streak_ok, gain_exp FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, mission_count, achievement_count, dungeon_count, global_event, kill_streak_ok, gain_exp, mission_party FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
 		var missioni = rows[0].mission_count;
@@ -6319,6 +6319,7 @@ bot.onText(/statistiche/i, function (message) {
 		var global_event = rows[0].global_event;
 		var kill_streak_ok = rows[0].kill_streak_ok;
 		var gain_exp = rows[0].gain_exp;
+		var mission_party = rows[0].mission_party;
 
 		connection.query('SELECT COUNT(*) As cnt FROM heist_history WHERE to_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -6429,8 +6430,9 @@ bot.onText(/statistiche/i, function (message) {
 																						"*20 scalate raggiunte*: " + scalateOk + "\n" +
 																						"*Imprese globali (partecipando attivamente)*: " + global_event + "\n" +
 																						"*Esperienza accumulata*: " + gain_exp + "\n" +
-																						"*Offerte contrabbandiere accettate*: " + contrabbandiere + "\n" +
-																						"*Livelli Talenti raggiunti*: " + talenti + "\n";
+																						"*Offerte contrabbandiere accettate*: " + formatNumber(contrabbandiere) + "\n" +
+																						"*Livelli Talenti raggiunti*: " + talenti + "\n" +
+																						"*Incarichi completati*: " + mission_party + "\n";
 
 																					bot.sendMessage(message.chat.id, text, back);
 
@@ -11083,6 +11085,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 															};
 
 															var status = "Normale";
+															var my_status = "Normale";
 
 															if (paralyzed > 0) {
 																status = "Paralizzato (" + paralyzed + " turni)";
@@ -11092,6 +11095,10 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 															}
 															if ((paralyzed > 0) && (critic > 0)){
 																status = "Paralizzato (" + paralyzed + " turni) e Vulnerabile (" + critic + " turni)";
+															}
+															
+															if (player_paralyzed > 0){
+																my_status = "Paralizzato (" + player_paralyzed + " turni)";
 															}
 
 															if ((paralyzed > 0) && (automagic == 1) && (magic == 2)) {
@@ -11109,12 +11116,13 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																});
 															}
 
-															bot.sendMessage(message.chat.id, "*" + monster_name + "*\nStato: " + status + "\nSalute: *" + formatNumber(monster_life) + "* hp\n" +
+															bot.sendMessage(message.chat.id, "*" + monster_name + "*\nIl tuo stato: " + my_status + "\nLa tua salute: *" + formatNumber(player_life) + "* hp" +
 																			"Arma: " + weapon_name + "\n" +
 																			"Armatura: " + weapon2_name + "\n" +
 																			"Scudo: " + weapon3_name + "\n" +
 																			"Talismano: " + charm_name + "\n" +
-																			"\nLa tua salute: *" + formatNumber(player_life) + "* hp", dBattleM).then(function () {
+																			"\nStato mob: " + status + "\n" +
+																			"\nSalute mob: *" + formatNumber(monster_life) + "* hp\n", dBattleM).then(function () {
 																answerCallbacks[message.chat.id] = function (answer) {
 
 																	if (answer.text == "Scappa") {
@@ -33226,6 +33234,7 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 																}
 															}
 
+															var boss_name = rows[0].name;
 															var boss_life = rows[0].life;
 															var critic = rows[0].critic;
 															var countdown = rows[0].countdown;
@@ -33349,6 +33358,7 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 															};
 
 															var status = "Normale";
+															var my_status = "Normale";
 															var paralyzed = rows[0].paralyzed;
 															var critic = rows[0].critic;
 															if (paralyzed > 0) {
@@ -33359,6 +33369,10 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 															}
 															if ((paralyzed > 0) && (critic > 0)){
 																status = "Paralizzato (" + paralyzed + " turni) e Vulnerabile (" + critic + " turni)";
+															}
+															
+															if (player_paralyzed > 0){
+																my_status = "Paralizzato (" + player_paralyzed + " turni)";
 															}
 
 															if ((paralyzed > 0) && (automagic == 1) && (magic == 2)) {
@@ -33376,7 +33390,7 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 																});
 															}
 
-															bot.sendMessage(message.chat.id, "Battaglia contro il boss:\nStato boss: " + status + "\nSalute boss: *" + formatNumber(boss_life) + "* hp\nLa tua salute: *" + formatNumber(player_life) + "* hp", next).then(function () {
+															bot.sendMessage(message.chat.id, "*" + boss_name + "*:\nIl tuo stato: " + my_status + "\nLa tua salute: *" + formatNumber(player_life) + "* hp" + "\nStato boss: " + status + "\nSalute boss: *" + formatNumber(boss_life) + "* hp", next).then(function () {
 																answerCallbacks[message.chat.id] = function (answer) {
 																	if (answer.text != "Continua") {
 																		return;
@@ -36215,11 +36229,6 @@ bot.onText(/^rifugio|Torna al rifugio/i, function (message) {
 			gender_text = "o";
 		}else{
 			gender_text = "a";
-		}
-
-		if ((life <= 0) && (myexp > 10)) {
-			bot.sendMessage(message.chat.id, "Non puoi iniziare ispezioni da morto.", revive);
-			return;
 		}
 
 		if ((lev < 15) && (reborn == 1)) {
