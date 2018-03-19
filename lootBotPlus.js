@@ -88,7 +88,8 @@ bot.on('message', function (message) {
 		if (user != "fenix45") {
 			if (chat_id == -1001097316494) {
 				if (!text.startsWith("Negozio di")) {
-					bot.kickChatMember(message.chat.id, account_id, {until_date: Date.now() + ms("7 days")}).then(function (result) {
+					var time = Math.round((Date.now()+ms("7 days"))/1000);
+					bot.kickChatMember(message.chat.id, account_id, {until_date: time}).then(function (result) {
 						bot.sendMessage(chat_id, user + ", non puoi scrivere in questo gruppo, sei stato bannato per 7 giorni.");
 						bot.sendMessage(account_id, "Sei stato bannato dal gruppo Loot Negozi per 7 giorni perchè non hai postato un negozio");
 					});
@@ -817,6 +818,15 @@ function toDate(lang, d) {
 	}
 	return datetime;
 }
+
+/*
+bot.onText(/\/test/, function (message) {
+	console.log(message.chat.id, message.from.id, Math.round((Date.now()+ms("7 days"))/1000));
+	bot.kickChatMember(message.chat.id, message.reply_to_message.from.id, {until_date: Math.round((Date.now()+ms("7 days"))/1000)}).then(function (result) {
+		console.log(result);
+	});
+});
+*/
 
 bot.onText(/^\/gruppi/, function (message) {
 
@@ -7213,6 +7223,7 @@ bot.onText(/^\/spia/, function (message) {
 			return;
 		}
 
+		var account_id = rows[0].account_id;
 		var player_id = rows[0].id;
 		var level = Math.floor(rows[0].exp / 10);
 		var power = rows[0].weapon;
