@@ -19,7 +19,6 @@ var fs = require('fs');
 var ms = require("ms");
 var mysql = require('mysql');
 var mysql_sync = require('sync-mysql');
-var mysqlRetry = require('node-mysql-deadlock-retries');
 var readline = require('readline');
 
 var token = '236880746:AAEolJ-Dpe_gQdnGxksGFTb1ubMj03PVhw4';
@@ -33,12 +32,14 @@ var bot = new TelegramBot(token, {
 });
 
 var check = [];
-var qnt = [];
+//var qnt = [];
 var globaltime = Math.round(new Date() / 1000);
 var timevar = [];
 var timevarSpam = [];
 var timevarFlood = [];
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000];
+
+console.log('Avvio bot...');
 
 var connection = mysql.createConnection({
 	host: dbconfig.dbhost,
@@ -71,11 +72,7 @@ bot.on('polling_error', function(error) {
 	console.log(error);
 });
 
-mysqlRetry(connection, 5, 100, 1000);
-
 bot.on('message', function (message) {
-
-	//console.log(update.chat);
 	var msg = message;
 	var text = msg.text;
 	var user = msg.from.username;
@@ -645,7 +642,7 @@ bot.onText(/^\/gban ([^\s]+) (.+)|^\/gban/, function (message, match) {
 		if (match[2] == undefined) {
 			match[2] == "...";
 		}
-		
+
 		connection.query('SELECT nickname, id, account_id FROM player WHERE nickname = "' + match[1].replace("@", "") + '"', function (err, rows, fields) {
 			if (err) throw err;
 
@@ -918,14 +915,14 @@ bot.onText(/^\/gruppi/, function (message) {
 																					"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
 																					"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
 																					"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
-																					"@lootterianew2 (" + c3 + ") - Riservato alle Lotterie\n" +
+																					"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
 																					"<a href='https://t.me/joinchat/AAAAAEBMfmv2x_z3vAVNeg'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
 																					"@LootAste2 (" + c5 + ") - Aste di oggetti per tutti i giocatori commercianti! (Livello minimo: 15)\n" +
 																					"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
 																					"<a href='https://telegram.me/joinchat/EXFobEDH8FbDpQ4MTmw-mQ'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
 																					"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
 																					"<a href='https://t.me/joinchat/CGfawEL89rdjylRx72zprQ'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
-																					"@lootgelateria (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
+																					"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
 																					"<a href='https://t.me/joinchat/CXTRTAtsjVG_AhJb3FjW5w'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
 																					"<a href='https://t.me/joinchat/AlRpFQvjnQ7twa4tmw_03Q'>Loot Contest</a> (" + c7 + ") - ENTRATE PER VINCERE TANTI PREMI LOOTTOSI!!\n" +
 																					"<a href='https://telegram.me/LootGame'>LootGame</a> (" + c15 + ") - Potete divertivi giocando e vincendo soldi :>\n" +
@@ -964,31 +961,13 @@ bot.onText(/^\/mercatini/, function (message) {
 	bot.sendMessage(message.from.id, "<b>Valutazione Mercatini</b>\n@lootadvisor\n\n" +
 					"<b>Mercatini</b>\n" +
 					"@LEMPORIOdiLootbot - Il primo negozio di Loot!\n" +
-					"@AlienStore - Lo store alieno di Loot!\n" +
-					"@LaPulceNellOrecchio | @ciarpamemistico - I mercanti del male\n" +
-					"@ElCanton - Da oggi senza olio di palma!\n" +
-					"@zainoRobNoah - Vendo tacchini a prezzi pazzi!\n" +
-					"@LHStore - Lo store onesto e di qualità\n" +
-					"@bricoloot - Il mercato per tutti e di tutti!\n" +
-					"<a href='https://telegram.me/joinchat/CO5QxUDcLsPjZFzisCvJdQ'>Le Bot Noir</a> - Il solito negozio privato, solo più nero\n" +
-					"@LootKea - Non servono neanche le istruzioni!\n" +
-					"@sephishop - L'evoluzione digitale del vostro amato sephistore. Sempre conveniente, ora fai-da-te.\n" +
 					"@fancazzisti_shop - Vendita oggetti per grandi, piccini e poveri\n" +
-					"@lapiccolafiammiferaialootbot - Comprate signori comprate! Prezzi modici, bassi e fissi\n" +
-					"@lootonlymychael - Chi non ha niente da fare è gentilmente pregato di andare a farlo da un’altra parte.\n" +
-					"@GaiusBazaar - Un bel negozietto per veri intenditori!\n" +
 					"@SoloCoseBellee - Prezzi belli per veri poverelli!\n" +
-					"@HelioStore - Save money. Craft better.\n" +
 					"@LootTatori - Store per veri Guerrieri!\n" +
-					"@PaopuShop - Vieni a condividere il legame del Paopu con noi e non te ne pentirai\n" +
 					"@dogestore - Such Prices! So Cheap! Much Items! #DogeCraft\n" +
-					"@LoShopDiCodast - Accorrete numerosi!!\n" +
 					"@lootspar - il risparmio è dietro l'angolo\n" +
 					"@ignorantlootstore - Prezzi bassi e offerte nuove ogni giorno!\n" +
 					"@AngoloRottureLootBot - Tutte le rarità a basso costo!\n" +
-					"@disadattatishop - Vendita oggetti di lootbot!\n" +
-					"@negoziopercaso - Negozio specializzato nel risparmio e nella cura dei nuovi giocatori nessuna fregatura solo prezzi basissimi\n" +
-					"@lootmedia - Ciao ragazzi ciao a tutti, sono zeb89 e malvenuti su lootmedia, lo store più fiero di lootbot.\n" +
 					"@roomlootbot - Un mercatino che sembra una stanza!\n" +
 					"@Zaino_Dell_Imperatore - Prezzi basati sul bot Loot Quotazioni!\n" +
 					"@paupershop - Un negozio di LootBot per poveri\n" +
@@ -2324,10 +2303,7 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+) (.+)|^\/creaasta(?!p)$/, function (message
 					return;
 				}
 
-				/* update
 				connection.query('SELECT item.allow_sell, item.id, item.value FROM inventory, item WHERE inventory.item_id = item.id AND item.name = "' + oggetto + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
-				*/
-				connection.query('SELECT item.allow_sell, item.id, item.value FROM inventory, item WHERE inventory.item_id = item.id AND item.name = "' + oggetto + '" AND inventory.player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length == 0) {
 						bot.sendMessage(message.chat.id, "Devi possedere l'oggetto per creare un'asta");
@@ -2834,7 +2810,6 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 		}
 
 		var func = "";
-
 		if (message.text.indexOf("negozioa") != -1) {
 			var code = parseInt(match[2]);
 			var text = match[3];
@@ -3000,8 +2975,6 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 					connection.query('SELECT id FROM item WHERE name = "' + item + '"', function (err, rows, fields) {
 						if (err) throw err;
 
-						//console.log("Negozio: " + this.item + ":" + this.price);
-
 						if (Object.keys(rows).length == 0) {
 							bot.sendMessage(message.chat.id, "Non ho trovato l'oggetto " + this.item + ", ricontrolla. L'ho saltato.");
 						} else {
@@ -3128,8 +3101,6 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 
 					connection.query('SELECT craftable, id, value, allow_sell FROM item WHERE name = "' + item + '"', function (err, rows, fields) {
 						if (err) throw err;
-
-						//console.log("Negozio -> " + this.item + ":" + this.price);
 
 						if (Object.keys(rows).length == 0) {
 							bot.sendMessage(message.chat.id, "Non ho trovato l'oggetto " + this.item + ", ricontrolla. L'ho saltato.");
@@ -3437,22 +3408,7 @@ bot.on('callback_query', function (message) {
 
 		var index = check.indexOf(message.from.id);
 		var shop_id = message.data;
-
 		var diff = 0;
-
-		if (shop_id.indexOf(":") == -1) {
-			if (qnt[message.from.id] != undefined) {
-				if (qnt[message.from.id] == shop_id) {
-					/*
-				bot.answerCallbackQuery(message.id, 'Aggiorna il negozio per comprare due oggetti uguali', false);
-				return;
-				*/
-				}
-			}
-
-		} else {
-			qnt[message.from.id] = 0;
-		}
 
 		if (shop_id.indexOf(":") == -1) {
 			if (index == -1) {
@@ -3463,250 +3419,230 @@ bot.on('callback_query', function (message) {
 				index = check.indexOf(message.from.id);
 			}
 
-
 			if (timevar[message.from.id] != undefined) {
 				diff = Math.round(new Date() / 1000) - timevar[message.from.id];
 				if (diff < 2) {
 					bot.answerCallbackQuery(message.id, {text: 'Attendi 2 secondi e riprova'});
-					console.log("Acquisto SPAM Utente " + message.from.username);
 					return;
 				}
 			}
 			timevar[message.from.id] = Math.round(new Date() / 1000);
+		}
 
-			connection.beginTransaction(function (err) {
-				if (err) throw err;
+		if (rows[0].market_ban == 1) {
+			bot.answerCallbackQuery(message.id, {text: 'Sei bannato dal mercato!'});
+			return;
+		}
 
-				var money = rows[0].money;
+		if (rows[0].holiday == 1) {
+			bot.answerCallbackQuery(message.id, {text: 'Sei in modalità vacanza!'});
+			return;
+		}
 
-				if (rows[0].market_ban == 1) {
-					return;
-				}
+		var isUpdate = 0;
 
-				if (rows[0].holiday == 1) {
-					return;
-				}
+		if (shop_id.indexOf(":") != -1) {
+			var split = shop_id.split(":");
+			var code = split[1];
 
-				var isUpdate = 0;
-				if (shop_id.indexOf(":") != -1) {
-					var split = shop_id.split(":");
-					var code = split[1];
-
-					connection.query('SELECT public_shop.id, player.nickname, quantity, item.name, price FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code, function (err, rows, fields) {
-						if (err) throw err;
-
-						if (Object.keys(rows).length == 0) {
-							bot.editMessageText("Questo negozio è stato cancellato :(", {
-								inline_message_id: message.inline_message_id
-							});
-							connection.commit(function () {});
-							return;
-						}
-
-						var iKeys = [];
-						var name = "";
-						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-							name = cutText(rows[i].name);
-							iKeys.push([{
-								text: name + " (" + rows[i].quantity + ") - " + formatNumber(rows[i].price) + " §",
-								callback_data: rows[i].id.toString()
-							}]);
-						}
-
-						iKeys.push([{
-							text: "Aggiorna",
-							callback_data: "update:" + code.toString()
-						}]);
-
-						var d = new Date();
-						var short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
-
-						var newtext = "Negozio di " + rows[0].nickname + " aggiornato alle " + short_date + "!";
-						var checktext = newtext.replaceAll("[\*\_]", "").trim();
-						//if (message.message.text != checktext){
-						bot.editMessageText(newtext, {
-							inline_message_id: message.inline_message_id,
-							reply_markup: {
-								inline_keyboard: iKeys
-							}
-						});
-						bot.answerCallbackQuery(message.id, {text: 'Aggiornato!'});
-						//}else{
-						//	bot.answerCallbackQuery(message.id, {text: 'Nessuna novità'});
-						//}
-					});
-					check.splice(index, 1);
-					connection.commit(function () {
-						//console.log(getNow("it") + " - Aggiornamento di " + message.from.username + " (" + shop_id + ")");
-					});
-					return;
-				}
-
-				connection.query('SELECT * FROM public_shop WHERE id = ' + shop_id, function (err, rows, fields) {
+			if (split[0] == "update"){
+				connection.query('SELECT public_shop.id, player.nickname, quantity, item.name, price FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code, function (err, rows, fields) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length == 0) {
-						bot.answerCallbackQuery(message.id, {text: 'L\'oggetto è stato rimosso, aggiorna il negozio!'});
-						check.splice(index, 1);
-						connection.commit(function () {});
+						bot.editMessageText("Questo negozio è stato cancellato :(", {
+							inline_message_id: message.inline_message_id
+						});
 						return;
 					}
 
-					var player_id2 = rows[0].player_id;
-					var price = rows[0].price;
-					var item_id = rows[0].item_id;
-					var quantity = rows[0].quantity;
-					var code = rows[0].code;
+					var iKeys = [];
+					var name = "";
+					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+						name = cutText(rows[i].name);
+						iKeys.push([{
+							text: name + " (" + rows[i].quantity + ") - " + formatNumber(rows[i].price) + " §",
+							callback_data: rows[i].id.toString()
+						}]);
+					}
 
-					connection.query('SELECT * FROM player WHERE id = ' + player_id2, function (err, rows, fields) {
+					iKeys.push([{
+						text: "Aggiorna",
+						callback_data: "update:" + code.toString()
+					}]);
+
+					var d = new Date();
+					var short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
+
+					var newtext = "Negozio di " + rows[0].nickname + " aggiornato alle " + short_date + "!";
+					bot.editMessageText(newtext, {
+						inline_message_id: message.inline_message_id,
+						reply_markup: {
+							inline_keyboard: iKeys
+						}
+					});
+					bot.answerCallbackQuery(message.id, {text: 'Aggiornato!'});
+				});
+				check.splice(index, 1);
+			}else if (split[0] == "all"){
+				//asd
+			}
+			return;
+		}
+
+		connection.query('SELECT player_id, price, item_id, quantity, code FROM public_shop WHERE id = ' + shop_id, function (err, rows, fields) {
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0) {
+				bot.answerCallbackQuery(message.id, {text: 'L\'oggetto è stato rimosso, aggiorna il negozio!'});
+				check.splice(index, 1);
+				return;
+			}
+
+			var player_id2 = rows[0].player_id;
+			var price = rows[0].price;
+			var item_id = rows[0].item_id;
+			var quantity = rows[0].quantity;
+			var code = rows[0].code;
+
+			connection.query('SELECT nickname, account_id, market_ban FROM player WHERE id = ' + player_id2, function (err, rows, fields) {
+				if (err) throw err;
+
+				var player2 = rows[0].nickname;
+				var chat_id2 = rows[0].account_id;
+
+				var banReason = isBanned(rows[0].account_id);
+				if (banReason != null) {
+					bot.answerCallbackQuery(message.id, {text: 'Non puoi acquistare da un giocatore bannato'});
+					return;
+				}
+
+				if (rows[0].market_ban == 1) {
+					bot.answerCallbackQuery(message.id, {text: 'Non puoi acquistare da un giocatore escluso dal mercato'});
+					return;
+				}
+
+				if (money - price < 0) {
+					bot.answerCallbackQuery(message.id, {text: 'Non hai abbastanza monete!'});
+					check.splice(index, 1);
+					return;
+				}
+
+				if (quantity < 1) {
+					bot.answerCallbackQuery(message.id, {text: 'Sono finite le scorte dell\'oggetto richiesto!'});
+					check.splice(index, 1);
+					return;
+				}
+
+				if (player_id == player_id2) {
+					bot.answerCallbackQuery(message.id, {text: 'Non puoi acquistare da te stesso!'});
+					check.splice(index, 1);
+					return;
+				}
+
+				connection.query('SELECT item.name, inventory.quantity FROM inventory, item WHERE inventory.item_id = item.id AND item.id = ' + item_id + ' AND inventory.player_id = ' + player_id2 + ' AND inventory.quantity > 0', function (err, rows, fields) {
+					if (err) throw err;
+					if (Object.keys(rows).length == 0) {
+						bot.answerCallbackQuery(message.id, {text: 'Il proprietario del negozio non possiede l\'oggetto'});
+						check.splice(index, 1);
+						return;
+					}
+					if (rows[0].quantity == 0) {
+						bot.answerCallbackQuery(message.id, {text: 'Il proprietario del negozio non possiede l\'oggetto'});
+						check.splice(index, 1);
+						return;
+					}
+
+					var item_name = rows[0].name;
+
+					connection.query('UPDATE player SET money = money + ' + price + ' WHERE id = ' + player_id2, function (err, rows, fields) {
 						if (err) throw err;
-
-						var player2 = rows[0].nickname;
-						var chat_id2 = rows[0].account_id;
-
-						var banReason = isBanned(rows[0].account_id);
-						if (banReason != null) {
-							bot.answerCallbackQuery(message.id, {text: 'Non puoi acquistare da un giocatore bannato'});
-							connection.commit(function () {});
+						if (rows.affectedRows == 0) {
+							bot.answerCallbackQuery(message.id, {text: 'Errore durante l\'acquisto, riprova'});
 							return;
 						}
-
-						if (rows[0].market_ban == 1) {
-							bot.answerCallbackQuery(message.id, {text: 'Non puoi acquistare da un giocatore escluso dal mercato'});
-							connection.commit(function () {});
-							return;
-						}
-
-						if (money - price < 0) {
-							bot.answerCallbackQuery(message.id, {text: 'Non hai abbastanza monete!'});
-							check.splice(index, 1);
-							connection.commit(function () {});
-							return;
-						}
-
-						if (quantity < 1) {
-							bot.answerCallbackQuery(message.id, {text: 'Sono finite le scorte dell\'oggetto richiesto!'});
-							check.splice(index, 1);
-							connection.commit(function () {});
-							return;
-						}
-
-						if (player_id == player_id2) {
-							bot.answerCallbackQuery(message.id, {text: 'Non puoi acquistare da te stesso!'});
-							check.splice(index, 1);
-							connection.commit(function () {});
-							return;
-						}
-
-						/* update
-						connection.query('SELECT item.name FROM inventory, item WHERE inventory.item_id = item.id AND item.id = ' + item_id + ' AND inventory.player_id = ' + player_id2 + ' AND inventory.quantity > 0', function (err, rows, fields) {
-						*/
-						connection.query('SELECT item.name FROM inventory, item WHERE inventory.item_id = item.id AND item.id = ' + item_id + ' AND inventory.player_id = ' + player_id2, function (err, rows, fields) {
+						connection.query('UPDATE player SET money = money - ' + price + ' WHERE money > 0 AND id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
-
-							if (Object.keys(rows).length == 0) {
-								bot.answerCallbackQuery(message.id, {text: 'Il proprietario del negozio non possiede l\'oggetto'});
-								check.splice(index, 1);
-								connection.commit(function () {});
+							if (rows.affectedRows == 0) {
+								bot.answerCallbackQuery(message.id, {text: 'Errore durante l\'acquisto, riprova'});
 								return;
 							}
-
-							var item_name = rows[0].name;
-
-							delItem(player_id2, item_id, 1);
-
-							addItem(player_id, item_id);
-							connection.query('UPDATE player SET money = money + ' + price + ' WHERE id = ' + player_id2, function (err, rows, fields) {
+							connection.query('UPDATE public_shop SET quantity = quantity - 1 WHERE quantity > 0 AND id = ' + shop_id, function (err, rows, fields) {
 								if (err) throw err;
-								connection.query('UPDATE player SET money = money - ' + price + ' WHERE money > 0 AND id = ' + player_id, function (err, rows, fields) {
+								if (rows.affectedRows == 0) {
+									bot.answerCallbackQuery(message.id, {text: 'Errore durante l\'acquisto, riprova'});
+									return;
+								}
+
+								delItem(player_id2, item_id, 1);
+								addItem(player_id, item_id);
+
+								bot.answerCallbackQuery(message.id, {text: 'Acquistato ' + item_name + ' per ' + formatNumber(price) + ' §!'});
+
+								bot.sendMessage(chat_id2, message.from.username + " ha acquistato " + item_name + " per " + formatNumber(price) + " § dal tuo negozio!");
+
+								if (quantity - 1 == 0)
+									bot.sendMessage(chat_id2, "Le scorte di " + item_name + " sono terminate!");
+
+								var d2 = new Date();
+								var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
+								connection.query('INSERT INTO market_direct_history (item_id, price, time, from_id, to_id, type) VALUES (' + item_id + ',' + price + ',"' + long_date + '",' + player_id2 + ',' + player_id + ',2)', function (err, rows, fields) {
 									if (err) throw err;
-									if (rows.affectedRows == 0) {
-										bot.answerCallbackQuery(message.id, {text: 'Errore durante l\'acquisto, riprova'});
-										connection.rollback(function () {
-											console.log("Rollback negozio 1");
+								});
+
+								console.log(getNow("it") + " - Acquisto di " + message.from.username + " (" + shop_id + ", " + item_name + ", " + price + " §)");
+
+								// aggiornamento negozio
+
+								connection.query('SELECT public_shop.id, quantity, item.name, price FROM public_shop, item WHERE item.id = item_id AND code = ' + code, function (err, rows, fields) {
+									if (err) throw err;
+
+									if (Object.keys(rows).length == 0) {
+										bot.editMessageText("Questo negozio è stato cancellato :(", {
+											inline_message_id: message.inline_message_id
 										});
+										check.splice(index, 1);
 										return;
 									}
-									connection.query('UPDATE public_shop SET quantity = quantity - 1 WHERE quantity > 0 AND id = ' + shop_id, function (err, rows, fields) {
-										if (err) throw err;
-										if (rows.affectedRows == 0) {
-											bot.answerCallbackQuery(message.id, {text: 'Errore durante l\'acquisto, riprova'});
-											connection.rollback(function () {
-												console.log("Rollback negozio 2");
-											});
-											return;
-										}
 
-										var d2 = new Date();
-										var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
-										connection.query('INSERT INTO market_direct_history (item_id, price, time, from_id, to_id, type) VALUES (' + item_id + ',' + price + ',"' + long_date + '",' + player_id2 + ',' + player_id + ',2)', function (err, rows, fields) {
-											if (err) throw err;
-										});
+									var iKeys = [];
+									var name = "";
+									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+										name = cutText(rows[i].name);
+										iKeys.push([{
+											text: name + " (" + rows[i].quantity + ") - " + formatNumber(rows[i].price) + " §",
+											callback_data: rows[i].id.toString()
+										}]);
+									}
 
-										bot.answerCallbackQuery(message.id, {text: 'Acquistato ' + item_name + ' per ' + formatNumber(price) + ' §!'});
+									iKeys.push([{
+										text: "Aggiorna",
+										callback_data: "update:" + code.toString()
+									}]);
 
-										bot.sendMessage(chat_id2, message.from.username + " ha acquistato " + item_name + " per " + formatNumber(price) + " § dal tuo negozio!");
+									var d = new Date();
+									var short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
 
-										if (quantity - 1 == 0) {
-											bot.sendMessage(chat_id2, "Le scorte di " + item_name + " sono terminate!");
-										}
+									var text = "Negozio di " + player2 + " aggiornato alle " + short_date + "!";
 
-										connection.query('SELECT public_shop.id, quantity, item.name, price FROM public_shop, item WHERE item.id = item_id AND code = ' + code, function (err, rows, fields) {
-											if (err) throw err;
-
-											if (Object.keys(rows).length == 0) {
-												bot.editMessageText("Questo negozio è stato cancellato :(", {
-													inline_message_id: message.inline_message_id
-												});
-												check.splice(index, 1);
-												return;
-											}
-
-											var iKeys = [];
-											var name = "";
-											for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-												name = cutText(rows[i].name);
-												iKeys.push([{
-													text: name + " (" + rows[i].quantity + ") - " + formatNumber(rows[i].price) + " §",
-													callback_data: rows[i].id.toString()
-												}]);
-											}
-
-											iKeys.push([{
-												text: "Aggiorna",
-												callback_data: "update:" + code.toString()
-											}]);
-
-											var d = new Date();
-											var short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
-
-											var text = "Negozio di " + player2 + " aggiornato alle " + short_date + "!";
-
-											bot.editMessageText(text, {
-												inline_message_id: message.inline_message_id,
-												reply_markup: {
-													inline_keyboard: iKeys
-												}
-											});
-
-											connection.commit(function () {
-												console.log(getNow("it") + " - Acquisto di " + message.from.username + " (" + shop_id + ", " + item_name + ", " + price + " §)");
-											});
-										});
-
-										qnt[message.from.id] = shop_id;
-										check.splice(index, 1);
-										if (Object.keys(check).length > 1000) {
-											check = [];
+									bot.editMessageText(text, {
+										inline_message_id: message.inline_message_id,
+										reply_markup: {
+											inline_keyboard: iKeys
 										}
 									});
 								});
+
+								check.splice(index, 1);
+								if (Object.keys(check).length > 100)
+									check = [];
 							});
 						});
 					});
 				});
 			});
-		};
+		});
+		//});
 	});
 });
 
@@ -3758,10 +3694,8 @@ bot.onText(/^\/crealotteria(?!p) (.+)|^\/crealotteria(?!p)$/, function (message,
 					return;
 				}
 
-				/* update
+
 				connection.query('SELECT item.allow_sell, item.id FROM inventory, item WHERE inventory.item_id = item.id AND item.name = "' + oggetto + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
-				*/
-				connection.query('SELECT item.allow_sell, item.id FROM inventory, item WHERE inventory.item_id = item.id AND item.name = "' + oggetto + '" AND inventory.player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length == 0) {
 						bot.sendMessage(message.chat.id, "Devi possedere l'oggetto per creare una lotteria");
@@ -3839,10 +3773,8 @@ bot.onText(/^\/crealotteriap ([^\s]+) (.+)|^\/crealotteriap$/, function (message
 					return;
 				}
 
-				/* update
+
 				connection.query('SELECT item.id, item.allow_sell, item.value, item.rarity FROM inventory, item WHERE inventory.item_id = item.id AND item.name = "' + oggetto + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
-				*/
-				connection.query('SELECT item.id, item.allow_sell, item.value, item.rarity FROM inventory, item WHERE inventory.item_id = item.id AND item.name = "' + oggetto + '" AND inventory.player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length == 0) {
 						bot.sendMessage(message.chat.id, "Devi possedere l'oggetto per creare una lotteria");
@@ -4217,7 +4149,7 @@ bot.onText(/^\/offri/i, function (message) {
 		return;
 	}
 
-	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, holiday, market_ban, id, money FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -4238,9 +4170,6 @@ bot.onText(/^\/offri/i, function (message) {
 		var player_id = rows[0].id;
 		var mymoney = rows[0].money;
 
-		var item_val = 0;
-		var item_id = 0;
-
 		connection.query('SELECT id FROM market_direct WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
@@ -4260,24 +4189,23 @@ bot.onText(/^\/offri/i, function (message) {
 					timeout_id = rows[0].player_id;
 				}
 
-				/* update
-				connection.query('SELECT item.allow_sell, item.value, item.id, item.name FROM item, inventory WHERE item.id = inventory.item_id AND item.name = "' + item + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
-				*/
-				connection.query('SELECT item.allow_sell, item.value, item.id, item.name FROM item, inventory WHERE item.id = inventory.item_id AND item.name = "' + item + '" AND inventory.player_id = ' + player_id, function (err, rows, fields) {
+				connection.query('SELECT item.allow_sell, item.value, item.id, item.name, inventory.quantity FROM item, inventory WHERE item.id = inventory.item_id AND item.name = "' + item + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
 					if (err) throw err;
-					if (Object.keys(rows).length > 0) {
-						item_val = rows[0].value;
-						item_id = rows[0].id;
-					} else {
+					if (Object.keys(rows).length == 0) {
 						bot.sendMessage(message.from.id, "Non possiedi l'oggetto che hai inserito.");
 						return;
 					}
-
+					if (rows[0].quantity == 0){
+						bot.sendMessage(message.from.id, "Non possiedi l'oggetto che hai inserito.");
+						return;
+					}
 					if (rows[0].allow_sell == 0) {
 						bot.sendMessage(message.chat.id, "Questo oggetto non può essere venduto");
 						return;
 					}
 
+					var item_val = parseInt(rows[0].value);
+					var item_id = parseInt(rows[0].id);
 					var item_name = rows[0].name;
 
 					var d2 = new Date();
@@ -4292,8 +4220,6 @@ bot.onText(/^\/offri/i, function (message) {
 							bot.sendMessage(message.from.id, "L'acquirente inserito non esiste");
 							return;
 						}
-
-						var nick = rows[0].nickname;
 
 						if (price < item_val) {
 							bot.sendMessage(message.from.id, "Prezzo per " + item_name + " impostato al minimo: " + formatNumber(item_val) + " §");
@@ -4318,6 +4244,8 @@ bot.onText(/^\/offri/i, function (message) {
 							}
 						}
 
+						var nick = rows[0].nickname;
+
 						connection.query('SELECT COUNT(id) As qnt FROM market_direct WHERE buyer = ' + rows[0].id, function (err, rows, fields) {
 							if (err) throw err;
 
@@ -4332,6 +4260,7 @@ bot.onText(/^\/offri/i, function (message) {
 												"> " + item + " per " + formatNumber(price) + " §\n" +
 												"Usa /accettav o /rifiutav");
 								var toId = rows[0].id;
+
 								delItem(player_id, item_id, 1);
 
 								connection.query('INSERT INTO market_direct VALUES (DEFAULT, ' + player_id + ',"' + item_id + '",' + price + ',"' + long_date + '",' + toId + ')', function (err, rows, fields) {
@@ -4533,10 +4462,8 @@ bot.onText(/^\/scambia/i, function (message) {
 						var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
 						var short_date = addZero(d2.getHours()) + ':' + addZero(d2.getMinutes());
 
-						/* update
+
 						connection.query('SELECT item.id, item.allow_sell FROM item, inventory WHERE item.id = inventory.item_id AND item.name = "' + item1 + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
-						*/
-						connection.query('SELECT item.id, item.allow_sell FROM item, inventory WHERE item.id = inventory.item_id AND item.name = "' + item1 + '" AND inventory.player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 							if (Object.keys(rows).length == 0) {
 								bot.sendMessage(message.from.id, "L'oggetto " + item1 + " non è presente nel tuo inventario o non è consentito.");
@@ -4616,7 +4543,7 @@ bot.onText(/^\/accettav/i, function (message) {
 		var player_id = rows[0].id;
 		var my_money = rows[0].money;
 
-		connection.query('SELECT * FROM market_direct WHERE buyer = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT id, item_id, money, buyer, player_id FROM market_direct WHERE buyer = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
@@ -4651,7 +4578,9 @@ bot.onText(/^\/accettav/i, function (message) {
 								if (err) throw err;
 								connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + player_id2, function (err, rows, fields) {
 									if (err) throw err;
+
 									addItem(player_id, item_id);
+
 									connection.query('SELECT name FROM item WHERE id = ' + item_id, function (err, rows, fields) {
 										if (err) throw err;
 										bot.sendMessage(chat_id2, message.from.username + " ha acquistato " + rows[0].name + " per " + formatNumber(money) + " §!");
@@ -4753,10 +4682,8 @@ bot.onText(/^\/accettas/i, function (message) {
 					return;
 				}
 
-				/* update
+
 				connection.query('SELECT item.id, item.name FROM item, inventory WHERE item.id = inventory.item_id AND inventory.item_id = ' + item2 + ' AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
-				*/
-				connection.query('SELECT item.id, item.name FROM item, inventory WHERE item.id = inventory.item_id AND inventory.item_id = ' + item2 + ' AND inventory.player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length == 0) {
@@ -5600,15 +5527,16 @@ bot.onText(/^\/statistiche/, function (message) {
 		connection.query('SELECT COUNT(*) As miss FROM player WHERE mission_id != 0', function (err, rows, fields) {
 			if (err) throw err;
 			var miss = rows[0].miss;
-			/* update
+
 			connection.query('SELECT SUM(quantity) As inv FROM inventory', function (err, rows, fields) {
-			*/
-			connection.query('SELECT MAX(id) As inv FROM inventory', function (err, rows, fields) {
 				if (err) throw err;
 				var inv = rows[0].inv;
 				connection.query('SELECT COUNT(id) As dragon FROM dragon', function (err, rows, fields) {
 					if (err) throw err;
 					var dragon = rows[0].dragon;
+					/* update
+					connection.query('SELECT SUM(quantity) As chest FROM inventory_chest', function (err, rows, fields) {
+					*/
 					connection.query('SELECT COUNT(*) As chest FROM inventory_chest', function (err, rows, fields) {
 						if (err) throw err;
 						var chest = rows[0].chest;
@@ -5625,10 +5553,7 @@ bot.onText(/^\/statistiche/, function (message) {
 									connection.query('SELECT MAX(id) As teamn FROM team', function (err, rows, fields) {
 										if (err) throw err;
 										var teamn = rows[0].teamn;
-										/* update
 										connection.query('SELECT SUM(IV.quantity) As u FROM item I, inventory IV WHERE I.id = IV.item_id AND I.rarity = "U"', function (err, rows, fields) {
-										*/
-										connection.query('SELECT COUNT(IV.id) As u FROM item I, inventory IV WHERE I.id = IV.item_id AND I.rarity = "U"', function (err, rows, fields) {
 											if (err) throw err;
 											var u = rows[0].u;
 											var d = new Date();
@@ -5636,10 +5561,8 @@ bot.onText(/^\/statistiche/, function (message) {
 											connection.query('SELECT COUNT(*) As active FROM `last_command` WHERE time LIKE "' + today + '%"', function (err, rows, fields) {
 												if (err) throw err;
 												var act = rows[0].active;
-												/* update
+
 												connection.query('SELECT SUM(quantity) As cnt FROM inventory WHERE item_id = 646', function (err, rows, fields) {
-												*/
-												connection.query('SELECT COUNT(id) As cnt FROM inventory WHERE item_id = 646', function (err, rows, fields) {
 													if (err) throw err;
 													var dust = rows[0].cnt;
 													connection.query('SELECT `AUTO_INCREMENT` As lottery FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "public_lottery"', function (err, rows, fields) {
@@ -5768,20 +5691,19 @@ bot.onText(/^\/statistiche/, function (message) {
 
 bot.onText(/^\/valorezaino (.+)|^\/valorezaino/, function (message, match) {
 
+	/*
 	if (message.from.username != "fenix45"){
 		bot.sendMessage(message.chat.id, "Questa funzione è momentaneamente disabilitata");
 		return;
 	}
+	*/
 
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
 		if (match[1] == undefined) {
-			/* update
 			connection.query('SELECT SUM(I.value*IV.quantity) As val FROM item I, inventory IV WHERE I.id = IV.item_id AND IV.player_id = ' + player_id, function (err, rows, fields) {
-			*/
-			connection.query('SELECT SUM(I.value) As val FROM item I, inventory IV WHERE I.id = IV.item_id AND IV.player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				if (rows[0].val == null)
@@ -5790,10 +5712,7 @@ bot.onText(/^\/valorezaino (.+)|^\/valorezaino/, function (message, match) {
 				bot.sendMessage(message.chat.id, message.from.username + ", il tuo zaino vale <b>" + formatNumber(rows[0].val) + "</b> §", html);
 			});
 		} else {
-			/* update
 			connection.query('SELECT SUM(I.value*IV.quantity) As val FROM item I, inventory IV WHERE I.id = IV.item_id AND rarity = "' + match[1] + '" AND IV.player_id = ' + player_id, function (err, rows, fields) {
-			*/
-			connection.query('SELECT SUM(I.value) As val FROM item I, inventory IV WHERE I.id = IV.item_id AND rarity = "' + match[1] + '" AND IV.player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (rows[0].val == null) {
 					bot.sendMessage(message.chat.id, "Rarità non valida o non possiedi oggetti");
@@ -5921,17 +5840,14 @@ bot.onText(/^\/oggetto (.+)|^\/oggetto/, function (message, match) {
 			var rarity = rows[0].rarity;
 			var critical = rows[0].critical;
 
-			/* update
-			connection.query('SELECT inventory.quantity As num FROM inventory, item WHERE item.id = inventory.item_id AND item.name = "' + oggetto + '" AND inventory.player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
-			*/
-			connection.query('SELECT item.name, COUNT(item.name) As num FROM inventory, item , player WHERE player.id = inventory.player_id AND item.id = inventory.item_id AND item.name = "' + oggetto + '" AND inventory.player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+			connection.query('SELECT inventory.quantity As num FROM inventory, item WHERE item.id = inventory.item_id AND item.name = "' + oggetto + '" AND inventory.player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '") AND quantity > 0', function (err, rows, fields) {
 				if (err) throw err;
-				var posseduti = rows[0].num;
 
-				/* update
+				var posseduti = 0;
+				if (Object.keys(rows).length > 0)
+					posseduti = rows[0].num;
+
 				connection.query('SELECT SUM(quantity) As num, (SELECT SUM(quantity) FROM inventory) As tot FROM inventory WHERE item_id = ' + id, function (err, rows, fields) {
-				*/
-				connection.query('SELECT COUNT(*) As num, (SELECT COUNT(*) FROM inventory) As tot FROM inventory WHERE item_id = ' + id, function (err, rows, fields) {
 					if (err) throw err;
 
 					var diff = Math.round((rows[0].num / rows[0].tot) * 100 * 1000) / 1000 + "%";
@@ -6009,10 +5925,8 @@ bot.onText(/^\/oggetti (.+)|^\/oggetti/, function (message, match) {
 				ogg = ogg.replace("*", "");
 				part = '= "' + ogg + '"';
 			}
-			/* update
+
 			query = 'SELECT item.name, item.rarity, inventory.quantity As num FROM item, inventory WHERE item.name ' + part + ' AND inventory.item_id = item.id AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0';
-			*/
-			query = 'SELECT item.name, item.rarity, COUNT(item.name) As num FROM item, inventory WHERE item.name ' + part + ' AND inventory.item_id = item.id AND inventory.player_id = ' + player_id + ' GROUP BY item.name';
 			connection.query(query, function (err, rows, fields) {
 				if (err) throw err;
 
@@ -6124,10 +6038,8 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, function (message, match) {
 						}
 					}
 
-					/* update
+
 					connection.query('SELECT player.nickname, public_shop.code, public_shop.price FROM public_shop, player, inventory WHERE inventory.player_id = player.id AND inventory.item_id = ' + itemId + ' AND inventory.quantity > 0 AND public_shop.public = 1 AND public_shop.quantity > 0 AND player.id = public_shop.player_id AND public_shop.item_id = ' + this.itemId + ' GROUP BY nickname ORDER BY price ASC', function (err, rows, fields) {
-					*/
-					connection.query('SELECT player.nickname, public_shop.code, public_shop.price FROM public_shop, player, inventory WHERE inventory.player_id = player.id AND inventory.item_id = ' + itemId + ' AND public_shop.public = 1 AND public_shop.quantity > 0 AND player.id = public_shop.player_id AND public_shop.item_id = ' + this.itemId + ' GROUP BY nickname ORDER BY price ASC', function (err, rows, fields) {
 						if (err) throw err;
 						if (Object.keys(rows).length > 0) {
 							text += "\n<b>Negozi</b> per " + this.itemName + ":\n";
@@ -6632,10 +6544,8 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																	referral = "Invitato da: " + rows[0].player + " (" + short_date + ")\n";
 																}
 
-																/* update
+
 																connection.query('SELECT COUNT(inventory.item_id) As cnt FROM inventory, item WHERE inventory.item_id = item.id AND player_id = ' + player_id + ' AND rarity = "IN" AND inventory.quantity > 0', function (err, rows, fields) {
-																*/
-																connection.query('SELECT COUNT(DISTINCT inventory.item_id) As cnt FROM inventory, item WHERE inventory.item_id = item.id AND player_id = '  + player_id + ' AND rarity = "IN"', function (err, rows, fields) {
 																	if (err) throw err;
 
 																	var inest = rows[0].cnt;
@@ -6987,6 +6897,7 @@ bot.onText(/^\/ispeziona/, function (message) {
 			return;
 		}
 
+		var account_id = rows[0].account_id;
 		var myexp = rows[0].exp;
 		var lev = Math.floor(myexp / 10);
 		var reborn = rows[0].reborn;
@@ -7333,6 +7244,9 @@ bot.onText(/^\/scrigni/, function (message, match) {
 		var player_id = rows[0].id;
 		var bottext = "<b>" + message.from.username + "</b> possiedi:\n";
 
+		/* update
+		connection.query('SELECT chest.name, quantity As num FROM chest, inventory_chest WHERE chest.id = inventory_chest.chest_id AND inventory_chest.player_id = ' + player_id + ' AND quantity > 0 ORDER BY chest.id', function (err, rows, fields) {
+		*/
 		connection.query('SELECT chest.name, COUNT(chest.name) As num FROM chest, inventory_chest WHERE chest.id = inventory_chest.chest_id AND inventory_chest.player_id = ' + player_id + ' GROUP BY chest.name ORDER BY chest.id', function (err, rows, fields) {
 			if (err) throw err;
 
@@ -7418,10 +7332,7 @@ bot.onText(/^\/zaino (.+)|^\/zaino/, function (message, match) {
 
 				var bottext = "<b>" + message.from.username + "</b> possiedi (" + rows[0].shortname + "):\n";
 
-				/* update
-				connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND rarity.shortname = " AND inventory.quantity > 0' + rows[0].shortname + '" ' + orderBy, function (err, rows, fields) {
-				*/
-				connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.name As rname, COUNT(item.name) As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND rarity.shortname = "' + rows[0].shortname + '" GROUP BY item.name ' + orderBy, function (err, rows, fields) {
+				connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND rarity.shortname = "' + rows[0].shortname + '" AND inventory.quantity > 0 ' + orderBy, function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0) {
 						for (i = 0, len = Object.keys(rows).length; i < len; i++) {
@@ -7752,23 +7663,13 @@ function addItem(player_id, item_id, qnt = 1) {
 		console.log("ERRORE! addItem di " + qnt + "x " + item_id + " per player " + player_id);
 		return;
 	}
-	/* update
-	connection.query('UPDATE inventory SET quantity = quantity+' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id, function (err, rows, fields) {
-		if (err) throw err;
-		if (rows.affectedRows == 0){
-			connection.query('INSERT INTO inventory (player_id, item_id, quantity) VALUES (' + player_id + ',' + item_id + ', ' + qnt + ')', function (err, rows, fields) {
-				if (err) throw err;
-				console.log("Aggiunto inventario per item " + item_id + " del giocatore " + player_id + " aggiunto " + qnt);
-			});
-		}else{
-			console.log("Aggiornato inventario per item " + item_id + " del giocatore " + player_id + " aggiunto " + qnt);
-		}
-	});
-	*/
-	for (var i = 0; i < qnt; i++) {
-		connection.query('INSERT INTO inventory (player_id, item_id) VALUES (' + player_id + ',' + item_id + ')', function (err, rows, fields) {
-			if (err) throw err;
-		});
+
+	var rows = connection_sync.query('UPDATE inventory SET quantity = quantity+' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
+	if (rows.affectedRows == 0){
+		connection_sync.query('INSERT INTO inventory (player_id, item_id, quantity) VALUES (' + player_id + ',' + item_id + ', ' + qnt + ')');
+		//console.log("Aggiunto inventario per item " + item_id + " del giocatore " + player_id + " aggiunto " + qnt);
+	}else{
+		//console.log("Aggiornato inventario per item " + item_id + " del giocatore " + player_id + " aggiunto " + qnt);
 	}
 }
 
@@ -7778,10 +7679,8 @@ function delItem(player_id, item_id, qnt = 1) {
 		console.log("ERRORE! delItem di " + qnt + "x " + item_id + " per player " + player_id);
 		return;
 	}
-	/* update
+
 	connection.query('UPDATE inventory SET quantity = quantity-' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id, function (err, rows, fields) {
-	*/
-	connection.query('DELETE FROM inventory WHERE player_id = ' + player_id + ' AND item_id = ' + item_id + ' LIMIT ' + qnt, function (err, rows, fields) {
 		if (err) throw err;
 	});
 }
@@ -7801,14 +7700,11 @@ function delAllInventory(player_id) {
 }
 
 function getItemCnt(player_id, item_id) {
-	/* update
-	connection.query('SELECT quantity FROM inventory WHERE player_id = ' + player_id + ' AND item_id = ' + item_id, function (err, rows, fields) {
-		if (err) throw err;
-	});
-	return item[0].quantity;
-	*/
-	var item = connection_sync.query('SELECT COUNT(id) As cnt FROM inventory WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
-	return item[0].cnt;
+	var item = connection_sync.query('SELECT quantity FROM inventory WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
+	if (Object.keys(item).length == 0)
+		return 0;
+	else
+		return item[0].quantity;
 }
 
 // Gestione scrigni
@@ -7819,6 +7715,15 @@ function addChest(player_id, chest_id, qnt = 1) {
 		console.log("ERRORE! addChest di " + qnt + "x " + chest_id + " per player " + player_id);
 		return;
 	}
+	/* update
+	var rows = connection_sync.query('UPDATE inventory_chest SET quantity = quantity+' + qnt + ' WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
+	if (rows.affectedRows == 0){
+		connection_sync.query('INSERT INTO inventory_chest (player_id, chest_id, quantity) VALUES (' + player_id + ',' + chest_id + ', ' + qnt + ')');
+		//console.log("Aggiunto inventario per chest " + chest_id + " del giocatore " + player_id + " aggiunto " + qnt);
+	}else{
+		//console.log("Aggiornato inventario per chest " + chest_id + " del giocatore " + player_id + " aggiunto " + qnt);
+	}
+	*/
 	for (var i = 0; i < qnt; i++) {
 		connection.query('INSERT INTO inventory_chest (player_id, chest_id) VALUES (' + player_id + ',' + chest_id + ')', function (err, rows, fields) {
 			if (err) throw err;
@@ -7832,6 +7737,11 @@ function delChest(player_id, chest_id, qnt = 1) {
 		console.log("ERRORE! delChest di " + qnt + "x " + chest_id + " per player " + player_id);
 		return;
 	}
+	/* update
+	connection.query('UPDATE inventory_chest SET quantity = quantity-' + qnt + ' WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id, function (err, rows, fields) {
+		if (err) throw err;
+	});
+	*/
 	connection.query('DELETE FROM inventory_chest WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id + ' LIMIT ' + qnt, function (err, rows, fields) {
 		if (err) throw err;
 	});
@@ -7851,9 +7761,16 @@ function delAllChestInventory(player_id) {
 	console.log("delAllInventory per player " + player_id);
 }
 
-function getChestCnt(player_id, item_id) {
+function getChestCnt(player_id, chest_id) {
 	var item = connection_sync('SELECT COUNT(id) As cnt FROM inventory_chest WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
 	return item[0].cnt;
+	/* update
+	var item = connection_sync('SELECT quantity FROM inventory_chest WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
+	if (Object.keys(item).length == 0)
+		return 0;
+	else
+		return item[0].quantity;
+	*/
 }
 
 function isBanned(account_id){
