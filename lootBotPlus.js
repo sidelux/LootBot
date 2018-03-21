@@ -5534,10 +5534,7 @@ bot.onText(/^\/statistiche/, function (message) {
 				connection.query('SELECT COUNT(id) As dragon FROM dragon', function (err, rows, fields) {
 					if (err) throw err;
 					var dragon = rows[0].dragon;
-					/* update
 					connection.query('SELECT SUM(quantity) As chest FROM inventory_chest', function (err, rows, fields) {
-					*/
-					connection.query('SELECT COUNT(*) As chest FROM inventory_chest', function (err, rows, fields) {
 						if (err) throw err;
 						var chest = rows[0].chest;
 						connection.query('SELECT MAX(id) As heist, COUNT(*) As heistn FROM heist', function (err, rows, fields) {
@@ -7231,7 +7228,7 @@ bot.onText(/^\/scrigni/, function (message, match) {
 		return;
 	}
 
-	connection.query('SELECT id, total_life, life, account_id FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, total_life, life, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -7244,10 +7241,7 @@ bot.onText(/^\/scrigni/, function (message, match) {
 		var player_id = rows[0].id;
 		var bottext = "<b>" + message.from.username + "</b> possiedi:\n";
 
-		/* update
 		connection.query('SELECT chest.name, quantity As num FROM chest, inventory_chest WHERE chest.id = inventory_chest.chest_id AND inventory_chest.player_id = ' + player_id + ' AND quantity > 0 ORDER BY chest.id', function (err, rows, fields) {
-		*/
-		connection.query('SELECT chest.name, COUNT(chest.name) As num FROM chest, inventory_chest WHERE chest.id = inventory_chest.chest_id AND inventory_chest.player_id = ' + player_id + ' GROUP BY chest.name ORDER BY chest.id', function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length > 0) {
@@ -7693,9 +7687,7 @@ function delAllItem(player_id, item_id) {
 }
 
 function delAllInventory(player_id) {
-	connection.query('DELETE FROM inventory WHERE player_id = ' + player_id, function (err, rows, fields) {
-		if (err) throw err;
-	});
+	connection_sync.query('DELETE FROM inventory WHERE player_id = ' + player_id);
 	console.log("delAllInventory per player " + player_id);
 }
 
@@ -7715,19 +7707,13 @@ function addChest(player_id, chest_id, qnt = 1) {
 		console.log("ERRORE! addChest di " + qnt + "x " + chest_id + " per player " + player_id);
 		return;
 	}
-	/* update
+
 	var rows = connection_sync.query('UPDATE inventory_chest SET quantity = quantity+' + qnt + ' WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
 	if (rows.affectedRows == 0){
 		connection_sync.query('INSERT INTO inventory_chest (player_id, chest_id, quantity) VALUES (' + player_id + ',' + chest_id + ', ' + qnt + ')');
 		//console.log("Aggiunto inventario per chest " + chest_id + " del giocatore " + player_id + " aggiunto " + qnt);
 	}else{
 		//console.log("Aggiornato inventario per chest " + chest_id + " del giocatore " + player_id + " aggiunto " + qnt);
-	}
-	*/
-	for (var i = 0; i < qnt; i++) {
-		connection.query('INSERT INTO inventory_chest (player_id, chest_id) VALUES (' + player_id + ',' + chest_id + ')', function (err, rows, fields) {
-			if (err) throw err;
-		});
 	}
 }
 
@@ -7737,12 +7723,7 @@ function delChest(player_id, chest_id, qnt = 1) {
 		console.log("ERRORE! delChest di " + qnt + "x " + chest_id + " per player " + player_id);
 		return;
 	}
-	/* update
 	connection.query('UPDATE inventory_chest SET quantity = quantity-' + qnt + ' WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id, function (err, rows, fields) {
-		if (err) throw err;
-	});
-	*/
-	connection.query('DELETE FROM inventory_chest WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id + ' LIMIT ' + qnt, function (err, rows, fields) {
 		if (err) throw err;
 	});
 }
@@ -7755,22 +7736,16 @@ function delAllChest(player_id, chest_id) {
 }
 
 function delAllChestInventory(player_id) {
-	connection.query('DELETE FROM inventory_chest WHERE player_id = ' + player_id, function (err, rows, fields) {
-		if (err) throw err;
-	});
+	connection_sync.query('DELETE FROM inventory_chest WHERE player_id = ' + player_id);
 	console.log("delAllInventory per player " + player_id);
 }
 
 function getChestCnt(player_id, chest_id) {
-	var item = connection_sync('SELECT COUNT(id) As cnt FROM inventory_chest WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
-	return item[0].cnt;
-	/* update
-	var item = connection_sync('SELECT quantity FROM inventory_chest WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
+	var item = connection_sync.query('SELECT quantity FROM inventory_chest WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
 	if (Object.keys(item).length == 0)
 		return 0;
 	else
 		return item[0].quantity;
-	*/
 }
 
 function isBanned(account_id){
