@@ -11,4 +11,4 @@ Il bot utilizza il modulo "node-telegram-bot-api" per interagire con le Api di T
 
 ## Licenza
 
-Questo progetto è sotto licenza GPL-3 - vedi [Documentazione](https://www.gnu.org/licenses/gpl-3.0.en.html) per ulteriori dettagli.
+Questo progetto è sotto licenza GPL-3 - leggi la [documentazione](https://www.gnu.org/licenses/gpl-3.0.en.html) per ulteriori dettagli.

@@ -37,7 +37,7 @@ var globaltime = Math.round(new Date() / 1000);
 var timevar = [];
 var timevarSpam = [];
 var timevarFlood = [];
-var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000];
+var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
 
 console.log('Avvio bot...');
 
@@ -816,14 +816,11 @@ function toDate(lang, d) {
 	return datetime;
 }
 
-/*
-bot.onText(/\/test/, function (message) {
-	console.log(message.chat.id, message.from.id, Math.round((Date.now()+ms("7 days"))/1000));
-	bot.kickChatMember(message.chat.id, message.reply_to_message.from.id, {until_date: Math.round((Date.now()+ms("7 days"))/1000)}).then(function (result) {
-		console.log(result);
+bot.onText(/\/printsticker/, function (message) {
+	bot.getStickerSet("Rango_v2").then(function (data) {
+		console.log(data.stickers);
 	});
 });
-*/
 
 bot.onText(/^\/gruppi/, function (message) {
 
@@ -7215,8 +7212,10 @@ function getRankName(rank) {
 		text = "Avventuriero Impavido";
 	} else if (rank <= rankList[7]) { //750
 		text = "Avventuriero Eroico";
-	} else { //1000
+	} else if (rank <= rankList[8]) { //750
 		text = "Eroe delle Esplorazioni";
+	} else {
+		text = "Mappatore Avanzato";
 	}
 
 	return text;
