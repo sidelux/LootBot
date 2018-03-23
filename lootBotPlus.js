@@ -9,10 +9,6 @@ process.on('unhandledRejection', function (error, p) {
 		console.log("\x1b[31m","Error: ", error.message, "\x1b[0m");
 });
 
-//Globali
-var activity_accountid = [];
-var activity_timestamp = [];
-
 var dbconfig = require('./dbconfig.js');
 var TelegramBot = require('node-telegram-bot-api');
 var fs = require('fs');
@@ -32,7 +28,6 @@ var bot = new TelegramBot(token, {
 });
 
 var check = [];
-//var qnt = [];
 var globaltime = Math.round(new Date() / 1000);
 var timevar = [];
 var timevarSpam = [];
@@ -715,10 +710,12 @@ bot.onText(/^\/gb (.+)|^\/gb$/, function (message, match) {
 							if (err) throw err;
 						});
 					} else {
-						bot.sendMessage(message.chat.id, nick + " (" + account_id + ") sbannato dai gruppi.");
-						connection.query('UPDATE player SET group_ban = 0 WHERE id = ' + rows[0].id, function (err, rows, fields){
-							if (err) throw err;
-						});
+						if (chat_id == "-1001064797183"){
+							bot.sendMessage(message.chat.id, nick + " (" + account_id + ") sbannato dai gruppi.");
+							connection.query('UPDATE player SET group_ban = 0 WHERE id = ' + rows[0].id, function (err, rows, fields){
+								if (err) throw err;
+							});
+						}
 					}
 				});
 			};
@@ -4458,7 +4455,6 @@ bot.onText(/^\/scambia/i, function (message) {
 						d2.setMinutes(d2.getMinutes() + 30);
 						var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
 						var short_date = addZero(d2.getHours()) + ':' + addZero(d2.getMinutes());
-
 
 						connection.query('SELECT item.id, item.allow_sell FROM item, inventory WHERE item.id = inventory.item_id AND item.name = "' + item1 + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
 							if (err) throw err;

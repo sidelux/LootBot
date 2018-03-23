@@ -10,7 +10,6 @@ process.on('unhandledRejection', function (error, p) {
 		console.log("\x1b[31m","Error: ", error.message, "\x1b[0m");
 });
 
-//Globali
 var max_mission_id = 290;
 var timevar = [];
 var timevarFlood = [];
@@ -294,7 +293,7 @@ bot.on('message', function (message) {
 						if (Object.keys(rows).length > 0) {
 							connection.query('INSERT INTO last_command (account_id, time) VALUES (' + message.from.id + ',"' + getNow("en") + '")', function (err, rows, fields) {
 								if (err) {
-									console.log("Errore chiave esterna: " + message.from.id);
+									console.log("Errore chiave esterna message: " + message.from.id);
 								};
 							});
 						}
@@ -361,10 +360,8 @@ bot.on('message', function (message) {
 				}
 			}
 
+			/*
 			if ((lev >= 10) || (reborn > 1)) {
-
-				return;
-
 				var d = new Date();
 				if (d.getDate() == 10) {
 					connection.query('SELECT COUNT(*) As cnt FROM one_time_gift WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -380,8 +377,9 @@ bot.on('message', function (message) {
 							});
 						}
 					});
-				}
+				};
 			};
+			*/
 		};
 	});
 
@@ -3229,7 +3227,7 @@ bot.onText(/^info/i, function (message) {
 
 	printStart(message);
 });
-
+/*
 bot.onText(/^\/test (.+)/i, function (message, match) {
 	var cost = 0;
 	var qnt = match[1];
@@ -3240,10 +3238,9 @@ bot.onText(/^\/test (.+)/i, function (message, match) {
 	}
 	bot.sendMessage(message.from.id, "Simulazione per Attacco aumentato di " + qnt + ": " + cost);
 });
-
+*/
 function mainMenu(message) {
 	calcLife(message);
-	var market = 0;
 
 	var price_drop = 0;
 	var price_drop_msg = "";
@@ -3256,19 +3253,18 @@ function mainMenu(message) {
 		price_drop_msg = "\n💸 Oggi sconti del <b>" + sconto + "%</b> all'emporio ed al mercato per il <b>Black Friday</b>!";
 	} else {
 		if ((n == 0) && (crazyMode == 0)) {
-			if (n2 <= 7) {
+			if (n2 <= 7)
 				sconto = 20;
-			}
 			price_drop = 1;
 			price_drop_msg = "\n💸 Oggi sconti del <b>" + sconto + "%</b> all'emporio ed al mercato!";
 		} else if (n == 2) {
 			price_drop_msg = "\n🍀 Oggi giornata <b>fortunata</b>!";
 		} else {
-			var links = ["<a href='http://telegram.me/storebot?start=lootgamebot'>Vota</a> il bot!",
-						 "Entra nella <a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a>!",
-						 "Commercia nel <a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a>!",
+			var links = ["<a href='http://telegram.me/storebot?start=lootgamebot'>Vota</a> il bot 🔝!",
+						 "Entra nella <a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> 🍺!",
+						 "Commercia nel <a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> 💰!",
 						 "Iscriviti a @LootBotAvvisi per seguire le novità!",
-						 "<a href='https://www.paypal.me/EdoardoCortese'>Dona</a> e riceverai alcune monete lunari per tentare la fortuna!",
+						 "<a href='https://www.paypal.me/EdoardoCortese'>Dona</a> e riceverai 🌕 per la Ruota della Luna!",
 						 "Aggiungi @lootplusbot al tuo gruppo!",
 						 ((n != 6) && (n != 0) ? "Ricordati di completare le Imprese Giornaliere!" : "In settimana completa le Imprese Giornaliere!")];
 			var rand = Math.round(Math.random() * (Object.keys(links).length - 1));
@@ -3277,7 +3273,7 @@ function mainMenu(message) {
 	}
 
 	if (message.from.username == undefined) {
-		bot.sendMessage("@lnotify", "#undefined " + "-" + account_id);
+		bot.sendMessage("@lnotify", "#undefined " + " (" + account_id + ")");
 		return;
 	}
 
@@ -33618,7 +33614,7 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 																								if (no_next == 1)
 																									next = "\nPotenzia il team per sbloccare il boss successivo!";
 
-																								bot.sendMessage(message.chat.id, "Hai ucciso il boss e ottenuto:\n> *" + formatNumber(drop + bonus_drop) + "* §\n> *1* 🦋" + next, bossKb);
+																								bot.sendMessage(message.chat.id, "Hai ucciso il boss ed ottenuto *" + formatNumber(drop) + "* §" + next, bossKb);
 
 																								fixBoss(team_id);
 
@@ -40828,7 +40824,12 @@ function setTeamBoss(element, index, array, drop, killerName, message, team_id, 
 		var text = "Inoltre hai ottenuto:\n";											// messaggio per chi uccide il boss
 		if (nickname != killerName)
 			text = "Il boss è stato ucciso da " + killerName + "! Hai ottenuto:\n";		// messaggio per tutti gli altri
-		text += "> " + formatNumber(drop) + " § + 1 exp per l'uccisione\n";
+		
+		var extra = "";
+		if (acc_bonus > 0)
+			extra = " (+1 da Accademia/Madre)";
+		
+		text += "> <b>" + formatNumber(drop) + "</b> §, <b>1</b> exp e <b>1</b> 🦋 al team" + extra + " per l'uccisione\n";
 
 		if (Object.keys(rows).length > 0) {
 			var damage = rows[0].damage;
@@ -40844,7 +40845,7 @@ function setTeamBoss(element, index, array, drop, killerName, message, team_id, 
 
 			setExp(player_id, 2);
 			connection_sync.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + player_id);
-			text += "> " + formatNumber(money) + " § + 2 exp per il tuo contributo\n";
+			text += "> <b>" + formatNumber(money) + "</b> § e <b>2</b> exp per il tuo contributo\n";
 		}
 
 		if (boss_id == 20) {
@@ -40853,11 +40854,8 @@ function setTeamBoss(element, index, array, drop, killerName, message, team_id, 
 		} else if (boss_id == 31) {
 			var mana = Math.round(getRandomArbitrary(750, 1500));
 			var gems = Math.round(getRandomArbitrary(5, 10));
-			
-			if (acc_bonus > 0)
-				extra = " (+1 da Accademia/Madre)";
 
-			text += "> " + formatNumber(mana) + " Mana, " + gems + " 💎 e 1 🦋 al team" + extra + "\n";
+			text += "> <b>" + formatNumber(mana) + "</b> Mana, <b>" + gems + "</b> 💎 e <b>1</b> 🦋 al team\n";
 			
 			connection.query('UPDATE event_mana_status SET mana_1 = mana_1 + ' + mana + ', mana_2 = mana_2 + ' + mana + ', mana_3 = mana_3 + ' + mana + ' WHERE player_id = ' + element.id, function (err, rows, fields) {
 				if (err) throw err;
@@ -40880,7 +40878,6 @@ function setTeamBoss(element, index, array, drop, killerName, message, team_id, 
 		
 		if (notify == 1)
 			bot.sendMessage(chat_id, text, html);
-		//console.log(text);
 	});
 };
 
