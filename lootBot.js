@@ -396,7 +396,7 @@ bot.on('message', function (message) {
 	}
 	
 	if (message.from.username == undefined){
-		bot.sendMessage("@lnotify", "#undefined " + message.from.first_name + " (" + message.from.id + ")");
+		bot.sendMessage("@lnotify", "#undefined " + message.from.first_name + ": " + message.text);
 		bot.sendMessage(message.from.id, "Imposta un nickname per giocare!", back);
 	}
 });
@@ -11741,11 +11741,11 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																						sec = sec - 180;
 																					}
 																					if ((class_id == 3) && (reborn >= 4)) {
-																						sec = sec - 240;
+																						sec = sec - 300;
 																					}
-																					//}
-																					if (crazyMode == 1)
+																					if (crazyMode == 1) {
 																						sec = sec - 120;
+																					}
 																					d.setSeconds(d.getSeconds() + sec);
 
 																					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
@@ -12072,7 +12072,7 @@ bot.onText(/rinasci/i, function (message) {
 									var chest6 = 5;
 									var chest7 = 1;
 
-									connection.query('SELECT * FROM referral_list WHERE new_player = ' + player_id, function (err, rows, fields) {
+									connection.query('SELECT player_id FROM referral_list WHERE new_player = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 										if (Object.keys(rows).length > 0) {
 											connection.query('SELECT chat_id, id FROM player WHERE id = ' + rows[0].player_id, function (err, rows, fields) {
@@ -12097,7 +12097,7 @@ bot.onText(/rinasci/i, function (message) {
 									var chest6 = 10;
 									var chest7 = 1;
 
-									connection.query('SELECT * FROM referral_list WHERE new_player = ' + player_id, function (err, rows, fields) {
+									connection.query('SELECT player_id FROM referral_list WHERE new_player = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 										if (Object.keys(rows).length > 0) {
 											connection.query('SELECT chat_id, id FROM player WHERE id = ' + rows[0].player_id, function (err, rows, fields) {
@@ -12121,7 +12121,7 @@ bot.onText(/rinasci/i, function (message) {
 									var chest6 = 20;
 									var chest7 = 2;
 
-									connection.query('SELECT * FROM referral_list WHERE new_player = ' + player_id, function (err, rows, fields) {
+									connection.query('SELECT player_id FROM referral_list WHERE new_player = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 										if (Object.keys(rows).length > 0) {
 											connection.query('SELECT chat_id, id FROM player WHERE id = ' + rows[0].player_id, function (err, rows, fields) {
@@ -12145,7 +12145,7 @@ bot.onText(/rinasci/i, function (message) {
 											return;
 										}
 
-										connection.query('UPDATE player SET exp = 1, life = 100, total_life = 100, mission_auto_id = 1, heist_count = 0, reborn = ' + reborn_val + ' WHERE id = ' + player_id, function (err, rows, fields) {
+										connection.query('UPDATE player SET exp = 1, life = 100, total_life = 100, mission_auto_id = 1, reborn = ' + reborn_val + ' WHERE id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 											bot.sendMessage(message.chat.id, "Hai completato l'ultima rinascita! Ma la strada è ancora lunga!", back);
 										});
@@ -12193,6 +12193,7 @@ bot.onText(/rinasci/i, function (message) {
 													"Oltre a " + money + " §\n" +
 													"Ed ora continua la tua incredibile avventura! Buon game!", back_html);
 									console.log("Finito :)");
+									calcLife(message);
 								});
 							};
 						});
@@ -17507,9 +17508,12 @@ bot.onText(/team/i, function (message) {
 							if (err) throw err;
 
 							var isAdmin = 0;
+							var isViceAdmin = 0;
 
 							if (rows[0].role == 1) {
 								isAdmin = 1;
+							}else if (rows[0].role == 2) {
+								isViceAdmin = 1;
 							}
 
 							connection.query('SELECT player.id, player.nickname FROM team_player, player WHERE player.id = team_player.player_id AND team_id = ' + team_id + ' AND role = 1', function (err, rows, fields) {
@@ -17830,7 +17834,7 @@ bot.onText(/team/i, function (message) {
 																};
 															}
 
-															if ((isAdmin == 1) || (details == 1)) {
+															if ((isAdmin == 1) || (isViceAdmin == 1) || (details == 1)) {
 																text += user_text;
 																extra = 1;
 																bot.sendMessage(message.chat.id, text, kb);
@@ -30083,9 +30087,9 @@ bot.onText(/^crea (.+)/i, function (message, match) {
 			var qnt = 1;
 			if (Object.keys(parts).length > 1) {
 				oggetto = parts[0];
-				qnt = parts[1].trim();
+				qnt = parseInt(parts[1].trim());
 			}
-					
+
 			creaOggetto(message, player_id, oggetto, money, reborn, qnt);
 		}
 	});
@@ -42495,9 +42499,8 @@ bot.onText(/^\/last (.+)/, function (message, match) {
 });
 
 function addZero(i) {
-	if (i < 10) {
+	if (i < 10)
 		i = "0" + i;
-	}
 	return i;
 }
 

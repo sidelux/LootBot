@@ -157,13 +157,15 @@ bot.on('message', function (message) {
 		});
 		connection.query('SELECT always FROM plus_groups WHERE chat_id = ' + msg.chat.id, function (err, rows, fields) {
 			if (err) throw err;
-
+			
 			if (msg.new_chat_members != undefined) {
-				checkStatus(msg, msg.new_chat_member.username, msg.new_chat_member.id, 0);
+				if (msg.new_chat_member.is_bot == 0)
+					checkStatus(msg, msg.new_chat_member.username, msg.new_chat_member.id, 0);
 			}else{
 				if (Object.keys(rows).length > 0) {
 					if (rows[0].always == 1) {
-						checkStatus(message, user, account_id, 1);
+						if (msg.from.is_bot == 0)
+							checkStatus(message, user, account_id, 1);
 					}
 				}
 			}
@@ -6298,8 +6300,7 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, function (message, match) {
 						}
 					}
 
-
-					connection.query('SELECT player.nickname, public_shop.code, public_shop.price FROM public_shop, player, inventory WHERE inventory.player_id = player.id AND inventory.item_id = ' + itemId + ' AND inventory.quantity > 0 AND public_shop.public = 1 AND public_shop.quantity > 0 AND player.id = public_shop.player_id AND public_shop.item_id = ' + this.itemId + ' GROUP BY nickname ORDER BY price ASC', function (err, rows, fields) {
+					connection.query('SELECT player.nickname, public_shop.code, public_shop.price FROM public_shop JOIN ( SELECT public_shop.code, MIN(public_shop.price) As minPrice, player.nickname FROM public_shop, player, inventory WHERE inventory.player_id = player.id AND inventory.item_id = ' + itemId + ' AND inventory.quantity > 0 AND public_shop.public = 1 AND public_shop.quantity > 0 AND player.id = public_shop.player_id AND public_shop.item_id = ' + itemId + ' GROUP BY nickname ) As t2, player, inventory WHERE inventory.player_id = player.id AND inventory.item_id = ' + itemId + ' AND inventory.quantity > 0 AND public_shop.public = 1 AND public_shop.quantity > 0 AND player.id = public_shop.player_id AND public_shop.item_id = ' + itemId + ' AND public_shop.price = t2.minPrice AND player.nickname = t2.nickname ORDER BY public_shop.price ASC', function (err, rows, fields) {
 						if (err) throw err;
 						if (Object.keys(rows).length > 0) {
 							text += "\n<b>Negozi</b> per " + this.itemName + ":\n";
@@ -8026,9 +8027,8 @@ function isBanned(account_id){
 // Funzioni
 
 function addZero(i) {
-	if (i < 10) {
+	if (i < 10)
 		i = "0" + i;
-	}
 	return i;
 }
 
