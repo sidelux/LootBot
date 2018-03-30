@@ -68,27 +68,21 @@ bot.on('polling_error', function(error) {
 });
 
 bot.on('message', function (message) {
-	var msg = message;
-	var text = msg.text;
-	var user = msg.from.username;
-	var chat_id = msg.chat.id;
-	var account_id = msg.from.id;
-	if (text != undefined) {
-		if (text.startsWith("/")) {
-			console.log(getNow("it") + " - " + user + ": " + text);
-		}
-		if (user != "fenix45") {
-			if (chat_id == -1001097316494) {
-				if (!text.startsWith("Negozio di")) {
+	if (message.text != undefined) {
+		if (message.text.startsWith("/"))
+			console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
+		
+		if (message.from.username != "fenix45") {
+			if (message.chat.id == -1001097316494) {
+				if (!message.text.startsWith("Negozio di")) {
 					var time = Math.round((Date.now()+ms("7 days"))/1000);
-					bot.kickChatMember(message.chat.id, account_id, {until_date: time}).then(function (result) {
-						bot.sendMessage(chat_id, user + ", non puoi scrivere in questo gruppo, sei stato bannato per 7 giorni.");
-						bot.sendMessage(account_id, "Sei stato bannato dal gruppo Loot Negozi per 7 giorni perchè non hai postato un negozio");
+					bot.kickChatMember(message.chat.id, message.from.id, {until_date: time}).then(function (result) {
+						bot.sendMessage(message.chat.id, user + ", non puoi scrivere in questo gruppo, sei stato bannato per 7 giorni.");
+						bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo Loot Negozi per 7 giorni perchè non hai postato un negozio");
 					});
-					bot.deleteMessage(chat_id, message.message_id).then(function (result) {
-						if (result != true) {
-							console.log("Errore cancellazione messaggio " + chat_id + " " + message.message_id);
-						}
+					bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
+						if (result != true)
+							console.log("Errore cancellazione messaggio " + message.chat.id + " " + message.message_id);
 					});
 				}else{
 					connection.query('INSERT INTO plus_history (account_id) VALUES (' + message.from.id + ')', function (err, rows, fields) {
@@ -97,25 +91,18 @@ bot.on('message', function (message) {
 							if (err) throw err;
 
 							if (Object.keys(rows).length > 1) {
-								console.log(rows[0].id, rows[1].id);
 								if (rows[0].id-rows[1].id < 10){
-									bot.kickChatMember(message.chat.id, account_id).then(function (result) {
-										bot.sendMessage(chat_id, user + ", hai postato un negozio troppo vicino all'ultimo, sei stato kickato.");
-										bot.sendMessage(account_id, "Sei stato kickato dal gruppo Loot Negozi perchè hai postato un negozio troppo vicino all'ultimo");
-										bot.unbanChatMember(message.chat.id, account_id).then(function (result) {
+									bot.kickChatMember(message.chat.id, message.from.id).then(function (result) {
+										bot.sendMessage(message.chat.id, message.from.username + ", hai postato un negozio troppo vicino all'ultimo, sei stato kickato.");
+										bot.sendMessage(message.from.id, "Sei stato kickato dal gruppo Loot Negozi perchè hai postato un negozio troppo vicino all'ultimo");
+										bot.unbanChatMember(message.chat.id, message.from.id).then(function (result) {
 											// kickato
 										});
 									});
-									bot.deleteMessage(chat_id, message.message_id).then(function (result) {
-										if (result != true) {
-											console.log("Errore cancellazione messaggio " + chat_id + " " + message.message_id);
-										}
+									bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
+										if (result != true)
+											console.log("Errore cancellazione messaggio " + message.chat.id + " " + message.message_id);
 									});
-									/*
-									connection.query('DELETE FROM plus_history WHERE account_id = ' + message.from.id, function (err, rows, fields) {
-										if (err) throw err;
-									});
-									*/
 								}else{
 									connection.query('DELETE FROM plus_history WHERE account_id = ' + message.from.id + ' AND id != ' + rows[0].id, function (err, rows, fields) {
 										if (err) throw err;
@@ -132,40 +119,40 @@ bot.on('message', function (message) {
 		}
 	}
 
-	if (msg.chat.id < 0) {
-		connection.query('SELECT chat_id FROM plus_groups WHERE chat_id = ' + msg.chat.id, function (err, rows, fields) {
+	if (message.chat.id < 0) {
+		connection.query('SELECT chat_id FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length == 0) {
-				bot.getChatMembersCount(msg.chat.id).then(function (cnt) {
-					connection.query('INSERT INTO plus_groups (name, chat_id, members) VALUES ("' + connection.escape(msg.chat.title) + '","' + msg.chat.id + '",' + cnt + ')', function (err, rows, fields) {
+				bot.getChatMembersCount(message.chat.id).then(function (cnt) {
+					connection.query('INSERT INTO plus_groups (name, chat_id, members) VALUES ("' + connection.escape(message.chat.title) + '","' + message.chat.id + '",' + cnt + ')', function (err, rows, fields) {
 						if (err) throw err;
-						console.log("Gruppo aggiunto: " + msg.chat.title);
+						console.log("Gruppo aggiunto: " + message.chat.title);
 					});
 				});
 			} else {
-				bot.getChatMembersCount(msg.chat.id).then(function (cnt) {
+				bot.getChatMembersCount(message.chat.id).then(function (cnt) {
 					var d = new Date();
 					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-					msg.chat.title = msg.chat.title.replace(/[^\w\s]/gi, '');
+					message.chat.title = message.chat.title.replace(/[^\w\s]/gi, '');
 
-					connection.query('UPDATE plus_groups SET name = "' + msg.chat.title + '", members = ' + cnt + ', last_update = "' + long_date + '" WHERE chat_id = ' + msg.chat.id, function (err, rows, fields) {
+					connection.query('UPDATE plus_groups SET name = "' + message.chat.title + '", members = ' + cnt + ', last_update = "' + long_date + '" WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 						if (err) throw err;
 					});
 				});
 			}
 		});
-		connection.query('SELECT always FROM plus_groups WHERE chat_id = ' + msg.chat.id, function (err, rows, fields) {
+		connection.query('SELECT always FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 			if (err) throw err;
 			
-			if (msg.new_chat_members != undefined) {
-				if (msg.new_chat_member.is_bot == 0)
-					checkStatus(msg, msg.new_chat_member.username, msg.new_chat_member.id, 0);
+			if (message.new_chat_members != undefined) {
+				if (message.new_chat_member.is_bot == 0)
+					checkStatus(message, message.new_chat_member.username, message.new_chat_member.id, 0);
 			}else{
 				if (Object.keys(rows).length > 0) {
 					if (rows[0].always == 1) {
-						if (msg.from.is_bot == 0)
-							checkStatus(message, user, account_id, 1);
+						if (message.from.is_bot == 0)
+							checkStatus(message, message.from.username, message.from.id, 1);
 					}
 				}
 			}
@@ -197,9 +184,6 @@ bot.on('message', function (message) {
 			});
 		}
 	});
-	if (checkFlood(message) == false) {
-		// ban?
-	}
 });
 
 function cutText(text) {
@@ -1012,6 +996,7 @@ bot.onText(/^\/mercatini/, function (message) {
 					"@roomlootbot - Un mercatino che sembra una stanza!\n" +
 					"@Zaino_Dell_Imperatore - Prezzi basati sul bot Loot Quotazioni!\n" +
 					"@paupershop - Un negozio di LootBot per poveri\n" +
+					"@mercaloot - Negozio Honesto\n" +
 
 					"\nVisita anche /gruppi. Per comparire qua chiedi all'amministratore.", html);
 });
@@ -5723,61 +5708,8 @@ bot.onText(/^\/dlotteriap (.+)|^\/dlotteriap/, function (message, match) {
 	});
 });
 
-bot.onText(/^\/faq/, function (message) {
-	if (message.chat.id < 0) {
-		bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
-	}
-
-	bot.sendMessage(message.from.id, "*DOMANDE FREQUENTI*\n" +
-					"\n*RISORSE UTILI*\n" +
-					"Sito per visualizzare crafting: http://federicoxella.space/lootbot\n" +
-					"Novità e bug: @LootBotAvvisi\n" +
-					"Amministratore: @fenix45 (@FenixNews)\n" +
-
-					"\n*INFORMAZIONI*\n" +
-					"Se gli HP scendono a 0? Usa Piuma di Fenice o alle 3 di notte la vita si ricarica automaticamente\n" +
-					"Non riesco a vendere ad un utente che ha uno spazio nel nome. Al posto dello spazio, metti l'underscore (trattino basso)\n" +
-
-					"\n*CERCA*\n" +
-					"Il Cerca è lo strumento più utilizzato di tutto il bot, ma ogni tanto può avere qualche loop spazio-temporale e ripetere le stesse stampe\n" +
-					"Per impedire che ciò avvenga inserisci un (asterisco) prima della parola da cercare: 'Cerca (asterisco)Acciaio', cosi da non incorrere in questo intoppo\n" +
-
-					"\n*VIAGGI*\n" +
-					"I viaggi più lunghi (escluse le cave dal livello 10), sono da considerarsi come un periodo in cui non si può giocare, e almeno non si perdono scrigni e monete, non vanno considerate in sostituzione allo stesso tempo di missioni. Le Cave differiscono solamente per quantità di Pietre trovate, gli altri viaggi per rarità scrigno e quantità monete.\n" +
-
-					"\n*RINASCITA*\n" +
-					"La Rinascita è un parziale Reset del gioco che avviene al livello 100, 150, 200 o 300\n" +
-					"- *Cosa perdo?*\n" +
-					"Tutti gli oggetti tranne le rarità UE, U, H, S, IN e X\n" +
-					"Tutti i soldi e gli scrigni\n" +
-					"Esperienza e oggetti al mercato\n" +
-					"- *Cosa rimane?*\n" +
-					"Il drago con tutto il suo equipaggiamento\n" +
-					"Il tuo equipaggiamento\n" +
-					"Le monete lunari/gemme e le missioni/viaggi in corso\n" +
-					"Gli incantesimi e il mana\n" +
-					"- *Cosa ottengo?*\n" +
-					"La possibilità di creare oggetti di qualità superiore\n" +
-					"Una gran quantità di monete\n" +
-					"Una gran quantità di scrigni\n" +
-
-					"\n*DRAGO*\n" +
-					"Il drago è utile per aumentare il proprio danno e velocizzare i viaggi, oltre che per difesa del rifugio.\n" +
-					"Tutti i dettagli vengono visualizzati dal livello 10, da quando è possibile farlo nascere.\n" +
-					"Le pietre del drago hanno un valore da 1 a 6, dividendo il valore totale per 70 si ottiene il livello del drago.\n" +
-
-					"\n*INCANTESIMI E MANA*\n" +
-					"Il Mana può essere ottenuto attraverso un evento chiamato Miniere di Mana, dopo averlo accumulato è necessario andare nella sezione Sintesi (Zaino > Sintesi)" +
-					" e seguire le istruzioni per creare gli incantesimi. A seconda della quantità di Mana utilizzato gli incantesimi creati saranno differenti e gli effetti" +
-					" vengono descritti nella sezione Boss o Dungeon quando si deve affrontare il nemico.\n" +
-
-					"\n*SET DRAGHI*\n" +
-					"Infernale > Danno +25\n" +
-					"Glaciale > Difesa +25\n" +
-					"Oscuro > Danno +15 Difesa +10 Critico +5%\n" +
-					"Celeste > Danno +10 Difesa +15 Critico +5%\n" +
-					"Abissale > Danno +10 Difesa +5 Critico +10%\n" +
-					"delle Vette > Danno +5 Difesa +10 Critico +10%", mark);
+bot.onText(/^\/scuola/, function (message) {
+	bot.sendMessage(message.chat.id, "Entra nella scuola per giovani avventurieri: https://t.me/joinchat/AAAAAEDH8FbelcVFTmw-mQ", mark);
 });
 
 bot.onText(/^\/statistiche/, function (message) {
@@ -6713,7 +6645,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 												var dragon_name = "-";
 												var dragon_level = "-";
 												var dragon_damage = "-";
-												var dragon_defense = "-";
+												var dragon_defence = "-";
 												var dragon_critical = "-";
 												var dragon_clawsid = 0;
 												var dragon_saddleid = 0;
@@ -6754,7 +6686,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 													dragon_name = rows[0].name.trim() + " " + rows[0].type;
 													dragon_level = rows[0].level;
 													dragon_damage = "+" + Math.round(rows[0].damage + rows[0].claws);
-													dragon_defense = "-" + Math.round(rows[0].defense + rows[0].saddle);
+													dragon_defence = "-" + Math.round(rows[0].defence + rows[0].saddle);
 													dragon_critical = Math.round(rows[0].critical);
 
 													dragon_claws = parseInt(rows[0].claws);
@@ -7016,7 +6948,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																					dragon_claws_n = "?";
 																					dragon_damage = "?";
 																					dragon_saddle_n = "?";
-																					dragon_defense = "?";
+																					dragon_defence = "?";
 																					dragon_critical = "?";
 																					dragon_status = "?";
 																				} else if (myhouse_id == 2) {
@@ -7037,7 +6969,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																					dragon_damage = "?";
 																					dragon_saddle_n = "?";
 																					dragon_arms_n = "?";
-																					dragon_defense = "?";
+																					dragon_defence = "?";
 																					dragon_critical = "?";
 																				} else if (myhouse_id == 3) {
 																					rows[0].heist_count = "?";
@@ -7050,7 +6982,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																					dragon_claws_n = "?";
 																					dragon_damage = "?";
 																					dragon_saddle_n = "?";
-																					dragon_defense = "?";
+																					dragon_defence = "?";
 																					dragon_critical = "?";
 																				} else if (myhouse_id == 4) {
 																					rows[0].heist_count = "?";
@@ -7085,7 +7017,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																							(dragon ? "\n<b>" + dragon_name + " (L" + dragon_level + ")</b> 🐉\n" : "") +
 																							(dragon ? "Stato: " + dragon_status + "\n" : "") +
 																							(dragon ? dragon_claws_n + " (" + dragon_damage + ")\n" : "") +
-																							(dragon ? dragon_saddle_n + " (" + dragon_defense + ")\n" : "") +
+																							(dragon ? dragon_saddle_n + " (" + dragon_defence + ")\n" : "") +
 																							(dragon ? dragon_arms_n + "\n" : "") +
 																							(dragon ? "Critico (" + dragon_critical + "%)\n" : "") +
 
@@ -7348,7 +7280,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, account_
 									 'VALUES (' + from_id + ',' + to_id + ',"' + long_date + '",' + rate + ',' + grade + ',' + isMatch + ')',
 									 function (err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Hai inviato Piedelesto all'ispezione del rifugio di " + nickname + ", tornerà alle " + short_date + "!");
+						bot.sendMessage(message.chat.id, message.from.username + ", hai inviato Piedelesto all'ispezione del rifugio di " + nickname + ", tornerà alle " + short_date + "!");
 					});
 					connection.query('UPDATE player SET heist_count = heist_count+1 WHERE id = ' + from_id, function (err, rows, fields) {
 						if (err) throw err;
