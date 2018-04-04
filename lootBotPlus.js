@@ -72,7 +72,7 @@ bot.on('message', function (message) {
 		if (message.text.startsWith("/"))
 			console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
 
-		if (message.from.username != "fenix45") {
+		if (message.from.id != 20471035) {
 			if (message.chat.id == -1001097316494) {
 				if (!message.text.startsWith("Negozio di")) {
 					var time = Math.round((Date.now()+ms("7 days"))/1000);
@@ -368,7 +368,7 @@ bot.onText(/^\/pollo/, function (message) {
 
 bot.onText(/^\/marketban (.+)/, function (message, match) {
 	match[1] = match[1].replace("@", "");
-	if ((message.from.username == "fenix45") || (message.from.username == "LastSoldier95")) {
+	if (message.from.id == 20471035) {
 		connection.query('SELECT id, market_ban, nickname, id, account_id FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
 			if (err) throw err;
 
@@ -400,7 +400,7 @@ bot.onText(/^\/([0-9]+)+birre$/, function (message, match) {
 	if (match[1] < 1)
 		match[1] = 1;
 
-	if (message.from.username != "fenix45") {
+	if (message.from.id != 20471035) {
 		if (match[1] > 10) {
 			bot.sendMessage(message.chat.id, "nope.");
 			return;
@@ -654,7 +654,7 @@ bot.onText(/^\/cibi/, function (message) {
 });
 
 bot.onText(/^\/gban ([^\s]+) (.+)|^\/gban/, function (message, match) {
-	if ((message.from.username == "fenix45") || (message.from.username == "LastSoldier95")) {
+	if (message.from.id == 20471035) {
 
 		if (match[1] == undefined) {
 			if (message.reply_to_message != undefined) {
@@ -760,7 +760,7 @@ bot.onText(/^\/gb (.+)|^\/gb$/, function (message, match) {
 bot.onText(/^\/det (.+)/, function (message, match) {
 	var nick = match[1];
 
-	if (message.from.username == "fenix45") {
+	if (message.from.id == 20471035) {
 		connection.query('SELECT * FROM player WHERE nickname = "' + nick + '"', function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
@@ -779,7 +779,7 @@ bot.onText(/^\/chatid/, function (message, match) {
 bot.onText(/^\/last (.+)/, function (message, match) {
 	var nick = match[1];
 
-	if (message.from.username == "fenix45") {
+	if (message.from.id == 20471035) {
 		connection.query('SELECT time FROM last_command, player WHERE last_command.account_id = player.account_id AND player.nickname = "' + nick + '"', function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
@@ -798,7 +798,7 @@ bot.onText(/^\/ping/, function (message, match) {
 });
 
 bot.onText(/^\/pinfo (.+)/, function (message, match) {
-	if (message.from.username != "fenix45"){
+	if (message.from.id != 20471035){
 		return;
 	}
 	connection.query('SELECT * FROM plus_players WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
@@ -1062,7 +1062,7 @@ bot.onText(/^\/chiamaparty/, function (message, match) {
 });
 
 bot.onText(/^\/cid/, function (message) {
-	if (message.from.username == "fenix45") {
+	if (message.from.id == 20471035) {
 		bot.sendMessage(message.chat.id, message.chat.id);
 	}
 });
@@ -1476,7 +1476,7 @@ function checkStatus(message, n, accountid, type) {
 			var chat_id = rows[0].chat_id;
 			var group_name = rows[0].name.trim();
 
-			if (n == "fenix45") {
+			if (player_id == 1) {
 				return;
 			}
 
@@ -2695,7 +2695,7 @@ bot.onText(/^\/negozi$/, function (message, match) {
 					text += "> " + rows[i].quantity + "x " + rows[i].name + " (" + formatNumber(rows[i].price) + " §)\n";
 				}
 
-				if ((Object.keys(text).length > 4000) || (message.from.username == "fenix45")) {
+				if ((Object.keys(text).length > 4000) || (message.from.id == 20471035)) {
 					text = "";
 					d = new Date(rows[0].time_end);
 
@@ -4090,7 +4090,7 @@ bot.onText(/^\/crealotteriap ([^\s]+) (.+)|^\/crealotteriap$/, function (message
 bot.onText(/^\/estrazione/, function (message) {
 
 	/*
-	if (message.from.username != "fenix45"){
+	if (message.from.id != 20471035){
 		bot.sendMessage(message.chat.id, "L'estrazione manuale è al momento disabilitata", mark)
 		return;
 	}
@@ -4316,7 +4316,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 				return;
 			}
 
-			if (message.from.username != "fenix45") {
+			if (message.from.id != 20471035) {
 				if (buyer.toLowerCase() == message.from.username.toLowerCase()) {
 					bot.sendMessage(message.from.id, "Non puoi inviare monete a te stesso");
 					return;
@@ -4504,7 +4504,7 @@ bot.onText(/^\/offri/i, function (message) {
 							price = item_val;
 						}
 
-						if (message.from.username != "fenix45") {
+						if (message.from.id != 20471035) {
 							if (buyer.toLowerCase() == message.from.username.toLowerCase()) {
 								bot.sendMessage(message.from.id, "Non puoi vendere a te stesso");
 								return;
@@ -4709,7 +4709,7 @@ bot.onText(/^\/scambia/i, function (message) {
 						return;
 					}
 
-					if (message.from.username != "fenix45") {
+					if (message.from.id != 20471035) {
 						if (buyer.toLowerCase() == message.from.username.toLowerCase()) {
 							bot.sendMessage(message.from.id, "Non puoi scambiare a te stesso");
 							return;
@@ -5970,7 +5970,7 @@ bot.onText(/^\/creazioni/, function (message, match) {
 
 bot.onText(/^\/checkmarket (.+)/, function (message, match) {
 
-	if (message.from.username != "fenix45") {
+	if (message.from.id != 20471035) {
 		return;
 	}
 
@@ -6002,7 +6002,7 @@ bot.onText(/^\/checkmarket (.+)/, function (message, match) {
 
 bot.onText(/^\/checkmarketAll (.+)/, function (message, match) {
 
-	if (message.from.username != "fenix45") {
+	if (message.from.id != 20471035) {
 		return;
 	}
 
@@ -6202,7 +6202,7 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, function (message, match) {
 	}
 
 	/*
-	if (message.from.username != "fenix45"){
+	if (message.from.id != 20471035){
 		bot.sendMessage(message.chat.id, "Manutenzione funzione");
 		return;
 	}
@@ -7414,7 +7414,7 @@ bot.onText(/^\/spia/, function (message) {
 					if (err) throw err;
 				});
 
-				if (message.from.username != "fenix45") {
+				if (message.from.id != 20471035) {
 					if (house_id == 1) {
 						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno ha spiato il tuo rifugio!");
 					} else if (house_id == 2) {
@@ -7901,9 +7901,6 @@ function addItem(player_id, item_id, qnt = 1) {
 	var rows = connection_sync.query('UPDATE inventory SET quantity = quantity+' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 	if (rows.affectedRows == 0){
 		connection_sync.query('INSERT INTO inventory (player_id, item_id, quantity) VALUES (' + player_id + ',' + item_id + ', ' + qnt + ')');
-		//console.log("Aggiunto inventario per item " + item_id + " del giocatore " + player_id + " aggiunto " + qnt);
-	}else{
-		//console.log("Aggiornato inventario per item " + item_id + " del giocatore " + player_id + " aggiunto " + qnt);
 	}
 }
 
@@ -7923,12 +7920,10 @@ function delAllItem(player_id, item_id) {
 	connection.query('DELETE FROM inventory WHERE player_id = ' + player_id + ' AND item_id = ' + item_id, function (err, rows, fields) {
 		if (err) throw err;
 	});
-	console.log("delAllItem " + item_id + " per player " + player_id);
 }
 
 function delAllInventory(player_id) {
 	connection_sync.query('DELETE FROM inventory WHERE player_id = ' + player_id);
-	console.log("delAllInventory per player " + player_id);
 }
 
 function getItemCnt(player_id, item_id) {
@@ -7951,9 +7946,6 @@ function addChest(player_id, chest_id, qnt = 1) {
 	var rows = connection_sync.query('UPDATE inventory_chest SET quantity = quantity+' + qnt + ' WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
 	if (rows.affectedRows == 0){
 		connection_sync.query('INSERT INTO inventory_chest (player_id, chest_id, quantity) VALUES (' + player_id + ',' + chest_id + ', ' + qnt + ')');
-		//console.log("Aggiunto inventario per chest " + chest_id + " del giocatore " + player_id + " aggiunto " + qnt);
-	}else{
-		//console.log("Aggiornato inventario per chest " + chest_id + " del giocatore " + player_id + " aggiunto " + qnt);
 	}
 }
 
@@ -7972,12 +7964,10 @@ function delAllChest(player_id, chest_id) {
 	connection.query('DELETE FROM inventory_chest WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id, function (err, rows, fields) {
 		if (err) throw err;
 	});
-	console.log("delAllChest " + chest_id + " per player " + player_id);
 }
 
 function delAllChestInventory(player_id) {
 	connection_sync.query('DELETE FROM inventory_chest WHERE player_id = ' + player_id);
-	console.log("delAllInventory per player " + player_id);
 }
 
 function getChestCnt(player_id, chest_id) {
