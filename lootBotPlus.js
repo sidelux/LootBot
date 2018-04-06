@@ -16,6 +16,7 @@ var ms = require("ms");
 var mysql = require('mysql');
 var mysql_sync = require('sync-mysql');
 var readline = require('readline');
+var math = require('mathjs');
 
 var token = '236880746:AAEolJ-Dpe_gQdnGxksGFTb1ubMj03PVhw4';
 var bot = new TelegramBot(token, {
@@ -319,8 +320,15 @@ bot.onText(/^\/calcola (.+)|^\/calcola/, function (message, match) {
 		return;
 	}
 
-	var evalValue = match[1].replace(/[^\-\+\/\*\^\(\)x0-9]/g, "");
-	bot.sendMessage(message.chat.id, eval(evalValue));
+	//var evalValue = match[1].replace(/[^\-\+\/\*\^\(\)x0-9]/g, "");
+	var evalValue = match[1];
+	try {
+		var result = math.eval(evalValue);
+		bot.sendMessage(message.chat.id, "Risultato: " + result);
+	} catch(error) {
+		bot.sendMessage(message.chat.id, "Errore: " + error.message);
+		console.error("Errore calcola: " + error.message);
+	}
 });
 
 bot.onText(/^\/birra/, function (message) {
@@ -994,7 +1002,6 @@ bot.onText(/^\/mercatini/, function (message) {
 					"@LootTatori - Store per veri Guerrieri!\n" +
 					"@dogestore - Such Prices! So Cheap! Much Items! #DogeCraft\n" +
 					"@lootspar - il risparmio è dietro l'angolo\n" +
-					"@ignorantlootstore - Prezzi bassi e offerte nuove ogni giorno!\n" +
 					"@AngoloRottureLootBot - Tutte le rarità a basso costo!\n" +
 					"@roomlootbot - Un mercatino che sembra una stanza!\n" +
 					"@Zaino_Dell_Imperatore - Prezzi basati sul bot Loot Quotazioni!\n" +
@@ -1114,7 +1121,7 @@ bot.onText(/^\/token/, function (message) {
 				callback_data: "token_del"
 			}]);
 
-			bot.sendMessage(message.chat.id, "Richiedi il token per utilizzare le Api, in caso di utilizzo non consono, verrai bannato dal gioco. Tienitelo per te!\nToken attuale: " + token + "\n\nGuida: http://telegra.ph/Mini-Guida-alle-LootBot-API-11-24", {
+			bot.sendMessage(message.chat.id, "Richiedi il token per utilizzare le Api, in caso di utilizzo non consono, verrai bannato dal gioco. Tienitelo per te!\nToken attuale: " + token + "\n\nGuida: http://telegra.ph/Guida-alle-LootBot-API-04-06", {
 				parse_mode: 'Markdown',
 				reply_markup: {
 					inline_keyboard: iKeys
@@ -1727,7 +1734,7 @@ bot.onText(/^\/rimod ([^\s]+) ([^\s]+)/i, function (message, match) {
 
 	var res = Math.round(x);
 	var unit = Math.round(x - y);
-	bot.sendMessage(message.chat.id, "Punti: " + formatNumber(res) + " (" + formatNumber(unit) + ")\nExp: " + formatNumber(res * 30) + " (" + formatNumber(unit * 30) + ")\nMonete: " + formatNumber(res * 1000000) + " (" + formatNumber(unit * 1000000) + ")");
+	bot.sendMessage(message.chat.id, "Punti: " + formatNumber(res) + " (" + formatNumber(unit) + ")\nExp: " + formatNumber(res * 30) + " (" + formatNumber(unit * 30) + ")\nMonete: " + formatNumber(res * 1000000) + " (" + formatNumber(unit * 1000000) + ")\n(Calcolo arrotondato)");
 });
 
 function funz(x) {
