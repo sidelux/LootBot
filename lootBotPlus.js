@@ -9,7 +9,7 @@ process.on('unhandledRejection', function (error, p) {
 		console.log("\x1b[31m","Error: ", error.message, "\x1b[0m");
 });
 
-var dbconfig = require('./dbconfig.js');
+var config = require('./config.js');
 var TelegramBot = require('node-telegram-bot-api');
 var fs = require('fs');
 var ms = require("ms");
@@ -38,18 +38,18 @@ var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
 console.log('Avvio bot...');
 
 var connection = mysql.createConnection({
-	host: dbconfig.dbhost,
-	user: dbconfig.dbuser,
-	password: dbconfig.dbpassword,
-	database: dbconfig.dbdatabase
+	host: config.dbhost,
+	user: config.dbuser,
+	password: config.dbpassword,
+	database: config.dbdatabase
 });
 connection.connect();
 
 var connection_sync = new mysql_sync({
-	host: dbconfig.dbhost,
-	user: dbconfig.dbuser,
-	password: dbconfig.dbpassword,
-	database: dbconfig.dbdatabase
+	host: config.dbhost,
+	user: config.dbuser,
+	password: config.dbpassword,
+	database: config.dbdatabase
 });
 
 process.on('SIGINT', function() {
@@ -311,6 +311,94 @@ callNTimes(60000, function () {
 
 bot.onText(/^\/start/, function (message) {
 	bot.sendMessage(message.chat.id, "Questo è un bot di supporto a @lootgamebot, è utile nei gruppi. Scrivi / per visualizzare tutti i comandi disponibili!");
+});
+
+bot.onText(/^\/comandigiocatore/, function (message) {
+	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per il giocatore*\n" +
+				   						"/giocatore - Mostra la scheda giocatore\n" +
+				   						"/zaino - Mostra gli oggetti contenuti nello zaino\n" +
+				   						"/oggetto - Mostra i dettagli di un oggetto posseduto\n" +
+				   						"/oggetti - Mostra i dettagli di più oggetti posseduti\n" +
+				   						"/scrigni - Mostra gli scrigni posseduti\n" +
+				   						"/valorezaino - Mostra il valore complessivo degli oggetti posseduti\n" +
+				   						"/gruzzolo - Mostra le monete possedute\n" +
+				   						"/creazioni - Mostra i punti creazione ottenuti\n" +
+				   						"/spia - Spia un giocatore mostrando la scheda giocatore\n" +
+				   						"/ispeziona - Ispeziona un giocatore", mark);
+});
+
+bot.onText(/^\/comandioggetto/, function (message) {
+	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per gestire gli oggetti*\n" +
+				   						"/necessari - Mostra gli oggetti necessari alla creazione di un creabile\n" +
+				   						"/prezzo - Mostra gli ultimi prezzi di vendita di un oggetto\n" +
+				   						"/totale - Mostra gli ultimi prezzi utilizzando i prezzi degli oggetti utilizzati per crearlo\n" +
+				   						"/ricerca - Cerca l'oggetto nei canali di vendita", mark);
+});
+
+bot.onText(/^\/comandilotteria/, function (message) {
+	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per gestire le lotterie*\n" +
+				   						"/statolotteria - Mostra lo stato di una lotteria\n" +
+				   						"/crealotteria - Permette di creare una lotteria con iscrizione gratuita\n" +
+				   						"/crealotteriap - Permette di creare una lotteria con iscrizione a pagamento\n" +
+				   						"/lotteria - Iscrive alla lotteria con iscrizione gratuita\n" +
+				   						"/lotteriap - Iscrive alla lotteria con iscrizione a pagamento\n" +
+				   						"/lotterie - Mostra tutte le lotterie disponibili\n" +
+				   						"/estrazione - Forza l'estrazione di una lotteria\n" +
+				   						"/cancellalotteria - Elimina una lotteria in corso", mark);
+});
+
+bot.onText(/^\/comandiasta/, function (message) {
+	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per gestire le aste*\n" +
+				   						"/statoasta - Mostra lo stato di un'asta\n" +
+				   						"/creaasta - Permette di creare un'asta\n" +
+				   						"/pubblicaasta - Permette di pubblicare l'asta con i relativi pulsanti\n" +
+				   						"/asta - Iscrive ad un'asta\n" +
+				   						"/aste - Mostra tutte le aste disponibili\n" +
+				   						"/cancellaasta - Elimina un'asta in corso", mark);
+});
+
+bot.onText(/^\/comandinegozio/, function (message) {
+	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per gestire i negozi*\n" +
+				   						"/negozio - Crea un negozio per la vendita di oggetti\n" +
+				   						"/privacy - Modifica la privacy del negozio da pubblico a privato e vice versa\n" +
+				   						"/massivo - Modifica la possibilità di acquistare in modo massivo dal negozio\n" +
+				   						"/negozioa - Permette di aggiungere oggetti al negozio\n" +
+				   						"/negozior - Permette di rimuovere oggetti dal negozio\n" +
+				   						"/negoziom - Permette di modificare oggetti inseriti nel negozio\n" +
+				   						"/negoziou - Permette di prolungare la scadenza del negozio\n" +
+				   						"/negozi - Mostra tutti i propri negozi disponibili\n" +
+				   						"/cancellanegozio - Elimina il negozio", mark);
+});
+
+bot.onText(/^\/comandicommercio/, function (message) {
+	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per commerciare*\n" +
+				   						"/offri - Crea una vendita riservata verso un altro giocatore\n" +
+				   						"/accettav - Acetta una vendita riservata\n" +
+				   						"/rifiutav - Rifiuta una vendita riservata\n" +
+				   						"/scambia - Crea uno scambio riservato verso un altro giocatore\n" +
+				   						"/accettas - Accetta lo scambio riservato\n" +
+				   						"/rifiutas - Rifiuta lo scambio riservato\n" +
+				   						"/paga - Invia monete ad un altro giocatore", mark);
+});
+
+bot.onText(/^\/comanditeam/, function (message) {
+	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per i team*\n" +
+				   						"/chiamaparty - Invia un messaggio taggando tutti i membri del party\n" +
+				   						"/votaparty - Invia un messaggio taggando solo i membri del party che devono ancora votare\n" +
+										"/scalata - Invia un messaggio taggando solo i membri del team che devono attaccare il boss attuale", mark);
+});
+
+bot.onText(/^\/comandigenerali/, function (message) {
+	bot.sendMessage(message.chat.id, 	"*Comandi generali*\n" +
+										"/ping - Verifica se il bot è online\n" +
+				   						"/statistiche - Mostra le statistiche di Loot Bot\n" +
+				   						"/scuola - Mostra un link per accedere al gruppo scuola\n" +
+				   						"/gruppi - Mostra tutti i gruppi pubblici\n" +
+				   						"/mercatini - Mostra i mercatini degli utenti\n" +
+				   						"/comandigruppo - Mostra i comandi per gestire gli utenti nei gruppi\n" +
+				   						"/token - Permette di ottenere un token per accedere alle Loot Bot API\n" +
+				   						"/notifiche - Permette di disattivare le notifiche di una particolare sezione del bot\n" +
+				   						"/calcola - Gestisce calcoli anche avanzati utilizzando funzioni (in inglese)", mark);
 });
 
 bot.onText(/^\/calcola (.+)|^\/calcola/, function (message, match) {
@@ -1041,19 +1129,8 @@ bot.onText(/^\/chiamaparty/, function (message, match) {
 				console.log("Errore party");
 				return;	
 			}
-			/*
-			if (rows[0].assigned_to == null){
-				bot.sendMessage(message.chat.id, "Puoi usare questo comando solo quando stai svolgendo un incarico");
-				return;
-			}
 
-			if (rows[0].wait == 1){
-				bot.sendMessage(message.chat.id, "Puoi usare questo comando solo quando sei in attesa di votazione");
-				return;
-			}
-			*/
-
-			connection.query('SELECT P.chat_id, P.nickname FROM mission_team_party_player T, player P WHERE T.player_id = P.id AND T.party_id = ' + party_id + ' AND T.team_id = ' + team_id + ' AND P.id != ' + player_id, function (err, rows, fields) {
+			connection.query('SELECT P.nickname FROM mission_team_party_player T, player P WHERE T.player_id = P.id AND T.party_id = ' + party_id + ' AND T.team_id = ' + team_id + ' AND P.id != ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				var nicklist = "";
@@ -1068,10 +1145,112 @@ bot.onText(/^\/chiamaparty/, function (message, match) {
 	});
 });
 
-bot.onText(/^\/cid/, function (message) {
-	if (message.from.id == 20471035) {
-		bot.sendMessage(message.chat.id, message.chat.id);
+bot.onText(/^\/votaparty/, function (message, match) {
+
+	if (!checkSpam(message)) {
+		return;
 	}
+
+	if (message.chat.id > 0){
+		bot.sendMessage(message.from.id, "Questo comando può essere usato solo nei gruppi");
+		return;
+	}
+
+	connection.query('SELECT team_id, party_id, player_id FROM mission_team_party_player WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0){
+			bot.sendMessage(message.from.id, "Non sei in team o in un party");
+			return;
+		}
+
+		var party_id = rows[0].party_id;
+		var team_id = rows[0].team_id;
+		var player_id = rows[0].player_id;
+
+		connection.query('SELECT wait, assigned_to FROM mission_team_party WHERE party_id = ' + party_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0){
+				console.log("Errore party");
+				return;	
+			}
+
+			connection.query('SELECT P.nickname FROM mission_team_party_player T, player P WHERE T.player_id = P.id AND T.party_id = ' + party_id + ' AND T.team_id = ' + team_id + ' AND P.id != ' + player_id + ' AND answ_id = 0', function (err, rows, fields) {
+				if (err) throw err;
+
+				var nicklist = "";
+				
+				if (Object.keys(rows).length == 0){
+					bot.sendMessage(message.chat.id, "Non manca nessun compagno!");
+					return;
+				}
+
+				for (i = 0; i < Object.keys(rows).length; i++) {
+					nicklist += "@" + rows[i].nickname + " ";
+				}
+
+				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> incita i suoi compagni di party a votare!\n" + nicklist, html);
+			});
+		});
+	});
+});
+
+bot.onText(/^\/scalata/, function (message, match) {
+
+	if (!checkSpam(message)) {
+		return;
+	}
+
+	if (message.chat.id > 0){
+		bot.sendMessage(message.from.id, "Questo comando può essere usato solo nei gruppi");
+		return;
+	}
+
+	connection.query('SELECT team_id, player_id FROM team_player WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0){
+			bot.sendMessage(message.from.id, "Non sei in team");
+			return;
+		}
+
+		var team_id = rows[0].team_id;
+		var player_id = rows[0].player_id;
+		
+		connection.query('SELECT id FROM boss_team WHERE team_id = ' + team_id + ' AND killedby IS NULL ORDER BY boss_id LIMIT 1', function (err, rows, fields) {
+			if (err) throw err;
+			
+			if (Object.keys(rows).length == 0){
+				bot.sendMessage(message.from.id, "Nessun boss in corso");
+				return;
+			}
+			
+			var boss_id = rows[0].id;
+			
+			connection.query('SELECT P.nickname FROM player P, team_player T LEFT JOIN boss_damage B ON T.player_id = B.player_id AND B.boss_id = ' + boss_id + ' WHERE T.team_id = ' + team_id + ' AND T.player_id != ' + player_id + ' AND B.player_id IS NULL AND T.player_id = P.id GROUP BY T.player_id', function (err, rows, fields) {
+				if (err) throw err;
+
+				var nicklist = "";
+
+				if (Object.keys(rows).length == 0){
+					bot.sendMessage(message.chat.id, "Non manca nessun compagno!");
+					return;
+				}
+
+				for (i = 0; i < Object.keys(rows).length; i++) {
+					nicklist += "@" + rows[i].nickname + " ";
+				}
+
+				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> incita i suoi compagni di team ad attaccare il boss!\n" + nicklist, html);
+			});
+		});
+	});
+});
+
+bot.onText(/^\/cid/, function (message) {
+	if (message.from.id == 20471035)
+		bot.sendMessage(message.chat.id, message.chat.id);
 });
 
 bot.onText(/^\/token/, function (message) {
@@ -1445,8 +1624,8 @@ bot.onText(/^\/welcome (.+)/, function (message, match) {
 	});
 });
 
-function checkStatus(message, n, accountid, type) {
-	connection.query('SELECT id, exp, reborn, nickname, market_ban, group_ban FROM player WHERE nickname = "' + n + '"', function (err, rows, fields) {
+function checkStatus(message, nickname, accountid, type) {
+	connection.query('SELECT id, exp, reborn, nickname, market_ban, group_ban FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var exist = 0;
@@ -1454,7 +1633,6 @@ function checkStatus(message, n, accountid, type) {
 		var lev = 0;
 		var reb = 0;
 		var player_id = 0;
-		var nickname = "";
 		var market = 0;
 		var group_ban = 0;
 
@@ -1468,6 +1646,8 @@ function checkStatus(message, n, accountid, type) {
 			nickname = rows[0].nickname;
 			market = rows[0].market_ban;
 			group_ban = rows[0].group_ban;
+		}else{
+			nickname = "Utente sconosciuto";
 		}
 
 		accountid = (accountid).toString();
@@ -1492,7 +1672,7 @@ function checkStatus(message, n, accountid, type) {
 				if (exist == 0) {
 					bot.kickChatMember(message.chat.id, accountid).then(function (result) {
 						if (result != false) {
-							bot.sendMessage(message.chat.id, n + " non è iscritto, l'ho bannato");
+							bot.sendMessage(message.chat.id, nickname + " non è iscritto, l'ho bannato");
 							bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa del fatto che non sei registrato al gioco");
 						}
 					});
@@ -1504,7 +1684,7 @@ function checkStatus(message, n, accountid, type) {
 				if (group_ban == 1) {
 					bot.kickChatMember(message.chat.id, accountid).then(function (result) {
 						if (result != false) {
-							bot.sendMessage(message.chat.id, n + " è bannato dai gruppi, l'ho bannato");
+							bot.sendMessage(message.chat.id, nickname + " è bannato dai gruppi, l'ho bannato");
 							bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa del ban da tutti i gruppi");
 						}
 					});
@@ -1539,7 +1719,7 @@ function checkStatus(message, n, accountid, type) {
 					if (isBanned(accountid) != null) {
 						bot.kickChatMember(message.chat.id, accountid).then(function (result) {
 							if (result != false) {
-								bot.sendMessage(message.chat.id, n + " è bannato dal gioco, l'ho bannato");
+								bot.sendMessage(message.chat.id, nickname + " è bannato dal gioco, l'ho bannato");
 								bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa del ban dal gioco");
 							}
 						});
@@ -1558,7 +1738,7 @@ function checkStatus(message, n, accountid, type) {
 					if ((levReal < min) || (levReal > max)) {
 						bot.kickChatMember(message.chat.id, accountid).then(function (result) {
 							if (result != "False") {
-								bot.sendMessage(message.chat.id, n + " non rispetta i requisiti del livello (" + levReal + "), l'ho bannato");
+								bot.sendMessage(message.chat.id, nickname + " non rispetta i requisiti del livello (" + levReal + "), l'ho bannato");
 								bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa dei requisiti relativi al livello minimo o massimo");
 							}
 						});
