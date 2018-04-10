@@ -969,9 +969,9 @@ bot.onText(/^\/stopglobal$/, function (message, match) {
 
 bot.onText(/^\/endglobal$/, function (message, match) {
 	if (message.from.id == 20471035) {
-		
+
 		// aggiorna il codice dell'impresa globale globalAchievement!! e di conseguenza anche qua sotto e classifica
-		
+
 		connection.query('SELECT I.id As id1, I.name As name1, I2.id As id2, I2.name As name2, I3.id As id3, I3.name As name3 FROM config C INNER JOIN item I ON C.global_item1 = I.id INNER JOIN item I2 ON C.global_item2 = I2.id INNER JOIN item I3 ON C.global_item3 = I3.id', function (err, rows, fields) {
 			if (err) throw err;
 
@@ -15390,56 +15390,60 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																				return;
 																			}
 
-																			if (wait_time != null) {
-																				var d = new Date(wait_time);
-																				var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
-																				bot.sendMessage(message.chat.id, "Il tuo drago ha appena concluso uno scontro, attendi fino alle " + short_date, kbBack);
-																				return;
-																			}
-
-																			if (no_match_time != null) {
-																				connection.query('UPDATE dragon_top_status SET no_match_time = NULL WHERE dragon_id = ' + dragon_id, function (err, rows, fields) {
-																					if (err) throw err;
-																				});
-																			}
-
-																			var kbSleep = {
-																				parse_mode: "HTML",
-																				reply_markup: {
-																					resize_keyboard: true,
-																					//one_time_keyboard: true,
-																					"keyboard": [['Riposa'], ["Torna alla vetta"]]
-																				}
-																			};
-
-																			if (dragon_life <= 0) {
-																				bot.sendMessage(message.chat.id, "Il tuo drago è esausto, fallo riposare per tornare a combattere!", kbSleep);
-																				return;
-																			}
-
-																			var kbStop = {
-																				parse_mode: "HTML",
-																				reply_markup: {
-																					resize_keyboard: true,
-																					//one_time_keyboard: true,
-																					"keyboard": [['Interrompi']]
-																				}
-																			};
-
-																			connection.query('SELECT COUNT(*) As cnt FROM player, dragon_top_rank d WHERE player.id = d.player_id AND status > 0 AND d.top_id = ' + top_id, function (err, rows, fields) {
+																			connection.query('SELECT wait_time, no_match_time FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 
-																				var cnt = rows[0].cnt;
-																				connection.query('UPDATE player SET status = IFNULL((SELECT * FROM (SELECT MAX(status) As mx FROM player, dragon_top_rank d WHERE player.id = d.player_id AND status IS NOT NULL AND d.top_id = ' + top_id + ') As a),0)+1 WHERE id = ' + player_id, function (err, rows, fields) {
+																				if (rows[0].wait_time != null) {
+																					var d = new Date(rows[0].wait_time);
+																					var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
+																					bot.sendMessage(message.chat.id, "Il tuo drago ha appena concluso uno scontro, attendi fino alle " + short_date, kbBack);
+																					return;
+																				}
+
+																				if (rows[0].no_match_time != null) {
+																					connection.query('UPDATE dragon_top_status SET no_match_time = NULL WHERE dragon_id = ' + dragon_id, function (err, rows, fields) {
+																						if (err) throw err;
+																					});
+																				}
+
+																				var kbSleep = {
+																					parse_mode: "HTML",
+																					reply_markup: {
+																						resize_keyboard: true,
+																						//one_time_keyboard: true,
+																						"keyboard": [['Riposa'], ["Torna alla vetta"]]
+																					}
+																				};
+
+																				if (dragon_life <= 0) {
+																					bot.sendMessage(message.chat.id, "Il tuo drago è esausto, fallo riposare per tornare a combattere!", kbSleep);
+																					return;
+																				}
+
+																				var kbStop = {
+																					parse_mode: "HTML",
+																					reply_markup: {
+																						resize_keyboard: true,
+																						//one_time_keyboard: true,
+																						"keyboard": [['Interrompi']]
+																					}
+																				};
+
+																				connection.query('SELECT COUNT(*) As cnt FROM player, dragon_top_rank d WHERE player.id = d.player_id AND status > 0 AND d.top_id = ' + top_id, function (err, rows, fields) {
 																					if (err) throw err;
 
-																					var queue = cnt + " draghi in coda";
-																					if (cnt == 1)
-																						queue = "1 drago in coda";
-																					else if (cnt == 0)
-																						queue = "Nessun drago in coda";
+																					var cnt = rows[0].cnt;
+																					connection.query('UPDATE player SET status = IFNULL((SELECT * FROM (SELECT MAX(status) As mx FROM player, dragon_top_rank d WHERE player.id = d.player_id AND status IS NOT NULL AND d.top_id = ' + top_id + ') As a),0)+1 WHERE id = ' + player_id, function (err, rows, fields) {
+																						if (err) throw err;
 
-																					bot.sendMessage(message.chat.id, "Ricerca avversario in corso... Scrivendo qualsiasi cosa la ricerca sarà interrotta o scadrà tra 10 minuti. (" + queue + ")", kbStop);
+																						var queue = cnt + " draghi in coda";
+																						if (cnt == 1)
+																							queue = "1 drago in coda";
+																						else if (cnt == 0)
+																							queue = "Nessun drago in coda";
+
+																						bot.sendMessage(message.chat.id, "Ricerca avversario in corso... Scrivendo qualsiasi cosa la ricerca sarà interrotta o scadrà tra 10 minuti. (" + queue + ")", kbStop);
+																					});
 																				});
 																			});
 																		});

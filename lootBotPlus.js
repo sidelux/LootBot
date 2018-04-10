@@ -116,7 +116,8 @@ bot.on('message', function (message) {
 			}
 		}
 		if (message.text.toLowerCase().indexOf("errore:") != -1){
-			bot.sendMessage("@lnotify", "#Mtproto " + message.from.username + ": " + message.text);
+			if (message.text.toLowerCase().indexOf("#arena") == -1)
+				bot.sendMessage("@lnotify", "#Mtproto " + message.from.username + ": " + message.text);
 		}
 	}
 
