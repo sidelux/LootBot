@@ -72,7 +72,7 @@ bot.on('message', function (message) {
 	if (message.text != undefined) {
 		if (message.text.startsWith("/"))
 			console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
-
+		
 		if (message.from.id != 20471035) {
 			if (message.chat.id == -1001097316494) {
 				if (!message.text.startsWith("Negozio di")) {
@@ -226,8 +226,13 @@ function checkFlood(message) {
 	return isOk;
 }
 
-bot.on("inline_query", function (query) {
+/* abilitare da botfather in caso
+bot.on("chosen_inline_result", function (query) {
+	console.log(query);
+});
+*/
 
+bot.on("inline_query", function (query) {
 	var code = parseInt(query.query);
 
 	if ((code == "") || (isNaN(code))) {
@@ -1028,7 +1033,8 @@ bot.onText(/^\/gruppi/, function (message) {
 																					"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
 																					"@DichisUtilityBot\n" +
 
-																					"\n<b>Documenti</b>\n" +
+																					"\n<b>Altro</b>\n" +
+																					"<a href='https://discord.gg/ea5tSEj'>Canale Discord</a>\n" +
 																					"<a href='telegra.ph/Mini-Guida-alle-LootBot-API-11-24'>LootBot Api</a>\n" +
 
 																					"\n<b>Siti</b>\n" +
@@ -1228,7 +1234,7 @@ bot.onText(/^\/scalata/, function (message, match) {
 			
 			var boss_id = rows[0].id;
 			
-			connection.query('SELECT P.nickname FROM player P, team_player T LEFT JOIN boss_damage B ON T.player_id = B.player_id AND B.boss_id = ' + boss_id + ' WHERE T.team_id = ' + team_id + ' AND T.player_id != ' + player_id + ' AND B.player_id IS NULL AND T.player_id = P.id GROUP BY T.player_id', function (err, rows, fields) {
+			connection.query('SELECT P.nickname FROM player P, team_player T LEFT JOIN boss_damage B ON T.player_id = B.player_id AND B.boss_id = ' + boss_id + ' WHERE T.team_id = ' + team_id + ' AND T.player_id != ' + player_id + ' AND B.player_id IS NULL AND T.player_id = P.id AND suspended = 0 GROUP BY T.player_id', function (err, rows, fields) {
 				if (err) throw err;
 
 				var nicklist = "";
@@ -3504,7 +3510,7 @@ bot.onText(/^\/cancellanegozio (.+)|^\/cancellanegozio$/, function (message, mat
 		}
 
 		if ((code == undefined) || (code == "")) {
-			bot.sendMessage(message.chat.id, "La sintassi è: /cancellanegozio CODICE, puoi anche usare /cancellanegozio tutti. Se usato in risposta il messaggio principale deve contenere il codice negozio intero");
+			bot.sendMessage(message.chat.id, "La sintassi è: /cancellanegozio CODICE, puoi anche usare /cancellanegozio tutti/privati/pubblici. Se usato in risposta il messaggio principale deve contenere il codice negozio intero");
 			return;
 		}
 
@@ -3518,6 +3524,36 @@ bot.onText(/^\/cancellanegozio (.+)|^\/cancellanegozio$/, function (message, mat
 				connection.query('DELETE FROM public_shop WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 					bot.sendMessage(message.chat.id, "Tutti i negozi sono stati eliminati!");
+				});
+			});
+			return;
+		}
+		
+		if (code == "privati") {
+			connection.query('SELECT player_id FROM public_shop WHERE public = 0 AND player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Non possiedi nessun negozio privato");
+					return;
+				}
+				connection.query('DELETE FROM public_shop WHERE public = 0 AND player_id = ' + player_id, function (err, rows, fields) {
+					if (err) throw err;
+					bot.sendMessage(message.chat.id, "Tutti i negozi privati sono stati eliminati!");
+				});
+			});
+			return;
+		}
+		
+		if (code == "pubblici") {
+			connection.query('SELECT player_id FROM public_shop WHERE public = 1 AND player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Non possiedi nessun negozio pubblico");
+					return;
+				}
+				connection.query('DELETE FROM public_shop WHERE public = 1 AND player_id = ' + player_id, function (err, rows, fields) {
+					if (err) throw err;
+					bot.sendMessage(message.chat.id, "Tutti i negozi pubblici sono stati eliminati!");
 				});
 			});
 			return;
@@ -3874,7 +3910,7 @@ bot.on('callback_query', function (message) {
 										var text = "Hai acquistato il negozio di " + player2 + " contenente:\n";
 										var len = Object.keys(rows).length;
 
-										console.log("Acquisto completo negozio:");
+										//console.log("Acquisto completo negozio:");
 										for (var i = 0; i < len; i++) {
 											if (rows[i].quantity > 0){
 												addItem(player_id, rows[i].item_id, rows[i].quantity);
@@ -3882,7 +3918,7 @@ bot.on('callback_query', function (message) {
 												var item = connection_sync.query('SELECT name FROM item WHERE id = ' + rows[i].item_id);
 												text += "> " + formatNumber(rows[i].quantity) + "x " + item[0].name + " per " + formatNumber(rows[i].quantity*rows[i].price) + " §\n";
 
-												console.log(formatNumber(rows[i].quantity) + "x " + item[0].name + " per " + formatNumber(rows[i].quantity*rows[i].price));
+												//console.log(formatNumber(rows[i].quantity) + "x " + item[0].name + " per " + formatNumber(rows[i].quantity*rows[i].price));
 
 												connection.query('INSERT INTO market_direct_history (item_id, price, quantity, time, from_id, to_id, type) VALUES (' + rows[i].item_id + ',' + rows[i].price + ',' + rows[i].quantity + ',"' + long_date + '",' + player_id2 + ',' + player_id + ',2)', function (err, rows, fields) {
 													if (err) throw err;
@@ -5928,7 +5964,7 @@ bot.onText(/^\/dlotteriap (.+)|^\/dlotteriap/, function (message, match) {
 });
 
 bot.onText(/^\/scuola/, function (message) {
-	bot.sendMessage(message.chat.id, "Entra nella scuola per giovani avventurieri: https://t.me/joinchat/AAAAAEDH8FbelcVFTmw-mQ", mark);
+	bot.sendMessage(message.chat.id, "Entra nella scuola per giovani avventurieri: https://t.me/joinchat/AAAAAEDH8FbelcVFTmw-mQ", html);
 });
 
 bot.onText(/^\/statistiche/, function (message) {
@@ -7250,8 +7286,9 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																							"\n<b>Altro</b> 💱\n" +
 																							referral +
 																							"Artefatti: " + artifacts + "\n" +
-																							"Abilità: " + formatNumber(rows[0].ability) + "\n" +
 																							"Rango: " + getRankName(rows[0].rank, 0) + " (" + rows[0].rank + ")\n" +
+																							"Abilità: " + formatNumber(rows[0].ability) + "\n" +
+																							"Incarichi: " + formatNumber(rows[0].mission_team_count) + "\n" +
 																							(player_description != null ? "\n<i>" + player_description + "</i>" : ""), html);
 																		});
 																	});
