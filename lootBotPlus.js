@@ -72,7 +72,7 @@ bot.on('message', function (message) {
 	if (message.text != undefined) {
 		if (message.text.startsWith("/"))
 			console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
-		
+
 		if (message.from.id != 20471035) {
 			if (message.chat.id == -1001097316494) {
 				if (!message.text.startsWith("Negozio di")) {
@@ -321,90 +321,90 @@ bot.onText(/^\/start/, function (message) {
 
 bot.onText(/^\/comandigiocatore/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per il giocatore*\n" +
-				   						"/giocatore - Mostra la scheda giocatore\n" +
-				   						"/zaino - Mostra gli oggetti contenuti nello zaino\n" +
-				   						"/oggetto - Mostra i dettagli di un oggetto posseduto\n" +
-				   						"/oggetti - Mostra i dettagli di più oggetti posseduti\n" +
-				   						"/scrigni - Mostra gli scrigni posseduti\n" +
-				   						"/valorezaino - Mostra il valore complessivo degli oggetti posseduti\n" +
-				   						"/gruzzolo - Mostra le monete possedute\n" +
-				   						"/creazioni - Mostra i punti creazione ottenuti\n" +
-				   						"/spia - Spia un giocatore mostrando la scheda giocatore\n" +
-				   						"/ispeziona - Ispeziona un giocatore", mark);
+					"/giocatore - Mostra la scheda giocatore\n" +
+					"/zaino - Mostra gli oggetti contenuti nello zaino\n" +
+					"/oggetto - Mostra i dettagli di un oggetto posseduto\n" +
+					"/oggetti - Mostra i dettagli di più oggetti posseduti\n" +
+					"/scrigni - Mostra gli scrigni posseduti\n" +
+					"/valorezaino - Mostra il valore complessivo degli oggetti posseduti\n" +
+					"/gruzzolo - Mostra le monete possedute\n" +
+					"/creazioni - Mostra i punti creazione ottenuti\n" +
+					"/spia - Spia un giocatore mostrando la scheda giocatore\n" +
+					"/ispeziona - Ispeziona un giocatore", mark);
 });
 
 bot.onText(/^\/comandioggetto/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per gestire gli oggetti*\n" +
-				   						"/necessari - Mostra gli oggetti necessari alla creazione di un creabile\n" +
-				   						"/prezzo - Mostra gli ultimi prezzi di vendita di un oggetto\n" +
-				   						"/totale - Mostra gli ultimi prezzi utilizzando i prezzi degli oggetti utilizzati per crearlo\n" +
-				   						"/ricerca - Cerca l'oggetto nei canali di vendita", mark);
+					"/necessari - Mostra gli oggetti necessari alla creazione di un creabile\n" +
+					"/prezzo - Mostra gli ultimi prezzi di vendita di un oggetto\n" +
+					"/totale - Mostra gli ultimi prezzi utilizzando i prezzi degli oggetti utilizzati per crearlo\n" +
+					"/ricerca - Cerca l'oggetto nei canali di vendita", mark);
 });
 
 bot.onText(/^\/comandilotteria/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per gestire le lotterie*\n" +
-				   						"/statolotteria - Mostra lo stato di una lotteria\n" +
-				   						"/crealotteria - Permette di creare una lotteria con iscrizione gratuita\n" +
-				   						"/crealotteriap - Permette di creare una lotteria con iscrizione a pagamento\n" +
-				   						"/lotteria - Iscrive alla lotteria con iscrizione gratuita\n" +
-				   						"/lotteriap - Iscrive alla lotteria con iscrizione a pagamento\n" +
-				   						"/lotterie - Mostra tutte le lotterie disponibili\n" +
-				   						"/estrazione - Forza l'estrazione di una lotteria\n" +
-				   						"/cancellalotteria - Elimina una lotteria in corso", mark);
+					"/statolotteria - Mostra lo stato di una lotteria\n" +
+					"/crealotteria - Permette di creare una lotteria con iscrizione gratuita\n" +
+					"/crealotteriap - Permette di creare una lotteria con iscrizione a pagamento\n" +
+					"/lotteria - Iscrive alla lotteria con iscrizione gratuita\n" +
+					"/lotteriap - Iscrive alla lotteria con iscrizione a pagamento\n" +
+					"/lotterie - Mostra tutte le lotterie disponibili\n" +
+					"/estrazione - Forza l'estrazione di una lotteria\n" +
+					"/cancellalotteria - Elimina una lotteria in corso", mark);
 });
 
 bot.onText(/^\/comandiasta/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per gestire le aste*\n" +
-				   						"/statoasta - Mostra lo stato di un'asta\n" +
-				   						"/creaasta - Permette di creare un'asta\n" +
-				   						"/pubblicaasta - Permette di pubblicare l'asta con i relativi pulsanti\n" +
-				   						"/asta - Iscrive ad un'asta\n" +
-				   						"/aste - Mostra tutte le aste disponibili\n" +
-				   						"/cancellaasta - Elimina un'asta in corso", mark);
+					"/statoasta - Mostra lo stato di un'asta\n" +
+					"/creaasta - Permette di creare un'asta\n" +
+					"/pubblicaasta - Permette di pubblicare l'asta con i relativi pulsanti\n" +
+					"/asta - Iscrive ad un'asta\n" +
+					"/aste - Mostra tutte le aste disponibili\n" +
+					"/cancellaasta - Elimina un'asta in corso", mark);
 });
 
 bot.onText(/^\/comandinegozio/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per gestire i negozi*\n" +
-				   						"/negozio - Crea un negozio per la vendita di oggetti\n" +
-				   						"/privacy - Modifica la privacy del negozio da pubblico a privato e vice versa\n" +
-				   						"/massivo - Modifica la possibilità di acquistare in modo massivo dal negozio\n" +
-				   						"/negozioa - Permette di aggiungere oggetti al negozio\n" +
-				   						"/negozior - Permette di rimuovere oggetti dal negozio\n" +
-				   						"/negoziom - Permette di modificare oggetti inseriti nel negozio\n" +
-				   						"/negoziou - Permette di prolungare la scadenza del negozio\n" +
-				   						"/negozi - Mostra tutti i propri negozi disponibili\n" +
-				   						"/cancellanegozio - Elimina il negozio", mark);
+					"/negozio - Crea un negozio per la vendita di oggetti\n" +
+					"/privacy - Modifica la privacy del negozio da pubblico a privato e vice versa\n" +
+					"/massivo - Modifica la possibilità di acquistare in modo massivo dal negozio\n" +
+					"/negozioa - Permette di aggiungere oggetti al negozio\n" +
+					"/negozior - Permette di rimuovere oggetti dal negozio\n" +
+					"/negoziom - Permette di modificare oggetti inseriti nel negozio\n" +
+					"/negoziou - Permette di prolungare la scadenza del negozio\n" +
+					"/negozi - Mostra tutti i propri negozi disponibili\n" +
+					"/cancellanegozio - Elimina il negozio", mark);
 });
 
 bot.onText(/^\/comandicommercio/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per commerciare*\n" +
-				   						"/offri - Crea una vendita riservata verso un altro giocatore\n" +
-				   						"/accettav - Acetta una vendita riservata\n" +
-				   						"/rifiutav - Rifiuta una vendita riservata\n" +
-				   						"/scambia - Crea uno scambio riservato verso un altro giocatore\n" +
-				   						"/accettas - Accetta lo scambio riservato\n" +
-				   						"/rifiutas - Rifiuta lo scambio riservato\n" +
-				   						"/paga - Invia monete ad un altro giocatore", mark);
+					"/offri - Crea una vendita riservata verso un altro giocatore\n" +
+					"/accettav - Acetta una vendita riservata\n" +
+					"/rifiutav - Rifiuta una vendita riservata\n" +
+					"/scambia - Crea uno scambio riservato verso un altro giocatore\n" +
+					"/accettas - Accetta lo scambio riservato\n" +
+					"/rifiutas - Rifiuta lo scambio riservato\n" +
+					"/paga - Invia monete ad un altro giocatore", mark);
 });
 
 bot.onText(/^\/comanditeam/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per i team*\n" +
-				   						"/chiamaparty - Invia un messaggio taggando tutti i membri del party\n" +
-				   						"/votaparty - Invia un messaggio taggando solo i membri del party che devono ancora votare\n" +
-										"/scalata - Invia un messaggio taggando solo i membri del team che devono attaccare il boss attuale", mark);
+					"/chiamaparty - Invia un messaggio taggando tutti i membri del party\n" +
+					"/votaparty - Invia un messaggio taggando solo i membri del party che devono ancora votare\n" +
+					"/scalata - Invia un messaggio taggando solo i membri del team che devono attaccare il boss attuale", mark);
 });
 
 bot.onText(/^\/comandigenerali/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi generali*\n" +
-										"/ping - Verifica se il bot è online\n" +
-				   						"/statistiche - Mostra le statistiche di Loot Bot\n" +
-				   						"/scuola - Mostra un link per accedere al gruppo scuola\n" +
-				   						"/gruppi - Mostra tutti i gruppi pubblici\n" +
-				   						"/mercatini - Mostra i mercatini degli utenti\n" +
-				   						"/comandigruppo - Mostra i comandi per gestire gli utenti nei gruppi\n" +
-				   						"/token - Permette di ottenere un token per accedere alle Loot Bot API\n" +
-				   						"/notifiche - Permette di disattivare le notifiche di una particolare sezione del bot\n" +
-				   						"/calcola - Gestisce calcoli anche avanzati utilizzando funzioni (in inglese)", mark);
+					"/ping - Verifica se il bot è online\n" +
+					"/statistiche - Mostra le statistiche di Loot Bot\n" +
+					"/scuola - Mostra un link per accedere al gruppo scuola\n" +
+					"/gruppi - Mostra tutti i gruppi pubblici\n" +
+					"/mercatini - Mostra i mercatini degli utenti\n" +
+					"/comandigruppo - Mostra i comandi per gestire gli utenti nei gruppi\n" +
+					"/token - Permette di ottenere un token per accedere alle Loot Bot API\n" +
+					"/notifiche - Permette di disattivare le notifiche di una particolare sezione del bot\n" +
+					"/calcola - Gestisce calcoli anche avanzati utilizzando funzioni (in inglese)", mark);
 });
 
 bot.onText(/^\/calcola (.+)|^\/calcola/, function (message, match) {
@@ -1187,7 +1187,7 @@ bot.onText(/^\/votaparty/, function (message, match) {
 				if (err) throw err;
 
 				var nicklist = "";
-				
+
 				if (Object.keys(rows).length == 0){
 					bot.sendMessage(message.chat.id, "Non manca nessun compagno!");
 					return;
@@ -1224,17 +1224,17 @@ bot.onText(/^\/scalata/, function (message, match) {
 
 		var team_id = rows[0].team_id;
 		var player_id = rows[0].player_id;
-		
+
 		connection.query('SELECT id FROM boss_team WHERE team_id = ' + team_id + ' AND killedby IS NULL ORDER BY boss_id LIMIT 1', function (err, rows, fields) {
 			if (err) throw err;
-			
+
 			if (Object.keys(rows).length == 0){
 				bot.sendMessage(message.from.id, "Nessun boss in corso");
 				return;
 			}
-			
+
 			var boss_id = rows[0].id;
-			
+
 			connection.query('SELECT P.nickname FROM player P, team_player T LEFT JOIN boss_damage B ON T.player_id = B.player_id AND B.boss_id = ' + boss_id + ' WHERE T.team_id = ' + team_id + ' AND T.player_id != ' + player_id + ' AND B.player_id IS NULL AND T.player_id = P.id AND suspended = 0 GROUP BY T.player_id', function (err, rows, fields) {
 				if (err) throw err;
 
@@ -1927,6 +1927,13 @@ bot.onText(/^\/rimod ([^\s]+) ([^\s]+)/i, function (message, match) {
 function funz(x) {
 	return 1 + (Math.pow(x, 1.8)) / 100000;
 }
+
+bot.onText(/^\/dai_fake (.+)/i, function (message, match) {
+	if (message.from.id == 20471035){
+		var split = match[1].split(",");
+		bot.sendMessage(message.chat.id, "*" + split[0] + "*, hai ricevuto 1x *" + split[1] + "*!", mark);
+	}
+});
 
 bot.onText(/^\/rune (.+)/i, function (message, match) {
 
@@ -3529,7 +3536,7 @@ bot.onText(/^\/cancellanegozio (.+)|^\/cancellanegozio$/, function (message, mat
 			});
 			return;
 		}
-		
+
 		if (code == "privati") {
 			connection.query('SELECT player_id FROM public_shop WHERE public = 0 AND player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -3544,7 +3551,7 @@ bot.onText(/^\/cancellanegozio (.+)|^\/cancellanegozio$/, function (message, mat
 			});
 			return;
 		}
-		
+
 		if (code == "pubblici") {
 			connection.query('SELECT player_id FROM public_shop WHERE public = 1 AND player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -7365,6 +7372,8 @@ bot.onText(/^\/ispeziona/, function (message) {
 		var money = rows[0].money;
 		var heist_count = rows[0].heist_count;
 		var global_end = rows[0].global_end;
+		var boost_id = rows[0].boost_id;
+		var boost_mission = rows[0].boost_mission;
 
 		if ((lev < 15) && (reborn == 1)) {
 			bot.sendMessage(message.from.id, "Il tuo livello è ancora troppo basso.");
@@ -7422,7 +7431,7 @@ bot.onText(/^\/ispeziona/, function (message) {
 						connection.query('SELECT id FROM heist_history WHERE from_id = ' + from_id + ' AND to_id = ' + rows[0].id + ' AND time LIKE "' + time + '%"', function (err, rows, fields) {
 							if (err) throw err;
 							if (Object.keys(rows).length <= 2) {
-								attack(usr, message, from_id, weapon_bonus, 3000, 0, account_id, global_end);
+								attack(usr, message, from_id, weapon_bonus, 3000, 0, account_id, global_end, boost_id, boost_mission);
 							} else {
 								bot.sendMessage(message.from.id, "Hai ispezionato troppe volte questo giocatore, riprova domani.");
 							}
@@ -7434,7 +7443,7 @@ bot.onText(/^\/ispeziona/, function (message) {
 	});
 });
 
-function attack(nickname, message, from_id, weapon_bonus, cost, source, account_id, global_end) {
+function attack(nickname, message, from_id, weapon_bonus, cost, source, account_id, global_end, boost_id, boost_mission) {
 	connection.query('SELECT exp, ability, chat_id, heist_count, heist_limit, heist_protection, house_id, custom_name_h, id, money FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var chat_id_nickname = rows[0].chat_id;
@@ -7532,7 +7541,23 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, account_
 						rate = 60;
 					}
 
+					/*
 					if (global_end == 1){
+						totTime = Math.round(totTime / 2);
+					}
+					*/
+
+					if (boost_id == 9) {
+						if (boost_mission - 1 == 0) {
+							connection.query('UPDATE player SET boost_mission = 0, boost_id = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+							});
+						} else {
+							connection.query('UPDATE player SET boost_mission = boost_mission-1 WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+							});
+						}
+
 						totTime = Math.round(totTime / 2);
 					}
 
