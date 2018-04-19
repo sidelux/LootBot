@@ -1390,7 +1390,7 @@ bot.onText(/^\/setmin (.+)/, function (message, match) {
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
 			var text = parseInt(match[1]);
-			connection.query('SELECT * FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+			connection.query('SELECT 1 FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, "Errore impostazione livello");
@@ -1418,7 +1418,7 @@ bot.onText(/^\/setmax (.+)/, function (message, match) {
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
 			var text = parseInt(match[1]);
-			connection.query('SELECT * FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+			connection.query('SELECT 1 FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, "Errore impostazione livello");
@@ -1441,7 +1441,7 @@ bot.onText(/^\/level (.+)/, function (message, match) {
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
 			var text = match[1];
-			connection.query('SELECT * FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+			connection.query('SELECT min_lev, max_lev FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, "Errore impostazione livello");
@@ -1476,7 +1476,7 @@ bot.onText(/^\/kickbanned (.+)/, function (message, match) {
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
 			var text = match[1];
-			connection.query('SELECT * FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+			connection.query('SELECT 1 FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, "Errore impostazione kick bannato");
@@ -1511,7 +1511,7 @@ bot.onText(/^\/kickreg (.+)/, function (message, match) {
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
 			var text = match[1];
-			connection.query('SELECT * FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+			connection.query('SELECT 1 FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, "Errore impostazione kick non iscritto");
@@ -1546,7 +1546,7 @@ bot.onText(/^\/hardmode (.+)/, function (message, match) {
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
 			var text = match[1];
-			connection.query('SELECT * FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+			connection.query('SELECT 1 FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, "Errore impostazione hard mode");
@@ -1581,7 +1581,7 @@ bot.onText(/^\/setwelcome (.+)/, function (message, match) {
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
 			var text = match[1];
-			connection.query('SELECT * FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+			connection.query('SELECT 1 FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, "Errore impostazione benvenuto");
@@ -1604,7 +1604,7 @@ bot.onText(/^\/welcome (.+)/, function (message, match) {
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
 			var text = match[1];
-			connection.query('SELECT * FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+			connection.query('SELECT 1 FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, "Errore impostazione benvenuto");
@@ -1659,7 +1659,7 @@ function checkStatus(message, nickname, accountid, type) {
 
 		accountid = (accountid).toString();
 
-		connection.query('SELECT * FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+		connection.query('SELECT chat_id, name, kickreg FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
@@ -2440,7 +2440,7 @@ bot.onText(/^\/cancellalotteria/, function (message) {
 			return;
 		}
 
-		connection.query('SELECT * FROM public_lottery WHERE creator_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT id, item_id, price, time_end FROM public_lottery WHERE creator_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
 				var lottery_id = rows[0].id;
@@ -2521,14 +2521,14 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+) (.+)|^\/creaasta(?!p)$/, function (message
 			return;
 		}
 
-		connection.query('SELECT * FROM auction_list WHERE creator_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT 1 FROM auction_list WHERE creator_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
 				bot.sendMessage(message.chat.id, "Puoi gestire solo un'asta alla volta");
 				return;
 			}
 
-			connection.query('SELECT * FROM auction_list WHERE chat_id = -1001069842056', function (err, rows, fields) {
+			connection.query('SELECT 1 FROM auction_list WHERE chat_id = -1001069842056', function (err, rows, fields) {
 				if (err) throw err;
 				if ((Object.keys(rows).length > 0) && (message.chat.id == -1001069842056)) {
 					bot.sendMessage(message.chat.id, "In questo gruppo può esistere solamente un'asta alla volta");
@@ -2712,7 +2712,7 @@ bot.onText(/^\/cancellaasta/, function (message) {
 			return;
 		}
 
-		connection.query('SELECT * FROM auction_list WHERE creator_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT id, item_id, last_price, last_player, time_start FROM auction_list WHERE creator_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
 				var auction_id = rows[0].id;
@@ -3219,7 +3219,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			for (var i = 0; i < arrLen; i++) {
 				code = elements[i];
 				//console.log(code, elements);
-				connection.query('SELECT * FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id, function (err, rows, fields) {
+				connection.query('SELECT 1 FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0) {
 						connection.query('UPDATE public_shop SET time_end = "' + long_date + '" WHERE code = ' + this.code, function (err, rows, fields) {
@@ -4189,14 +4189,14 @@ bot.onText(/^\/crealotteria(?!p) (.+)|^\/crealotteria(?!p)$/, function (message,
 			return;
 		}
 
-		connection.query('SELECT * FROM public_lottery WHERE creator_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT 1 FROM public_lottery WHERE creator_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
 				bot.sendMessage(message.chat.id, "Puoi gestire solo una lotteria alla volta");
 				return;
 			}
 
-			connection.query('SELECT * FROM public_lottery WHERE chat_id = -1001069842056', function (err, rows, fields) {
+			connection.query('SELECT 1 FROM public_lottery WHERE chat_id = -1001069842056', function (err, rows, fields) {
 				if (err) throw err;
 				if ((Object.keys(rows).length > 0) && (message.chat.id == -1001069842056)) {
 					bot.sendMessage(message.chat.id, "In questo gruppo può esistere solamente una lotteria alla volta");
@@ -4268,20 +4268,19 @@ bot.onText(/^\/crealotteriap ([^\s]+) (.+)|^\/crealotteriap$/, function (message
 			return;
 		}
 
-		connection.query('SELECT * FROM public_lottery WHERE creator_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT 1 FROM public_lottery WHERE creator_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
 				bot.sendMessage(message.chat.id, "Puoi gestire solo una lotteria alla volta");
 				return;
 			}
 
-			connection.query('SELECT * FROM public_lottery WHERE chat_id = -1001069842056', function (err, rows, fields) {
+			connection.query('SELECT 1 FROM public_lottery WHERE chat_id = -1001069842056', function (err, rows, fields) {
 				if (err) throw err;
 				if ((Object.keys(rows).length > 0) && (message.chat.id == -1001069842056)) {
 					bot.sendMessage(message.chat.id, "In questo gruppo può esistere solamente una lotteria alla volta");
 					return;
 				}
-
 
 				connection.query('SELECT item.id, item.allow_sell, item.value, item.rarity FROM inventory, item WHERE inventory.item_id = item.id AND item.name = "' + oggetto + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
 					if (err) throw err;
@@ -4374,7 +4373,7 @@ bot.onText(/^\/estrazione/, function (message) {
 				var rand = Math.round(Math.random() * (Object.keys(rows).length - 1));
 				//console.log("Estrazione: " + rand);
 				var extracted = rows[rand].player_id;
-				connection.query('SELECT * FROM player WHERE id = ' + extracted, function (err, rows, fields) {
+				connection.query('SELECT nickname FROM player WHERE id = ' + extracted, function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length == 0) {
 						bot.sendMessage(message.chat.id, "Non ho trovato il giocatore estratto!");
@@ -4513,7 +4512,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 		return;
 	}
 
-	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, id, money, holiday, market_ban FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -4587,7 +4586,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 });
 
 bot.onText(/^\/annullav/i, function (message) {
-	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
@@ -4786,7 +4785,7 @@ bot.onText(/^\/offri/i, function (message) {
 });
 
 bot.onText(/^\/rifiutav/i, function (message) {
-	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
@@ -4823,7 +4822,7 @@ bot.onText(/^\/rifiutav/i, function (message) {
 });
 
 bot.onText(/^\/annullas/i, function (message) {
-	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
@@ -4847,7 +4846,7 @@ bot.onText(/^\/annullas/i, function (message) {
 });
 
 bot.onText(/^\/scambia/i, function (message) {
-	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, market_ban, holiday, id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -5114,7 +5113,7 @@ bot.onText(/^\/accettav/i, function (message) {
 });
 
 bot.onText(/^\/rifiutas/i, function (message) {
-	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
@@ -5192,7 +5191,6 @@ bot.onText(/^\/accettas/i, function (message) {
 					bot.sendMessage(message.from.id, "Non puoi concludere un acquisto con te stesso");
 					return;
 				}
-
 
 				connection.query('SELECT item.id, item.name FROM item, inventory WHERE item.id = inventory.item_id AND inventory.item_id = ' + item2 + ' AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
 					if (err) throw err;
@@ -5394,14 +5392,14 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 				}
 
 				if (player_id == creator_id) {
-					connection.query('SELECT * FROM public_lottery_players WHERE lottery_id = ' + lottery_id, function (err, rows, fields) {
+					connection.query('SELECT 1 FROM public_lottery_players WHERE lottery_id = ' + lottery_id, function (err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Ci sono attualmente " + Object.keys(rows).length + " partecipanti");
 					});
 					return;
 				}
 
-				connection.query('SELECT * FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = ' + lottery_id, function (err, rows, fields) {
+				connection.query('SELECT 1 FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = ' + lottery_id, function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0) {
 						bot.sendMessage(message.chat.id, "Sei già registrato a questa lotteria!");
@@ -5495,7 +5493,7 @@ bot.onText(/^\/dlotteria(?!p) (.+)|^\/dlotteria(?!p)/, function (message, match)
 					return;
 				}
 
-				connection.query('SELECT * FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = ' + lottery_id, function (err, rows, fields) {
+				connection.query('SELECT 1 FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = ' + lottery_id, function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length == 0) {
 						bot.sendMessage(message.chat.id, "Non sei registrato a questa lotteria!");
@@ -5807,7 +5805,7 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 				var lottery_id = rows[0].id;
 
 				if (player_id == creator_id) {
-					connection.query('SELECT * FROM public_lottery_players WHERE lottery_id = ' + lottery_id, function (err, rows, fields) {
+					connection.query('SELECT 1 FROM public_lottery_players WHERE lottery_id = ' + lottery_id, function (err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Ci sono attualmente " + Object.keys(rows).length + " partecipanti");
 					});
@@ -5824,7 +5822,7 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 					return;
 				}
 
-				connection.query('SELECT * FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = ' + lottery_id, function (err, rows, fields) {
+				connection.query('SELECT 1 FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = ' + lottery_id, function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0) {
 						bot.sendMessage(message.chat.id, "Sei già registrato a questa lotteria!");
@@ -5929,7 +5927,7 @@ bot.onText(/^\/dlotteriap (.+)|^\/dlotteriap/, function (message, match) {
 					return;
 				}
 
-				connection.query('SELECT * FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = ' + lottery_id, function (err, rows, fields) {
+				connection.query('SELECT 1 FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = ' + lottery_id, function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length == 0) {
 						bot.sendMessage(message.chat.id, "Non sei registrato a questa lotteria!");
@@ -6787,6 +6785,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 		var nickname = rows[0].nickname;
 		var exp = rows[0].exp;
 		var lev = Math.floor(exp / 10);
+		var reborn = rows[0].reborn;
 		var money = rows[0].money;
 		var rank = rows[0].rank;
 		var ability = rows[0].ability;
@@ -7054,275 +7053,272 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																			class_name = rows[0].name;
 																		}
 
-																		connection.query('SELECT * FROM player WHERE id = ' + player_id, function (err, rows, fields) {
-																			if (err) throw err;
-																			var stars = rebSym(rows[0].reborn);
+																		var stars = rebSym(reborn);
 
-																			if (player_id == 1) {
-																				stars = "👑";
-																			}
+																		if (player_id == 1) {
+																			stars = "👑";
+																		}
 
-																			var enchant1 = "";
-																			if (weapon_enchant_bonus == 1){
-																				enchant1 = " 🌊";
-																			}else if (weapon_enchant_bonus == 2){
-																				enchant1 = " ⚡️";
-																			}else if (weapon_enchant_bonus == 3){
-																				enchant1 = " 🔥";
-																			}
-																			var enchant2 = "";
-																			if (weapon2_enchant_bonus == 1){
-																				enchant2 = " 🌊";
-																			}else if (weapon2_enchant_bonus == 2){
-																				enchant2 = " ⚡️";
-																			}else if (weapon2_enchant_bonus == 3){
-																				enchant2 = " 🔥";
-																			}
-																			var enchant3 = "";
-																			if (weapon3_enchant_bonus == 1){
-																				enchant3 = " 🌊";
-																			}else if (weapon3_enchant_bonus == 2){
-																				enchant3 = " ⚡️";
-																			}else if (weapon3_enchant_bonus == 3){
-																				enchant3 = " 🔥";
-																			}
+																		var enchant1 = "";
+																		if (weapon_enchant_bonus == 1){
+																			enchant1 = " 🌊";
+																		}else if (weapon_enchant_bonus == 2){
+																			enchant1 = " ⚡️";
+																		}else if (weapon_enchant_bonus == 3){
+																			enchant1 = " 🔥";
+																		}
+																		var enchant2 = "";
+																		if (weapon2_enchant_bonus == 1){
+																			enchant2 = " 🌊";
+																		}else if (weapon2_enchant_bonus == 2){
+																			enchant2 = " ⚡️";
+																		}else if (weapon2_enchant_bonus == 3){
+																			enchant2 = " 🔥";
+																		}
+																		var enchant3 = "";
+																		if (weapon3_enchant_bonus == 1){
+																			enchant3 = " 🌊";
+																		}else if (weapon3_enchant_bonus == 2){
+																			enchant3 = " ⚡️";
+																		}else if (weapon3_enchant_bonus == 3){
+																			enchant3 = " 🔥";
+																		}
 
-																			//Talismani
+																		//Talismani
 
-																			if (charm_id == 62) {
-																				weapon += 5;
-																			}
-																			if (charm_id == 184) {
-																				weapon += 15;
-																			}
-																			if (charm_id == 188) {
-																				weapon += 20;
-																			}
-																			if (charm_id == 404) {
-																				weapon_crit += 6;
-																			}
-																			if (charm_id == 493) {
-																				weapon_crit += 2;
-																			}
-																			if (charm_id == 494) {
-																				weapon_crit += 4;
-																			}
-																			if (charm_id == 495) {
-																				weapon2_crit += 3;
-																			}
-																			if (charm_id == 496) {
-																				weapon3_crit += 3;
-																			}
-																			if (charm_id == 696) {
-																				weapon_crit += 5;
-																				weapon2_crit += 5;
-																				weapon3_crit += 3;
-																			}
-																			if (charm_id == 698) {
-																				weapon += 30;
-																			}
-																			if (abBonus > 0) {
-																				weapon_crit += abBonus;
-																				weapon2_crit += abBonus;
-																				weapon3_crit += abBonus;
-																			}
+																		if (charm_id == 62) {
+																			weapon += 5;
+																		}
+																		if (charm_id == 184) {
+																			weapon += 15;
+																		}
+																		if (charm_id == 188) {
+																			weapon += 20;
+																		}
+																		if (charm_id == 404) {
+																			weapon_crit += 6;
+																		}
+																		if (charm_id == 493) {
+																			weapon_crit += 2;
+																		}
+																		if (charm_id == 494) {
+																			weapon_crit += 4;
+																		}
+																		if (charm_id == 495) {
+																			weapon2_crit += 3;
+																		}
+																		if (charm_id == 496) {
+																			weapon3_crit += 3;
+																		}
+																		if (charm_id == 696) {
+																			weapon_crit += 5;
+																			weapon2_crit += 5;
+																			weapon3_crit += 3;
+																		}
+																		if (charm_id == 698) {
+																			weapon += 30;
+																		}
+																		if (abBonus > 0) {
+																			weapon_crit += abBonus;
+																			weapon2_crit += abBonus;
+																			weapon3_crit += abBonus;
+																		}
 
-																			//Vocazioni
+																		//Vocazioni
 
-																			if ((class_id == 2) && (reborn == 3)) {
-																				weapon2_crit += 5;
-																			}
-																			if ((class_id == 2) && (reborn >= 4)) {
-																				weapon2_crit += 7;
-																				weapon3_crit += 7;
-																			}
-																			if ((class_id == 4) && (reborn == 3)) {
-																				weapon_crit += 2;
-																				weapon2_crit += 2;
-																				weapon3_crit += 2;
-																			}
-																			if ((class_id == 4) && (reborn >= 4)) {
-																				weapon_crit += 7;
-																				weapon2_crit += 7;
-																				weapon3_crit += 7;
-																			}
-																			if ((class_id == 5) && (reborn == 3)) {
-																				weapon3_crit += 4;
-																			}
-																			if ((class_id == 5) && (reborn >= 4)) {
-																				weapon3_crit += 8;
-																			}
-																			if ((class_id == 6) && (reborn == 3)) {
-																				weapon2_crit += 2;
-																			}
-																			if ((class_id == 6) && (reborn == 3)) {
-																				weapon3_crit += 2;
-																			}
-																			if ((class_id == 6) && (reborn >= 4)) {
-																				weapon2_crit += 7;
-																			}
-																			if ((class_id == 6) && (reborn >= 4)) {
-																				weapon3_crit += 7;
-																			}
-																			if ((class_id == 6) && (reborn == 5)) {
-																				weapon2_crit += 7;
-																			}
-																			if ((class_id == 6) && (reborn == 5)) {
-																				weapon3_crit += 7;
-																			}
-																			if ((class_id == 8) && (reborn == 3)) {
-																				weapon3_crit += 5;
-																			}
-																			if ((class_id == 8) && (reborn >= 4)) {
-																				weapon3_crit += 7;
-																			}
-																			if ((class_id == 8) && (reborn == 5)) {
-																				weapon_crit += 10;
-																			}
-																			if ((class_id == 9) && (reborn == 3)) {
-																				weapon_crit += 2;
-																				weapon3_crit += 2;
-																			}
-																			if ((class_id == 9) && (reborn >= 4)) {
-																				weapon_crit += 7;
-																				weapon3_crit += 7;
-																			}
+																		if ((class_id == 2) && (reborn == 3)) {
+																			weapon2_crit += 5;
+																		}
+																		if ((class_id == 2) && (reborn >= 4)) {
+																			weapon2_crit += 7;
+																			weapon3_crit += 7;
+																		}
+																		if ((class_id == 4) && (reborn == 3)) {
+																			weapon_crit += 2;
+																			weapon2_crit += 2;
+																			weapon3_crit += 2;
+																		}
+																		if ((class_id == 4) && (reborn >= 4)) {
+																			weapon_crit += 7;
+																			weapon2_crit += 7;
+																			weapon3_crit += 7;
+																		}
+																		if ((class_id == 5) && (reborn == 3)) {
+																			weapon3_crit += 4;
+																		}
+																		if ((class_id == 5) && (reborn >= 4)) {
+																			weapon3_crit += 8;
+																		}
+																		if ((class_id == 6) && (reborn == 3)) {
+																			weapon2_crit += 2;
+																		}
+																		if ((class_id == 6) && (reborn == 3)) {
+																			weapon3_crit += 2;
+																		}
+																		if ((class_id == 6) && (reborn >= 4)) {
+																			weapon2_crit += 7;
+																		}
+																		if ((class_id == 6) && (reborn >= 4)) {
+																			weapon3_crit += 7;
+																		}
+																		if ((class_id == 6) && (reborn == 5)) {
+																			weapon2_crit += 7;
+																		}
+																		if ((class_id == 6) && (reborn == 5)) {
+																			weapon3_crit += 7;
+																		}
+																		if ((class_id == 8) && (reborn == 3)) {
+																			weapon3_crit += 5;
+																		}
+																		if ((class_id == 8) && (reborn >= 4)) {
+																			weapon3_crit += 7;
+																		}
+																		if ((class_id == 8) && (reborn == 5)) {
+																			weapon_crit += 10;
+																		}
+																		if ((class_id == 9) && (reborn == 3)) {
+																			weapon_crit += 2;
+																			weapon3_crit += 2;
+																		}
+																		if ((class_id == 9) && (reborn >= 4)) {
+																			weapon_crit += 7;
+																			weapon3_crit += 7;
+																		}
 
-																			if ((class_id == 7) && (reborn == 5)) {
-																				weapon_crit += Math.round(dragon_critical / 2);
+																		if ((class_id == 7) && (reborn == 5)) {
+																			weapon_crit += Math.round(dragon_critical / 2);
+																		}
+
+																		if ((class_id == 8) && (reborn == 2)) {
+																			weapon += weapon * 0.10;
+																		}else if ((class_id == 8) && (reborn == 3)) {
+																			weapon += weapon * 0.15;
+																		}else if ((class_id == 8) && (reborn == 4)) {
+																			weapon += weapon * 0.17;
+																		}else if ((class_id == 8) && (reborn == 5)) {
+																			weapon += weapon * 0.30;
+																		}
+
+																		//Descrizioni
+
+																		var weapon_desc = "";
+																		if (weapon_name != "-") {
+																			weapon += power_dmg;
+																			weapon_crit += power_weapon;
+																			weapon_desc = " (+" + Math.round(weapon) + ", " + weapon_crit + "%, " + weapon_enchant + enchant1 + ")";
+																		}
+																		var weapon2_desc = "";
+																		if (weapon2_name != "-") {
+																			weapon2 -= power_def;
+																			weapon2_crit += power_armor;
+																			weapon2_desc = " (" + Math.round(weapon2) + ", " + weapon2_crit + "%, " + weapon2_enchant + enchant2 + ")";
+																		}
+																		var weapon3_desc = "";
+																		if (weapon3_name != "-") {
+																			weapon3_crit += power_shield;
+																			weapon3_desc = " (" + Math.round(weapon3) + ", " + weapon3_crit + "%, " + weapon3_enchant + enchant3 + ")";
+																		}
+
+																		if (player != message.from.username) {
+																			if (myhouse_id == 1) {
+																				life = "?";
+																				total_life = "?";
+																				heist_count = "?";
+																				spy_count = "?";
+																				money = "?";
+																				exp = "?";
+																				lev = "?";
+																				weapon_name = "?";
+																				weapon_desc = "";
+																				weapon2_name = "?";
+																				weapon2_desc = "";
+																				weapon3_name = "?";
+																				weapon3_desc = "";
+																				talismano = "?";
+																				talismano_desc = "";
+																				dragon_name = "?";
+																				dragon_level = "?";
+																				dragon_claws_n = "?";
+																				dragon_damage = "?";
+																				dragon_saddle_n = "?";
+																				dragon_defence = "?";
+																				dragon_critical = "?";
+																				dragon_status = "?";
+																			} else if (myhouse_id == 2) {
+																				heist_count = "?";
+																				spy_count = "?";
+																				money = "?";
+																				weapon_name = "?";
+																				weapon_desc = "";
+																				weapon2_name = "?";
+																				weapon2_desc = "";
+																				weapon3_name = "?";
+																				weapon3_desc = "";
+																				talismano = "?";
+																				talismano_desc = "";
+																				dragon_name = "?";
+																				dragon_level = "?";
+																				dragon_claws_n = "?";
+																				dragon_damage = "?";
+																				dragon_saddle_n = "?";
+																				dragon_arms_n = "?";
+																				dragon_defence = "?";
+																				dragon_critical = "?";
+																			} else if (myhouse_id == 3) {
+																				heist_count = "?";
+																				spy_count = "?";
+																				money = "?";
+																				talismano = "?";
+																				talismano_desc = "";
+																				dragon_name = "?";
+																				dragon_level = "?";
+																				dragon_claws_n = "?";
+																				dragon_damage = "?";
+																				dragon_saddle_n = "?";
+																				dragon_defence = "?";
+																				dragon_critical = "?";
+																			} else if (myhouse_id == 4) {
+																				heist_count = "?";
+																				spy_count = "?";
+																				money = "?";
+																			} else if (myhouse_id == 5) {
+																				money = "?";
 																			}
+																		}
 
-																			if ((class_id == 8) && (reborn == 2)) {
-																				weapon += weapon * 0.10;
-																			}else if ((class_id == 8) && (reborn == 3)) {
-																				weapon += weapon * 0.15;
-																			}else if ((class_id == 8) && (reborn == 4)) {
-																				weapon += weapon * 0.17;
-																			}else if ((class_id == 8) && (reborn == 5)) {
-																				weapon += weapon * 0.30;
-																			}
+																		if (from == 1)
+																			message.chat.id = account_id;
 
-																			//Descrizioni
+																		bot.sendMessage(message.chat.id, "<b>" + gender_text + "</b> 👤\n" +
+																						"👤 " + nickname + (player_custom_nickname != null ? " <i>" + player_custom_nickname + "</i>": "") + "\n" +
+																						team_desc + 
+																						stars + " " + formatNumber(lev) + " (" + formatNumber(exp) + " xp)\n\n" +
+																						"🏹 " + class_name + "\n" +
+																						"💎 " + gems + " 🏆 " + inest + "\n" +
+																						"💰 " + formatNumber(money) + " §\n" +
+																						"❤️ " + formatNumber(life) + " / " + formatNumber(total_life) + " hp\n" +
+																						"📦 " + formatNumber(craft_count) + " (" + formatNumber(craft_week) + ")\n" +
+																						"🏕 " + rifugio + "\n" +
+																						"\n<b>Equipaggiamento</b> ⚔️\n" +
+																						"🗡 " + weapon_name + weapon_desc + "\n" +
+																						"🥋 " + weapon2_name + weapon2_desc + "\n" +
+																						"🛡 " + weapon3_name + weapon3_desc + "\n" +
+																						"📿 " + talismano + "\n" +
 
-																			var weapon_desc = "";
-																			if (weapon_name != "-") {
-																				weapon += power_dmg;
-																				weapon_crit += power_weapon;
-																				weapon_desc = " (+" + Math.round(weapon) + ", " + weapon_crit + "%, " + weapon_enchant + enchant1 + ")";
-																			}
-																			var weapon2_desc = "";
-																			if (weapon2_name != "-") {
-																				weapon2 -= power_def;
-																				weapon2_crit += power_armor;
-																				weapon2_desc = " (" + Math.round(weapon2) + ", " + weapon2_crit + "%, " + weapon2_enchant + enchant2 + ")";
-																			}
-																			var weapon3_desc = "";
-																			if (weapon3_name != "-") {
-																				weapon3_crit += power_shield;
-																				weapon3_desc = " (" + Math.round(weapon3) + ", " + weapon3_crit + "%, " + weapon3_enchant + enchant3 + ")";
-																			}
+																						(dragon ? "\n<b>" + dragon_name + " (L" + dragon_level + ")</b> 🐉\n" : "") +
+																						(dragon ? "Stato: " + dragon_status + "\n" : "") +
+																						(dragon ? dragon_claws_n + " (" + dragon_damage + ")\n" : "") +
+																						(dragon ? dragon_saddle_n + " (" + dragon_defence + ")\n" : "") +
+																						(dragon ? dragon_arms_n + "\n" : "") +
+																						(dragon ? "Critico (" + dragon_critical + "%)\n" : "") +
 
-																			if (player != message.from.username) {
-																				if (myhouse_id == 1) {
-																					life = "?";
-																					total_life = "?";
-																					heist_count = "?";
-																					spy_count = "?";
-																					money = "?";
-																					exp = "?";
-																					lev = "?";
-																					weapon_name = "?";
-																					weapon_desc = "";
-																					weapon2_name = "?";
-																					weapon2_desc = "";
-																					weapon3_name = "?";
-																					weapon3_desc = "";
-																					talismano = "?";
-																					talismano_desc = "";
-																					dragon_name = "?";
-																					dragon_level = "?";
-																					dragon_claws_n = "?";
-																					dragon_damage = "?";
-																					dragon_saddle_n = "?";
-																					dragon_defence = "?";
-																					dragon_critical = "?";
-																					dragon_status = "?";
-																				} else if (myhouse_id == 2) {
-																					heist_count = "?";
-																					spy_count = "?";
-																					money = "?";
-																					weapon_name = "?";
-																					weapon_desc = "";
-																					weapon2_name = "?";
-																					weapon2_desc = "";
-																					weapon3_name = "?";
-																					weapon3_desc = "";
-																					talismano = "?";
-																					talismano_desc = "";
-																					dragon_name = "?";
-																					dragon_level = "?";
-																					dragon_claws_n = "?";
-																					dragon_damage = "?";
-																					dragon_saddle_n = "?";
-																					dragon_arms_n = "?";
-																					dragon_defence = "?";
-																					dragon_critical = "?";
-																				} else if (myhouse_id == 3) {
-																					heist_count = "?";
-																					spy_count = "?";
-																					money = "?";
-																					talismano = "?";
-																					talismano_desc = "";
-																					dragon_name = "?";
-																					dragon_level = "?";
-																					dragon_claws_n = "?";
-																					dragon_damage = "?";
-																					dragon_saddle_n = "?";
-																					dragon_defence = "?";
-																					dragon_critical = "?";
-																				} else if (myhouse_id == 4) {
-																					heist_count = "?";
-																					spy_count = "?";
-																					money = "?";
-																				} else if (myhouse_id == 5) {
-																					money = "?";
-																				}
-																			}
-
-																			if (from == 1)
-																				message.chat.id = account_id;
-
-																			bot.sendMessage(message.chat.id, "<b>" + gender_text + "</b> 👤\n" +
-																							"👤 " + nickname + (player_custom_nickname != null ? " <i>" + player_custom_nickname + "</i>": "") + "\n" +
-																							team_desc + 
-																							stars + " " + formatNumber(lev) + " (" + formatNumber(exp) + " xp)\n\n" +
-																							"🏹 " + class_name + "\n" +
-																							"💎 " + gems + " 🏆 " + inest + "\n" +
-																							"💰 " + formatNumber(money) + " §\n" +
-																							"❤️ " + formatNumber(life) + " / " + formatNumber(total_life) + " hp\n" +
-																							"📦 " + formatNumber(craft_count) + " (" + formatNumber(craft_week) + ")\n" +
-																							"🏕 " + rifugio + "\n" +
-																							"\n<b>Equipaggiamento</b> ⚔️\n" +
-																							"🗡 " + weapon_name + weapon_desc + "\n" +
-																							"🥋 " + weapon2_name + weapon2_desc + "\n" +
-																							"🛡 " + weapon3_name + weapon3_desc + "\n" +
-																							"📿 " + talismano + "\n" +
-
-																							(dragon ? "\n<b>" + dragon_name + " (L" + dragon_level + ")</b> 🐉\n" : "") +
-																							(dragon ? "Stato: " + dragon_status + "\n" : "") +
-																							(dragon ? dragon_claws_n + " (" + dragon_damage + ")\n" : "") +
-																							(dragon ? dragon_saddle_n + " (" + dragon_defence + ")\n" : "") +
-																							(dragon ? dragon_arms_n + "\n" : "") +
-																							(dragon ? "Critico (" + dragon_critical + "%)\n" : "") +
-
-																							"\n<b>Altro</b> 💱\n" +
-																							referral +
-																							"Artefatti: " + artifacts + "\n" +
-																							"Rango: " + getRankName(rank, 0) + " (" + rank + ")\n" +
-																							"Abilità: " + formatNumber(ability) + "\n" +
-																							"Incarichi: " + formatNumber(mission_team_count) + "\n" +
-																							(player_description != null ? "\n<i>" + player_description + "</i>" : ""), html);
-																		});
+																						"\n<b>Altro</b> 💱\n" +
+																						referral +
+																						"Artefatti: " + artifacts + "\n" +
+																						"Rango: " + getRankName(rank, 0) + " (" + rank + ")\n" +
+																						"Abilità: " + formatNumber(ability) + "\n" +
+																						"Incarichi: " + formatNumber(mission_team_count) + "\n" +
+																						(player_description != null ? "\n<i>" + player_description + "</i>" : ""), html);
 																	});
 																});
 															});
@@ -7618,7 +7614,7 @@ bot.onText(/^\/spia/, function (message) {
 
 	var player = message.reply_to_message.from.username;
 
-	connection.query('SELECT * FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, holiday, spy_count, heist_protection, account_id, id, exp, weapon, house_id, money FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -7944,7 +7940,7 @@ function setFinishedAuction(element, index, array) {
 		var last_price = rows[0].last_price;
 		var chat_id = rows[0].chat_id;
 
-		connection.query('SELECT * FROM player WHERE id = ' + last_player, function (err, rows, fields) {
+		connection.query('SELECT nickname FROM player WHERE id = ' + last_player, function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length == 0) {
 				connection.query('UPDATE player SET money = money + ' + last_price + ' WHERE id = ' + last_player, function (err, rows, fields) {
@@ -8035,7 +8031,7 @@ function setFinishedLottery(element, index, array) {
 			}
 			var rand = Math.round(Math.random() * (Object.keys(rows).length - 1));
 			var extracted = rows[rand].player_id;
-			connection.query('SELECT * FROM player WHERE id = ' + extracted, function (err, rows, fields) {
+			connection.query('SELECT nickname FROM player WHERE id = ' + extracted, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(chat_id, "Non ho trovato il giocatore estratto!");
@@ -8090,7 +8086,7 @@ function setFinishedLottery(element, index, array) {
 };
 
 function checkMarket() {
-	connection.query('SELECT * FROM `market` WHERE time_end < NOW()', function (err, rows, fields) {
+	connection.query('SELECT id, player_id, item_1_id FROM market WHERE time_end < NOW()', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
@@ -8126,6 +8122,21 @@ function setFinishedMarket(element, index, array) {
 	});
 }
 
+function checkMarketDirect() {
+	connection.query('SELECT player_id, item_id, id FROM market_direct WHERE time_end < NOW()', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length == 1) {
+				console.log(getNow("it") + "\x1b[32m 1 offerta vendita terminata\x1b[0m");
+			} else {
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " offerte vendita terminate\x1b[0m");
+			}
+			rows.forEach(setFinishedMarketDirect);
+		}
+	});
+};
+
 function setFinishedMarketDirect(element, index, array) {
 	connection.query('SELECT chat_id, account_id, id FROM player WHERE id = ' + element.player_id, function (err, rows, fields) {
 		if (err) throw err;
@@ -8147,21 +8158,6 @@ function setFinishedMarketDirect(element, index, array) {
 		});
 	});
 }
-
-function checkMarketDirect() {
-	connection.query('SELECT * FROM market_direct WHERE time_end < NOW()', function (err, rows, fields) {
-		if (err) throw err;
-
-		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
-				console.log(getNow("it") + "\x1b[32m 1 offerta vendita terminata\x1b[0m");
-			} else {
-				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " offerte vendita terminate\x1b[0m");
-			}
-			rows.forEach(setFinishedMarketDirect);
-		}
-	});
-};
 
 // Gestione oggetti
 
