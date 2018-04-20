@@ -1603,7 +1603,7 @@ bot.onText(/^\/ban ([^\s]+) (.+)|^\/ban/, function (message, match) {
 			connection.query('DELETE FROM public_shop WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			connection.query('UPDATE player SET market_ban = 1, boss_id = NULL WHERE id = ' + rows[0].id, function (err, rows, fields) {
+			connection.query('UPDATE player SET market_ban = 1, boss_id = NULL, mission_party = 0 WHERE id = ' + rows[0].id, function (err, rows, fields) {
 				if (err) throw err;
 			});
 			connection.query('DELETE FROM team_player WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
@@ -3350,7 +3350,6 @@ function autoMana() {
 		if (err) throw err;
 
 		var mana_type = "";
-		var text = "";
 		if (Object.keys(rows).length > 0) {
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 				mana_type = 'mana_' + rows[i].type;
@@ -3383,8 +3382,7 @@ function autoMana() {
 				connection.query('UPDATE event_mana_status SET ' + mana_type + ' = ' + mana_type + ' + ' + rows[i].quantity + ', zone_id = 0, time_start = NULL WHERE player_id = ' + rows[i].player_id, function (err, rows, fields) {
 					if (err) throw err;
 				});
-				bot.sendMessage(rows[i].chat_id, "Le miniere sono state chiuse, hai ricevuto " + rows[i].quantity + " Mana " + rows[i].name + "!");
-				text += "\n" + rows[i].quantity + " Mana " + rows[i].name + " per " + rows[i].nickname + "(" + rows[i].player_id + ")";
+				bot.sendMessage(rows[i].chat_id, "Le miniere sono state chiuse, hai ricevuto " + formatNumber(rows[i].quantity) + " Mana " + rows[i].name + "!");
 			}
 		} else {
 			console.log("Nessuna miniera da terminare");
@@ -8802,12 +8800,17 @@ bot.onText(/dungeon/i, function (message) {
 														if (answer.text == "Segui la Vecchia") {
 															var rand = Math.random() * 100;
 
-															if (rand < 60) {
-																var potId = 94;
-																var potN = "Pozione Grande";
-
-																addItem(player_id, potId);
-																bot.sendMessage(message.chat.id, "La vecchina ha preparato una Pozione, e decide di regalartene un po' per aver avuto fiducia in lei. Ottieni così *" + potN + "*", dNext);
+															if (rand < 50) {
+																if (reborn <= 3){
+																	addItem(player_id, 94);
+																	bot.sendMessage(message.chat.id, "La vecchina ha preparato una Pozione, e decide di regalartene un po' per aver avuto fiducia in lei. Ottieni così una *Pozione Grande*", dNext);
+																}else if (reborn == 4){
+																	addItem(player_id, 619);
+																	bot.sendMessage(message.chat.id, "La vecchina sta cucinando una Fenice appena catturata per la cena, e decide di regalartene un po' per aver avuto fiducia in lei. Ottieni così una *Piuma di Fenice*", dNext);
+																}else if (reborn == 5){
+																	addItem(player_id, 647);
+																	bot.sendMessage(message.chat.id, "La vecchina sta incenerendo una Fenice appena catturata per un incantesimo, e decide di regalartene un po' per aver avuto fiducia in lei. Ottieni così una *Cenere di Fenice*", dNext);
+																}
 															} else {
 																if (boost_id == 8)
 																	setBoost(player_id, boost_mission, boost_id);
@@ -19694,7 +19697,7 @@ bot.onText(/liste membri/i, function (message) {
 						query = '= "' + answer.text + '"';
 					}
 
-					connection.query('SELECT name FROM team WHERE name ' + query, function (err, rows, fields) {
+					connection.query('SELECT id, name, players, max_players, slogan, boss_count, kill_num1, kill_num2 FROM team WHERE name ' + query, function (err, rows, fields) {
 						if (err) throw err;
 
 						var search1 = Object.keys(rows).length;
@@ -22349,6 +22352,10 @@ bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
 bot.onText(/^\/sintesi (.+),(.+),(.+)|^\/sintesi/i, function (message, match) {
 	connection.query('SELECT id, holiday, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
+		
+		if (Object.keys(rows).length == 0) {
+			return;
+		}
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -33946,7 +33953,6 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 																						connection.query('UPDATE team SET boss_batch = 1 WHERE id = ' + team_id, function (err, rows, fields) {
 																							if (err) throw err;
 																							bot.sendMessage(message.chat.id, "Il boss è stato sconfitto! Attendi qualche secondo prima di ricevere la ricompensa!", back);
-																							console.log("Aggiunta al batch boss per team " + team_id);
 																						});
 
 																						setAchievement(message.chat.id, player_id, 19, 1);
@@ -34347,13 +34353,13 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 																						if (enemy_magic != "") {
 																							extra = "colpisce con *" + enemy_magic + "*";
 																							if (heal_enemy != 0) {
-																								extra += " recuperando " + heal_enemy + " hp";
+																								extra += " recuperando " + formatNumber(heal_enemy) + " hp";
 																							}
 																						}
 																						if ((special != "") && (enemy_magic != "")){
 																							extra = "colpisce con *" + special + "* e *" + enemy_magic + "*";
 																							if (heal_enemy != 0) {
-																								extra += " recuperando " + heal_enemy + " hp";
+																								extra += " recuperando " + formatNumber(heal_enemy) + " hp";
 																							}
 																						}
 
@@ -41321,8 +41327,6 @@ function setFinishedBatchBoss(element, index, array) {
 			"keyboard": [["Affronta Boss"], ["Torna al menu"]]
 		}
 	};
-
-	console.log("Batch boss per team " + team_id);
 
 	connection.query('UPDATE team SET boss_batch = 0 WHERE id = ' + team_id, function (err, rows, fields) {
 		if (err) throw err;

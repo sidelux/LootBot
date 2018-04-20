@@ -161,31 +161,33 @@ bot.on('message', function (message) {
 		});
 	}
 
-	connection.query('SELECT account_id FROM plus_players WHERE account_id = ' + message.from.id, function (err, rows, fields) {
-		if (err) throw err;
-		if (Object.keys(rows).length == 0) {
-			connection.query('INSERT INTO plus_players (account_id, nickname) VALUES (' + message.from.id + ',"' + message.from.username + '")', function (err, rows, fields) {
-				if (err) throw err;
-				console.log(message.from.username + " aggiunto");
-			});
-		}else{
-			connection.query('SELECT real_name, gender FROM player WHERE account_id = "' + message.from.id + '"', function (err, rows, fields) {
-				if (err) throw err;
+	if (message.from.username != undefined){
+		connection.query('SELECT account_id FROM plus_players WHERE account_id = ' + message.from.id, function (err, rows, fields) {
+			if (err) throw err;
+			if (Object.keys(rows).length == 0) {
+				connection.query('INSERT INTO plus_players (account_id, nickname) VALUES (' + message.from.id + ',"' + message.from.username + '")', function (err, rows, fields) {
+					if (err) throw err;
+					console.log(message.from.username + " aggiunto");
+				});
+			}else{
+				connection.query('SELECT real_name, gender FROM player WHERE account_id = "' + message.from.id + '"', function (err, rows, fields) {
+					if (err) throw err;
 
-				if (Object.keys(rows).length > 0) {
-					if ((rows[0].real_name == null) || (rows[0].gender == null)){
-						connection.query('UPDATE plus_players SET nickname = "' + message.from.username + '" WHERE account_id = ' + message.from.id, function (err, rows, fields) {
-							if (err) throw err;
-						});
-					}else{
-						connection.query('UPDATE plus_players SET nickname = "' + message.from.username + '", gender = "' + rows[0].gender + '", real_name = "' + rows[0].real_name + '" WHERE account_id = ' + message.from.id, function (err, rows, fields) {
-							if (err) throw err;
-						});
+					if (Object.keys(rows).length > 0) {
+						if ((rows[0].real_name == null) || (rows[0].gender == null)){
+							connection.query('UPDATE plus_players SET nickname = "' + message.from.username + '" WHERE account_id = ' + message.from.id, function (err, rows, fields) {
+								if (err) throw err;
+							});
+						}else{
+							connection.query('UPDATE plus_players SET nickname = "' + message.from.username + '", gender = "' + rows[0].gender + '", real_name = "' + rows[0].real_name + '" WHERE account_id = ' + message.from.id, function (err, rows, fields) {
+								if (err) throw err;
+							});
+						}
 					}
-				}
-			});
-		}
-	});
+				});
+			}
+		});
+	}
 });
 
 function cutText(text) {
@@ -789,7 +791,7 @@ bot.onText(/^\/gban ([^\s]+) (.+)|^\/gban/, function (message, match) {
 			connection.query('DELETE FROM public_shop WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			connection.query('UPDATE player SET market_ban = 1, boss_id = NULL WHERE id = ' + rows[0].id, function (err, rows, fields) {
+			connection.query('UPDATE player SET market_ban = 1, boss_id = NULL, mission_party = 0 WHERE id = ' + rows[0].id, function (err, rows, fields) {
 				if (err) throw err;
 			});
 			connection.query('DELETE FROM team_player WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
@@ -1659,7 +1661,7 @@ function checkStatus(message, nickname, accountid, type) {
 
 		accountid = (accountid).toString();
 
-		connection.query('SELECT chat_id, name, kickreg FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+		connection.query('SELECT * FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
@@ -6150,6 +6152,12 @@ bot.onText(/^\/valorezaino (.+)|^\/valorezaino/, function (message, match) {
 
 		var player_id = rows[0].id;
 		if (match[1] == undefined) {
+			
+			if (player_id == 1){
+				bot.sendMessage(message.chat.id, message.from.username + ", il tuo zaino vale <b>troppi</b> §", html);
+				return;
+			}
+			
 			connection.query('SELECT SUM(I.value*IV.quantity) As val FROM item I, inventory IV WHERE I.id = IV.item_id AND IV.player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
@@ -6199,8 +6207,10 @@ bot.onText(/^\/creazioni/, function (message, match) {
 
 bot.onText(/^\/checkmarket (.+)/, function (message, match) {
 
-	if (message.from.id != 20471035) {
-		return;
+	if (message.chat.id != -1001064797183){
+		if (message.from.id != 20471035) {
+			return;
+		}
 	}
 
 	connection.query('SELECT id, nickname FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
@@ -6229,11 +6239,16 @@ bot.onText(/^\/checkmarket (.+)/, function (message, match) {
 	});
 });
 
-bot.onText(/^\/checkmarketAll (.+)/, function (message, match) {
+bot.onText(/^\/checkmarketAll (.+)|^\/checkmarketAll/, function (message, match) {
 
-	if (message.from.id != 20471035) {
-		return;
+	if (message.chat.id != -1001064797183){
+		if (message.from.id != 20471035) {
+			return;
+		}
 	}
+	
+	if (match[1] == undefined)
+		match[1] = 90;
 
 	var player_id = 0;
 	var nickname = "";
@@ -6241,6 +6256,7 @@ bot.onText(/^\/checkmarketAll (.+)/, function (message, match) {
 	var len = 0;
 	var cnt = 0;
 
+	console.log("Inizio controllo...");
 	connection.query('SELECT P.id, P.nickname FROM last_command L, player P WHERE L.account_id = P.account_id AND L.time > NOW() - INTERVAL 1 WEEK', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -6274,9 +6290,13 @@ bot.onText(/^\/checkmarketAll (.+)/, function (message, match) {
 });
 
 bot.onText(/^\/gruzzolo/, function (message) {
-	connection.query('SELECT money as val FROM player WHERE id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+	connection.query('SELECT id, money FROM player WHERE id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
 		if (err) throw err;
-		bot.sendMessage(message.chat.id, message.from.username + ", possiedi <b>" + formatNumber(rows[0].val) + "</b>§", html);
+		if (rows[0].id == 1){
+			bot.sendMessage(message.chat.id, message.from.username + ", possiedi <b>troppissimi</b> §", html);
+			return;
+		}
+		bot.sendMessage(message.chat.id, message.from.username + ", possiedi <b>" + formatNumber(rows[0].money) + "</b> §", html);
 	});
 });
 
