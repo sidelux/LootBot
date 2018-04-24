@@ -73,46 +73,44 @@ bot.on('message', function (message) {
 		if (message.text.startsWith("/"))
 			console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
 
-		if (message.from.id != 20471035) {
-			if (message.chat.id == -1001097316494) {
-				if (!message.text.startsWith("Negozio di")) {
-					var time = Math.round((Date.now()+ms("7 days"))/1000);
-					bot.kickChatMember(message.chat.id, message.from.id, {until_date: time}).then(function (result) {
-						bot.sendMessage(message.chat.id, user + ", non puoi scrivere in questo gruppo, sei stato bannato per 7 giorni.");
-						bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo Loot Negozi per 7 giorni perchè non hai postato un negozio");
-					});
-					bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
-						if (result != true)
-							console.log("Errore cancellazione messaggio " + message.chat.id + " " + message.message_id);
-					});
-				}else{
-					connection.query('INSERT INTO plus_history (account_id) VALUES (' + message.from.id + ')', function (err, rows, fields) {
+		if ((message.from.id != 20471035) && (message.chat.id == -1001097316494)){
+			if (!message.text.startsWith("Negozio di")) {
+				var time = Math.round((Date.now()+ms("7 days"))/1000);
+				bot.kickChatMember(message.chat.id, message.from.id, {until_date: time}).then(function (result) {
+					bot.sendMessage(message.chat.id, user + ", non puoi scrivere in questo gruppo, sei stato bannato per 7 giorni.");
+					bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo Loot Negozi per 7 giorni perchè non hai postato un negozio");
+				});
+				bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
+					if (result != true)
+						console.log("Errore cancellazione messaggio " + message.chat.id + " " + message.message_id);
+				});
+			}else{
+				connection.query('INSERT INTO plus_history (account_id) VALUES (' + message.from.id + ')', function (err, rows, fields) {
+					if (err) throw err;
+					connection.query('SELECT id FROM plus_history WHERE account_id = ' + message.from.id + " ORDER BY id DESC LIMIT 2", function (err, rows, fields) {
 						if (err) throw err;
-						connection.query('SELECT id FROM plus_history WHERE account_id = ' + message.from.id + " ORDER BY id DESC LIMIT 2", function (err, rows, fields) {
-							if (err) throw err;
 
-							if (Object.keys(rows).length > 1) {
-								if (rows[0].id-rows[1].id < 10){
-									bot.kickChatMember(message.chat.id, message.from.id).then(function (result) {
-										bot.sendMessage(message.chat.id, message.from.username + ", hai postato un negozio troppo vicino all'ultimo, sei stato kickato.");
-										bot.sendMessage(message.from.id, "Sei stato kickato dal gruppo Loot Negozi perchè hai postato un negozio troppo vicino all'ultimo");
-										bot.unbanChatMember(message.chat.id, message.from.id).then(function (result) {
-											// kickato
-										});
+						if (Object.keys(rows).length > 1) {
+							if (rows[0].id-rows[1].id < 10){
+								bot.kickChatMember(message.chat.id, message.from.id).then(function (result) {
+									bot.sendMessage(message.chat.id, message.from.username + ", hai postato un negozio troppo vicino all'ultimo, sei stato kickato.");
+									bot.sendMessage(message.from.id, "Sei stato kickato dal gruppo Loot Negozi perchè hai postato un negozio troppo vicino all'ultimo");
+									bot.unbanChatMember(message.chat.id, message.from.id).then(function (result) {
+										// kickato
 									});
-									bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
-										if (result != true)
-											console.log("Errore cancellazione messaggio " + message.chat.id + " " + message.message_id);
-									});
-								}else{
-									connection.query('DELETE FROM plus_history WHERE account_id = ' + message.from.id + ' AND id != ' + rows[0].id, function (err, rows, fields) {
-										if (err) throw err;
-									});
-								}
+								});
+								bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
+									if (result != true)
+										console.log("Errore cancellazione messaggio " + message.chat.id + " " + message.message_id);
+								});
+							}else{
+								connection.query('DELETE FROM plus_history WHERE account_id = ' + message.from.id + ' AND id != ' + rows[0].id, function (err, rows, fields) {
+									if (err) throw err;
+								});
 							}
-						});
+						}
 					});
-				}
+				});
 			}
 		}
 		if (message.text.toLowerCase().indexOf("errore:") != -1){
@@ -6152,12 +6150,12 @@ bot.onText(/^\/valorezaino (.+)|^\/valorezaino/, function (message, match) {
 
 		var player_id = rows[0].id;
 		if (match[1] == undefined) {
-			
+
 			if (player_id == 1){
 				bot.sendMessage(message.chat.id, message.from.username + ", il tuo zaino vale <b>troppi</b> §", html);
 				return;
 			}
-			
+
 			connection.query('SELECT SUM(I.value*IV.quantity) As val FROM item I, inventory IV WHERE I.id = IV.item_id AND IV.player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
@@ -6246,7 +6244,7 @@ bot.onText(/^\/checkmarketAll (.+)|^\/checkmarketAll/, function (message, match)
 			return;
 		}
 	}
-	
+
 	if (match[1] == undefined)
 		match[1] = 90;
 
