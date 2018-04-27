@@ -428,14 +428,14 @@ var topOpen = "Chiuse";
 if (checkDragonTopOn == 1)
 	topOpen = "Aperte";
 
-mainKeys = [['Missione ⚔'],
+mainKeys = [['⚔ Missione ⚔'],
 			['Dungeon 🛡', 'Vette 🐲 (' + topOpen + ')'],
 			['Alchimia ⚗️', 'Rifugio 🔦'],
 			['Zaino 🎒', 'Piazza 💰', 'Scrigni 🔑'],
 			['Giocatore 👤', 'Team ⚜️'],
 			['Imprese 🏋️', 'Drago 🐉', 'Viaggi 🗺'],
-			['Sfide del Destino 🔮', 'Eventi 🎯'],
-			['Top 🔝', 'Monete Lunari 🌕', 'Info 📖']]
+			['Destino 🔮', 'Eventi 🎯'],
+			['Top 🔝', 'Lunari 🌕', 'Info 📖']]
 
 var defaultKeys = [];
 defaultKeys = mainKeys.slice();
@@ -1856,7 +1856,7 @@ function dailyChest(message, player_id) {
 	});
 };
 
-bot.onText(/Donazioni|Monete Lunari/i, function (message) {
+bot.onText(/Donazioni|Lunari/i, function (message) {
 	var kb = {
 		parse_mode: "HTML",
 		disable_web_page_preview: true,
@@ -36466,7 +36466,7 @@ bot.onText(/necro del destino/i, function (message) {
 	});
 });
 
-bot.onText(/Sfide del Destino/i, function (message) {
+bot.onText(/^Destino/i, function (message) {
 	var kb = {
 		parse_mode: "Markdown",
 		reply_markup: {
