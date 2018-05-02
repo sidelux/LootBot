@@ -33,7 +33,7 @@ CREATE TABLE `ability` (
   KEY `player_id` (`player_id`),
   CONSTRAINT `ABILITY_PID` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `ability_id_list` FOREIGN KEY (`ability_id`) REFERENCES `ability_list` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=14766 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=14869 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -83,9 +83,9 @@ CREATE TABLE `achievement_global` (
   `player_id` int(11) NOT NULL,
   `value` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `player_id` (`player_id`),
+  UNIQUE KEY `player_id` (`player_id`) USING BTREE,
   CONSTRAINT `PLAYERID_GLOBAL` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1505107 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1505502 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -126,7 +126,7 @@ CREATE TABLE `achievement_progressive_status` (
   KEY `player_id` (`player_id`),
   KEY `type` (`type`),
   CONSTRAINT `PLAYERID_PROGR` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=48904 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=49224 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -143,11 +143,12 @@ CREATE TABLE `achievement_status` (
   `progress` int(11) NOT NULL DEFAULT '0',
   `completed` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
+  UNIQUE KEY `achievement_no_duplicate` (`player_id`,`achievement_id`),
   KEY `player_id` (`player_id`),
   KEY `achievement_id` (`achievement_id`),
   CONSTRAINT `PID_STATS` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `STAT_PROGR` FOREIGN KEY (`achievement_id`) REFERENCES `achievement_list` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=320215 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=324141 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -162,7 +163,7 @@ CREATE TABLE `active_history` (
   `count` int(11) NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=488 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=493 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -182,7 +183,7 @@ CREATE TABLE `artifacts` (
   KEY `player_id` (`player_id`),
   CONSTRAINT `ITEMID_ART` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `PLAYERID_ART` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1668 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1699 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -265,7 +266,7 @@ CREATE TABLE `banlist` (
   `reason` varchar(255) NOT NULL,
   `until` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=254 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=255 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -304,7 +305,7 @@ CREATE TABLE `boss_damage` (
   CONSTRAINT `BOSSID_TEAM` FOREIGN KEY (`boss_id`) REFERENCES `boss_team` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `PLAYERID_BOSST` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `TEAMID_BOSST` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=8097067 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8253055 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -350,7 +351,7 @@ CREATE TABLE `boss_team` (
   KEY `boss_id` (`boss_id`),
   CONSTRAINT `BOSSID_TEAML` FOREIGN KEY (`boss_id`) REFERENCES `boss` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `team_id_team` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=29956 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=29987 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -535,7 +536,7 @@ CREATE TABLE `daily_chest` (
   KEY `chest_id` (`chest_id`),
   CONSTRAINT `CHESTID_DAILY` FOREIGN KEY (`chest_id`) REFERENCES `chest` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `PLAYERID_DAILY` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=652340 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=657180 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -556,7 +557,7 @@ CREATE TABLE `direct_message` (
   KEY `to_id` (`to_id`),
   CONSTRAINT `PLAYERID_DIRECT` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `PLAYERID_TOID` FOREIGN KEY (`to_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1162 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1171 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -575,7 +576,7 @@ CREATE TABLE `donation_history` (
   PRIMARY KEY (`id`),
   KEY `player_id` (`player_id`),
   CONSTRAINT `player_id_donation` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -613,7 +614,7 @@ CREATE TABLE `dragon` (
   UNIQUE KEY `PLAYERID` (`player_id`),
   KEY `type` (`type`),
   CONSTRAINT `dragon_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=4954 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4966 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -644,7 +645,7 @@ CREATE TABLE `dragon_dummy` (
   `evolved` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `type` (`type`)
-) ENGINE=InnoDB AUTO_INCREMENT=102333 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=100087 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -705,7 +706,7 @@ CREATE TABLE `dragon_top_dummy` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `dragon_id` (`dragon_id`),
   CONSTRAINT `DRAGONID_VETTAD` FOREIGN KEY (`dragon_id`) REFERENCES `dragon_dummy` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=102333 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=102420 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -748,7 +749,7 @@ CREATE TABLE `dragon_top_log` (
   CONSTRAINT `dragongist_enemy_dragon` FOREIGN KEY (`enemy_dragon_id`) REFERENCES `dragon` (`id`) ON DELETE CASCADE,
   CONSTRAINT `dragonhist_enemy_player` FOREIGN KEY (`enemy_player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE,
   CONSTRAINT `dragonhist_player` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=63853 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=63904 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -772,7 +773,7 @@ CREATE TABLE `dragon_top_rank` (
   CONSTRAINT `DRAGONID_RANK` FOREIGN KEY (`dragon_id`) REFERENCES `dragon` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `PLAYERID_RANK` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `TOPID_LIST` FOREIGN KEY (`top_id`) REFERENCES `dragon_top_list` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7048 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7149 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -804,7 +805,7 @@ CREATE TABLE `dragon_top_status` (
   UNIQUE KEY `enemy_dragon_id` (`enemy_dragon_id`),
   CONSTRAINT `DRAGONID_VETTA` FOREIGN KEY (`dragon_id`) REFERENCES `dragon` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `PLAYERID_VETTA` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3182 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3291 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -842,7 +843,7 @@ CREATE TABLE `dungeon_list` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`) USING BTREE,
   KEY `creator_id` (`creator_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=40454 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=40975 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -872,7 +873,7 @@ CREATE TABLE `dungeon_market` (
   CONSTRAINT `ITEMID_DUNG2` FOREIGN KEY (`item_2`) REFERENCES `item` (`id`),
   CONSTRAINT `ITEMID_DUNG3` FOREIGN KEY (`item_3`) REFERENCES `item` (`id`),
   CONSTRAINT `dungeon_id_market` FOREIGN KEY (`dungeon_id`) REFERENCES `dungeon_list` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=91381 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=92410 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -921,7 +922,7 @@ CREATE TABLE `dungeon_rooms` (
   KEY `player_id` (`player_id`),
   CONSTRAINT `PLAYERID_ROOMS` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `dungeon_list_rooms` FOREIGN KEY (`dungeon_id`) REFERENCES `dungeon_list` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1401128 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1422638 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -953,7 +954,7 @@ CREATE TABLE `dungeon_status` (
   KEY `dungeon_id` (`dungeon_id`),
   CONSTRAINT `DUNGSTATUS_ID` FOREIGN KEY (`dungeon_id`) REFERENCES `dungeon_list` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `player_id_dungeon` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=202265 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=204357 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -976,7 +977,7 @@ CREATE TABLE `dungeon_trade` (
   CONSTRAINT `TRADE_ITEMID` FOREIGN KEY (`item_1`) REFERENCES `item` (`id`),
   CONSTRAINT `TRADE_ITEMID2` FOREIGN KEY (`item_2`) REFERENCES `item` (`id`),
   CONSTRAINT `dungeon_id_trade` FOREIGN KEY (`dungeon_id`) REFERENCES `dungeon_list` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=61256 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=62247 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -993,7 +994,7 @@ CREATE TABLE `dungeon_well` (
   PRIMARY KEY (`id`),
   KEY `dungeon_id` (`dungeon_id`),
   CONSTRAINT `dungeon_id_well` FOREIGN KEY (`dungeon_id`) REFERENCES `dungeon_list` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=43083 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=44108 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1101,7 +1102,7 @@ CREATE TABLE `event_dust_status` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `player_id` (`player_id`),
   CONSTRAINT `PLAYERID_DUST` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6024 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6069 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1210,7 +1211,7 @@ CREATE TABLE `event_mana_status` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `player_id` (`player_id`),
   CONSTRAINT `PLAYERID_MANAS` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7816 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7830 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1400,7 +1401,7 @@ CREATE TABLE `game_house_stats` (
   PRIMARY KEY (`id`),
   KEY `player_id` (`player_id`),
   CONSTRAINT `PLAYERID_GAME` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6382 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6406 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1438,7 +1439,7 @@ CREATE TABLE `heist` (
   KEY `from_id` (`from_id`),
   CONSTRAINT `PID_HEIST` FOREIGN KEY (`from_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `PID_HEIST_TO` FOREIGN KEY (`to_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=765601 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=774311 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1458,7 +1459,7 @@ CREATE TABLE `heist_history` (
   `fail` int(11) NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=585225 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=593834 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1485,7 +1486,7 @@ CREATE TABLE `heist_progress` (
   KEY `to_id` (`to_id`),
   CONSTRAINT `HPROGR1` FOREIGN KEY (`from_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `HPROGR2` FOREIGN KEY (`to_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=209763 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=213354 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1512,7 +1513,7 @@ CREATE TABLE `help_message` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `player_id_2` (`player_id`),
   CONSTRAINT `PID_HELP` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12171 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=12231 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1529,7 +1530,7 @@ CREATE TABLE `holiday` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `player_id` (`player_id`),
   CONSTRAINT `holi_pid` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=15605 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=15713 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1564,7 +1565,7 @@ CREATE TABLE `house_game_3` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `player_id` (`player_id`),
   CONSTRAINT `HOUSE3_PID` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=67911 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=69217 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1604,7 +1605,7 @@ CREATE TABLE `inventory` (
   KEY `item_id` (`item_id`),
   CONSTRAINT `inventory_itemid` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `inventory_playerid` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=928594 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=945694 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1625,7 +1626,7 @@ CREATE TABLE `inventory_chest` (
   KEY `chest_id` (`chest_id`),
   CONSTRAINT `chest_id_chest` FOREIGN KEY (`chest_id`) REFERENCES `chest` (`id`),
   CONSTRAINT `player_id_chest` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=41408 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=42055 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1681,7 +1682,7 @@ CREATE TABLE `last_command` (
   UNIQUE KEY `accountid` (`account_id`),
   KEY `time` (`time`),
   CONSTRAINT `ACCID_LASTCMD` FOREIGN KEY (`account_id`) REFERENCES `player` (`account_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=29524 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=29735 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1736,7 +1737,7 @@ CREATE TABLE `magic` (
   KEY `player_id` (`player_id`),
   KEY `type` (`type`),
   CONSTRAINT `MAGIC_PID` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=301376 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=305809 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1768,7 +1769,7 @@ CREATE TABLE `market` (
   `time_end` timestamp NULL DEFAULT NULL,
   `buyer` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2467 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2655 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1792,7 +1793,7 @@ CREATE TABLE `market_direct` (
   CONSTRAINT `BUYER_MARK` FOREIGN KEY (`buyer`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `ITEMID_MARK` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `PID_MARK` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=19373 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=21073 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1825,7 +1826,7 @@ CREATE TABLE `market_direct_history` (
   CONSTRAINT `FROMID_HISTD` FOREIGN KEY (`from_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `ITEMID_HISTD` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `TOID_HISTD` FOREIGN KEY (`to_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11493011 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=11527599 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1870,7 +1871,7 @@ CREATE TABLE `market_gift` (
   CONSTRAINT `ITEMID_GIFT` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `PLAYERID_GIFT` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `PLAYERID_GIFT2` FOREIGN KEY (`to_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12875 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=12892 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1899,7 +1900,7 @@ CREATE TABLE `market_history` (
   CONSTRAINT `PID_H2` FOREIGN KEY (`from_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `PID_H2_2` FOREIGN KEY (`to_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `PID_H2_3` FOREIGN KEY (`buyer`) REFERENCES `player` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=45148 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=45298 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1917,7 +1918,7 @@ CREATE TABLE `market_pack` (
   PRIMARY KEY (`id`),
   KEY `item_id` (`item_id`),
   CONSTRAINT `ITEMID_PACK` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=10919 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=11069 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1960,7 +1961,7 @@ CREATE TABLE `merchant_offer` (
   UNIQUE KEY `player_id` (`player_id`),
   KEY `item_id` (`item_id`),
   CONSTRAINT `PLAYERID_MERCHANT` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3978 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3996 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2153,7 +2154,7 @@ CREATE TABLE `mission_team_party` (
   KEY `team_id` (`team_id`),
   CONSTRAINT `Mission_Team_Report` FOREIGN KEY (`report_id`) REFERENCES `mission_team_report` (`report_id`),
   CONSTRAINT `Party_Team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2974 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3302 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2174,7 +2175,7 @@ CREATE TABLE `mission_team_party_player` (
   KEY `mission_team_party_team` (`team_id`),
   CONSTRAINT `mission_team_party_player` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE,
   CONSTRAINT `mission_team_party_team` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12109 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=13381 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2197,7 +2198,7 @@ CREATE TABLE `mission_team_report` (
   UNIQUE KEY `no_duplicate` (`report_id`,`party_id`,`team_id`,`part_id`),
   KEY `report_id` (`report_id`),
   KEY `team_id` (`team_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11078 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=12115 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2215,7 +2216,7 @@ CREATE TABLE `mission_team_requirement` (
   `member` varchar(16) NOT NULL,
   `complex` int(11) NOT NULL DEFAULT '0' COMMENT '0-10',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2272,7 +2273,7 @@ CREATE TABLE `necro_change` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `player_id` (`player_id`),
   CONSTRAINT `PLAYERID_NECRO` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=210 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=215 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2289,7 +2290,7 @@ CREATE TABLE `necro_game` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `player_id` (`player_id`),
   CONSTRAINT `player_id_necro` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=296 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=304 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2326,7 +2327,7 @@ CREATE TABLE `pay_history` (
   KEY `to_id` (`to_id`),
   CONSTRAINT `PLAYERID_PAYFROM` FOREIGN KEY (`from_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `PLAYERID_PAYTO` FOREIGN KEY (`to_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=87733 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=91224 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2360,7 +2361,7 @@ CREATE TABLE `payments` (
   `status` varchar(5) NOT NULL,
   `amount` decimal(10,2) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=271 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=275 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2490,7 +2491,7 @@ CREATE TABLE `player` (
   UNIQUE KEY `account_id` (`account_id`),
   KEY `boss_id` (`boss_id`),
   CONSTRAINT `player_boss_id` FOREIGN KEY (`boss_id`) REFERENCES `boss_team` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=25440 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=25556 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -2552,7 +2553,7 @@ CREATE TABLE `plus_groups` (
   `last_update` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `chat_id` (`chat_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1547 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1552 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2566,7 +2567,7 @@ CREATE TABLE `plus_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `account_id` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=666 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=755 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2584,7 +2585,7 @@ CREATE TABLE `plus_notify` (
   PRIMARY KEY (`id`),
   KEY `player_id` (`player_id`),
   CONSTRAINT `PLAYERID_NOTIFY` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2621,7 +2622,7 @@ CREATE TABLE `plus_shop_timeout` (
   KEY `player_id2` (`player_id2`),
   CONSTRAINT `PLAYER1_TIMEOUT` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE,
   CONSTRAINT `PLAYER2_TIMEOUT` FOREIGN KEY (`player_id2`) REFERENCES `player` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2501 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2570 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2644,7 +2645,7 @@ CREATE TABLE `public_lottery` (
   KEY `item_id` (`item_id`),
   CONSTRAINT `CREATORID_LOTTERY` FOREIGN KEY (`creator_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `ITEMID_LOTTERY` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15923 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=16030 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2668,7 +2669,7 @@ CREATE TABLE `public_lottery_history` (
   CONSTRAINT `lottery_item` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `lottery_playerid` FOREIGN KEY (`creator_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `lottery_playerid_2` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=13944 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=14045 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2685,7 +2686,7 @@ CREATE TABLE `public_lottery_players` (
   PRIMARY KEY (`id`),
   KEY `player_id` (`player_id`),
   CONSTRAINT `PLAYERID_LOTTP` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=421806 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=424111 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2712,7 +2713,7 @@ CREATE TABLE `public_shop` (
   KEY `code` (`code`),
   CONSTRAINT `ITEMID_SHOP` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`),
   CONSTRAINT `player_id_player` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=962139 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=969645 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2745,7 +2746,7 @@ CREATE TABLE `reborn_save` (
   `saved` int(11) NOT NULL DEFAULT '1',
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=326 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=358 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2766,7 +2767,7 @@ CREATE TABLE `referral_list` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_player` (`new_player`),
   KEY `player_id` (`player_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4973 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5025 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2784,7 +2785,7 @@ CREATE TABLE `search_history` (
   PRIMARY KEY (`id`),
   KEY `player_id` (`player_id`),
   CONSTRAINT `PLAYERID_SEARCH` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9157958 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9218643 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2821,7 +2822,7 @@ CREATE TABLE `set_list` (
   PRIMARY KEY (`id`),
   KEY `player_id` (`player_id`),
   CONSTRAINT `PLAYERID_SET` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2433 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2458 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2875,7 +2876,7 @@ CREATE TABLE `team` (
   `boost_time` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `child_team` (`child_team`)
-) ENGINE=InnoDB AUTO_INCREMENT=1145 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1146 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2893,7 +2894,7 @@ CREATE TABLE `team_boost` (
   PRIMARY KEY (`id`),
   KEY `team_id` (`team_id`),
   CONSTRAINT `TEAMID_BOOST` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=248 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=252 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2916,7 +2917,7 @@ CREATE TABLE `team_player` (
   KEY `team_id` (`team_id`),
   CONSTRAINT `PLAYERID_TEAM` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `teamId_team` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11648 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=11673 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2948,7 +2949,7 @@ CREATE TABLE `tear` (
   PRIMARY KEY (`id`),
   KEY `player_id` (`player_id`),
   CONSTRAINT `PLAYERID_TEAR` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1203 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1223 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3247,4 +3248,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-04-27 15:00:12
+-- Dump completed on 2018-05-02 15:00:11
