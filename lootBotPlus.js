@@ -11,21 +11,36 @@ process.on('unhandledRejection', function (error, p) {
 
 var config = require('./config.js');
 var TelegramBot = require('node-telegram-bot-api');
-var fs = require('fs');
 var ms = require("ms");
 var mysql = require('mysql');
 var mysql_sync = require('sync-mysql');
 var readline = require('readline');
 var math = require('mathjs');
+var express = require('express');
+var http = require('http');
+var https = require('https');
+var fs = require('fs');
+var bodyParser = require('body-parser');
 
 var token = config.plustoken;
-var bot = new TelegramBot(token, {
-	polling: {
-		params: {
-			"allowed_updates": ["inline_query", "chosen_inline_result", "callback_query"],
-			"limit": 80
-		}
-	}
+
+var bot = new TelegramBot(token);
+var app = express();
+
+var path = "/plus/bot" + token;
+var port = 25002;
+
+var options = {
+	"allowed_updates": ["inline_query", "chosen_inline_result", "callback_query"],
+	"max_connections": 80
+}
+bot.setWebHook('https://fenixweb.net:8443' + path, options);
+app.listen(port);
+
+app.use(bodyParser.json());
+app.post(path, function(req, res) {
+  	bot.processUpdate(req.body);
+  	res.sendStatus(200);
 });
 
 var check = [];

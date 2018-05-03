@@ -71,14 +71,19 @@ var re6 = new RegExp("^[a-zA-Z0-9àèéìòù\\'\\-\\* ]{1,255}$");
 
 var config = require('./config.js');
 var TelegramBot = require('node-telegram-bot-api');
-var fs = require('fs')
 var Schedule = require('node-schedule');
 var request = require('request');
 var readline = require('readline');
 var mysql = require('mysql');
 var mysql_sync = require('sync-mysql');
+var express = require('express');
+var http = require('http');
+var https = require('https');
+var fs = require('fs');
+var bodyParser = require('body-parser');
 
 var token = config.maintoken;
+/*
 var bot = new TelegramBot(token, {
 	polling: true,
 	polling: {
@@ -86,6 +91,25 @@ var bot = new TelegramBot(token, {
 			"limit": 80
 		}
 	}
+});
+*/
+
+var bot = new TelegramBot(token);
+var app = express();
+
+var path = "/loot/bot" + token;
+var port = 25001;
+
+var options = {
+	"max_connections": 80
+}
+bot.setWebHook('https://fenixweb.net:8443' + path, options);
+app.listen(port);
+
+app.use(bodyParser.json());
+app.post(path, function (req, res) {
+  	bot.processUpdate(req.body);
+  	res.sendStatus(200);
 });
 
 var j = Schedule.scheduleJob('00 3 * * *', function () { //3 notte
