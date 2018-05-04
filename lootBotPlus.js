@@ -1830,6 +1830,9 @@ function getRealLevel(reb, lev) {
 }
 
 bot.onText(/^\/teamall/i, function (message, match) {
+	if (message.from.id != 20471035){
+		return;
+	}
 	connection.query('SELECT id FROM team WHERE players > 1', function (err, rows, fields) {
 		if (err) throw err;
 		for (var j = 0, len = Object.keys(rows).length; j < len; j++) {
@@ -1872,6 +1875,9 @@ bot.onText(/^\/teamall/i, function (message, match) {
 });
 
 bot.onText(/^\/team (.+)/i, function (message, match) {
+	if (message.from.id != 20471035){
+		return;
+	}
 	connection.query('SELECT team.name, player.reborn, player.nickname, FLOOR(player.exp/10) As level FROM team, team_player, player WHERE team.id = team_player.team_id AND team_player.player_id = player.id AND team.name = "' + match[1] + '" ORDER BY player.reborn, player.exp DESC', function (err, rows, fields) {
 		if (err) throw err;
 		var mediaTeam = 0;
@@ -1912,6 +1918,9 @@ bot.onText(/^\/team (.+)/i, function (message, match) {
 });
 
 bot.onText(/^\/contrabb (.+)/i, function (message, match) {
+	if (message.from.id != 20471035){
+		return;
+	}
 	connection.query('SELECT id, base_sum, price_sum, name, value FROM item WHERE name = "' + match[1] + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var val = parseInt(rows[0].base_sum);
