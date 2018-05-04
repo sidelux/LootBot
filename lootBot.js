@@ -131,6 +131,7 @@ var j3 = Schedule.scheduleJob('01 00 * * *', function () { //00:01 notte
 	if (d.getDay() == 1)
 		craftWeek();
 	resetTeamMission();
+	resetGnomorra();
 });
 
 var j4 = Schedule.scheduleJob('05 00 * * *', function () { //00:05 notte
@@ -218,9 +219,11 @@ callNTimes(60000, function () { //Ogni 1 minuto
 		estrazione();
 	}
 	if (gnomorra == 1){
-		checkGnomorraInvite();
-		checkGnomorraGame();
+		//checkGnomorraInvite();
+		//checkGnomorraGame();
 	}
+	checkGnomorraInvite();	// scommentare sopra ed eliminare questo
+	checkGnomorraGame();	// scommentare sopra ed eliminare questo
 });
 
 callNTimes(120000, function () { //Ogni 2 minuti
@@ -3313,6 +3316,12 @@ function resetAchievement() {
 
 function resetTeamMission() {
 	connection.query('UPDATE team SET mission_day_count = 0', function (err, rows, fields) {
+		if (err) throw err;
+	});
+}
+
+function resetGnomorra() {
+	connection.query('UPDATE event_gnomorra SET battle_limit = 0, practice_limit = 0', function (err, rows, fields) {
 		if (err) throw err;
 	});
 }
@@ -6923,6 +6932,9 @@ bot.onText(/dungeon/i, function (message) {
 	if (message.text.indexOf("velocemente") != -1) {
 		return;
 	}
+	
+	if (message.text.length > 25)
+		return;
 
 	var max_rooms_neg = 15;		// Diventa negativo dopo
 
@@ -15639,7 +15651,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 														};
 													});
 												} else if (answer.text.indexOf("Log") != -1) {
-													connection.query('SELECT L.id, P1.nickname As nick1, P2.nickname As nick2, D1.name As dragon1, D2.name As dragon2, D1.type As type1, D2.type As type2, win, note, time FROM dragon_top_log L INNER JOIN player P1 ON P1.id = L.player_id INNER JOIN player P2 ON P2.id = L.enemy_player_id INNER JOIN dragon D1 ON D1.id = L.dragon_id INNER JOIN dragon D2 ON D2.id = L.enemy_dragon_id WHERE (dragon_id = ' + dragon_id + ' OR enemy_dragon_id = ' + dragon_id + ') AND player_visible = 1 AND enemy_visible = 1 ORDER BY L.id DESC LIMIT 50', function (err, rows, fields) {
+													connection.query('SELECT L.id, P1.nickname As nick1, P2.nickname As nick2, D1.name As dragon1, D2.name As dragon2, D1.type As type1, D2.type As type2, win, note, time FROM dragon_top_log L INNER JOIN player P1 ON P1.id = L.player_id INNER JOIN player P2 ON P2.id = L.enemy_player_id INNER JOIN dragon D1 ON D1.id = L.dragon_id INNER JOIN dragon D2 ON D2.id = L.enemy_dragon_id WHERE (dragon_id = ' + dragon_id + ' OR enemy_dragon_id = ' + dragon_id + ') AND player_visible = 1 AND enemy_visible = 1 ORDER BY L.id DESC LIMIT 30', function (err, rows, fields) {
 														if (err) throw err;
 
 														if (Object.keys(rows).length > 0) {
@@ -15658,7 +15670,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 
 																text += rows[i].dragon1 + " vs " + rows[i].dragon2 + " (" + rows[i].note + " alle " + short_date + ")\n";
 															}
-															bot.sendMessage(message.chat.id, "Ultime 50 battaglie:\n\n" + text, kbClean_html);
+															bot.sendMessage(message.chat.id, "Ultime 30 battaglie:\n\n" + text, kbClean_html);
 														} else {
 															bot.sendMessage(message.chat.id, "Non hai ancora completato alcuna battaglia!\nOppure sono tutte nascoste perchè è da molto che non combatti :(", kbClean2_html);
 														}
@@ -15806,25 +15818,36 @@ bot.onText(/riposa/i, function (message) {
 							if (answer.text == "Torna al menu") {
 								return;
 							}
+							
 							var h = parseInt(answer.text);
-							if (isNaN(h) || (h < 10) || (h > 100)) {
-								bot.sendMessage(message.chat.id, "Valore non valido: minimo 10 minuti, massimo 100", kbBack);
-								return;
-							}
-
-							if (h > full) {
-								bot.sendMessage(message.chat.id, "Non puoi riposare più del necessario, massimo " + full + " minuti", kbBack);
-								return;
-							}
-
-							var d = new Date();
-							d.setMinutes(d.getMinutes() + h);
-							var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-							var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
-
-							connection.query('UPDATE dragon SET sleep_h = ' + h + ', sleep_time_end = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+							
+							connection.query('SELECT id FROM dragon_top_status WHERE enemy_dragon_id = ' + dragon_id, function (err, rows, fields) {
 								if (err) throw err;
-								bot.sendMessage(message.chat.id, "Il tuo drago si riposerà fino alle " + short_date, kbBack);
+
+								if (Object.keys(rows).length > 0) {
+									bot.sendMessage(message.chat.id, "Il drago è impegnato in uno scontro, non può riposarsi", kbBack);
+									return;
+								}
+								
+								if (isNaN(h) || (h < 10) || (h > 100)) {
+									bot.sendMessage(message.chat.id, "Valore non valido: minimo 10 minuti, massimo 100", kbBack);
+									return;
+								}
+
+								if (h > full) {
+									bot.sendMessage(message.chat.id, "Non puoi riposare più del necessario, massimo " + full + " minuti", kbBack);
+									return;
+								}
+
+								var d = new Date();
+								d.setMinutes(d.getMinutes() + h);
+								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+								var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
+
+								connection.query('UPDATE dragon SET sleep_h = ' + h + ', sleep_time_end = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+									if (err) throw err;
+									bot.sendMessage(message.chat.id, "Il tuo drago si riposerà fino alle " + short_date, kbBack);
+								});
 							});
 						};
 					});
@@ -18443,14 +18466,14 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 									progress = "Scelte: " + rows[i].parts;
 								}
 								if (rows[i].daynight == 1){
-									daynight = "\nAvviabile solo di giorno ☀️";
+									daynight = "Avviabile solo di giorno ☀️";
 								}else if (rows[i].daynight == 2){
-									daynight = "\nAvviabile solo di notte 🌙";
+									daynight = "Avviabile solo di notte 🌙";
 								}else{
 									daynight = "";
 								}
 								var rowsCnt = connection_sync.query('SELECT AVG(complex) As cnt FROM mission_team_requirement WHERE requirement_id = ' + rows[i].requirement_id);
-								text += "<b>" + rows[i].title + "</b>" + assigned + "\nMandante: " + rows[i].mandator + "\n<i>" + truncate(rows[i].description, 100) + "</i>\nDurata: " + toTime(rows[i].duration*(rows[i].parts+1)) + " (" + toTime(rows[i].duration) + "/scelta) ⏳\nDifficoltà: " + Math.round(rowsCnt[0].cnt*10)/10 + "/10 📈\n" + daynight + progress + " 🗺\n\n";
+								text += "<b>" + rows[i].title + "</b>" + assigned + "\nMandante: " + rows[i].mandator + "\n<i>" + truncate(rows[i].description, 100) + "</i>\nDurata: " + toTime(rows[i].duration*(rows[i].parts+1)) + " (" + toTime(rows[i].duration) + "/scelta) ⏳\nDifficoltà: " + Math.round(rowsCnt[0].cnt*10)/10 + "/10 📈\n" + daynight + "\n" + progress + " 🗺\n\n";
 								iKeys.push([rows[i].title]);
 							}
 
@@ -18527,21 +18550,8 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 											var mission_id = rows[0].id;
 											var mission_duration = rows[0].duration;
 											var mission_parts = rows[0].parts;
-											var mission_progress = rows[0].progress;
-
-											if (rows[0].daynight == 1){
-												var d = new Date();
-												if ((d.getHours() < 9) || (d.getHours() > 22)) { //9-23
-													bot.sendMessage(message.chat.id, "Questo incarico è avviabile solo di giorno", kbBack2);
-													return;
-												}
-											}else if (rows[0].daynight == 2){
-												var d = new Date();
-												if ((d.getHours() > 9) && (d.getHours() < 22)) { //10-21
-													bot.sendMessage(message.chat.id, "Questo incarico è avviabile solo di notte", kbBack2);
-													return;
-												}
-											}
+											var mission_progress = rows[0].progress_num;
+											var daynight = rows[0].daynight;
 
 											connection.query('SELECT type, value, member FROM mission_team_requirement WHERE requirement_id = ' + mission_id, function (err, req, fields) {
 												if (err) throw err;
@@ -18659,6 +18669,20 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 															if (rows[0].mission_day_count >= missionDayLimit){
 																bot.sendMessage(message.chat.id, "Hai raggiunto il limite giornaliero di incarichi", kbBack);
 																return;
+															}
+
+															if (daynight == 1){
+																var d = new Date();
+																if ((d.getHours() < 9) || (d.getHours() > 22)) { //9-23
+																	bot.sendMessage(message.chat.id, "Questo incarico è avviabile solo di giorno", kbBack2);
+																	return;
+																}
+															}else if (daynight == 2){
+																var d = new Date();
+																if ((d.getHours() > 9) && (d.getHours() < 22)) { //10-21
+																	bot.sendMessage(message.chat.id, "Questo incarico è avviabile solo di notte", kbBack2);
+																	return;
+																}
 															}
 
 															bot.sendMessage(message.chat.id, text, kb2).then(function () {
@@ -21445,8 +21469,9 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 	});
 });
 
-bot.onText(/Gnomorra/i, function (message) {
-	if ((message.from.id != 20471035) && (message.from.id != 62162452) && (message.from.id != 138671537)){
+bot.onText(/gnomorra/i, function (message) {
+	if ((message.from.id != 20471035) && (message.from.id != 62162452) && (message.from.id != 138671537) && (message.from.id != 340271798)){
+		bot.sendMessage(message.chat.id, "L'evento non è disponibile", back);
 		return;
 	}
 
@@ -21503,7 +21528,7 @@ bot.onText(/Gnomorra/i, function (message) {
 			}
 		};
 
-		connection.query('SELECT win, lose, win_streak, invite_id, enemy_id FROM event_gnomorra WHERE player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT win, lose, win_streak, invite_id, enemy_id, battle_limit, practice_limit FROM event_gnomorra WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
@@ -21519,10 +21544,18 @@ bot.onText(/Gnomorra/i, function (message) {
 			var win_streak = rows[0].win_streak;
 			var invite_id = rows[0].invite_id;
 			var enemy_id = rows[0].enemy_id;
+			var battle_limit = rows[0].battle_limit;
+			var practice_limit = rows[0].practice_limit;
 
-			bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " alla <b>Gnomorra Lootiana</b>!\nPuoi sfidare un giocatore casuale oppure uno in particolare inserendo il suo nickname, il giocatore bersaglio deve accettare l'invito, la partita è divisa in 3 round.\n\n<b>Vittorie:</b> " + win + "\n<b>Sconfitte:</b> " + lose + "\n<b>Vittorie consecutive:</b> " + win_streak, kb).then(function () {
+			bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " alla <b>Gnomorra Lootiana</b>!\nPuoi sfidare un giocatore casuale oppure uno in particolare inserendo il suo nickname, il giocatore bersaglio deve accettare l'invito, la partita è divisa in 3 round.\n\n<b>Vittorie:</b> " + win + "\n<b>Sconfitte:</b> " + lose + "\n<b>Vittorie consecutive:</b> " + win_streak + "\n\nPuoi ancora giocare " + (50-battle_limit) + " partite normali e " + (50-practice_limit) + " allenamenti", kb).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if (answer.text.indexOf("qualcuno") != -1){
+						
+						var d = new Date();
+						if ((d.getHours() < 9) || (d.getHours() > 22)) { //9-23
+							bot.sendMessage(message.chat.id, "Non è possibile avviare partite di notte!", kbBack);
+							return;
+						}
 
 						if (invite_id != null){
 							bot.sendMessage(message.chat.id, "Hai già un invito in attesa, attendi che scada prima di inviarne un altro", kbBack);
@@ -21531,6 +21564,11 @@ bot.onText(/Gnomorra/i, function (message) {
 
 						if (enemy_id != null){
 							bot.sendMessage(message.chat.id, "Hai già una partita in corso, usa /gnomorra per riprenderla", kbBack);
+							return;
+						}
+						
+						if ((50-battle_limit) <= 0){
+							bot.sendMessage(message.chat.id, "Per oggi non puoi più avviare partite di questo tipo", kbBack);
 							return;
 						}
 
@@ -21555,12 +21593,18 @@ bot.onText(/Gnomorra/i, function (message) {
 										return;
 									}
 
-									gnomorraStart(player_id, rows[0].player_id);
+									gnomorraStart(player_id, rows[0].player_id, 0);
 								});
 							});
 						});
 					}else if (answer.text.indexOf("precisa") != -1){
 
+						var d = new Date();
+						if ((d.getHours() < 9) || (d.getHours() > 22)) { //9-23
+							bot.sendMessage(message.chat.id, "Non è possibile avviare partite di notte!", kbBack);
+							return;
+						}
+						
 						if (invite_id != null){
 							bot.sendMessage(message.chat.id, "Hai già un invito in attesa, attendi che scada prima di inviarne un altro", kbBack);
 							return;
@@ -21568,6 +21612,11 @@ bot.onText(/Gnomorra/i, function (message) {
 
 						if (enemy_id != null){
 							bot.sendMessage(message.chat.id, "Hai già una partita in corso, usa /gnomorra per riprenderla", kbBack);
+							return;
+						}
+						
+						if ((50-practice_limit) <= 0){
+							bot.sendMessage(message.chat.id, "Per oggi non puoi più avviare partite di questo tipo", kbBack);
 							return;
 						}
 
@@ -21579,7 +21628,7 @@ bot.onText(/Gnomorra/i, function (message) {
 								return;
 							}
 
-							bot.sendMessage(message.chat.id, "Inserisci il nickname del giocatore che vuoi sfidare", kb2).then(function () {
+							bot.sendMessage(message.chat.id, "Le partite mirate non vengono considerate nei punteggi e non forniscono premi\nInserisci il nickname del giocatore che vuoi sfidare", kb2).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if ((answer.text == "Vai alla Gnomorra Lootiana") || (answer.text == "Torna al menu"))
 										return;
@@ -21617,7 +21666,7 @@ bot.onText(/Gnomorra/i, function (message) {
 													return;
 												}
 
-												gnomorraStart(player_id, enemy_player_id);
+												gnomorraStart(player_id, enemy_player_id, 1);
 											});
 										});
 									});
@@ -21635,7 +21684,7 @@ bot.onText(/Gnomorra/i, function (message) {
 							var points = [];
 							var mypos = 0;
 
-							if (Object.keys(rows).length < 100){
+							if (Object.keys(rows).length < 50){
 								bot.sendMessage(message.chat.id, "La classifica sarà disponibile con più giocatori iscritti!", kbBack);
 								return;
 							}
@@ -21668,7 +21717,7 @@ bot.onText(/Gnomorra/i, function (message) {
 	});
 });
 
-function gnomorraStart(player_id, enemy_player_id){
+function gnomorraStart(player_id, enemy_player_id, practice){
 	connection.query('SELECT nickname, chat_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 		if (err) throw err;
 		var chat_id = rows[0].chat_id;
@@ -21682,7 +21731,7 @@ function gnomorraStart(player_id, enemy_player_id){
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					keyboard: [["Accetta invito"], ["Rifiuta invito"], ["Torna al menu"]]
+					keyboard: [["Accetta invito", "Rifiuta invito"], ["Torna al menu"]]
 				}
 			};
 
@@ -21690,14 +21739,20 @@ function gnomorraStart(player_id, enemy_player_id){
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					keyboard: [["Torna a Gnomorra Lootiana"], ["Torna al menu"]]
+					keyboard: [["Torna alla Gnomorra Lootiana"], ["Torna al menu"]]
 				}
 			};
 
-			connection.query('UPDATE event_gnomorra SET invite_id = ' + enemy_player_id + ', invite_time = DATE_ADD(NOW(), INTERVAL 5 MINUTE) WHERE player_id = ' + player_id, function (err, rows, fields) {
+			connection.query('UPDATE event_gnomorra SET invite_id = ' + enemy_player_id + ', invite_time = DATE_ADD(NOW(), INTERVAL 5 MINUTE), type = ' + practice + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
-				bot.sendMessage(chat_id, "Hai spedito un invito a " + enemy_nickname + " attendi che l'accetti per iniziare la sfida (entro 5 min)", kb2);
-				bot.sendMessage(enemy_chat_id, "Hai ricevuto un invito per Gnomorra Lootiana da " + nickname + ", accetti?\nScade tra 5 minuti", kb);
+				
+				if (practice == 1){
+					bot.sendMessage(chat_id, "Hai spedito un invito per una partita di allenamento a " + enemy_nickname + " attendi che l'accetti per iniziare la sfida (entro 5 min)", kb2);
+					bot.sendMessage(enemy_chat_id, "Hai ricevuto un invito per Allenamento Gnomorra Lootiana da " + nickname + ", accetti?\nScade tra 5 minuti", kb);
+				} else {
+					bot.sendMessage(chat_id, "Hai spedito un invito per una partita a " + enemy_nickname + " attendi che l'accetti per iniziare la sfida (entro 5 min)", kb2);
+					bot.sendMessage(enemy_chat_id, "Hai ricevuto un invito per Gnomorra Lootiana da " + nickname + ", accetti?\nScade tra 5 minuti", kb);
+				}
 			});
 		});
 	});
@@ -21734,18 +21789,22 @@ bot.onText(/Accetta invito|Rifiuta invito/i, function (message) {
 					if (err) throw err;
 
 					if (message.text.toLowerCase().indexOf("accetta") != -1){
-						bot.sendMessage(message.chat.id, "Hai accettato l'invito!", back);
+						bot.sendMessage(message.chat.id, "Hai accettato l'invito! Tocca al tuo avversario!", back);
 						bot.sendMessage(rows[0].chat_id, message.from.username + " ha accettato il tuo invito!");
 
-						connection.query('UPDATE event_gnomorra SET invite_id = NULL, invite_time = NULL, enemy_id = ' + player_id + ', game_time = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE player_id = ' + enemy_player_id, function (err, rows, fields) {
+						connection.query('SELECT type FROM event_gnomorra WHERE player_id = ' + enemy_player_id, function (err, rows, fields) {
 							if (err) throw err;
-							gnomorraGame(enemy_player_id, player_id);
+							var type = rows[0].type;
+							connection.query('UPDATE event_gnomorra SET invite_id = NULL, invite_time = NULL, enemy_id = ' + player_id + ', game_time = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE player_id = ' + enemy_player_id, function (err, rows, fields) {
+								if (err) throw err;
+								gnomorraGame(enemy_player_id, player_id, type);
+							});
 						});
 					}else{
 						bot.sendMessage(message.chat.id, "Hai rifiutato l'invito!");
 						bot.sendMessage(rows[0].chat_id, message.from.username + " ha rifiutato il tuo invito!");
 
-						connection.query('UPDATE event_gnomorra SET invite_id = NULL, invite_time = NULL WHERE player_id = ' + enemy_player_id, function (err, rows, fields) {
+						connection.query('UPDATE event_gnomorra SET invite_id = NULL, invite_time = NULL, type = 0 WHERE player_id = ' + enemy_player_id, function (err, rows, fields) {
 							if (err) throw err;
 						});
 					}
@@ -21760,7 +21819,7 @@ bot.onText(/^\/gnomorra/i, function (message) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
-		connection.query('SELECT round_sel, enemy_id FROM event_gnomorra WHERE player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT round_sel, enemy_id, type FROM event_gnomorra WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0){
@@ -21778,26 +21837,35 @@ bot.onText(/^\/gnomorra/i, function (message) {
 					}
 
 					var enemy_player_id = rows[0].player_id;
-					if (rows[0].round_sel == 0){
-						gnomorraGame(enemy_player_id, player_id);
-					}else if (rows[0].round_sel != 1){
-						gnomorraGame(player_id, enemy_player_id);
-					}
+					var round_sel = rows[0].round_sel;
+					
+					connection.query('SELECT type FROM event_gnomorra WHERE player_id = ' + enemy_player_id, function (err, rows, fields) {
+						if (err) throw err;
+						
+						var type = rows[0].type;
+					
+						if (round_sel == 0){
+							gnomorraGame(enemy_player_id, player_id, type);
+						}else if (round_sel != 1){
+							gnomorraGame(player_id, enemy_player_id, type);
+						}
+					});
 				});
 				return;
-			}
-
-			var enemy_player_id = rows[0].enemy_id;
-			if (rows[0].round_sel == 0){
-				gnomorraGame(player_id, enemy_player_id);
-			}else if (rows[0].round_sel != 0){
-				gnomorraGame(enemy_player_id, player_id);
+			}else{
+				var enemy_player_id = rows[0].enemy_id;
+				var type = rows[0].type;
+				if (rows[0].round_sel == 0){
+					gnomorraGame(player_id, enemy_player_id, type);
+				}else if (rows[0].round_sel != 0){
+					gnomorraGame(enemy_player_id, player_id, type);
+				}
 			}
 		});
 	});
 });
 
-function gnomorraGame(player_id, enemy_player_id){
+function gnomorraGame(player_id, enemy_player_id, type){
 	connection.query('SELECT nickname, chat_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 		if (err) throw err;
 		var chat_id = rows[0].chat_id;
@@ -21841,7 +21909,7 @@ function gnomorraGame(player_id, enemy_player_id){
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							keyboard: [["Torna a Gnomorra Lootiana"], ["Torna al menu"]]
+							keyboard: [["Torna alla Gnomorra Lootiana"], ["Torna al menu"]]
 						}
 					};
 
@@ -21900,15 +21968,15 @@ function gnomorraGame(player_id, enemy_player_id){
 
 										if (win == 1){
 											round_win++;
-											bot.sendMessage(chat_id, "Hai scelto " + selS + ", il tuo avversario ha scelto " + enemy_selS + ".\nHai vinto!");
-											bot.sendMessage(enemy_chat_id, "Il tuo avversario ha giocato " + selS + ", tu hai scelto " + enemy_selS + ".\nHai perso il round!");
+											bot.sendMessage(chat_id, "Hai scelto " + selS + ", il tuo avversario ha scelto " + enemy_selS + ".\nHai *vinto* il round!", back);
+											bot.sendMessage(enemy_chat_id, "Il tuo avversario ha giocato " + selS + ", tu hai scelto " + enemy_selS + ".\nHai *perso* il round!");
 										}else if (win == 2){
 											enemy_round_win++;
-											bot.sendMessage(chat_id, "Hai scelto " + selS + ", il tuo avversario ha scelto " + enemy_selS + ".\nHai perso il round!");
-											bot.sendMessage(enemy_chat_id, "Il tuo avversario ha giocato " + selS + ", tu hai scelto " + enemy_selS + ".\nHai vinto il round!");
+											bot.sendMessage(chat_id, "Hai scelto " + selS + ", il tuo avversario ha scelto " + enemy_selS + ".\nHai *perso* il round!", back);
+											bot.sendMessage(enemy_chat_id, "Il tuo avversario ha giocato " + selS + ", tu hai scelto " + enemy_selS + ".\nHai *vinto* il round!");
 										}else{
-											bot.sendMessage(chat_id, "Hai scelto " + selS + ", il tuo avversario ha scelto " + enemy_selS + ".\nParità, si rigioca!", back);
-											bot.sendMessage(enemy_chat_id, "Il tuo avversario ha giocato " + selS + ", tu hai scelto " + enemy_selS + ".\nParità, si rigioca!");
+											bot.sendMessage(chat_id, "Hai scelto " + selS + ", il tuo avversario ha scelto " + enemy_selS + ".\n*Parità*, si rigioca!", back);
+											bot.sendMessage(enemy_chat_id, "Il tuo avversario ha giocato " + selS + ", tu hai scelto " + enemy_selS + ".\n*Parità*, si rigioca!");
 											// nulla in caso di parità
 										}
 
@@ -21938,27 +22006,57 @@ function gnomorraGame(player_id, enemy_player_id){
 													connection_sync.query('UPDATE event_gnomorra SET round_sel = 0 WHERE player_id = ' + enemy_player_id);
 												}
 
-												gnomorraGame(enemy_player_id, player_id);
+												gnomorraGame(player_id, enemy_player_id, type);
 											}
 
-											if (winner == 1){
-												bot.sendMessage(chat_id, "Hai vinto due round su tre, hai vinto la partita!", kb2);
-												bot.sendMessage(enemy_chat_id, "Il tuo avversario ha vinto due round su tre, hai perso la partita!", kb2);
-												connection.query('UPDATE event_gnomorra SET win = win+1, win_streak = win_streak+1, enemy_id = NULL, round_win = 0, round_sel = 0, game_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-													if (err) throw err;
-												});
-												connection.query('UPDATE event_gnomorra SET lose = lose+1, win_streak = 0, enemy_id = NULL, round_win = 0, round_sel = 0, game_time = NULL WHERE player_id = ' + enemy_player_id, function (err, rows, fields) {
-													if (err) throw err;
-												});
-											} else if (winner == 2){
-												bot.sendMessage(chat_id, "Hai perso due round su tre, hai perso la partita!", kb2);
-												bot.sendMessage(enemy_chat_id, "Il tuo avversario ha perso due round su tre, hai vinto la partita!", kb2);
-												connection.query('UPDATE event_gnomorra SET lose = lose+1, win_streak = 0, enemy_id = NULL, round_win = 0, round_sel = 0, game_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-													if (err) throw err;
-												});
-												connection.query('UPDATE event_gnomorra SET win = win+1, win_streak = win_streak+1, enemy_id = NULL, round_win = 0, round_sel = 0, game_time = NULL WHERE player_id = ' + enemy_player_id, function (err, rows, fields) {
-													if (err) throw err;
-												});
+											if (type == 1){
+												if (winner == 1){
+													bot.sendMessage(chat_id, "Hai vinto due round su tre, hai vinto la partita di allenamento!", kb2);
+													bot.sendMessage(enemy_chat_id, "Il tuo avversario ha vinto due round su tre, hai perso la partita di allenamento!", kb2);
+													connection.query('UPDATE event_gnomorra SET enemy_id = NULL, round_win = 0, round_sel = 0, game_time = NULL, type = 0, practice_limit = practice_limit+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+													});
+													connection.query('UPDATE event_gnomorra SET enemy_id = NULL, round_win = 0, round_sel = 0, game_time = NULL, type = 0, practice_limit = practice_limit+1 WHERE player_id = ' + enemy_player_id, function (err, rows, fields) {
+														if (err) throw err;
+													});
+												} else if (winner == 2){
+													bot.sendMessage(chat_id, "Hai perso due round su tre, hai perso la partita di allenamento!", kb2);
+													bot.sendMessage(enemy_chat_id, "Il tuo avversario ha perso due round su tre, hai vinto la partita di allenamento!", kb2);
+													connection.query('UPDATE event_gnomorra SET enemy_id = NULL, round_win = 0, round_sel = 0, game_time = NULL, type = 0, practice_limit = practice_limit+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+													});
+													connection.query('UPDATE event_gnomorra SET enemy_id = NULL, round_win = 0, round_sel = 0, game_time = NULL, type = 0, practice_limit = practice_limit+1 WHERE player_id = ' + enemy_player_id, function (err, rows, fields) {
+														if (err) throw err;
+													});
+												}
+											}else{
+												if (winner == 1){
+													bot.sendMessage(chat_id, "Hai vinto due round su tre, hai vinto la partita!", kb2);
+													bot.sendMessage(enemy_chat_id, "Il tuo avversario ha vinto due round su tre, hai perso la partita!", kb2);
+													connection.query('UPDATE event_gnomorra SET win = win+1, win_streak = win_streak+1, enemy_id = NULL, round_win = 0, round_sel = 0, game_time = NULL, battle_limit = battle_limit+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+													});
+													connection.query('UPDATE event_gnomorra SET lose = lose+1, win_streak = 0, enemy_id = NULL, round_win = 0, round_sel = 0, game_time = NULL, battle_limit = battle_limit+1 WHERE player_id = ' + enemy_player_id, function (err, rows, fields) {
+														if (err) throw err;
+													});
+												} else if (winner == 2){
+													bot.sendMessage(chat_id, "Hai perso due round su tre, hai perso la partita!", kb2);
+													bot.sendMessage(enemy_chat_id, "Il tuo avversario ha perso due round su tre, hai vinto la partita!", kb2);
+													connection.query('UPDATE event_gnomorra SET lose = lose+1, win_streak = 0, enemy_id = NULL, round_win = 0, round_sel = 0, game_time = NULL, battle_limit = battle_limit+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+													});
+													connection.query('UPDATE event_gnomorra SET win = win+1, win_streak = win_streak+1, enemy_id = NULL, round_win = 0, round_sel = 0, game_time = NULL, battle_limit = battle_limit+1 WHERE player_id = ' + enemy_player_id, function (err, rows, fields) {
+														if (err) throw err;
+													});
+												}
+												
+												/*
+												var rand = Math.random()*100;
+												var chestid = [2,3,4,5,6];
+												var prob = [40,20,20,10,10];
+												win_streak+1
+												enemy_win_streak+1
+												*/
 											}
 										}, 300);
 									}else{
