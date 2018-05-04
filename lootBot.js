@@ -477,8 +477,7 @@ var back = {
 	disable_web_page_preview: true,
 	reply_markup: {
 		resize_keyboard: true,
-		//one_time_keyboard: true,
-		"keyboard": [["Torna al menu"]]
+		keyboard: [["Torna al menu"]]
 	}
 };
 
@@ -487,8 +486,7 @@ var back_html = {
 	disable_web_page_preview: true,
 	reply_markup: {
 		resize_keyboard: true,
-		//one_time_keyboard: true,
-		"keyboard": [["Torna al menu"]]
+		keyboard: [["Torna al menu"]]
 	}
 };
 
@@ -497,8 +495,7 @@ var yesno = {
 	reply_markup: {
 		"force_reply": true,
 		"resize_keyboard": true,
-		"//one_time_keyboard": true,
-		"keyboard": [["Si"], ["Torna al menu"]]
+		keyboard: [["Si"], ["Torna al menu"]]
 	}
 };
 
@@ -506,8 +503,7 @@ var conf = {
 	parse_mode: "Markdown",
 	reply_markup: {
 		resize_keyboard: true,
-		//one_time_keyboard: true,
-		"keyboard": [["Conferma"], ["Torna al menu"]]
+		keyboard: [["Conferma"], ["Torna al menu"]]
 	}
 };
 
@@ -515,8 +511,7 @@ var abort_travel = {
 	parse_mode: "HTML",
 	reply_markup: {
 		resize_keyboard: true,
-		//one_time_keyboard: true,
-		"keyboard": [["Ritorna"], ["Torna al menu"]]
+		keyboard: [["Ritorna"], ["Torna al menu"]]
 	}
 };
 
@@ -524,8 +519,7 @@ var abort_travel_2 = {
 	parse_mode: "HTML",
 	reply_markup: {
 		resize_keyboard: true,
-		//one_time_keyboard: true,
-		"keyboard": [["Ritorna"], ["Concludi immediatamente"], ["Torna al menu"]]
+		keyboard: [["Ritorna"], ["Concludi immediatamente"], ["Torna al menu"]]
 	}
 };
 
@@ -533,8 +527,7 @@ var abort_mission = {
 	parse_mode: "HTML",
 	reply_markup: {
 		resize_keyboard: true,
-		//one_time_keyboard: true,
-		"keyboard": [["Termina subito"], ["Torna al menu"]]
+		keyboard: [["Termina subito"], ["Torna al menu"]]
 	}
 };
 
@@ -542,8 +535,7 @@ var team = {
 	parse_mode: "Markdown",
 	reply_markup: {
 		resize_keyboard: true,
-		//one_time_keyboard: true,
-		"keyboard": [["Torna al Team"], ["Torna al menu"]]
+		keyboard: [["Torna al Team"], ["Torna al menu"]]
 	}
 };
 
@@ -551,8 +543,7 @@ var team_html = {
 	parse_mode: "HTML",
 	reply_markup: {
 		resize_keyboard: true,
-		//one_time_keyboard: true,
-		"keyboard": [["Torna al Team"], ["Torna al menu"]]
+		keyboard: [["Torna al Team"], ["Torna al menu"]]
 	}
 };
 
@@ -570,8 +561,7 @@ var revive = {
 	parse_mode: "Markdown",
 	reply_markup: {
 		resize_keyboard: true,
-		//one_time_keyboard: true,
-		"keyboard": [["Torna in Vita"], ["Torna al menu"]]
+		keyboard: [["Torna in Vita"], ["Torna al menu"]]
 	}
 };
 
@@ -579,8 +569,7 @@ var keyrank = {
 	parse_mode: "HTML",
 	reply_markup: {
 		resize_keyboard: true,
-		//one_time_keyboard: true,
-		"keyboard": [['Top'], ['Torna al menu']]
+		keyboard: [['Top'], ['Torna al menu']]
 	}
 };
 
@@ -588,8 +577,7 @@ var kb_heist = {
 	parse_mode: "Markdown",
 	reply_markup: {
 		resize_keyboard: true,
-		//one_time_keyboard: true,
-		"keyboard": [["Completa immediatamente"], ["Torna al menu"]]
+		keyboard: [["Completa immediatamente"], ["Torna al menu"]]
 	}
 };
 
@@ -603,8 +591,7 @@ var no_preview_back = {
 	disable_web_page_preview: true,
 	reply_markup: {
 		resize_keyboard: true,
-		//one_time_keyboard: true,
-		"keyboard": [["Torna al menu"]]
+		keyboard: [["Torna al menu"]]
 	}
 };
 
@@ -849,8 +836,7 @@ function checkKeyboard() {
 		disable_web_page_preview: true,
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": mainKeys
+			keyboard: mainKeys
 		}
 	};
 
@@ -859,8 +845,7 @@ function checkKeyboard() {
 		disable_web_page_preview: true,
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": mainKeysR
+			keyboard: mainKeysR
 		}
 	};
 
@@ -869,8 +854,7 @@ function checkKeyboard() {
 		disable_web_page_preview: true,
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": mainKeysR2
+			keyboard: mainKeysR2
 		}
 	};
 };
@@ -1873,8 +1857,7 @@ bot.onText(/Donazioni|Lunari/i, function (message) {
 		disable_web_page_preview: true,
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Fai una Donazione!"], ["Lista Donatori"], ["Torna al menu"]]
+			keyboard: [["Fai una Donazione!"], ["Lista Donatori"], ["Torna al menu"]]
 		}
 	};
 
@@ -2250,8 +2233,7 @@ bot.onText(/fineEstraz/, function (message) {
 			disable_web_page_preview: true,
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Scrigno di Consolazione"], ["Torna al menu"]]
+				keyboard: [["Scrigno di Consolazione"], ["Torna al menu"]]
 			}
 		};
 
@@ -3950,8 +3932,7 @@ function mainMenu(message) {
 														disable_web_page_preview: true,
 														reply_markup: {
 															resize_keyboard: true,
-															//one_time_keyboard: true,
-															"keyboard": mainKeysR
+															keyboard: mainKeysR
 														}
 													};
 													bot.sendMessage(message.chat.id, msgtext, mainReborn_html);
@@ -3970,8 +3951,7 @@ function mainMenu(message) {
 														disable_web_page_preview: true,
 														reply_markup: {
 															resize_keyboard: true,
-															//one_time_keyboard: true,
-															"keyboard": mainKeysR2
+															keyboard: mainKeysR2
 														}
 													};
 													bot.sendMessage(message.chat.id, msgtext, mainReborn2_html);
@@ -3990,8 +3970,7 @@ function mainMenu(message) {
 														disable_web_page_preview: true,
 														reply_markup: {
 															resize_keyboard: true,
-															//one_time_keyboard: true,
-															"keyboard": mainKeys
+															keyboard: mainKeys
 														}
 													};
 
@@ -4618,8 +4597,7 @@ function getInfo(message, player, myhouse_id) {
 																			parse_mode: "HTML",
 																			reply_markup: {
 																				resize_keyboard: true,
-																				//one_time_keyboard: true,
-																				"keyboard": Keys
+																				keyboard: Keys
 																			}
 																		};
 
@@ -4770,8 +4748,7 @@ bot.onText(/Rimodulatore di Flaridion|Torna dal rimodulatore|^rimodulatore$/i, f
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Acquista Flaridion 💰", "Reset 🚫"], ["Attacco (" + rimodPrice(power_dmg+1, arrMolt[0]) + " Flaridion)", "Difesa (" + rimodPrice(power_def+1, arrMolt[1]) + " Flaridion)"], ["Critico (" + rimodPrice(power_weapon+1, arrMolt[2]) + " Flaridion)"], ["Dimezzamento (" + rimodPrice(power_armor+1, arrMolt[3]) + " Flaridion)"], ["Annullamento (" + rimodPrice(power_shield+1, arrMolt[4]) + " Flaridion)"], ["Torna all'alchimia"], ["Torna al menu"]]
+					keyboard: [["Acquista Flaridion 💰", "Reset 🚫"], ["Attacco (" + rimodPrice(power_dmg+1, arrMolt[0]) + " Flaridion)", "Difesa (" + rimodPrice(power_def+1, arrMolt[1]) + " Flaridion)"], ["Critico (" + rimodPrice(power_weapon+1, arrMolt[2]) + " Flaridion)"], ["Dimezzamento (" + rimodPrice(power_armor+1, arrMolt[3]) + " Flaridion)"], ["Annullamento (" + rimodPrice(power_shield+1, arrMolt[4]) + " Flaridion)"], ["Torna all'alchimia"], ["Torna al menu"]]
 				}
 			};
 
@@ -4779,8 +4756,7 @@ bot.onText(/Rimodulatore di Flaridion|Torna dal rimodulatore|^rimodulatore$/i, f
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Si"], ["Torna dal rimodulatore"], ["Torna al menu"]]
+					keyboard: [["Si"], ["Torna dal rimodulatore"], ["Torna al menu"]]
 				}
 			};
 
@@ -4788,8 +4764,7 @@ bot.onText(/Rimodulatore di Flaridion|Torna dal rimodulatore|^rimodulatore$/i, f
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Torna dal rimodulatore"], ["Torna al menu"]]
+					keyboard: [["Torna dal rimodulatore"], ["Torna al menu"]]
 				}
 			};
 
@@ -4797,8 +4772,7 @@ bot.onText(/Rimodulatore di Flaridion|Torna dal rimodulatore|^rimodulatore$/i, f
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["1", "5", "10"], ["Torna al menu"]]
+					keyboard: [["1", "5", "10"], ["Torna al menu"]]
 				}
 			};
 
@@ -5092,8 +5066,7 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["Procedi"], ["Torna al menu"]]
+						keyboard: [["Procedi"], ["Torna al menu"]]
 					}
 				};
 
@@ -5176,8 +5149,7 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Necrolama"], ["Corazza Necro"], ["Scudo Necro"], ["Torna al menu"]]
+					keyboard: [["Necrolama"], ["Corazza Necro"], ["Scudo Necro"], ["Torna al menu"]]
 				}
 			};
 
@@ -5185,8 +5157,7 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Rossa", "Gialla", "Blu"], ["Torna alla trasmo"]]
+					keyboard: [["Rossa", "Gialla", "Blu"], ["Torna alla trasmo"]]
 				}
 			};
 
@@ -5194,8 +5165,7 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Rossa", "Gialla"], ["Blu", "Bianca"], ["Torna alla trasmo"]]
+					keyboard: [["Rossa", "Gialla"], ["Blu", "Bianca"], ["Torna alla trasmo"]]
 				}
 			};
 
@@ -5212,8 +5182,7 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["Torna alla trasmo"], ["Boss", "Torna al menu"]]
+						keyboard: [["Torna alla trasmo"], ["Boss", "Torna al menu"]]
 					}
 				};
 
@@ -5415,8 +5384,7 @@ bot.onText(/nomina equip/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Nomina Necrolama"], ["Nomina Corazza Necro"], ["Nomina Scudo Necro"], ["Nomina Rifugio"], ["Torna al menu"]]
+			keyboard: [["Nomina Necrolama"], ["Nomina Corazza Necro"], ["Nomina Scudo Necro"], ["Nomina Rifugio"], ["Torna al menu"]]
 		}
 	};
 
@@ -5692,8 +5660,7 @@ bot.onText(/casa dei giochi/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Numero Fortunato 🥇", "Combo Craft 💎"], ["Carte e Pirata 📃"], ["Torna al menu"]]
+				keyboard: [["Numero Fortunato 🥇", "Combo Craft 💎"], ["Carte e Pirata 📃"], ["Torna al menu"]]
 			}
 		};
 
@@ -5701,8 +5668,7 @@ bot.onText(/casa dei giochi/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -5710,8 +5676,7 @@ bot.onText(/casa dei giochi/i, function (message) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -5720,7 +5685,7 @@ bot.onText(/casa dei giochi/i, function (message) {
 			reply_markup: {
 				resize_keyboard: true,
 				one_time_keyboard: true,
-				"keyboard": [["Gira Rotelle"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["Gira Rotelle"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -5728,8 +5693,7 @@ bot.onText(/casa dei giochi/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Gioca Numeri"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["Gioca Numeri"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -5737,8 +5701,7 @@ bot.onText(/casa dei giochi/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Vedi la Carta 📃"], ["Classifica", "Tabella Premi"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["Vedi la Carta 📃"], ["Classifica", "Tabella Premi"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -5746,8 +5709,7 @@ bot.onText(/casa dei giochi/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Si"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["Si"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -5893,8 +5855,7 @@ bot.onText(/gioca numeri/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Tutti i pari", "Tutti i dispari"], ["Primi 12", "Secondi 12", "Ultimi 12"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["Tutti i pari", "Tutti i dispari"], ["Primi 12", "Secondi 12", "Ultimi 12"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -5902,8 +5863,7 @@ bot.onText(/gioca numeri/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -5911,8 +5871,7 @@ bot.onText(/gioca numeri/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Gioca Numeri"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["Gioca Numeri"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -5921,7 +5880,7 @@ bot.onText(/gioca numeri/i, function (message) {
 			reply_markup: {
 				resize_keyboard: true,
 				one_time_keyboard: true,
-				"keyboard": [["Si"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["Si"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -6103,8 +6062,7 @@ bot.onText(/gira rotelle/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna alla casa dei giochi"], ["Torna al menu"]]
+			keyboard: [["Torna alla casa dei giochi"], ["Torna al menu"]]
 		}
 	};
 
@@ -6113,7 +6071,7 @@ bot.onText(/gira rotelle/i, function (message) {
 		reply_markup: {
 			resize_keyboard: true,
 			one_time_keyboard: true,
-			"keyboard": [["Gira Rotelle"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+			keyboard: [["Gira Rotelle"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
 		}
 	};
 
@@ -6333,8 +6291,7 @@ bot.onText(/vedi la carta/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -6342,8 +6299,7 @@ bot.onText(/vedi la carta/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Più bassa ⬇️", "Più alta ⬆️"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["Più bassa ⬇️", "Più alta ⬆️"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -6351,8 +6307,7 @@ bot.onText(/vedi la carta/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Vedi la Carta 📃"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["Vedi la Carta 📃"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -6548,8 +6503,7 @@ bot.onText(/$vocazioni|vocazione|torna alle vocazioni/i, function (message) {
 				disable_web_page_preview: true,
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": iKeys
+					keyboard: iKeys
 				}
 			};
 
@@ -6557,8 +6511,7 @@ bot.onText(/$vocazioni|vocazione|torna alle vocazioni/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Torna alle vocazioni"]]
+					keyboard: [["Torna alle vocazioni"]]
 				}
 			};
 
@@ -6567,8 +6520,7 @@ bot.onText(/$vocazioni|vocazione|torna alle vocazioni/i, function (message) {
 				disable_web_page_preview: true,
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Cambia Vocazione"], ["Torna al menu"]]
+					keyboard: [["Cambia Vocazione"], ["Torna al menu"]]
 				}
 			};
 
@@ -6576,8 +6528,7 @@ bot.onText(/$vocazioni|vocazione|torna alle vocazioni/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Si"], ["Torna alle vocazioni"]]
+					keyboard: [["Si"], ["Torna alle vocazioni"]]
 				}
 			};
 
@@ -6651,16 +6602,14 @@ bot.onText(/cambia vocazione/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna alle vocazioni"]]
+				keyboard: [["Torna alle vocazioni"]]
 			}
 		};
 		var cClass = {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Si"], ["Torna alle vocazioni"]]
+				keyboard: [["Si"], ["Torna alle vocazioni"]]
 			}
 		};
 
@@ -6981,8 +6930,7 @@ bot.onText(/dungeon/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna al dungeon"], ["Torna al menu"]]
+			keyboard: [["Torna al dungeon"], ["Torna al menu"]]
 		}
 	};
 
@@ -6990,8 +6938,7 @@ bot.onText(/dungeon/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna al dungeon"], ["Torna al menu"]]
+			keyboard: [["Torna al dungeon"], ["Torna al menu"]]
 		}
 	};
 
@@ -6999,8 +6946,7 @@ bot.onText(/dungeon/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Si"], ["Torna al dungeon"]]
+			keyboard: [["Si"], ["Torna al dungeon"]]
 		}
 	};
 
@@ -7108,8 +7054,7 @@ bot.onText(/dungeon/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": iKeys
+								keyboard: iKeys
 							}
 						};
 
@@ -7159,8 +7104,7 @@ bot.onText(/dungeon/i, function (message) {
 										parse_mode: "Markdown",
 										reply_markup: {
 											resize_keyboard: true,
-											//one_time_keyboard: true,
-											"keyboard": [["Si"], ["Prosegui il dungeon"], ["Torna al menu"]]
+											keyboard: [["Si"], ["Prosegui il dungeon"], ["Torna al menu"]]
 										}
 									};
 
@@ -7242,8 +7186,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": iKeys
+														keyboard: iKeys
 													}
 												};
 
@@ -7381,8 +7324,7 @@ bot.onText(/dungeon/i, function (message) {
 																			parse_mode: "HTML",
 																			reply_markup: {
 																				resize_keyboard: true,
-																				//one_time_keyboard: true,
-																				"keyboard": [["Si"], ["Torna al dungeon"]]
+																				keyboard: [["Si"], ["Torna al dungeon"]]
 																			}
 																		};
 
@@ -7455,8 +7397,7 @@ bot.onText(/dungeon/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": [["Si"], ["Prosegui il dungeon"], ["Torna al menu"]]
+								keyboard: [["Si"], ["Prosegui il dungeon"], ["Torna al menu"]]
 							}
 						};
 
@@ -7491,8 +7432,7 @@ bot.onText(/dungeon/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["☠️", "⬆️", "🔑"], ["⬅️", "⚒", "➡️"], ["Scappa", "Torna al menu"]]
+							keyboard: [["☠️", "⬆️", "🔑"], ["⬅️", "⚒", "➡️"], ["Scappa", "Torna al menu"]]
 						}
 					};
 
@@ -7500,8 +7440,7 @@ bot.onText(/dungeon/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Prosegui il dungeon"], ["Torna al menu"]]
+							keyboard: [["Prosegui il dungeon"], ["Torna al menu"]]
 						}
 					};
 
@@ -7509,8 +7448,7 @@ bot.onText(/dungeon/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Prosegui"], ["Torna al menu"]]
+							keyboard: [["Prosegui"], ["Torna al menu"]]
 						}
 					};
 
@@ -7518,8 +7456,7 @@ bot.onText(/dungeon/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Entra nel dungeon"], ["Torna al menu"]]
+							keyboard: [["Entra nel dungeon"], ["Torna al menu"]]
 						}
 					};
 
@@ -7527,8 +7464,7 @@ bot.onText(/dungeon/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Attacca", "Scappa"], ["Torna al menu"]]
+							keyboard: [["Attacca", "Scappa"], ["Torna al menu"]]
 						}
 					};
 
@@ -7536,8 +7472,7 @@ bot.onText(/dungeon/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Prendi"], ["Torna al menu"]]
+							keyboard: [["Prendi"], ["Torna al menu"]]
 						}
 					};
 
@@ -7545,8 +7480,7 @@ bot.onText(/dungeon/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Aiuta", "Ignora"], ["Torna al menu"]]
+							keyboard: [["Aiuta", "Ignora"], ["Torna al menu"]]
 						}
 					};
 
@@ -7554,8 +7488,7 @@ bot.onText(/dungeon/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Segui la Vecchia", "Ignora"], ["Torna al menu"]]
+							keyboard: [["Segui la Vecchia", "Ignora"], ["Torna al menu"]]
 						}
 					};
 
@@ -7563,8 +7496,7 @@ bot.onText(/dungeon/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["1", "2", "3"], ["4", "5", "6"], ["Scappa"], ["Torna al menu"]]
+							keyboard: [["1", "2", "3"], ["4", "5", "6"], ["Scappa"], ["Torna al menu"]]
 						}
 					};
 
@@ -7572,8 +7504,7 @@ bot.onText(/dungeon/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Tipo 1: Scorciatoia"], ["Tipo 2: Rivelazione"], ["Torna al dungeon"]]
+							keyboard: [["Tipo 1: Scorciatoia"], ["Tipo 2: Rivelazione"], ["Torna al dungeon"]]
 						}
 					};
 
@@ -8056,8 +7987,7 @@ bot.onText(/dungeon/i, function (message) {
 														parse_mode: "Markdown",
 														reply_markup: {
 															resize_keyboard: true,
-															//one_time_keyboard: true,
-															"keyboard": iKeys
+															keyboard: iKeys
 														}
 													};
 
@@ -8105,8 +8035,7 @@ bot.onText(/dungeon/i, function (message) {
 																							parse_mode: "Markdown",
 																							reply_markup: {
 																								resize_keyboard: true,
-																								//one_time_keyboard: true,
-																								"keyboard": iKeys2
+																								keyboard: iKeys2
 																							}
 																						};
 
@@ -8562,8 +8491,7 @@ bot.onText(/dungeon/i, function (message) {
 														parse_mode: "Markdown",
 														reply_markup: {
 															resize_keyboard: true,
-															//one_time_keyboard: true,
-															"keyboard": iKeys
+															keyboard: iKeys
 														}
 													};
 
@@ -8647,8 +8575,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Sinistra", "Centro", "Destra"], ["Torna al menu"]]
+														keyboard: [["Sinistra", "Centro", "Destra"], ["Torna al menu"]]
 													}
 												};
 
@@ -9001,8 +8928,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Più Raro", "Meno Raro"], ["Ignora"], ["Torna al menu"]]
+														keyboard: [["Più Raro", "Meno Raro"], ["Ignora"], ["Torna al menu"]]
 													}
 												};
 
@@ -9136,8 +9062,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Accumula Monete", "Estrai Spada"], ["Torna al menu"]]
+														keyboard: [["Accumula Monete", "Estrai Spada"], ["Torna al menu"]]
 													}
 												};
 
@@ -9248,8 +9173,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Esamina"], ["Torna al menu"]]
+														keyboard: [["Esamina"], ["Torna al menu"]]
 													}
 												};
 
@@ -9373,8 +9297,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Inserisci Monete"], ["Sfonda il Muro"], ["Torna al menu"]]
+														keyboard: [["Inserisci Monete"], ["Sfonda il Muro"], ["Torna al menu"]]
 													}
 												};
 
@@ -9454,8 +9377,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Procedi"], ["Torna al menu"]]
+														keyboard: [["Procedi"], ["Torna al menu"]]
 													}
 												};
 
@@ -9661,8 +9583,7 @@ bot.onText(/dungeon/i, function (message) {
 														parse_mode: "HTML",
 														reply_markup: {
 															resize_keyboard: true,
-															//one_time_keyboard: true,
-															"keyboard": iKeys
+															keyboard: iKeys
 														}
 													};
 
@@ -9670,8 +9591,7 @@ bot.onText(/dungeon/i, function (message) {
 														parse_mode: "HTML",
 														reply_markup: {
 															resize_keyboard: true,
-															//one_time_keyboard: true,
-															"keyboard": [["Si"], ["Torna al dungeon"]]
+															keyboard: [["Si"], ["Torna al dungeon"]]
 														}
 													};
 
@@ -9820,8 +9740,7 @@ bot.onText(/dungeon/i, function (message) {
 														parse_mode: "Markdown",
 														reply_markup: {
 															resize_keyboard: true,
-															//one_time_keyboard: true,
-															"keyboard": iKeys
+															keyboard: iKeys
 														}
 													};
 
@@ -9878,8 +9797,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Medita"], ["Termina Meditazione"], ["Torna al menu"]]
+														keyboard: [["Medita"], ["Termina Meditazione"], ["Torna al menu"]]
 													}
 												};
 
@@ -9955,8 +9873,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Tornare in piena salute"], ["Avere uno zaino pieno zeppo"], ["Essere ricco sfondato"], ["Completare il dungeon velocemente"], ["Torna al menu"]]
+														keyboard: [["Tornare in piena salute"], ["Avere uno zaino pieno zeppo"], ["Essere ricco sfondato"], ["Completare il dungeon velocemente"], ["Torna al menu"]]
 													}
 												};
 
@@ -10084,8 +10001,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Attacca con il Drago"], ["Ignora"], ["Torna al menu"]]
+														keyboard: [["Attacca con il Drago"], ["Ignora"], ["Torna al menu"]]
 													}
 												};
 
@@ -10154,8 +10070,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["..."], ["Torna al menu"]]
+														keyboard: [["..."], ["Torna al menu"]]
 													}
 												};
 
@@ -10214,8 +10129,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Punta"], ["Ignora"], ["Torna al menu"]]
+														keyboard: [["Punta"], ["Ignora"], ["Torna al menu"]]
 													}
 												};
 
@@ -10223,8 +10137,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Gioca"], ["Torna al menu"]]
+														keyboard: [["Gioca"], ["Torna al menu"]]
 													}
 												};
 
@@ -10341,8 +10254,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Porta Normale"], ["Porta Misteriosa"], ["Torna al menu"]]
+														keyboard: [["Porta Normale"], ["Porta Misteriosa"], ["Torna al menu"]]
 													}
 												};
 
@@ -10429,8 +10341,7 @@ bot.onText(/dungeon/i, function (message) {
 														parse_mode: "Markdown",
 														reply_markup: {
 															resize_keyboard: true,
-															//one_time_keyboard: true,
-															"keyboard": [[min + " §"], ["Prova a raccoglierle"], ["Torna al menu"]]
+															keyboard: [[min + " §"], ["Prova a raccoglierle"], ["Torna al menu"]]
 														}
 													};
 
@@ -10552,8 +10463,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Consegna 1 🦋"], ["Ignora"], ["Torna al menu"]]
+														keyboard: [["Consegna 1 🦋"], ["Ignora"], ["Torna al menu"]]
 													}
 												};
 
@@ -10665,8 +10575,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Disturba"], ["Torna al menu"]]
+														keyboard: [["Disturba"], ["Torna al menu"]]
 													}
 												};
 
@@ -10705,8 +10614,7 @@ bot.onText(/dungeon/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Si", "No"], ["Torna al menu"]]
+														keyboard: [["Si", "No"], ["Torna al menu"]]
 													}
 												};
 
@@ -10817,8 +10725,7 @@ bot.onText(/dungeon/i, function (message) {
 																	parse_mode: "Markdown",
 																	reply_markup: {
 																		resize_keyboard: true,
-																		//one_time_keyboard: true,
-																		"keyboard": [["Si", "No"], ["Cerca " + item1_name], ["Torna al menu"]]
+																		keyboard: [["Si", "No"], ["Cerca " + item1_name], ["Torna al menu"]]
 																	}
 																};
 
@@ -11009,8 +10916,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Si"], ["Torna al dungeon"]]
+			keyboard: [["Si"], ["Torna al dungeon"]]
 		}
 	};
 
@@ -11018,8 +10924,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Attacca"], ["Torna al menu"]]
+			keyboard: [["Attacca"], ["Torna al menu"]]
 		}
 	};
 
@@ -11556,8 +11461,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																parse_mode: "Markdown",
 																reply_markup: {
 																	resize_keyboard: true,
-																	//one_time_keyboard: true,
-																	"keyboard": [["Attacca " + monster_name], ["Incantesimi"], ["Scappa", "⚒", "Torna al menu"]]
+																	keyboard: [["Attacca " + monster_name], ["Incantesimi"], ["Scappa", "⚒", "Torna al menu"]]
 																}
 															};
 
@@ -11565,8 +11469,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																parse_mode: "Markdown",
 																reply_markup: {
 																	resize_keyboard: true,
-																	//one_time_keyboard: true,
-																	"keyboard": [["Prosegui il dungeon"], ["Torna al menu"]]
+																	keyboard: [["Prosegui il dungeon"], ["Torna al menu"]]
 																}
 															};
 
@@ -11574,8 +11477,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																parse_mode: "Markdown",
 																reply_markup: {
 																	resize_keyboard: true,
-																	//one_time_keyboard: true,
-																	"keyboard": [["Attacca"], ["Torna al menu"]]
+																	keyboard: [["Attacca"], ["Torna al menu"]]
 																}
 															};
 
@@ -12423,8 +12325,7 @@ bot.onText(/cassa rinascita|torna alla cassa/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna alla cassa"]]
+				keyboard: [["Torna alla cassa"]]
 			}
 		};
 
@@ -12432,8 +12333,7 @@ bot.onText(/cassa rinascita|torna alla cassa/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Conferma"], ["Torna al menu"]]
+				keyboard: [["Conferma"], ["Torna al menu"]]
 			}
 		};
 
@@ -12535,8 +12435,7 @@ bot.onText(/rinasci/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Avvia Rinascita " + reborn], ["Cassa Rinascita"], ["Torna al menu"]]
+				keyboard: [["Avvia Rinascita " + reborn], ["Cassa Rinascita"], ["Torna al menu"]]
 			}
 		};
 
@@ -12544,8 +12443,7 @@ bot.onText(/rinasci/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Si"], ["Torna al menu"]]
+				keyboard: [["Si"], ["Torna al menu"]]
 			}
 		};
 
@@ -13009,8 +12907,7 @@ bot.onText(/Scomponi/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Niente"]]
+				keyboard: [["Niente"]]
 			}
 		};
 
@@ -13031,8 +12928,7 @@ bot.onText(/Scomponi/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["1", "5", "10"], ["Annulla"]]
+							keyboard: [["1", "5", "10"], ["Annulla"]]
 						}
 					};
 
@@ -13179,8 +13075,7 @@ bot.onText(/Scomponi/i, function (message) {
 																		parse_mode: "Markdown",
 																		reply_markup: {
 																			resize_keyboard: true,
-																			//one_time_keyboard: true,
-																			"keyboard": [["Scomponi Ancora"], ["Torna al menu"]]
+																			keyboard: [["Scomponi Ancora"], ["Torna al menu"]]
 																		}
 																	};
 
@@ -13264,8 +13159,7 @@ bot.onText(/^Incanta/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": iKeys
+						keyboard: iKeys
 					}
 				};
 
@@ -13309,8 +13203,7 @@ bot.onText(/^Incanta/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["Gemme", "Runa"], ["Torna al menu"]]
+						keyboard: [["Gemme", "Runa"], ["Torna al menu"]]
 					}
 				};
 
@@ -13403,8 +13296,7 @@ bot.onText(/^Incanta/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Incanta Arma", "Incanta Armatura", "Incanta Scudo"], ["Torna al menu"]]
+				keyboard: [["Incanta Arma", "Incanta Armatura", "Incanta Scudo"], ["Torna al menu"]]
 			}
 		};
 
@@ -13545,8 +13437,7 @@ bot.onText(/fai nascere il drago|accudisci drago|nutri ancora|^drago$|^drago �
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["Dai un nome al drago!"], ["Torna al menu"]]
+						keyboard: [["Dai un nome al drago!"], ["Torna al menu"]]
 					}
 				};
 
@@ -13629,8 +13520,7 @@ bot.onText(/fai nascere il drago|accudisci drago|nutri ancora|^drago$|^drago �
 									parse_mode: "HTML",
 									reply_markup: {
 										resize_keyboard: true,
-										//one_time_keyboard: true,
-										"keyboard": iKeys
+										keyboard: iKeys
 									}
 								};
 
@@ -13942,8 +13832,7 @@ bot.onText(/^bevande|torna alle bevande/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": [["Attiva", "Scarta"], ["Torna al menu"]]
+								keyboard: [["Attiva", "Scarta"], ["Torna al menu"]]
 							}
 						};
 
@@ -13951,8 +13840,7 @@ bot.onText(/^bevande|torna alle bevande/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": [["Torna alle bevande"], ["Torna al menu"]]
+								keyboard: [["Torna alle bevande"], ["Torna al menu"]]
 							}
 						};
 
@@ -13989,8 +13877,7 @@ bot.onText(/^bevande|torna alle bevande/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Inizia Produzione"], ["Torna al menu"]]
+					keyboard: [["Inizia Produzione"], ["Torna al menu"]]
 				}
 			};
 
@@ -14088,8 +13975,7 @@ bot.onText(/cambia tipo/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["dei Mari"], ["dei Ghiacci"], ["Infernale"], ["dei Cieli"], ["delle Montagne"], ["dell'Oscurità"], ["Torna al menu"]]
+						keyboard: [["dei Mari"], ["dei Ghiacci"], ["Infernale"], ["dei Cieli"], ["delle Montagne"], ["dell'Oscurità"], ["Torna al menu"]]
 					}
 				};
 
@@ -14339,8 +14225,7 @@ bot.onText(/dai pietra/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Nutri Ancora"], ["Torna al menu"]]
+			keyboard: [["Nutri Ancora"], ["Torna al menu"]]
 		}
 	};
 
@@ -14416,8 +14301,7 @@ bot.onText(/dai pietra/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": [["1"], [cnt], ["Torna al menu"]]
+								keyboard: [["1"], [cnt], ["Torna al menu"]]
 							}
 						};
 					} else {
@@ -14425,8 +14309,7 @@ bot.onText(/dai pietra/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": [["1"], ["Torna al menu"]]
+								keyboard: [["1"], ["Torna al menu"]]
 							}
 						};
 					}
@@ -14631,8 +14514,7 @@ bot.onText(/dai tutte/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Nutri Ancora"], ["Torna al menu"]]
+			keyboard: [["Nutri Ancora"], ["Torna al menu"]]
 		}
 	};
 
@@ -14795,8 +14677,7 @@ bot.onText(/equipaggia drago/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": Keys
+						keyboard: Keys
 					}
 				};
 
@@ -14804,8 +14685,7 @@ bot.onText(/equipaggia drago/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["Torna al drago"], ["Torna al menu"]]
+						keyboard: [["Torna al drago"], ["Torna al menu"]]
 					}
 				};
 
@@ -15259,8 +15139,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [['Entra nella Vetta'], ['Torna al menu']]
+					keyboard: [['Entra nella Vetta'], ['Torna al menu']]
 				}
 			};
 
@@ -15268,8 +15147,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [['Torna alla vetta'], ['Torna al menu']]
+					keyboard: [['Torna alla vetta'], ['Torna al menu']]
 				}
 			};
 
@@ -15277,8 +15155,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [['Torna alla vetta'], ['Torna al menu']]
+					keyboard: [['Torna alla vetta'], ['Torna al menu']]
 				}
 			};
 
@@ -15286,8 +15163,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [['Nascondi log vecchi', 'Mostra log vecchi'], ['Torna alla vetta'], ['Torna al menu']]
+					keyboard: [['Nascondi log vecchi', 'Mostra log vecchi'], ['Torna alla vetta'], ['Torna al menu']]
 				}
 			};
 
@@ -15295,8 +15171,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [['Mostra log vecchi', 'Torna alla vetta'], ['Torna al menu']]
+					keyboard: [['Mostra log vecchi', 'Torna alla vetta'], ['Torna al menu']]
 				}
 			};
 
@@ -15304,8 +15179,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [['Entra in combattimento'], ['Torna al menu']]
+					keyboard: [['Entra in combattimento'], ['Torna al menu']]
 				}
 			};
 
@@ -15313,8 +15187,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [['Si'], ['Torna alla vetta']]
+					keyboard: [['Si'], ['Torna alla vetta']]
 				}
 			};
 
@@ -15322,8 +15195,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [['Si'], ['Torna alla vetta']]
+					keyboard: [['Si'], ['Torna alla vetta']]
 				}
 			};
 
@@ -15429,16 +15301,14 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 										parse_mode: "HTML",
 										reply_markup: {
 											resize_keyboard: true,
-											//one_time_keyboard: true,
-											"keyboard": [['Combatti 🐉'], ['Riposa 💤', 'Abbandona 🚫'], ['Risorse 🍵', 'Log 📃'], ['Torna al menu']]
+											keyboard: [['Combatti 🐉'], ['Riposa 💤', 'Abbandona 🚫'], ['Risorse 🍵', 'Log 📃'], ['Torna al menu']]
 										}
 									};
 									var kbSleep = {
 										parse_mode: "HTML",
 										reply_markup: {
 											resize_keyboard: true,
-											//one_time_keyboard: true,
-											"keyboard": [['10', '20', '30', '40'], ['50', '60', '70', '80'], ['90', '100'], ['Torna alla vetta'], ['Torna al menu']]
+											keyboard: [['10', '20', '30', '40'], ['50', '60', '70', '80'], ['90', '100'], ['Torna alla vetta'], ['Torna al menu']]
 										}
 									};
 
@@ -15479,8 +15349,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 												parse_mode: "HTML",
 												reply_markup: {
 													resize_keyboard: true,
-													//one_time_keyboard: true,
-													"keyboard": [['Risorse 🍵', 'Scruta 🔎'], ['Rinuncia 🚫', 'Log 📃'], ['Torna al menu']]
+													keyboard: [['Risorse 🍵', 'Scruta 🔎'], ['Rinuncia 🚫', 'Log 📃'], ['Torna al menu']]
 												}
 											};
 										}
@@ -15567,8 +15436,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																					parse_mode: "HTML",
 																					reply_markup: {
 																						resize_keyboard: true,
-																						//one_time_keyboard: true,
-																						"keyboard": [['Riposa'], ["Torna alla vetta"]]
+																						keyboard: [['Riposa'], ["Torna alla vetta"]]
 																					}
 																				};
 
@@ -15581,8 +15449,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																					parse_mode: "HTML",
 																					reply_markup: {
 																						resize_keyboard: true,
-																						//one_time_keyboard: true,
-																						"keyboard": [['Interrompi']]
+																						keyboard: [['Interrompi']]
 																					}
 																				};
 
@@ -15828,8 +15695,7 @@ bot.onText(/mostra log vecchi|nascondi log vecchi/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [['Torna alla vetta'], ['Torna al menu']]
+				keyboard: [['Torna alla vetta'], ['Torna al menu']]
 			}
 		};
 
@@ -15892,8 +15758,7 @@ bot.onText(/riposa/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [['Torna alla vetta'], ['Torna al drago'], ['Torna al menu']]
+					keyboard: [['Torna alla vetta'], ['Torna al drago'], ['Torna al menu']]
 				}
 			};
 
@@ -15901,8 +15766,7 @@ bot.onText(/riposa/i, function (message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [['10', '20', '30', '40'], ['50', '60', '70', '80'], ['90', '100'], ['Torna alla vetta'], ['Torna al drago'], ['Torna al menu']]
+					keyboard: [['10', '20', '30', '40'], ['50', '60', '70', '80'], ['90', '100'], ['Torna alla vetta'], ['Torna al drago'], ['Torna al menu']]
 				}
 			};
 
@@ -16081,8 +15945,7 @@ bot.onText(/^Risorse/i, function (message) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [['Torna alla vetta'], ['Torna al menu']]
+				keyboard: [['Torna alla vetta'], ['Torna al menu']]
 			}
 		};
 
@@ -16090,8 +15953,7 @@ bot.onText(/^Risorse/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [['Continua a Combattere'], ['Torna alla vetta'], ['Torna al menu']]
+				keyboard: [['Continua a Combattere'], ['Torna alla vetta'], ['Torna al menu']]
 			}
 		};
 
@@ -16099,8 +15961,7 @@ bot.onText(/^Risorse/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [['Si'], ['Torna alla vetta'], ['Continua a Combattere']]
+				keyboard: [['Si'], ['Torna alla vetta'], ['Continua a Combattere']]
 			}
 		};
 
@@ -16153,8 +16014,7 @@ bot.onText(/^Risorse/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": iKeys
+								keyboard: iKeys
 							}
 						};
 
@@ -16294,8 +16154,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [['Torna alla vetta'], ['Torna al menu']]
+				keyboard: [['Torna alla vetta'], ['Torna al menu']]
 			}
 		};
 
@@ -16303,8 +16162,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [['Continua a Combattere'], ['Torna al menu']]
+				keyboard: [['Continua a Combattere'], ['Torna al menu']]
 			}
 		};
 
@@ -16312,8 +16170,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [['Continua a Combattere'], ['Torna al menu']]
+				keyboard: [['Continua a Combattere'], ['Torna al menu']]
 			}
 		};
 
@@ -16321,8 +16178,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [['Si'], ['Continua a Combattere']]
+				keyboard: [['Si'], ['Continua a Combattere']]
 			}
 		};
 
@@ -16395,8 +16251,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": move
+						keyboard: move
 					}
 				};
 
@@ -18108,8 +17963,7 @@ bot.onText(/team/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [['Liste Membri', 'Hall of Fame'], ['Torna al menu']]
+					keyboard: [['Liste Membri', 'Hall of Fame'], ['Torna al menu']]
 				}
 			};
 
@@ -18132,8 +17986,7 @@ bot.onText(/team/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [['Fonda nuovo'], ['Entra in uno esistente'], ['Liste Membri', 'Hall of Fame'], ['Torna al menu']]
+						keyboard: [['Fonda nuovo'], ['Entra in uno esistente'], ['Liste Membri', 'Hall of Fame'], ['Torna al menu']]
 					}
 				};
 
@@ -18410,8 +18263,7 @@ bot.onText(/team/i, function (message) {
 													parse_mode: "HTML",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": iKeys
+														keyboard: iKeys
 													}
 												};
 
@@ -18478,8 +18330,7 @@ bot.onText(/team/i, function (message) {
 																	parse_mode: "HTML",
 																	reply_markup: {
 																		resize_keyboard: true,
-																		//one_time_keyboard: true,
-																		"keyboard": [['Gestisci Membri'], ['Torna al team']]
+																		keyboard: [['Gestisci Membri'], ['Torna al team']]
 																	}
 																};
 															}else{
@@ -18487,8 +18338,7 @@ bot.onText(/team/i, function (message) {
 																	parse_mode: "HTML",
 																	reply_markup: {
 																		resize_keyboard: true,
-																		//one_time_keyboard: true,
-																		"keyboard": [['Torna al team']]
+																		keyboard: [['Torna al team']]
 																	}
 																};
 															}
@@ -18615,8 +18465,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 								parse_mode: "HTML",
 								reply_markup: {
 									resize_keyboard: true,
-									//one_time_keyboard: true,
-									"keyboard": iKeys
+									keyboard: iKeys
 								}
 							};
 
@@ -18624,8 +18473,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 								parse_mode: "HTML",
 								reply_markup: {
 									resize_keyboard: true,
-									//one_time_keyboard: true,
-									"keyboard": [["Torna ai party"], ["Torna al team"]]
+									keyboard: [["Torna ai party"], ["Torna al team"]]
 								}
 							};
 
@@ -18633,8 +18481,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 								parse_mode: "HTML",
 								reply_markup: {
 									resize_keyboard: true,
-									//one_time_keyboard: true,
-									"keyboard": [["Torna agli incarichi"], ["Torna al team"]]
+									keyboard: [["Torna agli incarichi"], ["Torna al team"]]
 								}
 							};
 
@@ -18642,8 +18489,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 								parse_mode: "HTML",
 								reply_markup: {
 									resize_keyboard: true,
-									//one_time_keyboard: true,
-									"keyboard": [["Torna agli incarichi"], ["Torna al team"], ["Torna al menu"]]
+									keyboard: [["Torna agli incarichi"], ["Torna al team"], ["Torna al menu"]]
 								}
 							};
 
@@ -18651,8 +18497,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 								parse_mode: "HTML",
 								reply_markup: {
 									resize_keyboard: true,
-									//one_time_keyboard: true,
-									"keyboard": [["Torna ai party"], ["Torna agli incarichi"], ["Torna al team"]]
+									keyboard: [["Torna ai party"], ["Torna agli incarichi"], ["Torna al team"]]
 								}
 							};
 
@@ -18805,8 +18650,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 															parse_mode: "HTML",
 															reply_markup: {
 																resize_keyboard: true,
-																//one_time_keyboard: true,
-																"keyboard": iKeys
+																keyboard: iKeys
 															}
 														};
 
@@ -19139,8 +18983,7 @@ bot.onText(/^il mio party/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna agli incarichi"]]
+			keyboard: [["Torna agli incarichi"]]
 		}
 	};
 
@@ -19204,8 +19047,7 @@ bot.onText(/^party$|gestisci party|torna ai party/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna agli incarichi"]]
+			keyboard: [["Torna agli incarichi"]]
 		}
 	};
 
@@ -19213,8 +19055,7 @@ bot.onText(/^party$|gestisci party|torna ai party/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna ai party"]]
+			keyboard: [["Torna ai party"]]
 		}
 	};
 
@@ -19222,8 +19063,7 @@ bot.onText(/^party$|gestisci party|torna ai party/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna ai party"],["Torna agli incarichi"]]
+			keyboard: [["Torna ai party"],["Torna agli incarichi"]]
 		}
 	};
 
@@ -19231,8 +19071,7 @@ bot.onText(/^party$|gestisci party|torna ai party/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Si"], ["Torna ai party"]]
+			keyboard: [["Si"], ["Torna ai party"]]
 		}
 	};
 
@@ -19295,8 +19134,7 @@ bot.onText(/^party$|gestisci party|torna ai party/i, function (message) {
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": iKeys
+							keyboard: iKeys
 						}
 					};
 
@@ -19340,8 +19178,7 @@ bot.onText(/^party$|gestisci party|torna ai party/i, function (message) {
 											parse_mode: "HTML",
 											reply_markup: {
 												resize_keyboard: true,
-												//one_time_keyboard: true,
-												"keyboard": iKeys
+												keyboard: iKeys
 											}
 										};
 
@@ -19631,8 +19468,7 @@ bot.onText(/Potenziamenti Anima/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": [["Unione Fatale (40/200 🦋)"],
+								keyboard: [["Unione Fatale (40/200 🦋)"],
 											 ["Bottino Ricco (60/300 🦋)"],
 											 ["Formazione Impenetrabile (50/250 🦋)"],
 											 ["Richiamo dei Guerrieri (200 🦋)"],
@@ -19645,8 +19481,7 @@ bot.onText(/Potenziamenti Anima/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": [["Temporaneo"], ["Permanente"], ["Torna ai potenziamenti anima"]]
+								keyboard: [["Temporaneo"], ["Permanente"], ["Torna ai potenziamenti anima"]]
 							}
 						};
 
@@ -19654,8 +19489,7 @@ bot.onText(/Potenziamenti Anima/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": [["Si"], ["Torna ai potenziamenti anima"]]
+								keyboard: [["Si"], ["Torna ai potenziamenti anima"]]
 							}
 						};
 
@@ -19663,8 +19497,7 @@ bot.onText(/Potenziamenti Anima/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": [["Torna ai potenziamenti anima"]]
+								keyboard: [["Torna ai potenziamenti anima"]]
 							}
 						};
 
@@ -19830,8 +19663,7 @@ bot.onText(/liste membri/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Nessuno"]]
+			keyboard: [["Nessuno"]]
 		}
 	};
 
@@ -19839,8 +19671,7 @@ bot.onText(/liste membri/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna alle Liste Membri"], ["Torna al team"], ["Torna al menu"]]
+			keyboard: [["Torna alle Liste Membri"], ["Torna al team"], ["Torna al menu"]]
 		}
 	};
 
@@ -20090,8 +19921,7 @@ bot.onText(/Entra in uno esistente|^Pagina (.+)/i, function (message, match) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": iKeys
+						keyboard: iKeys
 					}
 				};
 
@@ -20336,8 +20166,7 @@ bot.onText(/Gestisci Membri/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": iKeys
+							keyboard: iKeys
 						}
 					};
 
@@ -20345,8 +20174,7 @@ bot.onText(/Gestisci Membri/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Espelli", "Sospendi"], ["Sposta in Madre"], ["Sposta in Accademia"], ["Torna al menu"]]
+							keyboard: [["Espelli", "Sospendi"], ["Sposta in Madre"], ["Sposta in Accademia"], ["Torna al menu"]]
 						}
 					};
 
@@ -20354,8 +20182,7 @@ bot.onText(/Gestisci Membri/i, function (message) {
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Gestisci membri"], ["Torna al team"], ["Torna al menu"]]
+							keyboard: [["Gestisci membri"], ["Torna al team"], ["Torna al menu"]]
 						}
 					};
 
@@ -20762,8 +20589,7 @@ bot.onText(/^Accademia/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": [["Scollega"], ["Annulla"]]
+								keyboard: [["Scollega"], ["Annulla"]]
 							}
 						};
 
@@ -21108,8 +20934,7 @@ bot.onText(/cambia admin/i, function (message) {
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									//one_time_keyboard: true,
-									"keyboard": iKeys
+									keyboard: iKeys
 								}
 							};
 
@@ -21117,8 +20942,7 @@ bot.onText(/cambia admin/i, function (message) {
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									//one_time_keyboard: true,
-									"keyboard": [["Amministratore", "Vice-Amministratore"],["Torna al team"]]
+									keyboard: [["Amministratore", "Vice-Amministratore"],["Torna al team"]]
 								}
 							};
 
@@ -21257,8 +21081,7 @@ bot.onText(/^aumenta posti/i, function (message) {
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									//one_time_keyboard: true,
-									"keyboard": [['Conferma'], ['Torna al Team']]
+									keyboard: [['Conferma'], ['Torna al Team']]
 								}
 							};
 
@@ -21471,8 +21294,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Invia una Cassa 📦"], ["Torna al menu"]]
+			keyboard: [["Invia una Cassa 📦"], ["Torna al menu"]]
 		}
 	};
 
@@ -21480,8 +21302,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Entra nella Villa 🏰"], ["Torna al menu"]]
+			keyboard: [["Entra nella Villa 🏰"], ["Torna al menu"]]
 		}
 	};
 
@@ -21489,8 +21310,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna alla Villa"], ["Torna al menu"]]
+			keyboard: [["Torna alla Villa"], ["Torna al menu"]]
 		}
 	};
 
@@ -21498,8 +21318,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna alla Villa"], ["Torna al menu"]]
+			keyboard: [["Torna alla Villa"], ["Torna al menu"]]
 		}
 	};
 
@@ -21664,8 +21483,7 @@ bot.onText(/Gnomorra/i, function (message) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna alla Gnomorra"], ["Torna al menu"]]
+				keyboard: [["Torna alla Gnomorra"], ["Torna al menu"]]
 			}
 		};
 
@@ -21673,8 +21491,7 @@ bot.onText(/Gnomorra/i, function (message) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Sfida qualcuno 👀"], ["Sfida precisa 💬"], ["Classifica 🔝", "Torna al menu"]]
+				keyboard: [["Sfida qualcuno 👀"], ["Sfida precisa 💬"], ["Classifica 🔝", "Torna al menu"]]
 			}
 		};
 
@@ -21682,8 +21499,7 @@ bot.onText(/Gnomorra/i, function (message) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Vai alla Gnomorra Lootiana"], ["Torna al menu"]]
+				keyboard: [["Vai alla Gnomorra Lootiana"], ["Torna al menu"]]
 			}
 		};
 
@@ -21866,8 +21682,7 @@ function gnomorraStart(player_id, enemy_player_id){
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Accetta invito"], ["Rifiuta invito"], ["Torna al menu"]]
+					keyboard: [["Accetta invito"], ["Rifiuta invito"], ["Torna al menu"]]
 				}
 			};
 
@@ -21875,8 +21690,7 @@ function gnomorraStart(player_id, enemy_player_id){
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Torna a Gnomorra Lootiana"], ["Torna al menu"]]
+					keyboard: [["Torna a Gnomorra Lootiana"], ["Torna al menu"]]
 				}
 			};
 
@@ -22019,8 +21833,7 @@ function gnomorraGame(player_id, enemy_player_id){
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Carta Stropicciata 📄", "Katana Affilata ✂️"], ["Pietra Piccola 🔘"], ["Torna al menu"]]
+							keyboard: [["Carta Stropicciata 📄", "Katana Affilata ✂️"], ["Pietra Piccola 🔘"], ["Torna al menu"]]
 						}
 					};
 
@@ -22028,8 +21841,7 @@ function gnomorraGame(player_id, enemy_player_id){
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Torna a Gnomorra Lootiana"], ["Torna al menu"]]
+							keyboard: [["Torna a Gnomorra Lootiana"], ["Torna al menu"]]
 						}
 					};
 
@@ -22205,8 +22017,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna alla Casa"], ["Torna al menu"]]
+				keyboard: [["Torna alla Casa"], ["Torna al menu"]]
 			}
 		};
 
@@ -22214,8 +22025,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Lancia Palla di Neve ❄️"], ["Costruisci un Pupazzo ⛄️"], ["Classifica 🔝", "Torna al menu"]]
+				keyboard: [["Lancia Palla di Neve ❄️"], ["Costruisci un Pupazzo ⛄️"], ["Classifica 🔝", "Torna al menu"]]
 			}
 		};
 
@@ -22223,8 +22033,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Casuale"], ["Torna alla Casa"]]
+				keyboard: [["Casuale"], ["Torna alla Casa"]]
 			}
 		};
 
@@ -22232,8 +22041,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Entra nella Casa"], ["Torna alla Casa"]]
+				keyboard: [["Entra nella Casa"], ["Torna alla Casa"]]
 			}
 		};
 
@@ -22241,8 +22049,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Si"], ["Torna alla Casa"]]
+				keyboard: [["Si"], ["Torna alla Casa"]]
 			}
 		};
 
@@ -22550,8 +22357,7 @@ bot.onText(/festival/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Entra nel festival"], ["Torna al menu"]]
+					keyboard: [["Entra nel festival"], ["Torna al menu"]]
 				}
 			};
 
@@ -22574,8 +22380,7 @@ bot.onText(/festival/i, function (message) {
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									//one_time_keyboard: true,
-									"keyboard": [["Aggiorna festival"], ["Cerca " + rows[0].name], ["Torna al menu"]]
+									keyboard: [["Aggiorna festival"], ["Cerca " + rows[0].name], ["Torna al menu"]]
 								}
 							};
 
@@ -22592,8 +22397,7 @@ bot.onText(/festival/i, function (message) {
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									//one_time_keyboard: true,
-									"keyboard": [["Aggiorna festival"], ["Cerca " + rows[0].name], ["Crea " + rows[0].name], ["Torna al menu"]]
+									keyboard: [["Aggiorna festival"], ["Cerca " + rows[0].name], ["Crea " + rows[0].name], ["Torna al menu"]]
 								}
 							};
 
@@ -22648,8 +22452,7 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Sintesi"], ["Torna al menu"]]
+			keyboard: [["Sintesi"], ["Torna al menu"]]
 		}
 	};
 
@@ -22688,8 +22491,7 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna alla Raccolta"], ["Torna al menu"]]
+				keyboard: [["Torna alla Raccolta"], ["Torna al menu"]]
 			}
 		};
 
@@ -22697,16 +22499,14 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Si"], ["Torna alla Raccolta"], ["Torna al menu"]]
+				keyboard: [["Si"], ["Torna alla Raccolta"], ["Torna al menu"]]
 			}
 		};
 		var mYesNo2 = {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Si"], ["Sintesi"], ["Torna al menu"]]
+				keyboard: [["Si"], ["Sintesi"], ["Torna al menu"]]
 			}
 		};
 
@@ -22717,8 +22517,7 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Inizia Raccolta"], ["Torna al menu"]]
+					keyboard: [["Inizia Raccolta"], ["Torna al menu"]]
 				}
 			};
 
@@ -22819,8 +22618,7 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": iKeys
+							keyboard: iKeys
 						}
 					};
 
@@ -22912,8 +22710,7 @@ bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna al Generatore di Polvere"], ["Torna al menu"]]
+				keyboard: [["Torna al Generatore di Polvere"], ["Torna al menu"]]
 			}
 		};
 
@@ -22921,8 +22718,7 @@ bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Si"], ["Torna al Generatore di Polvere"]]
+				keyboard: [["Si"], ["Torna al Generatore di Polvere"]]
 			}
 		};
 
@@ -22930,8 +22726,7 @@ bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Vai al Generatore di Polvere"], ["Torna al menu"]]
+				keyboard: [["Vai al Generatore di Polvere"], ["Torna al menu"]]
 			}
 		};
 
@@ -22939,8 +22734,7 @@ bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Aziona Generatore"], ["Aumenta Deposito", "Utilizza Polvere"], ["Genera Scaglia Evolutiva"], ["Torna al menu"]]
+				keyboard: [["Aziona Generatore"], ["Aumenta Deposito", "Utilizza Polvere"], ["Genera Scaglia Evolutiva"], ["Torna al menu"]]
 			}
 		};
 
@@ -22948,8 +22742,7 @@ bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Ritira", "Spegni"], ["Torna al menu"]]
+				keyboard: [["Ritira", "Spegni"], ["Torna al menu"]]
 			}
 		};
 
@@ -23221,8 +23014,7 @@ bot.onText(/^\/sintesi (.+),(.+),(.+)|^\/sintesi/i, function (message, match) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Torna al dungeon", "Affronta boss"], ["Torna al menu"]]
+														keyboard: [["Torna al dungeon", "Affronta boss"], ["Torna al menu"]]
 													}
 												};
 
@@ -23278,8 +23070,7 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Inizia Sintesi"], ["Sintetizza Materiali Finali"], ["Torna al menu"]]
+					keyboard: [["Inizia Sintesi"], ["Sintetizza Materiali Finali"], ["Torna al menu"]]
 				}
 			};
 
@@ -23287,8 +23078,7 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Torna alla Sintesi"], ["Torna al menu"]]
+					keyboard: [["Torna alla Sintesi"], ["Torna al menu"]]
 				}
 			};
 
@@ -23296,8 +23086,7 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Si"], ["Torna alla Sintesi"]]
+					keyboard: [["Si"], ["Torna alla Sintesi"]]
 				}
 			};
 
@@ -23305,8 +23094,7 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["0", "10", "20"], ["50", "100", "200"], ["Annulla"]]
+					keyboard: [["0", "10", "20"], ["50", "100", "200"], ["Annulla"]]
 				}
 			};
 
@@ -23380,8 +23168,7 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 												parse_mode: "Markdown",
 												reply_markup: {
 													resize_keyboard: true,
-													//one_time_keyboard: true,
-													"keyboard": iKeys
+													keyboard: iKeys
 												}
 											};
 											bot.sendMessage(message.chat.id, "Questa sezione è riservata alla sintesi dei componenti finali per le armi, seleziona il componente da sintetizzare", kb_f).then(function () {
@@ -23656,8 +23443,7 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function 
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Iscrizione dal Bardo"], ["Torna al menu"]]
+							keyboard: [["Iscrizione dal Bardo"], ["Torna al menu"]]
 						}
 					};
 
@@ -23665,8 +23451,7 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function 
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Torna al menu"]]
+							keyboard: [["Torna al menu"]]
 						}
 					};
 
@@ -23674,8 +23459,7 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function 
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Invia Scrittura"], ["Torna al menu"]]
+							keyboard: [["Invia Scrittura"], ["Torna al menu"]]
 						}
 					};
 
@@ -23683,8 +23467,7 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function 
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Torna dal Bardo"], ["Torna al menu"]]
+							keyboard: [["Torna dal Bardo"], ["Torna al menu"]]
 						}
 					};
 
@@ -23692,8 +23475,7 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function 
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Torna dal Bardo"]]
+							keyboard: [["Torna dal Bardo"]]
 						}
 					};
 
@@ -23864,8 +23646,7 @@ bot.onText(/ricercato|evento/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Vai all'Evento"], ["Torna al menu"]]
+					keyboard: [["Vai all'Evento"], ["Torna al menu"]]
 				}
 			};
 
@@ -23873,8 +23654,7 @@ bot.onText(/ricercato|evento/i, function (message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Torna al menu"]]
+					keyboard: [["Torna al menu"]]
 				}
 			};
 
@@ -23882,8 +23662,7 @@ bot.onText(/ricercato|evento/i, function (message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Torna al Ricercato"], ["Torna al menu"]]
+					keyboard: [["Torna al Ricercato"], ["Torna al menu"]]
 				}
 			};
 
@@ -23946,8 +23725,7 @@ bot.onText(/ricercato|evento/i, function (message) {
 							parse_mode: "HTML",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": [["Ispeziona: " + nick], ["I più pericolosi"], ["Torna al menu"]]
+								keyboard: [["Ispeziona: " + nick], ["I più pericolosi"], ["Torna al menu"]]
 							}
 						};
 						bot.sendMessage(message.chat.id, text, kb2).then(function () {
@@ -24032,8 +23810,7 @@ bot.onText(/Il Tesoro di Arthur|Evento/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Vai all'Evento"], ["Torna al menu"]]
+					keyboard: [["Vai all'Evento"], ["Torna al menu"]]
 				}
 			};
 
@@ -24044,8 +23821,7 @@ bot.onText(/Il Tesoro di Arthur|Evento/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["Iscriviti al Registro"], ["Torna al menu"]]
+						keyboard: [["Iscriviti al Registro"], ["Torna al menu"]]
 					}
 				};
 
@@ -24190,8 +23966,7 @@ bot.onText(/Il Tesoro di Arthur|Evento/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [[c1], [c2], [c3], ["Torna al menu"]]
+							keyboard: [[c1], [c2], [c3], ["Torna al menu"]]
 						}
 					};
 
@@ -24223,8 +23998,7 @@ bot.onText(/^Iscriviti al Registro$/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Vai all'evento"], ["Torna al menu"]]
+			keyboard: [["Vai all'evento"], ["Torna al menu"]]
 		}
 	};
 
@@ -24278,8 +24052,7 @@ bot.onText(/[1-9][.] [a-z1-9\s]+/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Riscatta ricompensa evento"], ["Torna al menu"]]
+							keyboard: [["Riscatta ricompensa evento"], ["Torna al menu"]]
 						}
 					};
 
@@ -24415,8 +24188,7 @@ bot.onText(/piazza di lootia|piazza/i, function (message) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": iKeys
+				keyboard: iKeys
 			}
 		};
 
@@ -24474,8 +24246,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["Vedi Offerte"], ["Torna al menu"]]
+						keyboard: [["Vedi Offerte"], ["Torna al menu"]]
 					}
 				};
 
@@ -24519,8 +24290,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Accetta Vendita di " + name + " (" + qnt + ")"], ["Cerca *" + name], ["Cambia offerta", "Torna al menu"]]
+							keyboard: [["Accetta Vendita di " + name + " (" + qnt + ")"], ["Cerca *" + name], ["Cambia offerta", "Torna al menu"]]
 						}
 					};
 
@@ -24528,8 +24298,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Si"], ["Torna dal contrabbandiere"], ["Torna al menu"]]
+							keyboard: [["Si"], ["Torna dal contrabbandiere"], ["Torna al menu"]]
 						}
 					};
 
@@ -24537,8 +24306,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Torna dal contrabbandiere"], ["Torna al menu"]]
+							keyboard: [["Torna dal contrabbandiere"], ["Torna al menu"]]
 						}
 					};
 
@@ -24546,8 +24314,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Torna dal contrabbandiere"], ["Torna al menu"]]
+							keyboard: [["Torna dal contrabbandiere"], ["Torna al menu"]]
 						}
 					};
 
@@ -24555,8 +24322,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Istantaneo", "Aspetta 4 ore"], ["Torna al menu"]]
+							keyboard: [["Istantaneo", "Aspetta 4 ore"], ["Torna al menu"]]
 						}
 					};
 
@@ -25174,8 +24940,7 @@ bot.onText(/offerte giornaliere|^mercante pazzo|mercante/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": iKeys
+					keyboard: iKeys
 				}
 			};
 
@@ -25229,8 +24994,7 @@ bot.onText(/offerte giornaliere|^mercante pazzo|mercante/i, function (message) {
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									//one_time_keyboard: true,
-									"keyboard": [["Accetta"], ["Torna dal mercante"], ["Torna al menu"]]
+									keyboard: [["Accetta"], ["Torna dal mercante"], ["Torna al menu"]]
 								}
 							};
 							bot.sendMessage(message.chat.id, text + "\n\nAcquisti il pacchetto?", kb2).then(function () {
@@ -25291,8 +25055,7 @@ bot.onText(/^Poste/, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna alla piazza"], ["Torna al menu"]]
+				keyboard: [["Torna alla piazza"], ["Torna al menu"]]
 			}
 		};
 
@@ -25461,8 +25224,7 @@ bot.onText(/Affari Passati/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna alla piazza"], ["Torna al menu"]]
+			keyboard: [["Torna alla piazza"], ["Torna al menu"]]
 		}
 	};
 
@@ -25613,8 +25375,7 @@ function cercaTermine(message, param, player_id) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Cerca Ancora"], ["Torna al menu"]]
+			keyboard: [["Cerca Ancora"], ["Torna al menu"]]
 		}
 	};
 
@@ -25689,8 +25450,7 @@ function cercaTermine(message, param, player_id) {
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									//one_time_keyboard: true,
-									"keyboard": iKeys
+									keyboard: iKeys
 								}
 							};
 
@@ -25727,8 +25487,7 @@ function cercaTermine(message, param, player_id) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": iKeys
+								keyboard: iKeys
 							}
 						};
 
@@ -25763,8 +25522,7 @@ function cercaTermine(message, param, player_id) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": iKeys
+								keyboard: iKeys
 							}
 						};
 
@@ -25799,8 +25557,7 @@ function cercaTermine(message, param, player_id) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": iKeys
+								keyboard: iKeys
 							}
 						};
 
@@ -25830,8 +25587,7 @@ function cercaTermine(message, param, player_id) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": iKeys
+								keyboard: iKeys
 							}
 						};
 
@@ -25862,8 +25618,7 @@ function cercaTermine(message, param, player_id) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": iKeys
+								keyboard: iKeys
 							}
 						};
 
@@ -25894,8 +25649,7 @@ function cercaTermine(message, param, player_id) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": iKeys
+								keyboard: iKeys
 							}
 						};
 
@@ -25926,8 +25680,7 @@ function cercaTermine(message, param, player_id) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": iKeys
+								keyboard: iKeys
 							}
 						};
 
@@ -25955,8 +25708,7 @@ function cercaTermine(message, param, player_id) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": iKeys
+							keyboard: iKeys
 						}
 					};
 
@@ -26185,8 +25937,7 @@ function cercaTermine(message, param, player_id) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": iKeys2
+														keyboard: iKeys2
 													}
 												};
 
@@ -26334,8 +26085,7 @@ function cercaTermine(message, param, player_id) {
 														parse_mode: "Markdown",
 														reply_markup: {
 															resize_keyboard: true,
-															//one_time_keyboard: true,
-															"keyboard": iKeys3
+															keyboard: iKeys3
 														}
 													};
 
@@ -26400,8 +26150,7 @@ bot.onText(/lista ricerche/i, function (message) {
 				var kb = {
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": iKeys
+						keyboard: iKeys
 					}
 				};
 
@@ -26422,8 +26171,7 @@ function cerca(message) {
 		var kb = {
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": iKeys
+				keyboard: iKeys
 			}
 		};
 
@@ -26437,8 +26185,7 @@ bot.onText(/alchimia/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [['Sintesi ✨'], ['Incanta 💎 ', 'Scomponi 💎 '], ['Utilizza Polvere 🌪', 'Trasmogrificazione 🌀'], ["Rimodulatore di Flaridion 🔗"], ['Torna al menu']]
+			keyboard: [['Sintesi ✨'], ['Incanta 💎 ', 'Scomponi 💎 '], ['Utilizza Polvere 🌪', 'Trasmogrificazione 🌀'], ["Rimodulatore di Flaridion 🔗"], ['Torna al menu']]
 		}
 	}
 
@@ -26473,8 +26220,7 @@ bot.onText(/genera scaglia evolutiva/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Si"], ["Torna all'alchimia"], ['Torna al menu']]
+				keyboard: [["Si"], ["Torna all'alchimia"], ['Torna al menu']]
 			}
 		}
 
@@ -26482,8 +26228,7 @@ bot.onText(/genera scaglia evolutiva/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna all'alchimia"], ['Torna al generatore'], ['Torna al menu']]
+				keyboard: [["Torna all'alchimia"], ['Torna al generatore'], ['Torna al menu']]
 			}
 		}
 
@@ -26539,8 +26284,7 @@ bot.onText(/utilizza polvere/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna all'alchimia"], ['Torna al generatore'], ['Torna al menu']]
+				keyboard: [["Torna all'alchimia"], ['Torna al generatore'], ['Torna al menu']]
 			}
 		}
 
@@ -26548,8 +26292,7 @@ bot.onText(/utilizza polvere/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Genera Oggetto", 'Genera Scaglia Evolutiva'], ["Torna all'alchimia"], ['Torna al menu']]
+				keyboard: [["Genera Oggetto", 'Genera Scaglia Evolutiva'], ["Torna all'alchimia"], ['Torna al menu']]
 			}
 		}
 
@@ -26557,8 +26300,7 @@ bot.onText(/utilizza polvere/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Si"], ["Torna al Generatore di Polvere"]]
+				keyboard: [["Si"], ["Torna al Generatore di Polvere"]]
 			}
 		};
 
@@ -26566,8 +26308,7 @@ bot.onText(/utilizza polvere/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["1", "10", "100"],["Torna al Generatore di Polvere"]]
+				keyboard: [["1", "10", "100"],["Torna al Generatore di Polvere"]]
 			}
 		};
 
@@ -26686,8 +26427,7 @@ bot.onText(/filtro/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [['Solo Base', 'Solo Creati'], ['Solo C', 'Solo NC', 'Solo R'], ['Solo UR', 'Solo L', 'Solo E'], ['Solo UE', 'Solo U', 'Solo S'], ['Solo I', 'Solo D'], ['Torna allo zaino']]
+			keyboard: [['Solo Base', 'Solo Creati'], ['Solo C', 'Solo NC', 'Solo R'], ['Solo UR', 'Solo L', 'Solo E'], ['Solo UE', 'Solo U', 'Solo S'], ['Solo I', 'Solo D'], ['Torna allo zaino']]
 		}
 	};
 
@@ -26700,8 +26440,7 @@ bot.onText(/cambia visualizzazione/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna allo Zaino"], ["Torna al menu"]]
+			keyboard: [["Torna allo Zaino"], ["Torna al menu"]]
 		}
 	};
 
@@ -26736,8 +26475,7 @@ bot.onText(/Bacheca IN/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna allo Zaino"], ["Torna al menu"]]
+				keyboard: [["Torna allo Zaino"], ["Torna al menu"]]
 			}
 		};
 
@@ -26778,8 +26516,7 @@ bot.onText(/zaino/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [['Zaino Completo 🎒'], ['Filtro 📃', 'Pozioni 🍶', 'Cerca 🔎'], ['Equipaggia 🗡', 'Set 💣', 'Rimuovi 🚫'], ['Scrigni 🔑', 'Torna al menu']]
+			keyboard: [['Zaino Completo 🎒'], ['Filtro 📃', 'Pozioni 🍶', 'Cerca 🔎'], ['Equipaggia 🗡', 'Set 💣', 'Rimuovi 🚫'], ['Scrigni 🔑', 'Torna al menu']]
 		}
 	};
 
@@ -26787,8 +26524,7 @@ bot.onText(/zaino/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna allo Zaino"], ["Torna al menu"]]
+			keyboard: [["Torna allo Zaino"], ["Torna al menu"]]
 		}
 	};
 
@@ -26884,8 +26620,7 @@ bot.onText(/zaino completo/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Cambia Visualizzazione 💼"], ["Bacheca IN 🌟", "Torna allo Zaino"], ["Torna al menu"]]
+			keyboard: [["Cambia Visualizzazione 💼"], ["Bacheca IN 🌟", "Torna allo Zaino"], ["Torna al menu"]]
 		}
 	};
 
@@ -26998,8 +26733,7 @@ bot.onText(/^set$|^set 💣$|torna ai set|^Imposta (.+)/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna ai set"], ["Torna al menu"]]
+				keyboard: [["Torna ai set"], ["Torna al menu"]]
 			}
 		};
 
@@ -27007,8 +26741,7 @@ bot.onText(/^set$|^set 💣$|torna ai set|^Imposta (.+)/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Si"], ["Elimina"], ["Torna ai set"], ["Torna al menu"]]
+				keyboard: [["Si"], ["Elimina"], ["Torna ai set"], ["Torna al menu"]]
 			}
 		};
 
@@ -27016,8 +26749,7 @@ bot.onText(/^set$|^set 💣$|torna ai set|^Imposta (.+)/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Si"], ["Torna ai set"], ["Torna al menu"]]
+				keyboard: [["Si"], ["Torna ai set"], ["Torna al menu"]]
 			}
 		};
 
@@ -27313,8 +27045,7 @@ bot.onText(/^set$|^set 💣$|torna ai set|^Imposta (.+)/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": iKeys
+					keyboard: iKeys
 				}
 			};
 
@@ -27491,8 +27222,7 @@ bot.onText(/^solo (.){1,10}$/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna allo Zaino"], ["Torna al menu"]]
+			keyboard: [["Torna allo Zaino"], ["Torna al menu"]]
 		}
 	};
 
@@ -27662,8 +27392,7 @@ bot.onText(/^Top|Torna alle top/i, function (message) {
 	var kb = {
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [['Le Mie Classifiche'], ['Creazioni', 'Settimanale'], ['Abilità', 'Rango'], ['Imprese Completate', 'Missioni'], ['Albo Artefatti', 'Classifica Contrabbandiere'], ['Impresa Globale', 'Globali Contribuite'], ['Potenziamenti Flaridion'], ['Cambia Top', 'Torna al menu']]
+			keyboard: [['Le Mie Classifiche'], ['Creazioni', 'Settimanale'], ['Abilità', 'Rango'], ['Imprese Completate', 'Missioni'], ['Albo Artefatti', 'Classifica Contrabbandiere'], ['Impresa Globale', 'Globali Contribuite'], ['Potenziamenti Flaridion'], ['Cambia Top', 'Torna al menu']]
 		}
 	};
 
@@ -27675,8 +27404,7 @@ bot.onText(/^Cambia Top/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna alle Top"], ["Torna al menu"]]
+			keyboard: [["Torna alle Top"], ["Torna al menu"]]
 		}
 	};
 
@@ -27858,8 +27586,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [['Top'], ['Torna al menu']]
+														keyboard: [['Top'], ['Torna al menu']]
 													}
 												};
 
@@ -28133,8 +27860,7 @@ function getRankAch(message, size) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [['Top'], ['Imprese'], ['Torna al menu']]
+					keyboard: [['Top'], ['Imprese'], ['Torna al menu']]
 				}
 			};
 
@@ -28356,8 +28082,7 @@ bot.onText(/emporio/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Compra", "Vendi", "Ricicla"], ["Torna alla piazza"], ["Torna al menu"]]
+				keyboard: [["Compra", "Vendi", "Ricicla"], ["Torna alla piazza"], ["Torna al menu"]]
 			}
 		};
 
@@ -28394,8 +28119,7 @@ bot.onText(/emporio/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": iKeys
+								keyboard: iKeys
 							}
 						};
 
@@ -28406,8 +28130,7 @@ bot.onText(/emporio/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Valore < 250", "Valore < 500"], ["Valore < 1000", "Valore < 2000"], ["Valore < 7000", "Valore < 10000"], ["Valore < 20000", "Valore > 20000"], ["Vendi C", "Vendi NC"], ["Vendi R", "Vendi UR"], ["Vendi L", "Vendi E"], ["Torna all'emporio"], ["Torna al menu"]]
+							keyboard: [["Valore < 250", "Valore < 500"], ["Valore < 1000", "Valore < 2000"], ["Valore < 7000", "Valore < 10000"], ["Valore < 20000", "Valore > 20000"], ["Vendi C", "Vendi NC"], ["Vendi R", "Vendi UR"], ["Vendi L", "Vendi E"], ["Torna all'emporio"], ["Torna al menu"]]
 						}
 					};
 
@@ -28451,8 +28174,7 @@ bot.onText(/emporio/i, function (message) {
 										parse_mode: "Markdown",
 										reply_markup: {
 											resize_keyboard: true,
-											//one_time_keyboard: true,
-											"keyboard": iKeys
+											keyboard: iKeys
 										}
 									};
 
@@ -28463,8 +28185,7 @@ bot.onText(/emporio/i, function (message) {
 										parse_mode: "Markdown",
 										reply_markup: {
 											resize_keyboard: true,
-											//one_time_keyboard: true,
-											"keyboard": [["Torna all'emporio"], ["Torna al menu"]]
+											keyboard: [["Torna all'emporio"], ["Torna al menu"]]
 										}
 									};
 
@@ -28501,8 +28222,7 @@ bot.onText(/ricicla/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["C", "NC", "R"], ["UR", "L", "E"], ["D"], ["Torna all'emporio"], ["Torna al menu"]]
+				keyboard: [["C", "NC", "R"], ["UR", "L", "E"], ["D"], ["Torna all'emporio"], ["Torna al menu"]]
 			}
 		};
 
@@ -28510,8 +28230,7 @@ bot.onText(/ricicla/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Ricicla Ancora"], ["Torna al menu"]]
+				keyboard: [["Ricicla Ancora"], ["Torna al menu"]]
 			}
 		};
 
@@ -28519,8 +28238,7 @@ bot.onText(/ricicla/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Stessa Rarità"], ["Rarità Superiore"], ["Torna al menu"]]
+				keyboard: [["Stessa Rarità"], ["Rarità Superiore"], ["Torna al menu"]]
 			}
 		};
 
@@ -28662,8 +28380,7 @@ bot.onText(/ricicla/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": iKeys
+							keyboard: iKeys
 						}
 					};
 
@@ -28779,16 +28496,14 @@ bot.onText(/^vendi/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Conferma"], ["Torna all'emporio"]]
+			keyboard: [["Conferma"], ["Torna all'emporio"]]
 		}
 	};
 	var store = {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna all'emporio"]]
+			keyboard: [["Torna all'emporio"]]
 		}
 	};
 
@@ -28796,8 +28511,7 @@ bot.onText(/^vendi/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["1"], ["2"], ["3"], ["4"], ["5"], ["10"], ["Torna al menu"]]
+			keyboard: [["1"], ["2"], ["3"], ["4"], ["5"], ["10"], ["Torna al menu"]]
 		}
 	};
 
@@ -28999,8 +28713,7 @@ bot.onText(/compra/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna all'emporio"], ["Torna al menu"]]
+				keyboard: [["Torna all'emporio"], ["Torna al menu"]]
 			}
 		};
 
@@ -29008,8 +28721,7 @@ bot.onText(/compra/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Si", "Torna all'emporio"], ["Torna al menu"]]
+				keyboard: [["Si", "Torna all'emporio"], ["Torna al menu"]]
 			}
 		};
 
@@ -29017,8 +28729,7 @@ bot.onText(/compra/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Vai agli scrigni", "Torna all'emporio"], ["Torna al menu"]]
+				keyboard: [["Vai agli scrigni", "Torna all'emporio"], ["Torna al menu"]]
 			}
 		};
 
@@ -29053,8 +28764,7 @@ bot.onText(/compra/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["1"], ["2"], ["3"], ["4"], ["5"], ["10"], ["Torna all'emporio"], ["Torna al menu"]]
+							keyboard: [["1"], ["2"], ["3"], ["4"], ["5"], ["10"], ["Torna all'emporio"], ["Torna al menu"]]
 						}
 					};
 
@@ -29120,8 +28830,7 @@ bot.onText(/compra/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["1"], ["2"], ["3"], ["4"], ["5"], ["10"], ["Torna all'emporio"], ["Torna al menu"]]
+							keyboard: [["1"], ["2"], ["3"], ["4"], ["5"], ["10"], ["Torna all'emporio"], ["Torna al menu"]]
 						}
 					};
 
@@ -29199,8 +28908,7 @@ bot.onText(/compra/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["1"], ["2"], ["3"], ["4"], ["5"], ["10"], ["Torna all'emporio"], ["Torna al menu"]]
+							keyboard: [["1"], ["2"], ["3"], ["4"], ["5"], ["10"], ["Torna all'emporio"], ["Torna al menu"]]
 						}
 					};
 
@@ -29267,8 +28975,7 @@ bot.onText(/compra/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["1"], ["2"], ["3"], ["4"], ["5"], ["10"], ["Torna all'emporio"], ["Torna al menu"]]
+						keyboard: [["1"], ["2"], ["3"], ["4"], ["5"], ["10"], ["Torna all'emporio"], ["Torna al menu"]]
 					}
 				};
 
@@ -29342,8 +29049,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Artefatto Fiammeggiante"], ["Artefatto Elettrico"], ["Artefatto Tempesta"], ["Artefatto Buio"], ["Artefatto Divinatorio"], ["Torna al menu"]]
+			keyboard: [["Artefatto Fiammeggiante"], ["Artefatto Elettrico"], ["Artefatto Tempesta"], ["Artefatto Buio"], ["Artefatto Divinatorio"], ["Torna al menu"]]
 		}
 	};
 
@@ -29351,8 +29057,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Ottieni Artefatto"], ["Torna agli artefatti"], ["Torna al menu"]]
+			keyboard: [["Ottieni Artefatto"], ["Torna agli artefatti"], ["Torna al menu"]]
 		}
 	};
 
@@ -29728,8 +29433,7 @@ bot.onText(/^Biblioteca|Torna alla biblioteca/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": iKeys
+						keyboard: iKeys
 					}
 				};
 
@@ -29737,8 +29441,7 @@ bot.onText(/^Biblioteca|Torna alla biblioteca/i, function (message) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["Torna alla Biblioteca"], ["Torna al menu"]]
+						keyboard: [["Torna alla Biblioteca"], ["Torna al menu"]]
 					}
 				};
 
@@ -29827,8 +29530,7 @@ bot.onText(/^Edificio/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Indaga oltre"], ["Torna al menu"]]
+				keyboard: [["Indaga oltre"], ["Torna al menu"]]
 			}
 		};
 
@@ -29836,8 +29538,7 @@ bot.onText(/^Edificio/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Déjà vu"], ["Torna al menu"]]
+				keyboard: [["Déjà vu"], ["Torna al menu"]]
 			}
 		};
 
@@ -29845,8 +29546,7 @@ bot.onText(/^Edificio/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Edificio"], ["Torna al menu"]]
+				keyboard: [["Edificio"], ["Torna al menu"]]
 			}
 		};
 
@@ -29889,8 +29589,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Albero Talenti"], ["Torna al menu"]]
+			keyboard: [["Albero Talenti"], ["Torna al menu"]]
 		}
 	};
 
@@ -29898,8 +29597,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna all'Albero"], ["Torna al menu"]]
+			keyboard: [["Torna all'Albero"], ["Torna al menu"]]
 		}
 	};
 
@@ -29962,8 +29660,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": iKeys
+						keyboard: iKeys
 					}
 				};
 
@@ -30674,8 +30371,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 											parse_mode: "Markdown",
 											reply_markup: {
 												resize_keyboard: true,
-												//one_time_keyboard: true,
-												"keyboard": [["Conferma"], ["Cerca " + item_name], ["Torna all'Albero"]]
+												keyboard: [["Conferma"], ["Cerca " + item_name], ["Torna all'Albero"]]
 											}
 										};
 
@@ -30753,8 +30449,7 @@ bot.onText(/equipaggia/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Equipaggia Ancora"], ["Torna allo zaino"], ["Torna al menu"]]
+			keyboard: [["Equipaggia Ancora"], ["Torna allo zaino"], ["Torna al menu"]]
 		}
 	};
 
@@ -31040,8 +30735,7 @@ bot.onText(/equipaggia/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": iKeys
+						keyboard: iKeys
 					}
 				};
 
@@ -31063,8 +30757,7 @@ bot.onText(/rimuovi/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Equipaggia"], ["Rimuovi"], ["Torna allo zaino"], ["Torna al menu"]]
+			keyboard: [["Equipaggia"], ["Rimuovi"], ["Torna allo zaino"], ["Torna al menu"]]
 		}
 	};
 
@@ -31229,8 +30922,7 @@ bot.onText(/rimuovi/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": [["Rimuovi Arma", "Rimuovi Armatura"], ["Rimuovi Scudo", "Rimuovi Talismano"], ["Rimuovi Tutto"], ["Torna allo zaino"], ["Torna al menu"]]
+								keyboard: [["Rimuovi Arma", "Rimuovi Armatura"], ["Rimuovi Scudo", "Rimuovi Talismano"], ["Rimuovi Tutto"], ["Torna allo zaino"], ["Torna al menu"]]
 							}
 						};
 
@@ -31325,8 +31017,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Cerca " + oggetto], ["Torna al menu"]]
+				keyboard: [["Cerca " + oggetto], ["Torna al menu"]]
 			}
 		};
 
@@ -31443,8 +31134,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														//one_time_keyboard: true,
-														"keyboard": [["Cerca " + rows[0].name], ["Torna al menu"]]
+														keyboard: [["Cerca " + rows[0].name], ["Torna al menu"]]
 													}
 												};
 
@@ -31460,8 +31150,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 														parse_mode: "Markdown",
 														reply_markup: {
 															resize_keyboard: true,
-															//one_time_keyboard: true,
-															"keyboard": [["Cerca " + rows[0].name], ["Torna al menu"]]
+															keyboard: [["Cerca " + rows[0].name], ["Torna al menu"]]
 														}
 													};
 
@@ -31477,8 +31166,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 															parse_mode: "Markdown",
 															reply_markup: {
 																resize_keyboard: true,
-																//one_time_keyboard: true,
-																"keyboard": [["Cerca " + rows[0].name], ["Torna al menu"]]
+																keyboard: [["Cerca " + rows[0].name], ["Torna al menu"]]
 															}
 														};
 
@@ -31524,8 +31212,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 															parse_mode: "Markdown",
 															reply_markup: {
 																resize_keyboard: true,
-																//one_time_keyboard: true,
-																"keyboard": iKeys
+																keyboard: iKeys
 															}
 														};
 
@@ -31808,8 +31495,7 @@ bot.onText(/^scrigni|torna agli scrigni|vai agli scrigni/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["Vai all'emporio"],["Torna al menu"]]
+						keyboard: [["Vai all'emporio"],["Torna al menu"]]
 					}
 				};
 
@@ -31831,8 +31517,7 @@ bot.onText(/^scrigni|torna agli scrigni|vai agli scrigni/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": iKeys
+					keyboard: iKeys
 				}
 			};
 
@@ -31871,8 +31556,7 @@ bot.onText(/^apri/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna agli scrigni"], ["Torna al menu"]]
+				keyboard: [["Torna agli scrigni"], ["Torna al menu"]]
 			}
 		};
 
@@ -31914,8 +31598,7 @@ bot.onText(/^apri/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Si"], ["Torna agli scrigni"], ["Torna al menu"]]
+							keyboard: [["Si"], ["Torna agli scrigni"], ["Torna al menu"]]
 						}
 					};
 
@@ -31983,8 +31666,7 @@ bot.onText(/^apri/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["Si"], ["Torna agli scrigni"], ["Torna al menu"]]
+						keyboard: [["Si"], ["Torna agli scrigni"], ["Torna al menu"]]
 					}
 				};
 			} else if (qnt > maxChest) {
@@ -31992,8 +31674,7 @@ bot.onText(/^apri/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["1"], [Math.min(qnt, maxChest).toString()], ["Torna agli scrigni"], ["Torna al menu"]]
+						keyboard: [["1"], [Math.min(qnt, maxChest).toString()], ["Torna agli scrigni"], ["Torna al menu"]]
 					}
 				};
 			} else if (qnt > 1) {
@@ -32001,8 +31682,7 @@ bot.onText(/^apri/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["1"], [qnt], ["Torna agli scrigni"], ["Torna al menu"]]
+						keyboard: [["1"], [qnt], ["Torna agli scrigni"], ["Torna al menu"]]
 					}
 				};
 			} else {
@@ -32010,8 +31690,7 @@ bot.onText(/^apri/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["1"], ["Torna agli scrigni"], ["Torna al menu"]]
+						keyboard: [["1"], ["Torna agli scrigni"], ["Torna al menu"]]
 					}
 				};
 			}
@@ -32207,8 +31886,7 @@ bot.onText(/evento della luna/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Ruota della Luna"], ["Torna al menu"]]
+			keyboard: [["Ruota della Luna"], ["Torna al menu"]]
 		}
 	};
 
@@ -32216,8 +31894,7 @@ bot.onText(/evento della luna/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna all'evento della luna"], ["Torna al menu"]]
+			keyboard: [["Torna all'evento della luna"], ["Torna al menu"]]
 		}
 	};
 
@@ -32225,8 +31902,7 @@ bot.onText(/evento della luna/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Si"], ["Torna all'evento della luna"], ["Torna al menu"]]
+			keyboard: [["Si"], ["Torna all'evento della luna"], ["Torna al menu"]]
 		}
 	};
 
@@ -32302,8 +31978,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna al menu"]]
+			keyboard: [["Torna al menu"]]
 		}
 	};
 
@@ -32311,8 +31986,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Torna alla ruota"], ["Torna al menu"]]
+			keyboard: [["Torna alla ruota"], ["Torna al menu"]]
 		}
 	};
 
@@ -32320,8 +31994,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Si"], ["Torna al menu"]]
+			keyboard: [["Si"], ["Torna al menu"]]
 		}
 	};
 
@@ -32646,32 +32319,28 @@ bot.onText(/arena/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Continua all'arena"], ["Torna al menu"]]
+				keyboard: [["Continua all'arena"], ["Torna al menu"]]
 			}
 		};
 		var kb2 = {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Scegli Drago 1", "Scegli Drago 2"], ["Punta Pietre"], ["Torna al menu"]]
+				keyboard: [["Scegli Drago 1", "Scegli Drago 2"], ["Punta Pietre"], ["Torna al menu"]]
 			}
 		};
 		var kb3 = {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Entra nell'arena"], ["Torna al menu"]]
+				keyboard: [["Entra nell'arena"], ["Torna al menu"]]
 			}
 		};
 		var kbBack = {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna all'arena"], ["Torna al menu"]]
+				keyboard: [["Torna all'arena"], ["Torna al menu"]]
 			}
 		};
 
@@ -33412,8 +33081,7 @@ bot.onText(/affronta boss|^scalata boss|^boss/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Affronta Boss"], ["Torna al menu"]]
+			keyboard: [["Affronta Boss"], ["Torna al menu"]]
 		}
 	};
 
@@ -33421,8 +33089,7 @@ bot.onText(/affronta boss|^scalata boss|^boss/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Visualizza Boss"], ["Torna al menu"]]
+			keyboard: [["Visualizza Boss"], ["Torna al menu"]]
 		}
 	};
 
@@ -33617,8 +33284,7 @@ bot.onText(/affronta boss|^scalata boss|^boss/i, function (message) {
 							parse_mode: "HTML",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": iKeys
+								keyboard: iKeys
 							}
 						};
 
@@ -33651,8 +33317,7 @@ bot.onText(/affronta boss|^scalata boss|^boss/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": [["Attacco Leggero", "Attacco Pesante"], ["Incantesimi"], ["Utilizzabili Boss"], ["Visualizza Boss", "Trasmogrificazione"], ["Torna al menu"]]
+								keyboard: [["Attacco Leggero", "Attacco Pesante"], ["Incantesimi"], ["Utilizzabili Boss"], ["Visualizza Boss", "Trasmogrificazione"], ["Torna al menu"]]
 							}
 						};
 
@@ -33778,8 +33443,7 @@ bot.onText(/^Incantesimi$/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": iKeys
+							keyboard: iKeys
 						}
 					};
 
@@ -33796,8 +33460,7 @@ bot.onText(/^Incantesimi$/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Affronta Boss"], ["Dungeon"], ["Torna al menu"]]
+							keyboard: [["Affronta Boss"], ["Dungeon"], ["Torna al menu"]]
 						}
 					};
 					bot.sendMessage(message.chat.id, text + "\n\nNon possiedi alcun incantesimo, puoi ottenerli attraverso la Sintesi!", kb);
@@ -33814,8 +33477,7 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Affronta Boss"], ["Torna al menu"]]
+			keyboard: [["Affronta Boss"], ["Torna al menu"]]
 		}
 	};
 
@@ -33879,8 +33541,7 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Scalata Boss"], ["Torna al menu"]]
+				keyboard: [["Scalata Boss"], ["Torna al menu"]]
 			}
 		};
 
@@ -34488,8 +34149,7 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 																parse_mode: "Markdown",
 																reply_markup: {
 																	resize_keyboard: true,
-																	//one_time_keyboard: true,
-																	"keyboard": [["Attacco Leggero", "Attacco Pesante"], ["Incantesimi"], ["Utilizzabili Boss"], ["Visualizza Boss"], ["Torna al menu"]]
+																	keyboard: [["Attacco Leggero", "Attacco Pesante"], ["Incantesimi"], ["Utilizzabili Boss"], ["Visualizza Boss"], ["Torna al menu"]]
 																}
 															};
 
@@ -34497,8 +34157,7 @@ bot.onText(/^Attacco leggero|^Attacco pesante|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, f
 																parse_mode: "Markdown",
 																reply_markup: {
 																	resize_keyboard: true,
-																	//one_time_keyboard: true,
-																	"keyboard": [["Continua"], ["Torna al menu"]]
+																	keyboard: [["Continua"], ["Torna al menu"]]
 																}
 															};
 
@@ -35242,8 +34901,7 @@ bot.onText(/visualizza boss/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Affronta Boss"], ["Torna al menu"]]
+			keyboard: [["Affronta Boss"], ["Torna al menu"]]
 		}
 	};
 
@@ -35382,8 +35040,7 @@ bot.onText(/Torna in Vita/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": iKeys
+					keyboard: iKeys
 				}
 			};
 
@@ -35391,8 +35048,7 @@ bot.onText(/Torna in Vita/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Affronta Boss"], ["Dungeon"], ["Torna al menu"]]
+					keyboard: [["Affronta Boss"], ["Dungeon"], ["Torna al menu"]]
 				}
 			};
 
@@ -35500,8 +35156,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": itemKeys
+					keyboard: itemKeys
 				}
 			};
 
@@ -35509,16 +35164,14 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Usa Ancora"], ["Affronta Boss", "Torna al dungeon"], ["Torna al menu"]]
+					keyboard: [["Usa Ancora"], ["Affronta Boss", "Torna al dungeon"], ["Torna al menu"]]
 				}
 			};
 			var kbAgainD = {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Usa Ancora"], ["Torna al dungeon"], ["Torna al menu"]]
+					keyboard: [["Usa Ancora"], ["Torna al dungeon"], ["Torna al menu"]]
 				}
 			};
 
@@ -35601,8 +35254,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 										parse_mode: "Markdown",
 										reply_markup: {
 											resize_keyboard: true,
-											//one_time_keyboard: true,
-											"keyboard": [["1", "2", "10"], ["19", "20"], ["Torna al menu"]]
+											keyboard: [["1", "2", "10"], ["19", "20"], ["Torna al menu"]]
 										}
 									};
 								} else if (item_id == 93) {
@@ -35610,8 +35262,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 										parse_mode: "Markdown",
 										reply_markup: {
 											resize_keyboard: true,
-											//one_time_keyboard: true,
-											"keyboard": [["1", "2", "3"], ["9", "10"], ["Torna al menu"]]
+											keyboard: [["1", "2", "3"], ["9", "10"], ["Torna al menu"]]
 										}
 									};
 								} else {
@@ -35619,8 +35270,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 										parse_mode: "Markdown",
 										reply_markup: {
 											resize_keyboard: true,
-											//one_time_keyboard: true,
-											"keyboard": [["1", "2", "3"], ["4", "5"], ["Torna al menu"]]
+											keyboard: [["1", "2", "3"], ["4", "5"], ["Torna al menu"]]
 										}
 									};
 								}
@@ -35747,8 +35397,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 									parse_mode: "Markdown",
 									reply_markup: {
 										resize_keyboard: true,
-										//one_time_keyboard: true,
-										"keyboard": [["1", "5", "10"], ["25", "50", "100"], ["Torna al menu"]]
+										keyboard: [["1", "5", "10"], ["25", "50", "100"], ["Torna al menu"]]
 									}
 								};
 
@@ -35866,8 +35515,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, b
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": Keys
+						keyboard: Keys
 					}
 				};
 
@@ -35883,8 +35531,7 @@ bot.onText(/spia rifugio|spia:/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Nessuno"], ["Torna al rifugio"]]
+			keyboard: [["Nessuno"], ["Torna al rifugio"]]
 		}
 	};
 
@@ -36065,8 +35712,7 @@ bot.onText(/lootteria/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["1 Biglietto (2.500 §)", "5 Biglietti (10.000 §)"], ["20 Biglietti (40.000 §)"], ["Torna al menu"]]
+			keyboard: [["1 Biglietto (2.500 §)", "5 Biglietti (10.000 §)"], ["20 Biglietti (40.000 §)"], ["Torna al menu"]]
 		}
 	};
 
@@ -36243,8 +35889,7 @@ bot.onText(/necro del destino/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Scambia Necrospiriti 💠"], ["Ottieni Ricompense 🔮"], ["Torna al menu"]]
+				keyboard: [["Scambia Necrospiriti 💠"], ["Ottieni Ricompense 🔮"], ["Torna al menu"]]
 			}
 		};
 
@@ -36252,8 +35897,7 @@ bot.onText(/necro del destino/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Torna alla Necro del Destino"], ["Torna al menu"]]
+				keyboard: [["Torna alla Necro del Destino"], ["Torna al menu"]]
 			}
 		};
 
@@ -36291,8 +35935,7 @@ bot.onText(/necro del destino/i, function (message) {
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									//one_time_keyboard: true,
-									"keyboard": iKeys
+									keyboard: iKeys
 								}
 							};
 
@@ -36300,8 +35943,7 @@ bot.onText(/necro del destino/i, function (message) {
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									//one_time_keyboard: true,
-									"keyboard": [["1","5","10"],["Torna alla Necro del Destino"]]
+									keyboard: [["1","5","10"],["Torna alla Necro del Destino"]]
 								}
 							};
 
@@ -36356,8 +35998,7 @@ bot.onText(/necro del destino/i, function (message) {
 							parse_mode: "HTML",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": [["Ricompensa 1", "Ricompensa 2"], ["Ricompensa 3", "Ricompensa 4"], ["Ricompensa 5", "Ricompensa 6"], ["Torna alla Necro del Destino"]]
+								keyboard: [["Ricompensa 1", "Ricompensa 2"], ["Ricompensa 3", "Ricompensa 4"], ["Ricompensa 5", "Ricompensa 6"], ["Torna alla Necro del Destino"]]
 							}
 						};
 
@@ -36365,8 +36006,7 @@ bot.onText(/necro del destino/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": [["Si"], ["Torna alla Necro del Destino"]]
+								keyboard: [["Si"], ["Torna alla Necro del Destino"]]
 							}
 						};
 
@@ -36498,8 +36138,7 @@ bot.onText(/^Destino/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Ruota della Luna 🌕"], ["Necro del Destino 🔮"], ["Torna al menu"]]
+			keyboard: [["Ruota della Luna 🌕"], ["Necro del Destino 🔮"], ["Torna al menu"]]
 		}
 	};
 	bot.sendMessage(message.chat.id, "Seleziona il tipo di prova che vuoi affrontare", kb);
@@ -36542,8 +36181,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["Cambia Rune", "Tieni Combinazione"], ["Rinuncia", "Regole"], ["Torna al Rifugio"]]
+						keyboard: [["Cambia Rune", "Tieni Combinazione"], ["Rinuncia", "Regole"], ["Torna al Rifugio"]]
 					}
 				};
 
@@ -36551,8 +36189,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["Torna al Rifugio"], ["Torna al menu"]]
+						keyboard: [["Torna al Rifugio"], ["Torna al menu"]]
 					}
 				};
 
@@ -36560,8 +36197,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["Torna dallo Gnomo", "Torna al Rifugio"], ["Torna al menu"]]
+						keyboard: [["Torna dallo Gnomo", "Torna al Rifugio"], ["Torna al menu"]]
 					}
 				};
 
@@ -36569,8 +36205,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["Si"], ["Torna dallo gnomo"]]
+						keyboard: [["Si"], ["Torna dallo gnomo"]]
 					}
 				};
 
@@ -36578,8 +36213,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						//one_time_keyboard: true,
-						"keyboard": [["1", "2", "3"], ["4", "5"], ["1,2,3,4,5"], ["Torna dallo gnomo"]]
+						keyboard: [["1", "2", "3"], ["4", "5"], ["1,2,3,4,5"], ["Torna dallo gnomo"]]
 					}
 				};
 
@@ -37397,8 +37031,7 @@ bot.onText(/^rifugio|Torna al rifugio/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": iKeys
+					keyboard: iKeys
 				}
 			};
 
@@ -37408,8 +37041,7 @@ bot.onText(/^rifugio|Torna al rifugio/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": [["Matchmaking (2.000 §)"], ["Inserisci il Nickname (3.000 §)"], ["Torna al Rifugio"]]
+					keyboard: [["Matchmaking (2.000 §)"], ["Inserisci il Nickname (3.000 §)"], ["Torna al Rifugio"]]
 				}
 			};
 
@@ -37812,8 +37444,7 @@ bot.onText(/^prelevazione/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Preleva", "Estrai"], ["Torna al rifugio"], ["Torna al menu"]]
+				keyboard: [["Preleva", "Estrai"], ["Torna al rifugio"], ["Torna al menu"]]
 			}
 		};
 
@@ -37821,8 +37452,7 @@ bot.onText(/^prelevazione/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Prelevazione"], ["Torna al menu"]]
+				keyboard: [["Prelevazione"], ["Torna al menu"]]
 			}
 		};
 
@@ -38176,8 +37806,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [["Matchmaking"], ["Torna al menu"]]
+				keyboard: [["Matchmaking"], ["Torna al menu"]]
 			}
 		};
 
@@ -38256,8 +37885,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": iKeys
+							keyboard: iKeys
 						}
 					};
 
@@ -38477,8 +38105,7 @@ bot.onText(/itinerario propizio|itinerari|regioni/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					//one_time_keyboard: true,
-					"keyboard": iKeys
+					keyboard: iKeys
 				}
 			};
 
@@ -38514,8 +38141,7 @@ bot.onText(/itinerario propizio|itinerari|regioni/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": iKeys
+								keyboard: iKeys
 							}
 						};
 
@@ -38523,8 +38149,7 @@ bot.onText(/itinerario propizio|itinerari|regioni/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								//one_time_keyboard: true,
-								"keyboard": [["Si"], ["Torna agli itinerari"], ["Torna al menu"]]
+								keyboard: [["Si"], ["Torna agli itinerari"], ["Torna al menu"]]
 							}
 						};
 
@@ -39177,8 +38802,7 @@ bot.onText(/^imprese/i, function (message) {
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							//one_time_keyboard: true,
-							"keyboard": [["Informazioni Impresa Globale"], ["Impresa Globale"], ["Torna al menu"]]
+							keyboard: [["Informazioni Impresa Globale"], ["Impresa Globale"], ["Torna al menu"]]
 						}
 					};
 
@@ -39274,8 +38898,7 @@ bot.onText(/^vacanza/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				//one_time_keyboard: true,
-				"keyboard": [[btn], ["Torna al menu"]]
+				keyboard: [[btn], ["Torna al menu"]]
 			}
 		};
 
@@ -39472,8 +39095,7 @@ bot.onText(/viaggi/i, function (message) {
 											parse_mode: "Markdown",
 											reply_markup: {
 												resize_keyboard: true,
-												//one_time_keyboard: true,
-												"keyboard": iKeys
+												keyboard: iKeys
 											}
 										};
 
@@ -39481,8 +39103,7 @@ bot.onText(/viaggi/i, function (message) {
 											parse_mode: "Markdown",
 											reply_markup: {
 												resize_keyboard: true,
-												//one_time_keyboard: true,
-												"keyboard": [["Si"],["Torna ai viaggi"],["Torna al menu"]]
+												keyboard: [["Si"],["Torna ai viaggi"],["Torna al menu"]]
 											}
 										};
 
@@ -39820,8 +39441,7 @@ function setDragonSearch(element, index, array) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [['Entra in combattimento'], ['Torna al menu']]
+			keyboard: [['Entra in combattimento'], ['Torna al menu']]
 		}
 	};
 
@@ -39957,8 +39577,7 @@ function dragonDummyStart(top_id, chat_id, my_rank, dragon_id, player_id, my_exp
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [['Entra in combattimento'], ['Torna al menu']]
+			keyboard: [['Entra in combattimento'], ['Torna al menu']]
 		}
 	};
 
@@ -42163,8 +41782,7 @@ function setFinishedBatchBoss(element, index, array) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Affronta Boss"], ["Torna al menu"]]
+			keyboard: [["Affronta Boss"], ["Torna al menu"]]
 		}
 	};
 
@@ -43229,8 +42847,7 @@ function setFinishedHeistProgress(element, index, array) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			//one_time_keyboard: true,
-			"keyboard": [["Contatta lo Gnomo"], ["Torna al menu"]]
+			keyboard: [["Contatta lo Gnomo"], ["Torna al menu"]]
 		}
 	};
 
@@ -43536,8 +43153,7 @@ function setFinishedHeist(element, index, array) {
 										parse_mode: "Markdown",
 										reply_markup: {
 											resize_keyboard: true,
-											//one_time_keyboard: true,
-											"keyboard": [["Contatta lo gnomo"], ["Torna al menu"]]
+											keyboard: [["Contatta lo gnomo"], ["Torna al menu"]]
 										}
 									};
 									bot.sendMessage(fromChat, "Il tuo gnomo è arrivato al rifugio nemico, il guardiano del cancello ti propone uno strano gioco con le *Rune*, hai tempo fino alle " + short_time + " per partecipare!", kb);
