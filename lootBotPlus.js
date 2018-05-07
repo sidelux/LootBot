@@ -110,9 +110,7 @@ bot.on('message', function (message) {
 								bot.kickChatMember(message.chat.id, message.from.id).then(function (result) {
 									bot.sendMessage(message.chat.id, message.from.username + ", hai postato un negozio troppo vicino all'ultimo, sei stato kickato.");
 									bot.sendMessage(message.from.id, "Sei stato kickato dal gruppo Loot Negozi perchè hai postato un negozio troppo vicino all'ultimo");
-									bot.unbanChatMember(message.chat.id, message.from.id).then(function (result) {
-										// kickato
-									});
+									bot.unbanChatMember(message.chat.id, message.from.id);
 								});
 								bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
 									if (result != true)
@@ -853,19 +851,27 @@ bot.onText(/^\/gb (.+)|^\/gb$/, function (message, match) {
 					var account_id = rows[0].account_id;
 
 					if (rows[0].group_ban == 0) {
-						bot.sendMessage(message.chat.id, nick + " (" + account_id + ") bannato dai gruppi.");
-						bot.kickChatMember(message.chat.id, account_id).then(function (result) {
-							console.log(nick + " bannato dai gruppi");
-						});
 						connection.query('UPDATE player SET group_ban = 1 WHERE id = ' + rows[0].id, function (err, rows, fields) {
 							if (err) throw err;
 						});
+						bot.sendMessage(message.chat.id, nick + " (" + account_id + ") bannato dai gruppi.");
+						bot.kickChatMember(message.chat.id, account_id);
+						bot.kickChatMember("-1001069842056", account_id);
+						bot.kickChatMember("-1001064571576", account_id);
+						bot.kickChatMember("-1001050459665", account_id);
+						bot.kickChatMember("-1001064797183", account_id);
+						bot.kickChatMember("-1001097316494", account_id);
 					} else {
 						if (chat_id == "-1001064797183"){
-							bot.sendMessage(message.chat.id, nick + " (" + account_id + ") sbannato dai gruppi.");
 							connection.query('UPDATE player SET group_ban = 0 WHERE id = ' + rows[0].id, function (err, rows, fields){
 								if (err) throw err;
 							});
+							bot.sendMessage(message.chat.id, nick + " (" + account_id + ") sbannato dai gruppi.");
+							bot.unbanChatMember("-1001069842056", message.from.id);
+							bot.unbanChatMember("-1001064571576", message.from.id);
+							bot.unbanChatMember("-1001050459665", message.from.id);
+							bot.unbanChatMember("-1001064797183", message.from.id);
+							bot.unbanChatMember("-1001097316494", message.from.id);
 						}
 					}
 				});

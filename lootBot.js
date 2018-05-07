@@ -21,7 +21,7 @@ var eventDust = 0;
 
 // Eventi attivati
 var crazyMode = 0;			// nulla
-var luckyMode = 0;			// svuota contest
+var luckyMode = 1;			// svuota contest
 var arena = 0;				// azzera le due tabelle
 var lootteria = 0;			// svuota event_lottery_coins e event_lottery_prize con extracted a 0
 var lootteriaBlock = 0;
@@ -3824,10 +3824,17 @@ function mainMenu(message) {
 																if ((d.getHours() >= 3) && (d.getHours() < 9))
 																	err = 1;
 																if ((checkDragonTopOn == 1) && (err == 0)){
-																	if (dragon_life > 0)
-																		msgtext = msgtext + "\n🐉 Drago in attesa nella Vetta";
-																	else
+																	if (dragon_life > 0){
+																		var dragon_status = connection_sync.query('SELECT wait_time FROM dragon_top_status WHERE player_id = ' + player_id);
+																		if (dragon_status[0].wait_time != null){
+																			var dragon_status_time = new Date(dragon_status[0].wait_time);
+																			msgtext = msgtext + "\n💤 Il drago riposa dopo uno scontro fino alle " + addZero(dragon_status_time.getHours()) + ":" + addZero(dragon_status_time.getMinutes());
+																		} else {
+																			msgtext = msgtext + "\n🐉 Drago in attesa nella Vetta";
+																		}
+																	} else {
 																		msgtext = msgtext + "\n🐉 Drago esausto, fallo riposare!";
+																	}
 																}
 															}
 													}else{
@@ -12061,13 +12068,12 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							var rankPoint = 1;
 																							if (luckyMode == 1) {
 																								var d = new Date();
+																								var rand = Math.random() * 100;
 																								if (d.getDay() == 6) {
-																									var rand = Math.random() * 100;
 																									if (rand < 25) {
 																										rankPoint = 2;
 																									}
 																								} else if (d.getDay() == 0) {
-																									var rand = Math.random() * 100;
 																									if (rand < 25) {
 																										rankPoint = 2;
 																									} else if ((rand > 25) && (rand < 50)) {
@@ -13349,7 +13355,7 @@ function numToMana(num) {
 	}
 }
 
-function setEnchant(message, player_id, type, rand, class_id, reborn) {
+function setEnchant(message, player_id, type, rand, class_id, reborn, week = 0) {
 	setAchievement(message.chat.id, player_id, 23, 1);
 
 	connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 20', function (err, rows, fields) {
@@ -13361,7 +13367,7 @@ function setEnchant(message, player_id, type, rand, class_id, reborn) {
 		}
 
 		var d = new Date();
-		if (crazyMode == 1) {
+		if ((crazyMode == 1) || (week == 1)){
 			d.setMinutes(d.getMinutes() + (10080+abBonus));
 		} else {
 			d.setMinutes(d.getMinutes() + (2880+abBonus));
@@ -18566,8 +18572,10 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 
 													value = req[i].value;
 
-													if (req[i].type == "level")
+													if (req[i].type == "min_level")
 														type = "Livello minimo (assoluto): ";
+													if (req[i].type == "max_level")
+														type = "Livello massimo (assoluto): ";
 													else if (req[i].type == "reborn") {
 														type = "Rinascita minima: ";
 														value -= 1;
@@ -18795,7 +18803,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 																				}
 
 																				for (var i = 0; i < reqLen; i++) {
-																					if (req[i].type == "level") {
+																					if (req[i].type == "min_level") {
 																						reqVal = 0;
 																						reqValMax = req[i].member;
 																						if (reqValMax == "all")
@@ -18806,7 +18814,21 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 																						}
 																						if (reqVal < reqValMax) {
 																							err = 1;
-																							errMsg = "Livello non soddisfatto (" + reqVal + " su " + reqValMax + " necessari)";
+																							errMsg = "Livello minimo non soddisfatto (" + reqVal + " su " + reqValMax + " necessari)";
+																						}
+																					}
+																					if (req[i].type == "max_level") {
+																						reqVal = 0;
+																						reqValMax = req[i].member;
+																						if (reqValMax == "all")
+																							reqValMax = partyLen;
+																						for (var j = 0; j < partyLen; j++) {
+																							if (getRealLevel(rows[j].reborn, Math.floor(rows[j].exp / 10)) <= req[i].value)
+																								reqVal++;
+																						}
+																						if (reqVal < reqValMax) {
+																							err = 1;
+																							errMsg = "Livello massimo non soddisfatto (" + reqVal + " su " + reqValMax + " necessari)";
 																						}
 																					}
 																					if (req[i].type == "reborn") {
@@ -18951,7 +18973,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 																					var short_date2 = addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + " del " + addZero(d2.getDate()) + "/" + addZero(d2.getMonth() + 1);
 
 																					for (var j = 0; j < partyLen; j++) {
-																						bot.sendMessage(rows[j].chat_id, "Il tuo party è stato assegnato all'incarico <b>" + mission_title + "</b> fino alle " + short_date + ", scadrà alle " + short_date2 + "!\n\n<i>" + mission_text + "</i>\nSe non vedi la schermata di votazione dopo il tempo di attesa usa /incarico.", html);
+																						bot.sendMessage(rows[j].chat_id, "Il tuo party è stato assegnato all'incarico <b>" + mission_title + "</b> fino alle " + short_date + ", scadrà alle " + short_date2 + "!\n\n<i>" + mission_text + "</i>\n\nSe non vedi la schermata di votazione dopo il tempo di attesa usa /incarico.", html);
 																						connection.query('UPDATE player SET mission_party = 1 WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
 																							if (err) throw err;
 																						});
@@ -24533,13 +24555,12 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 
 											if (luckyMode == 1) {
 												var d = new Date();
+												var rand = Math.random() * 100;
 												if (d.getDay() == 6) {
-													var rand = Math.random() * 100;
 													if (rand < 10) {
 														price = price * 2;
 													}
 												} else if (d.getDay() == 0) {
-													var rand = Math.random() * 100;
 													if (rand < 20) {
 														price = price * 2;
 													} else if ((rand > 20) && (rand < 30)) {
@@ -32104,7 +32125,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 		}
 	}
 
-	connection.query('SELECT id, holiday, account_id, exp, reborn, weapon_enchant, weapon2_enchant, weapon3_enchant FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, holiday, account_id, exp, reborn, weapon_enchant, weapon2_enchant, weapon3_enchant, class FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
 		var lev = Math.floor(rows[0].exp / 10);
@@ -32112,6 +32133,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 		var weapon_enchant = rows[0].weapon_enchant;
 		var weapon2_enchant = rows[0].weapon2_enchant;
 		var weapon3_enchant = rows[0].weapon3_enchant;
+		var class_id = rows[0].class;
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -32248,15 +32270,8 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 										bot.sendMessage(message.chat.id, "Avresti ottenuto un incantamento arma, ma l'arma è già incantata, ritira!", kbBack);
 										return;
 									}
-									var d = new Date();
-									d.setHours(d.getHours() + 168);
-									var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-									var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-
-									connection.query('UPDATE player SET weapon_enchant_bonus = ' + magic + ', weapon_enchant_end = "' + long_date + '", weapon_enchant = 30 WHERE id = ' + player_id, function (err, rows, fields) {
-										if (err) throw err;
-										bot.sendMessage(message.chat.id, "Hai un incantamento +30 " + magicN + " all'arma per una settimana!", kbBack);
-									});
+									
+									setEnchant(message, player_id, "Arma", 30, class_id, reborn, 1);
 									setAchievement(message.chat.id, player_id, 21, 1);
 								} else if (rand == 14) {
 									if (weapon2_enchant != 0){
@@ -32266,15 +32281,8 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 										bot.sendMessage(message.chat.id, "Avresti ottenuto un incantamento armatura, ma l'armatura è già incantata, ritira!", kbBack);
 										return;
 									}
-									var d = new Date();
-									d.setHours(d.getHours() + 168);
-									var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-									var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-
-									connection.query('UPDATE player SET weapon2_enchant_bonus = ' + magic + ', weapon2_enchant_end = "' + long_date + '", weapon2_enchant = 30 WHERE id = ' + player_id, function (err, rows, fields) {
-										if (err) throw err;
-										bot.sendMessage(message.chat.id, "Hai un incantamento +30 " + magicN + " all'armatura per una settimana!", kbBack);
-									});
+									
+									setEnchant(message, player_id, "Armatura", 30, class_id, reborn, 1);
 									setAchievement(message.chat.id, player_id, 21, 1);
 								} else if (rand == 15) {
 									if (weapon3_enchant != 0){
@@ -32284,15 +32292,8 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 										bot.sendMessage(message.chat.id, "Avresti ottenuto un incantamento scudo, ma lo scudo è già incantato, ritira!", kbBack);
 										return;
 									}
-									var d = new Date();
-									d.setHours(d.getHours() + 168);
-									var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-									var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-
-									connection.query('UPDATE player SET weapon3_enchant_bonus = ' + magic + ', weapon3_enchant_end = "' + long_date + '", weapon3_enchant = 30 WHERE id = ' + player_id, function (err, rows, fields) {
-										if (err) throw err;
-										bot.sendMessage(message.chat.id, "Hai un incantamento +30 " + magicN + " allo scudo per una settimana!", kbBack);
-									});
+									
+									setEnchant(message, player_id, "Scudo", 30, class_id, reborn, 1);
 									setAchievement(message.chat.id, player_id, 21, 1);
 								} else if (rand == 16) {
 									for (var i = 0; i < 200; i++) {
@@ -40964,6 +40965,9 @@ function setFinishedTeamMission(element, index, array) {
 				var endText = "";
 				var rewardText = "";
 				var totPnt = 0;
+				if (Object.keys(rows).length == 0){
+					console.log("Errore messaggio incarico vuoto per report_id " + report_id);
+				}
 				for (i = 0; i < Object.keys(rows).length; i++) {
 					endText += rows[i].text;
 					totPnt += rows[i].pnt;
@@ -40998,7 +41002,7 @@ function setFinishedTeamMission(element, index, array) {
 								if (d.getDay() == 6) {
 									paPnt = paPnt*2;
 								} else if (d.getDay() == 0) {
-									var r = Math.random();
+									var r = Math.random() * 100;
 									if (r < 50) {
 										paPnt = 0;
 									} else if ((r > 50) && (r < 75)) {
@@ -41008,8 +41012,10 @@ function setFinishedTeamMission(element, index, array) {
 							}
 							var expPnt = Math.floor((duration*(parts+1))/60/60);
 							var qnt = rewardLevel*rewardStr[0];
-							rewardText += "\n> " + paPnt + " 🦋 (team)";
-							rewardText += "\n> " + expPnt + " exp (a testa)";
+							if (paPnt > 0)
+								rewardText += "\n> " + paPnt + " 🦋 (team)";
+							if (expPnt > 0)
+								rewardText += "\n> " + expPnt + " exp (a testa)";
 							var isExp = 0;
 							var isItem = 0;
 							var isChest = 0;
@@ -41061,12 +41067,24 @@ function setFinishedTeamMission(element, index, array) {
 									qnt = 1;
 									rewardText += "\n> 1x Runa Necro (X) (a testa)";
 								}else{
-									var item = connection_sync.query("SELECT id, name, rarity FROM item WHERE name LIKE 'Runa%' AND rarity != 'X'");
+									var item = connection_sync.query("SELECT id, name, rarity FROM item WHERE name LIKE 'Runa%' AND rarity != 'X' ORDER BY RAND()");
 									var itemid = item[0].id;
 									qnt = Math.floor(rewardLevel/4)+1;
 									rewardText += "\n> " + qnt + "x " + item[0].name + " (" + item[0].rarity + ") (a testa)";
 								}
 								isItem = 1;
+							}else if (rewardStr[1] == "pietre"){
+								qnt = Math.round(qnt/2);
+								for (i = 4; i > 0; i--) {	// da 2 a 5 (1-4)
+									if (qnt % (i+1) === 0){
+										break;
+									}
+								}
+								var val = (i+1);
+								qnt = qnt/val;
+								var item = connection_sync.query("SELECT id, name, rarity FROM item WHERE id = " + (68+val));
+								var itemid = item[0].id;
+								rewardText += "\n> " + qnt + "x " + item[0].name + " (" + item[0].rarity + ") (a testa)";
 							}else{
 								console.log("Errore premi");
 								return;
@@ -42447,7 +42465,7 @@ function setFinishedMission(element, index, array) {
 					if (d.getDay() == 6) {
 						bonus += 50;
 					} else if (d.getDay() == 0) {
-						var r = Math.random();
+						var r = Math.random() * 100;
 						if (r < 50) {
 							bonus += 50;
 						} else if ((r > 50) && (r < 75)) {
@@ -43350,13 +43368,12 @@ function setFinishedCave(element, index, array) {
 
 		if (luckyMode == 1) {
 			var d = new Date();
+			var rand = Math.random() * 100;
 			if (d.getDay() == 6) {
-				var rand = Math.random() * 100;
 				if (rand < 15) {
 					caveid = caveid * 2;
 				}
 			} else if (d.getDay() == 0) {
-				var rand = Math.random() * 100;
 				if (rand < 10) {
 					caveid = caveid * 2;
 				} else if ((rand > 10) && (rand < 25)) {
