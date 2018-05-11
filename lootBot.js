@@ -12,7 +12,6 @@ process.on('unhandledRejection', function (error, p) {
 
 var max_mission_id = 290;
 var timevar = [];
-var timevarFlood = [];
 var answerCallbacks = {};
 
 // Eventi automatici
@@ -31,7 +30,7 @@ var wanted = 0;				// svuota event_wanted_status
 var eventTeamStory = 0;		// svuota event_team_story
 var eventFestival = 0;		// event_crafting_status con total_cnt a 0
 var specialMission = 0;		// nulla
-var checkDragonTopOn = 0;	// svuota tabelle dragon_ e auto increment dummy a 100000
+var checkDragonTopOn = 0;	// alla chiusura - svuota tabelle dragon_ e auto increment dummy a 100000
 var gnomorra = 0;			// svuota tabella event_gnomorra
 
 // Festività o disattivati
@@ -676,21 +675,6 @@ bot.onText(/^\/eventon (.+)|^\/eventon|^\/eventoff (.+)|^\/eventoff/, function (
 			if (event == "specialmission")
 				specialMission = onoff;
 			if (event == "top"){
-				connection.query('ALTER TABLE dragon_dummy AUTO_INCREMENT = 100000', function (err, rows, fields) {
-					if (err) throw err;
-				});
-				connection.query('DELETE FROM dragon_dummy', function (err, rows, fields) {
-					if (err) throw err;
-				});
-				connection.query('DELETE FROM dragon_top_dummy', function (err, rows, fields) {
-					if (err) throw err;
-				});
-				connection.query('DELETE FROM dragon_top_rank', function (err, rows, fields) {
-					if (err) throw err;
-				});
-				connection.query('DELETE FROM dragon_top_status', function (err, rows, fields) {
-					if (err) throw err;
-				});
 				checkDragonTopOn = onoff;
 			}
 			if (event == "gnomorra") {
@@ -727,8 +711,24 @@ bot.onText(/^\/eventon (.+)|^\/eventon|^\/eventoff (.+)|^\/eventoff/, function (
 			if (event == "specialmission")
 				specialMission = onoff;
 
-			if (event == "top")
+			if (event == "top"){
+				connection.query('ALTER TABLE dragon_dummy AUTO_INCREMENT = 100000', function (err, rows, fields) {
+					if (err) throw err;
+				});
+				connection.query('DELETE FROM dragon_dummy', function (err, rows, fields) {
+					if (err) throw err;
+				});
+				connection.query('DELETE FROM dragon_top_dummy', function (err, rows, fields) {
+					if (err) throw err;
+				});
+				connection.query('DELETE FROM dragon_top_rank', function (err, rows, fields) {
+					if (err) throw err;
+				});
+				connection.query('DELETE FROM dragon_top_status', function (err, rows, fields) {
+					if (err) throw err;
+				});
 				checkDragonTopOn = onoff;
+			}
 
 			if (event == "gnomorra")
 				gnomorra = onoff;
@@ -6481,11 +6481,10 @@ bot.onText(/vedi la carta/i, function (message) {
 
 bot.onText(/$vocazioni|vocazione|torna alle vocazioni/i, function (message) {
 
-	if (message.text == "Cambia Vocazione") {
+	if (message.text.toLowerCase() == "cambia vocazione")
 		return;
-	}
 
-	connection.query('SELECT account_id, id, class, reborn, class_changed FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, id, class, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -6497,7 +6496,6 @@ bot.onText(/$vocazioni|vocazione|torna alle vocazioni/i, function (message) {
 		var player_id = rows[0].id;
 		var player_class = rows[0].class;
 		var reborn = rows[0].reborn;
-		var changed = rows[0].class_changed;
 
 		if (reborn == 1) {
 			bot.sendMessage(message.chat.id, "Non puoi selezionare una vocazione fino alla Rinascita 1 (Livello 100). Potrai scegliere la strada che il tuo eroe desidera intraprendere ottenendo particolari abilità!\nPuoi visualizzare le Vocazioni e le loro descrizione in questo documento: http://telegra.ph/Lista-Vocazioni-di-Loot-01-26", back);
@@ -6551,7 +6549,7 @@ bot.onText(/$vocazioni|vocazione|torna alle vocazioni/i, function (message) {
 			};
 
 			if (player_class == 1) {
-				bot.sendMessage(message.chat.id, "Le *Vocazioni* sono dei percorsi che puoi scegliere e per migliorare una particolare sezione del tuo personaggio.\nSeleziona la vocazione che preferisci per trarne i benefici associati, ma fai attenzione, eccetto particolari momenti come i bilanciamenti, *non potrai più cambiarla!*\n\nIn questo documento sono descritte nei particolari, scegli saggiamente: http://telegra.ph/Lista-Vocazioni-di-Loot-01-26", sClass).then(function () {
+				bot.sendMessage(message.chat.id, "Le *Vocazioni* sono dei percorsi che puoi scegliere e per migliorare una particolare sezione del tuo personaggio.\nSeleziona la vocazione che preferisci per trarne i benefici associati, ma fai attenzione, cambiarla avrà un costo molto elevato!\n\nIn questo documento sono descritte nei particolari, scegli saggiamente: http://telegra.ph/Lista-Vocazioni-di-Loot-01-26", sClass).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text != "Torna al menu") {
 							connection.query('SELECT id, name FROM class WHERE name = "' + answer.text + '"', function (err, rows, fields) {
@@ -6597,7 +6595,7 @@ bot.onText(/$vocazioni|vocazione|torna alle vocazioni/i, function (message) {
 });
 
 bot.onText(/cambia vocazione/i, function (message) {
-	connection.query('SELECT account_id, id, class, reborn, class_changed FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, id, class, reborn, gems FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -6609,7 +6607,7 @@ bot.onText(/cambia vocazione/i, function (message) {
 		var player_id = rows[0].id;
 		var player_class = rows[0].class;
 		var reborn = rows[0].reborn;
-		var changed = rows[0].class_changed;
+		var gems = rows[0].gems;
 
 		if (reborn == 1) {
 			bot.sendMessage(message.chat.id, "Sblocca le vocazioni prima di poterla cambiare", back);
@@ -6631,30 +6629,28 @@ bot.onText(/cambia vocazione/i, function (message) {
 			}
 		};
 
-		if (changed == 1) {
-			bot.sendMessage(message.chat.id, "Hai già cambiato Vocazione una volta", bClass);
-			return;
-		}
-
 		if (player_class == 1) {
 			bot.sendMessage(message.chat.id, "Puoi cambiare vocazione solo dopo averne scelta una", bClass);
 			return;
 		}
-
-		var d = new Date("2018-01-28 22:00:00");
+		
 		var now = new Date();
-
-		if (now > d){
-			bot.sendMessage(message.chat.id, "Non è più possibile cambiare la vocazione", bClass);
+		if (now.getDate() != 1){
+			bot.sendMessage(message.chat.id, "E' possibile cambiare vocazione solo il primo del mese", bClass);
 			return;
 		}
-
-		bot.sendMessage(message.chat.id, "Sei sicuro di voler modificare la Vocazione? Puoi farlo solamente una volta dal momento in cui sceglierai 'Si', hai tempo fino al " + addZero(d.getDate()) + "/" + addZero(d.getMonth()+1) + " alle " + addZero(d.getHours()) + ":" + addZero(d.getMinutes()), cClass).then(function () {
+		
+		var cost = (reborn-1)*250;
+		bot.sendMessage(message.chat.id, "Sei sicuro di voler modificare la Vocazione? Ti costerà " + cost + " 💎", cClass).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text.toLowerCase() == "si") {
-					connection.query('UPDATE player SET class = 1, class_changed = 1 WHERE id = ' + player_id, function (err, rows, fields) {
+					if (gems < cost){
+						bot.sendMessage(message.chat.id, "Non hai abbastanza 💎", bClass);
+						return;
+					}
+					connection.query('UPDATE player SET gems = gems-' + cost + ', class = 1 WHERE id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Hai resettato la vocazione, ora fai la nuova scelta", bClass);
+						bot.sendMessage(message.chat.id, "Hai resettato la vocazione al costo di " + cost + " 💎, ora puoi selezionarne una nuova!", bClass);
 						console.log("Reset vocazione da " + player_class);
 					});
 				}
@@ -15996,7 +15992,7 @@ bot.onText(/^Risorse/i, function (message) {
 			}
 		};
 
-		connection.query('SELECT id, life, total_life, scale, level FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT id, life, total_life, scale, level, evolved FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length == 0) {
 				bot.sendMessage(message.chat.id, "Non possiedi il drago.", back);
@@ -16008,6 +16004,7 @@ bot.onText(/^Risorse/i, function (message) {
 			var dragon_total_life = rows[0].total_life;
 			var dragon_scale = rows[0].scale;
 			var dragon_level = rows[0].level;
+			var dragon_evolved = rows[0].evolved;
 
 			connection.query('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -16135,6 +16132,11 @@ bot.onText(/^Risorse/i, function (message) {
 										});
 									} else if (item_id == 706) {
 
+										if (((dragon_level == 100) && (dragon_evolved == 0)) || (dragon_level == 200)){
+											bot.sendMessage(message.chat.id, "Non puoi usare questo oggetto su un drago al livello massimo!", kbNext);
+											return;
+										}
+										
 										var sign = "+";
 										var text = "ottenuto";
 										var rand = Math.random() * 100;
@@ -21507,6 +21509,12 @@ bot.onText(/gnomorra/i, function (message) {
 		bot.sendMessage(message.chat.id, "L'evento non è disponibile", back);
 		return;
 	}
+	
+	var today = new Date();
+	if ((today.getDay() != 6) && (today.getDay() != 0)) {
+		bot.sendMessage(message.chat.id, "L'evento non è più disponibile!", back);
+		return;
+	}
 	*/
 
 	connection.query('SELECT id, account_id, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -21556,7 +21564,7 @@ bot.onText(/gnomorra/i, function (message) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Si"], ["Torna alla Gnomorra"], ["Torna al menu"]]
+				keyboard: [["Si", "Torna alla Gnomorra"], ["Torna al menu"]]
 			}
 		};
 
@@ -21566,7 +21574,7 @@ bot.onText(/gnomorra/i, function (message) {
 			if (Object.keys(rows).length == 0) {
 				connection.query('INSERT INTO event_gnomorra (player_id) VALUES (' + player_id + ')', function (err, rows, fields) {
 					if (err) throw err;
-					bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " alla <b>Gnomorra Lootiana</b>! Sfida gli altri giocatori in particolari partite di questo gioco tipico di Lootia e scala la classifica per ottenere interessanti premi a fine evento!", kb2);
+					bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " alla <b>Gnomorra Lootiana</b>! Sfida gli altri giocatori in particolari partite di questo gioco tipico di Lootia e scala la classifica!\nOgni vittoria otterrai un premio ed il premio migliorerà più alta sarà la tua sequenza di vittorie consecutive. Puoi giocare 50 sfide normali e 50 allenamenti ogni giorno, cerca di sfruttarle al meglio ;)", kb2);
 				});
 				return;
 			}
@@ -21622,19 +21630,22 @@ bot.onText(/gnomorra/i, function (message) {
 							connection.query('SELECT 1 FROM event_gnomorra WHERE player_id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
 								/*
-								if (Object.keys(rows).length < 20){
+								if (Object.keys(rows).length < 10){
 									bot.sendMessage(message.chat.id, "La ricerca automatica sarà disponibile con più giocatori iscritti!", kbBack);
 									return;
 								}
 								*/
-								connection.query('SELECT player_id, TIMESTAMPDIFF(SECOND, time, NOW()) As diff FROM event_gnomorra, last_command, player  WHERE event_gnomorra.player_id = player.id AND player.account_id = last_command.account_id AND player_id != ' + player_id + ' AND enemy_id IS NULL AND invite_id IS NULL AND player_id NOT IN (SELECT invite_id FROM event_gnomorra WHERE invite_id IS NOT NULL) AND suspend = 0 ORDER BY diff ASC', function (err, rows, fields) {
+								connection.query('SELECT player_id, TIMESTAMPDIFF(SECOND, time, NOW()) As diff FROM event_gnomorra, last_command, player  WHERE event_gnomorra.player_id = player.id AND player.account_id = last_command.account_id AND player_id != ' + player_id + ' AND enemy_id IS NULL AND invite_id IS NULL AND player_id NOT IN (SELECT invite_id FROM event_gnomorra WHERE invite_id IS NOT NULL) AND suspend = 0 AND battle_limit < 50 ORDER BY diff ASC LIMIT 5', function (err, rows, fields) {
 									if (err) throw err;
 									if (Object.keys(rows).length == 0){
 										bot.sendMessage(message.chat.id, "Nessun giocatore disponibile, riprova", kbBack);
 										return;
 									}
+									//asd
+									var rand = Math.round(getRandomArbitrary(0, Object.keys(rows).length-1));
+									var enemy_player_id = rows[rand].player_id;
 
-									gnomorraStart(player_id, rows[0].player_id, 0);
+									gnomorraStart(player_id, enemy_player_id, 0);
 								});
 							});
 						});
@@ -21693,7 +21704,7 @@ bot.onText(/gnomorra/i, function (message) {
 
 										var enemy_player_id = rows[0].id;
 
-										connection.query('SELECT enemy_id, invite_id FROM event_gnomorra WHERE player_id = ' + enemy_player_id, function (err, rows, fields) {
+										connection.query('SELECT enemy_id, invite_id, suspend, practice_limit FROM event_gnomorra WHERE player_id = ' + enemy_player_id, function (err, rows, fields) {
 											if (err) throw err;
 											if (Object.keys(rows).length == 0){
 												bot.sendMessage(message.chat.id, "Il giocatore non è iscritto all'evento, riprova", kbBack);
@@ -21705,6 +21716,14 @@ bot.onText(/gnomorra/i, function (message) {
 											}
 											if (rows[0].invite_id != null){
 												bot.sendMessage(message.chat.id, "Il giocatore è già in attesa della conferma di un invito, riprova", kbBack);
+												return;
+											}
+											if (rows[0].suspend == 1){
+												bot.sendMessage(message.chat.id, "Il giocatore bersaglio è sospeso!", kbBack);
+												return;
+											}
+											if (rows[0].practice_limit >= 50){
+												bot.sendMessage(message.chat.id, "Il giocatore bersaglio ha raggiunto il limite di sfide mirate!", kbBack);
 												return;
 											}
 
@@ -21724,7 +21743,7 @@ bot.onText(/gnomorra/i, function (message) {
 							});
 						});
 					}else if (answer.text.indexOf("Classifica") != -1){
-						var text = "Classifica vittorie:\n";
+						var text = "<b>Classifica vittorie:</b>\n";
 
 						connection.query('SELECT P.nickname, E.win FROM event_gnomorra E, player P WHERE P.id = E.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) GROUP BY E.player_id ORDER BY win DESC', function (err, rows, fields) {
 							if (err) throw err;
@@ -21734,10 +21753,12 @@ bot.onText(/gnomorra/i, function (message) {
 							var points = [];
 							var mypos = 0;
 
-							if (Object.keys(rows).length < 50){
-								bot.sendMessage(message.chat.id, "La classifica sarà disponibile con più giocatori iscritti!", kbBack);
+							/*
+							if (Object.keys(rows).length < 20){
+								bot.sendMessage(message.chat.id, "<i>La classifica sarà disponibile con più giocatori registrati all'evento!</i>", kbBack);
 								return;
 							}
+							*/
 
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 								nickname.push(rows[i].nickname);
@@ -21756,8 +21777,41 @@ bot.onText(/gnomorra/i, function (message) {
 									}
 								}
 							}
+							
+							text += "\n<b>Classifica record vittorie consecutive:</b>\n";
+							
+							connection.query('SELECT P.nickname, E.streak_record FROM event_gnomorra E, player P WHERE P.id = E.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) GROUP BY E.player_id ORDER BY streak_record DESC', function (err, rows, fields) {
+							if (err) throw err;
 
-							bot.sendMessage(message.chat.id, text, kbBack);
+								var range = 10;
+								var nickname = [];
+								var points = [];
+								var mypos = 0;
+
+								if (Object.keys(rows).length < 20){
+									text += "<i>Questa classifica sarà disponibile con più giocatori registrati all'evento</i>";
+								}else{
+									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+										nickname.push(rows[i].nickname);
+										points.push(rows[i].win);
+										if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase()) {
+											mypos = i;
+										}
+									}
+
+									for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
+										if (nickname[i] != undefined) {
+											if (i == mypos) {
+												text += (i + 1) + "° <b>" + nickname[i] + "</b> (" + points[i] + ")\n";
+											} else {
+												text += (i + 1) + "° " + nickname[i] + " (" + points[i] + ")\n";
+											}
+										}
+									}
+								}
+
+								bot.sendMessage(message.chat.id, text, kbBack);
+							});
 						});
 					}else if (answer.text.indexOf("Sospendi") != -1){
 						
@@ -21785,16 +21839,18 @@ bot.onText(/gnomorra/i, function (message) {
 
 							bot.sendMessage(message.chat.id, text, kbYesNo).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
-									if (suspend == 0){
-										connection.query('UPDATE event_gnomorra SET suspend = 1, win_streak = 0, streak_record = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
-											if (err) throw err;
-											bot.sendMessage(message.chat.id, "Ti sei sospeso dal Gnomorra!", kbBack);
-										});
-									}else{
-										connection.query('UPDATE event_gnomorra SET suspend = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
-											if (err) throw err;
-											bot.sendMessage(message.chat.id, "Non sei più sospeso da Gnomorra!", kbBack);
-										});
+									if (answer.text.toLowerCase() == "si"){
+										if (suspend == 0){
+											connection.query('UPDATE event_gnomorra SET suspend = 1, win_streak = 0, streak_record = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+												bot.sendMessage(message.chat.id, "Ti sei sospeso dal Gnomorra!", kbBack);
+											});
+										}else{
+											connection.query('UPDATE event_gnomorra SET suspend = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+												bot.sendMessage(message.chat.id, "Non sei più sospeso da Gnomorra!", kbBack);
+											});
+										}
 									}
 								}
 							});
@@ -21934,7 +21990,7 @@ bot.onText(/^\/gnomorra/i, function (message) {
 						var type = rows[0].type;
 					
 						if (round_sel == 0){
-							gnomorraGame(enemy_player_id, player_id, type);
+							bot.sendMessage(message.chat.id, "Non è il tuo turno!", back);
 						}else if (round_sel != 1){
 							gnomorraGame(player_id, enemy_player_id, type);
 						}
@@ -21947,7 +22003,7 @@ bot.onText(/^\/gnomorra/i, function (message) {
 				if (rows[0].round_sel == 0){
 					gnomorraGame(player_id, enemy_player_id, type);
 				}else if (rows[0].round_sel != 0){
-					gnomorraGame(enemy_player_id, player_id, type);
+					bot.sendMessage(message.chat.id, "Non è il tuo turno!", back);
 				}
 			}
 		});
@@ -21978,7 +22034,7 @@ function gnomorraGame(player_id, enemy_player_id, type){
 				if (err) throw err;
 				var enemy_chat_id = rows[0].chat_id;
 				var enemy_nickname = rows[0].nickname;
-				connection.query('SELECT round_win, round_sel, win_streak, streak_record FROM event_gnomorra, game_time WHERE player_id = ' + enemy_player_id, function (err, rows, fields) {
+				connection.query('SELECT round_win, round_sel, win_streak, streak_record, game_time FROM event_gnomorra WHERE player_id = ' + enemy_player_id, function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length == 0){
 						bot.sendMessage(chat_id, "L'avversario non è registrato all'evento", back);
@@ -22194,7 +22250,7 @@ function gnomorraGame(player_id, enemy_player_id, type){
 										}, 300);
 									}else{
 										bot.sendMessage(chat_id, "Hai scelto " + selS + "! Ora è il turno di <b>" + enemy_nickname + "</b>!", back_html);
-										bot.sendMessage(enemy_chat_id, "Il tuo avversario ha giocato, tocca a te!");
+										//bot.sendMessage(enemy_chat_id, "Il tuo avversario ha giocato, tocca a te!");
 										gnomorraGame(enemy_player_id, player_id, type);
 									}
 								});
@@ -22208,7 +22264,7 @@ function gnomorraGame(player_id, enemy_player_id, type){
 }
 
 function gnomorraReward(streak, max) {
-	var z = max * (2 * ((Math.atan(streak / 2)) / Math.PI));
+	var z = max * (2 * ((Math.atan(streak / 4.0)) / Math.PI));
 	var tot = 0;
 	for (var i = 0; i < max; i++) {
 		tot += Math.pow(Math.E, -((Math.pow(i - z, 2))/2));
@@ -43673,7 +43729,7 @@ function setFinishedTeamPlayers(element, index, array) {
 };
 
 function checkGnomorraGame() {
-	connection.query('SELECT player_id, enemy_id FROM event_gnomorra WHERE game_time < NOW() AND game_time IS NOT NULL', function (err, rows, fields) {
+	connection.query('SELECT player_id, enemy_id, round_sel FROM event_gnomorra WHERE game_time < NOW() AND game_time IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
@@ -43690,17 +43746,30 @@ function checkGnomorraGame() {
 function setFinishedGnomorraGame(element, index, array) {
 	var player_id = element.player_id;
 	var enemy_id = element.enemy_id;
+	var round_sel = element.round_sel;
+	
+	var text1 = "La partita di gnomorra in corso è scaduta!";
+	var text2 = "La partita di gnomorra in corso è scaduta!";
+	var q1 = "";
+	var q2 = "";
+	if (round_sel == 0){
+		text1 = "La partita di gnomorra in corso è scaduta e la tua serie di vittorie è stata resettata!";
+		q1 = ", win_streak = 0";
+	}else{
+		text2 = "La partita di gnomorra in corso è scaduta e la tua serie di vittorie è stata resettata!";
+		q2 = ", win_streak = 0";
+	}
 	connection.query('SELECT chat_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 		if (err) throw err;
-		bot.sendMessage(rows[0].chat_id, "La partita di gnomorra in corso è scaduta e la tua serie di vittorie è stata resettata!", back);
-		connection.query('UPDATE event_gnomorra SET enemy_id = NULL, game_time = NULL, round_win = 0, round_sel = 0, type = 0, win_streak = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+		bot.sendMessage(rows[0].chat_id, text1, back);
+		connection.query('UPDATE event_gnomorra SET enemy_id = NULL, game_time = NULL, round_win = 0, round_sel = 0, type = 0' + q1 + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
 	});
 	connection.query('SELECT chat_id FROM player WHERE id = ' + enemy_id, function (err, rows, fields) {
 		if (err) throw err;
-		bot.sendMessage(rows[0].chat_id, "La partita di gnomorra in corso è scaduta e la tua serie di vittorie è stata resettata!", back);
-		connection.query('UPDATE event_gnomorra SET enemy_id = NULL, game_time = NULL, round_win = 0, round_sel = 0, type = 0, win_streak = 0 WHERE player_id = ' + enemy_id, function (err, rows, fields) {
+		bot.sendMessage(rows[0].chat_id, text2, back);
+		connection.query('UPDATE event_gnomorra SET enemy_id = NULL, game_time = NULL, round_win = 0, round_sel = 0, type = 0' + q2 + ' WHERE player_id = ' + enemy_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
 	});
@@ -43726,7 +43795,7 @@ function setFinishedGnomorraInvite(element, index, array) {
 	var invite_id = element.invite_id;
 	connection.query('SELECT chat_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 		if (err) throw err;
-		bot.sendMessage(rows[0].chat_id, "L'invito inviato per gnomorra è scaduto!");
+		bot.sendMessage(rows[0].chat_id, "L'invito inviato per gnomorra è scaduto!", back);
 		connection.query('UPDATE event_gnomorra SET invite_id = NULL, invite_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 		});

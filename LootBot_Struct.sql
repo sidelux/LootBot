@@ -2477,7 +2477,6 @@ CREATE TABLE `player` (
   `custom_name_h` varchar(32) DEFAULT NULL,
   `player_description` varchar(512) DEFAULT NULL,
   `player_custom_nickname` varchar(32) DEFAULT NULL,
-  `class_changed` int(11) NOT NULL DEFAULT '0',
   `lore_page` int(11) NOT NULL DEFAULT '0',
   `lore_mission` int(11) NOT NULL DEFAULT '0',
   `holiday` tinyint(1) NOT NULL DEFAULT '0',
@@ -3257,4 +3256,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-05-09 12:00:11
+-- Dump completed on 2018-05-11 15:00:09
