@@ -2483,6 +2483,7 @@ CREATE TABLE `player` (
   `global_event` int(11) NOT NULL DEFAULT '0',
   `global_end` int(11) NOT NULL DEFAULT '0',
   `bag_min` int(11) NOT NULL DEFAULT '0',
+  `class_change` int(11) NOT NULL DEFAULT '0',
   `top_min` int(11) NOT NULL DEFAULT '0',
   `global_msg` int(11) NOT NULL DEFAULT '1',
   `kill_streak_ok` int(11) NOT NULL DEFAULT '0',
@@ -3256,4 +3257,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-05-11 15:00:09
+-- Dump completed on 2018-05-14 12:00:10
