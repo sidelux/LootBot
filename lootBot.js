@@ -829,9 +829,9 @@ function checkKeyboard() {
 		mainKeysR2.splice(1, 0, ['🎄 Villaggio Innevato (Evento) 🌨']);
 	}
 	if (gnomorra == 1){
-		mainKeys.splice(0, 0, ['📄 Gnomorra Lootiana (Beta)(Evento) 🈵']);
-		mainKeysR.splice(1, 0, ['📄 Gnomorra Lootiana (Beta)(Evento) 🈵']);
-		mainKeysR2.splice(1, 0, ['📄 Gnomorra Lootiana (Beta)(Evento) 🈵']);
+		mainKeys.splice(0, 0, ['📄 Gnomorra Lootiana (Beta) (Evento) 🈵']);
+		mainKeysR.splice(1, 0, ['📄 Gnomorra Lootiana (Beta) (Evento) 🈵']);
+		mainKeysR2.splice(1, 0, ['📄 Gnomorra Lootiana (Beta) (Evento) 🈵']);
 	}
 
 	main_html = {
@@ -3056,29 +3056,39 @@ bot.onText(/\/messaggio (.+)|\/messaggio/, function (message, match) {
 
 		var player_id = rows[0].id;
 		var money = rows[0].money;
-		connection.query('SELECT player_id FROM `team_player` WHERE team_id = (SELECT team_id FROM team_player WHERE player_id = ' + player_id + ') AND role = 1', function (err, rows, fields) {
+
+		connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
-			var adminId = rows[0].player_id;
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Non sei in un team", back);
+				return;
+			}
 
-			connection.query('SELECT player_id, chat_id FROM `team_player`, player WHERE team_player.player_id = player.id AND team_id = (SELECT team_id FROM team_player WHERE player_id = ' + player_id + ') ORDER BY team_player.id', function (err, rows, fields) {
+			var team_id = rows[0].team_id;
+
+			connection.query('SELECT 1 FROM team_player WHERE team_id = ' + team_id + ' AND player_id = ' + player_id + ' AND role > 0', function (err, rows, fields) {
 				if (err) throw err;
+
 				if (Object.keys(rows).length == 0) {
-					bot.sendMessage(message.chat.id, "Non sei in un team", back);
+					bot.sendMessage(message.chat.id, "Non hai i poteri sufficienti per utilizzare questa funzione", back);
 					return;
 				}
 
-				if (adminId != player_id) {
-					bot.sendMessage(message.chat.id, "Non sei amministratore del team", back);
-					return;
-				}
-
-				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					if (rows[i].chat_id != message.chat.id) {
-						bot.sendMessage(rows[i].chat_id, "Messaggio dall'Amministratore Team\n" + msg);
+				connection.query('SELECT player_id, chat_id FROM team_player, player WHERE team_player.player_id = player.id AND team_id = ' + team_id + ' ORDER BY team_player.id', function (err, rows, fields) {
+					if (err) throw err;
+					if (Object.keys(rows).length == 0) {
+						bot.sendMessage(message.chat.id, "Nessun membro a cui inviare il messaggio", back);
+						return;
 					}
-				}
-				bot.sendMessage(message.chat.id, "Messaggio inviato a " + (Object.keys(rows).length - 1) + " giocatori del team");
+
+					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+						if (rows[i].chat_id != message.chat.id) {
+							bot.sendMessage(rows[i].chat_id, "Messaggio dall'Amministratore Team\n" + msg);
+						}
+					}
+					bot.sendMessage(message.chat.id, "Messaggio inviato a " + (Object.keys(rows).length - 1) + " giocatori del team");
+				});
 			});
 		});
 	});
@@ -6634,7 +6644,7 @@ bot.onText(/cambia vocazione/i, function (message) {
 			bot.sendMessage(message.chat.id, "Puoi cambiare vocazione solo dopo averne scelta una", bClass);
 			return;
 		}
-		
+
 		if (player_id != 1){
 			var now = new Date();
 			if (now.getDate() != 1){
@@ -6642,7 +6652,7 @@ bot.onText(/cambia vocazione/i, function (message) {
 				return;
 			}
 		}
-		
+
 		var cost = (reborn-1)*250+(500*class_change);	// 1000 base R4 + 500 a volta
 		bot.sendMessage(message.chat.id, "Sei sicuro di voler modificare la Vocazione? Ti costerà " + cost + " 💎 ed il costo aumenterà ogni cambio!", cClass).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
@@ -6940,7 +6950,7 @@ bot.onText(/dungeon/i, function (message) {
 	if (message.text.indexOf("velocemente") != -1) {
 		return;
 	}
-	
+
 	if (message.text.length > 25)
 		return;
 
@@ -15697,7 +15707,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 });
 
 bot.onText(/mostra log vecchi|nascondi log vecchi/i, function (message) {
-	
+
 	connection.query('SELECT id, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -15709,7 +15719,7 @@ bot.onText(/mostra log vecchi|nascondi log vecchi/i, function (message) {
 		}
 
 		var player_id = rows[0].id;
-	
+
 		var kbBack = {
 			parse_mode: "Markdown",
 			reply_markup: {
@@ -15825,9 +15835,9 @@ bot.onText(/riposa/i, function (message) {
 							if (answer.text == "Torna al menu") {
 								return;
 							}
-							
+
 							var h = parseInt(answer.text);
-							
+
 							connection.query('SELECT id FROM dragon_top_status WHERE enemy_dragon_id = ' + dragon_id, function (err, rows, fields) {
 								if (err) throw err;
 
@@ -15835,7 +15845,7 @@ bot.onText(/riposa/i, function (message) {
 									bot.sendMessage(message.chat.id, "Il drago è impegnato in uno scontro, non può riposarsi", kbBack);
 									return;
 								}
-								
+
 								if (isNaN(h) || (h < 10) || (h > 100)) {
 									bot.sendMessage(message.chat.id, "Valore non valido: minimo 10 minuti, massimo 100", kbBack);
 									return;
@@ -16139,7 +16149,7 @@ bot.onText(/^Risorse/i, function (message) {
 											bot.sendMessage(message.chat.id, "Non puoi usare questo oggetto su un drago al livello massimo!", kbNext);
 											return;
 										}
-										
+
 										var sign = "+";
 										var text = "ottenuto";
 										var rand = Math.random() * 100;
@@ -19522,11 +19532,11 @@ bot.onText(/Potenziamenti Anima/i, function (message) {
 							reply_markup: {
 								resize_keyboard: true,
 								keyboard: [["Unione Fatale (40/200 🦋)"],
-											 ["Bottino Ricco (60/300 🦋)"],
-											 ["Formazione Impenetrabile (50/250 🦋)"],
-											 ["Richiamo dei Guerrieri (200 🦋)"],
-											 ["Torna al team"],
-											 ["Torna al menu"]]
+										   ["Bottino Ricco (60/300 🦋)"],
+										   ["Formazione Impenetrabile (50/250 🦋)"],
+										   ["Richiamo dei Guerrieri (200 🦋)"],
+										   ["Torna al team"],
+										   ["Torna al menu"]]
 							}
 						};
 
@@ -21037,7 +21047,7 @@ bot.onText(/cambia admin/i, function (message) {
 											}
 										});
 									}else if (answer.text == "Vice-Amministratore"){
-										bot.sendMessage(message.chat.id, "Chi vuoi eleggere vice-amministratore al posto dell'attuale?\nOtterrà i poteri per gestire gli incarichi", kb).then(function () {
+										bot.sendMessage(message.chat.id, "Chi vuoi eleggere vice-amministratore al posto dell'attuale?\nOtterrà i poteri per gestire gli incarichi e potrà inviare messaggi al team", kb).then(function () {
 											answerCallbacks[message.chat.id] = function (answer) {
 												if (answer.text == "Torna al team")
 													return;
@@ -21062,7 +21072,7 @@ bot.onText(/cambia admin/i, function (message) {
 														connection.query('UPDATE team_player SET role = 2 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
 															if (err) throw err;
 														});
-														bot.sendMessage(message.chat.id, "Cambio vice-admin completato!", back);
+														bot.sendMessage(message.chat.id, "Cambio vice-amministratore completato!", back);
 														bot.sendMessage(rows[0].chat_id, "Sei stato nominato Vice-Amministratore del Team!", back);
 													});
 												});
@@ -21506,7 +21516,7 @@ bot.onText(/gnomorra/i, function (message) {
 		bot.sendMessage(message.chat.id, "L'evento non è disponibile", back);
 		return;
 	}
-	
+
 	var today = new Date();
 	if ((today.getDay() != 6) && (today.getDay() != 0)) {
 		bot.sendMessage(message.chat.id, "L'evento non è più disponibile!", back);
@@ -21555,7 +21565,7 @@ bot.onText(/gnomorra/i, function (message) {
 				keyboard: [["Vai alla Gnomorra Lootiana"], ["Torna al menu"]]
 			}
 		};
-		
+
 		var kbYesNo = {
 			parse_mode: "HTML",
 			reply_markup: {
@@ -21584,10 +21594,10 @@ bot.onText(/gnomorra/i, function (message) {
 			var practice_limit = rows[0].practice_limit;
 			var streak_record = rows[0].streak_record;
 			var suspend = rows[0].suspend;
-			
+
 			connection.query('SELECT SUM(battle_limit+practice_limit) As cnt FROM event_gnomorra', function (err, rows, fields) {
 				if (err) throw err;
-				
+
 				var total_plays = rows[0].cnt;
 
 				bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " alla <b>Gnomorra Lootiana</b>!\nPuoi sfidare un giocatore casuale oppure uno in particolare inserendo il suo nickname, il giocatore bersaglio deve accettare l'invito, la partita è divisa in 3 round.\n\n<b>Vittorie:</b> " + win + "\n<b>Sconfitte:</b> " + lose + "\n<b>Vittorie consecutive:</b> " + win_streak + " (Record: " + streak_record + ")\n\nPuoi ancora giocare " + (50-battle_limit) + " partite normali e " + (50-practice_limit) + " allenamenti, sono state giocate in totale " + formatNumber(total_plays) + " partite!", kb).then(function () {
@@ -21804,7 +21814,7 @@ bot.onText(/gnomorra/i, function (message) {
 								text += "\n<b>Classifica record vittorie consecutive:</b>\n";
 
 								connection.query('SELECT P.nickname, E.streak_record FROM event_gnomorra E, player P WHERE P.id = E.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND streak_record > 0 GROUP BY E.player_id ORDER BY streak_record DESC', function (err, rows, fields) {
-								if (err) throw err;
+									if (err) throw err;
 
 									var range = 10;
 									var nickname = [];
@@ -21914,7 +21924,7 @@ function gnomorraStart(player_id, enemy_player_id, practice){
 
 			connection.query('UPDATE event_gnomorra SET invite_id = ' + enemy_player_id + ', invite_time = DATE_ADD(NOW(), INTERVAL 5 MINUTE), type = ' + practice + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
-				
+
 				if (practice == 1){
 					bot.sendMessage(chat_id, "Hai spedito un invito per una partita di allenamento a <b>" + enemy_nickname + "</b> attendi che l'accetti per iniziare la sfida (entro 5 min)", kb2);
 					bot.sendMessage(enemy_chat_id, "Hai ricevuto un invito per Allenamento Gnomorra Lootiana da <b>" + nickname + "</b>, accetti?\nScade tra 5 minuti, puoi anche scrivere Accetta invito o Rifiuta invito in altre schermate.", kb);
@@ -21944,7 +21954,7 @@ bot.onText(/accetta invito|rifiuta invito/i, function (message) {
 				bot.sendMessage(message.chat.id, "Sei già in partita", back);
 				return;
 			}
-			
+
 			connection.query('SELECT 1 FROM event_gnomorra WHERE enemy_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
@@ -22017,7 +22027,7 @@ bot.onText(/^\/gnomorra/i, function (message) {
 					var enemy_player_id = rows[0].player_id;
 					var round_sel = rows[0].round_sel;
 					var type = rows[0].type;
-					
+
 					if (round_sel == 0){
 						bot.sendMessage(message.chat.id, "Non è il tuo turno!", back);
 					}else if (round_sel != 0){
@@ -22185,7 +22195,7 @@ function gnomorraGame(player_id, enemy_player_id, type){
 
 												gnomorraGame(player_id, enemy_player_id, type);
 											}
-											
+
 											// incrementa tempo ogni turno per evitare exploit
 											if (game_time != null){
 												connection.query('UPDATE event_gnomorra SET game_time = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -22237,7 +22247,7 @@ function gnomorraGame(player_id, enemy_player_id, type){
 														if (err) throw err;
 													});
 												}
-												
+
 												if (winner > 0){
 													var chest = 0;
 													if (winner == 1){
@@ -32490,7 +32500,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 										bot.sendMessage(message.chat.id, "Avresti ottenuto un incantamento arma, ma l'arma è già incantata, ritira!", kbBack);
 										return;
 									}
-									
+
 									setEnchant(message, player_id, "Arma", 30, class_id, reborn, 1);
 									setAchievement(message.chat.id, player_id, 21, 1);
 								} else if (rand == 14) {
@@ -32501,7 +32511,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 										bot.sendMessage(message.chat.id, "Avresti ottenuto un incantamento armatura, ma l'armatura è già incantata, ritira!", kbBack);
 										return;
 									}
-									
+
 									setEnchant(message, player_id, "Armatura", 30, class_id, reborn, 1);
 									setAchievement(message.chat.id, player_id, 21, 1);
 								} else if (rand == 15) {
@@ -32512,7 +32522,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 										bot.sendMessage(message.chat.id, "Avresti ottenuto un incantamento scudo, ma lo scudo è già incantato, ritira!", kbBack);
 										return;
 									}
-									
+
 									setEnchant(message, player_id, "Scudo", 30, class_id, reborn, 1);
 									setAchievement(message.chat.id, player_id, 21, 1);
 								} else if (rand == 16) {
@@ -35234,79 +35244,89 @@ bot.onText(/Torna in Vita/i, function (message) {
 				}
 			};
 
-			if (life <= 0) {
-				bot.sendMessage(message.chat.id, "Vuoi usare una Piuma di Fenice o una Cenere di Fenice per tornare in vita? Nel caso della Piuma dovrai attendere 3 minuti prima di tornare ad affrontare i boss!", kbHeal).then(function () {
-					answerCallbacks[message.chat.id] = function (answer) {
-						if (answer.text.indexOf("Piuma di Fenice") != -1) {
+			if (life > 0) {
+				bot.sendMessage(message.chat.id, "Sei in salute, non è necessario tornare in vita", back);
+				return;
+			}
+			bot.sendMessage(message.chat.id, "Vuoi usare una Piuma di Fenice o una Cenere di Fenice per tornare in vita? Nel caso della Piuma dovrai attendere 3 minuti prima di tornare ad affrontare i boss!", kbHeal).then(function () {
+				answerCallbacks[message.chat.id] = function (answer) {
+					if (answer.text.indexOf("Piuma di Fenice") != -1) {
+						if (life > 0) {
+							bot.sendMessage(message.chat.id, "Sei in salute, non è necessario tornare in vita", back);
+							return;
+						}
+						if (getItemCnt(player_id, 619) == 0) {
+							bot.sendMessage(message.chat.id, "Non possiedi nessuna Piuma di Fenice", back);
+						} else {
+							delItem(player_id, 619, 1);
+							var ten = total_life / 100 * 10;
+							var perc = 0;
+							var life = ten;
+							var abBonus = 0;
 
-							if (getItemCnt(player_id, 619) == 0) {
-								bot.sendMessage(message.chat.id, "Non possiedi nessuna Piuma di Fenice", back);
-							} else {
-								delItem(player_id, 619, 1);
-								var ten = total_life / 100 * 10;
-								var perc = 0;
-								var life = ten;
-								var abBonus = 0;
+							var now = new Date();
+							now.setMinutes(now.getMinutes() + 3);
+							var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
+							var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
 
-								var now = new Date();
-								now.setMinutes(now.getMinutes() + 3);
-								var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
-								var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
-
-								connection.query('UPDATE player SET life = ' + life + ', res_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
-									if (err) throw err;
-									bot.sendMessage(message.chat.id, "Bentornat" + gender_text + "! 🌟", kbBack);
-									setAchievement(message.chat.id, player_id, 20, 1);
-								});
-							}
-						} else if (answer.text.indexOf("Cenere di Fenice") != -1) {
-
-							if (getItemCnt(player_id, 647) == 0) {
-								bot.sendMessage(message.chat.id, "Non possiedi nessuna Cenere di Fenice", back);
-							} else {
-								delItem(player_id, 647, 1);
-								connection.query('UPDATE player SET life = total_life WHERE id = ' + player_id, function (err, rows, fields) {
-									if (err) throw err;
-									bot.sendMessage(message.chat.id, "Bentornat" + gender_text + "! 🌟", kbBack);
-									setAchievement(message.chat.id, player_id, 20, 1);
-								});
-							}
-						} else if (answer.text.indexOf("Intervento Divino") != -1) {
-							connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 6', function (err, rows, fields) {
+							connection.query('UPDATE player SET life = ' + life + ', res_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
-
-								if (Object.keys(rows).length == 0) {
-									bot.sendMessage(message.chat.id, "Devi apprendere questo talento prima di poterlo utilizzare", back);
-									return;
-								}
-
-								if (rows[0].ability_level == 0) {
-									bot.sendMessage(message.chat.id, "Devi apprendere questo talento prima di poterlo utilizzare", back);
-									return;
-								}
-
-								var att = Math.ceil(rows[0].ability_level / 2);
-								if ((class_id == 5) && (reborn == 5)) {
-									att += 5;
-								}
-								if (refilled >= att) {
-									bot.sendMessage(message.chat.id, "Hai già consumato le " + att + " opportunità di oggi!", back);
-									return;
-								}
-
-								var refill = Math.floor(total_life * (rows[0].ability_level / 10)); // Cura = livello*10%
-								connection.query('UPDATE player SET refilled = refilled+1, life = ' + refill + ' WHERE id = ' + player_id, function (err, rows, fields) {
-									if (err) throw err;
-									bot.sendMessage(message.chat.id, "L'Intervento Divino ti ha concesso di tornare in battaglia con " + formatNumber(refill) + "/" + formatNumber(total_life) + " hp!", kbBack);
-									setAchievement(message.chat.id, player_id, 20, 1);
-								});
+								bot.sendMessage(message.chat.id, "Bentornat" + gender_text + "! 🌟", kbBack);
+								setAchievement(message.chat.id, player_id, 20, 1);
 							});
 						}
+					} else if (answer.text.indexOf("Cenere di Fenice") != -1) {
+						if (life > 0) {
+							bot.sendMessage(message.chat.id, "Sei in salute, non è necessario tornare in vita", back);
+							return;
+						}
+						if (getItemCnt(player_id, 647) == 0) {
+							bot.sendMessage(message.chat.id, "Non possiedi nessuna Cenere di Fenice", back);
+						} else {
+							delItem(player_id, 647, 1);
+							connection.query('UPDATE player SET life = total_life WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+								bot.sendMessage(message.chat.id, "Bentornat" + gender_text + "! 🌟", kbBack);
+								setAchievement(message.chat.id, player_id, 20, 1);
+							});
+						}
+					} else if (answer.text.indexOf("Intervento Divino") != -1) {
+						if (life > 0) {
+							bot.sendMessage(message.chat.id, "Sei in salute, non è necessario tornare in vita", back);
+							return;
+						}
+						connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 6', function (err, rows, fields) {
+							if (err) throw err;
+
+							if (Object.keys(rows).length == 0) {
+								bot.sendMessage(message.chat.id, "Devi apprendere questo talento prima di poterlo utilizzare", back);
+								return;
+							}
+
+							if (rows[0].ability_level == 0) {
+								bot.sendMessage(message.chat.id, "Devi apprendere questo talento prima di poterlo utilizzare", back);
+								return;
+							}
+
+							var att = Math.ceil(rows[0].ability_level / 2);
+							if ((class_id == 5) && (reborn == 5)) {
+								att += 5;
+							}
+							if (refilled >= att) {
+								bot.sendMessage(message.chat.id, "Hai già consumato le " + att + " opportunità di oggi!", back);
+								return;
+							}
+
+							var refill = Math.floor(total_life * (rows[0].ability_level / 10)); // Cura = livello*10%
+							connection.query('UPDATE player SET refilled = refilled+1, life = ' + refill + ' WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+								bot.sendMessage(message.chat.id, "L'Intervento Divino ti ha concesso di tornare in battaglia con " + formatNumber(refill) + "/" + formatNumber(total_life) + " hp!", kbBack);
+								setAchievement(message.chat.id, player_id, 20, 1);
+							});
+						});
 					}
-				});
-			} else {
-				bot.sendMessage(message.chat.id, "Sei in salute, non è necessario tornare in vita", back);
-			}
+				}
+			});
 		});
 	});
 });
@@ -43775,7 +43795,7 @@ function setFinishedGnomorraGame(element, index, array) {
 	var player_id = element.player_id;
 	var enemy_id = element.enemy_id;
 	var round_sel = element.round_sel;
-	
+
 	var text1 = "La partita di gnomorra in corso è scaduta!";
 	var text2 = "La partita di gnomorra in corso è scaduta!";
 	var q1 = "";
