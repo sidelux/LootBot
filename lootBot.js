@@ -135,7 +135,7 @@ var j3 = Schedule.scheduleJob('01 00 * * *', function () { //00:01 notte
 
 var j4 = Schedule.scheduleJob('05 00 * * *', function () { //00:05 notte
 	refreshMerchant(0);
-	market_generation();
+	marketGeneration();
 	resetDungeonSkip();
 	resetRefill();
 	deleteSearch();
@@ -894,7 +894,7 @@ bot.onText(/^\/accountid (.+)/, function (message, match) {
 });
 
 bot.onText(/^\/genmarket/, function (message, match) {
-	market_generation();
+	marketGeneration();
 	console.log("OK");
 });
 
@@ -1221,7 +1221,7 @@ bot.onText(/^\/endtop$/, function (message, match) {
 	}
 });
 
-function market_generation() {
+function marketGeneration() {
 	var items = [];
 	var rarity = [];
 	var est = [];
@@ -6624,6 +6624,11 @@ bot.onText(/cambia vocazione/i, function (message) {
 			bot.sendMessage(message.chat.id, "Sblocca le vocazioni prima di poterla cambiare", back);
 			return;
 		}
+		
+		if (reborn < 5){
+			bot.sendMessage(message.chat.id, "Puoi cambiare vocazione solo a Rinascita 4!", back);
+			return;
+		}
 
 		var bClass = {
 			parse_mode: "Markdown",
@@ -6653,7 +6658,7 @@ bot.onText(/cambia vocazione/i, function (message) {
 			}
 		}
 
-		var cost = (reborn-1)*250+(500*class_change);	// 1000 base R4 + 500 a volta
+		var cost = 1000+(500*class_change);	// 1000 base + 500 a volta
 		bot.sendMessage(message.chat.id, "Sei sicuro di voler modificare la Vocazione? Ti costerà " + cost + " 💎 ed il costo aumenterà ogni cambio!", cClass).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text.toLowerCase() == "si") {
@@ -18201,7 +18206,7 @@ bot.onText(/team/i, function (message) {
 													} else if (rows[i].holiday == 1) {
 														act = "⛱ Vacanza";
 													} else if (rows[i].mission_party == 1){
-														act = "🏃 🏽Incarico";
+														act = "🏃 Incarico";
 													} else {
 														act = "";
 													}
@@ -18280,7 +18285,7 @@ bot.onText(/team/i, function (message) {
 													// ADMIN
 													var show_type = "Aperto";
 													var show_details = "Visibili";
-													iKeys.push(["Scalata Boss 🐗", "Incarichi 📜 (Beta)"]);
+													iKeys.push(["Scalata Boss 🐗", "Incarichi 📜"]);
 													iKeys.push(["Dettaglio Membri 👥"]);
 													iKeys.push(["Aumenta Posti ✚", "Accademia 🏣"]);
 													iKeys.push(["Potenziamenti Anima 🦋"]);
@@ -18500,7 +18505,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 								iKeys.push([rows[i].title]);
 							}
 
-							text += "Gli incarichi vengono aggiornati ogni tanto, considera la versione Beta per segnalare i problemi che riscontri. Durante gli incarichi non puoi svolgere missioni, viaggi o itinerari. La notte dura dalle 23:00 alle 8:00.";
+							text += "Gli incarichi vengono aggiornati ogni tanto, considera la versione Beta per segnalare i problemi che riscontri. Durante gli incarichi non puoi svolgere missioni, viaggi o itinerari. La notte dura dalle 23:00 alle 9:00.";
 
 							if (isAdmin == 1)
 								iKeys.push(["Gestisci Party 👥", "Il mio Party 👥"], ["Torna al team", "Torna al menu"])
