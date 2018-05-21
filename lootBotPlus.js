@@ -1329,6 +1329,7 @@ bot.onText(/^\/token/, function (message) {
 
 			bot.sendMessage(message.chat.id, "Richiedi il token per utilizzare le Api, in caso di utilizzo non consono, verrai bannato dal gioco. Tienitelo per te!\nToken attuale: " + token + "\n\nGuida: http://telegra.ph/Guida-alle-LootBot-API-04-06", {
 				parse_mode: 'Markdown',
+				disable_web_page_preview: true,
 				reply_markup: {
 					inline_keyboard: iKeys
 				}
@@ -4666,6 +4667,11 @@ bot.onText(/^\/offri/i, function (message) {
 
 	if (Object.keys(elements).length != 3) {
 		bot.sendMessage(message.from.id, "Numero parametri errato nell'offerta: " + Object.keys(elements).length + " su 3\n" + syntax);
+		return;
+	}
+
+	if (Object.keys(elements).length < 3) {
+		bot.sendMessage(message.from.id, "Numero parametri non sufficiente nell'offerta: " + Object.keys(elements).length + " su 3\n" + syntax);
 		return;
 	}
 
