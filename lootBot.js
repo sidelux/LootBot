@@ -21328,9 +21328,8 @@ function spawnTeamBoss(team_id) {
 bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function (message) {
 
 	var today = new Date();
-	if ((today.getDay() > 2) && (today.getDay() < 6)) {
+	if ((today.getDay() > 2) && (today.getDay() < 6))
 		villa = 0;
-	}
 
 	if (villa == 0) {
 		connection.query("SELECT nickname, COUNT(item_id) As cnt FROM event_villa_gift, player WHERE event_villa_gift.from_id = player.id GROUP BY from_id ORDER BY COUNT(item_id) DESC LIMIT 50", function (err, rows, fields) {
@@ -21404,12 +21403,9 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 			return;
 		}
 
-		var gender_text = "";
-		if (rows[0].gender == "M"){
+		var gender_text = "a";
+		if (rows[0].gender == "M")
 			gender_text = "o";
-		}else{
-			gender_text = "a";
-		}
 
 		connection.query('SELECT COUNT(*) As cnt, (SELECT COUNT(*) FROM event_villa_gift WHERE from_id = ' + player_id + ') As mycnt FROM event_villa_gift', function (err, rows, fields) {
 			if (err) throw err;
@@ -21434,7 +21430,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 				var gift = Math.floor(rows[0].points / 5);
 				var bonusText = "";
 
-				var text = "Benvenut" + gender_text + " nella *Villa di LastSoldier95* 🏰!\nSvolgi missioni e incarichi da questo momento ed ogni 5 punti otterrai la possibilità di inviare una *Cassa Misteriosa* 📦 ad un altro avventuriero (compresi gli oggetti U)!\n\nHai a disposizione *" + gift + "* Casse da inviare\nFin ora sono state inviate *" + count + "* Casse, *" + mycount + "* da parte tua\n\nNota: Se non invierai tutte le casse entro la fine dell'evento, il padrone di casa se le riprenderà scontento del tuo operato" + bonusText;
+				var text = "Benvenut" + gender_text + " nella *Villa di LastSoldier95* 🏰!\nSvolgi missioni e incarichi da questo momento ed ogni 5 punti otterrai la possibilità di inviare una *Cassa Misteriosa* 📦 ad un altro avventuriero (compresi gli oggetti U)!\n\nHai a disposizione *" + gift + "* Casse da inviare (" + rows[0].points + " punti)\nFin ora sono state inviate *" + count + "* Casse, *" + mycount + "* da parte tua\n\nNota: Se non invierai tutte le casse entro la fine dell'evento, il padrone di casa se le riprenderà scontento del tuo operato" + bonusText;
 				bot.sendMessage(message.chat.id, text, kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text.indexOf("Cassa") != -1) {
@@ -44075,12 +44071,13 @@ function toDate(lang, date) {
 	var d = new Date(date);
 	if (typeof date == "object")
 		d = date;
+	var datetime;
 	if (lang == "it") {
-		var datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " alle " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+		datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " alle " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 	} else if (lang == "en") {
-		var datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+		datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 	} else {
-		var datetime = "Lingua non specificata";
+		datetime = "Error";
 	}
 	return datetime;
 }
@@ -44088,17 +44085,18 @@ function toDate(lang, date) {
 function getNow(lang, obj) {
 	var d = new Date();
 	obj = typeof obj !== 'undefined' ? obj : false;
+	var datetime;
 	if (lang == "it") {
-		var datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+		datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 	} else if (lang == "en") {
-		var datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+		datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 	} else {
-		var datetime = "Lingua non specificata";
+		datetime = "Error";
 	}
 	if (obj == true) {
 		datetime = new Date(datetime);
 	}
-	return datetime
+	return datetime;
 }
 
 function callNTimes(time, fn) {
