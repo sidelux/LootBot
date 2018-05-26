@@ -187,6 +187,134 @@ CREATE TABLE `artifacts` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `assault`
+--
+
+DROP TABLE IF EXISTS `assault`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `assault` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `team_id` int(11) NOT NULL,
+  `phase` tinyint(1) NOT NULL DEFAULT '0',
+  `time_end` timestamp NULL DEFAULT NULL,
+  `time_wait_end` timestamp NULL DEFAULT NULL,
+  `completed` int(11) NOT NULL DEFAULT '0',
+  `lost` int(11) NOT NULL DEFAULT '0',
+  `mob_name` varchar(32) DEFAULT NULL,
+  `mob_life` int(11) NOT NULL DEFAULT '0',
+  `mob_total_life` int(11) NOT NULL DEFAULT '0',
+  `mob_paralyzed` int(11) NOT NULL DEFAULT '0',
+  `mob_critic` int(11) NOT NULL DEFAULT '0',
+  `mob_count` int(11) NOT NULL DEFAULT '0',
+  `refresh_mob` tinyint(1) NOT NULL DEFAULT '0',
+  `boss_num` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `team_id` (`team_id`),
+  CONSTRAINT `assault_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `assault_place`
+--
+
+DROP TABLE IF EXISTS `assault_place`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `assault_place` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) NOT NULL,
+  `class_bonus` varchar(16) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `assault_place_item_pool`
+--
+
+DROP TABLE IF EXISTS `assault_place_item_pool`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `assault_place_item_pool` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `place_id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `level` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `item_pool_place_id` (`place_id`),
+  KEY `item_pool_item_id` (`item_id`),
+  CONSTRAINT `item_pool_item_id` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `item_pool_place_id` FOREIGN KEY (`place_id`) REFERENCES `assault_place` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `assault_place_item_pool_selected`
+--
+
+DROP TABLE IF EXISTS `assault_place_item_pool_selected`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `assault_place_item_pool_selected` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `team_id` int(11) NOT NULL,
+  `place_id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `team_place_no_duplicate` (`team_id`,`place_id`),
+  KEY `item_pool_sel_place_id` (`place_id`),
+  KEY `item_pool_sel_item_id` (`item_id`),
+  CONSTRAINT `item_pool_sel_item_id` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `item_pool_sel_place_id` FOREIGN KEY (`place_id`) REFERENCES `assault_place` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `item_pool_sel_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `assault_place_player_id`
+--
+
+DROP TABLE IF EXISTS `assault_place_player_id`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `assault_place_player_id` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `place_id` int(11) NOT NULL,
+  `player_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `place_place_no_duplicate` (`place_id`,`player_id`),
+  KEY `place_user_player_id` (`player_id`),
+  CONSTRAINT `place_user_place_id` FOREIGN KEY (`place_id`) REFERENCES `assault_place` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `place_user_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `assault_place_team`
+--
+
+DROP TABLE IF EXISTS `assault_place_team`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `assault_place_team` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `place_id` int(11) NOT NULL,
+  `team_id` int(11) NOT NULL,
+  `level` int(11) NOT NULL,
+  `time_end` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `place_team_no_duplicate` (`place_id`,`team_id`),
+  KEY `place_team_team_id` (`team_id`),
+  CONSTRAINT `place_team_place_id` FOREIGN KEY (`place_id`) REFERENCES `assault_place` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `place_team_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `auction_history`
 --
 
@@ -3257,4 +3385,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-05-22 15:00:10
+-- Dump completed on 2018-05-26 12:00:11
