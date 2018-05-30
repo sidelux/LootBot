@@ -7884,9 +7884,8 @@ bot.onText(/^\/zaino (.+)|^\/zaino/, function (message, match) {
 				}
 
 				var orderBy = "ORDER BY rarity.id DESC, item.name ASC";
-				if (rows[0].shortname == "D") {
+				if (rows[0].shortname == "D")
 					orderBy = "ORDER BY item.id ASC";
-				}
 
 				var bottext = "<b>" + message.from.username + "</b> possiedi (" + rows[0].shortname + "):\n";
 

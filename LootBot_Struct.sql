@@ -231,34 +231,36 @@ CREATE TABLE `assault_place` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `assault_place_item_pool`
+-- Table structure for table `assault_place_cons`
 --
 
-DROP TABLE IF EXISTS `assault_place_item_pool`;
+DROP TABLE IF EXISTS `assault_place_cons`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `assault_place_item_pool` (
+CREATE TABLE `assault_place_cons` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `place_id` int(11) NOT NULL,
+  `player_id` int(11) NOT NULL,
+  `team_id` int(11) NOT NULL,
   `item_id` int(11) NOT NULL,
-  `quantity` int(11) NOT NULL,
-  `level` int(11) NOT NULL,
+  `qnt` int(11) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
-  KEY `item_pool_place_id` (`place_id`),
-  KEY `item_pool_item_id` (`item_id`),
-  CONSTRAINT `item_pool_item_id` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `item_pool_place_id` FOREIGN KEY (`place_id`) REFERENCES `assault_place` (`id`) ON DELETE CASCADE
+  KEY `cons_player_id` (`player_id`),
+  KEY `cons_team_id` (`team_id`),
+  KEY `cons_item_id` (`item_id`),
+  CONSTRAINT `cons_item_id` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `cons_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `cons_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `assault_place_item_pool_selected`
+-- Table structure for table `assault_place_item`
 --
 
-DROP TABLE IF EXISTS `assault_place_item_pool_selected`;
+DROP TABLE IF EXISTS `assault_place_item`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `assault_place_item_pool_selected` (
+CREATE TABLE `assault_place_item` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
   `place_id` int(11) NOT NULL,
@@ -271,6 +273,29 @@ CREATE TABLE `assault_place_item_pool_selected` (
   CONSTRAINT `item_pool_sel_item_id` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE,
   CONSTRAINT `item_pool_sel_place_id` FOREIGN KEY (`place_id`) REFERENCES `assault_place` (`id`) ON DELETE CASCADE,
   CONSTRAINT `item_pool_sel_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `assault_place_magic`
+--
+
+DROP TABLE IF EXISTS `assault_place_magic`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `assault_place_magic` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `player_id` int(11) NOT NULL,
+  `team_id` int(11) NOT NULL,
+  `type` int(11) NOT NULL,
+  `power` int(11) NOT NULL,
+  `qnt` int(11) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `magic_player_id` (`player_id`),
+  KEY `magic_team_id` (`team_id`),
+  KEY `magic_magic_id` (`type`),
+  CONSTRAINT `magic_magic_id` FOREIGN KEY (`type`) REFERENCES `mana` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `magic_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -3385,4 +3410,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-05-26 12:00:11
+-- Dump completed on 2018-05-30  9:00:09
