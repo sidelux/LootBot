@@ -39,8 +39,8 @@ app.listen(port);
 
 app.use(bodyParser.json());
 app.post(path, function(req, res) {
-  	bot.processUpdate(req.body);
-  	res.sendStatus(200);
+	bot.processUpdate(req.body);
+	res.sendStatus(200);
 });
 
 var check = [];
@@ -992,99 +992,87 @@ bot.onText(/^\/gruppi/, function (message) {
 
 				bot.getChatMembersCount(-1001078754923).then(function (data) {
 					var c4 = data; //flame
-					console.log("Next Aste");
+					console.log("Next Scuola")
 
-					bot.getChatMembersCount(-1001235953009).then(function (data) {
-						var c5 = data; //aste2
-						console.log("Next Scuola")
+					bot.getChatMembersCount(-1001086845014).then(function (data) {
+						var c6 = data; //scuola
+						console.log("Next Notturno");
 
-						bot.getChatMembersCount(-1001086845014).then(function (data) {
-							var c6 = data; //scuola
-							console.log("Next Notturno");
+						bot.getChatMembersCount(-1001075644786).then(function (data) {
+							var c8 = data; //notturno
+							console.log("Next Scommesse");
 
-							bot.getChatMembersCount(-1001075644786).then(function (data) {
-								var c8 = data; //notturno
-								console.log("Next Scommesse");
+							bot.getChatMembersCount(-1001124038417).then(function (data) {
+								var c9 = data; //scommesse
+								console.log("Next Contrabbandiere");
 
-								bot.getChatMembersCount(-1001124038417).then(function (data) {
-									var c9 = data; //scommesse
-									console.log("Next Contrabbandiere");
+								bot.getChatMembersCount(-1001123874487).then(function (data) {
+									var c10 = data; //contrabbando
+									console.log("Next Raffles");
 
-									bot.getChatMembersCount(-1001123874487).then(function (data) {
-										var c10 = data; //contrabbando
-										console.log("Next Raffles");
+									bot.getChatMembersCount(-1001131584245).then(function (data) {
+										var c11 = data; //raffles
+										console.log("Next Negozi");
 
-										bot.getChatMembersCount(-1001131584245).then(function (data) {
-											var c11 = data; //raffles
-											console.log("Next Negozi");
+										bot.getChatMembersCount(-1001097316494).then(function (data) {
+											var c12 = data; //negozi
+											console.log("Next Test");
 
-											bot.getChatMembersCount(-1001097316494).then(function (data) {
-												var c12 = data; //negozi
-												console.log("Next Test");
+											bot.getChatMembersCount(-1001050459665).then(function (data) {
+												var c13 = data; //testi
+												console.log("Next Gelateria");
 
-												bot.getChatMembersCount(-1001050459665).then(function (data) {
-													var c13 = data; //testi
-													console.log("Next Gelateria");
+												bot.getChatMembersCount(-1001127554674).then(function (data) {
+													var c14 = data; //gelateria
+													console.log("Next Ade");
 
-													bot.getChatMembersCount(-1001127554674).then(function (data) {
-														var c14 = data; //gelateria
-														console.log("Next Loot Game");
+													bot.getChatMembersCount(-1001214216152).then(function (data) {
+														var c16 = data; //Ade
 
-														bot.getChatMembersCount(-1001338869829).then(function (data) {
-															var c15 = data; //loot game
-															console.log("Next Ade");
+														if (message.chat.id < 0)
+															bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
 
-															bot.getChatMembersCount(-1001214216152).then(function (data) {
-																var c16 = data; //Ade
+														bot.sendMessage(message.from.id, "<b>Ufficiali</b>\n" +
+																		"Canale principale per aggiornamenti: @LootBotAvvisi\n" +
 
-																if (message.chat.id < 0)
-																	bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
+																		"\n<b>Bot</b>\n" +
+																		"Liste oggetti e alberi automatici: @craftlootbot\n" +
+																		"Qualcuno sempre a disposizione: @OracoloLootBot\n" +
+																		"Calcolo Loot Combat Rating: @lootcrbot\n" +
+																		"Tool per mercato e cronologie: @ToolsForLootBot\n" +
+																		"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
+																		"@DichisUtilityBot\n" +
 
-																bot.sendMessage(message.from.id, "<b>Ufficiali</b>\n" +
-																				"Canale principale per aggiornamenti: @LootBotAvvisi\n" +
+																		"\n<b>Altro</b>\n" +
+																		"<a href='https://discord.gg/ea5tSEj'>Canale Discord</a>\n" +
+																		"<a href='telegra.ph/Mini-Guida-alle-LootBot-API-11-24'>LootBot Api</a>\n" +
 
-																				"\n<b>Bot</b>\n" +
-																				"Liste oggetti e alberi automatici: @craftlootbot\n" +
-																				"Qualcuno sempre a disposizione: @OracoloLootBot\n" +
-																				"Calcolo Loot Combat Rating: @lootcrbot\n" +
-																				"Tool per mercato e cronologie: @ToolsForLootBot\n" +
-																				"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
-																				"@DichisUtilityBot\n" +
+																		"\n<b>Siti</b>\n" +
+																		"<a href='http://beegotsy.altervista.org/lootbot/'>#SonoPoveroFaccioGuide</a> - Materiali necessari, guida, e altre funzionalità in sviluppo\n" +
 
-																				"\n<b>Altro</b>\n" +
-																				"<a href='https://discord.gg/ea5tSEj'>Canale Discord</a>\n" +
-																				"<a href='telegra.ph/Mini-Guida-alle-LootBot-API-11-24'>LootBot Api</a>\n" +
+																		"\n<b>Gruppi</b>\n" +
+																		"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
+																		"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
+																		"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
+																		"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
+																		"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
+																		"<a href='https://t.me/joinchat/AAAAAEBMfmv2x_z3vAVNeg'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
+																		"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
+																		"<a href='https://telegram.me/joinchat/EXFobEDH8FbDpQ4MTmw-mQ'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
+																		"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
+																		"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
+																		"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
+																		"<a href='https://t.me/joinchat/CXTRTAtsjVG_AhJb3FjW5w'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
+																		"<a href='https://t.me/joinchat/B0siAkhfd9ieAbo1PyL3zA'>Ade's Mappers</a> (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
 
-																				"\n<b>Siti</b>\n" +
-																				"<a href='http://beegotsy.altervista.org/lootbot/'>#SonoPoveroFaccioGuide</a> - Materiali necessari, guida, e altre funzionalità in sviluppo\n" +
+																		"\n<b>Canali</b>\n" +
+																		"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
+																		"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
+																		"@LootReport - Segnala un comportamento scorretto nella community!\n" +
+																		"@YellowBetsLoot - YellowPlay for YellowWin\n" +
+																		"@yellowlootshop - Join for eventi free!\n" +
 
-																				"\n<b>Gruppi</b>\n" +
-																				"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
-																				"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
-																				"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
-																				"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
-																				"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
-																				"<a href='https://t.me/joinchat/AAAAAEBMfmv2x_z3vAVNeg'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
-																				"@LootAste2 (" + c5 + ") - Aste di oggetti per tutti i giocatori commercianti! (Livello minimo: 15)\n" +
-																				"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
-																				"<a href='https://telegram.me/joinchat/EXFobEDH8FbDpQ4MTmw-mQ'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
-																				"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
-																				"<a href='https://t.me/joinchat/CGfawEL89rdjylRx72zprQ'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
-																				"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
-																				"<a href='https://t.me/joinchat/CXTRTAtsjVG_AhJb3FjW5w'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
-																				"<a href='https://telegram.me/LootGame'>LootGame</a> (" + c15 + ") - Potete divertivi giocando e vincendo soldi :>\n" +
-																				"<a href='https://t.me/joinchat/B0siAkhfd9ieAbo1PyL3zA'>Ade's Mappers</a> (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
-
-																				"\n<b>Canali</b>\n" +
-																				"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
-																				"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
-																				"@LootReport - Segnala un comportamento scorretto nella community!\n" +
-																				"@YellowBetsLoot - YellowPlay for YellowWin\n" +
-																				"@yellowlootshop - Join for eventi free!\n" +
-
-																				"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
-															});
-														});
+																		"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
 													});
 												});
 											});
@@ -1276,8 +1264,7 @@ bot.onText(/^\/scalata/, function (message, match) {
 });
 
 bot.onText(/^\/cid/, function (message) {
-	if (message.from.id == 20471035)
-		bot.sendMessage(message.chat.id, message.chat.id);
+	bot.sendMessage(message.chat.id, message.chat.id);
 });
 
 bot.onText(/^\/token/, function (message) {

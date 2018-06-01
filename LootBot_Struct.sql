@@ -208,7 +208,8 @@ CREATE TABLE `assault` (
   `mob_critic` int(11) NOT NULL DEFAULT '0',
   `mob_count` int(11) NOT NULL DEFAULT '0',
   `refresh_mob` tinyint(1) NOT NULL DEFAULT '0',
-  `boss_num` int(11) NOT NULL DEFAULT '0',
+  `is_boss` tinyint(1) NOT NULL DEFAULT '0',
+  `boss_num` int(11) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `team_id` (`team_id`),
   CONSTRAINT `assault_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
@@ -2688,7 +2689,8 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE TABLE `player_public` (
   `id` tinyint NOT NULL,
-  `nickname` tinyint NOT NULL
+  `nickname` tinyint NOT NULL,
+  `team` tinyint NOT NULL
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
@@ -2996,7 +2998,7 @@ DROP TABLE IF EXISTS `shop_public`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE TABLE `shop_public` (
-  `player_id` tinyint NOT NULL,
+  `nickname` tinyint NOT NULL,
   `code` tinyint NOT NULL,
   `item_id` tinyint NOT NULL,
   `price` tinyint NOT NULL,
@@ -3334,12 +3336,12 @@ CREATE TABLE `travel` (
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8 */;
-/*!50001 SET character_set_results     = utf8 */;
-/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `player_public` AS select `player`.`id` AS `id`,`player`.`nickname` AS `nickname` from `player` */;
+/*!50001 VIEW `player_public` AS select `player`.`id` AS `id`,`player`.`nickname` AS `nickname`,`team`.`name` AS `team` from ((`player` left join `team_player` on((`player`.`id` = `team_player`.`player_id`))) left join `team` on((`team_player`.`team_id` = `team`.`id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -3372,12 +3374,12 @@ CREATE TABLE `travel` (
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8 */;
-/*!50001 SET character_set_results     = utf8 */;
-/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `shop_public` AS select `public_shop`.`player_id` AS `player_id`,`public_shop`.`code` AS `code`,`public_shop`.`item_id` AS `item_id`,`public_shop`.`price` AS `price`,`public_shop`.`quantity` AS `quantity`,`public_shop`.`time_end` AS `time_end` from `public_shop` where (`public_shop`.`public` = 1) order by `public_shop`.`id` */;
+/*!50001 VIEW `shop_public` AS select `player`.`nickname` AS `nickname`,`public_shop`.`code` AS `code`,`public_shop`.`item_id` AS `item_id`,`public_shop`.`price` AS `price`,`public_shop`.`quantity` AS `quantity`,`public_shop`.`time_end` AS `time_end` from (`public_shop` join `player`) where ((`public_shop`.`public` = 1) and (`player`.`id` = `public_shop`.`player_id`)) order by `public_shop`.`id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -3410,4 +3412,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-05-30  9:00:09
+-- Dump completed on 2018-06-01  6:00:10
