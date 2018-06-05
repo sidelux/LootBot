@@ -4501,10 +4501,9 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 		bot.sendMessage(message.from.id, syntax);
 		return;
 	}
-
-	if (message.reply_to_message != undefined) {
+	
+	if (message.reply_to_message != undefined)
 		text = text + "," + message.reply_to_message.from.username;
-	}
 
 	var elements = text.split(",");
 
@@ -4513,8 +4512,13 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 		return;
 	}
 
-	var price = parseInt(elements[0].replace(/[^\w\s]/gi, '').trim());
+	var price = parseInt(elements[0].replace(/\D+/gi, '').trim());
 	var buyer = elements[1].replace('@', '').trim();
+	
+	var custom_message = "";
+	if (message.reply_to_message != undefined) {
+		message = elements[0].replace(/[0-9]/gi, '').trim();
+	}
 
 	if (buyer == "") {
 		bot.sendMessage(message.from.id, "Il parametro acquirente è obbligatorio");
@@ -4555,10 +4559,10 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 			return;
 		}
 
-		connection.query('SELECT COUNT(nickname) As cnt, id, chat_id, market_ban, account_id FROM player WHERE nickname = "' + buyer + '"', function (err, rows, fields) {
+		connection.query('SELECT money, id, chat_id, market_ban, account_id FROM player WHERE nickname = "' + buyer + '"', function (err, rows, fields) {
 			if (err) throw err;
 
-			if (rows[0].cnt == 0) {
+			if (Object.keys(rows).length == 0) {
 				bot.sendMessage(message.from.id, "L'acquirente inserito non esiste");
 				return;
 			}
@@ -4580,6 +4584,11 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 				bot.sendMessage(message.from.id, "Il destinatario è bannato dal mercato");
 				return;
 			}
+			
+			if ((parseInt(rows[0].money)+price) >= 1000000000){
+				bot.sendMessage(message.from.id, "Il destinatario raggiungerebbe il limite alle monete possedute con questa cifra, riprova");
+				return;
+			}
 
 			var player_id2 = rows[0].id;
 			var chat_id = rows[0].account_id;
@@ -4594,7 +4603,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 					connection.query('UPDATE player SET money = money + ' + price + ' WHERE id = ' + player_id2, function (err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(message.from.id, message.from.username + ", hai inviato <b>" + formatNumber(price) + " §</b> a " + buyer, html);
-						bot.sendMessage(chat_id, "Hai ricevuto <b>" + formatNumber(price) + " §</b> da " + message.from.username + "!", html);
+						bot.sendMessage(chat_id, "Hai ricevuto <b>" + formatNumber(price) + " §</b> da " + message.from.username + "!\n<i>" + custom_message + "</i>", html);
 					});
 				});
 			});
@@ -4795,7 +4804,7 @@ bot.onText(/^\/offri/i, function (message) {
 
 								connection.query('INSERT INTO market_direct VALUES (DEFAULT, ' + player_id + ',"' + item_id + '",' + price + ',"' + long_date + '",' + toId + ')', function (err, rows, fields) {
 									if (err) throw err;
-									bot.sendMessage(message.chat.id, "La messa in vendita da parte di " + message.from.username + " per " + item_name + " a " + formatNumber(price) + " § verso " + nick + " è stata registrata (scadenza: " + short_date + ")\n" + message.from.username + " può annullarla con /annullav");
+									bot.sendMessage(message.chat.id, "La messa in vendita da parte di " + message.from.username + " per " + item_name + " a " + formatNumber(price) + " § verso " + nick + " è stata registrata (scadenza: " + short_date + ")\n" + message.from.username + " può accettarla con /accettav o altrimenti /annullav");
 								});
 							});
 						});
@@ -5034,7 +5043,7 @@ bot.onText(/^\/scambia/i, function (message) {
 
 										delItem(player_id, item1_id, 1);
 
-										bot.sendMessage(message.chat.id, "Lo scambio dove " + message.from.username + " offre " + item1 + " e " + nick + " offre " + item2 + " è stato registrato (scadenza: " + short_date + ")\n" + message.from.username + " può annullarlo con /annullas");
+										bot.sendMessage(message.chat.id, "Lo scambio dove " + message.from.username + " offre " + item1 + " e " + nick + " offre " + item2 + " è stato registrato (scadenza: " + short_date + ")\n" + message.from.username + " può accettarlo con /accettas o altrimenti /annullas");
 									});
 								});
 							});
