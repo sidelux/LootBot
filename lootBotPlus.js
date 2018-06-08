@@ -361,6 +361,8 @@ bot.onText(/^\/comandilotteria/, function (message) {
 					"/crealotteriap - Permette di creare una lotteria con iscrizione a pagamento\n" +
 					"/lotteria - Iscrive alla lotteria con iscrizione gratuita\n" +
 					"/lotteriap - Iscrive alla lotteria con iscrizione a pagamento\n" +
+					"/dlotteria - Disiscrive dalla lotteria con iscrizione gratuita\n" +
+					"/dlotteriap - Disiscrive dalla lotteria con iscrizione a pamagento\n" +
 					"/lotterie - Mostra tutte le lotterie disponibili\n" +
 					"/estrazione - Forza l'estrazione di una lotteria\n" +
 					"/cancellalotteria - Elimina una lotteria in corso", mark);
@@ -855,23 +857,28 @@ bot.onText(/^\/gb (.+)|^\/gb$/, function (message, match) {
 							if (err) throw err;
 						});
 						bot.sendMessage(message.chat.id, nick + " (" + account_id + ") bannato dai gruppi.");
-						bot.kickChatMember(message.chat.id, account_id);
-						bot.kickChatMember("-1001069842056", account_id);
-						bot.kickChatMember("-1001064571576", account_id);
-						bot.kickChatMember("-1001050459665", account_id);
-						bot.kickChatMember("-1001064797183", account_id);
-						bot.kickChatMember("-1001097316494", account_id);
+
+						connection.query("SELECT chat_id FROM plus_groups WHERE groupban = 1", function (err, rows, fields) {
+							if (err) throw err;
+
+							for (i = 0; i < Object.keys(rows).length; i++) {
+								bot.kickChatMember(rows[i].chat_id, account_id);
+							}
+						});
 					} else {
 						if (chat_id == "-1001064797183"){
 							connection.query('UPDATE player SET group_ban = 0 WHERE id = ' + rows[0].id, function (err, rows, fields){
 								if (err) throw err;
 							});
 							bot.sendMessage(message.chat.id, nick + " (" + account_id + ") sbannato dai gruppi.");
-							bot.unbanChatMember("-1001069842056", message.from.id);
-							bot.unbanChatMember("-1001064571576", message.from.id);
-							bot.unbanChatMember("-1001050459665", message.from.id);
-							bot.unbanChatMember("-1001064797183", message.from.id);
-							bot.unbanChatMember("-1001097316494", message.from.id);
+
+							connection.query("SELECT chat_id FROM plus_groups WHERE groupban = 1", function (err, rows, fields) {
+								if (err) throw err;
+
+								for (i = 0; i < Object.keys(rows).length; i++) {
+									bot.unbanChatMember(rows[i].chat_id, account_id);
+								}
+							});
 						}
 					}
 				});
@@ -1105,6 +1112,7 @@ bot.onText(/^\/mercatini/, function (message) {
 					"@Zaino_Dell_Imperatore - Prezzi basati sul bot Loot Quotazioni!\n" +
 					"@paupershop - Un negozio di LootBot per poveri\n" +
 					"@mercaloot - Negozio Honesto\n" +
+					"@EdicolaDiLootia - Lotterie, aste e negozi di U!\n" +
 
 					"\nVisita anche /gruppi. Per comparire qua chiedi all'amministratore.", html);
 });
@@ -1314,8 +1322,8 @@ bot.onText(/^\/token/, function (message) {
 				callback_data: "token_del"
 			}]);
 
-			bot.sendMessage(message.chat.id, "Richiedi il token per utilizzare le Api, in caso di utilizzo non consono, verrai bannato dal gioco. Tienitelo per te!\nToken attuale: " + token + "\n\nGuida: http://telegra.ph/Guida-alle-LootBot-API-04-06", {
-				parse_mode: 'Markdown',
+			bot.sendMessage(message.chat.id, "Richiedi il token per utilizzare le Api, in caso di utilizzo non consono, verrai bannato dal gioco. Tienitelo per te!\nToken attuale: <code>" + token + "</code>\n\nGuida: http://telegra.ph/Guida-alle-LootBot-API-04-06", {
+				parse_mode: 'HTML',
 				disable_web_page_preview: true,
 				reply_markup: {
 					inline_keyboard: iKeys
@@ -1342,9 +1350,12 @@ bot.onText(/^\/comandigruppo/, function (message) {
 					"/kickbanned on-off - Abilita o disabilita il filtro bannato\n\n" +
 					"*Filtro non iscritto*\n" +
 					"/kickreg on-off - Abilita o disabilita il filtro non iscritto\n\n" +
+					"*Filtro ban dai gruppi*\n" +
+					"/groupban on-off - Abilita o disabilita il filtro group ban\n\n" +
+					"*Filtro foto/documenti postati nei gruppi*\n" +
+					"/photodocs on-off - Abilita o disabilita il filtro foto/documenti per livello < 50\n\n" +
 					"*Attiva i filtri per ogni messaggio*\n" +
 					"/hardmode on-off - Abilita o disabilita il controllo filtri per ogni messaggio\n" +
-
 					"\n\n_Altri comandi a breve_", mark);
 });
 
@@ -1369,6 +1380,8 @@ bot.onText(/^\/riassunto/, function (message, match) {
 					var kickban = (rows[0].kickban) ? "✅" : "❌";
 					var kickreg = (rows[0].kickreg) ? "✅" : "❌";
 					var always = (rows[0].always) ? "✅" : "❌";
+					var groupban = (rows[0].groupban) ? "✅" : "❌";
+					var photodocs = (rows[0].photodocs) ? "✅" : "❌";
 
 					bot.sendMessage(message.chat.id, "<b>Impostazioni gruppo:</b>\n" +
 									"Messaggio di benvenuto: " + welcome_text + "\n" +
@@ -1376,6 +1389,8 @@ bot.onText(/^\/riassunto/, function (message, match) {
 									"Filtro livello: " + level + " (" + min_lev + "-" + max_lev + ")\n" +
 									"Filtro bannato: " + kickban + "\n" +
 									"Filtro non registrato: " + kickreg + "\n" +
+									"Group ban automatico: " + groupban + "\n" +
+									"Filtro foto/documenti: " + photodocs + "\n" +
 									"Hard mode: " + always + "\n", html);
 				} else {
 					bot.sendMessage(message.chat.id, "Il gruppo non è memorizzato nel plus, contatta l'amministratore");
@@ -1546,6 +1561,76 @@ bot.onText(/^\/kickreg (.+)/, function (message, match) {
 	});
 });
 
+bot.onText(/^\/groupban (.+)/, function (message, match) {
+	if (message.chat.id > 0) {
+		return;
+	}
+
+	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
+		if ((data.status == "creator") || (data.status == "administrator")) {
+			var text = match[1];
+			connection.query('SELECT 1 FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Errore impostazione group ban");
+				} else {
+
+					if ((text == "on") || (text == "off")) {
+						var val = 0;
+						if (text == "on") {
+							bot.sendMessage(message.chat.id, "Filtro group ban abilitato\nRicorda di impostare il bot come amministratore");
+							val = 1;
+						} else {
+							bot.sendMessage(message.chat.id, "Filtro group ban disabilitato");
+							val = 0;
+						}
+						connection.query('UPDATE plus_groups SET groupban = ' + val + ' WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+					} else {
+						bot.sendMessage(message.chat.id, "Parametro non valido, on/off.");
+					}
+				}
+			});
+		}
+	});
+});
+
+bot.onText(/^\/photodocs (.+)/, function (message, match) {
+	if (message.chat.id > 0) {
+		return;
+	}
+
+	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
+		if ((data.status == "creator") || (data.status == "administrator")) {
+			var text = match[1];
+			connection.query('SELECT 1 FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Errore impostazione filtro foto/documenti");
+				} else {
+
+					if ((text == "on") || (text == "off")) {
+						var val = 0;
+						if (text == "on") {
+							bot.sendMessage(message.chat.id, "Filtro foto/documenti abilitato, ricorda di attivare l'/hardmode!");
+							val = 1;
+						} else {
+							bot.sendMessage(message.chat.id, "Filtro foto/documenti disabilitato");
+							val = 0;
+						}
+						connection.query('UPDATE plus_groups SET photodocs = ' + val + ' WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+					} else {
+						bot.sendMessage(message.chat.id, "Parametro non valido, on/off.");
+					}
+				}
+			});
+		}
+	});
+});
+
 bot.onText(/^\/hardmode (.+)/, function (message, match) {
 	if (message.chat.id > 0) {
 		return;
@@ -1661,9 +1746,8 @@ function checkStatus(message, nickname, accountid, type) {
 			nickname = rows[0].nickname;
 			market = rows[0].market_ban;
 			group_ban = rows[0].group_ban;
-		}else{
-			nickname = "Utente sconosciuto";
-		}
+		}else
+			nickname = "Utente";
 
 		accountid = (accountid).toString();
 
@@ -1678,9 +1762,8 @@ function checkStatus(message, nickname, accountid, type) {
 			var chat_id = rows[0].chat_id;
 			var group_name = rows[0].name.trim();
 
-			if (player_id == 1) {
+			if (player_id == 1)
 				return;
-			}
 
 			var non = rows[0].kickreg;
 			if (non == 1) {
@@ -1695,8 +1778,9 @@ function checkStatus(message, nickname, accountid, type) {
 				}
 			}
 
-			if ((chat_id == "-1001069842056") || (chat_id == "-1001064571576") || (chat_id == "-1001050459665") || (chat_id == "-1001097316494") || (chat_id == "-1001086845014")) {
-				if (group_ban == 1) {
+			var gb = rows[0].groupban;
+			if (gb == 1) {
+				if ((group_ban == 1) && (exist == 1)){
 					bot.kickChatMember(message.chat.id, accountid).then(function (result) {
 						if (result != false) {
 							bot.sendMessage(message.chat.id, nickname + " è bannato dai gruppi, l'ho bannato");
@@ -1704,27 +1788,6 @@ function checkStatus(message, nickname, accountid, type) {
 						}
 					});
 					return;
-				}
-			}
-
-			if ((chat_id == "-1001069842056") || (chat_id == "-1001064571576")){
-				if (message.photo != undefined){
-					if (getRealLevel(reb, lev) < 50){
-						bot.deleteMessage(chat_id, message.message_id).then(function (result) {
-							if (result != false) {
-								bot.sendMessage(message.chat.id, message.from.username + ", devi aver superato il livello 50 per postare foto in questo gruppo.");
-							}
-						});
-					}
-				}
-				if (message.document != undefined){
-					if (getRealLevel(reb, lev) < 50){
-						bot.deleteMessage(chat_id, message.message_id).then(function (result) {
-							if (result != false) {
-								bot.sendMessage(message.chat.id, message.from.username + ", devi aver superato il livello 50 per postare documenti in questo gruppo.");
-							}
-						});
-					}
 				}
 			}
 
@@ -1739,6 +1802,30 @@ function checkStatus(message, nickname, accountid, type) {
 							}
 						});
 						return;
+					}
+				}
+			}
+
+			var photodocs = rows[0].photodocs;
+			if (photodocs == 1){
+				if (exist == 1) {
+					if (message.photo != undefined){
+						if (getRealLevel(reb, lev) < 50){
+							bot.deleteMessage(chat_id, message.message_id).then(function (result) {
+								if (result != false) {
+									bot.sendMessage(message.chat.id, message.from.username + ", devi aver superato il livello 50 per postare foto in questo gruppo.");
+								}
+							});
+						}
+					}
+					if (message.document != undefined){
+						if (getRealLevel(reb, lev) < 50){
+							bot.deleteMessage(chat_id, message.message_id).then(function (result) {
+								if (result != false) {
+									bot.sendMessage(message.chat.id, message.from.username + ", devi aver superato il livello 50 per postare documenti in questo gruppo.");
+								}
+							});
+						}
 					}
 				}
 			}
@@ -4501,7 +4588,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 		bot.sendMessage(message.from.id, syntax);
 		return;
 	}
-	
+
 	if (message.reply_to_message != undefined)
 		text = text + "," + message.reply_to_message.from.username;
 
@@ -4514,10 +4601,10 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 
 	var price = parseInt(elements[0].replace(/\D+/gi, '').trim());
 	var buyer = elements[1].replace('@', '').trim();
-	
+
 	var custom_message = "";
 	if (message.reply_to_message != undefined) {
-		message = elements[0].replace(/[0-9]/gi, '').trim();
+		custom_message = elements[0].replace(/[0-9]/gi, '').trim();
 	}
 
 	if (buyer == "") {
@@ -4584,7 +4671,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 				bot.sendMessage(message.from.id, "Il destinatario è bannato dal mercato");
 				return;
 			}
-			
+
 			if ((parseInt(rows[0].money)+price) >= 1000000000){
 				bot.sendMessage(message.from.id, "Il destinatario raggiungerebbe il limite alle monete possedute con questa cifra, riprova");
 				return;
@@ -4804,7 +4891,7 @@ bot.onText(/^\/offri/i, function (message) {
 
 								connection.query('INSERT INTO market_direct VALUES (DEFAULT, ' + player_id + ',"' + item_id + '",' + price + ',"' + long_date + '",' + toId + ')', function (err, rows, fields) {
 									if (err) throw err;
-									bot.sendMessage(message.chat.id, "La messa in vendita da parte di " + message.from.username + " per " + item_name + " a " + formatNumber(price) + " § verso " + nick + " è stata registrata (scadenza: " + short_date + ")\n" + message.from.username + " può accettarla con /accettav o altrimenti /annullav");
+									bot.sendMessage(message.chat.id, "La messa in vendita da parte di " + message.from.username + " per " + item_name + " a " + formatNumber(price) + " § verso " + nick + " è stata registrata (scadenza: " + short_date + ")\n" + message.from.username + " puoi annullarla con /annullav");
 								});
 							});
 						});
@@ -5043,7 +5130,7 @@ bot.onText(/^\/scambia/i, function (message) {
 
 										delItem(player_id, item1_id, 1);
 
-										bot.sendMessage(message.chat.id, "Lo scambio dove " + message.from.username + " offre " + item1 + " e " + nick + " offre " + item2 + " è stato registrato (scadenza: " + short_date + ")\n" + message.from.username + " può accettarlo con /accettas o altrimenti /annullas");
+										bot.sendMessage(message.chat.id, "Lo scambio dove " + message.from.username + " offre " + item1 + " e " + nick + " offre " + item2 + " è stato registrato (scadenza: " + short_date + ")\n" + message.from.username + " puoi annullarla con /annullas");
 									});
 								});
 							});
@@ -6248,7 +6335,7 @@ bot.onText(/^\/checkmarket (.+)/, function (message, match) {
 		var player_id = rows[0].id;
 		var nickname = rows[0].nickname;
 
-		connection.query('SELECT P1.nickname As fromNick, P2.nickname As toNick, COUNT(from_id) As transac, (SELECT COUNT(to_id) FROM market_direct_history H WHERE H.type = 2 AND (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + ')) As tot, ROUND(COUNT(from_id)/(SELECT COUNT(to_id) FROM market_direct_history H WHERE H.type = 2 AND (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + '))*100, 2) As perc FROM market_direct_history H INNER JOIN player P1 ON P1.id = H.from_id INNER JOIN player P2 ON P2.id = H.to_id WHERE H.type = 2 AND (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + ') GROUP BY from_id, to_id ORDER BY perc DESC', function (err, rows, fields) {
+		connection.query('SELECT P1.nickname As fromNick, P2.nickname As toNick, COUNT(from_id) As transac, (SELECT COUNT(to_id) FROM market_direct_history H WHERE (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + ')) As tot, ROUND(COUNT(from_id)/(SELECT COUNT(to_id) FROM market_direct_history H WHERE (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + '))*100, 2) As perc FROM market_direct_history H INNER JOIN player P1 ON P1.id = H.from_id INNER JOIN player P2 ON P2.id = H.to_id WHERE (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + ') GROUP BY from_id, to_id ORDER BY perc DESC', function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0){
@@ -6295,7 +6382,7 @@ bot.onText(/^\/checkmarketAll (.+)|^\/checkmarketAll/, function (message, match)
 			player_id = rows[j].id;
 			nickname = rows[j].nickname;
 
-			var transactions = connection_sync.query('SELECT P1.nickname As fromNick, P2.nickname As toNick, COUNT(from_id) As transac, (SELECT COUNT(to_id) FROM market_direct_history H WHERE H.type = 2 AND (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + ')) As tot, ROUND(COUNT(from_id)/(SELECT COUNT(to_id) FROM market_direct_history H WHERE H.type = 2 AND (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + '))*100, 2) As perc FROM market_direct_history H INNER JOIN player P1 ON P1.id = H.from_id INNER JOIN player P2 ON P2.id = H.to_id WHERE H.type = 2 AND (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + ') GROUP BY from_id, to_id ORDER BY perc DESC');
+			var transactions = connection_sync.query('SELECT P1.nickname As fromNick, P2.nickname As toNick, COUNT(from_id) As transac, (SELECT COUNT(to_id) FROM market_direct_history H WHERE (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + ')) As tot, ROUND(COUNT(from_id)/(SELECT COUNT(to_id) FROM market_direct_history H WHERE (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + '))*100, 2) As perc FROM market_direct_history H INNER JOIN player P1 ON P1.id = H.from_id INNER JOIN player P2 ON P2.id = H.to_id WHERE  (H.from_id = ' + player_id + ' OR H.to_id = ' + player_id + ') GROUP BY from_id, to_id ORDER BY perc DESC');
 
 			len = Object.keys(transactions).length;
 			if (len > 50)
@@ -7677,12 +7764,12 @@ bot.onText(/^\/spia/, function (message) {
 		}
 
 		if (rows[0].spy_count >= 25) {
-			bot.sendMessage(message.chat.id, "Hai raggiunto il limite giornaliero.");
+			bot.sendMessage(account_id, "Hai raggiunto il limite giornaliero.");
 			return;
 		}
 
 		if (rows[0].heist_protection != null) {
-			bot.sendMessage(message.chat.id, "A causa del campo di forza non puoi spiare gli altri utenti", back);
+			bot.sendMessage(account_id, "A causa del campo di forza non puoi spiare gli altri utenti", back);
 			return;
 		}
 
@@ -7708,12 +7795,12 @@ bot.onText(/^\/spia/, function (message) {
 				}
 
 				if (rows[0].id == 3) {
-					bot.sendMessage(message.chat.id, "Non si fanno ste cose :c");
+					bot.sendMessage(account_id, "Non si fanno ste cose :c");
 					return;
 				}
 
 				if (player_id == rows[0].id) {
-					bot.sendMessage(message.chat.id, "Per visualizzare il tuo equipaggiamento utilizza il comando /giocatore");
+					bot.sendMessage(account_id, "Per visualizzare il tuo equipaggiamento utilizza il comando /giocatore");
 					return;
 				}
 

@@ -206,7 +206,11 @@ CREATE TABLE `assault` (
   `mob_total_life` int(11) NOT NULL DEFAULT '0',
   `mob_paralyzed` int(11) NOT NULL DEFAULT '0',
   `mob_critic` int(11) NOT NULL DEFAULT '0',
+  `cure_flag` tinyint(1) NOT NULL DEFAULT '0',
   `mob_count` int(11) NOT NULL DEFAULT '0',
+  `mob_turn` int(11) NOT NULL DEFAULT '0',
+  `team_paralyzed` int(11) NOT NULL DEFAULT '0',
+  `team_critic` int(11) NOT NULL DEFAULT '0',
   `refresh_mob` tinyint(1) NOT NULL DEFAULT '0',
   `is_boss` tinyint(1) NOT NULL DEFAULT '0',
   `boss_num` int(11) NOT NULL DEFAULT '1',
@@ -227,6 +231,7 @@ CREATE TABLE `assault_place` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL,
   `class_bonus` varchar(16) DEFAULT NULL,
+  `max_level` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -243,7 +248,6 @@ CREATE TABLE `assault_place_cons` (
   `player_id` int(11) NOT NULL,
   `team_id` int(11) NOT NULL,
   `item_id` int(11) NOT NULL,
-  `qnt` int(11) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `cons_player_id` (`player_id`),
   KEY `cons_team_id` (`team_id`),
@@ -290,7 +294,6 @@ CREATE TABLE `assault_place_magic` (
   `team_id` int(11) NOT NULL,
   `type` int(11) NOT NULL,
   `power` int(11) NOT NULL,
-  `qnt` int(11) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `magic_player_id` (`player_id`),
   KEY `magic_team_id` (`team_id`),
@@ -310,12 +313,17 @@ DROP TABLE IF EXISTS `assault_place_player_id`;
 CREATE TABLE `assault_place_player_id` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `place_id` int(11) NOT NULL,
+  `team_id` int(11) NOT NULL,
   `player_id` int(11) NOT NULL,
+  `role` int(11) NOT NULL DEFAULT '0',
+  `killed` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `place_place_no_duplicate` (`place_id`,`player_id`),
   KEY `place_user_player_id` (`player_id`),
+  KEY `place_user_team_id` (`team_id`),
   CONSTRAINT `place_user_place_id` FOREIGN KEY (`place_id`) REFERENCES `assault_place` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `place_user_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
+  CONSTRAINT `place_user_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `place_user_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -2707,13 +2715,15 @@ CREATE TABLE `plus_groups` (
   `chat_id` varchar(64) NOT NULL DEFAULT '0',
   `members` int(11) NOT NULL DEFAULT '0',
   `welcome_text` varchar(1024) DEFAULT NULL,
-  `welcome` int(1) NOT NULL DEFAULT '0',
+  `welcome` tinyint(1) NOT NULL DEFAULT '0',
   `max_lev` int(11) NOT NULL DEFAULT '0',
   `min_lev` int(11) NOT NULL DEFAULT '0',
-  `level` int(11) NOT NULL DEFAULT '0',
-  `kickban` int(11) NOT NULL DEFAULT '0',
-  `kickreg` int(11) NOT NULL DEFAULT '0',
-  `always` int(11) NOT NULL DEFAULT '0',
+  `level` tinyint(1) NOT NULL DEFAULT '0',
+  `kickban` tinyint(1) NOT NULL DEFAULT '0',
+  `kickreg` tinyint(1) NOT NULL DEFAULT '0',
+  `groupban` tinyint(1) NOT NULL DEFAULT '0',
+  `photodocs` tinyint(4) NOT NULL DEFAULT '0',
+  `always` tinyint(1) NOT NULL DEFAULT '0',
   `last_update` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `chat_id` (`chat_id`) USING BTREE
@@ -3032,14 +3042,15 @@ CREATE TABLE `team` (
   `boss_respawn` timestamp NULL DEFAULT NULL,
   `closed` int(3) NOT NULL DEFAULT '0',
   `details` int(11) NOT NULL DEFAULT '0',
-  `child_team` int(11) NOT NULL DEFAULT '0',
+  `child_team` int(11) DEFAULT NULL,
   `child_time` timestamp NULL DEFAULT NULL,
   `kill_num1` int(11) NOT NULL DEFAULT '0',
   `kill_num2` int(11) NOT NULL DEFAULT '0',
   `boost_id` int(11) NOT NULL DEFAULT '0',
   `boost_time` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `child_team` (`child_team`)
+  UNIQUE KEY `child_team` (`child_team`) USING BTREE,
+  CONSTRAINT `team_child_team` FOREIGN KEY (`child_team`) REFERENCES `team` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -3412,4 +3423,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-05 15:00:10
+-- Dump completed on 2018-06-08 15:00:09
