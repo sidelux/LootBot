@@ -92,7 +92,7 @@ bot.on('message', function (message) {
 			if (!message.text.startsWith("Negozio di")) {
 				var time = Math.round((Date.now()+ms("7 days"))/1000);
 				bot.kickChatMember(message.chat.id, message.from.id, {until_date: time}).then(function (result) {
-					bot.sendMessage(message.chat.id, user + ", non puoi scrivere in questo gruppo, sei stato bannato per 7 giorni.");
+					bot.sendMessage(message.chat.id, message.from.username + ", non puoi scrivere in questo gruppo, sei stato bannato per 7 giorni.");
 					bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo Loot Negozi per 7 giorni perchè non hai postato un negozio");
 				});
 				bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
@@ -1034,7 +1034,11 @@ bot.onText(/^\/gruppi/, function (message) {
 													console.log("Next Ade");
 
 													bot.getChatMembersCount(-1001214216152).then(function (data) {
-														var c16 = data; //Ade
+														var c16 = data; //ade
+														console.log("Next Music");
+														
+														bot.getChatMembersCount(-1001167682606).then(function (data) {
+															var c17 = data; //music
 
 														if (message.chat.id < 0)
 															bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
@@ -1071,6 +1075,7 @@ bot.onText(/^\/gruppi/, function (message) {
 																		"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
 																		"<a href='https://t.me/joinchat/CXTRTAtsjVG_AhJb3FjW5w'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
 																		"<a href='https://t.me/joinchat/B0siAkhfd9ieAbo1PyL3zA'>Ade's Mappers</a> (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
+																		"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ") - La musica ed il diverimento di Lootia!\n" +
 
 																		"\n<b>Canali</b>\n" +
 																		"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
@@ -1080,6 +1085,7 @@ bot.onText(/^\/gruppi/, function (message) {
 																		"@yellowlootshop - Join for eventi free!\n" +
 
 																		"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
+														});
 													});
 												});
 											});
@@ -1112,7 +1118,7 @@ bot.onText(/^\/mercatini/, function (message) {
 					"@Zaino_Dell_Imperatore - Prezzi basati sul bot Loot Quotazioni!\n" +
 					"@paupershop - Un negozio di LootBot per poveri\n" +
 					"@mercaloot - Negozio Honesto\n" +
-					"@EdicolaDiLootia - Lotterie, aste e negozi di U!\n" +
+					"@EdicolaDiLootia - Sempre più conveniente 👍\n" +
 
 					"\nVisita anche /gruppi. Per comparire qua chiedi all'amministratore.", html);
 });

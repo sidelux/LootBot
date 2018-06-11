@@ -232,6 +232,7 @@ CREATE TABLE `assault_place` (
   `name` varchar(64) NOT NULL,
   `class_bonus` varchar(16) DEFAULT NULL,
   `max_level` int(11) NOT NULL DEFAULT '0',
+  `max_players` int(11) NOT NULL DEFAULT '10',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -3423,4 +3424,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-08 15:00:09
+-- Dump completed on 2018-06-11 15:00:11

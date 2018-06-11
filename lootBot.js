@@ -120,15 +120,14 @@ var j2 = Schedule.scheduleJob('59 23 * * *', function () { //23:59 notte
 
 var j3 = Schedule.scheduleJob('01 00 * * *', function () { //00:01 notte
 	var d = new Date();
-	if (d.getDay() != 5)
+	if ((d.getDay() != 5) && (d.getDay() != 3))
 		autoMana();
 	if (d.getDay() != 2)
 		autoDust();
-	if ((d.getDay() != 6) && (d.getDay() != 0)) {
+	if ((d.getDay() != 6) && (d.getDay() != 0))
 		reloadAchievement();
-	} else {
+	else
 		resetAchievement();
-	}
 	if (d.getDay() == 1)
 		craftWeek();
 	resetTeamMission();
@@ -1146,9 +1145,7 @@ bot.onText(/^\/endtop$/, function (message, match) {
 						var mana = 0;
 						var dust = 0;
 						var chest = 0;
-						var item_id = 0;
-						var item_name = "";
-						var item_qnt = 0;
+						var moon_qnt = 0;
 						var extra_text = "";
 						var chestText = "";
 						var text = "";
@@ -1164,54 +1161,40 @@ bot.onText(/^\/endtop$/, function (message, match) {
 									for (var j = 0, len = Object.keys(rows).length; j < len; j++) {
 										if ((rows[j].rank < 12) && (this.top_id == 1)) {
 											bot.sendMessage(rows[j].chat_id, "Per il tuo posizionamento nelle *Vette dei Draghi*, essendo rimasto al primo Monte e di basso rango, non hai ricevuto alcun premio aggiuntivo! La prossima volta prova ad impegnarti di più :(", mark);
-											//console.log(rows[j].rank, this.top_id, "Skip");
 											continue; // per non dare altri premi
 										}
 
 										mana = Math.round(Math.pow(this.top_id, multi) * 200);
-										chest = Math.round((Math.pow(this.top_id, multi) * 10) - (j * 2));
+										chest = Math.floor(this.top_id*Math.log2(rows[j].rank));
 										if (chest < 0)
 											chest = 0;
 										if (rows[j].rank > 50)
 											rows[j].rank = 50;
 										dust = Math.round(rows[j].rank * (Math.pow(this.top_id, multi) * 8));
 
-										if ((this.top_id == max_top_id-2) && (j < 4)){
-											item_id = 608;
-											item_name = "Pass Bronzo";
-											item_qnt = 2-Math.floor(j/2);
-										}else if ((this.top_id == max_top_id-1) && (j < 6)){
-											item_id = 609;
-											item_name = "Pass Argento";
-											item_qnt = 3-Math.floor(j/2);
-										}else if ((this.top_id == max_top_id) && (j < 8)){
-											item_id = 610;
-											item_name = "Pass Oro";
-											item_qnt = 4-Math.floor(j/2);
-										}else{
-											item_id = 0;
-											item_name = "";
-											item_qnt = 0;
-										}
+										if ((this.top_id == max_top_id) && (j < 8))
+											moon_qnt = 4-Math.floor(j/2);
+										else
+											moon_qnt = 0;
 
-										console.log(rows[j].player_id, rows[j].rank, this.top_id, mana, dust, chest, item_name, item_qnt);
+										console.log(rows[j].player_id, moon_qnt);
 
 										connection.query('UPDATE event_mana_status SET mana_1 = mana_1+' + mana + ', mana_2 = mana_2+' + mana + ', mana_3 = mana_3+' + mana + ' WHERE player_id = ' + rows[j].player_id, function (err, rows, fields) {
 											if (err) throw err;
 										});
 										addItem(rows[j].player_id, 646, dust);
 										addChest(rows[j].player_id, 9, chest);
-										if (item_id > 0){
-											addItem(rows[j].player_id, item_id, item_qnt);
-										}
 
 										chestText = "";
-										if (chest > 0){
-											chestText = "\n> " + chest + " Scrigni Scaglia";
-										}
+										if (chest > 0)
+											chestText = "\n> " + chest + "x Scrigni Scaglia";
+											
 										extra_text = "";
-										if (item_id != 0){
-											extra_text = "\n> " + item_qnt + "x " + item_name;
+										if (moon_qnt > 0){
+											connection.query('UPDATE player SET moon_coin = moon_coin+' + moon_qnt + ' WHERE player_id = ' + rows[j].player_id, function (err, rows, fields) {
+												if (err) throw err;
+											});
+											extra_text = "\n> " + moon_qnt + "x Monete Lunari";
 										}
 
 										text = "Per il tuo posizionamento nelle *Vette dei Draghi* hai ricevuto:\n> " + mana + " Mana per tipo\n> " + dust + " unità di Polvere" + chestText + extra_text + "\n\nI premi durante le prossime stagioni potrebbero cambiare, grazie per aver giocato!";
@@ -3418,30 +3401,22 @@ function autoMana() {
 		if (Object.keys(rows).length > 0) {
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 				mana_type = 'mana_' + rows[i].type;
-				if ((rows[i].class == 2) && (rows[i].reborn > 1)) {
+				if ((rows[i].class == 2) && (rows[i].reborn > 1))
 					rows[i].quantity += rows[i].quantity * 0.3;
-				}
-				if ((rows[i].class == 3) && (rows[i].type == 2) && (rows[i].reborn > 1)) {
+				if ((rows[i].class == 3) && (rows[i].type == 2) && (rows[i].reborn > 1))
 					rows[i].quantity += rows[i].quantity * 0.5;
-				}
-				if ((rows[i].class == 3) && (rows[i].type != 2) && (rows[i].reborn > 1)) {
+				if ((rows[i].class == 3) && (rows[i].type != 2) && (rows[i].reborn > 1))
 					rows[i].quantity -= rows[i].quantity * 0.2;
-				}
-				if ((rows[i].class == 4) && (rows[i].type == 3) && (rows[i].reborn > 1)) {
+				if ((rows[i].class == 4) && (rows[i].type == 3) && (rows[i].reborn > 1))
 					rows[i].quantity += rows[i].quantity * 0.5;
-				}
-				if ((rows[i].class == 4) && (rows[i].type != 3) && (rows[i].reborn > 1)) {
+				if ((rows[i].class == 4) && (rows[i].type != 3) && (rows[i].reborn > 1))
 					rows[i].quantity -= rows[i].quantity * 0.2;
-				}
-				if ((rows[i].class == 5) && (rows[i].type == 1) && (rows[i].reborn > 1)) {
+				if ((rows[i].class == 5) && (rows[i].type == 1) && (rows[i].reborn > 1))
 					rows[i].quantity += rows[i].quantity * 1;
-				}
-				if ((rows[i].class == 5) && (rows[i].type != 1) && (rows[i].reborn > 1)) {
+				if ((rows[i].class == 5) && (rows[i].type != 1) && (rows[i].reborn > 1))
 					rows[i].quantity -= rows[i].quantity * 0.1;
-				}
-				if ((rows[i].class == 6) && (rows[i].reborn > 1)) {
+				if ((rows[i].class == 6) && (rows[i].reborn > 1))
 					rows[i].quantity -= rows[i].quantity * 0.1;
-				}
 				rows[i].quantity = Math.floor(rows[i].quantity);
 
 				connection.query('UPDATE event_mana_status SET ' + mana_type + ' = ' + mana_type + ' + ' + rows[i].quantity + ', zone_id = 0, time_start = NULL WHERE player_id = ' + rows[i].player_id, function (err, rows, fields) {
@@ -3449,9 +3424,8 @@ function autoMana() {
 				});
 				bot.sendMessage(rows[i].chat_id, "Le miniere sono state chiuse, hai ricevuto " + formatNumber(rows[i].quantity) + " Mana " + rows[i].name + "!");
 			}
-		} else {
+		} else
 			console.log("Nessuna miniera da terminare");
-		}
 	});
 };
 
@@ -27912,6 +27886,15 @@ function cercaTermine(message, param, player_id) {
 
 												bot.sendMessage(message.chat.id, bottext, kb2);
 											} else {
+												
+												search = {
+													parse_mode: "Markdown",
+													reply_markup: {
+														resize_keyboard: true,
+														keyboard: [["Vendi " + name, "Cerca Ancora"], ["Torna al menu"]]
+													}
+												};
+												
 												bot.sendMessage(message.chat.id, bottext, search);
 											}
 										});
@@ -28045,13 +28028,13 @@ function cercaTermine(message, param, player_id) {
 															iKeys3.push(["Cerca *" + rows[i].name]);
 														}
 
-														iKeys3.push(["Cerca Ancora"]);
+														iKeys3.push(["Vendi " + name, "Cerca Ancora"]);
 														if (prev == 1)
 															iKeys3.push([prevtxt]);
 														iKeys3.push(["Torna al menu"]);
 														bot.sendMessage(message.chat.id, bottext, kb);
 													} else {
-														iKeys3.push(["Cerca Ancora"]);
+														iKeys3.push(["Vendi " + name, "Cerca Ancora"]);
 														if (prev == 1)
 															iKeys3.push([prevtxt]);
 														iKeys3.push(["Torna al menu"]);
@@ -31220,7 +31203,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 
 							bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
 											"> Aver raggiunto il livello 1.000 R4\n" +
-											"> Aver raggiungo almeno il rango dungeon 200\n" +
+											"> Aver raggiunto almeno il rango dungeon 200\n" +
 											"> Aver completato almeno 300 incarichi\n" +
 											"> Aver completato almeno 50 scalate complete nello stesso team (senza cambiarlo)\n" +
 											"> Aver venduto almeno 500 oggetti al Contrabbandiere\n" +
@@ -41456,7 +41439,7 @@ function setDragonTop(element, index, array) {
 			}
 			res = -1;
 		} else if (rank >= rows[0].pnt) {
-			if (top < 5){
+			if (top < max_top_id){
 				top++;
 				res = 1;
 				reset = 6;
@@ -41565,9 +41548,8 @@ function setDragonBattle(element, index, array) {
 							connection.query('UPDATE dragon_top_rank SET rank = rank-' + rank_lost + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
 							});
-						} else {
+						} else
 							rank_lost = 0; //Nel caso in cui chi perde abbia zero rango
-						}
 					}
 
 					if (enemy_top_id < max_top_id){
