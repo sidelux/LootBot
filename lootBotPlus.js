@@ -6467,7 +6467,7 @@ bot.onText(/^\/oggetto (.+)|^\/oggetto/, function (message, match) {
 									"*Rarità:* " + rarity + pow + "\n" +
 									"*Prezzo base:* " + formatNumber(value) + " §\n" +
 									(est != 0 ? "*Valore:* " + formatNumber(est) + " §\n" : "") +
-									"*Posseduti:* " + posseduti + "\n" +
+									"*Posseduti:* " + formatNumber(posseduti) + "\n" +
 									"*Diffusione:* " + diff, mark);
 				});
 			});
@@ -6537,7 +6537,7 @@ bot.onText(/^\/oggetti (.+)|^\/oggetti/, function (message, match) {
 						name = rows[i].name;
 						rarity = rows[i].rarity;
 						posseduti = rows[i].num;
-						text += "\n> " + name + " (" + rarity + ", " + posseduti + ")";
+						text += "\n> " + name + " (" + rarity + ", " + formatNumber(posseduti) + ")";
 					}
 				}
 

@@ -206,7 +206,6 @@ CREATE TABLE `assault` (
   `mob_total_life` int(11) NOT NULL DEFAULT '0',
   `mob_paralyzed` int(11) NOT NULL DEFAULT '0',
   `mob_critic` int(11) NOT NULL DEFAULT '0',
-  `cure_flag` tinyint(1) NOT NULL DEFAULT '0',
   `mob_count` int(11) NOT NULL DEFAULT '0',
   `mob_turn` int(11) NOT NULL DEFAULT '0',
   `team_paralyzed` int(11) NOT NULL DEFAULT '0',
@@ -3424,4 +3423,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-11 15:00:11
+-- Dump completed on 2018-06-13 12:00:10
