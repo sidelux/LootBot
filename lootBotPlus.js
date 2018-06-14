@@ -4581,16 +4581,15 @@ bot.onText(/^\/lotterie/, function (message) {
 
 bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 
-	if (!checkSpam(message)) {
+	if (!checkSpam(message))
 		return;
-	}
 
-	var syntax = "Sintassi: '/paga prezzo,acquirente' (senza acquirente in caso di risposta)";
+	var syntax = "Sintassi: '/paga prezzo,acquirentem,messaggio(facoltativo)' (senza acquirente in caso di risposta)";
 	var text = "";
 
-	if (message.text.indexOf(" ") != -1) {
+	if (message.text.indexOf(" ") != -1)
 		text = message.text.substring(message.text.indexOf(" ") + 1, message.text.lenght);
-	} else {
+	else {
 		bot.sendMessage(message.from.id, syntax);
 		return;
 	}
@@ -4600,8 +4599,8 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 
 	var elements = text.split(",");
 
-	if (Object.keys(elements).length != 2) {
-		bot.sendMessage(message.from.id, "Numero parametri errato: " + Object.keys(elements).length + " su 2\n" + syntax);
+	if ((Object.keys(elements).length < 2) || (Object.keys(elements).length > 3)) {
+		bot.sendMessage(message.from.id, "Numero parametri errato: " + Object.keys(elements).length + " su 2/3\n" + syntax);
 		return;
 	}
 
@@ -4609,8 +4608,11 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 	var buyer = elements[1].replace('@', '').trim();
 
 	var custom_message = "";
-	if (message.reply_to_message != undefined) {
+	if (message.reply_to_message != undefined)
 		custom_message = elements[0].replace(/[0-9]/gi, '').trim();
+	else{
+		if (Object.keys(elements).length == 3)
+			custom_message = elements[2];
 	}
 
 	if (buyer == "") {
@@ -4626,7 +4628,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 		return;
 	}
 
-	connection.query('SELECT account_id, id, money, holiday, market_ban FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, id, money, holiday, market_ban, exp, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -4641,6 +4643,11 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 		}
 		if (rows[0].market_ban == 1) {
 			bot.sendMessage(message.chat.id, "...");
+			return;
+		}
+		
+		if ((Math.floor(rows[0].exp/10) < 50) && (rows[0].reborn == 1)){
+			bot.sendMessage(message.from.id, "Questo comando è utilizzabile solo dal livello 50");
 			return;
 		}
 
@@ -4678,7 +4685,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 				return;
 			}
 
-			if ((parseInt(rows[0].money)+price) >= 1000000000){
+			if ((parseInt(rows[0].money)+price) > 1000000000){
 				bot.sendMessage(message.from.id, "Il destinatario raggiungerebbe il limite alle monete possedute con questa cifra, riprova");
 				return;
 			}
