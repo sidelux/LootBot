@@ -83,7 +83,28 @@ bot.on('polling_error', function(error) {
 	console.log(error);
 });
 
+var mergeMessages = [];
+
+bot.on('edited_message', function (message) {
+	connection.query('SELECT always, compact FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length > 0) {
+			if (rows[0].compact == 1) {
+				if ((mergeMessages[message.chat.id] != undefined) && (mergeMessages[message.chat.id] != "")){
+					if (mergeMessages[message.chat.id].split(";")[0] == message.from.id){
+						var lastIdx = mergeMessages[message.chat.id].lastIndexOf(";");
+						mergeMessages[message.chat.id] = mergeMessages[message.chat.id].substr(0, lastIdx+1);
+						mergeMessages[message.chat.id] += message.text;
+					}
+				}
+			}
+		}
+	});
+});
+
 bot.on('message', function (message) {
+
 	if (message.text != undefined) {
 		if (message.text.startsWith("/"))
 			console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
@@ -155,7 +176,7 @@ bot.on('message', function (message) {
 				});
 			}
 		});
-		connection.query('SELECT always FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+		connection.query('SELECT always, compact FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (message.new_chat_members != undefined) {
@@ -166,6 +187,26 @@ bot.on('message', function (message) {
 					if (rows[0].always == 1) {
 						if (message.from.is_bot == 0)
 							checkStatus(message, message.from.username, message.from.id, 1);
+					}
+					if (rows[0].compact == 1) {
+						if ((message.from.is_bot == 0) && (message.text != undefined)){
+							if (message.reply_to_message == undefined) {
+								if ((mergeMessages[message.chat.id] != undefined) && (mergeMessages[message.chat.id] != "")){
+									if (mergeMessages[message.chat.id].split(";")[0] == message.from.id){
+										bot.deleteMessage(message.chat.id, mergeMessages[message.chat.id].split(";")[1]);
+										bot.deleteMessage(message.chat.id, message.message_id);
+										var newText = mergeMessages[message.chat.id].split(";")[2] + "\n" + message.text;
+										bot.sendMessage(message.chat.id, message.from.first_name + " <i>scrive</i>:\n" + newText, html).then(function (data) {
+											mergeMessages[message.chat.id] = message.from.id + ";" + data.message_id + ";" + newText;
+										});
+									} else
+										mergeMessages[message.chat.id] = message.from.id + ";" + message.message_id + ";" + message.text;
+								} else
+									mergeMessages[message.chat.id] = message.from.id + ";" + message.message_id + ";" + message.text;
+							}else
+								mergeMessages[message.chat.id] = "";	// ignora le risposte
+						}else
+							mergeMessages[message.chat.id] = "";	// ignora i bot
 					}
 				}
 			}
@@ -1359,15 +1400,16 @@ bot.onText(/^\/comandigruppo/, function (message) {
 					"/groupban on-off - Abilita o disabilita il filtro group ban\n\n" +
 					"*Filtro foto/documenti postati nei gruppi*\n" +
 					"/photodocs on-off - Abilita o disabilita il filtro foto/documenti per livello < 50\n\n" +
+					"*Compattatore messaggi (beta)*\n" +
+					"/compact on-off - Abilita o disabilita il compattamento automatico dei messaggi\n\n" +
 					"*Attiva i filtri per ogni messaggio*\n" +
 					"/hardmode on-off - Abilita o disabilita il controllo filtri per ogni messaggio\n" +
 					"\n\n_Altri comandi a breve_", mark);
 });
 
 bot.onText(/^\/riassunto/, function (message, match) {
-	if (message.chat.id > 0) {
+	if (message.chat.id > 0)
 		return;
-	}
 
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
@@ -1387,6 +1429,7 @@ bot.onText(/^\/riassunto/, function (message, match) {
 					var always = (rows[0].always) ? "✅" : "❌";
 					var groupban = (rows[0].groupban) ? "✅" : "❌";
 					var photodocs = (rows[0].photodocs) ? "✅" : "❌";
+					var compact = (rows[0].compact) ? "✅" : "❌";
 
 					bot.sendMessage(message.chat.id, "<b>Impostazioni gruppo:</b>\n" +
 									"Messaggio di benvenuto: " + welcome_text + "\n" +
@@ -1396,6 +1439,7 @@ bot.onText(/^\/riassunto/, function (message, match) {
 									"Filtro non registrato: " + kickreg + "\n" +
 									"Group ban automatico: " + groupban + "\n" +
 									"Filtro foto/documenti: " + photodocs + "\n" +
+									"Compattatore: " + compact + "\n" +
 									"Hard mode: " + always + "\n", html);
 				} else {
 					bot.sendMessage(message.chat.id, "Il gruppo non è memorizzato nel plus, contatta l'amministratore");
@@ -1406,9 +1450,8 @@ bot.onText(/^\/riassunto/, function (message, match) {
 });
 
 bot.onText(/^\/setmin (.+)/, function (message, match) {
-	if (message.chat.id > 0) {
+	if (message.chat.id > 0)
 		return;
-	}
 
 	if (isNaN(parseInt(match[1]))) {
 		bot.sendMessage(message.chat.id, "Valore non valido");
@@ -1434,9 +1477,8 @@ bot.onText(/^\/setmin (.+)/, function (message, match) {
 });
 
 bot.onText(/^\/setmax (.+)/, function (message, match) {
-	if (message.chat.id > 0) {
+	if (message.chat.id > 0)
 		return;
-	}
 
 	if (isNaN(parseInt(match[1]))) {
 		bot.sendMessage(message.chat.id, "Valore non valido");
@@ -1462,9 +1504,8 @@ bot.onText(/^\/setmax (.+)/, function (message, match) {
 });
 
 bot.onText(/^\/level (.+)/, function (message, match) {
-	if (message.chat.id > 0) {
+	if (message.chat.id > 0)
 		return;
-	}
 
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
@@ -1497,9 +1538,8 @@ bot.onText(/^\/level (.+)/, function (message, match) {
 });
 
 bot.onText(/^\/kickbanned (.+)/, function (message, match) {
-	if (message.chat.id > 0) {
+	if (message.chat.id > 0)
 		return;
-	}
 
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
@@ -1532,9 +1572,8 @@ bot.onText(/^\/kickbanned (.+)/, function (message, match) {
 });
 
 bot.onText(/^\/kickreg (.+)/, function (message, match) {
-	if (message.chat.id > 0) {
+	if (message.chat.id > 0)
 		return;
-	}
 
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
@@ -1567,9 +1606,8 @@ bot.onText(/^\/kickreg (.+)/, function (message, match) {
 });
 
 bot.onText(/^\/groupban (.+)/, function (message, match) {
-	if (message.chat.id > 0) {
+	if (message.chat.id > 0)
 		return;
-	}
 
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
@@ -1602,9 +1640,8 @@ bot.onText(/^\/groupban (.+)/, function (message, match) {
 });
 
 bot.onText(/^\/photodocs (.+)/, function (message, match) {
-	if (message.chat.id > 0) {
+	if (message.chat.id > 0)
 		return;
-	}
 
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
@@ -1625,6 +1662,40 @@ bot.onText(/^\/photodocs (.+)/, function (message, match) {
 							val = 0;
 						}
 						connection.query('UPDATE plus_groups SET photodocs = ' + val + ' WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+					} else {
+						bot.sendMessage(message.chat.id, "Parametro non valido, on/off.");
+					}
+				}
+			});
+		}
+	});
+});
+
+bot.onText(/^\/compact (.+)/, function (message, match) {
+	if (message.chat.id > 0)
+		return;
+
+	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
+		if ((data.status == "creator") || (data.status == "administrator")) {
+			var text = match[1];
+			connection.query('SELECT 1 FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Errore impostazione compattatore");
+				} else {
+
+					if ((text == "on") || (text == "off")) {
+						var val = 0;
+						if (text == "on") {
+							bot.sendMessage(message.chat.id, "Compattatore abilitato\nRicorda di impostare il bot come amministratore");
+							val = 1;
+						} else {
+							bot.sendMessage(message.chat.id, "Compattatore disabilitato");
+							val = 0;
+						}
+						connection.query('UPDATE plus_groups SET compact = ' + val + ' WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 							if (err) throw err;
 						});
 					} else {
@@ -2040,7 +2111,23 @@ function funz(x) {
 bot.onText(/^\/dai_fake (.+)/i, function (message, match) {
 	if (message.from.id == 20471035){
 		var split = match[1].split(",");
-		bot.sendMessage(message.chat.id, "*" + split[0] + "*, hai ricevuto 1x *" + split[1] + "*!", mark);
+
+		var options = {parse_mode: 'Markdown'};
+		if (message.reply_to_message != undefined)
+			options = {parse_mode: 'Markdown', reply_to_message_id: message.reply_to_message.message_id};
+
+		bot.sendMessage(message.chat.id, "*" + split[0] + "*, hai ricevuto 1x *" + split[1] + "*!", options);
+	}
+});
+
+bot.onText(/^\/msg (.+)/i, function (message, match) {
+	if (message.from.id == 20471035){
+
+		var options = {parse_mode: 'Markdown'};
+		if (message.reply_to_message != undefined)
+			options = {parse_mode: 'Markdown', reply_to_message_id: message.reply_to_message.message_id};
+
+		bot.sendMessage(message.chat.id, match[1], options);
 	}
 });
 
@@ -3080,6 +3167,12 @@ bot.onText(/^\/privacy (.+)/, function (message, match) {
 			return;
 		}
 
+		code = parseInt(code);
+		if (isNaN(code)){
+			bot.sendMessage(message.chat.id, "Codice non valido");
+			return;
+		}
+
 		connection.query('SELECT player_id, public FROM public_shop WHERE code = ' + code, function (err, rows, fields) {
 			if (err) throw err;
 
@@ -3095,11 +3188,6 @@ bot.onText(/^\/privacy (.+)/, function (message, match) {
 
 			var public = rows[0].public;
 
-			code = parseInt(code);
-			if (isNaN(code)){
-				bot.sendMessage(message.chat.id, "Non sei l'amministratore del negozio");
-				return;
-			}
 			if (public == 0) {
 				connection.query('UPDATE public_shop SET public = 1 WHERE code = ' + code, function (err, rows, fields) {
 					if (err) throw err;
@@ -3429,10 +3517,10 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 						quantity = 1;
 					else
 						quantity = parseInt(splitted[2].replace(/[^\w\s]/gi, '').trim());
-					
+
 					if (isNaN(price))
 						price = 0;
-					
+
 					if (isNaN(quantity))
 						quantity = 1;
 
@@ -3518,10 +3606,10 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 						quantity = 1;
 					else
 						quantity = parseInt(splitted[2].replace(/[^\w\s]/gi, '').trim());
-					
+
 					if (isNaN(price))
 						price = 0;
-					
+
 					if (isNaN(quantity))
 						quantity = 1;
 

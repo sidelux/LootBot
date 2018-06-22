@@ -2726,6 +2726,7 @@ CREATE TABLE `plus_groups` (
   `kickreg` tinyint(1) NOT NULL DEFAULT '0',
   `groupban` tinyint(1) NOT NULL DEFAULT '0',
   `photodocs` tinyint(4) NOT NULL DEFAULT '0',
+  `compact` tinyint(4) NOT NULL DEFAULT '0',
   `always` tinyint(1) NOT NULL DEFAULT '0',
   `last_update` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -3427,4 +3428,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-20  9:00:09
+-- Dump completed on 2018-06-22 15:00:13
