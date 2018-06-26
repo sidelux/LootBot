@@ -338,6 +338,7 @@ CREATE TABLE `assault_place_team` (
   `place_id` int(11) NOT NULL,
   `team_id` int(11) NOT NULL,
   `level` int(11) NOT NULL,
+  `actual_max_level` int(11) NOT NULL DEFAULT '0',
   `life` int(11) NOT NULL DEFAULT '0',
   `total_life` int(11) NOT NULL DEFAULT '0',
   `time_end` timestamp NULL DEFAULT NULL,
@@ -395,7 +396,7 @@ CREATE TABLE `auction_list` (
   KEY `item_id` (`item_id`),
   CONSTRAINT `CREATORID_AU` FOREIGN KEY (`creator_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `ITEMID_AU` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3428,4 +3429,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-22 15:00:13
+-- Dump completed on 2018-06-26  9:00:12

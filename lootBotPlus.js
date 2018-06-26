@@ -190,7 +190,7 @@ bot.on('message', function (message) {
 					}
 					if (rows[0].compact == 1) {
 						if ((message.from.is_bot == 0) && (message.text != undefined)){
-							if (message.reply_to_message == undefined) {
+							if ((message.reply_to_message == undefined) && (!message.text.startsWith("/"))){
 								if ((mergeMessages[message.chat.id] != undefined) && (mergeMessages[message.chat.id] != "")){
 									if (mergeMessages[message.chat.id].split(";")[0] == message.from.id){
 										bot.deleteMessage(message.chat.id, mergeMessages[message.chat.id].split(";")[1]);
@@ -204,7 +204,7 @@ bot.on('message', function (message) {
 								} else
 									mergeMessages[message.chat.id] = message.from.id + ";" + message.message_id + ";" + message.text;
 							}else
-								mergeMessages[message.chat.id] = "";	// ignora le risposte
+								mergeMessages[message.chat.id] = "";	// ignora le risposte e i comandi
 						}else
 							mergeMessages[message.chat.id] = "";	// ignora i bot
 					}
@@ -3718,7 +3718,7 @@ bot.onText(/^\/cancellanegozio (.+)|^\/cancellanegozio$/, function (message, mat
 		}
 
 		if (message.reply_to_message != undefined) {
-			var cod = message.reply_to_message.text.match(/[0-9]{11}/g);
+			var cod = message.reply_to_message.text.match(/[0-9]{7,11}/g);
 			if (cod[0] != undefined)
 				code = cod[0];
 		}
