@@ -1297,19 +1297,18 @@ bot.onText(/^\/scalata/, function (message, match) {
 
 			var boss_id = rows[0].id;
 
-			connection.query('SELECT P.nickname FROM player P, team_player T LEFT JOIN boss_damage B ON T.player_id = B.player_id AND B.boss_id = ' + boss_id + ' WHERE T.team_id = ' + team_id + ' AND T.player_id != ' + player_id + ' AND B.player_id IS NULL AND T.player_id = P.id AND suspended = 0 GROUP BY T.player_id', function (err, rows, fields) {
+			connection.query('SELECT P.nickname FROM player P, team_player T LEFT JOIN boss_damage B ON T.player_id = B.player_id AND B.boss_id = ' + boss_id + ' WHERE T.team_id = ' + team_id + ' AND T.player_id != ' + player_id + ' AND B.player_id IS NULL AND T.player_id = P.id AND suspended = 0 AND holiday = 0 GROUP BY T.player_id', function (err, rows, fields) {
 				if (err) throw err;
 
 				var nicklist = "";
 
 				if (Object.keys(rows).length == 0){
-					bot.sendMessage(message.chat.id, "Non manca nessun compagno!");
+					bot.sendMessage(message.chat.id, "Non manca nessun compagno valido!");
 					return;
 				}
 
-				for (i = 0; i < Object.keys(rows).length; i++) {
+				for (i = 0; i < Object.keys(rows).length; i++)
 					nicklist += "@" + rows[i].nickname + " ";
-				}
 
 				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> incita i suoi compagni di team ad attaccare il boss!\n" + nicklist, html);
 			});

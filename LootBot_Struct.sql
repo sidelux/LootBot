@@ -81,7 +81,7 @@ DROP TABLE IF EXISTS `achievement_global`;
 CREATE TABLE `achievement_global` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
-  `value` int(11) NOT NULL,
+  `value` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `player_id` (`player_id`) USING BTREE,
   CONSTRAINT `PLAYERID_GLOBAL` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -338,7 +338,6 @@ CREATE TABLE `assault_place_team` (
   `place_id` int(11) NOT NULL,
   `team_id` int(11) NOT NULL,
   `level` int(11) NOT NULL,
-  `actual_max_level` int(11) NOT NULL DEFAULT '0',
   `life` int(11) NOT NULL DEFAULT '0',
   `total_life` int(11) NOT NULL DEFAULT '0',
   `time_end` timestamp NULL DEFAULT NULL,
@@ -3429,4 +3428,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-26  9:00:12
+-- Dump completed on 2018-06-27  9:00:11
