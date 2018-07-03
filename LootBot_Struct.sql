@@ -272,9 +272,9 @@ CREATE TABLE `assault_place_item` (
   `item_id` int(11) NOT NULL,
   `quantity` int(11) NOT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `assault_item_no_duplicate` (`team_id`,`place_id`,`item_id`),
   KEY `item_pool_sel_place_id` (`place_id`),
   KEY `item_pool_sel_item_id` (`item_id`),
-  KEY `item_pool_sel_team_id` (`team_id`),
   CONSTRAINT `item_pool_sel_item_id` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE,
   CONSTRAINT `item_pool_sel_place_id` FOREIGN KEY (`place_id`) REFERENCES `assault_place` (`id`) ON DELETE CASCADE,
   CONSTRAINT `item_pool_sel_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
@@ -970,7 +970,7 @@ CREATE TABLE `dragon_top_status` (
   UNIQUE KEY `enemy_dragon_id` (`enemy_dragon_id`),
   CONSTRAINT `DRAGONID_VETTA` FOREIGN KEY (`dragon_id`) REFERENCES `dragon` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `PLAYERID_VETTA` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3428,4 +3428,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-28 12:00:11
+-- Dump completed on 2018-07-03 15:00:09

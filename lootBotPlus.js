@@ -403,7 +403,7 @@ bot.onText(/^\/comandilotteria/, function (message) {
 					"/lotteria - Iscrive alla lotteria con iscrizione gratuita\n" +
 					"/lotteriap - Iscrive alla lotteria con iscrizione a pagamento\n" +
 					"/dlotteria - Disiscrive dalla lotteria con iscrizione gratuita\n" +
-					"/dlotteriap - Disiscrive dalla lotteria con iscrizione a pamagento\n" +
+					"/dlotteriap - Disiscrive dalla lotteria con iscrizione a pagamento\n" +
 					"/lotterie - Mostra tutte le lotterie disponibili\n" +
 					"/estrazione - Forza l'estrazione di una lotteria\n" +
 					"/cancellalotteria - Elimina una lotteria in corso", mark);
@@ -2132,6 +2132,9 @@ bot.onText(/^\/msg (.+)/i, function (message, match) {
 
 bot.onText(/^\/rune (.+)/i, function (message, match) {
 
+	if (match[1].indexOf(",") == -1)
+		return;
+	
 	var split = match[1].split(" ");
 
 	var my_comb = split[0];
@@ -4665,7 +4668,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 	if (!checkSpam(message))
 		return;
 
-	var syntax = "Sintassi: '/paga prezzo,acquirentem,messaggio(facoltativo)' (senza acquirente in caso di risposta)";
+	var syntax = "Sintassi: '/paga prezzo,acquirente,messaggio(facoltativo)' (senza acquirente in caso di risposta)";
 	var text = "";
 
 	if (message.text.indexOf(" ") != -1)
