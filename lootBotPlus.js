@@ -196,7 +196,7 @@ bot.on('message', function (message) {
 										bot.deleteMessage(message.chat.id, mergeMessages[message.chat.id].split(";")[1]);
 										bot.deleteMessage(message.chat.id, message.message_id);
 										var newText = mergeMessages[message.chat.id].split(";")[2] + "\n" + message.text;
-										bot.sendMessage(message.chat.id, message.from.first_name + " <i>scrive</i>:\n" + newText, html).then(function (data) {
+										bot.sendMessage(message.chat.id, "@" + message.from.username + " <i>scrive</i>:\n" + newText, html).then(function (data) {
 											mergeMessages[message.chat.id] = message.from.id + ";" + data.message_id + ";" + newText;
 										});
 									} else
