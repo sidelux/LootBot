@@ -3482,7 +3482,7 @@ function printStart(message) {
 						'- Dopo 6 mesi di inattività il tuo account sarà eliminato senza possibilità di ripristinarlo.\n' +
 						'- Come ultima attività si intende un qualsiasi comando inviato tramite il bot principale o il Plus.\n\n' +
 						'<b>Link Utili</b> 📃\n' +
-						'- Vota il bot nello <a href="https://storebot.me/bot/lootgamebot">Storebot</a>\n' +
+						'- Vota il bot nello <a href="https://telegram.me/storebot?start=lootgamebot">Storebot</a>\n' +
 						'- Per aiutarmi a mantenere il server, <a href="http://fenixweb.net/">fai una donazione</a>, riceverai delle Monete Lunari 🌕!\n\n' +
 						'<b>Crediti</b> 👑\n' +
 						'- Edoardo Cortese @fenix45\n' +
@@ -4154,6 +4154,17 @@ function getInfo(message, player, myhouse_id) {
 		var reborn = rows[0].reborn;
 		var class_id = rows[0].class;
 		var boost_id = rows[0].boost_id;
+		var creation_date = rows[0].creation_date;
+		
+		if (mission_team_count > 0)
+			mission_team_count = "Incarichi: " + formatNumber(mission_team_count) + "\n";
+		else 
+			mission_team_count = "";
+		
+		if (rank > 0)
+			rank = "Rango: " + getRankName(rank, 0) + " (" + rank + ")\n";
+		else
+			rank = "";
 
 		connection.query('SELECT name, id FROM item WHERE id = ' + weapon_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -4181,8 +4192,8 @@ function getInfo(message, player, myhouse_id) {
 					if (err) throw err;
 
 					var artifacts = "";
-					if (rows[0].cnt == 0)
-						artifacts = "-";
+					if (rows[0].cnt > 0)
+						artifacts = "Artefatti: ";
 					if (rows[0].cnt >= 1)
 						artifacts += "🔥";
 					if (rows[0].cnt >= 2)
@@ -4193,6 +4204,8 @@ function getInfo(message, player, myhouse_id) {
 						artifacts += "🌑";
 					if (rows[0].cnt >= 5)
 						artifacts += "🔮";
+					if (rows[0].cnt > 0)
+						artifacts += "\n";
 
 					connection.query('SELECT name, description FROM item WHERE id = ' + charm_id, function (err, rows, fields) {
 						if (err) throw err;
@@ -4338,8 +4351,13 @@ function getInfo(message, player, myhouse_id) {
 																	var d = new Date(rows[0].time);
 																	var short_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
 																	referral = "Invitato da: " + rows[0].player + " (" + short_date + ")\n";
+																}else{
+																	if (creation_date != null){
+																		var d = new Date(creation_date);
+																		var short_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+																		referral = "Registrato il " + short_date + "\n";
+																	}
 																}
-
 
 																connection.query('SELECT COUNT(inventory.item_id) As cnt FROM inventory, item WHERE inventory.item_id = item.id AND player_id = ' + player_id + ' AND rarity = "IN" AND inventory.quantity > 0', function (err, rows, fields) {
 																	if (err) throw err;
@@ -4576,9 +4594,8 @@ function getInfo(message, player, myhouse_id) {
 																				heist_count = "?";
 																				spy_count = "?";
 																				money = "?";
-																			} else if (myhouse_id == 5) {
+																			} else if (myhouse_id == 5)
 																				money = "?";
-																			}
 																		}
 
 																		Keys.push(["Torna al menu"]);
@@ -4615,11 +4632,11 @@ function getInfo(message, player, myhouse_id) {
 																						(dragon ? "Critico (" + dragon_critical + "%)\n" : "") +
 
 																						"\n<b>Altro</b> 💱\n" +
-																						referral +
-																						"Artefatti: " + artifacts + "\n" +
-																						"Rango: " + getRankName(rank, 0) + " (" + rank + ")\n" +
 																						"Abilità: " + formatNumber(ability) + "\n" +
-																						"Incarichi: " + formatNumber(mission_team_count) + "\n" +
+																						referral +
+																						artifacts +
+																						rank +
+																						mission_team_count +
 																						(player_description != null ? "\n<i>" + player_description + "</i>" : ""), kb);
 																	});
 																});
@@ -17910,356 +17927,369 @@ bot.onText(/team/i, function (message) {
 				var team_level = rows[0].level;
 				var team_closed = rows[0].closed;
 				var team_boss_count = rows[0].boss_count;
-
-				connection.query('SELECT T2.name, T2.players FROM team T1 JOIN team T2 ON T1.child_team = T2.id WHERE T1.id = ' + team_id, function (err, rows, fields) {
+				
+				connection.query("SELECT completed, lost FROM assault WHERE team_id = " + team_id, function (err, rows, fields){
 					if (err) throw err;
-
-					var childName = "";
-					var childPlayers = 0;
+					
+					var team_assault_completed = 0;
+					var team_assault_lost = 0;
 					if (Object.keys(rows).length > 0) {
-						childName = rows[0].name;
-						childPlayers = rows[0].players;
+						team_assault_completed = rows[0].completed;
+						team_assault_lost = rows[0].lost;
 					}
 
-					connection.query('SELECT T2.name, T2.players FROM team T1 JOIN team T2 ON T1.id = T2.id WHERE T1.child_team = ' + team_id, function (err, rows, fields) {
+					connection.query('SELECT T2.name, T2.players FROM team T1 JOIN team T2 ON T1.child_team = T2.id WHERE T1.id = ' + team_id, function (err, rows, fields) {
 						if (err) throw err;
 
-						var motherName = "";
-						var motherPlayers = 0;
+						var childName = "";
+						var childPlayers = 0;
 						if (Object.keys(rows).length > 0) {
-							motherName = rows[0].name;
-							motherPlayers = rows[0].players;
+							childName = rows[0].name;
+							childPlayers = rows[0].players;
 						}
 
-						connection.query('SELECT team_player.role, team_player.player_id, player.nickname FROM team_player, player WHERE player.id = team_player.player_id AND team_id = ' + team_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+						connection.query('SELECT T2.name, T2.players FROM team T1 JOIN team T2 ON T1.id = T2.id WHERE T1.child_team = ' + team_id, function (err, rows, fields) {
 							if (err) throw err;
 
-							var isAdmin = 0;
-							var isViceAdmin = 0;
+							var motherName = "";
+							var motherPlayers = 0;
+							if (Object.keys(rows).length > 0) {
+								motherName = rows[0].name;
+								motherPlayers = rows[0].players;
+							}
 
-							if (rows[0].role == 1)
-								isAdmin = 1;
-							else if (rows[0].role == 2)
-								isViceAdmin = 1;
-
-							connection.query('SELECT player.id, player.nickname FROM team_player, player WHERE player.id = team_player.player_id AND team_id = ' + team_id + ' AND role = 1', function (err, rows, fields) {
+							connection.query('SELECT team_player.role, team_player.player_id, player.nickname FROM team_player, player WHERE player.id = team_player.player_id AND team_id = ' + team_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
 
-								var adminId = 0;
-								var adminName = "";
+								var isAdmin = 0;
+								var isViceAdmin = 0;
 
-								if (Object.keys(rows).length == 0) {
-									connection.query('UPDATE team_player SET role = 1 WHERE team_id = ' + team_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
-										if (err) throw err;
-									});
-									adminName = message.from.username;
-									adminId = player_id;
-								} else {
-									adminName = rows[0].nickname;
-									adminId = rows[0].id;
-								}
+								if (rows[0].role == 1)
+									isAdmin = 1;
+								else if (rows[0].role == 2)
+									isViceAdmin = 1;
 
-								connection.query('SELECT player.id, player.nickname FROM team_player, player WHERE player.id = team_player.player_id AND team_id = ' + team_id + ' AND role = 2', function (err, rows, fields) {
+								connection.query('SELECT player.id, player.nickname FROM team_player, player WHERE player.id = team_player.player_id AND team_id = ' + team_id + ' AND role = 1', function (err, rows, fields) {
 									if (err) throw err;
 
-									var viceAdminId = 0;
-									var viceAdminName = "";
+									var adminId = 0;
+									var adminName = "";
 
-									if (Object.keys(rows).length > 0) {
-										viceAdminName = rows[0].nickname;
-										viceAdminId = rows[0].id;
+									if (Object.keys(rows).length == 0) {
+										connection.query('UPDATE team_player SET role = 1 WHERE team_id = ' + team_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+										});
+										adminName = message.from.username;
+										adminId = player_id;
+									} else {
+										adminName = rows[0].nickname;
+										adminId = rows[0].id;
 									}
 
-									connection.query('SELECT id FROM boss_team WHERE team_id = ' + team_id + ' AND unlocked = 1 AND killedby IS NULL ORDER BY id ASC', function (err, rows, fields) {
+									connection.query('SELECT player.id, player.nickname FROM team_player, player WHERE player.id = team_player.player_id AND team_id = ' + team_id + ' AND role = 2', function (err, rows, fields) {
 										if (err) throw err;
 
-										var att_boss = 0;
-										if (Object.keys(rows).length > 0)
-											att_boss = rows[0].id;
+										var viceAdminId = 0;
+										var viceAdminName = "";
 
-										connection.query('SELECT team_player.player_id, role, boss_damage.boss_id, SUM(damage) As dmg, COUNT(damage) As dmg_cnt FROM player, boss_damage RIGHT JOIN team_player ON team_player.player_id = boss_damage.player_id WHERE player.id = team_player.player_id AND team_player.team_id = ' + team_id + ' AND boss_damage.boss_id = ' + att_boss + ' GROUP BY team_player.player_id ORDER BY player.reborn DESC, player.exp DESC', function (err, rows, fields) {
+										if (Object.keys(rows).length > 0) {
+											viceAdminName = rows[0].nickname;
+											viceAdminId = rows[0].id;
+										}
+
+										connection.query('SELECT id FROM boss_team WHERE team_id = ' + team_id + ' AND unlocked = 1 AND killedby IS NULL ORDER BY id ASC', function (err, rows, fields) {
 											if (err) throw err;
 
-											var list_dmg = [];
-											var list_dmg_cnt = [];
+											var att_boss = 0;
+											if (Object.keys(rows).length > 0)
+												att_boss = rows[0].id;
 
-											if (Object.keys(rows).length > 0) {
-												for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-													list_dmg[rows[i].player_id] = rows[i].dmg;
-													list_dmg_cnt[rows[i].player_id] = rows[i].dmg_cnt;
-												}
-											}
-
-											connection.query('SELECT P.id As player_id, P.nickname, IF(DS.player_id IS NULL, 0, 1) As in_dungeon, DS.room_id, (SELECT rooms FROM dungeon_list WHERE id = DS.dungeon_id) As rooms, PP.party_id, C.name As class_name, TP.*, L.time, P.rank, P.weapon, P.mission_time_end, P.travel_time_end, P.cave_time_end, P.holiday, P.ability, P.reborn, P.craft_count, P.life, P.total_life, P.exp, P.mission_party, SUM(BD.damage) As dmg, COUNT(BD.damage) As dmg_cnt FROM last_command L, team_player TP LEFT JOIN boss_damage BD ON BD.player_id = TP.player_id LEFT JOIN mission_team_party_player PP ON TP.player_id = PP.player_id LEFT JOIN dungeon_status DS ON TP.player_id = DS.player_id, player P, team, class C WHERE P.class = C.id AND team.id = TP.team_id AND TP.player_id = P.id AND TP.team_id = ' + team_id + ' AND P.account_id = L.account_id GROUP BY nickname ORDER BY TP.role = 0, TP.role, P.reborn DESC, P.exp DESC', function (err, rows, fields) {
+											connection.query('SELECT team_player.player_id, role, boss_damage.boss_id, SUM(damage) As dmg, COUNT(damage) As dmg_cnt FROM player, boss_damage RIGHT JOIN team_player ON team_player.player_id = boss_damage.player_id WHERE player.id = team_player.player_id AND team_player.team_id = ' + team_id + ' AND boss_damage.boss_id = ' + att_boss + ' GROUP BY team_player.player_id ORDER BY player.reborn DESC, player.exp DESC', function (err, rows, fields) {
 												if (err) throw err;
 
-												if (team_max_players == 19) {
-													connection.query('UPDATE team SET max_players = 20 WHERE id = ' + team_id, function (err, rows, fields) {
-														if (err) throw err;
-													});
+												var list_dmg = [];
+												var list_dmg_cnt = [];
+
+												if (Object.keys(rows).length > 0) {
+													for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+														list_dmg[rows[i].player_id] = rows[i].dmg;
+														list_dmg_cnt[rows[i].player_id] = rows[i].dmg_cnt;
+													}
 												}
 
-												var iKeys = [];
+												connection.query('SELECT P.id As player_id, P.nickname, IF(DS.player_id IS NULL, 0, 1) As in_dungeon, DS.room_id, (SELECT rooms FROM dungeon_list WHERE id = DS.dungeon_id) As rooms, PP.party_id, C.name As class_name, TP.*, L.time, P.rank, P.weapon, P.mission_time_end, P.travel_time_end, P.cave_time_end, P.holiday, P.ability, P.reborn, P.craft_count, P.life, P.total_life, P.exp, P.mission_party, SUM(BD.damage) As dmg, COUNT(BD.damage) As dmg_cnt FROM last_command L, team_player TP LEFT JOIN boss_damage BD ON BD.player_id = TP.player_id LEFT JOIN mission_team_party_player PP ON TP.player_id = PP.player_id LEFT JOIN dungeon_status DS ON TP.player_id = DS.player_id, player P, team, class C WHERE P.class = C.id AND team.id = TP.team_id AND TP.player_id = P.id AND TP.team_id = ' + team_id + ' AND P.account_id = L.account_id GROUP BY nickname ORDER BY TP.role = 0, TP.role, P.reborn DESC, P.exp DESC', function (err, rows, fields) {
+													if (err) throw err;
 
-												var user_text = "\n\n\n<b>Membri nel team:</b>\n\n";
-												var user_text2 = "";
-												var partial_text = "\n\n<b>Attività membri:</b>\n\n";
-
-												var stars = "";
-												var lev = 0;
-												var weapon_d = 0;
-												var dragon_claws = 0;
-												var act = "";
-												var d = new Date();
-												var long_date = "";
-												var last = "";
-												var suspended = "";
-												var nickname = "";
-												var class_name = "";
-												var life = 0;
-												var total_life = 0;
-												var craft_count = 0;
-												var ability = 0;
-												var dmg = 0;
-												var dmg_cnt = 0;
-												var dmg2 = 0;
-												var dmg_cnt2 = 0;
-												var base_text = "";
-												var party = "";
-												var party_line = "";
-												var admin = "";
-												var in_dungeon = "";
-
-												for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-													if (rows[i].dmg == null)
-														rows[i].dmg = 0;
-
-													stars = rebSym(rows[i].reborn);
-
-													if (rows[i].role == 1)
-														admin = "👑 ";
-													else if (rows[i].role == 2)
-														admin = "🔰 ";
-													else
-														admin = "👤 ";
-
-													lev = Math.floor(rows[i].exp / 10);
-
-													if (rows[i].mission_time_end != null) {
-														d = new Date(rows[i].mission_time_end);
-														long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-														act = "🏃🏽 Missione (" + long_date + ")";
-													} else if (rows[i].travel_time_end != null) {
-														d = new Date(rows[i].travel_time_end);
-														long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-														act = "🏃 🏽Viaggio (" + long_date + ")";
-													} else if (rows[i].cave_time_end != null) {
-														d = new Date(rows[i].cave_time_end);
-														long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-														act = "🏃🏽 Cava (" + long_date + ")";
-													} else if (rows[i].holiday == 1)
-														act = "⛱ Vacanza";
-													else if (rows[i].mission_party == 1)
-														act = "🏃 Incarico";
-													else
-														act = "";
-
-													if (rows[i].role == 0) {
-														d = new Date(rows[i].time);
-														last = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-													} else
-														last = "Nascosto";
-
-													if (rows[i].suspended == 1)
-														suspended = " 💬";
-													else
-														suspended = "";
-
-													var act_line = "";
-													if ((act != "") || (suspended != ""))
-														act_line = act + suspended + "\n";
-
-													nickname = rows[i].nickname;
-													class_name = rows[i].class_name;
-													life = rows[i].life;
-													total_life = rows[i].total_life;
-													craft_count = rows[i].craft_count;
-													ability = rows[i].ability;
-													dmg = rows[i].dmg;
-													dmg_cnt = rows[i].dmg_cnt;
-													rank = rows[i].rank;
-													party = rows[i].party_id;
-
-													if (party != null)
-														party_line = "👥 Assegnato al Party " + party + "\n";
-													else
-														party_line = "";
-
-													if (list_dmg[rows[i].player_id] == undefined) {
-														dmg2 = 0;
-														dmg_cnt2 = 0;
-													} else {
-														dmg2 = list_dmg[rows[i].player_id];
-														dmg_cnt2 = list_dmg_cnt[rows[i].player_id];
+													if (team_max_players == 19) {
+														connection.query('UPDATE team SET max_players = 20 WHERE id = ' + team_id, function (err, rows, fields) {
+															if (err) throw err;
+														});
 													}
 
-													if (dmg2 == null)
-														dmg2 = 0;
+													var iKeys = [];
 
-													if (rows[i].in_dungeon == 0)
-														in_dungeon = "Non in dungeon";
-													else
-														in_dungeon = "In dungeon (" + rows[i].room_id + "/" + rows[i].rooms + ")";
+													var user_text = "\n\n\n<b>Membri nel team:</b>\n\n";
+													var user_text2 = "";
+													var partial_text = "\n\n<b>Attività membri:</b>\n\n";
 
-													base_text = admin + "<i>" + nickname + "</i> " + stars + " " + lev + " \n" +
-														"🏹 " + class_name + "\n" +
-														act_line +
-														party_line +
-														"🕐 " + last + "\n" +
-														"🛡 " + in_dungeon + ", " + rank + " rango\n" +
-														"❤️ " + life + "/" + total_life + " hp\n" +
-														"📦 " + craft_count + " pnt creazione\n" +
-														"🔦 " + ability + " abilità\n" +
-														"📈 " + dmg + " danni/" + dmg_cnt + " colpi scalata\n" +
-														"🐗 " + dmg2 + " danni/" + dmg_cnt2 + " colpi boss attuale\n\n";
+													var stars = "";
+													var lev = 0;
+													var weapon_d = 0;
+													var dragon_claws = 0;
+													var act = "";
+													var d = new Date();
+													var long_date = "";
+													var last = "";
+													var suspended = "";
+													var nickname = "";
+													var class_name = "";
+													var life = 0;
+													var total_life = 0;
+													var craft_count = 0;
+													var ability = 0;
+													var dmg = 0;
+													var dmg_cnt = 0;
+													var dmg2 = 0;
+													var dmg_cnt2 = 0;
+													var base_text = "";
+													var party = "";
+													var party_line = "";
+													var admin = "";
+													var in_dungeon = "";
 
-													partial_text += admin + "<i>" + nickname + "</i> " + stars + " " + lev + " \n" +
-														act_line + "🐗 " + dmg2 + " danni/" + dmg_cnt2 + " colpi boss attuale\n\n";
+													for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+														if (rows[i].dmg == null)
+															rows[i].dmg = 0;
 
-													if (i < 10)
-														user_text += base_text;
-													else
-														user_text2 += base_text;
-												}
+														stars = rebSym(rows[i].reborn);
 
-												if (isAdmin == 1) {
-													// ADMIN
-													var show_type = "Aperto";
-													var show_details = "Visibili";
-													if (team_id == 1113)
-														iKeys.push(["Assalto 🐺"]);
-													iKeys.push(["Scalata Boss 🐗", "Incarichi 📜"]);
-													iKeys.push(["Dettaglio Membri 👥"]);
-													iKeys.push(["Aumenta Posti ✚", "Accademia 🏣"]);
-													iKeys.push(["Potenziamenti Anima 🦋"]);
-													iKeys.push(["Cambia Admin 👑", "Cambia Nome 💬", "Slogan 📃"]);
-													iKeys.push(["Hall of Fame 🏆", "Liste Membri 🔎"]);
-													iKeys.push(["Sciogli ❌", "Limite 🚫", "Notifiche 💤"]);
-													if (team_closed == 1)
-														show_type = "Chiuso";
-													if (team_details == 1)
-														show_details = "Non Visibili";
-													iKeys.push(["Tipo: " + show_type, "Dettagli: " + show_details]);
+														if (rows[i].role == 1)
+															admin = "👑 ";
+														else if (rows[i].role == 2)
+															admin = "🔰 ";
+														else
+															admin = "👤 ";
 
-													iKeys.push(["Torna al menu"]);
-												} else {
-													// UTENTE
-													if (team_id == 1113)
-														iKeys.push(["Assalto 🐺"]);
-													iKeys.push(["Scalata Boss 🐗", "Incarichi 📜 (Beta)"]);
-													if (team_details == 1)
+														lev = Math.floor(rows[i].exp / 10);
+
+														if (rows[i].mission_time_end != null) {
+															d = new Date(rows[i].mission_time_end);
+															long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+															act = "🏃🏽 Missione (" + long_date + ")";
+														} else if (rows[i].travel_time_end != null) {
+															d = new Date(rows[i].travel_time_end);
+															long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+															act = "🏃 🏽Viaggio (" + long_date + ")";
+														} else if (rows[i].cave_time_end != null) {
+															d = new Date(rows[i].cave_time_end);
+															long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+															act = "🏃🏽 Cava (" + long_date + ")";
+														} else if (rows[i].holiday == 1)
+															act = "⛱ Vacanza";
+														else if (rows[i].mission_party == 1)
+															act = "🏃 Incarico";
+														else
+															act = "";
+
+														if (rows[i].role == 0) {
+															d = new Date(rows[i].time);
+															last = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+														} else
+															last = "Nascosto";
+
+														if (rows[i].suspended == 1)
+															suspended = " 💬";
+														else
+															suspended = "";
+
+														var act_line = "";
+														if ((act != "") || (suspended != ""))
+															act_line = act + suspended + "\n";
+
+														nickname = rows[i].nickname;
+														class_name = rows[i].class_name;
+														life = rows[i].life;
+														total_life = rows[i].total_life;
+														craft_count = rows[i].craft_count;
+														ability = rows[i].ability;
+														dmg = rows[i].dmg;
+														dmg_cnt = rows[i].dmg_cnt;
+														rank = rows[i].rank;
+														party = rows[i].party_id;
+
+														if (party != null)
+															party_line = "👥 Assegnato al Party " + party + "\n";
+														else
+															party_line = "";
+
+														if (list_dmg[rows[i].player_id] == undefined) {
+															dmg2 = 0;
+															dmg_cnt2 = 0;
+														} else {
+															dmg2 = list_dmg[rows[i].player_id];
+															dmg_cnt2 = list_dmg_cnt[rows[i].player_id];
+														}
+
+														if (dmg2 == null)
+															dmg2 = 0;
+
+														if (rows[i].in_dungeon == 0)
+															in_dungeon = "Non in dungeon";
+														else
+															in_dungeon = "In dungeon (" + rows[i].room_id + "/" + rows[i].rooms + ")";
+
+														base_text = admin + "<i>" + nickname + "</i> " + stars + " " + lev + " \n" +
+															"🏹 " + class_name + "\n" +
+															act_line +
+															party_line +
+															"🕐 " + last + "\n" +
+															"🛡 " + in_dungeon + ", " + rank + " rango\n" +
+															"❤️ " + life + "/" + total_life + " hp\n" +
+															"📦 " + craft_count + " pnt creazione\n" +
+															"🔦 " + ability + " abilità\n" +
+															"📈 " + dmg + " danni/" + dmg_cnt + " colpi scalata\n" +
+															"🐗 " + dmg2 + " danni/" + dmg_cnt2 + " colpi boss attuale\n\n";
+
+														partial_text += admin + "<i>" + nickname + "</i> " + stars + " " + lev + " \n" +
+															act_line + "🐗 " + dmg2 + " danni/" + dmg_cnt2 + " colpi boss attuale\n\n";
+
+														if (i < 10)
+															user_text += base_text;
+														else
+															user_text2 += base_text;
+													}
+
+													if (isAdmin == 1) {
+														// ADMIN
+														var show_type = "Aperto";
+														var show_details = "Visibili";
+														if (team_id == 1113)
+															iKeys.push(["Assalto 🐺"]);
+														iKeys.push(["Scalata Boss 🐗", "Incarichi 📜"]);
 														iKeys.push(["Dettaglio Membri 👥"]);
-													iKeys.push(["Potenziamenti Anima 🦋"]);
-													iKeys.push(["Hall of Fame 🏆", "Notifiche 💤"]);
-													iKeys.push(["Liste Membri 🔎", "Lascia ❌"]);
-													iKeys.push(["Torna al menu"]);
-												}
+														iKeys.push(["Aumenta Posti ✚", "Accademia 🏣"]);
+														iKeys.push(["Potenziamenti Anima 🦋"]);
+														iKeys.push(["Cambia Admin 👑", "Cambia Nome 💬", "Slogan 📃"]);
+														iKeys.push(["Hall of Fame 🏆", "Liste Membri 🔎"]);
+														iKeys.push(["Sciogli ❌", "Limite 🚫", "Notifiche 💤"]);
+														if (team_closed == 1)
+															show_type = "Chiuso";
+														if (team_details == 1)
+															show_details = "Non Visibili";
+														iKeys.push(["Tipo: " + show_type, "Dettagli: " + show_details]);
 
-												var kb = {
-													parse_mode: "HTML",
-													reply_markup: {
-														resize_keyboard: true,
-														keyboard: iKeys
+														iKeys.push(["Torna al menu"]);
+													} else {
+														// UTENTE
+														if (team_id == 1113)
+															iKeys.push(["Assalto 🐺"]);
+														iKeys.push(["Scalata Boss 🐗", "Incarichi 📜 (Beta)"]);
+														if (team_details == 1)
+															iKeys.push(["Dettaglio Membri 👥"]);
+														iKeys.push(["Potenziamenti Anima 🦋"]);
+														iKeys.push(["Hall of Fame 🏆", "Notifiche 💤"]);
+														iKeys.push(["Liste Membri 🔎", "Lascia ❌"]);
+														iKeys.push(["Torna al menu"]);
 													}
-												};
 
-												var bonus = 0;
-												var bonus_parz = 0;
-												var bonus_compl = 0;
-
-												if (team_kill_num1 > 0)
-													bonus_parz = Math.floor(Math.log(team_kill_num1) * 1000) + 800;
-
-												if (team_kill_num2 > 0)
-													bonus_compl = Math.floor(Math.log2(team_kill_num2) * 1500) + 1500;
-
-												bonus = (100 * team_level) + bonus_parz + bonus_compl;
-
-												var boost_name = "";
-												if (team_boost_id == 1)
-													boost_name = " (Temporaneo: Unione Fatale)";
-												else if (team_boost_id == 2)
-													boost_name = " (Temporaneo: Bottino Ricco)";
-												else if (team_boost_id == 3)
-													boost_name = " (Temporaneo: Formazione Impenetrabile)";
-
-												var text = "🏆 <b>" + team_name + "</b>\n";
-												if (team_slogan != null)
-													text += "📃 <i>" + team_slogan + "</i>\n";
-												text += "👥 " + team_players + "/" + team_max_players + " (+" + bonus + " § + bonus)\n";
-												text += "🐗 " + team_boss_count + " sconfitti\n";
-												text += "📦 " + formatNumber(team_craft) + " punti\n";
-												text += "📊 " + team_kill_num1 + " Parziali\n";
-												text += "📈 " + team_kill_num2 + " Complete\n";
-												text += "📜 " + team_mission_count + " Incarichi\n";
-												text += "🦋 " + team_point + boost_name + "\n";
-												if (isAdmin == 1)
-													text += "Usa '/messaggio testo' per scrivere al team";
-												else
-													text += "👑 " + adminName;
-
-												if (viceAdminId != 0)
-													text += "\n🔰 " + viceAdminName;
-												if (childName != "")
-													text += "\n\nAccademia " + childName + " (+1 🦋/boss)";
-
-												if (motherName != "") {
-													if (childName == "")
-														text += "\n";
-													text += "\nTeam Madre " + motherName;
-												}
-
-												if ((isAdmin == 1) || (isViceAdmin == 1) || (team_details == 1))
-													text += partial_text;
-
-												bot.sendMessage(message.chat.id, text, kb).then(function () {
-													answerCallbacks[message.chat.id] = function (answer) {
-														if (answer.text.indexOf("Dettaglio Membri") != -1) {
-															var extra = 0;
-															var text = "";
-
-															if (isAdmin == 1){
-																var kb = {
-																	parse_mode: "HTML",
-																	reply_markup: {
-																		resize_keyboard: true,
-																		keyboard: [['Gestisci Membri'], ['Torna al team']]
-																	}
-																};
-															}else{
-																var kb = {
-																	parse_mode: "HTML",
-																	reply_markup: {
-																		resize_keyboard: true,
-																		keyboard: [['Torna al team']]
-																	}
-																};
-															}
-
-															if ((isAdmin == 1) || (isViceAdmin == 1) || (team_details == 1)) {
-																text += user_text;
-																extra = 1;
-																bot.sendMessage(message.chat.id, text, kb);
-																if ((team_players >= 11) && (extra == 1)) {
-																	setTimeout(function () {
-																		bot.sendMessage(message.chat.id, user_text2, kb);
-																	}, 500);
-																}
-															} else {
-																bot.sendMessage(message.chat.id, "Non sei abilitato a visualizzare la lista dei membri", team);
-															}
+													var kb = {
+														parse_mode: "HTML",
+														reply_markup: {
+															resize_keyboard: true,
+															keyboard: iKeys
 														}
 													};
+
+													var bonus = 0;
+													var bonus_parz = 0;
+													var bonus_compl = 0;
+
+													if (team_kill_num1 > 0)
+														bonus_parz = Math.floor(Math.log(team_kill_num1) * 1000) + 800;
+
+													if (team_kill_num2 > 0)
+														bonus_compl = Math.floor(Math.log2(team_kill_num2) * 1500) + 1500;
+
+													bonus = (100 * team_level) + bonus_parz + bonus_compl;
+
+													var boost_name = "";
+													if (team_boost_id == 1)
+														boost_name = " (Temporaneo: Unione Fatale)";
+													else if (team_boost_id == 2)
+														boost_name = " (Temporaneo: Bottino Ricco)";
+													else if (team_boost_id == 3)
+														boost_name = " (Temporaneo: Formazione Impenetrabile)";
+
+													var text = "🏆 <b>" + team_name + "</b>\n";
+													if (team_slogan != null)
+														text += "📃 <i>" + team_slogan + "</i>\n";
+													text += "👥 " + team_players + "/" + team_max_players + " (+" + bonus + " § + bonus)\n";
+													text += "🐗 " + team_boss_count + " sconfitti\n";
+													text += "📦 " + formatNumber(team_craft) + " punti\n";
+													text += "📊 " + team_kill_num1 + " Parziali\n";
+													text += "📈 " + team_kill_num2 + " Complete\n";
+													if (team_id == 1113)
+														text += "🐺 " + team_assault_completed + "/" + team_assault_lost + " Assalti\n";
+													text += "📜 " + team_mission_count + " Incarichi\n";
+													text += "🦋 " + team_point + boost_name + "\n";
+													if (isAdmin == 1)
+														text += "Usa '/messaggio testo' per scrivere al team";
+													else
+														text += "👑 " + adminName;
+
+													if (viceAdminId != 0)
+														text += "\n🔰 " + viceAdminName;
+													if (childName != "")
+														text += "\n\nAccademia " + childName + " (+1 🦋/boss)";
+
+													if (motherName != "") {
+														if (childName == "")
+															text += "\n";
+														text += "\nTeam Madre " + motherName;
+													}
+
+													if ((isAdmin == 1) || (isViceAdmin == 1) || (team_details == 1))
+														text += partial_text;
+
+													bot.sendMessage(message.chat.id, text, kb).then(function () {
+														answerCallbacks[message.chat.id] = function (answer) {
+															if (answer.text.indexOf("Dettaglio Membri") != -1) {
+																var extra = 0;
+																var text = "";
+
+																if (isAdmin == 1){
+																	var kb = {
+																		parse_mode: "HTML",
+																		reply_markup: {
+																			resize_keyboard: true,
+																			keyboard: [['Gestisci Membri'], ['Torna al team']]
+																		}
+																	};
+																}else{
+																	var kb = {
+																		parse_mode: "HTML",
+																		reply_markup: {
+																			resize_keyboard: true,
+																			keyboard: [['Torna al team']]
+																		}
+																	};
+																}
+
+																if ((isAdmin == 1) || (isViceAdmin == 1) || (team_details == 1)) {
+																	text += user_text;
+																	extra = 1;
+																	bot.sendMessage(message.chat.id, text, kb);
+																	if ((team_players >= 11) && (extra == 1)) {
+																		setTimeout(function () {
+																			bot.sendMessage(message.chat.id, user_text2, kb);
+																		}, 500);
+																	}
+																} else {
+																	bot.sendMessage(message.chat.id, "Non sei abilitato a visualizzare la lista dei membri", team);
+																}
+															}
+														};
+													});
 												});
 											});
 										});
@@ -19415,6 +19445,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 						var mob_paralyzed = rows[0].mob_paralyzed;
 						var mob_critic = rows[0].mob_critic;
 						var refresh_mob = rows[0].refresh_mob;
+						var is_boss = rows[0].is_boss;
 
 						var main_text = "Benvenut" + gender_text + " nell'<b>Assalto</b>!\n";
 						if (phase == 0){
@@ -19941,7 +19972,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 														if (rows[0].cnt > 0)
 															class_bonus = " (<b>+" + (rows[0].cnt*2) + "%</b> danno per bonus classe)";
 
-														text += "A questo livello fornisce <b>x" + (2+level) + "</b> danno durante la fase di battaglia\nPuoi solo potenziare questo tipo di postazione!" + class_bonus;
+														text += "A questo livello fornisce <b>x" + (level*1.5) + "</b> danno durante la fase di battaglia\nPuoi solo potenziare questo tipo di postazione!" + class_bonus;
 														bot.sendMessage(message.chat.id, text, kbBack_html);
 													});
 												}else if (selected == 4){
@@ -20083,7 +20114,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 														if (rows[0].cnt > 0)
 															class_bonus = " (<b>+" + (rows[0].cnt*2) + "%</b> danno per bonus classe)";
 
-														connection.query('SELECT COUNT(id) As cnt FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND place_id = 7', function (err, rows, fields) {
+														connection.query('SELECT COUNT(AP.id) As cnt FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND place_id = 7', function (err, rows, fields) {
 															if (err) throw err;
 															text += "A questo livello fornisce <b>x" + (livello+(rows[0].cnt*2)) + "</b> danno durante le fasi di battaglia di entrambe le artiglierie\nPuoi solo potenziare questo tipo di postazione!" + class_bonus;
 															bot.sendMessage(message.chat.id, text, kbBack_html);
@@ -20176,8 +20207,12 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 
 								var text = "Il <b>Giorno dell'Assalto</b> terminerà tra " + toTime(diff) + "!\n";
 
+								var extra = "";
+								if (is_boss == 1)
+									extra = "il temibile ";
+									
 								if (refresh_mob == 0){
-									text += "Riprendi la battaglia contro <b>" + mob_name + "</b>!"; //, restano " + formatNumber(mob_life) + " hp";
+									text += "Riprendi la battaglia contro " + extra + "<b>" + mob_name + "</b>!";
 									var kb = {
 										parse_mode: "HTML",
 										reply_markup: {
@@ -20544,9 +20579,12 @@ bot.onText(/riprendi battaglia/i, function (message) {
 										var gender_mob = "un";
 										if (mob_name.split(" ")[0].slice(-1) == "a")
 											gender_mob = "una";
-
-										bot.sendMessage(message.chat.id, "Davanti alla magione del team si erge " + gender_mob + " <b>" + mob_name + "</b>\n" + 
-														"Salute: " + progressBar(mob_life, mob_total_life) + " " + formatNumber(mob_life) + "/" + formatNumber(mob_total_life) + text, kb).then(function () {
+										
+										var extra = "";
+										if (is_boss == 1)
+											extra = ", uno dei temibili boss!";
+											
+										bot.sendMessage(message.chat.id, "Davanti alla magione del team si erge " + gender_mob + " <b>" + mob_name + "</b>" + extra + "\nSalute: " + progressBar(mob_life, mob_total_life) + " " + formatNumber(mob_life) + "/" + formatNumber(mob_total_life) + text, kb).then(function () {
 											answerCallbacks[message.chat.id] = function (answer) {
 												if ((answer.text == "Torna al team") || (answer.text == "Torna al menu"))
 													return;
@@ -20581,7 +20619,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 												}
 
 												if (answer.text.toLowerCase().indexOf("partecipanti") != -1){
-													connection.query('SELECT P.nickname, A.name, AP.place_id, AP.role FROM player P, assault_place_player_id AP, assault_place A WHERE AP.team_id = ' + team_id + ' AND P.id = AP.player_id AND A.id = AP.place_id ORDER BY AP.place_id', function (err, rows, fields) {
+													connection.query('SELECT P.nickname, A.name, AP.place_id, AP.role, APT.level FROM player P, assault_place_player_id AP, assault_place A, assault_place_team APT WHERE APT.place_id = A.id AND APT.team_id = AP.team_id AND AP.team_id = ' + team_id + ' AND P.id = AP.player_id AND A.id = AP.place_id ORDER BY AP.place_id', function (err, rows, fields) {
 														if (err) throw err;
 
 														var text = "Lista dei partecipanti a questo assalto:\n";
@@ -20589,7 +20627,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 														var role_text = "";
 														for (var i = 0, len = Object.keys(rows).length; i < len; i++){
 															if (place_id_break != rows[i].place_id){
-																text += "\n<b>" + rows[i].name + "</b>:\n";
+																text += "\n<b>" + rows[i].name + "</b> (Lv " + rows[i].level + "):\n";
 																place_id_break = rows[i].place_id;
 															}
 															if (rows[i].role == 1)
@@ -20708,7 +20746,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 												// Inizio battaglia
 
-												var final_report = "<b>Report battaglia del turno " + (mob_turn+1) + ":</b>\n\n";
+												var final_report = "<b>Report battaglia del turno <i>" + (mob_turn+1) + "</i> contro <b>" + mob_name + "</b>:</b>\n\n";
 												var mob_killed = 0;
 												var damage = 0;
 												var tot_damage = 0;
@@ -20729,7 +20767,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 													var calc_damage = 0;
 													var cnt = 0;
 													var cons = connection_sync.query("SELECT AP.item_id, I.cons_val, I.name, AP.id FROM assault_place_cons AP, item I WHERE AP.item_id = I.id AND AP.team_id = " + team_id + " ORDER BY AP.id");
-													if (Object.keys(rows).length > 0){
+													if (Object.keys(cons).length > 0){
 														for (var i = 0; i < Object.keys(cons).length; i++){
 															if (cnt >= place2_level)
 																break;
@@ -20896,8 +20934,6 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 													var player = connection_sync.query('SELECT P.* FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND place_id = 4 ORDER BY AP.id');
 
-													console.log(player);
-
 													if (Object.keys(player).length > 0){
 														var playerid = 0;
 														var class_id = 0;
@@ -20928,9 +20964,6 @@ bot.onText(/riprendi battaglia/i, function (message) {
 														var magic4 = 0;
 
 														for (var i = 0, len = Object.keys(player).length; i < len; i++){
-
-															console.log(player);
-
 															playerid = player[i].id;
 															class_id = player[i].class_id;
 															reborn = player[i].reborn;
@@ -21053,7 +21086,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															full_damage += damage;
 															mob_life -= damage;
 
-															player_text += "\n> " + player[i].nickname + " infligge " + formatNumber(damage) + " danni" + status_text;
+															player_text += "\n> " + player[i].nickname + " infligge <b>" + formatNumber(damage) + "</b> danni" + status_text;
 															
 															damage = 0;
 
@@ -21087,7 +21120,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 														connection_sync.query("UPDATE assault SET team_paralyzed = " + team_paralyzed + ", team_critic = " + team_critic + " WHERE team_id = " + team_id);
 
-														final_report += assaultEmojiList[3] + " L'Artiglieria Leggera colpisce infliggendo in totale " + formatNumber(full_damage) + " danni: " + player_text + magic_effect + "\n\n";
+														final_report += assaultEmojiList[3] + " L'Artiglieria Leggera colpisce infliggendo in totale <b>" + formatNumber(full_damage) + "</b> danni: " + player_text + magic_effect + "\n\n";
 													}else
 														final_report += assaultEmojiList[3] + " L'Artiglieria Leggera non ha nessuno al suo interno, nessun danno al nemico!\n\n";
 												} else
@@ -21097,8 +21130,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 												full_damage = 0;
 
 												if (mob_killed == 1){
-													mobKilled(team_id, final_report, is_boss, boss_num, kill_num, team_level)
-													final_report += "\nIl mob è stato sconfitto 🎉!";
+													mobKilled(team_id, final_report, is_boss, boss_num, kill_num, team_level);
 													return;
 												}
 
@@ -21143,9 +21175,10 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 												if (other_damage > 0){
 													var player_place5_damage = other_damage*0.6;	// 60% del rimanente ai player sulle mura
-													var player_place3_damage = other_damage*0.2;	// 20% del rimanente ai player sulla pesante
+													var player_place3_damage = other_damage*0.1;	// 10% del rimanente ai player sulla pesante
 													var player_place4_damage = other_damage*0.1;	// 10% del rimanente ai player sulla leggera
 													var player_place1_damage = other_damage*0.05;	// 5% del rimanente ai player sulla torre
+													var player_place6_damage = other_damage*0.05;	// 5% del rimanente ai player sul nido
 
 													var player = connection_sync.query('SELECT P.*, place_id, (SELECT COUNT(id) FROM assault_place_player_id WHERE place_id = AP.place_id) As cnt FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND place_id IN (5,3,4,1,6) AND killed = 0 ORDER BY FIELD(place_id,5,3,4,1,6), RAND()');
 
@@ -21279,7 +21312,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		mob_life += heal;
 																		if (mob_life > mob_total_life)
 																			mob_life = mob_total_life;
-																		player_text += "\nIl nemico lancia Tempesta dei Mari e recupera " + formatNumber(heal) + " hp";
+																		player_text += "\nIl nemico lancia <b>" + magicToName(1) + "</b> e recupera " + formatNumber(heal) + " hp";
 																		if ((weapon2_id == 689) || (weapon2_enchant == 1)) {
 																			var rand = Math.random()*100;
 																			if (rand < 50) {
@@ -21298,7 +21331,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	if (magic_rand > rand){
 																		var turn = Math.round(getRandomArbitrary(3, 6));
 																		connection_sync.query("UPDATE assault SET team_paralyzed = " + turn + " FROM assault WHERE team_id = " + team_id);
-																		player_text += "\nIl nemico lancia " + magicToName(2) + " e paralizza per " + turn + " alleati";
+																		player_text += "\nIl nemico lancia <b>" + magicToName(2) + "</b> e paralizza per " + turn + " alleati";
 																		if ((weapon2_id == 690) || (weapon2_enchant == 2)) {
 																			var rand = Math.random()*100;
 																			if (rand < 50) {
@@ -21316,7 +21349,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		magic_rand -= 50;
 																	if (magic_rand > rand){
 																		divided_damage_att = divided_damage_att*3;
-																		player_text += "\nIl nemico lancia " + magicToName(3) + " ed incrementa il suo danno";
+																		player_text += "\nIl nemico lancia <b>" + magicToName(3) + "</b> ed incrementa il suo danno";
 																		if ((weapon2_id == 688) || (weapon2_enchant == 3)) {
 																			var rand = Math.random()*100;
 																			if (rand < 50) {
@@ -21355,6 +21388,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															console.log(player[i].nickname, divided_damage_att);
 
 															player_life -= divided_damage_att;
+															
 															if (player_life < 0)
 																player_life = 0;
 															if (player_life <= 0){
@@ -21370,7 +21404,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															if (divided_damage_att == 0)
 																player_text += "\n> " + player[i].nickname + " non subisce danni" + status_text;
 															else
-																player_text += "\n> " + player[i].nickname + " subisce " + formatNumber(divided_damage_att) + " danni" + status_text;
+																player_text += "\n> " + player[i].nickname + " subisce <b>" + formatNumber(divided_damage_att) + "</b> danni" + status_text;
 
 															connection_sync.query("UPDATE player SET life = " + player_life + " WHERE id = " + playerid);
 														}
@@ -21539,10 +21573,10 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																magic4 += magic_power;
 
 															var rand = Math.random()*100;
-															if ((critical+5) > rand)			//+5 per pesante
+															if ((critical+5) > rand)				//+5 per pesante
 																damage = damage*2;
 
-															damage = damage*(place3_level+2);	//+2 per pesante
+															damage = damage*place3_level*1.5;		//x1.5 per pesante
 															damage += damage*(military_bonus/100);
 															damage += damage*(0.02*place3_class_bonus[0].cnt);
 
@@ -21567,7 +21601,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															if (status.length > 0)
 																status_text = " (" + status.join(", ") + ")";
 
-															player_text += "\n> " + player[i].nickname + " infligge " + formatNumber(damage) + " danni" + status_text;
+															player_text += "\n> " + player[i].nickname + " infligge <b>" + formatNumber(damage) + "</b> danni" + status_text;
 
 															damage = 0;
 
@@ -21603,7 +21637,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 														full_damage = Math.round(full_damage);
 
-														final_report += assaultEmojiList[2] + " L'Artiglieria Pesante colpisce infliggendo in totale " + formatNumber(full_damage) + " danni: " + player_text + magic_effect + "\n\n";
+														final_report += assaultEmojiList[2] + " L'Artiglieria Pesante colpisce infliggendo in totale <b>" + formatNumber(full_damage) + "</b> danni: " + player_text + magic_effect + "\n\n";
 													}else
 														final_report += assaultEmojiList[2] + " L'Artiglieria Pesante non ha nessuno al suo interno, nessun danno al nemico!\n\n";
 												} else
@@ -21613,8 +21647,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 												full_damage = 0;
 
 												if (mob_killed == 1){
-													mobKilled(team_id, final_report, is_boss, boss_num, kill_num, team_level)
-													final_report += "\nIl mob è stato sconfitto 🎉!";
+													mobKilled(team_id, final_report, is_boss, boss_num, kill_num, team_level);
 													return;
 												}
 
@@ -21650,21 +21683,20 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															damage = 20;
 														damage = mob_total_life*(damage/100);
 														mob_life -= Math.round(damage);
-														damage = 0;
 
 														if (mob_life <= 0)
 															mob_killed = 1;
 
-														final_report += assaultEmojiList[5] + " Il Dragone della magione si alza in volo e sferra una scarica di palle di fuoco che infligge " + formatNumber(damage) + " danni\n\n";
+														final_report += assaultEmojiList[5] + " I draghi del nido si alzano in volo e attaccano il nemico infliggendo complessivamente <b>" + formatNumber(damage) + "</b> danni\n\n";
 													}
 												} else
 													final_report += assaultEmojiList[5] + " Il Nido del Drago non è stato costruito, nessun danno al nemico!\n\n";
 
 												tot_damage += damage;
+												damage = 0;
 
 												if (mob_killed == 1){
-													mobKilled(team_id, final_report, is_boss, boss_num, kill_num, team_level)
-													final_report += "\nIl mob è stato sconfitto 🎉!";
+													mobKilled(team_id, final_report, is_boss, boss_num, kill_num, team_level);
 													return;
 												}
 
@@ -21684,17 +21716,17 @@ bot.onText(/riprendi battaglia/i, function (message) {
 													var perc = place8_level+(player[0].cnt*2);
 													perc += perc*(0.2*place8_class_bonus[0].cnt);
 
-													player = connection_sync.query('SELECT id, life, total_life FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 ORDER BY AP.id');
+													player = connection_sync.query('SELECT P.id, P.life, P.total_life FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 ORDER BY AP.id');
 
 													var life = 0;
 													for (var i = 0, len = Object.keys(player).length; i < len; i++){
 														life = player[i].life+(player[i].total_life*(perc/100));
-														if (life > total_life)
-															life = total_life;
+														if (life > player[i].total_life)
+															life = player[i].total_life;
 														connection_sync.query('UPDATE player SET life = ' + life + ' WHERE id = ' + player[i].id);
 													}
 
-													final_report += assaultEmojiList[7] + " La Fabbrica di Energia consente di recuperare il " + perc + "% di hp a tutti\n\n";
+													final_report += assaultEmojiList[7] + " La Fabbrica di Energia consente di recuperare il <b>" + perc + "%</b> di hp a tutti\n\n";
 												} else
 													final_report += assaultEmojiList[7] + " La Fabbrica di Energia non è stata costruita, nessun recupero di salute!\n\n";
 
@@ -21727,17 +21759,22 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																if (pot1+pot2+pot3 == Math.round(place8_level/2))
 																	break;
 
-																if ((player_life+Math.round(player_total_life*perc3) < player_total_life) && (getItemCnt(player_id, 94) > 0)){
+																if ((player_life+Math.round(player_total_life*perc3) <= player_total_life) && (getItemCnt(player_id, 94) > 0)){
+																	console.log("pozione grande");
 																	player_life += Math.round(player_total_life*perc3);
 																	pot3++;
-																}else if ((player_life+Math.round(player_total_life*perc2) < player_total_life) && (getItemCnt(player_id, 93) > 0)){
+																}else if ((player_life+Math.round(player_total_life*perc2) <= player_total_life) && (getItemCnt(player_id, 93) > 0)){
+																	console.log("pozione media");
 																	player_life += Math.round(player_total_life*perc2);
 																	pot2++;
 																}else if (getItemCnt(player_id, 92) > 0){
+																	console.log("pozione piccola");
 																	player_life += Math.round(player_total_life*perc1);
 																	pot1++;
-																}else
+																}else{
+																	console.log("nessuna pozione");
 																	break;
+																}
 															}
 
 															delItem(player[i].id, 92, pot1);
@@ -21770,11 +21807,12 @@ bot.onText(/riprendi battaglia/i, function (message) {
 												// Fine turno
 
 												var player = connection_sync.query('SELECT chat_id, role FROM assault_place_player_id APP, player WHERE APP.player_id = player.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id');
-												for (var i = 0, len = Object.keys(player).length; i < len; i++){
+												for (var i = 0, len = Object.keys(player).length; i < len; i++)
 													bot.sendMessage(player[i].chat_id, final_report, html);
-													if (player[i].role == 1)
-														bot.sendMessage(player[i].chat_id, "Turno concluso!", kbBack);
-												}
+												
+												setTimeout(function () {
+													bot.sendMessage(message.chat.id, "Turno concluso!", kbBack);
+												}, 500);
 
 												// Riduco quelle che non possono essere colpite dal mostro (tranne 8, fabbrica di energia)
 
@@ -21804,7 +21842,8 @@ function applyMagic(team_id, magic_type, magic_power, damage_base){
 	var magic_name = "";
 	var magic_effect = "";
 	var damage = damage_base;
-
+	var magic_turn = 0;
+	
 	if (magic_power < 100)
 		magic_turn = 1;
 	else if (magic_power < 200)
@@ -21914,8 +21953,12 @@ function mobKilled(team_id, final_report, is_boss, boss_num, kill_num, team_leve
 
 	if ((team_level) == 7)
 		lockNextBoss = 0;
-
-	final_report += "\n\n<b>Assegnazione delle ricompense:</b>\n";
+	
+	var extra = "mob";
+	if (is_boss == 1)
+		extra = "boss";
+		
+	final_report += "🎉 Il " + extra + " è stato sconfitto 🎉!\n\n<b>Assegnazione delle ricompense:</b>\n";
 
 	connection.query('SELECT level FROM team_boost WHERE team_id = ' + team_id + ' AND boost_id = 2', function (err, rows, fields) {
 		if (err) throw err;
@@ -21962,13 +22005,14 @@ function mobKilled(team_id, final_report, is_boss, boss_num, kill_num, team_leve
 						if (is_boss == 1){
 							// scrigni e monete
 							paPnt = 5;
-							reward = "> " + paPnt + " 🦋\n";
-							reward = "> " + chest + " Scrigni\n";
-							reward = "> " + money + " §\n";
 						}else{
 							paPnt = 1;
 							// scrigni
 						}
+						
+						reward += "> <b>" + paPnt + "</b> 🦋 (team)\n";
+						reward += "> <b>" + chest + "</b> Scrigni (membro)\n";
+						reward += "> <b>" + money + "</b> § (membro)\n";
 
 						bot.sendMessage(rows[i].chat_id, final_report + reward, kbBack2);
 					}
@@ -21986,7 +22030,7 @@ function mobKilled(team_id, final_report, is_boss, boss_num, kill_num, team_leve
 						});
 					}else{
 						if (boss_num == 31){
-							connection.query('UPDATE assault SET completed = completed+1, phase = 0, mob_count = 0, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, refresh_mob = 0, is_boss = 0, boss_num = 1 WHERE team_id = ' + team_id, function (err, rows, fields) {
+							connection.query('UPDATE assault SET completed = completed+1, phase = 0, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, refresh_mob = 0, is_boss = 0, boss_num = 1 WHERE team_id = ' + team_id, function (err, rows, fields) {
 								if (err) throw err;
 							});
 
@@ -22001,13 +22045,13 @@ function mobKilled(team_id, final_report, is_boss, boss_num, kill_num, team_leve
 								});
 							});
 						}else{
-							connection.query('UPDATE assault SET phase = 3, mob_count = 0, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, refresh_mob = 0, is_boss = 0, boss_num = 1 WHERE team_id = ' + team_id, function (err, rows, fields) {
+							connection.query('UPDATE assault SET phase = 3, mob_count = 0, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, refresh_mob = 0, is_boss = 0, boss_num = boss_num+1 WHERE team_id = ' + team_id, function (err, rows, fields) {
 								if (err) throw err;
 							});
 						}
 					}
 				}else{
-					connection.query('UPDATE assault SET refresh_mob = 1, mob_count = mob_count+1, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
+					connection.query('UPDATE assault SET refresh_mob = 1, mob_count = mob_count+1, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
 						if (err) throw err;
 					});
 				}
@@ -43576,7 +43620,7 @@ function setFinishedAssaults(element, index, array) {
 			
 			console.log("Fase 3 -> Fase 1");
 			
-			text += "Il <b>Giorno dell'Assalto</b> è stato completato con successo!";
+			text += "Il <b>Giorno dell'Assalto</b> è stato completato con successo!\n\nIl <b>Giorno della Preparazione</b> ha inizio, organizza le tue strutture per sopravvivere contro un altro boss!";
 		}else{
 			console.log("Errore phase non valida: " + phase);
 			return;
@@ -43588,7 +43632,7 @@ function setFinishedAssaults(element, index, array) {
 };
 
 function checkAssaultsMob() {
-	connection.query('SELECT team_id, mob_count, boss_num FROM assault WHERE refresh_mob = 1', function (err, rows, fields) {
+	connection.query('SELECT team_id, mob_count, boss_num, completed, lost FROM assault WHERE refresh_mob = 1', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1) {
@@ -43604,21 +43648,25 @@ function checkAssaultsMob() {
 function setFinishedAssaultsMob(element, index, array) {
 	var team_id = element.team_id;
 	var mob_count = element.mob_count;
+	var boss_num = element.boss_num;
+	var completed = element.completed;
+	var lost = element.lost;
 
 	var mob_name;
 	var mob_life;
 	var is_boss;
-
-	if (mob_count < 3){
-		// generazione mob
+	
+	var boss = connection_sync.query('SELECT name, total_life FROM boss WHERE id = ' + boss_num);
+	mob_life = boss[0].total_life*(completed^2)/(lost^8);
+	
+	var total_mob = 3;
+	
+	if (mob_count < total_mob){	// Mob
 		mob_name = mobGenerator.generate();
-		mob_life = 100000;
+		mob_life = Math.round(mob_life/((total_mob+1)-(mob_count-1)));
 		is_boss = 0;
-	} else {
-		// generazione boss
-		var boss = connection_sync.query('SELECT name, total_life FROM boss WHERE id = ' + boss_num);
+	} else {					// Boss
 		mob_name = boss[0].name;
-		mob_life = boss[0].total_life;
 		is_boss = 1;
 	}
 
@@ -43681,9 +43729,9 @@ function setFinishedAssaultsItem(element, index, array) {
 					else if (level == 9)
 						itemQuantity = [25,23,17,15,10,3];
 
-					for (var k = 0; k < itemQuantity.length; k++){
-						for (var j = 0; j < Object.keys(items).length; j++)
-							connection_sync.query("INSERT INTO assault_place_item (team_id, place_id, item_id, quantity) VALUES (" + team_id + "," + place_id + "," + itemId[j] + "," + itemQuantity[k] + ")");
+					for (var j = 0; j < Object.keys(itemId).length; j++){
+						if (itemQuantity[j] > 0)
+							connection_sync.query("INSERT INTO assault_place_item (team_id, place_id, item_id, quantity) VALUES (" + team_id + "," + place_id + "," + itemId[j] + "," + itemQuantity[j] + ")");
 					}
 				}else if (place_id == 7){
 					var rarityName = ["NC","R","UR","L","E"];
@@ -43712,7 +43760,7 @@ function setFinishedAssaultsItem(element, index, array) {
 					var items;
 					var quantity = 0;
 					for (var k = 0; k < rarityQuantity.length; k++){
-						items = connection_sync.query("SELECT id FROM item WHERE rarity = " + rarityName[k] + " AND craftable = 1 AND ((power > 0 OR power_armor < 0 OR power_shield < 0) AND dragon_power = 0) AND cons = 0 AND id NOT IN (SELECT item_id FROM assault_place_item WHERE team_id = " + team_id + " AND place_id = " + place_id + ") ORDER BY RAND() LIMIT " + rarityQuantity[k]);
+						items = connection_sync.query("SELECT id FROM item WHERE rarity = '" + rarityName[k] + "' AND craftable = 1 AND ((power > 0 OR power_armor < 0 OR power_shield < 0) AND dragon_power = 0) AND cons = 0 AND id NOT IN (SELECT item_id FROM assault_place_item WHERE team_id = " + team_id + " AND place_id = " + place_id + ") ORDER BY RAND() LIMIT " + rarityQuantity[k]);
 						//quantity = Math.round(((rarityQuantity.length+1)-i)/2)+player_num; // ipoteticamente max 6, min 3
 						quantity = Math.round(Math.random()*2+2);
 						for (var j = 0; j < Object.keys(items).length; j++)
@@ -44004,7 +44052,7 @@ function setFinishedTeamMission(element, index, array) {
 								return;
 							}
 
-							console.log("Reward incarico: " + rewardStr + " - " + qnt)
+							//console.log("Reward incarico: " + rewardStr + " - " + qnt)
 
 							connection.query('SELECT P.chat_id, T.team_id, P.id, TP.suspended, P.nickname, P.boost_id, P.boost_mission FROM mission_team_party_player T, player P, team_player TP WHERE TP.player_id = P.id AND T.player_id = P.id AND T.party_id = ' + party_id + ' AND T.team_id = ' + team_id, function (err, rows, fields) {
 								if (err) throw err;
@@ -44161,9 +44209,8 @@ function setFinishedTeamMission(element, index, array) {
 
 bot.onText(/^\/incarico/, function (message, match) {
 
-	if (!checkSpam(message)) {
+	if (!checkSpam(message))
 		return;
-	}
 
 	connection.query('SELECT team_id, party_id, answ_id FROM mission_team_party_player WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
 		if (err) throw err;

@@ -2134,7 +2134,7 @@ bot.onText(/^\/rune (.+)/i, function (message, match) {
 
 	if (match[1].indexOf(",") == -1)
 		return;
-	
+
 	var split = match[1].split(" ");
 
 	var my_comb = split[0];
@@ -7061,6 +7061,17 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 		var reborn = rows[0].reborn;
 		var class_id = rows[0].class;
 		var boost_id = rows[0].boost_id;
+		var creation_date = rows[0].creation_date;
+		
+		if (mission_team_count > 0)
+			mission_team_count = "Incarichi: " + formatNumber(mission_team_count) + "\n";
+		else 
+			mission_team_count = "";
+		
+		if (rank > 0)
+			rank = "Rango: " + getRankName(rank, 0) + " (" + rank + ")\n";
+		else
+			rank = "";
 
 		connection.query('SELECT name, id FROM item WHERE id = ' + weapon_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -7069,46 +7080,39 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 			if (Object.keys(rows).length > 0) {
 				weapon_id = rows[0].id;
 				if ((weapon_id == 638) || (weapon_id == 639) || (weapon_id == 640) || (weapon_id == 754)) {
-					if (custom_name != null) {
+					if (custom_name != null)
 						weapon_name = custom_name + rows[0].name.replace("Necro", "");
-					} else {
+					else
 						weapon_name = rows[0].name;
-					}
-				} else {
+				} else
 					weapon_name = rows[0].name;
-				}
 			};
 
 			connection.query('SELECT ability_level FROM ability WHERE player_id = ' + player_id + ' AND ability_id = 1', function (err, rows, fields) {
 				if (err) throw err;
 
 				var abBonus = 0;
-				if (Object.keys(rows).length > 0) {
+				if (Object.keys(rows).length > 0)
 					abBonus = rows[0].ability_level;
-				}
 
 				connection.query('SELECT COUNT(item_id) As cnt FROM artifacts WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 
 					var artifacts = "";
-					if (rows[0].cnt == 0) {
-						artifacts = "-";
-					}
-					if (rows[0].cnt >= 1) {
+					if (rows[0].cnt > 0)
+						artifacts = "Artefatti: ";
+					if (rows[0].cnt >= 1)
 						artifacts += "🔥";
-					}
-					if (rows[0].cnt >= 2) {
+					if (rows[0].cnt >= 2)
 						artifacts += "⚡️";
-					}
-					if (rows[0].cnt >= 3) {
+					if (rows[0].cnt >= 3)
 						artifacts += "⛈";
-					}
-					if (rows[0].cnt >= 4) {
+					if (rows[0].cnt >= 4)
 						artifacts += "🌑";
-					}
-					if (rows[0].cnt >= 5) {
+					if (rows[0].cnt >= 5)
 						artifacts += "🔮";
-					}
+					if (rows[0].cnt > 0)
+						artifacts += "\n";
 
 					connection.query('SELECT name, description FROM item WHERE id = ' + charm_id, function (err, rows, fields) {
 						if (err) throw err;
@@ -7124,22 +7128,19 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 							var rifugio = "-";
 							if (Object.keys(rows).length > 0) {
 								if (house_id >= 5) {
-									if (custom_name_h != null) {
+									if (custom_name_h != null)
 										rifugio = "Rifugio " + custom_name_h + " (" + house_id + ")";
-									} else {
+									else
 										rifugio = rows[0].name + " (" + house_id + ")";
-									}
-								} else {
+								} else
 									rifugio = rows[0].name + " (" + house_id + ")";
-								}
 							};
 
 							connection.query('SELECT name FROM player, team, team_player WHERE player.id = ' + player_id + ' AND team.id = team_player.team_id AND team_player.player_id = player.id', function (err, rows, fields) {
 								if (err) throw err;
 								var team_desc = "";
-								if (Object.keys(rows).length > 0) {
+								if (Object.keys(rows).length > 0)
 									team_desc = "⚜️ " + rows[0].name.trim() + "\n";
-								};
 
 								connection.query('SELECT name FROM house WHERE id = ' + house_id, function (err, rows, fields) {
 									if (err) throw err;
@@ -7150,14 +7151,12 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 										var weapon2_name = "-";
 										if (Object.keys(rows).length > 0) {
 											if ((weapon2_id == 688) || (weapon2_id == 689) || (weapon2_id == 690)) {
-												if (custom_name2 != null) {
+												if (custom_name2 != null)
 													weapon2_name = rows[0].name.replace("Necro", custom_name2);
-												} else {
+												else
 													weapon2_name = rows[0].name;
-												}
-											} else {
+											} else
 												weapon2_name = rows[0].name;
-											}
 										}
 
 										connection.query('SELECT name FROM item WHERE id = ' + weapon3_id, function (err, rows, fields) {
@@ -7165,14 +7164,12 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 											var weapon3_name = "-";
 											if (Object.keys(rows).length > 0) {
 												if ((weapon3_id == 671) || (weapon3_id == 672) || (weapon3_id == 673)) {
-													if (custom_name3 != null) {
+													if (custom_name3 != null)
 														weapon3_name = rows[0].name.replace("Necro", custom_name3);
-													} else {
+													else
 														weapon3_name = rows[0].name;
-													}
-												} else {
+												} else
 													weapon3_name = rows[0].name;
-												}
 											}
 
 											connection.query('SELECT dragon.* FROM player, dragon WHERE player.id = dragon.player_id AND player.id = ' + player_id, function (err, rows, fields) {
@@ -7201,22 +7198,20 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 														rows[0].critical += 15;
 													}
 
-													if ((class_id == 7) && (reborn > 1) && (reborn == 5)) {
+													if ((class_id == 7) && (reborn > 1) && (reborn == 5))
 														rows[0].claws += rows[0].claws * 1;
-													}else if ((class_id == 7) && (reborn > 1)) {
+													else if ((class_id == 7) && (reborn > 1))
 														rows[0].claws += rows[0].claws * 0.5;
-													}
-													if ((class_id == 7) && (reborn > 1) && (reborn == 5)) {
+													if ((class_id == 7) && (reborn > 1) && (reborn == 5))
 														rows[0].saddle += rows[0].saddle * 1;
-													}else if ((class_id == 7) && (reborn > 1)) {
+													else if ((class_id == 7) && (reborn > 1))
 														rows[0].saddle += rows[0].saddle * 0.5;
-													}
-													if ((class_id == 7) && (reborn == 3)) {
+
+													if ((class_id == 7) && (reborn == 3))
 														rows[0].critical += 5;
-													}
-													if ((class_id == 7) && (reborn >= 4)) {
+
+													if ((class_id == 7) && (reborn >= 4))
 														rows[0].critical += 7;
-													}
 
 													dragon_name = rows[0].name.trim() + " " + rows[0].type;
 													dragon_level = rows[0].level;
@@ -7230,37 +7225,32 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 													dragon_saddleid = rows[0].saddle_id;
 													dragon_armsid = rows[0].arms_id;
 
-													if (rows[0].life <= 0) {
+													if (rows[0].life <= 0)
 														dragon_status = "Esausto";
-													}
-													if (rows[0].sleep_h > 0) {
+													if (rows[0].sleep_h > 0)
 														dragon_status = "Dorme";
-													}
 												}
 
 												connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_clawsid, function (err, rows, fields) {
 													if (err) throw err;
 
 													var dragon_claws_n = "-";
-													if (rows[0].num > 0) {
+													if (rows[0].num > 0)
 														dragon_claws_n = rows[0].name;
-													}
 
 													connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_saddleid, function (err, rows, fields) {
 														if (err) throw err;
 
 														var dragon_saddle_n = "-";
-														if (rows[0].num > 0) {
+														if (rows[0].num > 0)
 															dragon_saddle_n = rows[0].name;
-														}
 
 														connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_armsid, function (err, rows, fields) {
 															if (err) throw err;
 
 															var dragon_arms_n = "-";
-															if (rows[0].num > 0) {
+															if (rows[0].num > 0)
 																dragon_arms_n = rows[0].name;
-															}
 
 															connection.query('SELECT player_nick As player, new_player_nick As new, time FROM referral_list WHERE new_player = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
@@ -7270,8 +7260,13 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																	var d = new Date(rows[0].time);
 																	var short_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
 																	referral = "Invitato da: " + rows[0].player + " (" + short_date + ")\n";
+																}else {
+																	if (creation_date != null){
+																		var d = new Date(creation_date);
+																		var short_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+																		referral = "Registrato il " + short_date + "\n";
+																	}
 																}
-
 
 																connection.query('SELECT COUNT(inventory.item_id) As cnt FROM inventory, item WHERE inventory.item_id = item.id AND player_id = ' + player_id + ' AND rarity = "IN" AND inventory.quantity > 0', function (err, rows, fields) {
 																	if (err) throw err;
@@ -7282,75 +7277,61 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																		if (err) throw err;
 
 																		var class_name = "-";
-																		if (Object.keys(rows).length > 0) {
+																		if (Object.keys(rows).length > 0)
 																			class_name = rows[0].name;
-																		}
 
 																		var stars = rebSym(reborn);
 
-																		if (player_id == 1) {
+																		if (player_id == 1)
 																			stars = "👑";
-																		}
 
 																		var enchant1 = "";
-																		if (weapon_enchant_bonus == 1){
+																		if (weapon_enchant_bonus == 1)
 																			enchant1 = " 🌊";
-																		}else if (weapon_enchant_bonus == 2){
+																		else if (weapon_enchant_bonus == 2)
 																			enchant1 = " ⚡️";
-																		}else if (weapon_enchant_bonus == 3){
+																		else if (weapon_enchant_bonus == 3)
 																			enchant1 = " 🔥";
-																		}
 																		var enchant2 = "";
-																		if (weapon2_enchant_bonus == 1){
+																		if (weapon2_enchant_bonus == 1)
 																			enchant2 = " 🌊";
-																		}else if (weapon2_enchant_bonus == 2){
+																		else if (weapon2_enchant_bonus == 2)
 																			enchant2 = " ⚡️";
-																		}else if (weapon2_enchant_bonus == 3){
+																		else if (weapon2_enchant_bonus == 3)
 																			enchant2 = " 🔥";
-																		}
 																		var enchant3 = "";
-																		if (weapon3_enchant_bonus == 1){
+																		if (weapon3_enchant_bonus == 1)
 																			enchant3 = " 🌊";
-																		}else if (weapon3_enchant_bonus == 2){
+																		else if (weapon3_enchant_bonus == 2)
 																			enchant3 = " ⚡️";
-																		}else if (weapon3_enchant_bonus == 3){
+																		else if (weapon3_enchant_bonus == 3)
 																			enchant3 = " 🔥";
-																		}
 
 																		//Talismani
 
-																		if (charm_id == 62) {
+																		if (charm_id == 62)
 																			weapon += 5;
-																		}
-																		if (charm_id == 184) {
+																		if (charm_id == 184)
 																			weapon += 15;
-																		}
-																		if (charm_id == 188) {
+																		if (charm_id == 188)
 																			weapon += 20;
-																		}
-																		if (charm_id == 404) {
+																		if (charm_id == 404)
 																			weapon_crit += 6;
-																		}
-																		if (charm_id == 493) {
+																		if (charm_id == 493)
 																			weapon_crit += 2;
-																		}
-																		if (charm_id == 494) {
+																		if (charm_id == 494)
 																			weapon_crit += 4;
-																		}
-																		if (charm_id == 495) {
+																		if (charm_id == 495)
 																			weapon2_crit += 3;
-																		}
-																		if (charm_id == 496) {
+																		if (charm_id == 496)
 																			weapon3_crit += 3;
-																		}
 																		if (charm_id == 696) {
 																			weapon_crit += 5;
 																			weapon2_crit += 5;
 																			weapon3_crit += 3;
 																		}
-																		if (charm_id == 698) {
+																		if (charm_id == 698)
 																			weapon += 30;
-																		}
 																		if (abBonus > 0) {
 																			weapon_crit += abBonus;
 																			weapon2_crit += abBonus;
@@ -7359,9 +7340,8 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 
 																		//Vocazioni
 
-																		if ((class_id == 2) && (reborn == 3)) {
+																		if ((class_id == 2) && (reborn == 3))
 																			weapon2_crit += 5;
-																		}
 																		if ((class_id == 2) && (reborn >= 4)) {
 																			weapon2_crit += 7;
 																			weapon3_crit += 7;
@@ -7376,39 +7356,28 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																			weapon2_crit += 7;
 																			weapon3_crit += 7;
 																		}
-																		if ((class_id == 5) && (reborn == 3)) {
+																		if ((class_id == 5) && (reborn == 3))
 																			weapon3_crit += 4;
-																		}
-																		if ((class_id == 5) && (reborn >= 4)) {
+																		if ((class_id == 5) && (reborn >= 4))
 																			weapon3_crit += 8;
-																		}
-																		if ((class_id == 6) && (reborn == 3)) {
+																		if ((class_id == 6) && (reborn == 3))
 																			weapon2_crit += 2;
-																		}
-																		if ((class_id == 6) && (reborn == 3)) {
+																		if ((class_id == 6) && (reborn == 3))
 																			weapon3_crit += 2;
-																		}
-																		if ((class_id == 6) && (reborn >= 4)) {
+																		if ((class_id == 6) && (reborn >= 4))
 																			weapon2_crit += 7;
-																		}
-																		if ((class_id == 6) && (reborn >= 4)) {
+																		if ((class_id == 6) && (reborn >= 4))
 																			weapon3_crit += 7;
-																		}
-																		if ((class_id == 6) && (reborn == 5)) {
+																		if ((class_id == 6) && (reborn == 5))
 																			weapon2_crit += 7;
-																		}
-																		if ((class_id == 6) && (reborn == 5)) {
+																		if ((class_id == 6) && (reborn == 5))
 																			weapon3_crit += 7;
-																		}
-																		if ((class_id == 8) && (reborn == 3)) {
+																		if ((class_id == 8) && (reborn == 3))
 																			weapon3_crit += 5;
-																		}
-																		if ((class_id == 8) && (reborn >= 4)) {
+																		if ((class_id == 8) && (reborn >= 4))
 																			weapon3_crit += 7;
-																		}
-																		if ((class_id == 8) && (reborn == 5)) {
+																		if ((class_id == 8) && (reborn == 5))
 																			weapon_crit += 10;
-																		}
 																		if ((class_id == 9) && (reborn == 3)) {
 																			weapon_crit += 2;
 																			weapon3_crit += 2;
@@ -7418,19 +7387,17 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																			weapon3_crit += 7;
 																		}
 
-																		if ((class_id == 7) && (reborn == 5)) {
+																		if ((class_id == 7) && (reborn == 5))
 																			weapon_crit += Math.round(dragon_critical / 2);
-																		}
 
-																		if ((class_id == 8) && (reborn == 2)) {
+																		if ((class_id == 8) && (reborn == 2))
 																			weapon += weapon * 0.10;
-																		}else if ((class_id == 8) && (reborn == 3)) {
+																		else if ((class_id == 8) && (reborn == 3))
 																			weapon += weapon * 0.15;
-																		}else if ((class_id == 8) && (reborn == 4)) {
+																		else if ((class_id == 8) && (reborn == 4))
 																			weapon += weapon * 0.17;
-																		}else if ((class_id == 8) && (reborn == 5)) {
+																		else if ((class_id == 8) && (reborn == 5))
 																			weapon += weapon * 0.30;
-																		}
 
 																		//Descrizioni
 
@@ -7514,9 +7481,8 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																				heist_count = "?";
 																				spy_count = "?";
 																				money = "?";
-																			} else if (myhouse_id == 5) {
+																			} else if (myhouse_id == 5)
 																				money = "?";
-																			}
 																		}
 
 																		if (from == 1)
@@ -7546,11 +7512,11 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																						(dragon ? "Critico (" + dragon_critical + "%)\n" : "") +
 
 																						"\n<b>Altro</b> 💱\n" +
-																						referral +
-																						"Artefatti: " + artifacts + "\n" +
-																						"Rango: " + getRankName(rank, 0) + " (" + rank + ")\n" +
 																						"Abilità: " + formatNumber(ability) + "\n" +
-																						"Incarichi: " + formatNumber(mission_team_count) + "\n" +
+																						referral +
+																						artifacts +
+																						rank +
+																						mission_team_count +
 																						(player_description != null ? "\n<i>" + player_description + "</i>" : ""), html);
 																	});
 																});
