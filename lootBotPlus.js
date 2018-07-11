@@ -104,8 +104,7 @@ bot.on('edited_message', function (message) {
 });
 
 bot.on('message', function (message) {
-
-	if (message.text != undefined) {
+	if (message.text != undefined) {		
 		if (message.text.startsWith("/"))
 			console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
 
@@ -190,7 +189,7 @@ bot.on('message', function (message) {
 					}
 					if (rows[0].compact == 1) {
 						if ((message.from.is_bot == 0) && (message.text != undefined)){
-							if ((message.reply_to_message == undefined) && (!message.text.startsWith("/"))){
+							if ((message.reply_to_message == undefined) && (!message.text.startsWith("/")) && (message.forward_from == undefined)){
 								if ((mergeMessages[message.chat.id] != undefined) && (mergeMessages[message.chat.id] != "")){
 									if (mergeMessages[message.chat.id].split(";")[0] == message.from.id){
 										bot.deleteMessage(message.chat.id, mergeMessages[message.chat.id].split(";")[1]);
@@ -204,7 +203,7 @@ bot.on('message', function (message) {
 								} else
 									mergeMessages[message.chat.id] = message.from.id + ";" + message.message_id + ";" + message.text;
 							}else
-								mergeMessages[message.chat.id] = "";	// ignora le risposte e i comandi
+								mergeMessages[message.chat.id] = "";	// ignora le risposte, i comandi e gli inoltri
 						}else
 							mergeMessages[message.chat.id] = "";	// ignora i bot
 					}
@@ -7062,12 +7061,12 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 		var class_id = rows[0].class;
 		var boost_id = rows[0].boost_id;
 		var creation_date = rows[0].creation_date;
-		
+
 		if (mission_team_count > 0)
 			mission_team_count = "Incarichi: " + formatNumber(mission_team_count) + "\n";
 		else 
 			mission_team_count = "";
-		
+
 		if (rank > 0)
 			rank = "Rango: " + getRankName(rank, 0) + " (" + rank + ")\n";
 		else

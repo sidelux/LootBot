@@ -199,6 +199,7 @@ CREATE TABLE `assault` (
   `phase` tinyint(1) NOT NULL DEFAULT '0',
   `time_end` timestamp NULL DEFAULT NULL,
   `time_wait_end` timestamp NULL DEFAULT NULL,
+  `lock_time_end` timestamp NULL DEFAULT NULL,
   `completed` int(11) NOT NULL DEFAULT '0',
   `lost` int(11) NOT NULL DEFAULT '0',
   `mob_name` varchar(32) DEFAULT NULL,
@@ -210,6 +211,7 @@ CREATE TABLE `assault` (
   `mob_turn` int(11) NOT NULL DEFAULT '0',
   `team_paralyzed` int(11) NOT NULL DEFAULT '0',
   `team_critic` int(11) NOT NULL DEFAULT '0',
+  `team_reduce` int(11) NOT NULL DEFAULT '0',
   `refresh_mob` tinyint(1) NOT NULL DEFAULT '0',
   `is_boss` tinyint(1) NOT NULL DEFAULT '0',
   `boss_num` int(11) NOT NULL DEFAULT '1',
@@ -2701,6 +2703,7 @@ SET character_set_client = utf8;
 /*!50001 CREATE TABLE `player_public` (
   `id` tinyint NOT NULL,
   `nickname` tinyint NOT NULL,
+  `team_id` tinyint NOT NULL,
   `team` tinyint NOT NULL
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
@@ -3358,7 +3361,7 @@ CREATE TABLE `travel` (
 /*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `player_public` AS select `player`.`id` AS `id`,`player`.`nickname` AS `nickname`,`team`.`name` AS `team` from ((`player` left join `team_player` on((`player`.`id` = `team_player`.`player_id`))) left join `team` on((`team_player`.`team_id` = `team`.`id`))) */;
+/*!50001 VIEW `player_public` AS select `player`.`id` AS `id`,`player`.`nickname` AS `nickname`,`team`.`id` AS `team_id`,`team`.`name` AS `team` from ((`player` left join `team_player` on((`player`.`id` = `team_player`.`player_id`))) left join `team` on((`team_player`.`team_id` = `team`.`id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -3429,4 +3432,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-07-06 15:00:09
+-- Dump completed on 2018-07-11 15:00:09
