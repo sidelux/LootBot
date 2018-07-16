@@ -215,10 +215,34 @@ CREATE TABLE `assault` (
   `refresh_mob` tinyint(1) NOT NULL DEFAULT '0',
   `is_boss` tinyint(1) NOT NULL DEFAULT '0',
   `boss_num` int(11) NOT NULL DEFAULT '1',
+  `epic_var` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `team_id` (`team_id`),
   CONSTRAINT `assault_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `assault_mob_weak`
+--
+
+DROP TABLE IF EXISTS `assault_mob_weak`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `assault_mob_weak` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `team_id` int(11) NOT NULL,
+  `mob_num` int(11) NOT NULL,
+  `place_weak` int(11) NOT NULL COMMENT 'Postazione a cui il mob è debole',
+  `place_strong` int(11) NOT NULL COMMENT 'Postazione a cui il mob resiste',
+  PRIMARY KEY (`id`),
+  KEY `mob_weak_team_id` (`team_id`),
+  KEY `mob_weak_place_id1` (`place_weak`),
+  KEY `mob_weak_place_id2` (`place_strong`),
+  CONSTRAINT `mob_weak_place_id1` FOREIGN KEY (`place_weak`) REFERENCES `assault_place` (`id`),
+  CONSTRAINT `mob_weak_place_id2` FOREIGN KEY (`place_strong`) REFERENCES `assault_place` (`id`),
+  CONSTRAINT `mob_weak_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3432,4 +3456,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-07-11 15:00:09
+-- Dump completed on 2018-07-16 15:00:09
