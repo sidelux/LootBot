@@ -4156,12 +4156,12 @@ function getInfo(message, player, myhouse_id) {
 		var class_id = rows[0].class;
 		var boost_id = rows[0].boost_id;
 		var creation_date = rows[0].creation_date;
-		
+
 		if (mission_team_count > 0)
 			mission_team_count = "Incarichi: " + formatNumber(mission_team_count) + "\n";
 		else 
 			mission_team_count = "";
-		
+
 		if (rank > 0)
 			rank = "Rango: " + getRankName(rank, 0) + " (" + rank + ")\n";
 		else
@@ -17928,10 +17928,10 @@ bot.onText(/team/i, function (message) {
 				var team_level = rows[0].level;
 				var team_closed = rows[0].closed;
 				var team_boss_count = rows[0].boss_count;
-				
+
 				connection.query("SELECT completed, lost FROM assault WHERE team_id = " + team_id, function (err, rows, fields){
 					if (err) throw err;
-					
+
 					var team_assault_completed = 0;
 					var team_assault_lost = 0;
 					if (Object.keys(rows).length > 0) {
@@ -19472,9 +19472,9 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 												if (answer.text.toLowerCase() == "si"){
 													connection.query('UPDATE assault SET phase = 1, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY) WHERE team_id = ' + team_id, function (err, rows, fields) {
 														if (err) throw err;
-														
+
 														generateMobWeakness(team_id, 4);	// 3 + boss
-														
+
 														bot.sendMessage(message.chat.id, "Hai avviato il *Giorno della Preparazione*!", kbBack);
 														connection.query('SELECT player_id, chat_id FROM team_player, player WHERE team_player.player_id = player.id AND team_id = ' + team_id + ' ORDER BY team_player.id', function (err, rows, fields) {
 															if (err) throw err;
@@ -19638,23 +19638,23 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 										} else if (answer.text.toLowerCase().indexOf("rapporto") != -1){
 											connection.query("SELECT mob_num, place_weak, place_strong, is_boss FROM assault_mob_weak WHERE team_id = " + team_id + " ORDER BY id", function (err, rows, fields) {
 												if (err) throw err;
-												
+
 												if (Object.keys(rows).length == 0){
 													bot.sendMessage(message.chat.id, "Il rapporto relativo all'ultima esplorazione non è ancora disponibile!", kbBack);
 													return;
 												}
-												
+
 												var text = "Rapporto sui mob ottenuto dall'ultima esplorazione:\n";
 												var mob = "";
 												for (var i = 0, len = Object.keys(rows).length; i < len; i++){
 													if (rows[i].is_boss == 0)
-														mob = "Mob " + rows[i].mob_num;
+														mob = "Mob " + (rows[i].mob_num+1);
 													else
 														mob = "<b>Boss</b>";
-													text += mob + ": " + assaultEmojiList(rows[i].place_weak-1) + " < " + assaultEmojiList(rows[i].place_strong-1) + "\n";
+													text += mob + ": " + assaultEmojiList[rows[i].place_weak-1] + " - " + assaultEmojiList[rows[i].place_strong-1] + "\n";
 												}
-												text = "\nX < Y: dove contro X subisce più danni, contro Y infligge più danni";
-												bot.sendMessage(message.chat.id, text, kbBack);
+												text += "\nX - Y: dove contro X subisce più danni, contro Y infligge più danni";
+												bot.sendMessage(message.chat.id, text, kbBack_html);
 											});
 										} else if ((answer.text.toLowerCase().indexOf("potenzia") != -1) || (answer.text.toLowerCase().indexOf("costruisci") != -1)){
 											if (selected == -1)
@@ -19730,7 +19730,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																iKeys.push(["Potenzia istantaneamente (" + paPrice + " 🦋)"]);
 																iKeys.push(["Torna all'assalto"]);
 																iKeys.push(["Torna al menu"]);
-																
+
 																var kbYesNo = {
 																	parse_mode: "HTML",
 																	reply_markup: {
@@ -19749,15 +19749,15 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																					bot.sendMessage(message.chat.id, "Il potenziamento è già stato avviato!", kbBack);
 																					return;
 																				}
-																				
+
 																				connection.query('SELECT point FROM team WHERE id = ' + team_id, function (err, rows, fields) {
 																					if (err) throw err;
-																					
+
 																					if (rows[0].point < paPrice){
 																						bot.sendMessage(message.chat.id, "Il team non possiede abbastanza 🦋!", kbBack);
 																						return;
 																					}
-																				
+
 																					if (isAdmin == 0){
 																						bot.sendMessage(message.chat.id, "Sicuro di voler inviare la richiesta all'amministratore?", kbYesNo).then(function () {
 																							answerCallbacks[message.chat.id] = function (answer) {
@@ -19773,7 +19773,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																						});
 																						return;
 																					}
-																					
+
 																					connection.query('UPDATE team SET point = point-' + paPrice + ' WHERE id = ' + team_id, function (err, rows, fields) {
 																						if (err) throw err;
 																						connection.query('UPDATE assault_place_team SET time_end = NOW() WHERE place_id = ' + selected + ' AND team_id = ' + team_id, function (err, rows, fields) {
@@ -20299,7 +20299,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 								var extra = "";
 								if (is_boss == 1)
 									extra = "il temibile ";
-									
+
 								if (refresh_mob == 0){
 									text += "Riprendi la battaglia contro " + extra + "<b>" + mob_name + "</b>!";
 									var kb = {
@@ -20634,13 +20634,13 @@ bot.onText(/riprendi battaglia/i, function (message) {
 										var mob_count = rows[0].mob_count;
 										var is_boss = rows[0].is_boss;
 										var epic_var = rows[0].epic_var;
-										
+
 										connection.query("SELECT place_weak, place_strong FROM assault_mob_weak WHERE team_id = " + team_id + " AND mob_num = " + mob_count + " AND is_boss = " + is_boss, function (err, rows, fields) {
 											if (err) throw err;
-											
+
 											var mob_place_weak = 0;
 											var mob_place_strong = 0;
-											if (Object.keys(rows).length == 0){
+											if (Object.keys(rows).length > 0){
 												mob_place_weak = rows[0].place_weak;
 												mob_place_strong = rows[0].place_strong;
 											}
@@ -20895,7 +20895,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																cnt++;
 																epic_var++;
 															}
-															
+
 															var weak = "";
 															if (mob_place_weak == 2){
 																damage += damage*0.25;
@@ -21000,13 +21000,13 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																magic_power += magic_power * 1;
 
 															magic_power += magic_power*(0.02*place1_class_bonus[0].cnt);
-															
+
 															var weak = "";
 															if (mob_place_weak == 1){
 																magic_power += magic_power*0.10;
 																weak = " [potenza+ per debolezza]";
 															}
-															
+
 															magic_power = Math.round(magic_power);
 
 															var damage_red = place1_level*magic_power*3;
@@ -21220,7 +21220,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	damage += damage * 0.5;
 
 																damage += damage*team_boost_damage
-																
+
 																var weak = "";
 																if (mob_place_weak == 4){
 																	damage += damage*0.25;
@@ -21385,14 +21385,14 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 															var this_perc = 0;
 															var tot_perc = 0;
-															var place_cnt = connection_sync.query('SELECT place_id FROM assault_place_team WHERE team_id = ' + team_id);
+															var place_cnt = connection_sync.query('SELECT place_id FROM assault_place_team WHERE place_id IN (5,3,4,1,6) AND team_id = ' + team_id);
 															for (var i = 0, len = Object.keys(place_cnt).length; i < len; i++)
 																tot_perc += eval("player_place" + place_cnt[i].place_id + "_perc");
 
 															for (var i = 0, len = Object.keys(player).length; i < len; i++){
 																this_perc = eval("player_place" + player[i].place_id + "_perc");
 																divided_damage_att = other_damage * this_perc / (tot_perc*player[i].cnt);
-																
+
 																if (mob_place_strong == player[i].place_id){
 																	divided_damage_att += divided_damage_att*0.25;
 																	status.push("danno+ per resistenza");
@@ -21797,7 +21797,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	damage += damage * 0.5;
 
 																damage += damage*team_boost_damage
-																
+
 																var weak = "";
 																if (mob_place_weak == 3){
 																	damage += damage*0.25;
@@ -21902,7 +21902,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															if (damage > 20)
 																damage = 20;
 															damage = mob_total_life*(damage/100);
-															
+
 															var weak = "";
 															if (mob_place_weak == 6){
 																damage += damage*0.25;
@@ -22207,7 +22207,6 @@ function magicDesc(magic_type, value){
 }
 
 function mobKilled(team_id, final_report, is_boss, mob_count, boss_num, kill_num, team_level, epic_var){	
-
 	var kbBack2 = {
 		parse_mode: "HTML",
 		reply_markup: {
@@ -22222,11 +22221,11 @@ function mobKilled(team_id, final_report, is_boss, mob_count, boss_num, kill_num
 
 	if ((team_level) == 7)
 		lockNextBoss = 0;
-	
+
 	var extra = "mob";
 	if (is_boss == 1)
 		extra = "boss";
-		
+
 	final_report += "🎉 Il " + extra + " è stato sconfitto 🎉!\n\n<b>Assegnazione delle ricompense:</b>\n";
 
 	connection.query('SELECT level FROM team_boost WHERE team_id = ' + team_id + ' AND boost_id = 2', function (err, rows, fields) {
@@ -22258,10 +22257,10 @@ function mobKilled(team_id, final_report, is_boss, mob_count, boss_num, kill_num
 					if ((rows[0].level >= 5) && (bonus_act == 0))
 						acc_bonus = 1;
 				}
-				
+
 				connection.query("SELECT level FROM assault_place_team WHERE team_id = " + team_id + " ORDER BY place_id", function (err, rows, fields) {
 					if (err) throw err;
-					
+
 					var paPlace = 0;
 					var placeAvg = 0;
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++){
@@ -22269,8 +22268,8 @@ function mobKilled(team_id, final_report, is_boss, mob_count, boss_num, kill_num
 						placeAvg += rows[i].level;
 					}
 					placeAvg = Math.round(placeAvg/Object.keys(rows).length);
-					
-					connection.query('SELECT P.id, P.chat_id FROM assault_place_player_id APP player P WHERE APP.player_id = P.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
+
+					connection.query('SELECT P.id, P.chat_id FROM assault_place_player_id APP, player P WHERE APP.player_id = P.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
 						if (err) throw err;
 
 						var place_text = "";
@@ -22286,7 +22285,7 @@ function mobKilled(team_id, final_report, is_boss, mob_count, boss_num, kill_num
 						var chest7 = 0;
 						var chest8 = 0;
 						var chest9 = 0;
-						
+
 						if (is_boss == 1)
 							paPnt = 5;
 						else
@@ -22301,10 +22300,10 @@ function mobKilled(team_id, final_report, is_boss, mob_count, boss_num, kill_num
 						var boss_molt = (1+boss_num/10);
 						var randChest = 0;
 						var randProb = 0;
-						
+
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++){
 							reward = "";
-							
+
 							// reset
 							money = 0;
 							exp = 0;
@@ -22317,25 +22316,25 @@ function mobKilled(team_id, final_report, is_boss, mob_count, boss_num, kill_num
 							chest7 = 0;
 							chest8 = 0;
 							chest9 = 0;
-							
+
 							// calcoli ricompense
 							money = 100000*rows[i].level*boss_molt;
 							if (!is_boss)
 								money = money/(4-mob_count);
 							money += money*team_boost_money
 							money = Math.round(money);
-							
+
 							exp = 10;
 							if (is_boss == 1)
 								exp = 20;
-								
+
 							chest1 = Math.round(10*placeAvg*boss_molt);
 							chest2 = Math.round(6*placeAvg*boss_molt);
 							chest3 = Math.round(4*placeAvg*boss_molt);
 							chest4 = Math.round(3*placeAvg*boss_molt);
 							chest5 = Math.round(2*placeAvg*boss_molt);
 							chest6 = Math.round(1*placeAvg*boss_molt);
-							
+
 							if (is_boss == 1){
 								randProb = Math.random()*100;
 								randChest = Math.random()*(25*boss_num);
@@ -22385,7 +22384,7 @@ function mobKilled(team_id, final_report, is_boss, mob_count, boss_num, kill_num
 								addChest(rows[i].id, 9, chest9);
 								reward += "> <b>" + chest9 + "</b> Scrigni Scaglia\n";
 							}
-							
+
 							if (money > 0){
 								connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + rows[i].id, function (err, rows, fields) {
 									if (err) throw err;
@@ -22393,9 +22392,12 @@ function mobKilled(team_id, final_report, is_boss, mob_count, boss_num, kill_num
 								reward += "> <b>" + formatNumber(money) + "</b> §\n";
 							}
 
+							if (team_id == 1113)
+								reward += "\nEpicità: " + epic_var + "\n";
+
 							bot.sendMessage(rows[i].chat_id, final_report + reward, kbBack2);
 						}
-						
+
 						connection.query('UPDATE team SET point = point+' + paPnt + ' WHERE id = ' + team_id, function (err, rows, fields) {
 							if (err) throw err;
 						});
@@ -22412,31 +22414,33 @@ function mobKilled(team_id, final_report, is_boss, mob_count, boss_num, kill_num
 								assaultFailed(team_id, 1);
 							});
 						}else if (boss_num == 31){
-								connection.query('UPDATE assault SET completed = completed+1, phase = 0, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1 WHERE team_id = ' + team_id, function (err, rows, fields) {
-									if (err) throw err;
-								});
+							connection.query('UPDATE assault SET completed = completed+1, phase = 0, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1, epic_var = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
+								if (err) throw err;
+							});
 
-								connection.query('SELECT P.id, P.chat_id FROM assault_place_player_id APP, player P WHERE APP.player_id = P.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
-									if (err) throw err;
+							connection.query('SELECT P.id, P.chat_id FROM assault_place_player_id APP, player P WHERE APP.player_id = P.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
+								if (err) throw err;
 
-									for (var i = 0, len = Object.keys(rows).length; i < len; i++){
-										bot.sendMessage(rows[i].chat_id, "🎉🎉 Il team ha completato con successo l'Assalto n. " + (kill_num+1) + "! 🎉🎉", kbBack2);
-										connection.query('UPDATE team_player SET kill_streak = kill_streak+1 WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
-											if (err) throw err;
-										});
-									}
-
-									connection.query('UPDATE team SET kill_num1 = kill_num1+1 WHERE id = ' + team_id, function (err, rows, fields) {
+								for (var i = 0, len = Object.keys(rows).length; i < len; i++){
+									bot.sendMessage(rows[i].chat_id, "🎉🎉 Il team ha completato con successo l'Assalto n. " + (kill_num+1) + "! 🎉🎉", kbBack2);
+									connection.query('UPDATE team_player SET kill_streak = kill_streak+1 WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
 										if (err) throw err;
 									});
+								}
+
+								connection.query('UPDATE team SET kill_num1 = kill_num1+1 WHERE id = ' + team_id, function (err, rows, fields) {
+									if (err) throw err;
 								});
+							});
 						}else{
-							connection.query('UPDATE assault SET phase = 3, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = boss_num+1, epic_var = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
+							connection.query('UPDATE assault SET phase = 3, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = boss_num+1, epic_var = ' + epic_var + ' WHERE team_id = ' + team_id, function (err, rows, fields) {
 								if (err) throw err;
+								
+								generateMobWeakness(team_id, 4);
 							});
 						}
 					}else{
-						connection.query('UPDATE assault SET refresh_mob = 1, mob_count = mob_count+1, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
+						connection.query('UPDATE assault SET refresh_mob = 1, mob_count = mob_count+1, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, epic_var = ' + epic_var + ' WHERE team_id = ' + team_id, function (err, rows, fields) {
 							if (err) throw err;
 						});
 					}
@@ -22492,7 +22496,7 @@ function assaultFailed(team_id, nolost = 0){
 	if (nolost == 1)
 		text = "";
 
-	connection.query('UPDATE assault SET phase = 0, time_end = NULL, time_wait_end = NULL, ' + text + 'mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1 WHERE team_id = ' + team_id, function (err, rows, fields) {
+	connection.query('UPDATE assault SET phase = 0, time_end = NULL, time_wait_end = NULL, ' + text + 'mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1, epic_var = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
 		if (err) throw err;
 	});
 }
@@ -30796,7 +30800,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 			}
 			c++;
 		}
-		text = text + "\n*Punti crafting*: " + mypos + "° con " + mypnt;
+		text = text + "\n*Punti crafting*: " + mypos + "° con " + formatNumber(mypnt);
 		c = 1;
 		mypnt = 0;
 		mypos = 0;
@@ -30810,7 +30814,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 				}
 				c++;
 			}
-			text = text + "\n*Punti crafting settimanali*: " + mypos + "° con " + mypnt + " pnt";
+			text = text + "\n*Punti crafting settimanali*: " + mypos + "° con " + formatNumber(mypnt) + " pnt";
 			c = 1;
 			mypnt = 0;
 			mypos = 0;
@@ -30824,7 +30828,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 					}
 					c++;
 				}
-				text = text + "\n*Punti rango*: " + mypos + "° con " + mypnt;
+				text = text + "\n*Punti rango*: " + mypos + "° con " + formatNumber(mypnt);
 				c = 1;
 				mypnt = 0;
 				mypos = 0;
@@ -30838,7 +30842,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 						}
 						c++;
 					}
-					text = text + "\n*Imprese giornaliere*: " + mypos + "° con " + mypnt + " pnt";
+					text = text + "\n*Imprese giornaliere*: " + mypos + "° con " + formatNumber(mypnt) + " pnt";
 					c = 1;
 					mypnt = 0;
 					mypos = 0;
@@ -30852,7 +30856,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 							}
 							c++;
 						}
-						text = text + "\n*Missioni completate*: " + mypos + "° con " + mypnt;
+						text = text + "\n*Missioni completate*: " + mypos + "° con " + formatNumber(mypnt);
 						c = 1;
 						mypnt = 0;
 						mypos = 0;
@@ -30866,7 +30870,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 								}
 								c++;
 							}
-							text = text + "\n*Abilità*: " + mypos + "° con " + mypnt;
+							text = text + "\n*Abilità*: " + mypos + "° con " + formatNumber(mypnt);
 							c = 1;
 							mypnt = 0;
 							mypos = 0;
@@ -30880,7 +30884,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 									}
 									c++;
 								}
-								text = text + "\n*Contrabbandiere*: " + mypos + "° con " + mypnt + " offerte";
+								text = text + "\n*Contrabbandiere*: " + mypos + "° con " + formatNumber(mypnt) + " offerte";
 								c = 1;
 								mypnt = 0;
 								mypos = 0;
@@ -30930,7 +30934,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 													}
 													c++;
 												}
-												text = text + "\n*Potenziamenti Flaridion*: " + mypos + "° con " + mypnt;
+												text = text + "\n*Potenziamenti Flaridion*: " + mypos + "° con " + formatNumber(mypnt);
 												c = 1;
 												mypnt = 0;
 												mypos = 0;
@@ -31040,17 +31044,15 @@ function getRank(message, size, type) {
 			connection.query('SELECT nickname, ' + t + ' As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, ' + t + ', exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 				if (err) throw err;
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					if (c < size + 1) {
-						rows[i].points = formatNumber(rows[i].points);
-						text = text + c + "° " + rows[i].nickname + " (" + rows[i].points + " " + tval + ")\n";
-					}
+					if (c < size + 1)
+						text = text + c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].points) + " " + tval + ")\n";
 					if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
-						mypnt = formatNumber(rows[i].points);
+						mypnt = rows[i].points;
 						mypos = c;
 					}
 					c++;
 				}
-				text = text + "\nTu:\n" + mypos + "° " + message.from.username + " (" + mypnt + " " + tval + ")";
+				text = text + "\nTu:\n" + mypos + "° " + message.from.username + " (" + formatNumber(mypnt) + " " + tval + ")";
 
 				bot.sendMessage(message.chat.id, text, keyrank);
 			});
@@ -31067,18 +31069,16 @@ function getRank(message, size, type) {
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					nickname.push(rows[i].nickname);
 					points.push(rows[i].points);
-					if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase()) {
+					if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase())
 						mypos = i;
-					}
 				}
 
 				for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
 					if (nickname[i] != undefined) {
-						if (i == mypos) {
-							text += (i + 1) + "° <b>" + nickname[i] + "</b> (" + points[i] + " " + tval + ")\n";
-						} else {
-							text += (i + 1) + "° " + nickname[i] + " (" + points[i] + " " + tval + ")\n";
-						}
+						if (i == mypos)
+							text += (i + 1) + "° <b>" + nickname[i] + "</b> (" + formatNumber(points[i]) + " " + tval + ")\n";
+						else
+							text += (i + 1) + "° " + nickname[i] + " (" + formatNumber(points[i]) + " " + tval + ")\n";
 					}
 				}
 
@@ -31110,13 +31110,12 @@ function getRankAt(message, size) {
 
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					if (c < 31) {
-						if (c < size + 1) {
-							text = text + c + "° " + rows[i].nickname + " (" + rows[i].total_cnt + ")\n";
-						}
+						if (c < size + 1)
+							text = text + c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].total_cnt) + ")\n";
 					}
 					if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
 						mypnt = rows[i].total_cnt;
-						myinfo = c + "° " + rows[i].nickname + " (" + rows[i].total_cnt + ")\n";
+						myinfo = c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].total_cnt) + ")\n";
 					}
 					c++;
 				}
@@ -31142,17 +31141,15 @@ function getRankAt(message, size) {
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					nickname.push(rows[i].nickname);
 					total_cnt.push(rows[i].total_cnt);
-					if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase()) {
+					if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase())
 						mypos = i;
-					}
 				}
 				for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
 					if (nickname[i] != undefined) {
-						if (i == mypos) {
-							text += (i + 1) + "° <b>" + nickname[i] + "</b> (" + total_cnt[i] + ")\n";
-						} else {
-							text += (i + 1) + "° " + nickname[i] + " (" + total_cnt[i] + ")\n";
-						}
+						if (i == mypos)
+							text += (i + 1) + "° <b>" + nickname[i] + "</b> (" + formatNumber(total_cnt[i]) + ")\n";
+						else
+							text += (i + 1) + "° " + nickname[i] + " (" + formatNumber(total_cnt[i]) + ")\n";
 					}
 				}
 
@@ -31339,13 +31336,12 @@ bot.onText(/Classifica Contrabbandiere/i, function (message) {
 
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					if (c < 31) {
-						if (c < size + 1) {
-							text = text + c + "° " + rows[i].nickname + " (" + rows[i].total_cnt + ")\n";
-						}
+						if (c < size + 1)
+							text = text + c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].total_cnt) + ")\n";
 					}
 					if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
 						mypnt = rows[i].total_cnt;
-						myinfo = c + "° " + rows[i].nickname + " (" + rows[i].total_cnt + ")\n";
+						myinfo = c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].total_cnt) + ")\n";
 					}
 					c++;
 				}
@@ -31366,17 +31362,15 @@ bot.onText(/Classifica Contrabbandiere/i, function (message) {
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					nickname.push(rows[i].nickname);
 					total_cnt.push(rows[i].total_cnt);
-					if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase()) {
+					if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase())
 						mypos = i;
-					}
 				}
 				for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
 					if (nickname[i] != undefined) {
-						if (i == mypos) {
-							text += (i + 1) + "° <b>" + nickname[i] + "</b> (" + total_cnt[i] + ")\n";
-						} else {
-							text += (i + 1) + "° " + nickname[i] + " (" + total_cnt[i] + ")\n";
-						}
+						if (i == mypos)
+							text += (i + 1) + "° <b>" + nickname[i] + "</b> (" + formatNumber(total_cnt[i]) + ")\n";
+						else
+							text += (i + 1) + "° " + nickname[i] + " (" + formatNumber(total_cnt[i]) + ")\n";
 					}
 				}
 
@@ -43688,10 +43682,10 @@ function setEvents(element, index, array) {
 				if (err) throw err;
 			});
 		} else {
+			text2 = "tuttavia ci ripensa e si rende conto che in effetti, non fosse poi così male, allora si congratula con te e ti regala il 5% delle monete in più!";
 			connection.query('UPDATE player SET money = money + ((money/100)*5) WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			text2 = "tuttavia ci riprensa e si rende conto che in effetti, non fosse poi così male, allora si congratula con te e ti regala il 5% delle monete in più!"
 		}
 
 		text = "Durante la missione ti viene l'ispirazione poetica e decidi di scrivere una poesia avventurosa, ma appena finisci di scriverla non essendo un bravo scrittore dietro di te appare Lara997 e te la strappa perchè scritta male, " + text2;
@@ -43977,7 +43971,7 @@ function setFinishedAssaults(element, index, array) {
 					if (err) throw err;
 				});
 			}else{
-				var player = connection_sync.query('SELECT id, nickname FROM player WHERE id = ' + rows[0].player_id);
+				var player = connection_sync.query('SELECT id, nickname FROM player WHERE id = ' + elected[0].player_id);
 
 				var nickname = player[0].nickname;
 			}
@@ -44000,10 +43994,10 @@ function setFinishedAssaults(element, index, array) {
 			connection.query('UPDATE assault SET phase = 1, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY) WHERE team_id = ' + team_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			
+
 			console.log("Fase 3 -> Fase 1");
 			generateMobWeakness(team_id, 4);
-			
+
 			text += "Il <b>Giorno dell'Assalto</b> è stato completato con successo!\n\nIl <b>Giorno della Preparazione</b> ha inizio, organizza le tue strutture per sopravvivere contro un altro boss!";
 		}else{
 			console.log("Errore phase non valida: " + phase);
@@ -44038,16 +44032,16 @@ function setFinishedAssaultsMob(element, index, array) {
 
 	var mob_name;
 	var is_boss;
-	
+
 	var team = connection_sync.query('SELECT players FROM team WHERE id = ' + team_id);		
 	var team_players = team[0].players;
-	
+
 	var boss = connection_sync.query('SELECT name, total_life FROM boss WHERE id = ' + boss_num);
 	var mob_life = boss[0].total_life*(completed^2)/(lost^3);
 	mob_life = mob_life*team_players;
-	
+
 	var total_mob = 3;
-	
+
 	if (mob_count < total_mob){	// Mob
 		mob_name = mobGenerator.generate();
 		mob_life = Math.round(mob_life/((total_mob+1)-(mob_count-1)));
@@ -44281,7 +44275,7 @@ function checkAssaultsLock() {
 
 function setFinishedAssaultsLock(element, index, array) {
 	var team_id = element.team_id;
-	
+
 	connection.query('UPDATE assault SET lock_time_end = NULL WHERE team_id = ' + team_id, function (err, rows, fields) {
 		if (err) throw err;
 	});

@@ -235,6 +235,7 @@ CREATE TABLE `assault_mob_weak` (
   `mob_num` int(11) NOT NULL,
   `place_weak` int(11) NOT NULL COMMENT 'Postazione a cui il mob è debole',
   `place_strong` int(11) NOT NULL COMMENT 'Postazione a cui il mob resiste',
+  `is_boss` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `mob_weak_team_id` (`team_id`),
   KEY `mob_weak_place_id1` (`place_weak`),
@@ -242,7 +243,7 @@ CREATE TABLE `assault_mob_weak` (
   CONSTRAINT `mob_weak_place_id1` FOREIGN KEY (`place_weak`) REFERENCES `assault_place` (`id`),
   CONSTRAINT `mob_weak_place_id2` FOREIGN KEY (`place_strong`) REFERENCES `assault_place` (`id`),
   CONSTRAINT `mob_weak_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2351,7 +2352,7 @@ CREATE TABLE `mission_team_party` (
   UNIQUE KEY `report_id` (`report_id`) USING BTREE,
   KEY `team_id` (`team_id`),
   CONSTRAINT `Mission_Team_Report` FOREIGN KEY (`report_id`) REFERENCES `mission_team_report` (`report_id`),
-  CONSTRAINT `Party_Team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`)
+  CONSTRAINT `Party_Team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -2395,7 +2396,8 @@ CREATE TABLE `mission_team_report` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `no_duplicate` (`report_id`,`party_id`,`team_id`,`part_id`),
   KEY `report_id` (`report_id`),
-  KEY `team_id` (`team_id`)
+  KEY `team_id` (`team_id`),
+  CONSTRAINT `Report_Team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -3456,4 +3458,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-07-16 15:00:09
+-- Dump completed on 2018-07-17 15:00:09

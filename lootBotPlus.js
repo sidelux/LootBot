@@ -444,9 +444,10 @@ bot.onText(/^\/comandicommercio/, function (message) {
 
 bot.onText(/^\/comanditeam/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per i team*\n" +
-					"/chiamaparty - Invia un messaggio taggando tutti i membri del party\n" +
-					"/votaparty - Invia un messaggio taggando solo i membri del party che devono ancora votare\n" +
-					"/scalata - Invia un messaggio taggando solo i membri del team che devono attaccare il boss attuale", mark);
+					"/chiamaparty - Invia un messaggio taggando tutti i membri del proprio party (escluso il chiamante)\n" +
+					"/chiamaparty<numero> - Invia un messaggio taggando tutti i membri del party <numero> (solo per amministratori)\n" +
+					"/votaparty - Invia un messaggio taggando solo i membri del proprio party che devono ancora votare\n" +
+					"/scalata - Invia un messaggio taggando solo i membri del team che devono ancora attaccare il boss attuale", mark);
 });
 
 bot.onText(/^\/comandigenerali/, function (message) {
@@ -1162,11 +1163,10 @@ bot.onText(/^\/mercatini/, function (message) {
 					"\nVisita anche /gruppi. Per comparire qua chiedi all'amministratore.", html);
 });
 
-bot.onText(/^\/chiamaparty/, function (message, match) {
+bot.onText(/^\/chiamaparty$/, function (message, match) {
 
-	if (!checkSpam(message)) {
+	if (!checkSpam(message))
 		return;
-	}
 
 	if (message.chat.id > 0){
 		bot.sendMessage(message.from.id, "Questo comando può essere usato solo nei gruppi");
@@ -1198,9 +1198,8 @@ bot.onText(/^\/chiamaparty/, function (message, match) {
 
 				var nicklist = "";
 
-				for (i = 0; i < Object.keys(rows).length; i++) {
+				for (i = 0; i < Object.keys(rows).length; i++)
 					nicklist += "@" + rows[i].nickname + " ";
-				}
 
 				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> chiama i suoi compagni di party!\n" + nicklist, html);
 			});
@@ -1208,11 +1207,69 @@ bot.onText(/^\/chiamaparty/, function (message, match) {
 	});
 });
 
-bot.onText(/^\/votaparty/, function (message, match) {
+bot.onText(/^\/chiamaparty([0-9])$/, function (message, match) {
 
-	if (!checkSpam(message)) {
+	if (!checkSpam(message))
+		return;
+
+	if (message.chat.id > 0){
+		bot.sendMessage(message.from.id, "Questo comando può essere usato solo nei gruppi");
 		return;
 	}
+	
+	var party_id = parseInt(match[1]);
+	
+	if ((isNaN(party_id)) || (party_id < 1)){
+		bot.sendMessage(message.from.id, "Numero party non valido");
+		return;
+	}
+
+	connection.query('SELECT team_id, role FROM team_player WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0){
+			bot.sendMessage(message.from.id, "Non sei in team");
+			return;
+		}
+
+		var role = rows[0].role;
+		var team_id = rows[0].team_id;
+		var sym = "";
+		
+		if (rows[0].role == 0){
+			bot.sendMessage(message.from.id, "Solo l'amministratore o il vice possono utilizzare questa funzione");
+			return;
+		} else if (rows[0].role == 1)
+			sym = " 👑";
+		else if (rows[0].role == 2)
+			sym = " 🔰";
+
+		connection.query('SELECT 1 FROM mission_team_party WHERE party_id = ' + party_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0){
+				console.log("Il numero del party inserito non esiste");
+				return;	
+			}
+
+			connection.query('SELECT P.nickname FROM mission_team_party_player T, player P WHERE T.player_id = P.id AND T.party_id = ' + party_id + ' AND T.team_id = ' + team_id, function (err, rows, fields) {
+				if (err) throw err;
+
+				var nicklist = "";
+
+				for (i = 0; i < Object.keys(rows).length; i++)
+					nicklist += "@" + rows[i].nickname + " ";
+
+				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b>" + sym + " chiama i componenti del party " + party_id + "!\n" + nicklist, html);
+			});
+		});
+	});
+});
+
+bot.onText(/^\/votaparty$/, function (message, match) {
+
+	if (!checkSpam(message))
+		return;
 
 	if (message.chat.id > 0){
 		bot.sendMessage(message.from.id, "Questo comando può essere usato solo nei gruppi");
