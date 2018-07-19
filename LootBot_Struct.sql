@@ -200,6 +200,7 @@ CREATE TABLE `assault` (
   `time_end` timestamp NULL DEFAULT NULL,
   `time_wait_end` timestamp NULL DEFAULT NULL,
   `lock_time_end` timestamp NULL DEFAULT NULL,
+  `elected_lock_time_end` timestamp NULL DEFAULT NULL,
   `completed` int(11) NOT NULL DEFAULT '0',
   `lost` int(11) NOT NULL DEFAULT '0',
   `mob_name` varchar(32) DEFAULT NULL,
@@ -327,6 +328,28 @@ CREATE TABLE `assault_place_magic` (
   KEY `magic_team_id` (`team_id`),
   KEY `magic_magic_id` (`type`),
   CONSTRAINT `magic_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `assault_place_miniboost`
+--
+
+DROP TABLE IF EXISTS `assault_place_miniboost`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `assault_place_miniboost` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `team_id` int(11) NOT NULL,
+  `place_id` int(11) NOT NULL,
+  `player_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `mini_boost_player_id` (`player_id`) USING BTREE,
+  KEY `mini_boost_place_id` (`place_id`),
+  KEY `mini_boost_team_id` (`team_id`),
+  CONSTRAINT `mini_boost_place_id` FOREIGN KEY (`place_id`) REFERENCES `assault_place` (`id`),
+  CONSTRAINT `mini_boost_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `mini_boost_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -3461,4 +3484,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-07-18 15:00:10
+-- Dump completed on 2018-07-19 15:00:10
