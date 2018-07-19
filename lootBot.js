@@ -20803,22 +20803,27 @@ bot.onText(/riprendi battaglia/i, function (message) {
 														}
 
 														if (answer.text.toLowerCase().indexOf("partecipanti") != -1){
-															connection.query('SELECT P.nickname, P.life, P.total_life, A.name, AP.place_id, AP.role, APT.level FROM player P, assault_place_player_id AP, assault_place A, assault_place_team APT WHERE APT.place_id = A.id AND APT.team_id = AP.team_id AND AP.team_id = ' + team_id + ' AND P.id = AP.player_id AND A.id = AP.place_id ORDER BY AP.place_id', function (err, rows, fields) {
+															connection.query('SELECT P.nickname, P.life, P.total_life, A.name, AP.place_id, AP.role, APT.level, AP.killed FROM player P, assault_place_player_id AP, assault_place A, assault_place_team APT WHERE APT.place_id = A.id AND APT.team_id = AP.team_id AND AP.team_id = ' + team_id + ' AND P.id = AP.player_id AND A.id = AP.place_id ORDER BY AP.place_id', function (err, rows, fields) {
 																if (err) throw err;
 
 																var text = "Lista dei partecipanti a questo assalto:\n";
 																var place_id_break = 0;
 																var role_text = "";
+																var killed_text = "";
 																for (var i = 0, len = Object.keys(rows).length; i < len; i++){
 																	if (place_id_break != rows[i].place_id){
 																		text += "\n<b>" + rows[i].name + "</b> (Lv " + rows[i].level + "):\n";
 																		place_id_break = rows[i].place_id;
 																	}
 																	if (rows[i].role == 1)
-																		role_text = "🗡";
+																		role_text = " 🗡";
 																	else
 																		role_text = "";
-																	text += "> " + rows[i].nickname + " " + formatNumber(rows[i].life) + "/" + formatNumber(rows[i].total_life) + role_text + "\n";
+																	if (rows[i].killed == 1)
+																		killed_text = " ☠️";
+																	else
+																		killed_text = "";
+																	text += "> " + rows[i].nickname + " - " + formatNumber(rows[i].life) + "/" + formatNumber(rows[i].total_life) + role_text + killed_text + "\n";
 																}
 
 																bot.sendMessage(message.chat.id, text, kbBack);
@@ -20943,6 +20948,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															var minitext = "";
 															var minival = 0;
 															var miniunit = "";
+															var minivalTot = 0;
 															for (var i = 0, len = Object.keys(miniboost).length; i < len; i++){
 																miniboost_arr[miniboost[i].place_id-1] = miniboost[i].cnt;
 																if ((miniboost[i].place_id == 3) || (miniboost[i].place_id == 4)){
@@ -20965,12 +20971,9 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	minival = 0.5;
 																	minitext = "salute ai giocatori";
 																	miniunit = "%";
-																}else{
-																	minitext = "";
-																	minival = 0;
-																	console.log("Errore miniboost");
 																}
-																miniboost_text += "\n> " + miniboost[i].name + " (+<b>" + (minival*miniboost[i].cnt).replace(".",",") + "</b>" + miniunit + " " + minitext + ")";
+																minivalTot = minival*miniboost[i].cnt;
+																miniboost_text += "\n> " + miniboost[i].name + " (+<b>" + minivalTot.toString().replace(".",",") + "</b>" + miniunit + " " + minitext + ")";
 															}
 															miniboost_text += "\n\n";
 														}
@@ -22119,7 +22122,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																if ((player[i].killed == 1) || (player[i].life == 0)){
 																	if (getItemCnt(player[i].id, 759) > 0){
 																		connection_sync.query('UPDATE player SET life = total_life WHERE id = ' + player[i].id);
-																		connection_sync.query('UPDATE assault_place_player_id SET killed = 0 WHERE id = ' + player[i].id);
+																		connection_sync.query('UPDATE assault_place_player_id SET killed = 0 WHERE player_id = ' + player[i].id);
 																		delItem(player[i].id, 759, 1);
 																		if (player[i].life == 0)
 																			player_text += "\n> " + player[i].nickname + " torna in salute con l'intruglio revitalizzante";
@@ -22586,7 +22589,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								}
 							});
 
-							connection.query('UPDATE assault SET completed = completed+1, phase = 0, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1, epic_var = 0, epic_var_record = ' + epic_var_record + ' WHERE team_id = ' + team_id, function (err, rows, fields) {
+							connection.query('UPDATE assault SET completed = completed+1, phase = 0, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1, epic_var = 0, epic_var_record = ' + epic_var_record + ', lock_time_end = NULL, elected_lock_time_end = NULL WHERE team_id = ' + team_id, function (err, rows, fields) {
 								if (err) throw err;
 
 								connection.query('SELECT P.id, P.chat_id FROM assault_place_player_id APP, player P WHERE APP.player_id = P.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
@@ -22605,14 +22608,14 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								});
 							});
 						}else{
-							connection.query('UPDATE assault SET phase = 3, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = boss_num+1, epic_var = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
+							connection.query('UPDATE assault SET phase = 3, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = boss_num+1, epic_var = 0, lock_time_end = NULL, elected_lock_time_end = NULL WHERE team_id = ' + team_id, function (err, rows, fields) {
 								if (err) throw err;
 
 								generateMobWeakness(team_id, 4);
 							});
 						}
 					}else{
-						connection.query('UPDATE assault SET refresh_mob = 1, mob_count = mob_count+1, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, epic_var = ' + epic_var + ' WHERE team_id = ' + team_id, function (err, rows, fields) {
+						connection.query('UPDATE assault SET refresh_mob = 1, mob_count = mob_count+1, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, epic_var = ' + epic_var + ', lock_time_end = NULL, elected_lock_time_end = NULL WHERE team_id = ' + team_id, function (err, rows, fields) {
 							if (err) throw err;
 						});
 					}
@@ -22675,7 +22678,7 @@ function assaultFailed(team_id, nolost = 0){
 	if (nolost == 1)
 		text = "";
 
-	connection.query('UPDATE assault SET phase = 0, time_end = NULL, time_wait_end = NULL, ' + text + 'mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1, epic_var = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
+	connection.query('UPDATE assault SET phase = 0, time_end = NULL, time_wait_end = NULL, ' + text + 'mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1, epic_var = 0, lock_time_end = NULL, elected_lock_time_end = NULL WHERE team_id = ' + team_id, function (err, rows, fields) {
 		if (err) throw err;
 	});
 }
