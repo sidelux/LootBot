@@ -19336,9 +19336,21 @@ function hasDuplicates(array) {
 }
 
 bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'arrivo/i, function (message) {
-	connection.query('SELECT id, holiday, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, account_id, holiday, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
+		
+		if (Object.keys(rows).length == 0)
+			return;
+		
 		var player_id = rows[0].id;
+		
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+		
 		if (rows[0].holiday == 1) {
 			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back)
 			return;
@@ -22492,7 +22504,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 					}
 					placeAvg = Math.round(placeAvg/Object.keys(rows).length);
 
-					connection.query('SELECT P.id, P.chat_id, APT.level FROM assault_place_player_id APP, player P, assault_place_team APT WHERE APT.place_id = APP.place_id AND APP.player_id = P.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
+					connection.query('SELECT P.id, P.chat_id, APT.level, TP.suspended FROM team_player TP, assault_place_player_id APP, player P, assault_place_team APT WHERE TP.player_id = P.id AND APT.place_id = APP.place_id AND APP.player_id = P.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
 						if (err) throw err;
 
 						var place_text = "";
@@ -22525,9 +22537,13 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 						var randProb = 0;
 
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++){
-							reward = "";
+							if (rows[i].suspended == 1){
+								bot.sendMessage(rows[i].chat_id, final_report + "Nessuna ricompensa a causa della sospensione", kbBack2);
+								continue;
+							}
 
 							// reset
+							reward = "";
 							money = 0;
 							exp = 0;
 							chest1 = 0;

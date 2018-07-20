@@ -2146,17 +2146,28 @@ bot.onText(/^\/contrabb (.+)/i, function (message, match) {
 	});
 });
 
-bot.onText(/^\/rimod ([^\s]+) ([^\s]+)/i, function (message, match) {
+bot.onText(/^\/rimod ([^\s]+) ([^\s]+) ([^\s]+)/i, function (message, match) {
+	// attuale - richiesto - costo
+	
+	var att = match[1];
+	var rich = match[2];
+	var cost = match[3];
+	
+	var spent = 0;
 	var x = 0;
 	var y = 0;
-	for (i = 0; i < match[1]; i++) {
+	for (i = 0; i < rich; i++) {
 		y = x;
-		x += funz(x) * match[2];
+		if (i == att)
+			spent = Math.round(x);
+		x += funz(x) * cost;
 	}
 
-	var res = Math.round(x);
+	var res = Math.round(x) - spent;
 	var unit = Math.round(x - y);
-	bot.sendMessage(message.chat.id, "Punti: " + formatNumber(res) + " (" + formatNumber(unit) + ")\nExp: " + formatNumber(res * 30) + " (" + formatNumber(unit * 30) + ")\nMonete: " + formatNumber(res * 1000000) + " (" + formatNumber(unit * 1000000) + ")");
+	bot.sendMessage(message.chat.id, 	"Punti: " + formatNumber(res) + " (" + formatNumber(unit) + ")\n" +
+										"Exp: " + formatNumber(res * 30) + " (" + formatNumber(unit * 30) + ")\n" +
+										"Monete: " + formatNumber(res * 1000000) + " (" + formatNumber(unit * 1000000) + ")");
 });
 
 function funz(x) {
