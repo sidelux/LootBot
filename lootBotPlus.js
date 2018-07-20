@@ -2151,12 +2151,12 @@ bot.onText(/^\/rimod ([^\s]+) ([^\s]+)/i, function (message, match) {
 	var y = 0;
 	for (i = 0; i < match[1]; i++) {
 		y = x;
-		x += Math.round(funz(x) * match[2]);
+		x += funz(x) * match[2];
 	}
 
 	var res = Math.round(x);
 	var unit = Math.round(x - y);
-	bot.sendMessage(message.chat.id, "Punti: " + formatNumber(res) + " (" + formatNumber(unit) + ")\nExp: " + formatNumber(res * 30) + " (" + formatNumber(unit * 30) + ")\nMonete: " + formatNumber(res * 1000000) + " (" + formatNumber(unit * 1000000) + ")\n(Calcolo arrotondato)");
+	bot.sendMessage(message.chat.id, "Punti: " + formatNumber(res) + " (" + formatNumber(unit) + ")\nExp: " + formatNumber(res * 30) + " (" + formatNumber(unit * 30) + ")\nMonete: " + formatNumber(res * 1000000) + " (" + formatNumber(unit * 1000000) + ")");
 });
 
 function funz(x) {
