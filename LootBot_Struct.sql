@@ -201,6 +201,8 @@ CREATE TABLE `assault` (
   `time_wait_end` timestamp NULL DEFAULT NULL,
   `lock_time_end` timestamp NULL DEFAULT NULL,
   `elected_lock_time_end` timestamp NULL DEFAULT NULL,
+  `weak_time_end` timestamp NULL DEFAULT NULL,
+  `weak_unlocked` int(11) NOT NULL DEFAULT '0',
   `completed` int(11) NOT NULL DEFAULT '0',
   `lost` int(11) NOT NULL DEFAULT '0',
   `mob_name` varchar(32) DEFAULT NULL,
@@ -2918,6 +2920,8 @@ CREATE TABLE `public_lottery_players` (
   `player_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `player_id` (`player_id`),
+  KEY `LOTTERYID_LOTTP` (`lottery_id`),
+  CONSTRAINT `LOTTERYID_LOTTP` FOREIGN KEY (`lottery_id`) REFERENCES `public_lottery` (`id`) ON DELETE CASCADE,
   CONSTRAINT `PLAYERID_LOTTP` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -3484,4 +3488,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-07-20 15:00:09
+-- Dump completed on 2018-07-31 15:00:09
