@@ -1081,7 +1081,7 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 bot.onText(/^\/failglobal/, function (message, match) {
 	if (message.from.id == 20471035) {
 
-		connection.query('SELECT COUNT(DISTINCT player_id) As cnt FROM achievement_global', function (err, rows, fields) {
+		connection.query('SELECT COUNT(player_id) As cnt FROM achievement_global', function (err, rows, fields) {
 			if (err) throw err;
 
 			var tot = rows[0].cnt;
@@ -1091,38 +1091,28 @@ bot.onText(/^\/failglobal/, function (message, match) {
 				bot.sendMessage(message.chat.id, "Il valore attuale è " + formatNumber(rows[0].val) + " per " + formatNumber(tot) + " persone, sicuro di chiudere l'impresa FALLITA?", yesno).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text.toLowerCase() == "si") {
-
-							var minValue = 500000;
-							var minText = "monete da vendite";
-							var text = "i tempi delle cave sono incrementati del 30%";
-
-							connection.query('SELECT P.nickname, P.chat_id, A.player_id, SUM(A.value) As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.reborn > 1 AND P.account_id NOT IN (SELECT account_id FROM banlist) GROUP BY A.player_id HAVING SUM(A.value) < ' + minValue + ' ORDER BY val DESC', function (err, rows, fields) {
+							connection.query('UPDATE player SET global_end = 0', function (err, rows, fields) {
 								if (err) throw err;
-								for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-									connection.query('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
-										if (err) throw err;
-									});
-									bot.sendMessage(rows[i].chat_id, "Per il fallimento dell'impresa e lo scarso impegno (minimo " + minValue + " " + minText + "), da questo momento fino al termine della prossima impresa " + text);
-									console.log(rows[i].nickname + " - Fallito");
-								}
-							});
+							
+								var minValue = 40;
+								var minText = "ispezioni vinte";
+								var text = "tempo missioni incrementato del 25%";
 
-							// scommentare se conta la partecipazione di team!
-							/*
-							connection.query('SELECT P.nickname, P.id As player_id, DATEDIFF(CURDATE(), CAST(L.time As date)) As last_access, T.team_id FROM player P LEFT JOIN achievement_global A ON A.player_id = P.id INNER JOIN last_command L ON L.account_id = P.account_id LEFT JOIN team_player T ON P.id = T.player_id WHERE A.player_id IS NULL AND P.reborn > 1 AND T.team_id IS NOT NULL HAVING last_access >= 28', function (err, rows, fields) {
-								if (err) throw err;
-								for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-									connection.query('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
-										if (err) throw err;
-									});
-									console.log(rows[i].nickname + " - Fallito extra");
-								}
-							});
-							*/
+								connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.reborn > 1 AND P.account_id NOT IN (SELECT account_id FROM banlist) AND A.value < ' + minValue + ' GROUP BY A.player_id ORDER BY val DESC', function (err, rows, fields) {
+									if (err) throw err;
+									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+										connection.query('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
+											if (err) throw err;
+										});
+										bot.sendMessage(rows[i].chat_id, "Per il fallimento dell'impresa e lo scarso impegno (minimo " + minValue + " " + minText + "), da questo momento fino al termine della prossima impresa " + text);
+										console.log(rows[i].nickname + " - Fallito");
+									}
+								});
 
-							connection.query('UPDATE config SET global_eventon = 0, global_eventwait = 1', function (err, rows, fields) {
-								if (err) throw err;
-								bot.sendMessage(message.chat.id, "Fatto!");
+								connection.query('UPDATE config SET global_eventon = 0, global_eventwait = 1', function (err, rows, fields) {
+									if (err) throw err;
+									bot.sendMessage(message.chat.id, "Fatto!");
+								});
 							});
 						}
 					}
@@ -7044,7 +7034,7 @@ function globalAchievement(player_id, value = 1) {
 			});
 		} else {
 			if (rows[0].global_eventwait == 1) {
-				console.log("Pre-impresa +" + value);
+				//console.log("Pre-impresa +" + value);
 				connection.query('SELECT 1 FROM achievement_global WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0) {
@@ -8160,7 +8150,6 @@ bot.onText(/dungeon/i, function (message) {
 
 															if (answer.text != "Torna al dungeon") {
 																var passName = answer.text.substring(0, answer.text.indexOf("(") - 1);
-
 
 																connection.query('SELECT item.name, item.id FROM item, inventory WHERE item.name = "' + passName + '" AND inventory.item_id = item.id AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
 																	if (err) throw err;
@@ -21090,7 +21079,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			if (err) throw err;
 																			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 																				bot.sendMessage(rows[i].chat_id, "L'eletto ha deciso di <b>arrendersi</b>, magari andrà meglio la prossima volta", back_html);
-																			assaultFailed(team_id);
+																			assaultEnd(team_id);
 																		});
 																	}
 																}
@@ -21660,11 +21649,40 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 														if (other_damage > 0){
 															epic_var++;
+															
+															var total_perc = 100;
+															var player_place5_perc = 0;
+															var player_place3_perc = 0;
+															var player_place4_perc = 0;
+															var player_place1_perc = 0;
+															var player_place6_perc = 0;
+															
+															var wall_players = connection_sync.query('SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE killed = 0 AND place_id = 5 AND team_id = ' + team_id);
+															if ((Object.keys(place5).length > 0) && (place5[0].level > 0) && (wall_players[0].cnt > 0)){
+																player_place5_perc = 50;
+																total_perc -= player_place5_perc;
+															}
+															
+															var perc_players = connection_sync.query('SELECT place_id, COUNT(id) As cnt FROM assault_place_player_id WHERE killed = 0 AND place_id IN (3,4,1,6) AND team_id = ' + team_id + ' GROUP BY place_id HAVING cnt > 0');
+															
+															var perc_place_cnt = Object.keys(perc_players).length;
+															var perc = Math.round(total_perc/perc_place_cnt);
+															for (var i = 0; i < perc_place_cnt; i++)
+																eval("player_place" + perc_players[i].place_id + "_perc = " + perc);
+															
+															/*
 															var player_place5_perc = 60;
 															var player_place3_perc = 20;
 															var player_place4_perc = 10;
 															var player_place1_perc = 5;
 															var player_place6_perc = 5;
+															*/
+															
+															console.log(player_place5_perc);
+															console.log(player_place3_perc);
+															console.log(player_place4_perc);
+															console.log(player_place1_perc);
+															console.log(player_place6_perc);
 
 															var player = connection_sync.query('SELECT P.*, place_id, (SELECT COUNT(id) FROM assault_place_player_id WHERE place_id = AP.place_id) As cnt FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND place_id IN (5,3,4,1,6) AND killed = 0 ORDER BY FIELD(place_id,5,3,4,1,6), RAND()');
 
@@ -21700,6 +21718,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																var divided_damage_att = 0;
 																var place_id_break = 0;
 
+																var diff_damage = 0;
 																var this_perc = 0;
 																var tot_perc = 0;
 																var place_cnt = connection_sync.query('SELECT place_id FROM assault_place_team WHERE place_id IN (5,3,4,1,6) AND team_id = ' + team_id);
@@ -21894,15 +21913,19 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	if (divided_damage_att < 0)
 																		divided_damage_att = 0;
 
+																	diff_damage = divided_damage_att-player_life;
 																	player_life -= divided_damage_att;
 
-																	if (player_life < 0)
-																		player_life = 0;
 																	if (player_life <= 0){
+																		player_life = 0;
 																		var placeDestroyed = playerKilled(team_id, playerid, player[i].place_id, is_boss);
 																		epic_var++;
 																		status_text = ", viene ferito gravemente e accompagnato in infermeria 💉";
 																		status_text += placeDestroyed;
+																		
+																		// riverso
+																		if (diff_damage > 0)
+																			other_damage += diff_damage;
 																	}
 
 																	defence = 0;
@@ -21941,7 +21964,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																if (err) throw err;
 																for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 																	bot.sendMessage(rows[i].chat_id, final_report, back_html);
-																assaultFailed(team_id);
+																assaultEnd(team_id);
 															});
 															return;
 														}
@@ -22804,10 +22827,9 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 									bot.sendMessage(rows[i].chat_id, "🎉🎉 Il team ha completato con successo l'Assalto Parziale! 🎉🎉\n\nL'assalto non è stato contrassegnato come completato nel conteggio, espandi prima il team per proseguire!", kbBack2);
 
-								assaultFailed(team_id, 1);
+								assaultEnd(team_id, 1);
 							});
 						}else if (boss_num == 31){
-
 							if (epic_var > epic_var_record)
 								epic_var_record = epic_var;
 
@@ -22837,6 +22859,8 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 									connection.query('UPDATE team SET kill_num1 = kill_num1+1 WHERE id = ' + team_id, function (err, rows, fields) {
 										if (err) throw err;
 									});
+									
+									assaultEnd(team_id, 1, 1);
 								});
 							});
 						}else{
@@ -22844,11 +22868,13 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								if (err) throw err;
 
 								generateMobWeakness(team_id, 4);
+								repairWall(team_id);
 							});
 						}
 					}else{
 						connection.query('UPDATE assault SET refresh_mob = 1, mob_count = mob_count+1, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, epic_var = ' + epic_var + ', lock_time_end = NULL, elected_lock_time_end = NULL WHERE team_id = ' + team_id, function (err, rows, fields) {
 							if (err) throw err;
+							repairWall(team_id);
 						});
 					}
 
@@ -22883,7 +22909,7 @@ function checkAllKilled(team_id){
 		return 0;
 }
 
-function assaultFailed(team_id, nolost = 0){
+function assaultEnd(team_id, nolost = 0, clearVars = 1){
 	connection.query('DELETE FROM assault_place_team WHERE team_id = ' + team_id, function (err, rows, fields) {
 		if (err) throw err;
 	});
@@ -22909,9 +22935,28 @@ function assaultFailed(team_id, nolost = 0){
 	var text = "lost = lost+1, ";
 	if (nolost == 1)
 		text = "";
+	
+	if (clearVars == 1){
+		connection.query('UPDATE assault SET phase = 0, time_end = NULL, time_wait_end = NULL, ' + text + 'mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1, epic_var = 0, lock_time_end = NULL, elected_lock_time_end = NULL, weak_time_end = NULL, weak_unlocked = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
+	}
+}
 
-	connection.query('UPDATE assault SET phase = 0, time_end = NULL, time_wait_end = NULL, ' + text + 'mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1, epic_var = 0, lock_time_end = NULL, elected_lock_time_end = NULL, weak_time_end = NULL, weak_unlocked = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
+function repairWall(team_id){
+	connection.query('SELECT life, total_life FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id, function (err, rows, fields) {
 		if (err) throw err;
+		
+		if ((Object.keys(rows).length > 0) && (rows[0].life < rows[0].total_life)) {
+			var refill = rows[0].total_life*0.1;
+			if (rows[0].life+refill >= rows[0].total_life)
+				rows[0].life += rows[0].total_life;
+			else
+				rows[0].life += refill;
+			connection.query('UPDATE assault_place_team SET life = ' + rows[0].life + ' WHERE place_id = 5 AND team_id = ' + team_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
 	});
 }
 
@@ -26727,8 +26772,10 @@ bot.onText(/^\/sintesi (.+),(.+),(.+)|^\/sintesi/i, function (message, match) {
 						if (err) throw err;
 
 						var max_magic = 5;
+						/*
 						if (global_end == 1)
 							max_magic = 10;
+						*/
 
 						if (rows[0].cnt >= max_magic) {
 							bot.sendMessage(message.chat.id, "Non puoi sintetizzare altri incantesimi prima di averli consumati", back);
@@ -26803,11 +26850,13 @@ bot.onText(/^\/sintesi (.+),(.+),(.+)|^\/sintesi/i, function (message, match) {
 										}
 
 										var extra = "";
+										/*
 										if (global_end == 1){
 											extra += " (potenza aumentata per bonus globale)";
 											power += power*0.1;
 											power = Math.round(power);
 										}
+										*/
 
 										var type = 0;
 										var quantity = 3;
@@ -27065,8 +27114,10 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 													if (err) throw err;
 
 													var max_magic = 5;
+													/*
 													if (global_end == 1)
 														max_magic = 10;	
+													*/
 
 													if (rows[0].cnt >= max_magic) {
 														bot.sendMessage(message.chat.id, "Non puoi sintetizzare altri incantesimi prima di averli consumati", kbBack);
@@ -27151,11 +27202,13 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 																					}
 
 																					var extra = "";
+																					/*
 																					if (global_end == 1){
 																						extra += " (potenza aumentata per bonus globale)";
 																						power += power*0.1;
 																						power = Math.round(power);
 																					}
+																					*/
 
 																					var type = 0;
 																					var quantity = 3;
@@ -40350,8 +40403,6 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 														bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è migliore di quella del guardiano (" + combi + ")! In una stanzetta all'interno del rifugio hai trovato un sacchettino contenente " + formatNumber(money) + " § e " + key + "x Chiave Mistica  🗝!", kbBack);
 														bot.sendMessage(toChat, message.from.username + " è riuscito a sconfiggere il guardiano del tuo rifugio, purtroppo avendo lasciato incustodito un sacchettino di monete, hai perso " + formatNumber(money) + " §");
 
-														globalAchievement(player_id, 1);
-
 														if (travel <= 2)
 															setAchievement(message.chat.id, player_id, 8, 1);
 
@@ -40422,8 +40473,6 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 									connection.query('DELETE FROM heist_progress WHERE from_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 										bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è peggiore di quella del guardiano (" + combi + ")! Il portone del rifugio si blocca ed il tuo gnomo è costretto a tornare indietro", kbBack);
-
-										globalAchievement(toId, 1);
 
 										bot.sendMessage(toChat, "<b>" + message.from.username + "</b> non è riuscito a sconfiggere il guardiano del tuo portone, così è stato respinto", html);
 									});
@@ -41985,6 +42034,7 @@ bot.onText(/missione/i, function (message) {
 						var extra2 = "✅";
 
 						var duration_reduce = 0;
+						var duration_extend = 0;
 						if (charm_id == 60)
 							duration_reduce = 5;
 						else if (charm_id == 187)
@@ -41996,15 +42046,15 @@ bot.onText(/missione/i, function (message) {
 						else
 							extra1 = "❌";
 
-						/*
 						if (global_end == 1){
-							name += " (Velocizzata per bonus globale)";
-							duration_reduce += 25;
+							name += " (Estesa per malus globale)";
+							duration_extend += 25;
 						}
-						*/
 
 						if (duration_reduce > 0)
-							duration = duration - (duration / 100 * duration_reduce);
+							duration -= (duration / 100 * duration_reduce);
+						if (duration_extend > 0)
+							duration += (duration / 100 * duration_extend);
 
 						if ((class_id == 3) && (reborn == 3))
 							duration -= (duration * 0.05);
@@ -42269,11 +42319,11 @@ bot.onText(/^imprese/i, function (message) {
 					else
 						text += formatNumber(craft_count) + " su " + formatNumber(progCraft[end]) + " punti creazione (" + formatNumber(progCraftRew[end]) + " §)\n";
 
-					var time_start = new Date("2018-08-01 12:00:00");
+					var time_end = new Date("2018-09-01 12:00:00");
 					var now = new Date();
-					var diffD = Math.floor(((time_start - now) / 1000) / 60 / 60 / 24);
-					var diffH = Math.floor(((time_start - now) / 1000) / 60 / 60);
-					var diffM = Math.floor(((time_start - now) / 1000) / 60);
+					var diffD = Math.floor(((time_end - now) / 1000) / 60 / 60 / 24);
+					var diffH = Math.floor(((time_end - now) / 1000) / 60 / 60);
+					var diffM = Math.floor(((time_end - now) / 1000) / 60);
 					var diff = "";
 					if (diffH < 1)
 						diff = diffM + " min";
@@ -42292,11 +42342,11 @@ bot.onText(/^imprese/i, function (message) {
 						else {
 							var cap = global_cap;
 							if (global_wait == 1)
-								text += "L'impresa sta raccogliendo dati, pazienta fino al pomeriggio del primo giorno del mese!\n";
+								text += "L'impresa sta raccogliendo dati, pazienta fino ai primi giorni del mese!\n";
 							else{
 								if (global_hide == 1)
 									cap = "???";
-								text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> sfide contro il guardiano vinte (sia in attacco che in difesa)\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
+								text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> ...\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
 							}
 						}
 					}
@@ -44392,7 +44442,7 @@ function setFinishedAssaults(element, index, array) {
 			connection.query('UPDATE assault SET time_wait_end = DATE_ADD(NOW(), INTERVAL 1 DAY) WHERE team_id = ' + team_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			assaultFailed(team_id);
+			assaultEnd(team_id);
 		}else if (phase == 3){
 			connection.query('UPDATE assault SET phase = 1, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY) WHERE team_id = ' + team_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -45674,6 +45724,7 @@ function setFinishedDungeonRoom(element, index, array) {
 	connection.query('UPDATE dungeon_status SET room_time = NULL WHERE id = ' + element.room_id, function (err, rows, fields) {
 		if (err) throw err;
 		bot.sendMessage(element.chat_id, "Sei tornato in forze per proseguire il dungeon!");
+		globalAchievement(player_id, 1);
 	});
 };
 
