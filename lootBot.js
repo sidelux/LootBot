@@ -20129,7 +20129,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 														connection.query("SELECT COUNT(id) As cnt FROM assault_place_cons WHERE team_id = " + team_id, function (err, rows, fields) {
 															if (err) throw err;
 															var tot_qnt = rows[0].cnt;
-															text += "A questo livello fornisce <b>" + (1*level) + "</b> lanci contemporanei di oggetti lanciabili, è possibile caricarne ancora <b>" + (max_qnt-tot_qnt) + "</b>, verrano lanciati nell'ordine di inserimento" + class_bonus + "\n";
+															text += "A questo livello fornisce <b>" + Math.floor(level/2) + "</b> lanci contemporanei di oggetti lanciabili, è possibile caricarne ancora <b>" + (max_qnt-tot_qnt) + "</b>, verrano lanciati nell'ordine di inserimento" + class_bonus + "\n";
 															connection.query("SELECT name, cons_val FROM assault_place_cons APC, item WHERE APC.item_id = item.id AND team_id = " + team_id + " ORDER BY APC.id", function (err, rows, fields) {
 																if (err) throw err;
 
@@ -20218,9 +20218,9 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 
 														var class_bonus = "";
 														if (rows[0].cnt > 0)
-															class_bonus = " (<b>+" + (rows[0].cnt*2) + "%</b> danno per bonus classe)";
+															class_bonus = " (<b>+" + (rows[0].cnt*0.05) + "%</b> danno per bonus classe)";
 
-														text += "A questo livello fornisce <b>x" + (level*1.5) + "</b> danno durante la fase di battaglia\nPuoi solo potenziare questo tipo di postazione!" + class_bonus;
+														text += "A questo livello fornisce <b>x" + (level*2) + "</b> danno durante la fase di battaglia\nPuoi solo potenziare questo tipo di postazione!" + class_bonus;
 														bot.sendMessage(message.chat.id, text, kbBack_html);
 													});
 												}else if (selected == 4){
@@ -20229,7 +20229,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 
 														var class_bonus = "";
 														if (rows[0].cnt > 0)
-															class_bonus = " (<b>+" + (rows[0].cnt*5) + "%</b> danno per bonus classe)";
+															class_bonus = " (<b>+" + (rows[0].cnt*0.05) + "%</b> danno per bonus classe)";
 
 														text += "A questo livello fornisce <b>x" + level + "</b> danno durante la fase di battaglia\nPuoi solo potenziare questo tipo di postazione!" + class_bonus;
 														bot.sendMessage(message.chat.id, text, kbBack_html);
@@ -21106,7 +21106,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															for (var i = 0, len = Object.keys(miniboost).length; i < len; i++){
 																miniboost_arr[miniboost[i].place_id-1] = miniboost[i].cnt;
 																if ((miniboost[i].place_id == 3) || (miniboost[i].place_id == 4)){
-																	minival = 1;
+																	minival = 2;
 																	minitext = "danno";
 																	miniunit = "%";
 																}else if (miniboost[i].place_id == 7){
@@ -21160,9 +21160,9 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															var cons = connection_sync.query("SELECT AP.item_id, I.cons_val, I.name, AP.id, AP.player_id, P.chat_id FROM assault_place_cons AP, item I, player P WHERE AP.player_id = P.id AND AP.item_id = I.id AND AP.team_id = " + team_id + " ORDER BY AP.id");
 															if (Object.keys(cons).length > 0){
 																for (var i = 0; i < Object.keys(cons).length; i++){
-																	if (cnt >= place2_level)
+																	if (cnt >= Math.floor(place2_level/2))
 																		break;
-																	calc_damage = Math.round(mob_total_life*(cons[i].cons_val/100));
+																	calc_damage = Math.round(mob_total_life*(cons[i].cons_val/10));
 																	calc_damage += calc_damage*(0.02*place2_class_bonus[0].cnt);
 																	damage += calc_damage;
 																	connection.query("DELETE FROM assault_place_cons WHERE id = " + cons[i].id, function (err, rows, fields) {
@@ -21510,10 +21510,10 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																	damage = damage*place4_level;
 																	damage += damage*(military_bonus/100);
-																	damage += damage*(0.02*place4_class_bonus[0].cnt);
+																	damage += damage*(0.05*place4_class_bonus[0].cnt);
 
 																	if (miniboost_arr[3] > 0)
-																		damage += damage*(0.01*miniboost_arr[3]);
+																		damage += damage*(0.02*miniboost_arr[3]);
 
 																	if (team_boost_id == 1)
 																		damage += damage * 0.5;
@@ -21601,7 +21601,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 														var mob_critic = mob[0].mob_critic;
 														var team_reduce = mob[0].team_reduce;
 
-														var range = getRandomArbitrary(2500, 50000);
+														var range = getRandomArbitrary(2500, 10000);
 														var mob_damage = ((completed+1)/(lost+1)) * (Math.sqrt(players_num)) * boss_num * range;
 														mob_damage = mob_damage / (4 - mob_count);
 														mob_damage = Math.round(mob_damage);
@@ -21729,6 +21729,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	var status = [];
 																	this_perc = eval("player_place" + player[i].place_id + "_perc");
 																	divided_damage_att = other_damage * this_perc / (tot_perc*player[i].cnt);
+																	
+																	console.log(player[i].nickname, divided_damage_att);
 
 																	if (mob_place_strong == player[i].place_id){
 																		divided_damage_att += divided_damage_att*0.25;
@@ -22128,7 +22130,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		critical += critical*(0.005*miniboost_arr[6]);
 
 																	var rand = Math.random()*100;
-																	if ((critical+5) > rand){				//+5 per pesante
+																	if ((critical+5) > rand){				//per pesante
 																		damage = damage*2;
 																		epic_var++;
 																		status.push("critico");
@@ -22141,12 +22143,12 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		status.push("danno da incantesimo");
 																	}
 
-																	damage = damage*place3_level*1.5;		//x1.5 per pesante
+																	damage = damage*place3_level*2;		//per pesante
 																	damage += damage*(military_bonus/100);
-																	damage += damage*(0.02*place3_class_bonus[0].cnt);
+																	damage += damage*(0.05*place3_class_bonus[0].cnt);
 
 																	if (miniboost_arr[2] > 0)
-																		damage += damage*(0.01*miniboost_arr[2]);
+																		damage += damage*(0.02*miniboost_arr[2]);
 
 																	if (team_boost_id == 1)
 																		damage += damage * 0.5;
@@ -22424,10 +22426,15 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																	connection_sync.query('UPDATE player SET life = ' + player_life + ' WHERE id = ' + player[i].id);
 
-																	if (pot1+pot2+pot3 == 0)
+																	var potSum = pot1+pot2+pot3;
+																	if (potSum == 0)
 																		player_text += "\n> " + player[i].nickname + " non recupera salute (manca Fabbrica di Energia)";
-																	else
-																		player_text += "\n> " + player[i].nickname + " raggiunge i <b>" + formatNumber(player_life) + "</b> hp utilizzando " + (pot1+pot2+pot3) + " pozioni";
+																	else{
+																		var plur = "i";
+																		if (potSum == 1)
+																			plur = "e";
+																		player_text += "\n> " + player[i].nickname + " raggiunge i <b>" + formatNumber(player_life) + "</b> hp utilizzando " + potSum + " pozion" + plur;
+																	}
 																}
 															}
 
@@ -22835,7 +22842,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 
 							connection.query('SELECT epic_var_record, DATEDIFF(CURDATE(), CAST(epic_var_record_time As date)) As diff FROM config', function (err, rows, fields) {
 								if (err) throw err;
-								if (epic_var_record > rows[0].epic_var_record * (1-0.05*rows[0].diff)){
+								if (epic_var_record > rows[0].epic_var_record * (1-0.03*rows[0].diff)){
 									var turns = "un'intensa";
 									if (mob_turn > 5)
 										turns = "una lunga";
@@ -35947,7 +35954,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 											}
 										});
 										setAchievement(message.chat.id, player_id, 21, 1);
-									} else if (rand == 18) {
+									} else {
 										connection.query('UPDATE player SET necro_pnt = necro_pnt+1 WHERE id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 											bot.sendMessage(message.chat.id, "Hai ricevuto 1 💠!", kbBack);
