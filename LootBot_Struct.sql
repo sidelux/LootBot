@@ -3101,7 +3101,6 @@ CREATE TABLE `team` (
   `boss_count` int(3) NOT NULL DEFAULT '0',
   `craft_count` int(11) NOT NULL DEFAULT '0',
   `mission_count` int(11) NOT NULL DEFAULT '0',
-  `mission_count_diff` int(11) NOT NULL DEFAULT '0',
   `mission_day_count` int(11) NOT NULL DEFAULT '0',
   `boss_respawn` timestamp NULL DEFAULT NULL,
   `closed` int(3) NOT NULL DEFAULT '0',
@@ -3111,7 +3110,6 @@ CREATE TABLE `team` (
   `kill_num1` int(11) NOT NULL DEFAULT '0',
   `kill_num2` int(11) NOT NULL DEFAULT '0',
   `boost_id` int(11) NOT NULL DEFAULT '0',
-  `boost_time` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `child_team` (`child_team`) USING BTREE,
   CONSTRAINT `team_child_team` FOREIGN KEY (`child_team`) REFERENCES `team` (`id`) ON DELETE SET NULL
@@ -3488,4 +3486,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-08-02 12:00:11
+-- Dump completed on 2018-08-03 15:00:09

@@ -1120,7 +1120,7 @@ bot.onText(/^\/gruppi/, function (message) {
 																			"\n<b>Canali</b>\n" +
 																			"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
 																			"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
-																			"@LootReport - Segnala un comportamento scorretto nella community!\n" +
+																			"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
 																			"@YellowBetsLoot - YellowPlay for YellowWin\n" +
 																			"@yellowlootshop - Join for eventi free!\n" +
 
