@@ -30,7 +30,7 @@ var wanted = 0;				// svuota event_wanted_status
 var eventTeamStory = 0;		// svuota event_team_story
 var eventFestival = 0;		// event_crafting_status con total_cnt a 0
 var specialMission = 0;		// nulla
-var checkDragonTopOn = 0;	// alla chiusura: svuota tabelle dragon_ e auto increment dummy a 100000
+var checkDragonTopOn = 1;	// alla chiusura: svuota tabelle dragon_ e auto increment dummy a 100000
 var gnomorra = 0;			// svuota tabella event_gnomorra
 
 // Festività o disattivati
@@ -386,6 +386,16 @@ bot.on('message', function (message) {
 			connection.query('UPDATE player SET status = NULL, status_cnt = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
+			
+			if (message.text.toLocaleLowerCase() != "interrompi"){
+				var d = new Date();
+				d.setMinutes(d.getMinutes() + 5);
+				var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+				connection.query('UPDATE dragon_top_status SET no_match_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+					if (err) throw err;
+				});
+			}
 		}
 
 		if (rows[0].account_id != message.from.id) {
@@ -1639,6 +1649,8 @@ bot.onText(/^\/ban ([^\s]+) (.+)|^\/ban/, function (message, match) {
 			connection.query('DELETE FROM mission_team_party_player WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
 				if (err) throw err;
 			});
+			
+			removeFromAssault(rows[0].id);
 
 			bot.sendMessage(message.chat.id, rows[0].nickname + " (" + rows[0].account_id + ") bannato.");
 		});
@@ -18294,7 +18306,7 @@ bot.onText(/team/i, function (message) {
 														var show_type = "Aperto";
 														var show_details = "Visibili";
 														if (team_id == 1113)
-															iKeys.push(["Assalto 🐺"]);
+															iKeys.push(["Assalto 🐺 (Beta)"]);
 														iKeys.push(["Scalata Boss 🐗", "Incarichi 📜"]);
 														iKeys.push(["Dettaglio Membri 👥"]);
 														iKeys.push(["Aumenta Posti ✚", "Accademia 🏣"]);
@@ -18312,8 +18324,8 @@ bot.onText(/team/i, function (message) {
 													} else {
 														// UTENTE
 														if (team_id == 1113)
-															iKeys.push(["Assalto 🐺"]);
-														iKeys.push(["Scalata Boss 🐗", "Incarichi 📜 (Beta)"]);
+															iKeys.push(["Assalto 🐺 (Beta)"]);
+														iKeys.push(["Scalata Boss 🐗", "Incarichi 📜"]);
 														if (team_details == 1)
 															iKeys.push(["Dettaglio Membri 👥"]);
 														iKeys.push(["Potenziamenti Anima 🦋"]);
@@ -20016,7 +20028,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 															connection.query("SELECT COUNT(id) As quantity FROM assault_place_magic WHERE team_id = " + team_id, function (err, rows, fields) {
 																if (err) throw err;
 																var tot_qnt = rows[0].quantity;
-																text += "A questo livello fornisce <b>x" + (level*3) + "</b> potenza base della postazione ed il <b>" + (player_cnt*5) + "</b> probabilità raddoppio incantesimi. E' possibile caricarne ancora <b>" + (max_qnt-tot_qnt) + "</b>, verrano lanciati nell'ordine di inserimento." + class_bonus + "\n";
+																text += "Ad ogni livello fornisce maggiore potenza base della postazione ed il <b>" + (player_cnt*5) + "</b> probabilità raddoppio incantesimi. E' possibile caricarne ancora <b>" + (max_qnt-tot_qnt) + "</b>, verrano lanciati nell'ordine di inserimento." + class_bonus + "\n";
 																connection.query("SELECT nickname, type, power FROM assault_place_magic APM, player WHERE APM.player_id = player.id AND team_id = " + team_id + " ORDER BY APM.id", function (err, rows, fields) {
 																	if (err) throw err;
 
@@ -22632,7 +22644,7 @@ function magicDesc(magic_type, value){
 	else if (magic_type == 2)
 		magic_effect = ", paralizzando il nemico per <b>" + value + "</b> alleati";
 	else if (magic_type == 3)
-		magic_effect = ", incrementando il danno e infliggendo <b>" + value + "</b> danni al nemico";
+		magic_effect = ", incrementando il danno e infliggendo <b>" + formatNumber(value) + "</b> danni al nemico";
 	else if (magic_type == 4)
 		magic_effect = ", aumentando la probabilità di critico per <b>" + value + "</b> alleati";
 	return magic_effect;
@@ -22947,6 +22959,21 @@ function checkAllKilled(team_id){
 		return 1;
 	else
 		return 0;
+}
+
+function removeFromAssault(player_id){
+	connection.query('DELETE FROM assault_place_player_id WHERE player_id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+	});
+	connection.query('DELETE FROM assault_place_magic WHERE player_id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+	});
+	connection.query('DELETE FROM assault_place_cons WHERE player_id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+	});
+	connection.query('DELETE FROM assault_place_miniboost WHERE player_id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+	});
 }
 
 function assaultEnd(team_id, nolost = 0, clearVars = 1){
@@ -23542,9 +23569,8 @@ bot.onText(/Hall of Fame/i, function (message) {
 		if (err) throw err;
 
 		var myTeam = "";
-		if (Object.keys(rows).length > 0) {
+		if (Object.keys(rows).length > 0)
 			myTeam = rows[0].name;
-		}
 
 		connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 			if (err) throw err;
@@ -23839,6 +23865,8 @@ bot.onText(/Gestisci Membri/i, function (message) {
 														connection.query('UPDATE player SET boss_id = NULL, team_time = "' + long_date + '" WHERE id = ' + playerId, function (err, rows, fields) {
 															if (err) throw err;
 														});
+														
+														removeFromAssault(playerId);
 													});
 												});
 											});
@@ -24346,9 +24374,11 @@ bot.onText(/^Lascia/i, function (message) {
 										connection.query('UPDATE player SET boss_id = NULL, team_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 										});
+										
+										removeFromAssault(player_id);
 									});
 								});
-							}
+							};
 						};
 					});
 				});
@@ -42530,6 +42560,7 @@ bot.onText(/^vacanza/i, function (message) {
 									connection.query('UPDATE player SET holiday = 1, heist_protection = "' + long_date2 + '" WHERE id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 										bot.sendMessage(message.chat.id, "Hai attivato la modalità vacanza!", back);
+										removeFromAssault(player_id);
 									});
 								});
 							}
@@ -42965,9 +42996,8 @@ function setDragonSleep(element, index, array) {
 	var chat_id = element.chat_id;
 	var total_life = element.total_life;
 
-	if (life > total_life) {
+	if (life > total_life)
 		life = total_life;
-	}
 
 	var d = new Date();
 	d.setMinutes(d.getMinutes() + 15);
@@ -43466,6 +43496,14 @@ function setDragonBattle(element, index, array) {
 												addChest(rows[0].id, 9, chest);
 											}
 										}
+										
+										var d = new Date();
+										d.setMinutes(d.getMinutes() + 5);
+										var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+										connection.query('UPDATE dragon_top_status SET no_match_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+										});
 
 										bot.sendMessage(chat_id, "La battaglia nella vetta è scaduta, hai perso " + rank_lost + " Ð!");
 
@@ -44307,7 +44345,7 @@ function setFinishedAct(element, index, array) {
 }
 
 function checkTeamAct() {
-	connection.query('SELECT P.nickname, P.chat_id, T.team_id, T.player_id, CAST(L.time As date) As last_action, CURDATE(), DATEDIFF(CURDATE(), CAST(L.time As date)) As last_access FROM player P INNER JOIN team_player T ON P.id = T.player_id INNER JOIN last_command L ON P.account_id = L.account_id WHERE P.holiday != 1 HAVING last_access > 14 LIMIT 20', function (err, rows, fields) {
+	connection.query('SELECT P.nickname, P.chat_id, T.team_id, T.player_id, CAST(L.time As date) As last_action, CURDATE(), DATEDIFF(CURDATE(), CAST(L.time As date)) As last_access, T.role FROM player P INNER JOIN team_player T ON P.id = T.player_id INNER JOIN last_command L ON P.account_id = L.account_id WHERE P.holiday != 1 HAVING last_access > 14 LIMIT 20', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1) {
@@ -44325,13 +44363,47 @@ function setFinishedTeamAct(element, index, array) {
 	var nickname = element.nickname;
 	var chat_id = element.chat_id;
 	var team_id = element.team_id;
-
-	connection.query('DELETE FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
+	var role = element.role;
+	
+	connection.query('SELECT player_id FROM team_player WHERE team_id = ' + team_id + ' AND role = 2', function (err, rows, fields) {
 		if (err) throw err;
-		bot.sendMessage(chat_id, "Sei stato espulso dal team per inattività");
-		connection.query('SELECT P.chat_id FROM player P, team_player T WHERE T.player_id = P.id AND T.team_id = ' + team_id + ' AND T.role = 1', function (err, rows, fields) {
+		
+		if ((Object.keys(rows).length > 0) && (role == 1)) {
+			connection.query('UPDATE team_player SET role = 1 WHERE team_id = ' + team_id + ' AND player_id = ' + rows[0].player_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}else{
+			connection.query('SELECT player_id FROM team_player WHERE team_id = ' + team_id + ' AND role = 0 ORDER BY RAND()', function (err, rows, fields) {
+				if (err) throw err;
+				if ((Object.keys(rows).length > 0) && (role == 1)) {
+					connection.query('UPDATE team_player SET role = 1 WHERE team_id = ' + team_id + ' AND player_id = ' + rows[0].player_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
+				}
+			});
+		}
+		
+		connection.query('SELECT player_id FROM team_player WHERE team_id = ' + team_id + ' AND role = 0 ORDER BY RAND()', function (err, rows, fields) {
 			if (err) throw err;
-			bot.sendMessage(rows[0].chat_id, nickname + " è stato espulso dal team per inattività");
+			
+			if ((Object.keys(rows).length > 0) && (role == 2)) {
+				connection.query('UPDATE team_player SET role = 2 WHERE team_id = ' + team_id + ' AND player_id = ' + rows[0].player_id, function (err, rows, fields) {
+					if (err) throw err;
+				});
+			}
+
+			connection.query('DELETE FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				if (role > 0)
+					bot.sendMessage(chat_id, "Sei stato espulso dal team per inattività ed il tuo potere è passato ad un altro membro del team");
+				else
+					bot.sendMessage(chat_id, "Sei stato espulso dal team per inattività");
+				connection.query('SELECT P.chat_id FROM player P, team_player T WHERE T.player_id = P.id AND T.team_id = ' + team_id + ' AND T.role = 1', function (err, rows, fields) {
+					if (err) throw err;
+					bot.sendMessage(rows[0].chat_id, nickname + " è stato espulso dal team per inattività");
+					removeFromAssault(player_id);
+				});
+			});
 		});
 	});
 };

@@ -823,9 +823,8 @@ bot.onText(/^\/gban ([^\s]+) (.+)|^\/gban/, function (message, match) {
 			}
 		}
 
-		if (match[2] == undefined) {
+		if (match[2] == undefined)
 			match[2] == "...";
-		}
 
 		connection.query('SELECT nickname, id, account_id FROM player WHERE nickname = "' + match[1].replace("@", "") + '"', function (err, rows, fields) {
 			if (err) throw err;
@@ -857,6 +856,8 @@ bot.onText(/^\/gban ([^\s]+) (.+)|^\/gban/, function (message, match) {
 			connection.query('DELETE FROM mission_team_party_player WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
 				if (err) throw err;
 			});
+			
+			removeFromAssault(rows[0].id);
 
 			bot.kickChatMember(message.chat.id, account_id).then(function (result) {
 				bot.sendMessage(message.chat.id, nick + " (" + account_id + ") bannato da chat e game.");
@@ -864,6 +865,21 @@ bot.onText(/^\/gban ([^\s]+) (.+)|^\/gban/, function (message, match) {
 		});
 	};
 });
+
+function removeFromAssault(player_id){
+	connection.query('DELETE FROM assault_place_player_id WHERE player_id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+	});
+	connection.query('DELETE FROM assault_place_magic WHERE player_id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+	});
+	connection.query('DELETE FROM assault_place_cons WHERE player_id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+	});
+	connection.query('DELETE FROM assault_place_miniboost WHERE player_id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+	});
+}
 
 bot.onText(/^\/gb (.+)|^\/gb$/, function (message, match) {
 	if (message.chat.id > 0)
@@ -1324,9 +1340,8 @@ bot.onText(/^\/votaparty$/, function (message, match) {
 
 bot.onText(/^\/scalata/, function (message, match) {
 
-	if (!checkSpam(message)) {
+	if (!checkSpam(message))
 		return;
-	}
 
 	if (message.chat.id > 0){
 		bot.sendMessage(message.from.id, "Questo comando può essere usato solo nei gruppi");
@@ -1343,6 +1358,35 @@ bot.onText(/^\/scalata/, function (message, match) {
 
 		var team_id = rows[0].team_id;
 		var player_id = rows[0].player_id;
+		
+		if (team_id == 1113){
+			connection.query('SELECT id FROM assault WHERE team_id = ' + team_id, function (err, rows, fields) {
+				if (err) throw err;
+
+				if (Object.keys(rows).length == 0){
+					bot.sendMessage(message.from.id, "Iscriviti all'assalto prima di utilizzare questa funzione");
+					return;
+				}
+				
+				connection.query('SELECT P.nickname, P.chat_id FROM player P, team_player T LEFT JOIN assault_place_player_id A ON T.player_id = A.player_id WHERE T.team_id = ' + team_id + ' AND T.player_id = P.id AND T.player_id != ' + player_id + ' AND A.id IS NULL', function (err, rows, fields) {
+					if (err) throw err;
+
+					var nicklist = "";
+
+					if (Object.keys(rows).length == 0){
+						bot.sendMessage(message.chat.id, "Non manca nessun compagno valido!");
+						return;
+					}
+
+					for (i = 0; i < Object.keys(rows).length; i++)
+						nicklist += "@" + rows[i].nickname + " ";
+
+					bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> incita i suoi compagni di team a partecipare all'assalto!\n" + nicklist, html);
+				});
+				
+			});
+			return;
+		}
 
 		connection.query('SELECT id FROM boss_team WHERE team_id = ' + team_id + ' AND killedby IS NULL ORDER BY boss_id LIMIT 1', function (err, rows, fields) {
 			if (err) throw err;

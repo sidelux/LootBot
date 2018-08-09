@@ -1640,7 +1640,7 @@ CREATE TABLE `global_msg` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `chat_id` bigint(16) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3486,4 +3486,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-08-06 15:00:10
+-- Dump completed on 2018-08-09  9:00:09
