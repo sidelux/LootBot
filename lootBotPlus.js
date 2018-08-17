@@ -148,7 +148,7 @@ bot.on('message', function (message) {
 		}
 		if (message.text.toLowerCase().indexOf("errore:") != -1){
 			if (message.text.toLowerCase().indexOf("#arena") == -1)
-				bot.sendMessage("@lnotify", "#Mtproto " + message.from.username + ": " + message.text);
+				bot.sendMessage("-1001098734700", "#Mtproto " + message.from.username + ": " + message.text);
 		}
 	}
 
@@ -288,17 +288,15 @@ bot.on("chosen_inline_result", function (query) {
 
 bot.on("inline_query", function (query) {
 	var code = parseInt(query.query);
-
-	if ((code == "") || (isNaN(code))) {
+	
+	if ((code == "") || (isNaN(code)))
 		return;
-	}
 
 	connection.query('SELECT public_shop.id, quantity, item.name, price, player_id, massive FROM public_shop, item WHERE item.id = item_id AND code = ' + code, function (err, rows, fields) {
 		if (err) throw err;
 
-		if (Object.keys(rows).length == 0) {
+		if (Object.keys(rows).length == 0)
 			return;
-		}
 
 		var iKeys = [];
 		var name = "";
@@ -329,9 +327,8 @@ bot.on("inline_query", function (query) {
 		connection.query('SELECT nickname FROM player WHERE id = ' + rows[0].player_id, function (err, rows, fields) {
 			if (err) throw err;
 
-			if (Object.keys(rows).length == 0) {
+			if (Object.keys(rows).length == 0)
 				return;
-			}
 
 			var text = "Negozio di " + rows[0].nickname + "!";
 			var desc = total_qnt + " oggetti in vendita";
@@ -811,7 +808,7 @@ bot.onText(/^\/cibi/, function (message) {
 	});
 });
 
-bot.onText(/^\/gban ([^\s]+) (.+)|^\/gban/, function (message, match) {
+bot.onText(/^\/gban ([^\s]+) (.+)|^\/gban|^\/🍌/, function (message, match) {
 	if (message.from.id == 20471035) {
 
 		if (match[1] == undefined) {
@@ -1125,7 +1122,7 @@ bot.onText(/^\/gruppi/, function (message) {
 																			"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
 																			"<a href='https://t.me/joinchat/AVqFykBMfmvrULAUQv-MmQ'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
 																			"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
-																			"<a href='https://telegram.me/joinchat/EXFobEDH8FbDpQ4MTmw-mQ'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
+																			"<a href='https://t.me/joinchat/AThc-0DH8FaFEpYpLg-rOA'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
 																			"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
 																			"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
 																			"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
@@ -2219,10 +2216,9 @@ function funz(x) {
 	return 1 + (Math.pow(x, 1.8)) / 100000;
 }
 
-bot.onText(/^\/dai_fake (.+)/i, function (message, match) {
-	if (message.from.id == 20471035){
+bot.onText(/^\/dai (.+)/i, function (message, match) {
+	if ((message.from.id == 20471035) || (message.from.id == 114304603)){
 		var split = match[1].split(",");
-
 		var options = {parse_mode: 'Markdown'};
 		if (message.reply_to_message != undefined)
 			options = {parse_mode: 'Markdown', reply_to_message_id: message.reply_to_message.message_id};
@@ -2231,9 +2227,16 @@ bot.onText(/^\/dai_fake (.+)/i, function (message, match) {
 	}
 });
 
-bot.onText(/^\/msg (.+)/i, function (message, match) {
-	if (message.from.id == 20471035){
+bot.onText(/^\/reset/i, function (message, match) {
+	if ((message.from.id == 20471035) || (message.from.id == 114304603)){
+		if (message.reply_to_message != undefined){
+			bot.sendMessage(message.chat.id, "*" + message.reply_to_message.from.username + "*, il tuo account è stato completamente *resettato*, riavvia il bot per creare un nuovo account!", {parse_mode: 'Markdown', reply_to_message_id: message.reply_to_message.message_id});
+		}
+	}
+});
 
+bot.onText(/^\/msg (.+)/i, function (message, match) {
+	if ((message.from.id == 20471035) || (message.from.id == 114304603)){
 		var options = {parse_mode: 'Markdown'};
 		if (message.reply_to_message != undefined)
 			options = {parse_mode: 'Markdown', reply_to_message_id: message.reply_to_message.message_id};
@@ -6374,7 +6377,7 @@ bot.onText(/^\/dlotteriap (.+)|^\/dlotteriap/, function (message, match) {
 });
 
 bot.onText(/^\/scuola/, function (message) {
-	bot.sendMessage(message.chat.id, "Entra nella scuola per giovani avventurieri: https://t.me/joinchat/AAAAAEDH8FbelcVFTmw-mQ", html);
+	bot.sendMessage(message.chat.id, "Entra nella scuola per giovani avventurieri: https://t.me/joinchat/AThc-0DH8FaFEpYpLg-rOA", html);
 });
 
 bot.onText(/^\/statistiche/, function (message) {
@@ -6693,11 +6696,13 @@ bot.onText(/^\/checkmarketAll (.+)|^\/checkmarketAll/, function (message, match)
 bot.onText(/^\/gruzzolo/, function (message) {
 	connection.query('SELECT id, money FROM player WHERE id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
 		if (err) throw err;
-		if (rows[0].id == 1){
-			bot.sendMessage(message.chat.id, message.from.username + ", possiedi <b>troppissimi</b> §", html);
-			return;
+		if (Object.keys(rows).length > 0) {
+			if (rows[0].id == 1){
+				bot.sendMessage(message.chat.id, message.from.username + ", possiedi <b>troppissimi</b> §", html);
+				return;
+			}
+			bot.sendMessage(message.chat.id, message.from.username + ", possiedi <b>" + formatNumber(rows[0].money) + "</b> §", html);
 		}
-		bot.sendMessage(message.chat.id, message.from.username + ", possiedi <b>" + formatNumber(rows[0].money) + "</b> §", html);
 	});
 });
 
@@ -7873,15 +7878,22 @@ bot.onText(/^\/ispeziona/, function (message) {
 							bot.sendMessage(message.from.id, "Non puoi ispezionare un giocatore in modalità vacanza.");
 							return;
 						}
+						
+						var to_id = rows[0].id;
 
-						connection.query('SELECT id FROM heist_history WHERE from_id = ' + from_id + ' AND to_id = ' + rows[0].id + ' AND time LIKE "' + time + '%"', function (err, rows, fields) {
-							if (err) throw err;
-							if (Object.keys(rows).length <= 2) {
-								attack(usr, message, from_id, weapon_bonus, 3000, 0, account_id, global_end, boost_id, boost_mission);
-							} else {
-								bot.sendMessage(message.from.id, "Hai ispezionato troppe volte questo giocatore, riprova domani.");
-							}
-						});
+						var rows = connection_sync.query('SELECT id FROM heist_history WHERE from_id = ' + from_id + ' AND to_id = ' + to_id + ' AND time LIKE "' + time + '%"');
+						if (Object.keys(rows).length > 2){
+							bot.sendMessage(message.from.id, "Hai ispezionato troppe volte questo giocatore oggi, riprova domani.");
+							return;
+						}
+						
+						var rows = connection_sync.query('SELECT id FROM heist_history WHERE from_id = ' + from_id + ' AND to_id = ' + to_id + ' AND time > DATE_SUB("' + time + '", INTERVAL 7 DAY)');
+						if (Object.keys(rows).length > 10){
+							bot.sendMessage(message.from.id, "Hai ispezionato troppe volte questo giocatore durante gli ultimi 7 giorni.");
+							return;
+						}
+						
+						attack(usr, message, from_id, weapon_bonus, 3000, 0, account_id, global_end, boost_id, boost_mission);
 					}
 				});
 			});
