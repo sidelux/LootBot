@@ -5348,15 +5348,15 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 					}
 
 					var query = match[1].split(",");
-					query[0] = query[0].trim();
-					query[1] = query[1].trim();
-					query[2] = query[2].trim();
 					var len = Object.keys(query).length;
-
 					if (len < 3){
 						bot.sendMessage(message.chat.id, "Sintassi: /trasmo bianca,gialla,rosso (spada, armatura, scudo), lascia vuoto un campo per mantenere l'equip attuale");
 						return;
 					}
+					
+					query[0] = query[0].trim();
+					query[1] = query[1].trim();
+					query[2] = query[2].trim();
 
 					connection.query('SELECT weapon_id, weapon2_id, weapon3_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
@@ -11660,9 +11660,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 															bot.sendMessage(message.chat.id, "*" + monster_name + "*\nStato mob: " + status + "\n" +
 																			"Salute mob: *" + formatNumber(monster_life) + "* hp\n" +
 																			"Arma: " + weapon_name + "\n" +
-																			"Armatura: " + weapon2_name + "\n" +
-																			"Scudo: " + weapon3_name + "\n" +
-																			"Talismano: " + charm_name + "\n" +
+																			(weapon2_name != "-" ? "Armatura: " + weapon2_name + "\n" : "") +
+																			(weapon3_name != "-" ? "Scudo: " + weapon3_name + "\n" : "") +
+																			(charm_name != "-" ? "Talismano: " + charm_name + "\n" : "") +
 																			"Il tuo stato: " + my_status + "\n" +
 																			"La tua salute: *" + formatNumber(player_life) + "* hp", dBattleM).then(function () {
 																answerCallbacks[message.chat.id] = function (answer) {
@@ -20268,7 +20268,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 															class_bonus = " (<b>+" + (rows[0].cnt*5) + "%</b> salute per bonus classe)";
 
 														// il 1000*level deve essere uguale a total_life nel checkAssaultsItem
-														text += "A questo livello fornisce <b>" + (20000*level) + "</b> salute alle mura per protezione, possiede ancora la capacità di proteggere da <b>" + formatNumber(life) + "</b> danni\nSi ripara automaticamente del 10% di salute alla sconfitta di un nemico, ma puoi comunque ripararla usando oggetti base (scrivi il nome se non lo vedi nella lista)." + class_bonus + "\n";
+														text += "A questo livello fornisce <b>" + (40000*level) + "</b> salute alle mura per protezione, possiede ancora la capacità di proteggere da <b>" + formatNumber(life) + "</b> danni\nSi ripara automaticamente del 10% di salute alla sconfitta di un nemico, ma puoi comunque ripararla usando oggetti base (scrivi il nome se non lo vedi nella lista)." + class_bonus + "\n";
 
 														if (life == total_life){
 															text += "\nLa resistenza delle mura è al massimo";
@@ -20414,7 +20414,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 												var place_name = answer.text;
 												connection.query('SELECT AP.name, AP.class_bonus, AP.max_players, COUNT(APP.id) As cnt FROM assault_place AP LEFT JOIN assault_place_player_id APP ON AP.id = APP.place_id WHERE name = "' + place_name + '"', function (err, rows, fields) {
 													if (err) throw err;
-													if (Object.keys(rows).length == 0){
+													if (rows[0].name == null){
 														bot.sendMessage(message.chat.id, "Postazione non valida!", kbBack);
 														return;
 													}
@@ -21176,6 +21176,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 														var players_num = connection_sync.query("SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE team_id = " + team_id);
 														players_num = players_num[0].cnt;
+														
+														// console.log("Fase 0: " + tot_damage);
 
 														// Fase 1, postazione di lancio
 
@@ -21228,6 +21230,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 														mob_life -= damage;
 														tot_damage += damage;
 														damage = 0;
+														
+														// console.log("Fase 1: " + tot_damage);
 
 														// Fase 2, torre dello stregone
 
@@ -21327,6 +21331,9 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																var magic_name = apply[0];
 																var magic_effect = apply[1];
 																var damage = apply[2];
+																
+																if (magic_type != 3)
+																	damage = 0;
 
 																connection.query("DELETE FROM assault_place_magic WHERE id = " + magic[0].id, function (err, rows, fields) {
 																	if (err) throw err;
@@ -21348,6 +21355,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 														mob_life -= damage;
 														tot_damage += damage;
 														damage = 0;
+														
+														// console.log("Fase 2: " + tot_damage);
 
 														// Fase 2.5, campo militare
 
@@ -21368,6 +21377,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															final_report += assaultEmojiList[6] + " Il Campo Militare fornisce <b>" + military_bonus + "</b>% bonus al danno delle artiglierie!\n\n";
 														} else
 															final_report += assaultEmojiList[6] + " Il Campo Militare non è stato costruito, nessun bonus al danno!\n\n";
+														
+														// console.log("Fase 2.5: " + tot_damage);
 
 														// Fase 3, artiglieria leggera
 
@@ -21569,12 +21580,12 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	var status_text = "";
 																	if (status.length > 0)
 																		status_text = " (" + status.join(", ") + ")";
+																	
+																	damage = incremDamage(damage, players_num, mob_turn);
+																	damage = Math.round(damage);
 
 																	full_damage += damage;
 																	mob_life -= damage;
-
-																	damage = incremDamage(damage, players_num, mob_turn);
-																	damage = Math.round(damage);
 
 																	if (damage > 0)
 																		setAchievement(player[i].chat_id, player[i].id, 2, damage);
@@ -21628,6 +21639,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_num, mob_name, mob_turn, kill_num, team_level, epic_var, epic_var_record);
 															return;
 														}
+														
+														// console.log("Fase 3: " + tot_damage);
 
 														// Fase 4, attacco del mob
 
@@ -21646,29 +21659,37 @@ bot.onText(/riprendi battaglia/i, function (message) {
 														console.log("assault mob_damage: " + mob_damage);
 														var place5_damage = 0;
 
-														var place5 = connection_sync.query("SELECT level, life FROM assault_place_team WHERE place_id = 5 AND team_id = " + team_id);
+														var place5 = connection_sync.query("SELECT level, life, total_life FROM assault_place_team WHERE place_id = 5 AND team_id = " + team_id);
 
 														var place5_text = "";
 														var isWall = 0;
+														
+														var place5_total_damage = Math.round(mob_damage*0.5);
 
 														if ((Object.keys(place5).length > 0) && (place5[0].level > 0)){	
 															epic_var++;
 															var place5_class_bonus = connection_sync.query("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND AP.id = 5");
 
-															if (mob_damage > 0){
+															if (place5_total_damage > 0){
 																epic_var++;
 																var life = place5[0].life+(place5[0].life*(0.02*place5_class_bonus[0].cnt));
+																var total_life = rows[0].total_life;
 																if (miniboost_arr[4] > 0)
 																	life += life*(0.01*miniboost_arr[4]);
-																if (life < mob_damage){
+																
+																if (life > total_life)
+																	life = total_life;
+																
+																if (life < place5_total_damage){
 																	place5_damage = life;
 																	life = 0;
-																	mob_damage -= life;
-																}else if (life >= mob_damage){
-																	place5_damage = mob_damage;		
-																	life -= mob_damage;
-																	mob_damage = 0;
+																	place5_total_damage -= life;
+																}else if (life >= place5_total_damage){
+																	place5_damage = place5_total_damage;		
+																	life -= place5_total_damage;
+																	place5_total_damage = 0;
 																}
+																
 																isWall = 1;
 																var resist = "(resistenza residua: " + formatNumber(life) + ")";
 																if (life <= 0)
@@ -21682,7 +21703,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 														} else
 															final_report += assaultEmojiList[4] + " Le mura non sono state costruite, nessuna protezione aggiuntiva!\n\n";
 
-														var other_damage = mob_damage;
+														var other_damage = mob_damage+place5_total_damage;
 
 														if (other_damage > 0){
 															epic_var++;
@@ -21708,18 +21729,12 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																eval("player_place" + perc_players[i].place_id + "_perc = " + perc);
 
 															/*
-															var player_place5_perc = 60;
-															var player_place3_perc = 20;
-															var player_place4_perc = 10;
-															var player_place1_perc = 5;
-															var player_place6_perc = 5;
-															*/
-
 															console.log(player_place5_perc);
 															console.log(player_place3_perc);
 															console.log(player_place4_perc);
 															console.log(player_place1_perc);
 															console.log(player_place6_perc);
+															*/
 
 															var player = connection_sync.query('SELECT P.*, place_id, (SELECT COUNT(id) FROM assault_place_player_id WHERE place_id = AP.place_id) As cnt FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND place_id IN (5,3,4,1,6) AND killed = 0 ORDER BY FIELD(place_id,5,3,4,1,6), RAND()');
 
@@ -22007,6 +22022,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															});
 															return;
 														}
+														
+														// console.log("Fase 4: " + tot_damage);
 
 														// Fase 5, artiglieria pesante
 
@@ -22268,6 +22285,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_num, mob_name, mob_turn, kill_num, team_level, epic_var, epic_var_record);
 															return;
 														}
+														
+														// console.log("Fase 5: " + tot_damage);
 
 														// Fase 6, nido del drago
 
@@ -22328,6 +22347,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_num, mob_name, mob_turn, kill_num, team_level, epic_var, epic_var_record);
 															return;
 														}
+														
+														// console.log("Fase 6: " + tot_damage);
 
 														// Fase 7, fabbrica di energia
 
@@ -22365,6 +22386,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															final_report += assaultEmojiList[7] + " La Fabbrica di Energia consente di recuperare il <b>" + perc + "%</b> di hp a tutti\n\n";
 														} else
 															final_report += assaultEmojiList[7] + " La Fabbrica di Energia non è stata costruita, nessun recupero di salute!\n\n";
+														
+														// console.log("Fase 7: " + tot_damage);
 
 														// Fase 8, intrugli e pozioni
 
@@ -22481,6 +22504,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 															final_report += assaultEmojiList[9] + " I compagni recuperano salute:" + player_text + "\n\n";
 														}
+														
+														// console.log("Fase 8: " + tot_damage);
 
 														// Fase 9, stampa infermeria
 
@@ -22562,6 +22587,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 function incremDamage(damage, players_num, mob_turn){
 	var val = (10 + players_num/2);
+	console.log("Moltiplicatore: " + Math.floor(mob_turn/val));
 	damage = damage*(Math.floor(mob_turn/val) > 0 ? Math.floor(mob_turn/val) : 1);
 	return damage;
 }
@@ -27352,9 +27378,8 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 
 bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function (message) {
 
-	if (eventTeamStory == 0) {
+	if (eventTeamStory == 0)
 		return;
-	}
 
 	connection.query('SELECT id, holiday, account_id, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -27477,22 +27502,24 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function 
 						var n = new Date().getDay();
 						if (n == 6) {
 							text = "<b>Bentornat" + gender_text + "!</b>\nIl Bardo ti suggerisce le istruzioni per la scrittura di oggi, puoi scegliere una delle tre tracce:\n" +
-								"> Traccia 1: In un'esplorazione di una delle tante cave di Lootia incontri un uomo altissimo che ti guarda e ti chiede 'Cosa vorresti esplorare nella tua avventura giovane?', ci pensi un po' e dici...\n" +
-								"> Traccia 2: Lungo la strada di ritorno da una missione trovi a terra un tronchetto blu duro come l'acciaio, lo guardi con aria interrogativa, a cosa potrebbe servire?\n" +
-								"> Traccia 3: Il treno sul quale stai viaggiando si ferma improvvisamente in mezzo al deserto, cosa fai?\n" +
+								"> <b>Traccia 1</b>: Lo scorrere impetuoso del tempo: cosa faresti con una clessidra che a seconda della direzione fa scorrere il tempo in avanti o indietro?\n" +
+								"> <b>Traccia 2</b>: Vieni trasformato in un Gabbianodonte affamato di pesce senza-branchie, come decidi di vivere la tua giornata?\n" +
+								"> <b>Traccia 3</b>: Incontri uno stregone capace di trasformare l'aria in succo di frutta al lampone, cosa fai?\n" +
 								"- Massimo 4.000 caratteri -\n\n" +
 								"Ricorda di inviare la storia prima di mezzanotte, domani cambieranno i temi!";
 						} else if (n == 0) {
 							text = "<b>Bentornat" + gender_text  + "!</b>\nIl Bardo ti suggerisce le istruzioni per la scrittura di oggi, puoi scegliere una delle tre tracce:\n" +
-								"> Traccia 1: Sei ad una festa in maschera, solo che hai dimenticato la maschera! Come te la cavi?\n" +
-								"> Traccia 2: Devi spartire un tesoro tra te ed il tuo compagno di avventure, ma la nave su cui ti trovi sta affondando, cosa fai?\n" +
-								"> Traccia 3: Vieni trasformato in un Troll di mezza età con la bava alla bocca per una scommessa persa, come decidi di vivere la tua giornata?\n" +
+								"> <b>Traccia 1</b>: Raggiungi un dirupo, dietro di te un gruppo di pollosauri ti fissa minacciosamente, hai solo uno spazzolino, cosa fai?\n" +
+								"> <b>Traccia 2</b>: Sei condannato a morte per l'omicidio di un alberellolello, un sedere di gigante ti schiaccerà tra 60 minuti, come la scampi?\n" +
+								"> <b>Traccia 3</b>: Alcuni banditi si stanno avvicinando al villaggio in groppa a dei rinocerunti, sei uno gnomo appena ripreso da una sbronza, cosa fai?\n" +
 								"- Massimo 4.000 caratteri -\n\n" +
 								"Ricorda di inviare la storia di prima di mezzanotte! Le valutazioni arriveranno il prima possibile";
 						} else {
 							bot.sendMessage(message.chat.id, "Oggi non è disponibile il Bardo, torna quando l'evento è attivo", back);
 							return;
 						}
+						
+						text += "\n\nQuesto Canto del Bardo assicurerà ai vincitori la possibilità di provare in anticipo la nuova modalità Assalto!";
 
 						bot.sendMessage(message.chat.id, text + win, kb2).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
@@ -32540,14 +32567,14 @@ bot.onText(/compra/i, function (message) {
 				sconto = 20;
 			price_drop = 1;
 		}
+		
 		if (sconto_evento > 0) {
 			sconto = sconto_evento;
 			price_drop = 1;
 		}
 
-		if ((oggetto == "") || (oggetto == " ")) {
+		if ((oggetto == "") || (oggetto == " "))
 			return;
-		}
 
 		var store = {
 			parse_mode: "Markdown",
@@ -32574,9 +32601,8 @@ bot.onText(/compra/i, function (message) {
 		};
 
 		var pos = oggetto.indexOf("(");
-		if (pos != -1) {
+		if (pos != -1)
 			oggetto = oggetto.substr(0, pos - 1);
-		}
 
 		connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 7', function (err, rows, fields) {
 			if (err) throw err;
@@ -32586,9 +32612,8 @@ bot.onText(/compra/i, function (message) {
 				abBonus = rows[0].ability_level * rows[0].val;
 
 				var rand = Math.random() * 100;
-				if (rand < abBonus) {
+				if (rand < abBonus)
 					abBonus = 1;
-				}
 			}
 
 			if (oggetto.indexOf("Scrigno") != -1) {
@@ -32621,9 +32646,8 @@ bot.onText(/compra/i, function (message) {
 
 							var price = rows[0].value;
 
-							if (price_drop == 1) {
+							if (price_drop == 1)
 								price -= Math.round((rows[0].value / 100) * sconto);
-							}
 
 							quantity = Math.floor(quantity);
 							price = price * parseInt(quantity);
@@ -32768,16 +32792,15 @@ bot.onText(/compra/i, function (message) {
 							quantity = Math.floor(quantity);
 
 							var value = 0;
-							if (name == "Piuma di Fenice") {
+							if (name == "Piuma di Fenice")
 								value = 6000;
-							} else if (name == "Cenere di Fenice") {
+							else if (name == "Cenere di Fenice")
 								value = 25000;
-							}
+								
 							var price = parseInt(value);
 
-							if (price_drop == 1) {
+							if (price_drop == 1)
 								price -= Math.round(value / 100) * sconto;
-							}
 
 							price = price * quantity;
 
@@ -39757,7 +39780,7 @@ bot.onText(/necro del destino/i, function (message) {
 
 														var text = "Hai speso " + cost + " 💠 ed ottenuto:\n";
 														if (num == 1){
-															var rows = connection_sync.query('SELECT id, name, rarity FROM item WHERE rarity NOT IN ("C","NC","X","S","IN","A") OR id = 764 ORDER BY RAND()');
+															var rows = connection_sync.query('SELECT id, name, rarity FROM item WHERE rarity NOT IN ("C","NC","X","S","IN","A","U") OR id = 764 ORDER BY RAND()');
 															addItem(player_id, rows[0].id);
 															addItem(player_id, rows[1].id);
 															text += "> " + rows[0].name + " (" + rows[0].rarity + ")\n";
@@ -44827,7 +44850,7 @@ function setFinishedAssaultsItem(element, index, array) {
 				var extra_life = "";
 				if (place_id == 5){
 					// il 100*level deve essere uguale a total_life nel selected == 5 nella gestione
-					var refill = ((level+1)*20000);
+					var refill = ((level+1)*40000);
 					extra_life = ", life = " + refill + ", total_life = " + refill;
 				}
 
