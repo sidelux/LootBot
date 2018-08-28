@@ -371,7 +371,7 @@ bot.onText(/^\/start/, function (message) {
 
 bot.onText(/^\/comandigiocatore/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per il giocatore*\n" +
-					"/giocatore - Mostra la scheda giocatore\n" +
+					"/giocatore o /giocatrice - Mostra la scheda giocatore\n" +
 					"/zaino - Mostra gli oggetti contenuti nello zaino\n" +
 					"/oggetto - Mostra i dettagli di un oggetto posseduto\n" +
 					"/oggetti - Mostra i dettagli di più oggetti posseduti\n" +
@@ -7775,7 +7775,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 	});
 };
 
-bot.onText(/^\/giocatore/, function (message) {
+bot.onText(/^\/giocatore|^\/giocatrice/, function (message) {
 	var player = message.from.username;
 	var account_id = 0;
 

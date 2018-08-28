@@ -25,7 +25,7 @@ var arena = 0;				// azzera le due tabelle
 var lootteria = 0;			// svuota event_lottery_coins e event_lottery_prize con extracted a 0
 var lootteriaBlock = 0;
 var autoEstrazione = 0;
-var villa = 0;				// update a 10 punti e svuota tabella
+var villa = 1;				// update a 10 punti e svuota tabella
 var wanted = 0;				// svuota event_wanted_status
 var eventTeamStory = 0;		// svuota event_team_story
 var eventFestival = 0;		// event_crafting_status con total_cnt a 0
@@ -3535,7 +3535,7 @@ function printStart(message) {
 						'- Come ultima attività si intende un qualsiasi comando inviato tramite il bot principale o il Plus.\n\n' +
 						'<b>Link Utili</b> 📃\n' +
 						'- Vota il bot nello <a href="https://telegram.me/storebot?start=lootgamebot">Storebot</a>\n' +
-						'- Per aiutarmi a mantenere il server, <a href="http://fenixweb.net/">fai una donazione</a>, riceverai delle Monete Lunari 🌕!\n\n' +
+						'- Per aiutarmi a mantenere il server, <a href="https://www.paypal.me/EdoardoCortese">fai una donazione</a>, riceverai delle Monete Lunari 🌕!\n\n' +
 						'<b>Crediti</b> 👑\n' +
 						'- Edoardo Cortese @fenix45\n' +
 						'- Emanuele Finiguerra @LastSoldier95', no_preview_html);
@@ -20375,8 +20375,11 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 														if (rows[0].cnt > 0)
 															class_bonus = " (<b>+" + rows[0].cnt + "%</b> probabilità per bonus classe)";
 
-														text += "A questo livello fornisce <b>" + level + "%</b> probabilità base di sferrare l'attacco speciale da parte del drago\nPuoi solo potenziare questo tipo di postazione!" + class_bonus;
-														bot.sendMessage(message.chat.id, text, kbBack_html);
+														connection.query('SELECT COUNT(AP.id) As cnt FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND place_id = 6', function (err, rows, fields) {
+															if (err) throw err;
+															text += "A questo livello fornisce <b>" + (level+(rows[0].cnt*5)) + "%</b> probabilità base di sferrare l'attacco speciale da parte del drago con un danno potente quanto lo sono i draghi dei membri nella postazione\nPuoi solo potenziare questo tipo di postazione!" + class_bonus;
+															bot.sendMessage(message.chat.id, text, kbBack_html);
+														});
 													});
 												}else if (selected == 7){
 													connection.query("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND AP.id = 7", function (err, rows, fields) {
@@ -27479,23 +27482,21 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function 
 					} else {
 
 						var win = "";
-						if (rows[0].point_1 > 0) {
+						if (rows[0].point_1 > 0)
 							win = "\n\nPremio primo giorno: " + rows[0].point_1 + " 🦋";
-						} else {
-							if (rows[0].story_1 != null) {
+						else {
+							if (rows[0].story_1 != null)
 								win = "\n\nTesto del primo giorno inviato con successo";
-							} else {
+							else
 								win = "\n\nTesto del primo giorno in attesa...";
-							}
 						}
-						if (rows[0].point_2 > 0) {
+						if (rows[0].point_2 > 0)
 							win += "\nPremio secondo giorno: " + rows[0].point_2 + " 🦋";
-						} else {
-							if (rows[0].story_2 != null) {
+						else {
+							if (rows[0].story_2 != null)
 								win += "\nTesto del secondo giorno inviato con successo";
-							} else {
+							else
 								win += "\nTesto del secondo giorno in attesa...";
-							}
 						}
 
 						var text = "";
@@ -32110,7 +32111,7 @@ bot.onText(/ricicla/i, function (message) {
 		}
 
 		if (message.text.indexOf("/") != -1) {
-			message.text = message.text.replace("/ricicla ", "");
+			message.text = message.text.toLowerCase().replace("/ricicla ", "");
 			var oggetto = message.text.split(",")[0].trim();
 			if (message.text.indexOf(",") == -1) {
 				bot.sendMessage(message.chat.id, "Sintassi non valida: /ricicla nome,quantità", back);
