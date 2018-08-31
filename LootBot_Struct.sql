@@ -205,7 +205,7 @@ CREATE TABLE `assault` (
   `weak_unlocked` int(11) NOT NULL DEFAULT '0',
   `completed` int(11) NOT NULL DEFAULT '0',
   `lost` int(11) NOT NULL DEFAULT '0',
-  `mob_name` varchar(32) DEFAULT NULL,
+  `mob_name` varchar(64) DEFAULT NULL,
   `mob_life` int(11) NOT NULL DEFAULT '0',
   `mob_total_life` int(11) NOT NULL DEFAULT '0',
   `mob_paralyzed` int(11) NOT NULL DEFAULT '0',
@@ -3486,4 +3486,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-08-28  9:00:12
+-- Dump completed on 2018-08-31 15:00:10

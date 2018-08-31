@@ -4814,7 +4814,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 
 	var custom_message = "";
 	if (message.reply_to_message != undefined)
-		custom_message = elements[0].replace(/[0-9]/gi, '').trim();
+		custom_message = elements[0].replace(/[0-9\.]/gi, '').trim();
 	else{
 		if (Object.keys(elements).length == 3)
 			custom_message = elements[2];
