@@ -443,8 +443,7 @@ bot.onText(/^\/comanditeam/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per i team*\n" +
 					"/chiamaparty - Invia un messaggio taggando tutti i membri del proprio party (escluso il chiamante)\n" +
 					"/chiamaparty<numero> - Invia un messaggio taggando tutti i membri del party <numero> (solo per amministratori)\n" +
-					"/votaparty - Invia un messaggio taggando solo i membri del proprio party che devono ancora votare\n" +
-					"/scalata - Invia un messaggio taggando solo i membri del team che devono ancora attaccare il boss attuale", mark);
+					"/votaparty - Invia un messaggio taggando solo i membri del proprio party che devono ancora votare", mark);
 });
 
 bot.onText(/^\/comandigenerali/, function (message) {
@@ -841,7 +840,7 @@ bot.onText(/^\/gban ([^\s]+) (.+)|^\/gban|^\/🍌/, function (message, match) {
 			connection.query('DELETE FROM public_shop WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			connection.query('UPDATE player SET market_ban = 1, boss_id = NULL, mission_party = 0 WHERE id = ' + rows[0].id, function (err, rows, fields) {
+			connection.query('UPDATE player SET market_ban = 1, mission_party = 0 WHERE id = ' + rows[0].id, function (err, rows, fields) {
 				if (err) throw err;
 			});
 			connection.query('DELETE FROM team_player WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
@@ -1130,7 +1129,7 @@ bot.onText(/^\/gruppi/, function (message) {
 																				"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
 																				"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
 																				"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
-																				"<a href='https://t.me/joinchat/CXTRTAtsjVG_AhJb3FjW5w'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
+																				"<a href='https://t.me/joinchat/CXTRTE60M2WLQR2fvG_q7A'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
 																				"<a href='https://t.me/joinchat/B0siAkhfd9ieAbo1PyL3zA'>Ade's Mappers</a> (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
 																				"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ") - La musica ed il diverimento di Lootia!\n" +
 																				"@LootAste (" + c18 + ") - Gruppo dedicato alle aste\n" +
@@ -1139,7 +1138,6 @@ bot.onText(/^\/gruppi/, function (message) {
 																				"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
 																				"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
 																				"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
-																				"@YellowBetsLoot - YellowPlay for YellowWin\n" +
 																				"@yellowlootshop - Join for eventi free!\n" +
 
 																				"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
@@ -1179,6 +1177,7 @@ bot.onText(/^\/mercatini/, function (message) {
 					"@mercaloot - Negozio Honesto\n" +
 					"@EdicolaDiLootia - Sempre più conveniente 👍\n" +
 					"@lootnoce - Prezzi aggiornati ogni due giorni!\n" +
+					"@Fenixstore - Il primo negozio a fare distinzioni tra poveri e ricchi\n" +
 
 					"\nVisita anche /gruppi. Per comparire qua chiedi all'amministratore.", html);
 });
@@ -1336,85 +1335,6 @@ bot.onText(/^\/votaparty$/, function (message, match) {
 				}
 
 				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> incita i suoi compagni di party a votare!\n" + nicklist, html);
-			});
-		});
-	});
-});
-
-bot.onText(/^\/scalata/, function (message, match) {
-
-	if (!checkSpam(message))
-		return;
-
-	if (message.chat.id > 0){
-		bot.sendMessage(message.from.id, "Questo comando può essere usato solo nei gruppi");
-		return;
-	}
-
-	connection.query('SELECT team_id, player_id FROM team_player WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
-		if (err) throw err;
-
-		if (Object.keys(rows).length == 0){
-			bot.sendMessage(message.from.id, "Non sei in team");
-			return;
-		}
-
-		var team_id = rows[0].team_id;
-		var player_id = rows[0].player_id;
-		
-		if (team_id == 1113){
-			connection.query('SELECT id FROM assault WHERE team_id = ' + team_id, function (err, rows, fields) {
-				if (err) throw err;
-
-				if (Object.keys(rows).length == 0){
-					bot.sendMessage(message.from.id, "Iscriviti all'assalto prima di utilizzare questa funzione");
-					return;
-				}
-				
-				connection.query('SELECT P.nickname, P.chat_id FROM player P, team_player T LEFT JOIN assault_place_player_id A ON T.player_id = A.player_id WHERE T.team_id = ' + team_id + ' AND T.player_id = P.id AND T.player_id != ' + player_id + ' AND A.id IS NULL', function (err, rows, fields) {
-					if (err) throw err;
-
-					var nicklist = "";
-
-					if (Object.keys(rows).length == 0){
-						bot.sendMessage(message.chat.id, "Non manca nessun compagno valido!");
-						return;
-					}
-
-					for (i = 0; i < Object.keys(rows).length; i++)
-						nicklist += "@" + rows[i].nickname + " ";
-
-					bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> incita i suoi compagni di team a partecipare all'assalto!\n" + nicklist, html);
-				});
-				
-			});
-			return;
-		}
-
-		connection.query('SELECT id FROM boss_team WHERE team_id = ' + team_id + ' AND killedby IS NULL ORDER BY boss_id LIMIT 1', function (err, rows, fields) {
-			if (err) throw err;
-
-			if (Object.keys(rows).length == 0){
-				bot.sendMessage(message.from.id, "Nessun boss in corso");
-				return;
-			}
-
-			var boss_id = rows[0].id;
-
-			connection.query('SELECT P.nickname FROM player P, team_player T LEFT JOIN boss_damage B ON T.player_id = B.player_id AND B.boss_id = ' + boss_id + ' WHERE T.team_id = ' + team_id + ' AND T.player_id != ' + player_id + ' AND B.player_id IS NULL AND T.player_id = P.id AND suspended = 0 AND holiday = 0 GROUP BY T.player_id', function (err, rows, fields) {
-				if (err) throw err;
-
-				var nicklist = "";
-
-				if (Object.keys(rows).length == 0){
-					bot.sendMessage(message.chat.id, "Non manca nessun compagno valido!");
-					return;
-				}
-
-				for (i = 0; i < Object.keys(rows).length; i++)
-					nicklist += "@" + rows[i].nickname + " ";
-
-				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> incita i suoi compagni di team ad attaccare il boss!\n" + nicklist, html);
 			});
 		});
 	});
@@ -6415,9 +6335,6 @@ bot.onText(/^\/statistiche/, function (message) {
 							connection.query('SELECT COUNT(*) As travel FROM player WHERE travel_id != 0', function (err, rows, fields) {
 								if (err) throw err;
 								var travel = rows[0].travel;
-								connection.query('SELECT SUM(damage) As dmg FROM boss_damage', function (err, rows, fields) {
-									if (err) throw err;
-									var dmg = rows[0].dmg;
 									connection.query('SELECT MAX(id) As teamn FROM team', function (err, rows, fields) {
 										if (err) throw err;
 										var teamn = rows[0].teamn;
@@ -6502,7 +6419,6 @@ bot.onText(/^\/statistiche/, function (message) {
 																																		"*Draghi*: " + formatNumber(dragon) + "\n" +
 																																		"*Team:* " + formatNumber(teamn) + "\n" +
 																																		"*Ispezioni/In corso/Rapporto:* " + formatNumber(heist) + "/" + heistn + "/" + perc + "%\n" +
-																																		"*Danni ai boss attuali:* " + formatNumber(dmg) + "\n" +
 																																		"*Lotterie:* " + formatNumber(lottery) + "\n" +
 																																		"*Oggetti nei negozi:* " + formatNumber(shop) + "\n" +
 																																		"*Oggetti acquistati:* " + formatNumber(shop_tot) + "\n" +
@@ -6547,7 +6463,6 @@ bot.onText(/^\/statistiche/, function (message) {
 											});
 										});
 									});
-								});
 							});
 						});
 					});

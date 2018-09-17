@@ -263,6 +263,7 @@ CREATE TABLE `assault_place` (
   `class_bonus` varchar(16) DEFAULT NULL,
   `max_level` int(11) NOT NULL DEFAULT '0',
   `max_players` int(11) NOT NULL DEFAULT '10',
+  `description` varchar(1024) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -496,77 +497,7 @@ CREATE TABLE `boss` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
   `total_life` int(16) NOT NULL,
-  `description` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `boss_damage`
---
-
-DROP TABLE IF EXISTS `boss_damage`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `boss_damage` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `boss_id` int(3) NOT NULL,
-  `player_id` int(3) NOT NULL,
-  `team_id` int(11) NOT NULL,
-  `damage` int(16) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `boss_id` (`boss_id`),
-  KEY `player_id` (`player_id`),
-  KEY `team_id` (`team_id`),
-  CONSTRAINT `BOSSID_TEAM` FOREIGN KEY (`boss_id`) REFERENCES `boss_team` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `PLAYERID_BOSST` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `TEAMID_BOSST` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Temporary table structure for view `boss_damage_view`
---
-
-DROP TABLE IF EXISTS `boss_damage_view`;
-/*!50001 DROP VIEW IF EXISTS `boss_damage_view`*/;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
-/*!50001 CREATE TABLE `boss_damage_view` (
-  `notification` tinyint NOT NULL,
-  `nickname` tinyint NOT NULL,
-  `player_id` tinyint NOT NULL,
-  `chat_id` tinyint NOT NULL,
-  `damage` tinyint NOT NULL,
-  `boss_id` tinyint NOT NULL,
-  `team_id` tinyint NOT NULL
-) ENGINE=MyISAM */;
-SET character_set_client = @saved_cs_client;
-
---
--- Table structure for table `boss_team`
---
-
-DROP TABLE IF EXISTS `boss_team`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `boss_team` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `boss_id` int(11) NOT NULL,
-  `life` int(11) NOT NULL,
-  `total_life` int(11) NOT NULL,
-  `killedby` varchar(64) DEFAULT NULL,
-  `killeddate` timestamp NULL DEFAULT NULL,
-  `unlocked` int(11) NOT NULL,
-  `team_id` int(11) NOT NULL,
-  `paralyzed` int(11) NOT NULL DEFAULT '0',
-  `critic` int(11) NOT NULL DEFAULT '0',
-  `countdown` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  KEY `TEAMID` (`team_id`),
-  KEY `boss_id` (`boss_id`),
-  CONSTRAINT `BOSSID_TEAML` FOREIGN KEY (`boss_id`) REFERENCES `boss` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `team_id_team` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1060,6 +991,7 @@ CREATE TABLE `dungeon_list` (
   `main` int(11) NOT NULL DEFAULT '0',
   `notified` int(11) NOT NULL DEFAULT '0',
   `creator_id` int(11) NOT NULL DEFAULT '0',
+  `creator_comment` varchar(1024) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`) USING BTREE,
   KEY `creator_id` (`creator_id`)
@@ -2615,7 +2547,7 @@ CREATE TABLE `player` (
   `life` int(32) NOT NULL DEFAULT '0',
   `total_life` int(32) NOT NULL DEFAULT '0',
   `money` int(16) NOT NULL DEFAULT '100',
-  `magic_to` int(11) NOT NULL DEFAULT '0',
+  `magic_active` int(11) NOT NULL DEFAULT '0',
   `dragon_to` int(11) NOT NULL DEFAULT '0',
   `paralyzed` int(11) NOT NULL DEFAULT '0',
   `market_pack` int(11) NOT NULL DEFAULT '0',
@@ -3094,7 +3026,6 @@ CREATE TABLE `team` (
   `slogan` varchar(255) DEFAULT NULL,
   `level` int(3) NOT NULL DEFAULT '1',
   `point` int(11) NOT NULL DEFAULT '10',
-  `boss_batch` tinyint(4) NOT NULL DEFAULT '0',
   `players` int(3) NOT NULL DEFAULT '1',
   `max_players` int(3) NOT NULL DEFAULT '3',
   `min_lev` int(11) NOT NULL DEFAULT '0',
@@ -3107,8 +3038,7 @@ CREATE TABLE `team` (
   `details` int(11) NOT NULL DEFAULT '0',
   `child_team` int(11) DEFAULT NULL,
   `child_time` timestamp NULL DEFAULT NULL,
-  `kill_num1` int(11) NOT NULL DEFAULT '0',
-  `kill_num2` int(11) NOT NULL DEFAULT '0',
+  `kill_num` int(11) NOT NULL DEFAULT '0',
   `boost_id` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `child_team` (`child_team`) USING BTREE,
@@ -3245,25 +3175,6 @@ CREATE TABLE `travel` (
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
 /*!50001 VIEW `auction_public` AS select `L`.`id` AS `id`,`P1`.`nickname` AS `creator`,`P2`.`nickname` AS `player`,`I`.`name` AS `item`,`L`.`price` AS `price`,`L`.`time` AS `time` from (((`auction_history` `L` join `player` `P1` on((`P1`.`id` = `L`.`creator_id`))) join `player` `P2` on((`P2`.`id` = `L`.`player_id`))) join `item` `I` on((`I`.`id` = `L`.`item_id`))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `boss_damage_view`
---
-
-/*!50001 DROP TABLE IF EXISTS `boss_damage_view`*/;
-/*!50001 DROP VIEW IF EXISTS `boss_damage_view`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `boss_damage_view` AS select `team_player`.`notification` AS `notification`,`player`.`nickname` AS `nickname`,`player`.`id` AS `player_id`,`player`.`chat_id` AS `chat_id`,sum(`boss_damage`.`damage`) AS `damage`,`boss_damage`.`boss_id` AS `boss_id`,`boss_damage`.`team_id` AS `team_id` from ((`boss_damage` join `player`) join `team_player`) where ((`team_player`.`player_id` = `player`.`id`) and (`player`.`id` = `boss_damage`.`player_id`)) group by `player`.`nickname`,`boss_damage`.`boss_id`,`boss_damage`.`team_id` order by sum(`boss_damage`.`damage`) desc */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -3486,4 +3397,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-08-31 15:00:10
+-- Dump completed on 2018-09-17  6:00:09
