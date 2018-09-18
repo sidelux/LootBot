@@ -188,7 +188,7 @@ bot.on('message', function (message) {
 							checkStatus(message, message.from.username, message.from.id, 1);
 					}
 					if (rows[0].compact == 1) {
-						if ((message.from.is_bot == 0) && (message.text != undefined)){
+						if ((message.from.is_bot == 0) && (message.text != undefined) && (message.text.indexOf("http") == -1)){
 							if ((message.reply_to_message == undefined) && (!message.text.startsWith("/")) && (message.forward_from == undefined)){
 								if ((mergeMessages[message.chat.id] != undefined) && (mergeMessages[message.chat.id] != "")){
 									if (mergeMessages[message.chat.id].split(";")[0] == message.from.id){
