@@ -288,7 +288,7 @@ bot.on("chosen_inline_result", function (query) {
 
 bot.on("inline_query", function (query) {
 	var code = parseInt(query.query);
-	
+
 	if ((code == "") || (isNaN(code)))
 		return;
 
@@ -852,7 +852,7 @@ bot.onText(/^\/gban ([^\s]+) (.+)|^\/gban|^\/🍌/, function (message, match) {
 			connection.query('DELETE FROM mission_team_party_player WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			
+
 			removeFromAssault(rows[0].id);
 
 			bot.kickChatMember(message.chat.id, account_id).then(function (result) {
@@ -1092,55 +1092,61 @@ bot.onText(/^\/gruppi/, function (message) {
 														bot.getChatMembersCount(-1001167682606).then(function (data) {
 															var c17 = data; //music
 															console.log("Next Aste");
-															
+
 															bot.getChatMembersCount(-1001179385319).then(function (data) {
 																var c18 = data; //aste
+																console.log("Next Nabbi");
 
-																if (message.chat.id < 0)
-																	bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
+																bot.getChatMembersCount(-1001332170267).then(function (data) {
+																	var c19 = data; //nabbi
 
-																bot.sendMessage(message.from.id, "<b>Ufficiali</b>\n" +
-																				"Canale principale per aggiornamenti: @LootBotAvvisi\n" +
+																	if (message.chat.id < 0)
+																		bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
 
-																				"\n<b>Bot</b>\n" +
-																				"Liste oggetti e alberi automatici: @craftlootbot\n" +
-																				"Qualcuno sempre a disposizione: @OracoloLootBot\n" +
-																				"Calcolo Loot Combat Rating: @lootcrbot\n" +
-																				"Tool per mercato e cronologie: @ToolsForLootBot\n" +
-																				"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
-																				"@DichisUtilityBot\n" +
+																	bot.sendMessage(message.from.id, "<b>Ufficiali</b>\n" +
+																					"Canale principale per aggiornamenti: @LootBotAvvisi\n" +
 
-																				"\n<b>Altro</b>\n" +
-																				"<a href='https://discord.gg/ea5tSEj'>Canale Discord</a>\n" +
-																				"<a href='telegra.ph/Mini-Guida-alle-LootBot-API-11-24'>LootBot Api</a>\n" +
+																					"\n<b>Bot</b>\n" +
+																					"Liste oggetti e alberi automatici: @craftlootbot\n" +
+																					"Qualcuno sempre a disposizione: @OracoloLootBot\n" +
+																					"Calcolo Loot Combat Rating: @lootcrbot\n" +
+																					"Tool per mercato e cronologie: @ToolsForLootBot\n" +
+																					"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
+																					"@DichisUtilityBot\n" +
 
-																				"\n<b>Siti</b>\n" +
-																				"<a href='http://beegotsy.altervista.org/lootbot/'>#SonoPoveroFaccioGuide</a> - Materiali necessari, guida, e altre funzionalità in sviluppo\n" +
+																					"\n<b>Altro</b>\n" +
+																					"<a href='https://discord.gg/ea5tSEj'>Canale Discord</a>\n" +
+																					"<a href='telegra.ph/Mini-Guida-alle-LootBot-API-11-24'>LootBot Api</a>\n" +
 
-																				"\n<b>Gruppi</b>\n" +
-																				"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
-																				"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
-																				"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
-																				"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
-																				"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
-																				"<a href='https://t.me/joinchat/AVqFykBMfmvrULAUQv-MmQ'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
-																				"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
-																				"<a href='https://t.me/joinchat/AThc-0DH8FaFEpYpLg-rOA'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
-																				"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
-																				"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
-																				"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
-																				"<a href='https://t.me/joinchat/CXTRTE60M2WLQR2fvG_q7A'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
-																				"<a href='https://t.me/joinchat/B0siAkhfd9ieAbo1PyL3zA'>Ade's Mappers</a> (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
-																				"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ") - La musica ed il diverimento di Lootia!\n" +
-																				"@LootAste (" + c18 + ") - Gruppo dedicato alle aste\n" +
+																					"\n<b>Siti</b>\n" +
+																					"<a href='http://beegotsy.altervista.org/lootbot/'>#SonoPoveroFaccioGuide</a> - Materiali necessari, guida, e altre funzionalità in sviluppo\n" +
 
-																				"\n<b>Canali</b>\n" +
-																				"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
-																				"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
-																				"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
-																				"@yellowlootshop - Join for eventi free!\n" +
+																					"\n<b>Gruppi</b>\n" +
+																					"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
+																					"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
+																					"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
+																					"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
+																					"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
+																					"<a href='https://t.me/joinchat/AVqFykBMfmvrULAUQv-MmQ'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
+																					"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
+																					"<a href='https://t.me/joinchat/AThc-0DH8FaFEpYpLg-rOA'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
+																					"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
+																					"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
+																					"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
+																					"<a href='https://t.me/joinchat/CXTRTE60M2WLQR2fvG_q7A'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
+																					"<a href='https://t.me/joinchat/B0siAkhfd9ieAbo1PyL3zA'>Ade's Mappers</a> (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
+																					"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ") - La musica ed il diverimento di Lootia!\n" +
+																					"@LootAste (" + c18 + ") - Gruppo dedicato alle aste\n" +
+																					"<a href='https://t.me/joinchat/B8_tHk9nThsWfDL-k-Fazw'>Loot Nabbi</a> (" + c19 + ") - Dedicato ai nabbi di Lootia!\n" +
 
-																				"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
+																					"\n<b>Canali</b>\n" +
+																					"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
+																					"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
+																					"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
+																					"@yellowlootshop - Join for eventi free!\n" +
+
+																					"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
+																});
 															});
 														});
 													});
@@ -6335,114 +6341,113 @@ bot.onText(/^\/statistiche/, function (message) {
 							connection.query('SELECT COUNT(*) As travel FROM player WHERE travel_id != 0', function (err, rows, fields) {
 								if (err) throw err;
 								var travel = rows[0].travel;
-									connection.query('SELECT MAX(id) As teamn FROM team', function (err, rows, fields) {
+								connection.query('SELECT MAX(id) As teamn FROM team', function (err, rows, fields) {
+									if (err) throw err;
+									var teamn = rows[0].teamn;
+									connection.query('SELECT SUM(IV.quantity) As u FROM item I, inventory IV WHERE I.id = IV.item_id AND I.rarity = "U"', function (err, rows, fields) {
 										if (err) throw err;
-										var teamn = rows[0].teamn;
-										connection.query('SELECT SUM(IV.quantity) As u FROM item I, inventory IV WHERE I.id = IV.item_id AND I.rarity = "U"', function (err, rows, fields) {
+										var u = rows[0].u;
+										var d = new Date();
+										var today = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate());
+										connection.query('SELECT COUNT(*) As active FROM `last_command` WHERE time LIKE "' + today + '%"', function (err, rows, fields) {
 											if (err) throw err;
-											var u = rows[0].u;
-											var d = new Date();
-											var today = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate());
-											connection.query('SELECT COUNT(*) As active FROM `last_command` WHERE time LIKE "' + today + '%"', function (err, rows, fields) {
+											var act = rows[0].active;
+
+											connection.query('SELECT SUM(quantity) As cnt FROM inventory WHERE item_id = 646', function (err, rows, fields) {
 												if (err) throw err;
-												var act = rows[0].active;
-
-												connection.query('SELECT SUM(quantity) As cnt FROM inventory WHERE item_id = 646', function (err, rows, fields) {
+												var dust = rows[0].cnt;
+												connection.query('SELECT `AUTO_INCREMENT` As lottery FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "public_lottery"', function (err, rows, fields) {
 													if (err) throw err;
-													var dust = rows[0].cnt;
-													connection.query('SELECT `AUTO_INCREMENT` As lottery FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "public_lottery"', function (err, rows, fields) {
+													var lottery = rows[0].lottery;
+													connection.query('SELECT `AUTO_INCREMENT` As shop FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "public_shop"', function (err, rows, fields) {
 														if (err) throw err;
-														var lottery = rows[0].lottery;
-														connection.query('SELECT `AUTO_INCREMENT` As shop FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "public_shop"', function (err, rows, fields) {
+														var shop = rows[0].shop;
+														connection.query('SELECT `AUTO_INCREMENT` As daily FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "daily_chest"', function (err, rows, fields) {
 															if (err) throw err;
-															var shop = rows[0].shop;
-															connection.query('SELECT `AUTO_INCREMENT` As daily FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "daily_chest"', function (err, rows, fields) {
+															var daily = rows[0].daily;
+															connection.query('SELECT `AUTO_INCREMENT` As dungeon FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dungeon_list"', function (err, rows, fields) {
 																if (err) throw err;
-																var daily = rows[0].daily;
-																connection.query('SELECT `AUTO_INCREMENT` As dungeon FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dungeon_list"', function (err, rows, fields) {
+																var dungeon = rows[0].dungeon;
+																connection.query('SELECT `AUTO_INCREMENT` As room FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dungeon_rooms"', function (err, rows, fields) {
 																	if (err) throw err;
-																	var dungeon = rows[0].dungeon;
-																	connection.query('SELECT `AUTO_INCREMENT` As room FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dungeon_rooms"', function (err, rows, fields) {
+																	var room = rows[0].room;
+																	connection.query('SELECT SUM(ability_level) As ablevel FROM `ability`', function (err, rows, fields) {
 																		if (err) throw err;
-																		var room = rows[0].room;
-																		connection.query('SELECT SUM(ability_level) As ablevel FROM `ability`', function (err, rows, fields) {
+																		var ablevel = rows[0].ablevel;
+																		connection.query('SELECT `AUTO_INCREMENT` As invite FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "referral_list"', function (err, rows, fields) {
 																			if (err) throw err;
-																			var ablevel = rows[0].ablevel;
-																			connection.query('SELECT `AUTO_INCREMENT` As invite FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "referral_list"', function (err, rows, fields) {
+																			var invite = rows[0].invite;
+																			connection.query('SELECT TRUNCATE(SUM(CASE WHEN fail = 0 THEN 1 ELSE 0 END)/COUNT(*)*100,0) As perc FROM heist_history', function (err, rows, fields) {
 																				if (err) throw err;
-																				var invite = rows[0].invite;
-																				connection.query('SELECT TRUNCATE(SUM(CASE WHEN fail = 0 THEN 1 ELSE 0 END)/COUNT(*)*100,0) As perc FROM heist_history', function (err, rows, fields) {
+																				var perc = rows[0].perc;
+																				connection.query('SELECT COUNT(*) As groups, SUM(members) As members FROM plus_groups WHERE last_update < NOW() - INTERVAL 1 WEEK', function (err, rows, fields) {
 																					if (err) throw err;
-																					var perc = rows[0].perc;
-																					connection.query('SELECT COUNT(*) As groups, SUM(members) As members FROM plus_groups WHERE last_update < NOW() - INTERVAL 1 WEEK', function (err, rows, fields) {
+																					var groups = rows[0].groups;
+																					var members = rows[0].members;
+																					connection.query('SELECT SUM(mana_1+mana_2+mana_3) As mana FROM event_mana_status', function (err, rows, fields) {
 																						if (err) throw err;
-																						var groups = rows[0].groups;
-																						var members = rows[0].members;
-																						connection.query('SELECT SUM(mana_1+mana_2+mana_3) As mana FROM event_mana_status', function (err, rows, fields) {
+																						var mana = rows[0].mana;
+																						connection.query('SELECT SUM(quantity) As mag FROM magic', function (err, rows, fields) {
 																							if (err) throw err;
-																							var mana = rows[0].mana;
-																							connection.query('SELECT SUM(quantity) As mag FROM magic', function (err, rows, fields) {
+																							var magic = rows[0].mag;
+																							connection.query('SELECT `AUTO_INCREMENT` As search FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "search_history"', function (err, rows, fields) {
 																								if (err) throw err;
-																								var magic = rows[0].mag;
-																								connection.query('SELECT `AUTO_INCREMENT` As search FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "search_history"', function (err, rows, fields) {
+																								var search = rows[0].search;
+																								connection.query('SELECT `AUTO_INCREMENT` As top_log FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dragon_top_log"', function (err, rows, fields) {
 																									if (err) throw err;
-																									var search = rows[0].search;
-																									connection.query('SELECT `AUTO_INCREMENT` As top_log FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dragon_top_log"', function (err, rows, fields) {
+																									var top_log = rows[0].top_log;
+																									connection.query('SELECT SUM(quantity) As shop_tot FROM market_direct_history WHERE type = 2', function (err, rows, fields) {
 																										if (err) throw err;
-																										var top_log = rows[0].top_log;
-																										connection.query('SELECT SUM(quantity) As shop_tot FROM market_direct_history WHERE type = 2', function (err, rows, fields) {
+																										var shop_tot = rows[0].shop_tot;
+
+																										connection.query('SELECT SUM(pay) As cnt FROM game_house_stats', function (err, rows, fields) {
 																											if (err) throw err;
-																											var shop_tot = rows[0].shop_tot;
+																											var house_tot = rows[0].cnt;
 
-																											connection.query('SELECT SUM(pay) As cnt FROM game_house_stats', function (err, rows, fields) {
+																											connection.query('SELECT SUM(mission_count) As cnt FROM team', function (err, rows, fields) {
 																												if (err) throw err;
-																												var house_tot = rows[0].cnt;
+																												var mission_team = rows[0].cnt;
 
-																												connection.query('SELECT SUM(mission_count) As cnt FROM team', function (err, rows, fields) {
+																												connection.query('SELECT COUNT(id) As cnt FROM artifacts', function (err, rows, fields) {
 																													if (err) throw err;
-																													var mission_team = rows[0].cnt;
+																													var artifacts = rows[0].cnt;
 
-																													connection.query('SELECT COUNT(id) As cnt FROM artifacts', function (err, rows, fields) {
-																														if (err) throw err;
-																														var artifacts = rows[0].cnt;
+																													bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
+																																	"*Giocatori registrati:* " + formatNumber(tot) + "\n" +
+																																	"*Missioni in corso*: " + miss + "\n" +
+																																	"*Missioni completate*: " + formatNumber(miss2) + "\n" +
+																																	"*Viaggi in corso*: " + travel + "\n" +
+																																	"*Utenti attivi (1):* " + formatNumber(act) + "\n" +
+																																	"*Monete attuali*: " + formatNumber(money) + " §\n" +
+																																	"*Oggetti*: " + formatNumber(inv) + "\n" +
+																																	"*Scrigni attuali*: " + formatNumber(chest) + "\n" +
+																																	"*Creazioni*: " + formatNumber(craft) + "\n" +
+																																	"*Draghi*: " + formatNumber(dragon) + "\n" +
+																																	"*Team:* " + formatNumber(teamn) + "\n" +
+																																	"*Ispezioni/In corso/Rapporto:* " + formatNumber(heist) + "/" + heistn + "/" + perc + "%\n" +
+																																	"*Lotterie:* " + formatNumber(lottery) + "\n" +
+																																	"*Oggetti nei negozi:* " + formatNumber(shop) + "\n" +
+																																	"*Oggetti acquistati:* " + formatNumber(shop_tot) + "\n" +
+																																	"*Scrigni giornalieri consegnati:* " + formatNumber(daily) + "\n" +
+																																	"*Dungeon completati:* " + formatNumber(dungeon_tot) + "\n" +
+																																	"*Dungeon creati:* " + formatNumber(dungeon) + "\n" +
+																																	"*Stanze create:* " + formatNumber(room) + "\n" +
+																																	"*Livelli skill:* " + formatNumber(ablevel) + "\n" +
+																																	"*Utenti invitati:* " + formatNumber(invite) + "\n" +
+																																	"*Mana grezzo:* " + formatNumber(mana) + "\n" +
+																																	"*Polvere:* " + formatNumber(dust) + "\n" +
+																																	"*Incantesimi:* " + formatNumber(magic) + "\n" +
+																																	"*Oggetti cercati:* " + formatNumber(search) + "\n" +
+																																	"*Imprese completate:* " + formatNumber(achievement) + "\n" +
+																																	"*Spese Casa dei Giochi:* " + formatNumber(house_tot) + " §\n" +
+																																	"*Battaglie nella Vetta:* " + formatNumber(top_log) + "\n" +
+																																	"*Incarichi completati:* " + formatNumber(mission_team) + "\n" +
+																																	"*Artefatti ottenuti:* " + formatNumber(artifacts) + "\n" +
 
-																														bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
-																																		"*Giocatori registrati:* " + formatNumber(tot) + "\n" +
-																																		"*Missioni in corso*: " + miss + "\n" +
-																																		"*Missioni completate*: " + formatNumber(miss2) + "\n" +
-																																		"*Viaggi in corso*: " + travel + "\n" +
-																																		"*Utenti attivi (1):* " + formatNumber(act) + "\n" +
-																																		"*Monete attuali*: " + formatNumber(money) + " §\n" +
-																																		"*Oggetti*: " + formatNumber(inv) + "\n" +
-																																		"*Scrigni attuali*: " + formatNumber(chest) + "\n" +
-																																		"*Creazioni*: " + formatNumber(craft) + "\n" +
-																																		"*Draghi*: " + formatNumber(dragon) + "\n" +
-																																		"*Team:* " + formatNumber(teamn) + "\n" +
-																																		"*Ispezioni/In corso/Rapporto:* " + formatNumber(heist) + "/" + heistn + "/" + perc + "%\n" +
-																																		"*Lotterie:* " + formatNumber(lottery) + "\n" +
-																																		"*Oggetti nei negozi:* " + formatNumber(shop) + "\n" +
-																																		"*Oggetti acquistati:* " + formatNumber(shop_tot) + "\n" +
-																																		"*Scrigni giornalieri consegnati:* " + formatNumber(daily) + "\n" +
-																																		"*Dungeon completati:* " + formatNumber(dungeon_tot) + "\n" +
-																																		"*Dungeon creati:* " + formatNumber(dungeon) + "\n" +
-																																		"*Stanze create:* " + formatNumber(room) + "\n" +
-																																		"*Livelli skill:* " + formatNumber(ablevel) + "\n" +
-																																		"*Utenti invitati:* " + formatNumber(invite) + "\n" +
-																																		"*Mana grezzo:* " + formatNumber(mana) + "\n" +
-																																		"*Polvere:* " + formatNumber(dust) + "\n" +
-																																		"*Incantesimi:* " + formatNumber(magic) + "\n" +
-																																		"*Oggetti cercati:* " + formatNumber(search) + "\n" +
-																																		"*Imprese completate:* " + formatNumber(achievement) + "\n" +
-																																		"*Spese Casa dei Giochi:* " + formatNumber(house_tot) + " §\n" +
-																																		"*Battaglie nella Vetta:* " + formatNumber(top_log) + "\n" +
-																																		"*Incarichi completati:* " + formatNumber(mission_team) + "\n" +
-																																		"*Artefatti ottenuti:* " + formatNumber(artifacts) + "\n" +
+																																	"\n*Gruppi attivi (2):* " + formatNumber(groups) + "\n" +
+																																	"*Membri nei gruppi attivi (2):* " + formatNumber(members) + "\n" +
 
-																																		"\n*Gruppi attivi (2):* " + formatNumber(groups) + "\n" +
-																																		"*Membri nei gruppi attivi (2):* " + formatNumber(members) + "\n" +
-
-																																		"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark);
-																													});
+																																	"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark);
 																												});
 																											});
 																										});
@@ -6463,6 +6468,7 @@ bot.onText(/^\/statistiche/, function (message) {
 											});
 										});
 									});
+								});
 							});
 						});
 					});
@@ -7411,7 +7417,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 
 																				if ((history_cnt == 0) && (history_direct_cnt == 0) && (history_pay_cnt == null))
 																					relation = "";
-																				
+
 																				if (my_player_id == player_id)
 																					relation = "";
 
@@ -7799,7 +7805,7 @@ bot.onText(/^\/ispeziona/, function (message) {
 							bot.sendMessage(message.from.id, "Non puoi ispezionare un giocatore in modalità vacanza.");
 							return;
 						}
-						
+
 						var to_id = rows[0].id;
 
 						var rows = connection_sync.query('SELECT id FROM heist_history WHERE from_id = ' + from_id + ' AND to_id = ' + to_id + ' AND time LIKE "' + time + '%"');
@@ -7807,13 +7813,13 @@ bot.onText(/^\/ispeziona/, function (message) {
 							bot.sendMessage(message.from.id, "Hai ispezionato troppe volte questo giocatore oggi, riprova domani.");
 							return;
 						}
-						
+
 						var rows = connection_sync.query('SELECT id FROM heist_history WHERE from_id = ' + from_id + ' AND to_id = ' + to_id + ' AND time > DATE_SUB("' + time + '", INTERVAL 7 DAY)');
 						if (Object.keys(rows).length > 10){
 							bot.sendMessage(message.from.id, "Hai ispezionato troppe volte questo giocatore durante gli ultimi 7 giorni.");
 							return;
 						}
-						
+
 						attack(usr, message, from_id, weapon_bonus, 3000, 0, account_id, global_end, boost_id, boost_mission);
 					}
 				});
