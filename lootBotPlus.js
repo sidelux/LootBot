@@ -1144,6 +1144,7 @@ bot.onText(/^\/gruppi/, function (message) {
 																					"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
 																					"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
 																					"@yellowlootshop - Join for eventi free!\n" +
+																					"@lootgames - Gruppo OT con giochi per tutti i gusti, specie giochi di ruolo\n" +
 
 																					"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
 																});

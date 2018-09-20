@@ -2312,6 +2312,7 @@ CREATE TABLE `mission_team_party` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `report_id` (`report_id`) USING BTREE,
   KEY `team_id` (`team_id`),
+  KEY `party_id` (`party_id`),
   CONSTRAINT `Mission_Team_Report` FOREIGN KEY (`report_id`) REFERENCES `mission_team_report` (`report_id`),
   CONSTRAINT `Party_Team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
@@ -2333,6 +2334,7 @@ CREATE TABLE `mission_team_party_player` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `player_id` (`player_id`),
   KEY `mission_team_party_team` (`team_id`),
+  KEY `party_id` (`party_id`),
   CONSTRAINT `mission_team_party_player` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE,
   CONSTRAINT `mission_team_party_team` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
@@ -3398,4 +3400,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-09-19 15:00:10
+-- Dump completed on 2018-09-20 15:00:11
