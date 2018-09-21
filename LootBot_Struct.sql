@@ -370,6 +370,7 @@ CREATE TABLE `assault_place_player_id` (
   `player_id` int(11) NOT NULL,
   `role` tinyint(1) NOT NULL DEFAULT '0',
   `killed` tinyint(1) NOT NULL DEFAULT '0',
+  `notify` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `place_place_no_duplicate` (`place_id`,`player_id`),
   KEY `place_user_player_id` (`player_id`),
@@ -3400,4 +3401,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-09-20 15:00:11
+-- Dump completed on 2018-09-21 21:00:11

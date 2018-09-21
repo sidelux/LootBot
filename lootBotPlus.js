@@ -1185,6 +1185,7 @@ bot.onText(/^\/mercatini/, function (message) {
 					"@EdicolaDiLootia - Sempre più conveniente 👍\n" +
 					"@lootnoce - Prezzi aggiornati ogni due giorni!\n" +
 					"@Fenixstore - Il primo negozio a fare distinzioni tra poveri e ricchi\n" +
+					"@Lootkea - L'IKEA di Loot dal 13/11/2016\n" +
 
 					"\nVisita anche /gruppi. Per comparire qua chiedi all'amministratore.", html);
 });
@@ -6325,7 +6326,6 @@ bot.onText(/^\/statistiche/, function (message) {
 		connection.query('SELECT COUNT(*) As miss FROM player WHERE mission_id != 0', function (err, rows, fields) {
 			if (err) throw err;
 			var miss = rows[0].miss;
-
 			connection.query('SELECT SUM(quantity) As inv FROM inventory', function (err, rows, fields) {
 				if (err) throw err;
 				var inv = rows[0].inv;
@@ -6353,7 +6353,6 @@ bot.onText(/^\/statistiche/, function (message) {
 										connection.query('SELECT COUNT(*) As active FROM `last_command` WHERE time LIKE "' + today + '%"', function (err, rows, fields) {
 											if (err) throw err;
 											var act = rows[0].active;
-
 											connection.query('SELECT SUM(quantity) As cnt FROM inventory WHERE item_id = 646', function (err, rows, fields) {
 												if (err) throw err;
 												var dust = rows[0].cnt;
@@ -6413,42 +6412,49 @@ bot.onText(/^\/statistiche/, function (message) {
 																													if (err) throw err;
 																													var artifacts = rows[0].cnt;
 
-																													bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
-																																	"*Giocatori registrati:* " + formatNumber(tot) + "\n" +
-																																	"*Missioni in corso*: " + miss + "\n" +
-																																	"*Missioni completate*: " + formatNumber(miss2) + "\n" +
-																																	"*Viaggi in corso*: " + travel + "\n" +
-																																	"*Utenti attivi (1):* " + formatNumber(act) + "\n" +
-																																	"*Monete attuali*: " + formatNumber(money) + " §\n" +
-																																	"*Oggetti*: " + formatNumber(inv) + "\n" +
-																																	"*Scrigni attuali*: " + formatNumber(chest) + "\n" +
-																																	"*Creazioni*: " + formatNumber(craft) + "\n" +
-																																	"*Draghi*: " + formatNumber(dragon) + "\n" +
-																																	"*Team:* " + formatNumber(teamn) + "\n" +
-																																	"*Ispezioni/In corso/Rapporto:* " + formatNumber(heist) + "/" + heistn + "/" + perc + "%\n" +
-																																	"*Lotterie:* " + formatNumber(lottery) + "\n" +
-																																	"*Oggetti nei negozi:* " + formatNumber(shop) + "\n" +
-																																	"*Oggetti acquistati:* " + formatNumber(shop_tot) + "\n" +
-																																	"*Scrigni giornalieri consegnati:* " + formatNumber(daily) + "\n" +
-																																	"*Dungeon completati:* " + formatNumber(dungeon_tot) + "\n" +
-																																	"*Dungeon creati:* " + formatNumber(dungeon) + "\n" +
-																																	"*Stanze create:* " + formatNumber(room) + "\n" +
-																																	"*Livelli skill:* " + formatNumber(ablevel) + "\n" +
-																																	"*Utenti invitati:* " + formatNumber(invite) + "\n" +
-																																	"*Mana grezzo:* " + formatNumber(mana) + "\n" +
-																																	"*Polvere:* " + formatNumber(dust) + "\n" +
-																																	"*Incantesimi:* " + formatNumber(magic) + "\n" +
-																																	"*Oggetti cercati:* " + formatNumber(search) + "\n" +
-																																	"*Imprese completate:* " + formatNumber(achievement) + "\n" +
-																																	"*Spese Casa dei Giochi:* " + formatNumber(house_tot) + " §\n" +
-																																	"*Battaglie nella Vetta:* " + formatNumber(top_log) + "\n" +
-																																	"*Incarichi completati:* " + formatNumber(mission_team) + "\n" +
-																																	"*Artefatti ottenuti:* " + formatNumber(artifacts) + "\n" +
+																													connection.query('SELECT COUNT(id) As cnt FROM assault WHERE time_end IS NOT NULL', function (err, rows, fields) {
+																														if (err) throw err;
+																														var assaults = rows[0].cnt;
 
-																																	"\n*Gruppi attivi (2):* " + formatNumber(groups) + "\n" +
-																																	"*Membri nei gruppi attivi (2):* " + formatNumber(members) + "\n" +
+																														bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
+																																		"*Giocatori registrati:* " + formatNumber(tot) + "\n" +
+																																		"*Missioni in corso*: " + miss + "\n" +
+																																		"*Missioni completate*: " + formatNumber(miss2) + "\n" +
+																																		"*Viaggi in corso*: " + travel + "\n" +
+																																		"*Utenti attivi (1):* " + formatNumber(act) + "\n" +
+																																		"*Monete attuali*: " + formatNumber(money) + " §\n" +
+																																		"*Oggetti*: " + formatNumber(inv) + "\n" +
+																																		"*Scrigni attuali*: " + formatNumber(chest) + "\n" +
+																																		"*Creazioni*: " + formatNumber(craft) + "\n" +
+																																		"*Draghi*: " + formatNumber(dragon) + "\n" +
+																																		"*Team:* " + formatNumber(teamn) + "\n" +
+																																		"*Ispezioni/In corso/Rapporto:* " + formatNumber(heist) + "/" + heistn + "/" + perc + "%\n" +
+																																		"*Lotterie:* " + formatNumber(lottery) + "\n" +
+																																		"*Oggetti nei negozi:* " + formatNumber(shop) + "\n" +
+																																		"*Oggetti acquistati:* " + formatNumber(shop_tot) + "\n" +
+																																		"*Scrigni giornalieri consegnati:* " + formatNumber(daily) + "\n" +
+																																		"*Dungeon completati:* " + formatNumber(dungeon_tot) + "\n" +
+																																		"*Dungeon creati:* " + formatNumber(dungeon) + "\n" +
+																																		"*Stanze create:* " + formatNumber(room) + "\n" +
+																																		"*Livelli skill:* " + formatNumber(ablevel) + "\n" +
+																																		"*Utenti invitati:* " + formatNumber(invite) + "\n" +
+																																		"*Mana grezzo:* " + formatNumber(mana) + "\n" +
+																																		"*Polvere:* " + formatNumber(dust) + "\n" +
+																																		"*Incantesimi:* " + formatNumber(magic) + "\n" +
+																																		"*Oggetti cercati:* " + formatNumber(search) + "\n" +
+																																		"*Imprese completate:* " + formatNumber(achievement) + "\n" +
+																																		"*Spese Casa dei Giochi:* " + formatNumber(house_tot) + " §\n" +
+																																		"*Battaglie nella Vetta:* " + formatNumber(top_log) + "\n" +
+																																		"*Incarichi completati:* " + formatNumber(mission_team) + "\n" +
+																																		"*Artefatti ottenuti:* " + formatNumber(artifacts) + "\n" +
+																																		"*Assalti in corso:* " + formatNumber(assaults) + "\n" +
 
-																																	"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark);
+																																		"\n*Gruppi attivi (2):* " + formatNumber(groups) + "\n" +
+																																		"*Membri nei gruppi attivi (2):* " + formatNumber(members) + "\n" +
+
+																																		"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark);
+
+																													});
 																												});
 																											});
 																										});
