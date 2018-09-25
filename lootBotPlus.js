@@ -1099,6 +1099,10 @@ bot.onText(/^\/gruppi/, function (message) {
 
 																bot.getChatMembersCount(-1001332170267).then(function (data) {
 																	var c19 = data; //nabbi
+																	console.log("Next Lootgames");
+																	
+																	bot.getChatMembersCount(-1001323964750).then(function (data) {
+																		var c20 = data; //lootgames
 
 																	if (message.chat.id < 0)
 																		bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
@@ -1138,15 +1142,16 @@ bot.onText(/^\/gruppi/, function (message) {
 																					"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ") - La musica ed il diverimento di Lootia!\n" +
 																					"@LootAste (" + c18 + ") - Gruppo dedicato alle aste\n" +
 																					"<a href='https://t.me/joinchat/B8_tHk9nThsWfDL-k-Fazw'>Loot Nabbi</a> (" + c19 + ") - Dedicato ai nabbi di Lootia!\n" +
+																					"@lootgames (" + c20 + ") - Gruppo OT con giochi per tutti i gusti, specie giochi di ruolo\n" +
 
 																					"\n<b>Canali</b>\n" +
 																					"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
 																					"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
 																					"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
 																					"@yellowlootshop - Join for eventi free!\n" +
-																					"@lootgames - Gruppo OT con giochi per tutti i gusti, specie giochi di ruolo\n" +
 
 																					"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
+																	});
 																});
 															});
 														});
