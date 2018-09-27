@@ -3037,6 +3037,7 @@ CREATE TABLE `team` (
   `craft_count` int(11) NOT NULL DEFAULT '0',
   `mission_count` int(11) NOT NULL DEFAULT '0',
   `mission_day_count` int(11) NOT NULL DEFAULT '0',
+  `mission_time_count` int(11) NOT NULL DEFAULT '0',
   `boss_respawn` timestamp NULL DEFAULT NULL,
   `closed` int(3) NOT NULL DEFAULT '0',
   `details` int(11) NOT NULL DEFAULT '0',
@@ -3401,4 +3402,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-09-25  9:00:10
+-- Dump completed on 2018-09-27 12:00:11

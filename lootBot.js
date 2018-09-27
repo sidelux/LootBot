@@ -30,7 +30,7 @@ var wanted = 0;				// svuota event_wanted_status
 var eventTeamStory = 0;		// svuota event_team_story
 var eventFestival = 0;		// event_crafting_status con total_cnt a 0
 var specialMission = 0;		// nulla
-var checkDragonTopOn = 1;	// alla chiusura: svuota tabelle dragon_ e auto increment dummy a 100000
+var checkDragonTopOn = 0;	// alla chiusura: svuota tabelle dragon_ e auto increment dummy a 100000
 var gnomorra = 0;			// svuota tabella event_gnomorra
 
 // Festività o disattivati
@@ -11052,29 +11052,23 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 			});
 		}
 
-		if (player_charm_id == 404) {
+		if (player_charm_id == 404)
 			critical += 6;
-		}
-		if (player_charm_id == 493) {
+		if (player_charm_id == 493)
 			critical += 2;
-		}
-		if (player_charm_id == 494) {
+		if (player_charm_id == 494)
 			critical += 4;
-		}
-		if (player_charm_id == 495) {
+		if (player_charm_id == 495)
 			critical_armor += 3;
-		}
-		if (player_charm_id == 496) {
+		if (player_charm_id == 496)
 			critical_shield += 3;
-		}
 		if (charm_id == 696) {
 			critical += 5;
 			critical_armor += 5;
 			critical_shield += 3;
 		}
-		if ((class_id == 2) && (reborn == 3)) {
+		if ((class_id == 2) && (reborn == 3))
 			critical_armor += 5;
-		}
 		if ((class_id == 2) && (reborn >= 4)) {
 			critical_armor += 7;
 			critical_shield += 7;
@@ -11089,39 +11083,28 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 			critical_armor += 7;
 			critical_shield += 7;
 		}
-		if ((class_id == 5) && (reborn == 3)) {
+		if ((class_id == 5) && (reborn == 3))
 			critical_shield += 4;
-		}
-		if ((class_id == 5) && (reborn >= 4)) {
+		if ((class_id == 5) && (reborn >= 4))
 			critical_shield += 8;
-		}
-		if ((class_id == 6) && (reborn == 3)) {
+		if ((class_id == 6) && (reborn == 3))
 			critical_armor += 2;
-		}
-		if ((class_id == 6) && (reborn == 3)) {
+		if ((class_id == 6) && (reborn == 3))
 			critical_shield += 2;
-		}
-		if ((class_id == 6) && (reborn >= 4)) {
+		if ((class_id == 6) && (reborn >= 4))
 			critical_armor += 7;
-		}
-		if ((class_id == 6) && (reborn >= 4)) {
+		if ((class_id == 6) && (reborn >= 4))
 			critical_shield += 7;
-		}
-		if ((class_id == 6) && (reborn == 5)) {
+		if ((class_id == 6) && (reborn == 5))
 			critical_armor += 7;
-		}
-		if ((class_id == 6) && (reborn == 5)) {
+		if ((class_id == 6) && (reborn == 5))
 			critical_shield += 7;
-		}
-		if ((class_id == 8) && (reborn == 3)) {
+		if ((class_id == 8) && (reborn == 3))
 			critical_shield += 5;
-		}
-		if ((class_id == 8) && (reborn >= 4)) {
+		if ((class_id == 8) && (reborn >= 4))
 			critical_shield += 7;
-		}
-		if ((class_id == 8) && (reborn == 5)) {
+		if ((class_id == 8) && (reborn == 5))
 			critical += 10;
-		}
 		if ((class_id == 9) && (reborn == 3)) {
 			critical += 2;
 			critical_shield += 2;
@@ -11150,15 +11133,14 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 			return;
 		}
 
-		if (charm_id == 62) {
+		if (charm_id == 62)
 			danno += 5;
-		} else if (charm_id == 184) {
+		else if (charm_id == 184)
 			danno += 15;
-		} else if (charm_id == 188) {
+		else if (charm_id == 188)
 			danno += 20;
-		} else if (charm_id == 698) {
+		else if (charm_id == 698)
 			danno += 30;
-		}
 
 		var bonus = 0;
 		if (rows[0].weapon2 < 0) {
@@ -11173,9 +11155,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 		var crit_bool = 0;
 		var crit_txt = "";
 
-		if (crazyMode == 1) {
+		if (crazyMode == 1)
 			danno = danno * 2;
-		}
 
 		var magic = 0;
 		var magicId = 0;
@@ -11192,9 +11173,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 					magic = 3;
 				else if (match[1] == magicToName(4))
 					magic = 4;
-			} else {
+			} else
 				return;
-			}
 		}
 
 		if (rows[0].dungeon_time != null) {
@@ -11206,18 +11186,16 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 		}
 
 		var pow = 0;
-		if (match[2] != undefined) {
+		if (match[2] != undefined)
 			pow = match[2];
-		}
 
 		var magicDouble = 0;
 		connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 10', function (err, rows, fields) {
 			if (err) throw err;
 
 			var abBonus = 0;
-			if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length > 0)
 				abBonus = parseInt(rows[0].ability_level) * rows[0].val;
-			}
 
 			connection.query('DELETE FROM magic WHERE quantity <= 0 AND player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -11236,13 +11214,10 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 								magicPowBase = magicPow;
 
 								var rand = Math.random() * 100;
-								if ((class_id == 4) && ((magic == 3) || (magic == 4)) && (reborn == 5)) {
+								if ((class_id == 4) && ((magic == 3) || (magic == 4)) && (reborn == 5))
 									abBonus += 25;
-								}
-								if (rand < abBonus) {
+								if (rand < abBonus)
 									magicDouble = 1;
-									//console.log("DUNG_DOUBLE");
-								}
 							}
 						} else {
 							bot.sendMessage(message.chat.id, "Non possiedi l'incantesimo selezionato!", dungKb);
@@ -11252,9 +11227,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 					var automagic = 0;
 
-					if (charm_id == 698) {
+					if (charm_id == 698)
 						boost_cast += 3;
-					}
 
 					if (magic == 0) {
 						var magicrand = Math.random() * 100;
@@ -11344,30 +11318,23 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 						}
 					} else {
 						if (automagic == 0) {	// per escludere lame
-							if ((class_id == 2) && (reborn == 3)) {
+							if ((class_id == 2) && (reborn == 3))
 								magicPow += magicPow * 0.1;
-							}
-							if ((class_id == 2) && (reborn == 4)) {
+							if ((class_id == 2) && (reborn == 4))
 								magicPow += magicPow * 0.25;
-							}
-							if ((class_id == 2) && (reborn == 5)) {
+							if ((class_id == 2) && (reborn == 5))
 								magicPow += magicPow * 0.75;
-							}
-							if ((class_id == 3) && (reborn == 5)) {
+							if ((class_id == 3) && (reborn == 5))
 								magicPow += magicPow * 0.3;
-							}
 						}
 					}
 
-					if ((class_id == 8) && (reborn > 1)) {
+					if ((class_id == 8) && (reborn > 1))
 						magicPow -= magicPow * 0.1;
-					}
-					if ((class_id == 5) && (reborn == 3) && (magic == 1)) {
+					if ((class_id == 5) && (reborn == 3) && (magic == 1))
 						magicPow += magicPow * 0.5;
-					}
-					if ((class_id == 5) && (reborn >= 4) && (magic == 1)) {
+					if ((class_id == 5) && (reborn >= 4) && (magic == 1))
 						magicPow += magicPow * 1;
-					}
 
 					connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 1', function (err, rows, fields) {
 						if (err) throw err;
@@ -11553,19 +11520,15 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 															var status = "Normale";
 															var my_status = "Normale";
 
-															if (paralyzed > 0) {
+															if (paralyzed > 0)
 																status = "Paralizzato (" + paralyzed + " turni)";
-															}
-															if (critic > 0) {
+															if (critic > 0)
 																status = "Vulnerabile (" + critic + " turni)";
-															}
-															if ((paralyzed > 0) && (critic > 0)){
+															if ((paralyzed > 0) && (critic > 0))
 																status = "Paralizzato (" + paralyzed + " turni) e Vulnerabile (" + critic + " turni)";
-															}
 
-															if (player_paralyzed > 0){
+															if (player_paralyzed > 0)
 																my_status = "Paralizzato (" + player_paralyzed + " turni)";
-															}
 
 															if ((paralyzed > 0) && (automagic == 1) && (magic == 2)) {
 																automagic = 0;
@@ -11649,9 +11612,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																		});
 																		return;
 																	}
-																	if (answer.text.indexOf("Attacca") == -1) {
+																	if (answer.text.indexOf("Attacca") == -1)
 																		return;
-																	}
 
 																	if (paralyzed > 0) {
 																		connection.query('UPDATE dungeon_status SET monster_paralyzed = monster_paralyzed-1 WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -11685,21 +11647,20 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																	if ((magic == 2) && (meParalyzed == 0)) {
 																		var turn = 0;
-																		if (magicPow < 100) {
+																		if (magicPow < 100)
 																			turn = 1;
-																		} else if (magicPow < 200) {
+																		else if (magicPow < 200)
 																			turn = 2;
-																		} else if (magicPow < 250) {
+																		else if (magicPow < 250)
 																			turn = 3;
-																		} else if (magicPow < 300) {
+																		else if (magicPow < 300)
 																			turn = 4;
-																		} else if (magicPow < 350) {
+																		else if (magicPow < 350)
 																			turn = 5;
-																		} else if (magicPow < 400) {
+																		else if (magicPow < 400)
 																			turn = 6;
-																		} else {
+																		else
 																			turn = 7;
-																		}
 																		var r = Math.random() * 100;
 																		if ((automagic == 1) && (r < 50))
 																			turn++;
@@ -11720,21 +11681,20 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																	if ((magic == 4) && (meParalyzed == 0)) {
 																		var turn = 0;
-																		if (magicPow < 100) {
+																		if (magicPow < 100)
 																			turn = 1;
-																		} else if (magicPow < 200) {
+																		else if (magicPow < 200)
 																			turn = 2;
-																		} else if (magicPow < 250) {
+																		else if (magicPow < 250)
 																			turn = 3;
-																		} else if (magicPow < 300) {
+																		else if (magicPow < 300)
 																			turn = 4;
-																		} else if (magicPow < 350) {
+																		else if (magicPow < 350)
 																			turn = 5;
-																		} else if (magicPow < 400) {
+																		else if (magicPow < 400)
 																			turn = 6;
-																		} else {
+																		else
 																			turn = 7;
-																		}
 																		var r = Math.random() * 100;
 																		if ((automagic == 1) && (r < 50))
 																			turn++;
@@ -11770,9 +11730,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																		if (critic == 0)
 																			critic = rows[0].monster_critic;
 
-																		if (critic != 0) {
+																		if (critic != 0)
 																			critical += 50;
-																		}
 
 																		var critical_rand = Math.round(Math.random() * 100) + 1;
 
@@ -11786,11 +11745,10 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																		var magic_txt = "";
 																		if ((magic == 3) && (meParalyzed == 0)) {
 																			danno = danno * (magicPow / 30);
-																			if (magicDouble == 1) {
+																			if (magicDouble == 1)
 																				magic_txt = " con un incantesimo (x2)";
-																			} else {
+																			else
 																				magic_txt = " con un incantesimo";
-																			}
 																		}
 
 																		var damage = 100 + (Math.pow(monster_level, 2) * (1 + 1.5 * Math.random())) / 3.3 + Math.pow(weapon_dmg, 2) / 10.5 - bonus;
@@ -11799,34 +11757,28 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																		if (magic == 1)
 																			danno += heal;
 
-																		if (charm_id == 404) {
+																		if (charm_id == 404)
 																			en_crit += 6;
-																		}
-																		if (charm_id == 493) {
+																		if (charm_id == 493)
 																			en_crit += 2;
-																		}
-																		if (charm_id == 494) {
+																		if (charm_id == 494)
 																			en_crit += 4;
-																		}
-																		if (charm_id == 495) {
+																		if (charm_id == 495)
 																			en_crit2 += 3;
-																		}
-																		if (charm_id == 496) {
+																		if (charm_id == 496)
 																			en_crit3 += 3;
-																		}
 																		if (charm_id == 696) {
 																			en_crit += 5;
 																			en_crit2 += 5;
 																			en_crit3 += 3;
 																		}
 
-																		if (charm_id == 63) {
+																		if (charm_id == 63)
 																			damage = damage - 5;
-																		} else if (charm_id == 186) {
+																		else if (charm_id == 186)
 																			damage = damage - 15;
-																		} else if (charm_id == 189) {
+																		else if (charm_id == 189)
 																			damage = damage - 20;
-																		}
 
 																		if (player_charm_id == 698) {
 																			en_crit -= 5;
@@ -11843,36 +11795,30 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																			setAchievement(message.chat.id, player_id, 31, 1);
 																		}
 
-																		if (player_charm_id == 63) {
+																		if (player_charm_id == 63)
 																			damage = damage - 5;
-																		} else if (player_charm_id == 186) {
+																		else if (player_charm_id == 186)
 																			damage = damage - 15;
-																		} else if (player_charm_id == 189) {
+																		else if (player_charm_id == 189)
 																			damage = damage - 20;
-																		}
 
-																		if (charm_id == 62) {
+																		if (charm_id == 62)
 																			damage += 5;
-																		} else if (charm_id == 184) {
+																		else if (charm_id == 184)
 																			damage += 15;
-																		} else if (charm_id == 188) {
+																		else if (charm_id == 188)
 																			damage += 20;
-																		} else if (charm_id == 698) {
+																		else if (charm_id == 698)
 																			damage += 30;
-																		}
 
-																		if ((class_id == 2) && (reborn > 1)) {
+																		if ((class_id == 2) && (reborn > 1))
 																			damage += damage * 0.05;
-																		}
-																		if ((class_id == 6) && (reborn > 1)) {
+																		if ((class_id == 6) && (reborn > 1))
 																			damage -= damage * 0.15;
-																		}
-																		if ((class_id == 8) && (reborn > 1)) {
+																		if ((class_id == 8) && (reborn > 1))
 																			damage += damage * 0.1;
-																		}
-																		if ((class_id == 9) && (reborn > 1)) {
+																		if ((class_id == 9) && (reborn > 1))
 																			damage += damage * 0.1;
-																		}
 
 																		damage = Math.round(damage);
 
@@ -11884,9 +11830,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																			en_crit_txt = " CRITICI ";
 																		}
 
-																		if (damage <= 0) {
+																		if (damage <= 0)
 																			damage = 0;
-																		}
 
 																		var critical_rand3 = Math.round(Math.random() * 100) + 1;
 																		var crit_bool3 = 0;
@@ -11913,9 +11858,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																				if (rand < 30) {
 																					var r = 100;
 																					rand = Math.random() * 100;
-																					if ((player_weapon3_id == 672) || (automagic3 == 3)) {
+																					if ((player_weapon3_id == 672) || (automagic3 == 3))
 																						r = 50;
-																					}
 																					if (r >= rand) {
 																						enemy_magic = magicToName(3);
 																						damage = damage * 4;
@@ -11933,20 +11877,17 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																				} else if (rand < 60) {
 																					var r = 100;
 																					rand = Math.random() * 100;
-																					if ((player_weapon3_id == 673) || (automagic3 == 1)) {
+																					if ((player_weapon3_id == 673) || (automagic3 == 1))
 																						r = 50;
-																					}
 																					if (r >= rand) {
 																						enemy_magic = magicToName(1);
 																						heal_enemy = getRandomArbitrary(monster_total_life * 0.01, monster_total_life * 0.1);
-																						if (monster_life + heal_enemy > monster_total_life) {
+																						if (monster_life + heal_enemy > monster_total_life)
 																							heal_enemy = monster_total_life - monster_life;
-																						}
 																						if (heal_enemy < 0)
 																							heal_enemy = Math.abs(heal_enemy);
-																						if (heal_enemy > 50000) {
+																						if (heal_enemy > 50000)
 																							heal_enemy = 50000;
-																						}
 																						heal_enemy = Math.round(heal_enemy);
 																						//console.log("heal_dungeon: " + heal_enemy);
 																						connection.query('UPDATE dungeon_status SET monster_life = monster_life+' + heal_enemy + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -11967,9 +11908,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																				} else {
 																					var r = 100;
 																					rand = Math.random() * 100;
-																					if ((player_weapon3_id == 671) || (automagic3 == 2)) {
+																					if ((player_weapon3_id == 671) || (automagic3 == 2))
 																						r = 50;
-																					}
 																					if ((r >= rand) && (meParalyzed == 0)) {
 																						enemy_magic = magicToName(2);
 																						connection.query('UPDATE player SET paralyzed = 2 WHERE id = ' + player_id, function (err, rows, fields) {
@@ -12170,11 +12110,18 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																								}
 
 																								setAchievement(message.chat.id, player_id, 26, 1);
-																								if (getrank1 == 1) {
-																									bot.sendMessage(message.chat.id, "Hai completato il dungeon! Hai ottenuto " + rankPoint + " punto rango!\n" + refill, back);
-																								} else {
-																									bot.sendMessage(message.chat.id, "Hai completato il dungeon!\n" + refill, back);
-																								}
+																								
+																								connection.query('SELECT name FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
+																									if (err) throw err;
+																									
+																									var dungeon_name = rows[0].name;
+																								
+																									if (getrank1 == 1) {
+																										bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*! Hai ottenuto " + rankPoint + " punto rango!\n" + refill, back);
+																									} else {
+																										bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*!\n" + refill, back);
+																									}
+																								});
 
 																								var rand = Math.round(Math.random() * 100);
 																								if ((rand <= 5) && (rank > 20)) {
@@ -15183,7 +15130,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 
 			if (player_id != 1){
 				if (checkDragonTopOn == 0) {
-					bot.sendMessage(message.chat.id, "\nProssima stagione: 19 settembre 12:00 - 26 settembre 12:00\nSe hai partecipato alla stagione precedente, riceverai i premi a breve!", back_html);
+					bot.sendMessage(message.chat.id, "\nProssima stagione: 17 ottobre 12:00 - 24 ottobre 12:00\nSe hai partecipato alla stagione precedente, riceverai i premi a breve!", back_html);
 					return;
 				}
 			}
@@ -15255,7 +15202,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 			connection.query('SELECT id, top_id, enemy_dragon_id, wait_time, no_match_time, is_dummy FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
-				var finishD = new Date("2018-09-26 12:00:00");
+				var finishD = new Date("2018-10-24 12:00:00");
 				var finish_date = addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes()) + " del " + addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + "/" + finishD.getFullYear();
 
 				if (Object.keys(rows).length == 0) {
@@ -17770,29 +17717,25 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																			bot.sendMessage(message.chat.id, "Il tuo drago salta il turno! Si sta caricando!", kbNext);
 																		else
 																			bot.sendMessage(message.chat.id, "Il tuo drago ha saltato il turno!");
-																	} else if (damage <= 0) {
+																	} else if (damage <= 0)
 																		bot.sendMessage(message.chat.id, "Il tuo drago non ha inflitto alcun danno all'avversario!", kbNext);
-																	} else {
+																	else {
 																		var extra = "";
-																		if (moveCrit1 == 1) {
+																		if (moveCrit1 == 1)
 																			extra = " E' superefficace!";
-																		}
 																		var moveEffect = ""
-																		if (dmg_boost > 0) {
+																		if (dmg_boost > 0)
 																			moveEffect = "Aumentati grazie al potere della mossa di fuoco!\n";
-																		}
-																		if (enemy_protection > 0) {
+																		if (enemy_protection > 0)
 																			moveEffect = "Ridotti a causa della protezione!\n";
-																		}
 																		if (high_dmg > 0) {
 																			if (over == 0)
 																				moveEffect += "Dei quali " + formatNumber(high_dmg) + " per colpo pesante!\n";
 																			else
 																				moveEffect += "Dei quali " + formatNumber(high_dmg) + " per colpo pesante (con i quali hai superato la difesa)!\n";
 																		}
-																		if (enemy_conf_dmg > 0) {
+																		if (enemy_conf_dmg > 0)
 																			moveEffect += "Dei quali " + formatNumber(enemy_conf_dmg) + " derivano dall'essersi colpito da solo!\n";
-																		}
 																		bot.sendMessage(message.chat.id, "Il tuo drago ha inflitto " + formatNumber(damage) + " danni" + crit_txt + " all'avversario con " + move_name + "!" + extra + "\n" + moveEffect);
 																	}
 
@@ -19608,9 +19551,9 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 
 													var text = "";
 													if (selected == 1)
-														text = "Uscendo da questa postazione perderai tutti gli incantesimi caricati, continuare?";
+														text = "Uscendo da questa postazione perderai tutti i tuoi incantesimi caricati, continuare?";
 													else if (selected == 2)
-														text = "Uscendo da questa postazione perderai tutti i lanciabili caricati, continuare?";
+														text = "Uscendo da questa postazione perderai tutti i tuoi lanciabili caricati, continuare?";
 													else
 														text = "Sei sicuro di voler uscire dalla postazione?";
 
@@ -20152,7 +20095,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 														var wall_max_life = boss[0].total_life*(Math.sqrt(team[0].boss_count+1));
 														wall_max_life = wall_max_life*team_cnt[0].cnt*0.4;
 														wall_max_life = Math.round(wall_max_life*0.02*level);
-														text += "A questo livello fornisce <b>" + formatNumber(wall_max_life) + "</b> salute alle mura per protezione, possiede ancora la capacità di proteggere da <b>" + formatNumber(life) + "</b> danni\nSi ripara automaticamente del 10% di salute alla sconfitta di un nemico, ma puoi comunque ripararla usando oggetti base (scrivi il nome se non lo vedi nella lista)." + class_bonus + "\n";
+														text += "A questo livello fornisce <b>" + formatNumber(wall_max_life) + "</b> salute alle mura per protezione, possiede ancora la capacità di proteggere da <b>" + formatNumber(life) + "</b> danni\nSi ripara automaticamente fino al 50% di salute alla sconfitta di un nemico, ma puoi comunque ripararla usando oggetti base (scrivi il nome se non lo vedi nella lista)." + class_bonus + "\n";
 
 														if (life >= total_life){
 															text += "\nLa resistenza delle mura è al massimo";
@@ -20295,9 +20238,9 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 												}
 											});
 										}else{
-											if (selected != -1){
+											if (selected != -1)
 												bot.sendMessage(message.chat.id, "Hai già selezionato una postazione!", kbBack);
-											}else{
+											else{
 
 												if (validTeamMember(team_id, player_id) == 0){
 													bot.sendMessage(message.chat.id, "Non puoi accedere a nessuna postazione finchè il team sarà così sbilanciato, la media assoluta dei livelli deve essere più omogenea!", kbBack);
@@ -22335,7 +22278,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																for (var i = 0, len = Object.keys(player).length; i < len; i++){
 																	var dragon = connection_sync.query('SELECT level FROM dragon WHERE player_id = ' + player[i].id);
-																	if (Object.keys(player).length > 0)
+																	if (Object.keys(dragon).length > 0)
 																		damage += Math.floor(dragon[0].level/50);
 																	prob += 5;
 																	epic_var++;
@@ -22448,7 +22391,6 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				else if (player[i].killed == 1)
 																					player_text += "\n> " + player[i].nickname + " esce dall'infermeria grazie all'Intervento Divino";
 
-																				setAchievement(player[i].chat_id, player[i].id, 20, 1);
 																				reviveUsed = 1;
 																				epic_var++;
 																			}
@@ -22462,7 +22404,6 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				player_text += "\n> " + player[i].nickname + " torna in salute con l'intruglio revitalizzante";
 																			else if (player[i].killed == 1)
 																				player_text += "\n> " + player[i].nickname + " esce dall'infermeria grazie all'intruglio revitalizzante";
-																			setAchievement(player[i].chat_id, player[i].id, 20, 1);
 																			epic_var++;
 																		}
 																	}else if ((player[i].life < player[i].total_life) && (player[i].killed == 0)){
@@ -22518,6 +22459,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		if (potSum == 0)
 																			player_text += "\n> " + player[i].nickname + " non recupera salute (manca Fabbrica di Energia)";
 																		else{
+																			if (player_life <= player_total_life*0.05)
+																				setAchievement(player[i].chat_id, player[i].id, 20, 1);
 																			var plur = "i";
 																			if (potSum == 1)
 																				plur = "e";
@@ -22667,11 +22610,11 @@ function applyMagic(team_id, magic_type, magic_power, damage){
 		connection_sync.query("UPDATE assault SET mob_paralyzed = " + magic_turn + " WHERE team_id = " + team_id);
 	} else if (magic_type == 3){
 		magic_name = magicToName(3);
-		magic_effect = magicDesc(3, damage, 2);
+		magic_effect = magicDesc(3, damage);
 		// il calcolo lo fa fuori dalla funzione, qua stampa solo la descrizione
 	} else if (magic_type == 4){
 		magic_name = magicToName(4);
-		magic_effect = magicDesc(4, magic_turn);
+		magic_effect = magicDesc(4, magic_turn, 2);
 		connection_sync.query("UPDATE assault SET team_critic = " + magic_turn + " WHERE team_id = " + team_id);
 	}
 
@@ -23106,10 +23049,8 @@ function repairWall(team_id){
 
 		if ((Object.keys(rows).length > 0) && (rows[0].life < rows[0].total_life)) {
 			var refill = rows[0].total_life*0.5;
-			if (rows[0].life+refill >= rows[0].total_life)
-				rows[0].life += rows[0].total_life;
-			else
-				rows[0].life += refill;
+			if (rows[0].life < refill)
+				rows[0].life = refill;
 			connection.query('UPDATE assault_place_team SET life = ' + rows[0].life + ' WHERE place_id = 5 AND team_id = ' + team_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
@@ -37025,11 +36966,10 @@ bot.onText(/^pozioni|^⚒$/i, function (message) {
 			return;
 		}
 
-		if (message.text.toLowerCase().indexOf("pozioni") != -1) {
+		if (message.text.toLowerCase().indexOf("pozioni") != -1)
 			Consumabili(message, player_id, 2, total_life, life, 0);
-		} else if (message.text.indexOf("⚒") != -1) {
+		else if (message.text.indexOf("⚒") != -1)
 			Consumabili(message, player_id, 4, total_life, life, 0);
-		}
 	});
 });
 
@@ -37122,7 +37062,6 @@ bot.onText(/Torna in Vita/i, function (message) {
 							connection.query('UPDATE player SET life = ' + life + ', res_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
 								bot.sendMessage(message.chat.id, "Bentornat" + gender_text + "! 🌟", kbBack);
-								setAchievement(message.chat.id, player_id, 20, 1);
 							});
 						}
 					} else if (answer.text.indexOf("Cenere di Fenice") != -1) {
@@ -37137,7 +37076,6 @@ bot.onText(/Torna in Vita/i, function (message) {
 							connection.query('UPDATE player SET life = total_life WHERE id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
 								bot.sendMessage(message.chat.id, "Bentornat" + gender_text + "! 🌟", kbBack);
-								setAchievement(message.chat.id, player_id, 20, 1);
 							});
 						}
 					} else if (answer.text.indexOf("Intervento Divino") != -1) {
@@ -37170,7 +37108,6 @@ bot.onText(/Torna in Vita/i, function (message) {
 							connection.query('UPDATE player SET refilled = refilled+1, life = ' + refill + ' WHERE id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
 								bot.sendMessage(message.chat.id, "L'Intervento Divino ti ha concesso di tornare in battaglia con " + formatNumber(refill) + "/" + formatNumber(total_life) + " hp!", kbBack);
-								setAchievement(message.chat.id, player_id, 20, 1);
 							});
 						});
 					}
@@ -37304,6 +37241,11 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 								bot.sendMessage(message.chat.id, "Sei morto, per tornare in vita ti serve una Piuma di Fenice o la Cenere di Fenice!", revive);
 								return;
 							}
+							
+							if (player_life >= player_total_life) {
+								bot.sendMessage(message.chat.id, "Sei in piena salute, non è necessario utilizzare Pozioni!", back);
+								return;
+							}
 
 							bot.sendMessage(message.chat.id, "Quante pozioni vuoi usare?", kbNum).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
@@ -37341,6 +37283,9 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 											perc = player_total_life - player_life;
 											all = 1;
 										}
+										
+										if (player_life <= player_total_life*0.05)
+											setAchievement(message.chat.id, player_id, 20, 1);
 
 										connection.query('UPDATE player SET life = life+' + perc + ' WHERE id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
@@ -43377,7 +43322,9 @@ function setFinishedTeamMission(element, index, array) {
 									for (i = 0; i < Object.keys(rows).length; i++)		// In caso di più admin
 										bot.sendMessage(rows[i].chat_id, "Il Party " + party_id + " ha completato l'incarico assegnato!");
 
-									connection.query('UPDATE team SET mission_count = mission_count+1, point = point+' + paPnt + ' WHERE id = ' + team_id, function (err, rows, fields) {
+									var mission_time_count = Math.floor((duration*(parts+1))/60/60);
+									
+									connection.query('UPDATE team SET mission_count = mission_count+1, point = point+' + paPnt + ', mission_time_count = mission_time_count + ' + mission_time_count + ' WHERE id = ' + team_id, function (err, rows, fields) {
 										if (err) throw err;
 									});
 

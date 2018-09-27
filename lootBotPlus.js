@@ -409,7 +409,7 @@ bot.onText(/^\/comandiasta/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per gestire le aste*\n" +
 					"/statoasta - Mostra lo stato di un'asta\n" +
 					"/creaasta - Permette di creare un'asta\n" +
-					"/pubblicaasta - Permette di pubblicare l'asta con i relativi pulsanti\n" +
+					"/pubblicaasta - Permette di pubblicare l'asta con i relativi pulsanti (prova anche 'tutte')\n" +
 					"/asta - Iscrive ad un'asta\n" +
 					"/aste - Mostra tutte le aste disponibili\n" +
 					"/cancellaasta - Elimina un'asta in corso", mark);
@@ -2851,12 +2851,10 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+) (.+)|^\/creaasta(?!p)$/, function (message
 bot.onText(/^\/pubblicaasta (.+)|^\/pubblicaasta/, function (message, match) {
 
 	var nick = "";
-
-	if (match[1] == undefined) {
+	if (match[1] == undefined)
 		nick = message.from.username;
-	} else {
+	else
 		nick = match[1];
-	}
 
 	connection.query('SELECT id, account_id, market_ban, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -2879,74 +2877,87 @@ bot.onText(/^\/pubblicaasta (.+)|^\/pubblicaasta/, function (message, match) {
 			bot.sendMessage(message.chat.id, "...")
 			return;
 		}
+		
+		var query = 'SELECT auction_list.id, last_price, holiday, creator_id, last_player, item_id, time_end, nickname, market_ban FROM auction_list, player WHERE player.id = auction_list.creator_id AND auction_list.creator_id = (SELECT id FROM player WHERE nickname = "' + nick + '")';
+		if (nick == "tutte")
+			query = "SELECT auction_list.id, last_price, holiday, creator_id, last_player, item_id, time_end, nickname, market_ban FROM auction_list, player WHERE player.id = auction_list.creator_id LIMIT 5";
 
-		connection.query('SELECT auction_list.id, last_price, holiday, creator_id, last_player, item_id, time_end, nickname, market_ban FROM auction_list, player WHERE player.id = auction_list.creator_id AND auction_list.creator_id = (SELECT id FROM player WHERE nickname = "' + nick + '")', function (err, rows, fields) {
+		connection.query(query, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
-				if (nick == message.from.username) {
+				if (nick == message.from.username)
 					bot.sendMessage(message.chat.id, "Non hai aperto nessuna asta");
-				} else {
+				else if (nick == "tutte")
+					bot.sendMessage(message.chat.id, "Non c'è nessuna asta aperta");
+				else
 					bot.sendMessage(message.chat.id, "L'utente non ha aperto nessuna asta");
-				}
 				return;
 			}
-
-			if (rows[0].market_ban == 1) {
-				bot.sendMessage(message.chat.id, "L'utente è bannato dal mercato", mark);
-				return;
-			}
-
-			var creator_nickname = rows[0].nickname;
-			var last_player = rows[0].last_player;
+			
+			var creator_nickname = "";
+			var last_player = 0;
 			var last_player_nickname = "";
-			var last_price = rows[0].last_price;
+			var last_price = 0;
 			var itemName = "";
 
-			var d = new Date(rows[0].time_end);
-			var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-			var short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
+			var d = new Date();
+			var long_date = "";
+			var short_date = "";
 
-			var id = rows[0].id;
+			var id = 0;
+			
+			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 
-			connection.query('SELECT name FROM item WHERE id = ' + rows[0].item_id, function (err, rows, fields) {
-				if (err) throw err;
+				if (rows[i].market_ban == 1) {
+					if (nickname != "tutte")
+						bot.sendMessage(message.chat.id, "L'utente è bannato dal mercato", mark);
+					continue;
+				}
+				
+				creator_nickname = rows[i].nickname;
+				last_player = rows[i].last_player;
+				last_player_nickname = "";
+				last_price = rows[i].last_price;
+				itemName = "";
 
-				itemName = rows[0].name;
+				d = new Date(rows[i].time_end);
+				long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+				short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
 
-				connection.query('SELECT nickname FROM player WHERE id = ' + last_player, function (err, rows, fields) {
-					if (err) throw err;
+				var id = rows[i].id;
 
-					if (Object.keys(rows).length == 0) {
-						last_player_nickname = "-";
-					} else {
-						last_player_nickname = rows[0].nickname;
+				item = connection_sync.query('SELECT name FROM item WHERE id = ' + rows[i].item_id);
+				itemName = item[0].name;
+				player = connection_sync.query('SELECT nickname FROM player WHERE id = ' + last_player);
+				if (Object.keys(player).length == 0)
+					last_player_nickname = "-";
+				else
+					last_player_nickname = player[0].nickname;
+
+				var iKeys = [];
+				iKeys.push([{
+					text: "+10",
+					callback_data: "asta:" + id + ":" + "100"
+				}]);
+				iKeys.push([{
+					text: "+1k",
+					callback_data: "asta:" + id + ":" + "1000"
+				}]);
+				iKeys.push([{
+					text: "+10k",
+					callback_data: "asta:" + id + ":" + "10000"
+				}]);
+
+				var text = "<b>Asta per " + itemName + "</b>\n\n<b>Creatore</b>: " + creator_nickname + "\n<b>Offerta</b>: " + formatNumber(last_price) + " §\n<b>Offerente:</b> " + last_player_nickname + "\n<b>Scade alle:</b> " + short_date;
+
+				bot.sendMessage(message.chat.id, text, {
+					parse_mode: 'HTML',
+					reply_markup: {
+						inline_keyboard: iKeys
 					}
-
-					var iKeys = [];
-					iKeys.push([{
-						text: "+10",
-						callback_data: "asta:" + id + ":" + "100"
-					}]);
-					iKeys.push([{
-						text: "+1k",
-						callback_data: "asta:" + id + ":" + "1000"
-					}]);
-					iKeys.push([{
-						text: "+10k",
-						callback_data: "asta:" + id + ":" + "10000"
-					}]);
-
-					var text = "<b>Asta per " + itemName + "</b>\n\n<b>Creatore</b>: " + creator_nickname + "\n<b>Offerta</b>: " + formatNumber(last_price) + " §\n<b>Offerente:</b> " + last_player_nickname + "\n<b>Scade alle:</b> " + short_date;
-
-					bot.sendMessage(message.chat.id, text, {
-						parse_mode: 'HTML',
-						reply_markup: {
-							inline_keyboard: iKeys
-						}
-					});
 				});
-			});
+			}
 		});
 	});
 });
