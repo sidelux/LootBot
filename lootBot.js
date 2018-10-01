@@ -1119,9 +1119,9 @@ bot.onText(/^\/failglobal/, function (message, match) {
 							connection.query('UPDATE player SET global_end = 0', function (err, rows, fields) {
 								if (err) throw err;
 
-								var minValue = 40;
-								var minText = "ispezioni vinte";
-								var text = "tempo missioni incrementato del 25%";
+								var minValue = 20000000;
+								var minText = "monete spese in acquisti";
+								var text = "il guadagno del contrabbandiere sarà dimezzato";
 
 								connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.reborn > 1 AND P.account_id NOT IN (SELECT account_id FROM banlist) AND A.value < ' + minValue + ' GROUP BY A.player_id ORDER BY val DESC', function (err, rows, fields) {
 									if (err) throw err;
@@ -1129,7 +1129,7 @@ bot.onText(/^\/failglobal/, function (message, match) {
 										connection.query('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
 											if (err) throw err;
 										});
-										bot.sendMessage(rows[i].chat_id, "Per il fallimento dell'impresa e lo scarso impegno (minimo " + minValue + " " + minText + "), da questo momento fino al termine della prossima impresa " + text);
+										bot.sendMessage(rows[i].chat_id, "Per il fallimento dell'impresa e lo scarso impegno (minimo " + formatNumber(minValue) + " " + minText + "), da questo momento fino al termine della prossima impresa " + text);
 										console.log(rows[i].nickname + " - Fallito");
 									}
 								});
@@ -19282,8 +19282,8 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 
 		if (rows[0].boss_time != null){
 			var d = new Date(rows[0].boss_time);
-			var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
-			bot.sendMessage(message.chat.id, "Hai appena cambiato team, non puoi ancora accedere a questa funzione fino alle " + short_date + "!", back)
+			var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+			bot.sendMessage(message.chat.id, "Hai appena cambiato team, non puoi ancora accedere a questa funzione fino alle " + long_date + "!", back)
 			return;
 		}
 
@@ -20909,11 +20909,11 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			active = "";
 																			if ((rows[i].place_id == 1) || (rows[i].place_id == 2)){
 																				if (rows[i].active == 1)
-																					active = "Attivata";
+																					active = " - <i>Attivata</i>";
 																				else
-																					active = "Disattivata";
+																					active = " - <i>Disattivata</i>";
 																			}
-																			text += "\n<b>" + rows[i].name + "</b> (Lv " + rows[i].level + " - <i>" + active + "</i>):\n";
+																			text += "\n<b>" + rows[i].name + "</b> (Lv " + rows[i].level + active + "):\n";
 																			place_id_break = rows[i].place_id;
 																		}
 																		if (rows[i].role == 1)
@@ -22713,7 +22713,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 			if (Object.keys(rows).length > 0) {
 				if (rows[0].level >= 5) {
 					bonus_act = 1;
-					acc_bonus = 1;
+					acc_bonus = 5;
 				}
 			}
 
@@ -22723,7 +22723,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 				//Se questa è la accademia
 				if (Object.keys(rows).length > 0) {
 					if ((rows[0].level >= 5) && (bonus_act == 0))
-						acc_bonus = 1;
+						acc_bonus = 5;
 				}
 
 				connection.query("SELECT level FROM assault_place_team WHERE team_id = " + team_id + " ORDER BY place_id", function (err, rows, fields) {
@@ -23049,11 +23049,12 @@ function repairWall(team_id){
 
 		if ((Object.keys(rows).length > 0) && (rows[0].life < rows[0].total_life)) {
 			var refill = rows[0].total_life*0.5;
-			if (rows[0].life < refill)
+			if (rows[0].life < refill){
 				rows[0].life = refill;
-			connection.query('UPDATE assault_place_team SET life = ' + rows[0].life + ' WHERE place_id = 5 AND team_id = ' + team_id, function (err, rows, fields) {
-				if (err) throw err;
-			});
+				connection.query('UPDATE assault_place_team SET life = ' + rows[0].life + ' WHERE place_id = 5 AND team_id = ' + team_id, function (err, rows, fields) {
+					if (err) throw err;
+				});
+			}
 		}
 	});
 }
@@ -23131,9 +23132,9 @@ bot.onText(/potenziamenti anima/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								keyboard: [["Unione Fatale (400/2000 🦋)"],
-										   ["Bottino Ricco (600/3000 🦋)"],
-										   ["Formazione Impenetrabile (500/2500 🦋)"],
+								keyboard: [["Unione Fatale (200/1000 🦋)"],
+										   ["Bottino Ricco (300/1500 🦋)"],
+										   ["Formazione Impenetrabile (250/1250 🦋)"],
 										   ["Torna al team"],
 										   ["Torna al menu"]]
 							}
@@ -23174,18 +23175,18 @@ bot.onText(/potenziamenti anima/i, function (message) {
 								var desc = "";
 
 								if (answer.text.indexOf("Unione Fatale") != -1) {
-									p = 400;
-									p2 = 2000;
+									p = 200;
+									p2 = 1000;
 									id = 1;
 									desc = "Questa opzione permette di scegliere tra un potenziamento temporaneo per il team, che darà la possibilità di infliggere +50% di danno ai boss fino al respawn e costerà " + p + " 🦋 oppure un potenziamento permanente di +3% per livello al danno inflitto a tutti i boss, che costerà " + p2 + " 🦋, continuare?";
 								} else if (answer.text.indexOf("Bottino Ricco") != -1) {
-									p = 600;
-									p2 = 3000;
+									p = 300;
+									p2 = 1500;
 									id = 2;
 									desc = "Questa opzione permette di scegliere tra un potenziamento temporaneo del team, che darà la possibilità di guadagnare +50% § dalla sconfitta dei boss fino al respawn e costerà " + p + " 🦋 oppure un potenziamento permanente di +3% per livello dei § guadagnati per ogni boss, che costerà " + p2 + " 🦋, continuare?"
 								} else if (answer.text.indexOf("Formazione Impenetrabile") != -1) {
-									p = 500;
-									p2 = 2500;
+									p = 250;
+									p2 = 1250;
 									id = 3;
 									desc = "Questa opzione permette di scegliere tra un potenziamento temporaneo per il team, che darà la possibilità di subire -50% di danno dai boss fino al respawn e costerà " + p + " 🦋 oppure un potenziamento permanente di -3% per livello al danno subito da tutti i boss, che costerà " + p2 + " 🦋, continuare?";
 								}
@@ -23562,7 +23563,8 @@ bot.onText(/Hall of Fame/i, function (message) {
 
 		connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 			if (err) throw err;
-			var query = "SELECT name As name, ROUND((craft_count/100)+(boss_count*(SELECT COUNT(id) FROM team_player WHERE team_id = T.id))+mission_count+(IFNULL(A.completed,0)*100)-(IFNULL(A.lost,0)*100)) As pnt FROM team T LEFT JOIN assault A ON T.id = A.team_id GROUP BY T.id ORDER BY pnt DESC";
+			//var query = "SELECT name As name, ROUND((craft_count/100)+(boss_count*(SELECT COUNT(id) FROM team_player WHERE team_id = T.id))+mission_count+(IFNULL(A.completed,0)*100)-(IFNULL(A.lost,0)*100)) As pnt FROM team T LEFT JOIN assault A ON T.id = A.team_id GROUP BY T.id ORDER BY pnt DESC";
+			var query = "SELECT name As name, ((500*mission_time_count)+(craft_count)+(3000*boss_count)+(125000*(A.completed+kill_num))) As pnt FROM team T LEFT JOIN assault A ON T.id = A.team_id GROUP BY T.id ORDER BY pnt DESC";
 			if (rows[0].top_min == 1) {
 				connection.query(query, function (err, rows, fields) {
 					if (err) throw err;
@@ -23570,9 +23572,8 @@ bot.onText(/Hall of Fame/i, function (message) {
 					var c = 1;
 					var mypos = "";
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-						if (c <= 15) {
+						if (c <= 15)
 							text += c + "° " + rows[i].name + " (" + formatNumber(Math.floor(rows[i].pnt)) + " pnt)\n";
-						}
 						if (myTeam != "") {
 							if (rows[i].name == myTeam) {
 								mypos = "\nIl tuo team:\n";
@@ -23596,18 +23597,16 @@ bot.onText(/Hall of Fame/i, function (message) {
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 						name.push(rows[i].name);
 						points.push(rows[i].pnt);
-						if (myTeam == rows[i].name) {
+						if (myTeam == rows[i].name)
 							mypos = i;
-						}
 					}
 
 					for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
 						if (name[i] != undefined) {
-							if (i == mypos) {
+							if (i == mypos)
 								text += (i + 1) + "° <b>" + name[i] + "</b> (" + formatNumber(Math.floor(points[i])) + ")\n";
-							} else {
+							else
 								text += (i + 1) + "° " + name[i] + " (" + formatNumber(Math.floor(points[i])) + ")\n";
-							}
 						}
 					}
 
@@ -24781,10 +24780,10 @@ bot.onText(/^aumenta posti/i, function (message) {
 						};
 
 						var price = 100000;
-						var price_p = 35;
+						var price_p = 350;
 
 						price = price * level;
-						price_p = price_p + (16 * (level));
+						price_p = price_p + (160 * (level));
 
 						bot.sendMessage(message.chat.id, "Il potenziamento al livello " + (level + 1) + " ti costerà " + formatNumber(price) + " § e " + price_p + " 🦋. Aumenterà lo spazio per i membri del team e ti consentirà di affrontare più boss", kb).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
@@ -26322,7 +26321,7 @@ bot.onText(/festival/i, function (message) {
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									keyboard: [["Aggiorna festival"], ["Cerca " + rows[0].name], ["Torna al menu"]]
+									keyboard: [["Aggiorna festival"], ["Cerca *" + rows[0].name], ["Torna al menu"]]
 								}
 							};
 
@@ -26339,7 +26338,7 @@ bot.onText(/festival/i, function (message) {
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									keyboard: [["Aggiorna festival"], ["Cerca " + rows[0].name], ["Crea " + rows[0].name], ["Torna al menu"]]
+									keyboard: [["Aggiorna festival"], ["Cerca *" + rows[0].name], ["Crea " + rows[0].name], ["Torna al menu"]]
 								}
 							};
 
@@ -28137,7 +28136,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 	if (message.text == "Classifica Contrabbandiere")
 		return;
 
-	connection.query('SELECT account_id, market_ban, holiday, id, gender, gems FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, market_ban, holiday, id, gender, gems, global_end FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -28159,6 +28158,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 
 		var player_id = rows[0].id;
 		var gems = rows[0].gems;
+		var global_end = rows[0].global_end;
 
 		var d = new Date();
 		if ((d.getHours() < 9) || (d.getHours() > 22)) { //9-23
@@ -28268,8 +28268,14 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 					var offers = merchant_limit - day_cnt;
 					if (offers < 0)
 						offers = 0;
+					
+					var extra = "";
+					if (global_end == 1){
+						extra = " (dimezzato per malus globale)";
+						price = Math.round(price/2);
+					}
 
-					bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " <b>" + message.from.username + "</b>!\nPuoi creare oggetti per il <b>Contrabbandiere</b> ed egli provvederà a valutarli e ricompensarti adeguatamente, purtroppo però è disponibile solamente di giorno. Quando lascia la piazza, aggiorna la sua fornitura e quando torna ti propone affari diversi.\n\n<b>" + name + " (" + rarity + ")</b> al prezzo di <i>" + formatNumber(price) + "</i> §" + poss + "\n\nAccetti l'incarico di questo oggetto? Se l'offerta che ti propone non ti sembra valida, puoi cambiarla. Hai ancora a disposizione <b>" + offers + " offerte</b> per oggi." + activeCoupon, kb).then(function () {
+					bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " <b>" + message.from.username + "</b>!\nPuoi creare oggetti per il <b>Contrabbandiere</b> ed egli provvederà a valutarli e ricompensarti adeguatamente, purtroppo però è disponibile solamente di giorno. Quando lascia la piazza, aggiorna la sua fornitura e quando torna ti propone affari diversi.\n\n<b>" + name + " (" + rarity + ")</b> al prezzo di <i>" + formatNumber(price) + "</i> §" + extra + poss + "\n\nAccetti l'incarico di questo oggetto? Se l'offerta che ti propone non ti sembra valida, puoi cambiarla. Hai ancora a disposizione <b>" + offers + " offerte</b> per oggi." + activeCoupon, kb).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							if (answer.text == "Torna al menu") {
 								return;
@@ -28368,15 +28374,13 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 												var d = new Date();
 												var rand = Math.random() * 100;
 												if (d.getDay() == 6) {
-													if (rand < 10) {
+													if (rand < 10)
 														price = price * 2;
-													}
 												} else if (d.getDay() == 0) {
-													if (rand < 20) {
+													if (rand < 20)
 														price = price * 2;
-													} else if ((rand > 20) && (rand < 30)) {
+													else if ((rand > 20) && (rand < 30))
 														price = Math.round(price / 2);
-													}
 												}
 											}
 
@@ -28384,9 +28388,8 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 												if (err) throw err;
 
 												var abBonus = 0;
-												if (Object.keys(rows).length > 0) {
+												if (Object.keys(rows).length > 0)
 													abBonus = parseInt(rows[0].ability_level) * rows[0].val;
-												}
 
 												var now = new Date();
 												now.setMinutes(now.getMinutes() + 30);
@@ -28394,13 +28397,11 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 												var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
 
 												var extra = "\nTorna tra 30 minuti per provare a commerciare di nuovo!";
-												if ((day_cnt + 1) >= merchant_limit) {
+												if ((day_cnt + 1) >= merchant_limit)
 													extra = "\nPer oggi il contrabbandiere ha terminato le sue offerte per te!";
-												}
 
-												if (now.getHours() > 22) {
+												if (now.getHours() > 22)
 													extra = "\nPer oggi il contrabbandiere ha terminato le sue offerte!";
-												}
 
 												var bonus_text = "";
 												if (abBonus > 0){
@@ -32615,8 +32616,6 @@ bot.onText(/compra/i, function (message) {
 
 								setAchievement(message.chat.id, player_id, 14, quantity, chest_id);
 
-								globalAchievement(player_id, price);
-
 								connection.query('UPDATE player SET money = money-' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
 									addChest(player_id, chest_id, quantity);
@@ -32695,8 +32694,6 @@ bot.onText(/compra/i, function (message) {
 									bonus_text = " grazie al tuo talento!";
 								}
 
-								globalAchievement(player_id, price);
-
 								connection.query('UPDATE player SET money = money-' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
 									addItem(player_id, potion_id, quantity);
@@ -32771,8 +32768,6 @@ bot.onText(/compra/i, function (message) {
 
 								setAchievement(message.chat.id, player_id, 17, quantity);
 
-								globalAchievement(player_id, price);
-
 								connection.query('UPDATE player SET money = money-' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
 									addItem(player_id, item_id, quantity);
@@ -32846,8 +32841,6 @@ bot.onText(/compra/i, function (message) {
 										}
 
 										setAchievement(message.chat.id, player_id, 16, quantity);
-
-										globalAchievement(player_id, price);
 
 										connection.query('UPDATE player SET money = money-' + price + ', gems = gems + ' + quantity + ' WHERE id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
@@ -34805,17 +34798,6 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 		}
 	}
 
-	var today = new Date();
-	if ((eventFestival == 1) && (quantity > 1)) {
-		if ((today.getDay() == 6) || (today.getDay() == 0)) {
-			var rows = connection_sync.query('SELECT item_id, wait_time, completed FROM event_crafting_item ORDER BY id DESC LIMIT 1');
-			if ((Object.keys(rows).length > 0) && (rows[0].id == item_id) && (rows[0].wait_time == null) && (rows[0].completed == 0)) {
-				bot.sendMessage(message.chat.id, "Non puoi creare più copie dell'oggetto per il festival!", back);
-				return;
-			}
-		}
-	}
-
 	connection.query('SELECT id, term FROM search_history WHERE player_id = ' + player_id + ' ORDER BY id DESC LIMIT 2', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -34846,6 +34828,17 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 				var mat2 = rows[0].material_2;
 				var mat3 = rows[0].material_3;
 				var matR = rows[0].material_result;
+
+				var today = new Date();
+				if ((eventFestival == 1) && (quantity > 1)) {
+					if ((today.getDay() == 6) || (today.getDay() == 0)) {
+						var item = connection_sync.query('SELECT item_id, wait_time, completed FROM event_crafting_item ORDER BY id DESC LIMIT 1');
+						if ((Object.keys(item).length > 0) && (item[0].item_id == matR) && (item[0].wait_time == null) && (item[0].completed == 0)) {
+							bot.sendMessage(message.chat.id, "Non puoi creare più copie dell'oggetto richiesto per il festival!", back);
+							return;
+						}
+					}
+				}
 
 				oggetto = rows[0].name;
 
@@ -40616,7 +40609,7 @@ bot.onText(/^imprese/i, function (message) {
 					else
 						text += formatNumber(craft_count) + " su " + formatNumber(progCraft[end]) + " punti creazione (" + formatNumber(progCraftRew[end]) + " §)\n";
 
-					var time_end = new Date("2018-10-01 12:00:00");
+					var time_end = new Date("2018-11-01 12:00:00");
 					var now = new Date();
 					var diffD = Math.floor(((time_end - now) / 1000) / 60 / 60 / 24);
 					var diffH = Math.floor(((time_end - now) / 1000) / 60 / 60);
@@ -40632,7 +40625,7 @@ bot.onText(/^imprese/i, function (message) {
 					text += "\n<b>Impresa globale</b>\n";
 
 					if ((global == 1) && (diffM < 0) && (globalVal < global_cap))
-						text += "Impresa fallita! 🚫\nSe non hai partecipato attivamente, riceverai un malus l'ultimo giorno del mese!\n";
+						text += "Impresa fallita! 🚫\nSe non hai partecipato attivamente, riceverai un malus il primo giorno del mese!\n";
 					else {
 						if (globalVal >= global_cap)
 							text += "Impresa completata! ✅\nSe hai partecipato, riceverai una ricompensa ed il bonus l'ultimo giorno del mese!\n";
@@ -40643,7 +40636,7 @@ bot.onText(/^imprese/i, function (message) {
 							else{
 								if (global_hide == 1)
 									cap = "???";
-								text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> monete spese in acquisti nel negozio del bot\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
+								text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> ...\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
 							}
 						}
 					}
@@ -43257,6 +43250,8 @@ function setFinishedTeamMission(element, index, array) {
 
 										qnt = savedQnt;
 
+										var extra = "";
+										/*
 										if (rows[i].global_end == 1){
 											if ((qnt >= 100) || (rewardStr[1] == "money"))
 												qnt += qnt*0.2;
@@ -43270,8 +43265,8 @@ function setFinishedTeamMission(element, index, array) {
 												extra_val = extra_val*1000;
 											console.log("Incarico: " + rewardStr[1] + " " + extra_val);
 											extra = "\n\nQuantità incrementata di +" + extra_val + " per il bonus globale";
-										} else
-											extra = "";
+										}
+										*/
 
 										bot.sendMessage(rows[i].chat_id, "Hai completato l'incarico insieme al tuo party come richiesto da " + mandator + "!\nEcco il rapporto dell'incarico:\n<i>" + endText + "</i>\n\nL'ufficio incarichi vi premia con: " + rewardText + extra, html);
 
@@ -45292,15 +45287,13 @@ function setFinishedCave(element, index, array) {
 			var d = new Date();
 			var rand = Math.random() * 100;
 			if (d.getDay() == 6) {
-				if (rand < 15) {
+				if (rand < 15)
 					caveid = caveid * 2;
-				}
 			} else if (d.getDay() == 0) {
-				if (rand < 10) {
+				if (rand < 10)
 					caveid = caveid * 2;
-				} else if ((rand > 10) && (rand < 25)) {
+				else if ((rand > 10) && (rand < 25))
 					caveid = 0;
-				}
 			}
 		}
 
@@ -45312,9 +45305,8 @@ function setFinishedCave(element, index, array) {
 			if (Object.keys(rows).length > 0) {
 				var rand = Math.random() * 100;
 				abBonus = parseInt(rows[0].ability_level) * rows[0].val;
-				if ((rand < abBonus) && (luckyMode == 0)) {
+				if ((rand < abBonus) && (luckyMode == 0))
 					caveid = caveid * 2;
-				}
 			}
 
 			connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + element.id + ' AND ability_id = 8', function (err, rows, fields) {
@@ -45400,6 +45392,9 @@ function setFinishedCave(element, index, array) {
 					totPnt += (stone_id-67);
 					addItem(element.id, stone_id);
 				}
+				
+				if (cave_gem == 0)
+					globalAchievement(element.id, totPnt);
 
 				connection.query('UPDATE player SET cave_limit = 0, cave_id = 0, cave_time_end = NULL WHERE id = ' + element.id, function (err, rows, fields) {
 					if (err) throw err;

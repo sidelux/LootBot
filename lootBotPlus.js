@@ -356,6 +356,11 @@ var html = {
 	disable_web_page_preview: true
 };
 
+var no_preview = {
+	parse_mode: "Markdown",
+	disable_web_page_preview: true
+};
+
 callNTimes(60000, function () {
 	checkLottery();
 	checkAuction();
@@ -462,7 +467,7 @@ bot.onText(/^\/comandigenerali/, function (message) {
 bot.onText(/^\/calcola (.+)|^\/calcola/, function (message, match) {
 
 	if (match[1] == undefined){
-		bot.sendMessage(message.chat.id, "Inserisci un operazione da risolvere. Esempio: /calcola 1+2");
+		bot.sendMessage(message.chat.id, "Inserisci un operazione da risolvere. Esempio: /calcola 1+2\nGuida: http://mathjs.org/docs/index.html", no_preview);
 		return;
 	}
 
@@ -1195,7 +1200,7 @@ bot.onText(/^\/mercatini/, function (message) {
 					"\nVisita anche /gruppi. Per comparire qua chiedi all'amministratore.", html);
 });
 
-bot.onText(/^\/chiamaparty$/, function (message, match) {
+bot.onText(/^\/chiamaparty( .+)?$/, function (message, match) {
 
 	if (!checkSpam(message))
 		return;
@@ -1239,7 +1244,7 @@ bot.onText(/^\/chiamaparty$/, function (message, match) {
 	});
 });
 
-bot.onText(/^\/chiamaparty([0-9])$/, function (message, match) {
+bot.onText(/^\/chiamaparty([0-9])( .+)?$/, function (message, match) {
 
 	if (!checkSpam(message))
 		return;
