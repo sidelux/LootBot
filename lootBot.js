@@ -3009,7 +3009,7 @@ bot.onText(/\/dai_moon (.+),(.+)/, function (message, match) {
 });
 
 bot.onText(/\/invitati/i, function (message) {
-	connection.query('SELECT player.nickname, player.exp, player.reborn FROM referral_list, player WHERE new_player = player.id AND player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+	connection.query('SELECT P.nickname, P.exp, P.reborn FROM referral_list R, player P WHERE R.new_player = P.id AND R.player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '"))', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0) {
@@ -3018,9 +3018,8 @@ bot.onText(/\/invitati/i, function (message) {
 		}
 
 		var text = Object.keys(rows).length + " giocatori si sono registrati con il tuo link invito:\n";
-		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+		for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 			text += "> @" + rows[i].nickname + " Livello: " + Math.floor(rows[i].exp / 10) + " Rinascita: " + (rows[i].reborn - 1) + "\n";
-		}
 		bot.sendMessage(message.chat.id, text);
 	});
 });
@@ -21273,7 +21272,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		var range = Math.round(getRandomArbitrary(0, 8));
 																		var damage_red = place1_level*magic_power*(5+(avg_dmg/100)+range);
 																		damage_red = Math.round(damage_red);
-																		console.log("damage_red: " + damage_red);
+																		//console.log("damage_red: " + damage_red);
 																		var apply = applyMagic(team_id, magic_type, magic_power, damage_red);
 
 																		var magic_name = apply[0];
@@ -22737,7 +22736,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 					}
 					placeAvg = Math.round(placeAvg/Object.keys(rows).length);
 
-					connection.query('SELECT P.id, P.chat_id, APT.level, TP.suspended FROM team_player TP, assault_place_player_id APP, player P, assault_place_team APT WHERE TP.player_id = P.id AND APT.place_id = APP.place_id AND APP.player_id = P.id AND APT.team_id = APP.team_id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
+					connection.query('SELECT P.id, P.chat_id, APT.level, TP.suspended, P.boost_id, P.boost_mission FROM team_player TP, assault_place_player_id APP, player P, assault_place_team APT WHERE TP.player_id = P.id AND APT.place_id = APP.place_id AND APP.player_id = P.id AND APT.team_id = APP.team_id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
 						if (err) throw err;
 
 						var place_text = "";
@@ -22814,6 +22813,10 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 
 							if (is_boss == 1){
 								randProb = Math.random()*100;
+								if (rows[i].boost_id == 5){
+									randProb -= 5;	// ridurre perchè così aumenta probabilità
+									setBoost(rows[i].id, rows[i].boost_mission, rows[i].boost_id);
+								}
 								if (randProb <= 1)
 									capsule = 1;
 								randProb = Math.random()*100;
@@ -23405,7 +23408,7 @@ bot.onText(/Fonda nuovo/i, function (message) {
 		var player_id = rows[0].id;
 		var money = rows[0].money;
 
-		var new_price = 5000;
+		var new_price = 1000000;
 		var price_drop = 0;
 		var price_drop_msg = "";
 		var n = new Date().getDay()
@@ -23421,7 +23424,7 @@ bot.onText(/Fonda nuovo/i, function (message) {
 
 		if (n == 0) {
 			price_drop = 1;
-			new_price = 3500;
+			new_price = 750000;
 			price_drop_msg = "*SOLO OGGI* ";
 		}
 
@@ -40636,7 +40639,7 @@ bot.onText(/^imprese/i, function (message) {
 							else{
 								if (global_hide == 1)
 									cap = "???";
-								text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> ...\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
+								text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> punti pietra ottenuti dalle cave (non gemmate)\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
 							}
 						}
 					}
@@ -44526,13 +44529,11 @@ function setFinishedMission(element, index, array) {
 
 					var chest8 = 0;
 					if (boost_id == 5) {
-						if ((rand > 2) && (rand < 5)) {
+						if ((rand > 2) && (rand < 5))
 							chest8 = 1;
-						}
 					}else{
-						if ((rand > 2) && (rand < 8)) {
+						if ((rand > 2) && (rand < 8))
 							chest8 = 1;
-						}
 					}
 
 					if (chest8 == 1){
@@ -44545,13 +44546,11 @@ function setFinishedMission(element, index, array) {
 
 					var gem = 0;
 					if (boost_id == 5) {
-						if ((rand > 97) && (reborn >= 2)) {
+						if ((rand > 97) && (reborn >= 2))
 							gem = 1;
-						}
 					}else{
-						if ((rand > 99) && (reborn >= 2)) {
+						if ((rand > 99) && (reborn >= 2))
 							gem = 1;
-						}
 					}
 
 					if (gem == 1){
@@ -44564,13 +44563,11 @@ function setFinishedMission(element, index, array) {
 
 					var moon = 0;
 					if ((luckyMode == 1) || (boost_id == 5)) {
-						if ((rand > 80) && (rand < 84)) {
+						if ((rand > 80) && (rand < 84))
 							moon = 1;
-						}
 					} else {
-						if ((rand > 80) && (rand < 81) && (mission_chest >= 3)) {
+						if ((rand > 80) && (rand < 81) && (mission_chest >= 3))
 							moon = 1;
-						}
 					}
 
 					if (moon == 1){
@@ -44583,9 +44580,8 @@ function setFinishedMission(element, index, array) {
 
 					setAchievement(chat_id, element.id, 37, achPnt);
 
-					if (auto_id == (max_mission_id + 1)) {
+					if (auto_id == (max_mission_id + 1))
 						auto_id = 1;
-					}
 
 					connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + element.id + ' AND ability_id = 2', function (err, rows, fields) {
 						if (err) throw err;
