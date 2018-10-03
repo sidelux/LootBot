@@ -328,9 +328,10 @@ CREATE TABLE `assault_place_magic` (
   `power` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `magic_player_id` (`player_id`),
-  KEY `magic_team_id` (`team_id`),
   KEY `magic_magic_id` (`type`),
-  CONSTRAINT `magic_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
+  KEY `magic_team_id` (`team_id`),
+  CONSTRAINT `magic_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `magic_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -3402,4 +3403,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-10-02 15:00:11
+-- Dump completed on 2018-10-03 15:00:10

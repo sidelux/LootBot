@@ -3009,7 +3009,7 @@ bot.onText(/\/dai_moon (.+),(.+)/, function (message, match) {
 });
 
 bot.onText(/\/invitati/i, function (message) {
-	connection.query('SELECT P.nickname, P.exp, P.reborn FROM referral_list R, player P WHERE R.new_player = P.id AND R.player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '"))', function (err, rows, fields) {
+	connection.query('SELECT P.nickname, P.exp, P.reborn FROM referral_list R, player P WHERE R.new_player = P.id AND R.player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0) {
@@ -19292,7 +19292,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 		
 		helpMsg(message.chat.id, player_id, 3);
 
-		connection.query('SELECT team.name, team_player.team_id, team.players, boost_id FROM team_player, team WHERE team_player.team_id = team.id AND team_id = (SELECT team_id FROM team_player WHERE player_id = ' + player_id + ')', function (err, rows, fields) {
+		connection.query('SELECT team.name, team_player.team_id, team.players, boost_id, boss_count FROM team_player, team WHERE team_player.team_id = team.id AND team_id = (SELECT team_id FROM team_player WHERE player_id = ' + player_id + ')', function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length == 0) {
 				bot.sendMessage(message.chat.id, "Entra in un team per utilizzare questa funzione", team);
@@ -19302,6 +19302,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 			var team_id = rows[0].team_id;
 			var team_players = rows[0].players;
 			var team_name = rows[0].name;
+			var boss_count = rows[0].boss_count;
 
 			if (team_id != 1113){
 				if (rows[0].players < 3){
@@ -19390,6 +19391,8 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 						var mob_critic = rows[0].mob_critic;
 						var refresh_mob = rows[0].refresh_mob;
 						var is_boss = rows[0].is_boss;
+						var boss_num = rows[0].boss_num;
+						var mob_turn = rows[0].mob_turn;
 
 						var main_text = "Benvenut" + gender_text + " nell'<b>Assalto</b>!\n";
 						if (phase == 0){
@@ -20088,15 +20091,23 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 														if (rows[0].cnt > 0)
 															class_bonus = " (<b>+" + (rows[0].cnt*5) + "%</b> salute per bonus classe)";
 
+														/*
 														var team = connection_sync.query('SELECT boss_count FROM team WHERE id = ' + team_id);
 														var team_cnt = connection_sync.query('SELECT COUNT(id) As cnt FROM team_player WHERE team_id = ' + team_id);
 														var boss = connection_sync.query('SELECT total_life FROM boss WHERE id = (SELECT boss_num FROM assault WHERE team_id = ' + team_id + ')');
 														var wall_max_life = boss[0].total_life*(Math.sqrt(team[0].boss_count+1));
 														wall_max_life = wall_max_life*team_cnt[0].cnt*0.4;
 														wall_max_life = Math.round(wall_max_life*0.02*level);
+														*/
+														var players_num = connection_sync.query("SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE team_id = " + team_id);
+														var mob_damage = mobDamage(boss_count, players_num[0].cnt, boss_num, 1, mob_turn, 1);
+														var place = connection_sync.query('SELECT level FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id);
+														var players = connection_sync.query('SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE place_id = 5 AND team_id = ' + team_id);
+														var wall_max_life = Math.round(mob_damage * place[0].level * players[0].cnt);
+														
 														text += "A questo livello fornisce <b>" + formatNumber(wall_max_life) + "</b> salute alle mura per protezione, possiede ancora la capacità di proteggere da <b>" + formatNumber(life) + "</b> danni\nSi ripara automaticamente fino al 50% di salute alla sconfitta di un nemico, ma puoi comunque ripararla usando oggetti base (scrivi il nome se non lo vedi nella lista)." + class_bonus + "\n";
 
-														if (life >= total_life){
+														if (life >= wall_max_life){
 															text += "\nLa resistenza delle mura è al massimo";
 															bot.sendMessage(message.chat.id, text, kbBack_html);
 															return;
@@ -21618,10 +21629,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															var team_reduce = mob[0].team_reduce;
 
 															var range = getRandomArbitrary(2500, 10000);
-															var mob_damage = (Math.log(boss_count)+1) * (Math.sqrt(players_num)) * (boss_num/20) * range;
-															mob_damage = mob_damage / (4 - mob_count);
-															mob_damage = incremDamage(mob_damage, players_num, mob_turn);
-															mob_damage = Math.round(mob_damage);
+															var mob_damage = mobDamage(boss_count, players_num, boss_num, mob_count, mob_turn, 0);
 
 															var place5_damage = 0;
 															var place5 = connection_sync.query("SELECT level, life, total_life FROM assault_place_team WHERE place_id = 5 AND team_id = " + team_id);
@@ -21638,7 +21646,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																if (place5_total_damage > 0){
 																	epic_var++;
 																	var life = place5[0].life+(place5[0].life*(0.02*place5_class_bonus[0].cnt));
-																	var total_life = rows[0].total_life;
+																	var total_life = place5[0].total_life;
+																	console.log("wall life: " + life + "/" + total_life);
 																	if (miniboost_arr[4] > 0)
 																		life += life*(0.01*miniboost_arr[4]);
 
@@ -22560,6 +22569,17 @@ bot.onText(/riprendi battaglia/i, function (message) {
 	});
 });
 
+function mobDamage(boss_count, players_num, boss_num, mob_count, mob_turn, customRange){
+	var range = getRandomArbitrary(2500, 10000);
+	if (customRange == 1)
+		range = 6000;
+	var mob_damage = (Math.log(boss_count)+1) * (Math.sqrt(players_num)) * (boss_num/20) * range;
+	mob_damage = mob_damage / (4 - mob_count);
+	mob_damage = incremDamage(mob_damage, players_num, mob_turn);
+	mob_damage = Math.round(mob_damage);
+	return mob_damage;
+}
+
 function incremDamage(damage, players_num, mob_turn){
 	// Moltiplicatore danno
 	var mul = Math.floor(mob_turn/10);
@@ -22804,12 +22824,12 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 							if (is_boss == 1)
 								exp = 20;
 
-							chest1 = Math.round(10*placeAvg*boss_molt);
-							chest2 = Math.round(6*placeAvg*boss_molt);
-							chest3 = Math.round(4*placeAvg*boss_molt);
-							chest4 = Math.round(3*placeAvg*boss_molt);
-							chest5 = Math.round(2*placeAvg*boss_molt);
-							chest6 = Math.round(1*placeAvg*boss_molt);
+							chest1 = Math.round(4*placeAvg*boss_molt);
+							chest2 = Math.round(2.4*placeAvg*boss_molt);
+							chest3 = Math.round(1.6*placeAvg*boss_molt);
+							chest4 = Math.round(1.2*placeAvg*boss_molt);
+							chest5 = Math.round(0.8*placeAvg*boss_molt);
+							chest6 = Math.round(0.4*placeAvg*boss_molt);
 
 							if (is_boss == 1){
 								randProb = Math.random()*100;
@@ -42940,6 +42960,7 @@ function regenItems(team_id, place_id, level){
 
 	var extra_life = "";
 	if (place_id == 5){
+		/*
 		var team = connection_sync.query('SELECT boss_count FROM team WHERE id = ' + team_id);
 		var team_cnt = connection_sync.query('SELECT COUNT(id) As cnt FROM team_player WHERE team_id = ' + team_id);
 		var boss = connection_sync.query('SELECT total_life FROM boss WHERE id = (SELECT boss_num FROM assault WHERE team_id = ' + team_id + ')');
@@ -42947,9 +42968,26 @@ function regenItems(team_id, place_id, level){
 		var wall_max_life = boss[0].total_life*(Math.sqrt(team[0].boss_count+1));
 		wall_max_life = wall_max_life*team_cnt[0].cnt*0.4;
 		wall_max_life = Math.round(wall_max_life*0.02*place[0].level);
+		*/
+		var team = connection_sync.query('SELECT boss_count FROM team WHERE id = ' + team_id);
+		var assault = connection_sync.query('SELECT boss_num, mob_turn FROM assault WHERE team_id = ' + team_id);
+		var players_num = connection_sync.query("SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE team_id = " + team_id);
+		var mob_damage = mobDamage(team[0].boss_count, players_num[0].cnt, assault[0].boss_num, 1, assault[0].mob_turn, 1);
+		var place = connection_sync.query('SELECT level FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id);
+		var players = connection_sync.query('SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE place_id = 5 AND team_id = ' + team_id);
+		var wall_max_life = Math.round(mob_damage * place[0].level * players[0].cnt);
 
-		connection.query('UPDATE assault_place_team SET life = ' + wall_max_life + ', total_life = ' + wall_max_life + ' WHERE team_id = ' + team_id + ' AND place_id = ' + place_id, function (err, rows, fields) {
+		connection.query('SELECT life FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id, function (err, rows, fields) {
 			if (err) throw err;
+			if (rows[0].life > wall_max_life){
+				connection.query('UPDATE assault_place_team SET life = ' + wall_max_life + ', total_life = ' + wall_max_life + ' WHERE place_id = 5 AND team_id = ' + team_id, function (err, rows, fields) {
+					if (err) throw err;
+				});
+			}else{
+				connection.query('UPDATE assault_place_team SET total_life = ' + wall_max_life + ' WHERE place_id = 5 AND team_id = ' + team_id, function (err, rows, fields) {
+					if (err) throw err;
+				});
+			}
 		});
 	}
 }
