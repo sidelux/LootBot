@@ -523,7 +523,11 @@ bot.onText(/^\/birra/, function (message) {
 
 bot.onText(/^\/pollo/, function (message) {
 	bot.sendMessage(message.chat.id, "🐓");
-})
+});
+
+bot.onText(/^\/facepalm/, function (message) {
+	bot.sendPhoto(message.chat.id, "https://scifanatic-wpengine.netdna-ssl.com/wp-content/uploads/2017/03/facepalm-head.jpg");
+});
 
 bot.onText(/^\/marketban (.+)/, function (message, match) {
 	match[1] = match[1].replace("@", "");
