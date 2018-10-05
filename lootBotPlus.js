@@ -8024,7 +8024,7 @@ bot.onText(/^\/spia/, function (message) {
 			return;
 		}
 
-		if (rows[0].spy_count >= 25) {
+		if (rows[0].spy_count >= 30) {
 			bot.sendMessage(account_id, "Hai raggiunto il limite giornaliero.");
 			return;
 		}

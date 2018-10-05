@@ -364,6 +364,9 @@ bot.on('message', function (message) {
 					if (err) throw err;
 
 					var amount = Math.floor(message.successful_payment.total_amount / 100);
+					
+					if (luckyMode == 1)
+						amount = amount*2;
 
 					bot.sendMessage("-1001098734700", "#Donazione " + message.from.username + " (" + message.from.id + ") per " + message.successful_payment.total_amount / 100 + " €");
 					bot.sendMessage(message.chat.id, "Hai ricevuto *" + amount + " 🌕* per la tua donazione, grazie mille!", back);
@@ -1879,8 +1882,12 @@ bot.onText(/Donazioni|Lunari/i, function (message) {
 		var max = 90;
 		var att = rows[0].tot;
 		var progress = progressBar(att, max);
+		
+		var extra = "";
+		if (luckyMode == 0)
+			extra = "<b>Oggi le monete ottenute sono raddoppiate!</b>\n";
 
-		bot.sendMessage(message.chat.id, "<b>Donazioni</b>\n\n<i>Magari non tutti voi sapete che mantenere il server di Loot Bot ha un costo che deve essere saldato ogni mese, non ci sono pubblicità, nè acquisti pay2win, nè sponsorizzazioni che contribuiscono al sostentamento. Perciò tu nel tuo piccolo puoi aiutare donando attraverso il link sotto, qualsiasi cifra può aiutare. Per motivarti un po' (lo so che ti stai chiedendo: 'e io che ci guadagno?') oltre al fatto che saprai che hai aiutato ad estendere di un mese questo passatempo, riceverai anche una Moneta Lunare per ogni euro donato.\nNon è niente di obbligatorio e niente di troppo vantaggioso, anzi. Però purtroppo non sempre si riesce a mantenere tutto in modo gratuito. A me personalmente farebbe molto piacere la cosa, pensaci!</i>\n\nLink PayPal: https://www.paypal.me/EdoardoCortese\nIndirizzo Bitcoin: <code>3ChwKyXG4fo8NDAdQwJERUty78qumeyn91</code>\n\nRicordati di specificare il nickname, se hai problemi contattami in privato (@fenix45).\nIn caso di abbandono del gioco o casi simili, la donazione <i>non verrà</i> rimborsata.\n\nProgresso per il mese attuale: " + progress + " " + att + " € / " + max + " €", kb);
+		bot.sendMessage(message.chat.id, "<b>Donazioni</b>\n\n<i>Magari non tutti voi sapete che mantenere il server di Loot Bot ha un costo che deve essere saldato ogni mese, non ci sono pubblicità, nè acquisti pay2win, nè sponsorizzazioni che contribuiscono al sostentamento. Perciò tu nel tuo piccolo puoi aiutare donando attraverso il link sotto, qualsiasi cifra può aiutare. Per motivarti un po' (lo so che ti stai chiedendo: 'e io che ci guadagno?') oltre al fatto che saprai che hai aiutato ad estendere di un mese questo passatempo, riceverai anche una Moneta Lunare per ogni euro donato.\nNon è niente di obbligatorio e niente di troppo vantaggioso, anzi. Però purtroppo non sempre si riesce a mantenere tutto in modo gratuito. A me personalmente farebbe molto piacere la cosa, pensaci!</i>\n\nLink PayPal: https://www.paypal.me/EdoardoCortese\nIndirizzo Bitcoin: <code>3ChwKyXG4fo8NDAdQwJERUty78qumeyn91</code>\n\nRicordati di specificare il nickname, se hai problemi contattami in privato (@fenix45).\nIn caso di abbandono del gioco o casi simili, la donazione <i>non verrà</i> rimborsata.\n" + extra + "\nProgresso per il mese attuale: " + progress + " " + att + " € / " + max + " €", kb);
 	});
 });
 
@@ -11874,6 +11881,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																								connection.query('UPDATE event_mana_status SET mana_3 = mana_3 + ' + restore + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
+																								setAchievement(message.chat.id, player_id, 29, restore);
 																							}
 																						}
 																					}
@@ -11905,6 +11913,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																								connection.query('UPDATE event_mana_status SET mana_1 = mana_1 + ' + restore + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
+																								setAchievement(message.chat.id, player_id, 29, restore);
 																							}
 																						}
 																					}
@@ -11926,6 +11935,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																								connection.query('UPDATE event_mana_status SET mana_2 = mana_2 + ' + restore + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
+																								setAchievement(message.chat.id, player_id, 29, restore);
 																							}
 																						}
 																					}
@@ -21145,7 +21155,6 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				if (err) throw err;
 																			});
 																			cons_text += "\n> " + cons[i].name;
-																			setAchievement(cons[i].chat_id, cons[i].player_id, 29, damage);
 																			cnt++;
 																			epic_var++;
 																		}
@@ -21869,6 +21878,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																							connection.query('UPDATE event_mana_status SET mana_1 = mana_1 + ' + restore + ' WHERE player_id = ' + playerid, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
+																							setAchievement(player[i].chat_id, playerid, 29, restore);
 																						}
 																					}
 																				}
@@ -21890,6 +21900,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																							connection.query('UPDATE event_mana_status SET mana_2 = mana_2 + ' + restore + ' WHERE player_id = ' + playerid, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
+																							setAchievement(player[i].chat_id, playerid, 29, restore);
 																						}
 																					}
 																				}
@@ -21910,6 +21921,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																							connection.query('UPDATE event_mana_status SET mana_3 = mana_3 + ' + restore + ' WHERE player_id = ' + playerid, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
+																							setAchievement(player[i].chat_id, playerid, 29, restore);
 																						}
 																					}
 																				}
@@ -35744,11 +35756,11 @@ bot.onText(/evento della luna/i, function (message) {
 
 	var mode = 0;
 	var d = new Date();
-	if (d.getDay() == 6) {
+	if (d.getDay() == 6)
 		mode = 1;
-	} else if (d.getDay() == 0) {
+	else if (d.getDay() == 0)
 		mode = 2;
-	} else {
+	else {
 		bot.sendMessage(message.chat.id, "L'evento della luna non è attivo oggi!", back);
 		return;
 	}
@@ -35761,6 +35773,7 @@ bot.onText(/evento della luna/i, function (message) {
 			"> La luce della Luna Dorata dona ai viaggiatori di *Dungeon* la possibilità di raddoppiare il loro Rango\n" +
 			"> Il *Contrabbandiere* non ama molto la Luce della Luna Dorata e questo evento raro, in vista dell’aumento degli avventurieri, lo porta a valutare, in alcuni momenti, le sue offerte al doppio del prezzo\n" +
 			"> I mandanti degli Incarichi, se si sentono ispirati dalla Luna Dorata, possono raddoppiare la ricompensa di Punti Anima al suo completamento\n" +
+			"> Inoltre solo durante il weekend della luna, le Monete Lunari ottenute grazie alle donazioni sono raddoppiate!\n" +
 			"> *Ruota* della Luna Dorata\n" +
 			"\n*Vuoi accedere alla Ruota?*";
 	} else if (mode == 2) {
@@ -35771,6 +35784,7 @@ bot.onText(/evento della luna/i, function (message) {
 			"> La Luna Nera può dare consigli corretti o sbagliati ai viaggiatori di Dungeon che concludono le loro avventure sotto la sua influenza. Vi è possibilità di raddoppiare i loro *Punti Rango* o di Annullarli\n" +
 			"> Il *Contrabbandiere* adora la Luce della Luna Nera e aumenta notevolmente rispetto alla Luna Dorata la probabilità di raddoppiare i soldi dati per un oggetti, ma a volte può essere più guardingo e conclude in fretta le sue transazioni dimezzando il guadagno\n" +
 			"> I mandanti degli Incarichi, spaventati dalla luce della Luna Nera, possono triplicare la ricompensa di Punti Anima oppure rifiutarsi di fornirne\n" +
+			"> Inoltre solo durante il weekend della luna, le Monete Lunari ottenute grazie alle donazioni sono raddoppiate!\n" +
 			"> *Ruota* della Luna Nera\n" +
 			"\n*Vuoi accedere alla Ruota?*";
 	}
@@ -37445,7 +37459,7 @@ bot.onText(/spia rifugio|spia:/i, function (message) {
 			return;
 		}
 
-		if (rows[0].spy_count >= 25) {
+		if (rows[0].spy_count >= 30) {
 			bot.sendMessage(message.chat.id, "Hai raggiunto il limite giornaliero.");
 			return;
 		}
