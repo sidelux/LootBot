@@ -105,8 +105,6 @@ app.post(path, function (req, res) {
 });
 
 var j = Schedule.scheduleJob('00 3 * * *', function () { //3 notte
-	refreshHeists();
-	refreshLife();
 	if (checkDragonTopOn == 1)
 		checkDragonTop();
 });
@@ -134,6 +132,8 @@ var j3 = Schedule.scheduleJob('01 00 * * *', function () { //00:01 notte
 		craftWeek();
 	resetTeamMission();
 	resetGnomorra();
+	refreshHeists();
+	refreshLife();
 });
 
 var j4 = Schedule.scheduleJob('05 00 * * *', function () { //00:05 notte
@@ -371,9 +371,15 @@ bot.on('message', function (message) {
 					bot.sendMessage("-1001098734700", "#Donazione " + message.from.username + " (" + message.from.id + ") per " + message.successful_payment.total_amount / 100 + " €");
 					bot.sendMessage(message.chat.id, "Hai ricevuto *" + amount + " 🌕* per la tua donazione, grazie mille!", back);
 
-					connection.query('UPDATE player SET donation = donation + ' + amount + ' WHERE id = ' + player_id, function (err, rows, fields) {
-						if (err) throw err;
-					});
+					if (luckyMode == 1){
+						connection.query('UPDATE player SET donation = donation + ' + Math.round(amount/2) + ' WHERE id = ' + player_id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+					}else{
+						connection.query('UPDATE player SET donation = donation + ' + amount + ' WHERE id = ' + player_id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+					}
 					connection.query('UPDATE player SET moon_coin = moon_coin + ' + amount + ' WHERE id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 					});
@@ -1504,7 +1510,7 @@ bot.onText(/^\/comandi/, function (message, match) {
 						"/festival (cambia oggetto manualmente)\n" +
 						"/getid nick\n" +
 						"/lacrima nick\n" +
-						"/dona nick n\n" +
+						"/dona nick numero (gestisce da solo luckymode)\n" +
 						"/dai_scrigni nick,nome,qnt\n" +
 						"/dai_ogg nick,ogg,qnt\n" +
 						"/soldi nick,qnt\n" +
@@ -1517,7 +1523,8 @@ bot.onText(/^\/comandi/, function (message, match) {
 						"/genmarket (rigenera mercante pazzo)\n" +
 						"/endglobal (fine globale)\n" +
 						"/failglobal (fallimento globale)\n" +
-						"/avviso testo (msg agli attivi < 48h)");
+						"/avviso testo (msg agli attivi < 48h)\n" +
+						"/assaultstop (manutenzione assalto)");
 	} else
 		bot.sendMessage(message.chat.id, "Piacerebbe :D");
 });
@@ -2551,6 +2558,9 @@ bot.onText(/\/dona (.+)/, function (message, match) {
 
 		var nick = split[0];
 		var qnt = split[1];
+		
+		if (luckyMode == 1)
+			qnt = qnt*2;
 
 		connection.query('SELECT id, chat_id FROM player WHERE nickname = "' + nick + '"', function (err, rows, fields) {
 			if (err) throw err;
@@ -3493,6 +3503,7 @@ function mainMenu(message) {
 						 "<a href='https://www.paypal.me/EdoardoCortese'>Dona</a> e riceverai 🌕 per la Ruota della Luna!",
 						 "Aggiungi @lootplusbot al tuo gruppo!",
 						 "Visita @LaBachecaDiLootia per pubblicizzare o trovare un team!",
+						 "Suggerisci migliorie in @Suggerimenti_per_LootBot!",
 						 ((n != 6) && (n != 0) ? "Ricordati di completare le Imprese Giornaliere!" : "In settimana completa le Imprese Giornaliere!")];
 			var rand = Math.round(Math.random() * (Object.keys(links).length - 1));
 			price_drop_msg = "\n " + links[rand];
@@ -18189,10 +18200,10 @@ bot.onText(/team/i, function (message) {
 										text += "🦋 " + formatNumber(team_point) + boost_name + "\n";
 
 										if (isAdmin == 1)
-											text += "Usa '/messaggio testo' per scrivere al team";
+											text += "Usa '/messaggio testo' per scrivere al team\n";
 
 										if (childName != "")
-											text += "\n\nAccademia " + childName + " (+1 🦋/boss)";
+											text += "\nAccademia " + childName + " (+5 🦋/boss)";
 
 										if (motherName != "") {
 											if (childName == "")
@@ -19514,6 +19525,13 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 									}else
 										text += "<i>Nessun membro in questa postazione</i>\n";
 								}
+								
+								var tot_level = connection_sync.query('SELECT SUM(max_level) As cnt FROM assault_place');
+								var my_tot_level = connection_sync.query('SELECT SUM(level) As cnt FROM assault_place_team WHERE team_id = ' + team_id);
+								if (tot_level[0].cnt == my_tot_level[0].cnt){
+									setAchievement(message.chat.id, player_id, 44, 999);
+									setAchievement(message.chat.id, player_id, 19, 999);
+								}
 
 								if (team_players-selected_count == 1)
 									text += "\nAncora <b>1</b> membro deve scegliere la propria postazione!";
@@ -19792,6 +19810,8 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																								connection.query('UPDATE assault_place_team SET time_end = NOW() WHERE place_id = ' + selected + ' AND team_id = ' + team_id, function (err, rows, fields) {
 																									if (err) throw err;
 																									bot.sendMessage(message.chat.id, "Hai iniziato l'incremento del livello della postazione *" + selected_name + "* istantaneo! Attendi qualche secondo!", kbBack);
+																									setAchievement(message.chat.id, player_id, 19, 1);
+																									setAchievement(message.chat.id, player_id, 44, 1);
 																								});
 																							});
 																						});
@@ -19832,6 +19852,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																						if (err) throw err;
 																						bot.sendMessage(message.chat.id, "Hai iniziato l'incremento del livello della postazione *" + selected_name + "*! Torna tra 1 ora!", kbBack);
 																						setAchievement(message.chat.id, player_id, 19, 1);
+																						setAchievement(message.chat.id, player_id, 44, 1);
 																					});
 																				});
 																			});
@@ -20105,22 +20126,19 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 														if (err) throw err;
 
 														var class_bonus = "";
-														if (rows[0].cnt > 0)
+														var class_bonus_val = 0;
+														if (rows[0].cnt > 0){
 															class_bonus = " (<b>+" + (rows[0].cnt*5) + "%</b> salute per bonus classe)";
+															class_bonus_val = (rows[0].cnt*5);
+														}
 
-														/*
-														var team = connection_sync.query('SELECT boss_count FROM team WHERE id = ' + team_id);
-														var team_cnt = connection_sync.query('SELECT COUNT(id) As cnt FROM team_player WHERE team_id = ' + team_id);
-														var boss = connection_sync.query('SELECT total_life FROM boss WHERE id = (SELECT boss_num FROM assault WHERE team_id = ' + team_id + ')');
-														var wall_max_life = boss[0].total_life*(Math.sqrt(team[0].boss_count+1));
-														wall_max_life = wall_max_life*team_cnt[0].cnt*0.4;
-														wall_max_life = Math.round(wall_max_life*0.02*level);
-														*/
 														var players_num = connection_sync.query("SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE team_id = " + team_id);
 														var mob_damage = mobDamage(boss_count, players_num[0].cnt, boss_num, 1, mob_turn, 1);
 														var place = connection_sync.query('SELECT level FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id);
 														var players = connection_sync.query('SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE place_id = 5 AND team_id = ' + team_id);
-														var wall_max_life = Math.round(mob_damage * place[0].level * players[0].cnt);
+														var wall_max_life = mob_damage * place[0].level * players[0].cnt;
+														wall_max_life += wall_max_life*(class_bonus_val/100);
+														wall_max_life = Math.round(wall_max_life);
 
 														text += "A questo livello fornisce <b>" + formatNumber(wall_max_life) + "</b> salute alle mura per protezione, possiede ancora la capacità di proteggere da <b>" + formatNumber(life) + "</b> danni\nSi ripara automaticamente fino al 50% di salute alla sconfitta di un nemico, ma puoi comunque ripararla usando oggetti base (scrivi il nome se non lo vedi nella lista)." + class_bonus + "\n";
 
@@ -20128,6 +20146,11 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 															text += "\nLa resistenza delle mura è al massimo";
 															bot.sendMessage(message.chat.id, text, kbBack_html);
 															return;
+														}
+														
+														if (total_life != wall_max_life){
+															connection_sync.query("UPDATE assault_place_team SET total_life = " + wall_max_life + " WHERE team_id = " + team_id + " AND place_id = 5");
+															console.log("Salute mura adeguata");
 														}
 
 														connection.query('SELECT I.name, I.value, IV.quantity, R.id As rarity_id FROM item I, inventory IV, rarity R WHERE R.shortname = I.rarity AND I.id = IV.item_id AND IV.quantity > 0 AND I.craftable = 0 AND I.rarity IN ("C","NC","R","UR","L","R") AND IV.player_id = ' + player_id + " LIMIT 25", function (err, rows, fields) {
@@ -20776,6 +20799,11 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																}
 															};
 														}
+													}
+													
+													if ((place_id == 1) || (place_id == 2)){
+														setAchievement(message.chat.id, player_id, 44, 999);
+														setAchievement(message.chat.id, player_id, 19, 999);
 													}
 
 													if (elected == 0)
@@ -21496,17 +21524,14 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				magic_type = 1;
 																				magic_power = 50;
 																				epic_var++;
-																				setAchievement(message.chat.id, player[i].id, 6, 1);
 																			} else if (weapon_enchant == 2) {
 																				magic_type = 2;
 																				magic_power = 150;
 																				epic_var++;
-																				setAchievement(message.chat.id, player[i].id, 6, 1);
 																			} else {
 																				magic_type = 3;
 																				magic_power = 50;
 																				epic_var++;
-																				setAchievement(message.chat.id, player[i].id, 6, 1);
 																			}
 																		}
 
@@ -21525,6 +21550,9 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			magic3 += magic_power;
 																		else if (magic_type == 4)
 																			magic4 += magic_power;
+																		
+																		if (magic_type > 0)
+																			setAchievement(message.chat.id, player[i].id, 6, 1);
 
 																		if (miniboost_arr[6] > 0)
 																			critical += critical*(0.005*miniboost_arr[6]);
@@ -21975,9 +22003,10 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																		defence = 0;
 
-																		if (divided_damage_att == 0)
-																			player_text += "\n> " + player[i].nickname + " non subisce danni" + status_text;
-																		else{
+																		if (divided_damage_att == 0){
+																			if (status_text != "")
+																				player_text += "\n> " + player[i].nickname + " non subisce danni" + status_text;
+																		}else{
 																			player_text += "\n> " + player[i].nickname + " subisce <b>" + formatNumber(divided_damage_att) + "</b> danni" + status_text;
 																			setAchievement(player[i].chat_id, playerid, 30, divided_damage_att);
 																		}
@@ -22145,17 +22174,14 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				magic_type = 1;
 																				magic_power = 50;
 																				epic_var++;
-																				setAchievement(player[i].chat_id, player[i].id, 6, 1);
 																			} else if (weapon_enchant == 2) {
 																				magic_type = 2;
 																				magic_power = 150;
 																				epic_var++;
-																				setAchievement(player[i].chat_id, player[i].id, 6, 1);
 																			} else {
 																				magic_type = 3;
 																				magic_power = 50;
 																				epic_var++;
-																				setAchievement(player[i].chat_id, player[i].id, 6, 1);
 																			}
 																		}
 
@@ -22174,6 +22200,9 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			magic3 += magic_power;
 																		else if (magic_type == 4)
 																			magic4 += magic_power;
+																		
+																		if (magic_type > 0)
+																			setAchievement(message.chat.id, player[i].id, 6, 1);
 
 																		if (miniboost_arr[6] > 0)
 																			critical += critical*(0.005*miniboost_arr[6]);
@@ -35782,7 +35811,7 @@ bot.onText(/evento della luna/i, function (message) {
 			"> Oscuri sono i percorsi irradiati dalla Luna Nera, possono portare a maggiori *tesori* o a piccoli guadagni\n" +
 			"> L’influenza della Luna Nera può portarvi a grandi ritrovamenti o a vicoli ciechi senza ritorno nelle Cave di *Pietre*\n" +
 			"> La Luna Nera può dare consigli corretti o sbagliati ai viaggiatori di Dungeon che concludono le loro avventure sotto la sua influenza. Vi è possibilità di raddoppiare i loro *Punti Rango* o di Annullarli\n" +
-			"> Il *Contrabbandiere* adora la Luce della Luna Nera e aumenta notevolmente rispetto alla Luna Dorata la probabilità di raddoppiare i soldi dati per un oggetti, ma a volte può essere più guardingo e conclude in fretta le sue transazioni dimezzando il guadagno\n" +
+			"> Il *Contrabbandiere* adora la Luce della Luna Nera e aumenta notevolmente rispetto alla Luna Dorata la probabilità di raddoppiare i soldi dati per un oggetto, ma a volte può essere più guardingo e conclude in fretta le sue transazioni dimezzando il guadagno\n" +
 			"> I mandanti degli Incarichi, spaventati dalla luce della Luna Nera, possono triplicare la ricompensa di Punti Anima oppure rifiutarsi di fornirne\n" +
 			"> Inoltre solo durante il weekend della luna, le Monete Lunari ottenute grazie alle donazioni sono raddoppiate!\n" +
 			"> *Ruota* della Luna Nera\n" +
@@ -38959,7 +38988,7 @@ bot.onText(/^rifugio|Torna al rifugio/i, function (message) {
 					rifugio = rows[0].name + " (" + house_id + ")";
 				}
 
-				bot.sendMessage(message.chat.id, "Bentornat" + gender_text + " nel tuo 🏕 *" + rifugio + "*, possiedi *" + ability + "* punti abilità!\nPuoi ancora effettuare " + ((10 - heist_count) < 0 ? 0 : (10 - heist_count)) + " ispezioni e spiare " + (25 - spy_count) + " giocatori.", kb).then(function () {
+				bot.sendMessage(message.chat.id, "Bentornat" + gender_text + " nel tuo 🏕 *" + rifugio + "*, possiedi *" + ability + "* punti abilità!\nPuoi ancora effettuare " + ((10 - heist_count) < 0 ? 0 : (10 - heist_count)) + " ispezioni e spiare " + (30 - spy_count) + " giocatori.", kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text.indexOf("Ispezione") != -1){
 
@@ -42782,7 +42811,7 @@ function setFinishedAssaults(element, index, array) {
 			if (Object.keys(regen).length > 0) {
 				//console.log("Rigenerazione requisiti postazione in base ai livelli attuali per team " + team_id);
 				for (var i = 0, len = Object.keys(regen).length; i < len; i++)
-					regenItems(regen[i].team_id, regen[i].place_id, regen[i].level);
+					regenItems(regen[i].team_id, regen[i].place_id, (regen[i].level-1));
 			}
 
 			connection.query('UPDATE assault_place_player_id SET killed = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
@@ -42996,22 +43025,20 @@ function regenItems(team_id, place_id, level){
 
 	var extra_life = "";
 	if (place_id == 5){
-		/*
-		var team = connection_sync.query('SELECT boss_count FROM team WHERE id = ' + team_id);
-		var team_cnt = connection_sync.query('SELECT COUNT(id) As cnt FROM team_player WHERE team_id = ' + team_id);
-		var boss = connection_sync.query('SELECT total_life FROM boss WHERE id = (SELECT boss_num FROM assault WHERE team_id = ' + team_id + ')');
-		var place = connection_sync.query('SELECT level FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id);
-		var wall_max_life = boss[0].total_life*(Math.sqrt(team[0].boss_count+1));
-		wall_max_life = wall_max_life*team_cnt[0].cnt*0.4;
-		wall_max_life = Math.round(wall_max_life*0.02*place[0].level);
-		*/
+		var class_bonus = connection_sync.query("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 5");
+		var class_bonus_val = 0;
+		if (class_bonus[0].cnt > 0)
+			class_bonus_val = class_bonus[0].cnt*5;
+
 		var team = connection_sync.query('SELECT boss_count FROM team WHERE id = ' + team_id);
 		var assault = connection_sync.query('SELECT boss_num, mob_turn FROM assault WHERE team_id = ' + team_id);
 		var players_num = connection_sync.query("SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE team_id = " + team_id);
 		var mob_damage = mobDamage(team[0].boss_count, players_num[0].cnt, assault[0].boss_num, 1, assault[0].mob_turn, 1);
 		var place = connection_sync.query('SELECT level FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id);
 		var players = connection_sync.query('SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE place_id = 5 AND team_id = ' + team_id);
-		var wall_max_life = Math.round(mob_damage * place[0].level * players[0].cnt);
+		var wall_max_life = mob_damage * place[0].level * players[0].cnt;
+		wall_max_life += wall_max_life*(class_bonus_val/100);
+		wall_max_life = Math.round(wall_max_life);
 
 		connection.query('SELECT life FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id, function (err, rows, fields) {
 			if (err) throw err;

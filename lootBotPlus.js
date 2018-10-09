@@ -770,6 +770,45 @@ bot.onText(/^\/salmone/, function (message) {
 	});
 });
 
+bot.onText(/^\/caffè/, function (message) {
+	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		var player_id = rows[0].id;
+		var money = rows[0].money;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			console.log("BANNATO! (" + message.from.username + ")");
+			var text = "...";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+
+		if (rows[0].market_ban == 1) {
+			bot.sendMessage(message.chat.id, "...", mark);
+			return;
+		}
+
+		if (rows[0].holiday == 1) {
+			bot.sendMessage(message.chat.id, "...")
+			return;
+		}
+
+		if (money < 100) {
+			bot.sendMessage(message.chat.id, "Il caffè è finito :c");
+		} else {
+			connection.query('UPDATE player SET money = money-100 WHERE id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				bot.sendMessage(message.chat.id, "☕️");
+			});
+			connection.query('UPDATE config SET food = food+1', function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
+	});
+});
+
 bot.onText(/^\/whisky/, function (message) {
 	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
