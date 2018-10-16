@@ -1891,7 +1891,7 @@ bot.onText(/Donazioni|Lunari/i, function (message) {
 		var progress = progressBar(att, max);
 		
 		var extra = "";
-		if (luckyMode == 0)
+		if (luckyMode == 1)
 			extra = "<b>Oggi le monete ottenute sono raddoppiate!</b>\n";
 
 		bot.sendMessage(message.chat.id, "<b>Donazioni</b>\n\n<i>Magari non tutti voi sapete che mantenere il server di Loot Bot ha un costo che deve essere saldato ogni mese, non ci sono pubblicità, nè acquisti pay2win, nè sponsorizzazioni che contribuiscono al sostentamento. Perciò tu nel tuo piccolo puoi aiutare donando attraverso il link sotto, qualsiasi cifra può aiutare. Per motivarti un po' (lo so che ti stai chiedendo: 'e io che ci guadagno?') oltre al fatto che saprai che hai aiutato ad estendere di un mese questo passatempo, riceverai anche una Moneta Lunare per ogni euro donato.\nNon è niente di obbligatorio e niente di troppo vantaggioso, anzi. Però purtroppo non sempre si riesce a mantenere tutto in modo gratuito. A me personalmente farebbe molto piacere la cosa, pensaci!</i>\n\nLink PayPal: https://www.paypal.me/EdoardoCortese\nIndirizzo Bitcoin: <code>3ChwKyXG4fo8NDAdQwJERUty78qumeyn91</code>\n\nRicordati di specificare il nickname, se hai problemi contattami in privato (@fenix45).\nIn caso di abbandono del gioco o casi simili, la donazione <i>non verrà</i> rimborsata.\n" + extra + "\nProgresso per il mese attuale: " + progress + " " + att + " € / " + max + " €", kb);
@@ -19665,7 +19665,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 														mob = "<b>Boss</b>";
 													text += mob + ": " + assaultEmojiList[rows[i].place_weak-1] + " - " + assaultEmojiList[rows[i].place_strong-1] + "\n";
 												}
-												text += "\nA sinistra la resistenza (subisce meno danni da giocatori e postazione indicata), a destra la debolezza (subisce più danni da giocatori e postazione indicata)";
+												text += "\nA sinistra la debolezza 🔺 (subisce più danni da giocatori e postazione indicata), a destra la resistenza 🔻 (subisce meno da giocatori e postazione indicata)";
 												bot.sendMessage(message.chat.id, text, kbBack_html);
 											});
 										} else if ((answer.text.toLowerCase().indexOf("potenzia") != -1) || (answer.text.toLowerCase().indexOf("costruisci") != -1)){
@@ -20107,7 +20107,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 														if (rows[0].cnt > 0)
 															class_bonus = " (<b>+" + (rows[0].cnt*5) + "%</b> danno per bonus classe)";
 
-														text += "A questo livello fornisce <b>x" + (level/2+3).toFixed(3) + "</b> danno durante la fase di battaglia\nPuoi solo potenziare questo tipo di postazione!" + class_bonus;
+														text += "A questo livello fornisce <b>x" + (level/2+3).toFixed(2).toString().replace(".",",") + "</b> danno durante la fase di battaglia\nPuoi solo potenziare questo tipo di postazione!" + class_bonus;
 														bot.sendMessage(message.chat.id, text, kbBack_html);
 													});
 												}else if (selected == 4){
@@ -20118,7 +20118,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 														if (rows[0].cnt > 0)
 															class_bonus = " (<b>+" + (rows[0].cnt*5) + "%</b> danno per bonus classe)";
 
-														text += "A questo livello fornisce <b>x" + (level/3+1).toFixed(3).toString().replace(".",",") + "</b> danno durante la fase di battaglia\nPuoi solo potenziare questo tipo di postazione!" + class_bonus;
+														text += "A questo livello fornisce <b>x" + (level/3+1).toFixed(2).toString().replace(".",",") + "</b> danno durante la fase di battaglia\nPuoi solo potenziare questo tipo di postazione!" + class_bonus;
 														bot.sendMessage(message.chat.id, text, kbBack_html);
 													});
 												}else if (selected == 5){
@@ -20225,6 +20225,9 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 
 																							delItem(player_id, item_id, qnt);
 
+																							var life = rows[0].life;
+																							var total_life = rows[0].total_life;
+																							
 																							var refill = singleRefill*qnt;
 																							var new_life = Math.round(life+refill);
 																							if (new_life > total_life)
@@ -21190,7 +21193,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		var weak = "";
 																		if (mob_place_weak == 2){
 																			damage += damage*0.25;
-																			weak = " 🆙";
+																			weak = " 🔺";
 																		}
 
 																		damage = Math.round(damage);
@@ -21320,7 +21323,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		var weak = "";
 																		if (mob_place_weak == 1){
 																			magic_power += magic_power*0.10;
-																			weak = " 🆙";
+																			weak = " 🔺";
 																		}
 
 																		magic_power = Math.round(magic_power);
@@ -21591,7 +21594,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		var weak = "";
 																		if (mob_place_weak == 4){
 																			damage += damage*0.25;
-																			weak = " 🆙";
+																			weak = " 🔺";
 																		}
 
 																		if (team_paralyzed > 0){
@@ -21798,7 +21801,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																		if (mob_place_strong == player[i].place_id){
 																			divided_damage_att += divided_damage_att*0.25;
-																			status.push("🆙");
+																			status.push("🔻");
 																		}
 
 																		playerid = player[i].id;
@@ -22240,7 +22243,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		var weak = "";
 																		if (mob_place_weak == 3){
 																			damage += damage*0.25;
-																			weak = " 🆙";
+																			weak = " 🔺";
 																		}
 
 																		if (team_paralyzed > 0){
@@ -22353,7 +22356,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	var weak = "";
 																	if (mob_place_weak == 6){
 																		damage += damage*0.25;
-																		weak = " 🆙";
+																		weak = " 🔺";
 																	}
 																	damage = Math.round(damage);
 																	mob_life -= damage;
@@ -22636,7 +22639,8 @@ function mobDamage(boss_count, players_num, boss_num, mob_count, mob_turn, custo
 	var range = getRandomArbitrary(2500, 10000);
 	if (customRange == 1)
 		range = 6000;
-	var mob_damage = (Math.log(boss_count)+1) * (Math.sqrt(players_num)) * (boss_num/20) * range;
+	//var mob_damage = (Math.log(boss_count)+1) * (Math.sqrt(players_num)) * (boss_num/20) * range;
+	var mob_damage = (Math.sqrt(boss_count)+1) * (Math.sqrt(players_num)) * (boss_num/20) * range;
 	mob_damage = mob_damage / (4 - mob_count);
 	mob_damage = incremDamage(mob_damage, players_num, mob_turn);
 	mob_damage = Math.round(mob_damage);
@@ -39076,7 +39080,7 @@ bot.onText(/matchmaking/i, function (message) {
 				}
 
 				if (heist_count >= 10) {
-					bot.sendMessage(message.chat.id, "Puoi ispezionare un rifugio solamente 10 volte al giorno, riprova domani dalle 3.", back);
+					bot.sendMessage(message.chat.id, "Puoi ispezionare un rifugio solamente 10 volte al giorno, riprova domani.", back);
 					return;
 				}
 
@@ -39247,7 +39251,7 @@ bot.onText(/inserisci il nickname|ispeziona: /i, function (message) {
 										return;
 									}
 									if (heist_count >= 10) {
-										bot.sendMessage(message.chat.id, "Puoi ispezionare un rifugio solamente 10 volte al giorno, riprova domani dalle 3.", back);
+										bot.sendMessage(message.chat.id, "Puoi ispezionare un rifugio solamente 10 volte al giorno, riprova domani.", back);
 										return;
 									}
 								}
@@ -39311,7 +39315,7 @@ bot.onText(/inserisci il nickname|ispeziona: /i, function (message) {
 											return;
 										}
 										if (heist_count >= 10) {
-											bot.sendMessage(message.chat.id, "Puoi ispezionare un rifugio solamente 10 volte al giorno, riprova domani dalle 3.", back);
+											bot.sendMessage(message.chat.id, "Puoi ispezionare un rifugio solamente 10 volte al giorno, riprova domani.", back);
 											return;
 										}
 									}
@@ -42626,6 +42630,10 @@ function setFinishedTeamAct(element, index, array) {
 				});
 			});
 		});
+		
+		connection.query('UPDATE team SET players = players-1 WHERE id = ' + team_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
 	});
 };
 
@@ -44713,16 +44721,14 @@ function setFinishedMission(element, index, array) {
 									var d = new Date();
 									if (d.getDay() == 6) {
 										var rand = Math.random() * 100;
-										if (rand < 75) {
+										if (rand < 75)
 											money = money * 2;
-										}
 									} else if (d.getDay() == 0) {
 										var rand = Math.random() * 100;
-										if (rand < 50) {
+										if (rand < 50)
 											money = money * 2;
-										} else {
+										else
 											money = money / 2;
-										}
 									}
 								}
 

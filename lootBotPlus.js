@@ -4083,6 +4083,9 @@ bot.on('callback_query', function (message) {
 		var index = check.indexOf(message.from.id);
 		var shop_id = message.data;
 		var diff = 0;
+		
+		if (shop_id.indexOf(":") == -1)
+			updateShop(message, shop_id, 1);
 
 		if ((shop_id.indexOf(":") == -1) || (shop_id.indexOf("all") != -1)) {
 			if (index == -1) {
@@ -4111,8 +4114,6 @@ bot.on('callback_query', function (message) {
 			bot.answerCallbackQuery(message.id, {text: 'Sei in modalità vacanza!'});
 			return;
 		}
-
-		var isUpdate = 0;
 
 		if (shop_id.indexOf(":") != -1) {
 			var split = shop_id.split(":");
@@ -4417,7 +4418,14 @@ bot.on('callback_query', function (message) {
 	});
 });
 
-function updateShop(message, code){
+function updateShop(message, code, isId){
+	var query = "";
+	if (isId == undefined){
+		query = 'SELECT public_shop.id, player.nickname, quantity, item.name, price, massive FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code;
+	}else if (isId == 1){
+		var shopCode = connection_sync.query("SELECT code FROM public_shop WHERE id = " + code);
+		code = shopCode[0].code;
+	}
 	connection.query('SELECT public_shop.id, player.nickname, quantity, item.name, price, massive FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code, function (err, rows, fields) {
 		if (err) throw err;
 
@@ -4463,7 +4471,9 @@ function updateShop(message, code){
 				inline_keyboard: iKeys
 			}
 		});
-		bot.answerCallbackQuery(message.id, {text: 'Negozio aggiornato!'});
+		
+		if (isId == 0)
+			bot.answerCallbackQuery(message.id, {text: 'Negozio aggiornato!'});
 	});
 }
 
@@ -7868,7 +7878,7 @@ bot.onText(/^\/ispeziona/, function (message) {
 							return;
 						}
 						if (heist_count >= 10) {
-							bot.sendMessage(message.from.id, "Puoi ispezionare un rifugio solamente 10 volte al giorno, riprova domani dalle 3.");
+							bot.sendMessage(message.from.id, "Puoi ispezionare un rifugio solamente 10 volte al giorno, riprova domani.");
 							return;
 						}
 
