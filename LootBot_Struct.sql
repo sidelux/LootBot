@@ -593,6 +593,7 @@ CREATE TABLE `config` (
   `food` int(11) NOT NULL DEFAULT '0',
   `global_msg` text NOT NULL,
   `global_msg_on` int(2) NOT NULL DEFAULT '0',
+  `global_limitcnt` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -3403,4 +3404,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-10-16 12:00:11
+-- Dump completed on 2018-10-18 15:00:11
