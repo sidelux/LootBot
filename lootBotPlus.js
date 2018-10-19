@@ -448,7 +448,8 @@ bot.onText(/^\/comanditeam/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per i team*\n" +
 					"/chiamaparty - Invia un messaggio taggando tutti i membri del proprio party (escluso il chiamante)\n" +
 					"/chiamaparty<numero> - Invia un messaggio taggando tutti i membri del party <numero> (solo per amministratori)\n" +
-					"/votaparty - Invia un messaggio taggando solo i membri del proprio party che devono ancora votare", mark);
+					"/votaparty - Invia un messaggio taggando solo i membri del proprio party che devono ancora votare\n" +
+					"/incremento - Invia un messaggio taggando solo i membri del proprio team che devono ancora attivare l'incremento nell'assalto", mark);
 });
 
 bot.onText(/^\/comandigenerali/, function (message) {
@@ -1360,7 +1361,7 @@ bot.onText(/^\/votaparty$/, function (message, match) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0){
-			bot.sendMessage(message.from.id, "Non sei in team o in un party");
+			bot.sendMessage(message.from.id, "Puoi usare questo comando solo se sei all'interno di un team e di un party!");
 			return;
 		}
 
@@ -1377,7 +1378,7 @@ bot.onText(/^\/votaparty$/, function (message, match) {
 			}
 
 			if ((rows[0].part_id == 0) && (rows[0].wait == 0)){
-				bot.sendMessage(message.chat.id, "Il party è in attesa dell'inizio incarico!");
+				bot.sendMessage(message.chat.id, "Puoi usare questo comando solo se il party non è in attesa!");
 				return;
 			}
 
@@ -1391,11 +1392,63 @@ bot.onText(/^\/votaparty$/, function (message, match) {
 					return;
 				}
 
-				for (i = 0; i < Object.keys(rows).length; i++) {
+				for (i = 0; i < Object.keys(rows).length; i++)
 					nicklist += "@" + rows[i].nickname + " ";
-				}
 
 				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> incita i suoi compagni di party a votare!\n" + nicklist, html);
+			});
+		});
+	});
+});
+
+bot.onText(/^\/incremento$/, function (message, match) {
+
+	if (!checkSpam(message))
+		return;
+
+	if (message.chat.id > 0){
+		bot.sendMessage(message.from.id, "Questo comando può essere usato solo nei gruppi");
+		return;
+	}
+
+	connection.query('SELECT player_id, team_id FROM team_player WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0){
+			bot.sendMessage(message.from.id, "Puoi usare questo comando solo se sei all'interno di un team!");
+			return;
+		}
+
+		var team_id = rows[0].team_id;
+		var player_id = rows[0].player_id;
+		
+		connection.query('SELECT phase FROM assault WHERE team_id = ' + team_id, function (err, rows, fields) {
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0){
+				bot.sendMessage(message.from.id, "Puoi usare questo comando solo se hai avviato un Assalto!");
+				return;
+			}
+
+			if (rows[0].phase != 2){
+				bot.sendMessage(message.from.id, "Puoi usare questo comando solo durante il Giorno dell'Assalto!");
+				return;
+			}
+
+			connection.query('SELECT P.nickname FROM assault_place_player_id A LEFT JOIN assault_place_miniboost M ON A.player_id = M.player_id, player P WHERE A.player_id = P.id AND A.place_id NOT IN (1,2) AND M.player_id IS NULL AND P.id != ' + player_id + ' AND A.team_id = ' + team_id, function (err, rows, fields) {
+				if (err) throw err;
+
+				var nicklist = "";
+
+				if (Object.keys(rows).length == 0){
+					bot.sendMessage(message.chat.id, "Non manca nessun compagno!");
+					return;
+				}
+
+				for (i = 0; i < Object.keys(rows).length; i++)
+					nicklist += "@" + rows[i].nickname + " ";
+
+				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> incita i suoi compagni di team ad attivare l'incremento!\n" + nicklist, html);
 			});
 		});
 	});
@@ -3143,7 +3196,7 @@ bot.onText(/^\/asta(?!p) ([^\s]+) (.+)|^\/asta(?!p)/, function (message, match) 
 					});
 
 					var d = new Date();
-					d.setMinutes(d.getMinutes() + 120);
+					d.setMinutes(d.getMinutes() + 60);
 					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
 					connection.query('UPDATE auction_list SET time_end = "' + long_date + '", last_price = ' + prezzo + ', last_player = ' + player_id + ' WHERE id = ' + auction_id, function (err, rows, fields) {
@@ -4038,7 +4091,7 @@ bot.on('callback_query', function (message) {
 					});
 
 					var d = new Date();
-					d.setMinutes(d.getMinutes() + 120);
+					d.setMinutes(d.getMinutes() + 60);
 					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 					var short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
 
