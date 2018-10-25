@@ -1168,7 +1168,6 @@ bot.onText(/^\/gruppi/, function (message) {
 																					"@DichisUtilityBot\n" +
 
 																					"\n<b>Altro</b>\n" +
-																					"<a href='https://discord.gg/ea5tSEj'>Canale Discord</a>\n" +
 																					"<a href='telegra.ph/Mini-Guida-alle-LootBot-API-11-24'>LootBot Api</a>\n" +
 
 																					"\n<b>Siti</b>\n" +
@@ -4595,7 +4594,7 @@ bot.onText(/^\/crealotteria(?!p) (.+)|^\/crealotteria(?!p)$/, function (message,
 
 					connection.query('INSERT INTO public_lottery (chat_id, creator_id, item_id, time_end) VALUES (' + message.chat.id + ',' + player_id + ',' + item_id + ',"' + long_date + '")', function (err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Lotteria creata! Usa /lotteria @" + message.from.username + " per iscriverti e /estrazione per estrarre il vincitore. Partecipanti minimi: 5.\nScadrà tra 48 ore.");
+						bot.sendMessage(message.chat.id, "Lotteria creata! Usa `/lotteria @" + message.from.username + "` per iscriverti e /estrazione per estrarre il vincitore. Partecipanti minimi: 5.\nScadrà tra 48 ore.", mark);
 					});
 				});
 			});
@@ -4679,7 +4678,7 @@ bot.onText(/^\/crealotteriap ([^\s]+) (.+)|^\/crealotteriap$/, function (message
 
 					connection.query('INSERT INTO public_lottery (chat_id, creator_id, item_id, price, time_end) VALUES (' + message.chat.id + ',' + player_id + ',' + item_id + ',' + prezzo + ',"' + long_date + '")', function (err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Lotteria creata! Usa /lotteriap @" + message.from.username + " per iscriverti e /estrazione per estrarre il vincitore. Partecipanti minimi: 5\nPrezzo partecipazione: " + formatNumber(prezzo) + " §.\nScadrà tra 48 ore.");
+						bot.sendMessage(message.chat.id, "Lotteria creata! Usa `/lotteriap @" + message.from.username + "` per iscriverti e /estrazione per estrarre il vincitore. Partecipanti minimi: 5\nPrezzo partecipazione: " + formatNumber(prezzo) + " §.\nScadrà tra 48 ore.", mark);
 					});
 				});
 			});
