@@ -963,9 +963,8 @@ bot.onText(/^\/gb (.+)|^\/gb$/, function (message, match) {
 						connection.query("SELECT chat_id FROM plus_groups WHERE groupban = 1", function (err, rows, fields) {
 							if (err) throw err;
 
-							for (i = 0; i < Object.keys(rows).length; i++) {
+							for (i = 0; i < Object.keys(rows).length; i++)
 								bot.kickChatMember(rows[i].chat_id, account_id);
-							}
 						});
 					} else {
 						if (chat_id == "-1001064797183"){
