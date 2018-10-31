@@ -2653,6 +2653,7 @@ CREATE TABLE `player` (
   `donation` int(11) NOT NULL DEFAULT '0',
   `real_name` varchar(64) DEFAULT NULL,
   `gender` varchar(1) NOT NULL DEFAULT 'M',
+  `birth_date` date DEFAULT NULL,
   `creation_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `nickname` (`nickname`),
@@ -2773,6 +2774,7 @@ CREATE TABLE `plus_players` (
   `nickname` text NOT NULL,
   `real_name` varchar(64) DEFAULT NULL,
   `gender` varchar(1) DEFAULT NULL,
+  `birth_date` date DEFAULT NULL,
   `last_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -3404,4 +3406,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-10-26 15:00:10
+-- Dump completed on 2018-10-31 15:00:10

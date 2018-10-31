@@ -1029,12 +1029,19 @@ bot.onText(/^\/ping/, function (message, match) {
 });
 
 bot.onText(/^\/pinfo (.+)/, function (message, match) {
-	if (message.from.id != 20471035){
+	if (message.from.id != 20471035)
 		return;
-	}
 	connection.query('SELECT * FROM plus_players WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
 		if (err) throw err;
-		bot.sendMessage(message.from.id, "<b>ID Account:</b> " + rows[0].account_id + "\n<b>Nome utente:</b> " + rows[0].nickname + "\n<b>Ultimo comando:</b> " + toDate("it", rows[0].last_update) + "\n<b>Nome e sesso:</b> " + rows[0].real_name + " (" + rows[0].gender + ")", html);
+		var real_name = "?";
+		if (rows[0].real_name != null)
+			real_name = rows[0].real_name;
+		var datetime = "?";
+		if (rows[0].birth_date != null){
+			var d = new Date(rows[0].birth_date);
+			datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+		}
+		bot.sendMessage(message.from.id, "<b>ID Account:</b> " + rows[0].account_id + "\n<b>Nome utente:</b> " + rows[0].nickname + "\n<b>Ultimo comando:</b> " + toDate("it", rows[0].last_update) + "\n<b>Nome:</b> " + rows[0].real_name + "\n<b>Sesso:</b> " + rows[0].gender + "\n<b>Data di nascita:</b> " + datetime, html);
 	});
 });
 
@@ -5984,8 +5991,10 @@ bot.onText(/^\/statolotteria (.+)|^\/statolotteria/, function (message, match) {
 
 			var price = rows[0].price;
 			var itemId = rows[0].item_id;
+			var command = "lotteria";
 			var priceText = "No";
-			if (price > 0) {
+			if (price > 0){
+				command = "lotteriap";
 				priceText = "Si (" + formatNumber(price) + " §)";
 			}
 
@@ -6006,8 +6015,9 @@ bot.onText(/^\/statolotteria (.+)|^\/statolotteria/, function (message, match) {
 						"\nOggetto: " + name + rarity +
 						"\nA pagamento: " + priceText +
 						"\nPartecipanti: " + players +
-						"\nScade alle: " + long_date;
-					bot.sendMessage(message.chat.id, text);
+						"\nScade alle: " + long_date +
+						"\n\nIscriviti con <code>/" + command + " " + nick + "</code>";
+					bot.sendMessage(message.chat.id, text, html);
 				});
 			});
 		});
@@ -6077,13 +6087,11 @@ bot.onText(/^\/statoasta (.+)|^\/statoasta/, function (message, match) {
 });
 
 bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
-	if ((message.chat.id == "-1001069842056") || (message.chat.id == "-1001064571576")) {
+	if ((message.chat.id == "-1001069842056") || (message.chat.id == "-1001064571576"))
 		return;
-	}
 
-	if (!checkSpam(message)) {
+	if (!checkSpam(message))
 		return;
-	}
 
 	var nickname = match[1];
 	if ((nickname == undefined) || (nickname == "")) {
@@ -6127,9 +6135,8 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 
 				var tot = 0;
 
-				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 					tot += rows[i].price;
-				}
 
 				if (money < tot) {
 					bot.sendMessage(message.chat.id, "Non hai abbastanza monete per partecipare a tutte le lotterie, ti servono " + formatNumber(tot) + " §!");
@@ -6175,9 +6182,8 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 											notify = 1;
 										}
 									}
-									if (notify == 1) {
+									if (notify == 1)
 										bot.sendMessage(this.creator_chat, message.from.username + " si è registrato alla tua lotteria a pagamento!");
-									}
 								}.bind({
 									creator_chat: this.creator_chat
 								}));
@@ -6196,9 +6202,8 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 								creator_chat: this.creator_chat
 							}));
 						}
-						if ((this.i + 1 == this.len) && (one == 0)) {
+						if ((this.i + 1 == this.len) && (one == 0))
 							bot.sendMessage(message.chat.id, "Sei già registrato a tutte le lotterie a pagamento!");
-						};
 					}.bind({
 						player_id: player_id,
 						lottery_id: lottery_id,
@@ -6268,12 +6273,11 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 							connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + creator_id + ' AND type = 1', function (err, rows, fields) {
 								if (err) throw err;
 								var notify = 0;
-								if (Object.keys(rows).length == 0) {
+								if (Object.keys(rows).length == 0)
 									notify = 1;
-								} else {
-									if (rows[0].deny == 0) {
+								else {
+									if (rows[0].deny == 0)
 										notify = 1;
-									}
 								}
 								if (notify == 1) {
 									connection.query('SELECT chat_id FROM player WHERE id = ' + creator_id, function (err, rows, fields) {
