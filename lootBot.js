@@ -20768,6 +20768,10 @@ bot.onText(/riprendi battaglia/i, function (message) {
 											var completed = rows[0].completed;
 											var lost = rows[0].lost;
 											var mob_name = rows[0].mob_name;
+											if (mob_name == null){
+												bot.sendMessage(message.chat.id, "Il mob non ha ancora raggiunto la magione!", kbBack2);
+												return;
+											}
 											var mob_life = rows[0].mob_life;
 											var mob_total_life = rows[0].mob_total_life;
 											var mob_turn = rows[0].mob_turn;
@@ -20877,10 +20881,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 														text += "\n\nE' stato attivato <b>1</b> incremento";
 
 													var gender_mob = "un";
-													if (mob_name != null){
-														if (mob_name.split(" ")[0].slice(-1) == "a")
-															gender_mob = "una";
-													}
+													if (mob_name.split(" ")[0].slice(-1) == "a")
+														gender_mob = "una";
 
 													var extra = "";
 													if (is_boss == 1)
@@ -22604,7 +22606,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		if (potSum == 0)
 																			player_text += "\n> " + player[i].nickname + " non recupera salute";
 																		else{
-																			if (player_life <= player_total_life*0.05)
+																			if (player_life <= player_total_life*0.2)
 																				setAchievement(player[i].chat_id, player[i].id, 20, 1);
 																			var plur = "i";
 																			if (potSum == 1)
@@ -37511,7 +37513,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 										delItem(player_id, item_id, qnt);
 										setAchievement(message.chat.id, player_id, 35, qnt);
 
-										if (player_life <= player_total_life*0.05)
+										if (player_life <= player_total_life*0.2)
 											setAchievement(message.chat.id, player_id, 20, 1);
 
 										connection.query('UPDATE player SET life = life+' + perc + ' WHERE id = ' + player_id, function (err, rows, fields) {
