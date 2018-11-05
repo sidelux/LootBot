@@ -167,6 +167,21 @@ CREATE TABLE `active_history` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `active_montly_history`
+--
+
+DROP TABLE IF EXISTS `active_montly_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `active_montly_history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `count` int(11) NOT NULL,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `artifacts`
 --
 
@@ -3406,4 +3421,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-11-02  9:00:11
+-- Dump completed on 2018-11-05 15:00:10
