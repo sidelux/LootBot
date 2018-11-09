@@ -1174,13 +1174,9 @@ bot.onText(/^\/gruppi/, function (message) {
 																						"Calcolo Loot Combat Rating: @lootcrbot\n" +
 																						"Tool per mercato e cronologie: @ToolsForLootBot\n" +
 																						"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
-																						"@DichisUtilityBot\n" +
 
 																						"\n<b>Altro</b>\n" +
 																						"<a href='telegra.ph/Mini-Guida-alle-LootBot-API-11-24'>LootBot Api</a>\n" +
-
-																						"\n<b>Siti</b>\n" +
-																						"<a href='http://beegotsy.altervista.org/lootbot/'>#SonoPoveroFaccioGuide</a> - Materiali necessari, guida, e altre funzionalità in sviluppo\n" +
 
 																						"\n<b>Gruppi</b>\n" +
 																						"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
@@ -6706,15 +6702,10 @@ bot.onText(/^\/valorezainoc$/, function (message, match) {
 });
 
 bot.onText(/^\/creazioni/, function (message, match) {
-	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, craft_count, craft_week, craft_day FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		var player_id = rows[0].id;
-		connection.query('SELECT craft_count, craft_week FROM player WHERE id = ' + player_id, function (err, rows, fields) {
-			if (err) throw err;
-
-			bot.sendMessage(message.chat.id, message.from.username + ", hai ottenuto <b>" + formatNumber(rows[0].craft_count) + "</b> punti creazione totali, <b>" + formatNumber(rows[0].craft_week) + "</b> settimanali", html);
-		});
+		bot.sendMessage(message.chat.id, message.from.username + ", hai ottenuto <b>" + formatNumber(rows[0].craft_count) + "</b> punti creazione totali, <b>" + formatNumber(rows[0].craft_week) + "</b> settimanali e <b>" + formatNumber(rows[0].craft_day) + "</b> giornalieri", html);
 	});
 });
 
@@ -6728,7 +6719,7 @@ bot.onText(/^\/rango/, function (message, match) {
 		var rank = getRankName(player_rank_b, 0);
 		var next_rank = 0;
 		next_rank = parseInt(getRankName(player_rank_b, 1));
-		bot.sendMessage(message.chat.id, "Rango Attuale: *" + formatNumber(rank) + "* (" + player_rank_b + ")\nAumento Rango a " + formatNumber(next_rank) + " punti\nHai completato " + formatNumber(dungeon_count) + " dungeon fin ora!", mark);
+		bot.sendMessage(message.chat.id, "Informazioni rango per " + message.from.username + ":\nRango Attuale: *" + formatNumber(rank) + "* (" + player_rank_b + ")\nAumento Rango: " + formatNumber(next_rank) + " punti\nDungeon completati: " + formatNumber(dungeon_count), mark);
 		setTimeout(function () {
 			bot.sendSticker(message.chat.id, getRankFileId(player_rank_b));
 		}, 500);
@@ -7302,19 +7293,39 @@ bot.onText(/^\/totale (.+)|^\/totale/, function (message, match) {
 	});
 });
 
+function classSym(className) {
+	var classSym = "🐓";
+	if (className == "Sciamano Elementalista")
+		classSym = "🦉";
+	else if (className == "Esploratore Druido")
+		classSym = "🐅";
+	else if (className == "Incantaspade")
+		classSym = "🦅";
+	else if (className == "Consacratore Divino")
+		classSym = "🕊";
+	else if (className == "Spaccateste")
+		classSym = "🦍";
+	else if (className == "Discepolo dei Draghi")
+		classSym = "🐉";
+	else if (className == "Barbaro")
+		classSym = "🦏";
+	else if (className == "Predone")
+		classSym = "🦊";
+	return classSym;
+}
+
 function rebSym(reborn) {
 	var rebSym = "";
-	if (reborn == 1) {
+	if (reborn == 1)
 		rebSym = "✨";
-	} else if (reborn == 2) {
+	else if (reborn == 2)
 		rebSym = "🔆";
-	} else if (reborn == 3) {
+	else if (reborn == 3)
 		rebSym = "💫";
-	} else if (reborn == 4) {
+	else if (reborn == 4)
 		rebSym = "⭐️";
-	} else if (reborn == 5) {
+	else if (reborn == 5)
 		rebSym = "🌟";
-	}
 	return rebSym;
 }
 
@@ -7334,8 +7345,11 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 			}
 
 			var gender_text = "Giocatore";
-			if (rows[0].gender == "F")
+			var gender_sym = "🏃‍♂️";
+			if (rows[0].gender == "F"){
 				gender_text = "Giocatrice";
+				gender_sym = "🏃‍♀️";
+			}
 
 			var player_id = rows[0].id;
 			var nickname = rows[0].nickname;
@@ -7629,7 +7643,8 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																						var class_name = "-";
 																						if (Object.keys(rows).length > 0)
 																							class_name = rows[0].name;
-
+																						var class_sym = classSym(class_name);
+																						
 																						var stars = rebSym(reborn);
 
 																						if (player_id == 1)
@@ -7839,7 +7854,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																							message.chat.id = account_id;
 
 																						bot.sendMessage(message.chat.id, "<b>" + gender_text + "</b> 👤\n" +
-																										"👤 " + nickname + (player_custom_nickname != null ? " <i>" + player_custom_nickname + "</i>": "") + "\n" +
+																										gender_sym + " " + nickname + (player_custom_nickname != null ? " <i>" + player_custom_nickname + "</i>": "") + "\n" +
 																										team_desc + 
 																										stars + " " + formatNumber(lev) + " (" + formatNumber(exp) + " xp)\n\n" +
 																										"🏹 " + class_name + "\n" +

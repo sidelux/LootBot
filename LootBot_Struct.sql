@@ -2606,6 +2606,7 @@ CREATE TABLE `player` (
   `dungeon_count` int(11) NOT NULL DEFAULT '0',
   `craft_count` int(8) NOT NULL DEFAULT '0',
   `craft_week` int(11) NOT NULL DEFAULT '0',
+  `craft_day` int(11) NOT NULL DEFAULT '0',
   `weapon` int(3) DEFAULT '0',
   `weapon_id` int(3) NOT NULL DEFAULT '0',
   `weapon_crit` int(3) NOT NULL DEFAULT '0',
@@ -3421,4 +3422,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-11-05 15:00:10
+-- Dump completed on 2018-11-09 15:00:10
