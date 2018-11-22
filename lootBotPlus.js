@@ -49,6 +49,7 @@ var timevar = [];
 var timevarSpam = [];
 var timevarFlood = [];
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
+var reg = new RegExp("^[a-zA-Zàèìòùé0-9.,\\\?\!\'\@\(\) ]{1,}$");
 
 console.log('Avvio bot...');
 
@@ -404,10 +405,10 @@ bot.onText(/^\/comandilotteria/, function (message) {
 					"/statolotteria - Mostra lo stato di una lotteria\n" +
 					"/crealotteria - Permette di creare una lotteria con iscrizione gratuita\n" +
 					"/crealotteriap - Permette di creare una lotteria con iscrizione a pagamento\n" +
-					"/lotteria - Iscrive alla lotteria con iscrizione gratuita\n" +
-					"/lotteriap - Iscrive alla lotteria con iscrizione a pagamento\n" +
-					"/dlotteria - Disiscrive dalla lotteria con iscrizione gratuita\n" +
-					"/dlotteriap - Disiscrive dalla lotteria con iscrizione a pagamento\n" +
+					"/lotteria - Iscrive alla lotteria con iscrizione gratuita (usa anche 'tutte' o '+nome oggetto')\n" +
+					"/lotteriap - Iscrive alla lotteria con iscrizione a pagamento (usa anche 'tutte' o '+nome oggetto')\n" +
+					"/dlotteria - Disiscrive dalla lotteria con iscrizione gratuita (usa anche 'tutte')\n" +
+					"/dlotteriap - Disiscrive dalla lotteria con iscrizione a pagamento (usa anche 'tutte')\n" +
 					"/lotterie - Mostra tutte le lotterie disponibili\n" +
 					"/estrazione - Forza l'estrazione di una lotteria\n" +
 					"/cancellalotteria - Elimina una lotteria in corso", mark);
@@ -439,7 +440,7 @@ bot.onText(/^\/comandinegozio/, function (message) {
 bot.onText(/^\/comandicommercio/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per commerciare*\n" +
 					"/offri - Crea una vendita riservata verso un altro giocatore\n" +
-					"/accettav - Acetta una vendita riservata\n" +
+					"/accettav - Accetta una vendita riservata\n" +
 					"/rifiutav - Rifiuta una vendita riservata\n" +
 					"/scambia - Crea uno scambio riservato verso un altro giocatore\n" +
 					"/accettas - Accetta lo scambio riservato\n" +
@@ -495,7 +496,6 @@ bot.onText(/^\/birra/, function (message) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -587,7 +587,6 @@ bot.onText(/^\/([0-9]+)+birre$/, function (message, match) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -627,7 +626,6 @@ bot.onText(/^\/duebirre/, function (message) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -666,7 +664,6 @@ bot.onText(/^\/popcorn/, function (message) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -705,7 +702,6 @@ bot.onText(/^\/ovetto/, function (message) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -744,7 +740,6 @@ bot.onText(/^\/salmone/, function (message) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -783,7 +778,6 @@ bot.onText(/^\/caffè/, function (message) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -822,7 +816,6 @@ bot.onText(/^\/whisky/, function (message) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -1479,7 +1472,6 @@ bot.onText(/^\/token/, function (message) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -2792,7 +2784,6 @@ bot.onText(/^\/cancellalotteria/, function (message) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -2863,7 +2854,6 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+) (.+)|^\/creaasta(?!p)$/, function (message
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -2968,7 +2958,6 @@ bot.onText(/^\/pubblicaasta (.+)|^\/pubblicaasta/, function (message, match) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -3075,7 +3064,6 @@ bot.onText(/^\/cancellaasta/, function (message) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -3139,7 +3127,6 @@ bot.onText(/^\/asta(?!p) ([^\s]+) (.+)|^\/asta(?!p)/, function (message, match) 
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -3304,7 +3291,6 @@ bot.onText(/^\/privacy (.+)/, function (message, match) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -3385,7 +3371,6 @@ bot.onText(/^\/massivo (.+)/, function (message, match) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -3468,7 +3453,6 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -3513,6 +3497,13 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 		} else if (message.text.indexOf("negoziom") != -1) {
 			var code = parseInt(match[6]);
 			var text = match[7];
+			if (message.reply_to_message != undefined) {
+				var cod = message.reply_to_message.text.match(/[0-9]{7,11}/g);
+				if (cod[0] != undefined){
+					code = cod[0];
+					text = match[6];
+				}
+			}
 
 			func = "update";
 
@@ -3884,7 +3875,6 @@ bot.onText(/^\/cancellanegozio (.+)|^\/cancellanegozio$/, function (message, mat
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -3993,7 +3983,6 @@ bot.on('callback_query', function (message) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.from.id, text, mark);
 			return;
@@ -4481,11 +4470,11 @@ function updateShop(message, code, isId){
 	if (isId == undefined){
 		query = 'SELECT public_shop.id, player.nickname, quantity, item.name, price, massive FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code;
 	}else if (isId == 1){
-		if (code == undefined){
+		var shopCode = connection_sync.query("SELECT code FROM public_shop WHERE id = " + code);
+		if (shopCode[0] == undefined){
 			bot.answerCallbackQuery(message.id, {text: "Codice negozio non specificato!"});
 			return;
 		}
-		var shopCode = connection_sync.query("SELECT code FROM public_shop WHERE id = " + code);
 		code = shopCode[0].code;
 	}
 	connection.query('SELECT public_shop.id, player.nickname, quantity, item.name, price, massive FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code, function (err, rows, fields) {
@@ -4552,7 +4541,6 @@ bot.onText(/^\/crealotteria(?!p) (.+)|^\/crealotteria(?!p)$/, function (message,
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -4631,7 +4619,6 @@ bot.onText(/^\/crealotteriap ([^\s]+) (.+)|^\/crealotteriap$/, function (message
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -4715,7 +4702,6 @@ bot.onText(/^\/estrazione/, function (message) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -4813,32 +4799,29 @@ bot.onText(/^\/lotterie/, function (message) {
 
 		var player_id = rows[0].id;
 
-		connection.query('SELECT player.nickname, item.name, P.price, (SELECT COUNT(id) FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = P.id) As subs FROM player, item, public_lottery P WHERE P.item_id = item.id AND P.creator_id = player.id ORDER BY price', function (err, rows, fields) {
+		connection.query('SELECT item.id, item.name, player.nickname, P.price, (SELECT COUNT(id) FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = P.id) As subs FROM player, item, public_lottery P WHERE P.item_id = item.id AND P.creator_id = player.id ORDER BY id, price', function (err, rows, fields) {
 			if (err) throw err;
 			var text = "Non ci sono lotterie disponibili";
 			var p = "";
 			var s = "";
 			var free = 1;
 			if (Object.keys(rows).length > 0) {
-				text = "<b>Lotterie gratis:</b>\n";
+				text = "";
+				var last_item = 0;
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-
-					if ((rows[i].price > 0) && (free == 1)) {
-						free = 0;
-						text += "\n<b>Lotterie a pagamento:</b>\n";
+					if (last_item != rows[i].id){
+						last_item = rows[i].id;
+						text += "> <b>" + rows[i].name + "</b>\n";
 					}
-
-					if (rows[i].price == 0) {
-						p = "";
-					} else {
+					
+					p = "";
+					if (rows[i].price > 0)
 						p = " (" + formatNumber(rows[i].price) + " §)";
-					}
-					if (rows[i].subs == 0) {
-						s = "";
-					} else {
+					s = "";
+					if (rows[i].subs != 0)
 						s = " ✅";
-					}
-					text += "> " + rows[i].nickname + " - " + rows[i].name + p + s + "\n";
+					
+					text += "- " + rows[i].nickname + p + s + "\n";
 				}
 
 				text += "\nPer iscriverti ad una lotteria usa /lotteria o /lotteriap";
@@ -5660,9 +5643,8 @@ bot.onText(/^\/aste/, function (message) {
 
 bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 
-	if (!checkSpam(message)) {
+	if (!checkSpam(message))
 		return;
-	}
 
 	var nickname = match[1];
 	if ((nickname == undefined) || (nickname == "")) {
@@ -5679,7 +5661,6 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -5730,32 +5711,98 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + creator_id + ' AND type = 1', function (err, rows, fields) {
 									if (err) throw err;
 									notify = 0;
-									if (Object.keys(rows).length == 0) {
+									if (Object.keys(rows).length == 0)
 										notify = 1;
-									} else {
-										if (rows[0].deny == 0) {
+									else {
+										if (rows[0].deny == 0)
 											notify = 1;
-										}
 									}
-									if (notify == 1) {
+									if (notify == 1)
 										bot.sendMessage(this.creator_chat, message.from.username + " si è registrato alla tua lotteria gratuita!");
-									}
 								}.bind({
 									creator_chat: this.creator_chat
 								}));
 
-								if (this.i + 1 == this.len) {
+								if (this.i + 1 == this.len)
 									bot.sendMessage(message.chat.id, "Ti sei registrato correttamente a " + count + " lotterie gratuite!");
-								};
 							}.bind({
 								i: this.i,
 								len: this.len,
 								creator_chat: this.creator_chat
 							}));
 						}
-						if ((this.i + 1 == this.len) && (one == 0)) {
+						if ((this.i + 1 == this.len) && (one == 0))
 							bot.sendMessage(message.chat.id, "Sei già registrato a tutte le lotterie gratuite!");
-						};
+					}.bind({
+						player_id: player_id,
+						lottery_id: lottery_id,
+						i: i,
+						len: len,
+						creator_chat: creator_chat
+					}));
+				}
+			});
+			return;
+		}
+		
+		if (nickname.indexOf("+") != -1) {
+			var item_name = nickname.replace("+", "");
+			connection.query('SELECT L.creator_id, L.id, L.price, P.chat_id, P.nickname FROM public_lottery L, player P, item I WHERE P.item_id = I.id AND P.id = L.creator_id AND L.price = 0 AND L.creator_id != ' + player_id + ' AND I.name = "' + item_name + '"', function (err, rows, fields) {
+				if (err) throw err;
+
+				var len = Object.keys(rows).length;
+				var count = 0;
+
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Non ci sono lotterie gratuite disponibili per l'oggetto selezionato!");
+					return;
+				}
+
+				var lottery_id = 0;
+				var one = 0;
+				var creator_chat = 0;
+				var creator_id = 0;
+				var notify = 0;
+
+				for (var i = 0; i < len; i++) {
+					lottery_id = rows[i].id;
+					creator_chat = rows[i].chat_id;
+					creator_id = rows[i].creator_id;
+
+					connection.query('SELECT * FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = ' + lottery_id, function (err, rows, fields) {
+						if (err) throw err;
+						if (Object.keys(rows).length == 0) {
+							one = 1;
+							connection.query('INSERT INTO public_lottery_players (lottery_id, player_id) VALUES (' + this.lottery_id + ',' + this.player_id + ')', function (err, rows, fields) {
+								if (err) throw err;
+
+								count++;
+
+								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + creator_id + ' AND type = 1', function (err, rows, fields) {
+									if (err) throw err;
+									notify = 0;
+									if (Object.keys(rows).length == 0)
+										notify = 1;
+									else {
+										if (rows[0].deny == 0)
+											notify = 1;
+									}
+									if (notify == 1)
+										bot.sendMessage(this.creator_chat, message.from.username + " si è registrato alla tua lotteria gratuita!");
+								}.bind({
+									creator_chat: this.creator_chat
+								}));
+
+								if (this.i + 1 == this.len)
+									bot.sendMessage(message.chat.id, "Ti sei registrato correttamente a " + count + " lotterie gratuite per l'oggetto selezionato!");
+							}.bind({
+								i: this.i,
+								len: this.len,
+								creator_chat: this.creator_chat
+							}));
+						}
+						if ((this.i + 1 == this.len) && (one == 0))
+							bot.sendMessage(message.chat.id, "Sei già registrato a tutte le lotterie gratuite per l'oggetto selezionato!");
 					}.bind({
 						player_id: player_id,
 						lottery_id: lottery_id,
@@ -5835,9 +5882,8 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 
 bot.onText(/^\/dlotteria(?!p) (.+)|^\/dlotteria(?!p)/, function (message, match) {
 
-	if (!checkSpam(message)) {
+	if (!checkSpam(message))
 		return;
-	}
 
 	var nickname = match[1];
 	if ((nickname == undefined) || (nickname == "")) {
@@ -5854,7 +5900,6 @@ bot.onText(/^\/dlotteria(?!p) (.+)|^\/dlotteria(?!p)/, function (message, match)
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -6112,7 +6157,6 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -6179,12 +6223,11 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + creator_id + ' AND type = 1', function (err, rows, fields) {
 									if (err) throw err;
 									notify = 0;
-									if (Object.keys(rows).length == 0) {
+									if (Object.keys(rows).length == 0)
 										notify = 1;
-									} else {
-										if (rows[0].deny == 0) {
+									else {
+										if (rows[0].deny == 0)
 											notify = 1;
-										}
 									}
 									if (notify == 1)
 										bot.sendMessage(this.creator_chat, message.from.username + " si è registrato alla tua lotteria a pagamento!");
@@ -6208,6 +6251,99 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 						}
 						if ((this.i + 1 == this.len) && (one == 0))
 							bot.sendMessage(message.chat.id, "Sei già registrato a tutte le lotterie a pagamento!");
+					}.bind({
+						player_id: player_id,
+						lottery_id: lottery_id,
+						i: i,
+						len: len,
+						price: price,
+						creator_chat: creator_chat
+					}));
+				}
+			});
+			return;
+		}
+		
+		if (nickname.indexOf("+") != -1) {
+			var item_name = nickname.replace("+", "");
+			connection.query('SELECT L.creator_id, player.chat_id, L.id, L.price, (SELECT COUNT(id) FROM public_lottery_players P WHERE P.lottery_id = L.id AND P.player_id = ' + player_id + ') As sub FROM public_lottery L, player, item I WHERE L.item_id = I.id AND player.id = L.creator_id AND L.price > 0 AND L.creator_id != ' + player_id + ' AND I.name = "' + item_name + '" HAVING sub = 0', function (err, rows, fields) {
+				if (err) throw err;
+
+				if ((Object.keys(rows).length == 0) || (rows[0].tot == 0)) {
+					bot.sendMessage(message.chat.id, "Non ci sono lotterie a pagamento disponibili per l'oggetto specificato!");
+					return;
+				}
+
+				var tot = 0;
+
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+					tot += rows[i].price;
+
+				if (money < tot) {
+					bot.sendMessage(message.chat.id, "Non hai abbastanza monete per partecipare a tutte le lotterie per l'oggetto specificato, ti servono " + formatNumber(tot) + " §!");
+					return;
+				}
+
+				var len = Object.keys(rows).length;
+				var count = 0;
+
+				var lottery_id = 0;
+				var price = 0;
+				var one = 0;
+				var creator_chat = 0;
+				var creator_id = 0;
+				var notify = 0;
+
+				for (var i = 0; i < len; i++) {
+					lottery_id = rows[i].id;
+					price = rows[i].price;
+					creator_chat = rows[i].chat_id;
+					creator_id = rows[i].creator_id;
+
+					connection.query('SELECT * FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = ' + lottery_id, function (err, rows, fields) {
+						if (err) throw err;
+						if (Object.keys(rows).length == 0) {
+							one = 1;
+							connection.query('INSERT INTO public_lottery_players (lottery_id, player_id) VALUES (' + this.lottery_id + ',' + this.player_id + ')', function (err, rows, fields) {
+								if (err) throw err;
+
+								count++;
+
+								connection.query('UPDATE public_lottery SET money = money+' + this.price + ' WHERE id = ' + this.lottery_id, function (err, rows, fields) {
+									if (err) throw err;
+								});
+
+								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + creator_id + ' AND type = 1', function (err, rows, fields) {
+									if (err) throw err;
+									notify = 0;
+									if (Object.keys(rows).length == 0)
+										notify = 1;
+									else {
+										if (rows[0].deny == 0)
+											notify = 1;
+									}
+									if (notify == 1)
+										bot.sendMessage(this.creator_chat, message.from.username + " si è registrato alla tua lotteria a pagamento!");
+								}.bind({
+									creator_chat: this.creator_chat
+								}));
+
+								if (this.i + 1 == this.len) {
+									bot.sendMessage(message.chat.id, "Ti sei registrato correttamente a " + count + " lotterie a pagamento, relative all'oggetto specificato, spendendo " + formatNumber(tot) + " §!");
+									connection.query('UPDATE player SET money = money-' + tot + ' WHERE id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+									});
+								};
+							}.bind({
+								i: this.i,
+								len: this.len,
+								price: this.price,
+								lottery_id: this.lottery_id,
+								creator_chat: this.creator_chat
+							}));
+						}
+						if ((this.i + 1 == this.len) && (one == 0))
+							bot.sendMessage(message.chat.id, "Sei già registrato a tutte le lotterie a pagamento per l'oggetto specificato!");
 					}.bind({
 						player_id: player_id,
 						lottery_id: lottery_id,
@@ -6320,7 +6456,6 @@ bot.onText(/^\/dlotteriap (.+)|^\/dlotteriap/, function (message, match) {
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -6827,6 +6962,12 @@ bot.onText(/^\/oggetto (.+)|^\/oggetto/, function (message, match) {
 		bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto (es. /oggetto Spada Antimateria) per visualizzare quanti ne possiedi");
 		return;
 	}
+	
+	if (reg.test(oggetto) == false) {
+		bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
+		return;
+	}
+	
 	connection.query('SELECT * FROM item WHERE name = "' + oggetto + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -6894,6 +7035,11 @@ bot.onText(/^\/oggetti (.+)|^\/oggetti/, function (message, match) {
 		bot.sendMessage(message.chat.id, "Inserisci il nome parziale dell'oggetto (es. /oggetti Spada Anti) per visualizzare la lista e la quantità, per una ricerca precisa usa l'asterisco");
 		return;
 	}
+	
+	if (reg.test(oggetto) == false) {
+		bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
+		return;
+	}
 
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -6908,9 +7054,8 @@ bot.onText(/^\/oggetti (.+)|^\/oggetti/, function (message, match) {
 		if (oggetto.indexOf(",") != -1) {
 			oggetti = oggetto.split(",");
 			oggetti = cleanArray(oggetti);
-		} else {
+		} else
 			oggetti.push(oggetto);
-		}
 
 		var len = Object.keys(oggetti).length;
 		var ogg = "";
@@ -6942,14 +7087,12 @@ bot.onText(/^\/oggetti (.+)|^\/oggetti/, function (message, match) {
 
 				if (this.i + 1 == this.len) {
 					if (Object.keys(text).length > 0) {
-						if (Object.keys(text).length < 4000) {
+						if (Object.keys(text).length < 4000)
 							bot.sendMessage(message.chat.id, intro + text, html);
-						} else {
+						else
 							bot.sendMessage(message.chat.id, "Troppi risultati, prova con un filtro più limitato");
-						}
-					} else {
+					} else
 						bot.sendMessage(message.chat.id, "Non possiedi nessun oggetto con i filtri specificati");
-					}
 				}
 			}.bind({
 				i: i,
@@ -6961,22 +7104,19 @@ bot.onText(/^\/oggetti (.+)|^\/oggetti/, function (message, match) {
 
 bot.onText(/^\/ricerca (.+)|^\/ricerca/, function (message, match) {
 
-	if (!checkSpam(message)) {
+	if (!checkSpam(message))
 		return;
-	}
 
 	var oggetto = match[1];
 	if (oggetto == undefined) {
 		bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto (es. /ricerca Spada Antimateria) per cercare in tutte le vendite e scambi");
 		return;
 	}
-
-	/*
-	if (message.from.id != 20471035){
-		bot.sendMessage(message.chat.id, "Manutenzione funzione");
+	
+	if (reg.test(oggetto) == false) {
+		bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
 		return;
 	}
-	*/
 
 	var o = oggetto.trim();
 	var oggetti = [];
@@ -6985,15 +7125,13 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, function (message, match) {
 	if (o.indexOf(",") != -1) {
 		oggetti = o.split(",");
 		oggetti = cleanArray(oggetti);
-	} else {
+	} else
 		oggetti.push(o);
-	}
 
 	var len = Object.keys(oggetti).length;
 	var plur = "i";
-	if (len == 1) {
+	if (len == 1)
 		plur = "o";
-	}
 	var text = "Risultati ricerca di " + len + " oggett" + plur + ":\n";
 
 	if (len > 3) {
@@ -7020,11 +7158,10 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, function (message, match) {
 				if (Object.keys(rows).length > 0) {
 					text += "\n<b>Lotterie</b> per " + this.itemName + ":\n";
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-						if (rows[i].price == 0) {
+						if (rows[i].price == 0)
 							rows[i].price = "Gratis";
-						} else {
+						else
 							rows[i].price = formatNumber(rows[i].price) + " §";
-						}
 						text += "> " + rows[i].nickname + " (" + formatNumber(rows[i].price) + " - Lotteria)\n";
 					}
 				}
@@ -7034,30 +7171,26 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, function (message, match) {
 
 					if (Object.keys(rows).length > 0) {
 						text += "\n<b>Pacchetti</b> per " + this.itemName + ":\n";
-						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+						for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 							text += "> Mercante Pazzo (" + formatNumber(rows[i].price) + " § - Pacchetto)\n";
-						}
 					}
 
 					connection.query('SELECT player.nickname, public_shop.code, public_shop.price FROM public_shop JOIN ( SELECT public_shop.code, MIN(public_shop.price) As minPrice, player.nickname FROM public_shop, player, inventory WHERE inventory.player_id = player.id AND inventory.item_id = ' + itemId + ' AND inventory.quantity > 0 AND public_shop.public = 1 AND public_shop.quantity > 0 AND player.id = public_shop.player_id AND public_shop.item_id = ' + itemId + ' GROUP BY nickname ) As t2, player, inventory WHERE inventory.player_id = player.id AND inventory.item_id = ' + itemId + ' AND inventory.quantity > 0 AND public_shop.public = 1 AND public_shop.quantity > 0 AND player.id = public_shop.player_id AND public_shop.item_id = ' + itemId + ' AND public_shop.price = t2.minPrice AND player.nickname = t2.nickname ORDER BY public_shop.price ASC', function (err, rows, fields) {
 						if (err) throw err;
 						if (Object.keys(rows).length > 0) {
 							text += "\n<b>Negozi</b> per " + this.itemName + ":\n";
-							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+							for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 								text += "> " + rows[i].nickname + " (" + formatNumber(rows[i].price) + " § - <code>" + rows[i].code + "</code>)\n";
-							}
 						}
 
 						if (this.i + 1 == this.len) {
 							if (Object.keys(text).length > 50) {
-								if (Object.keys(text).length < 4000) {
+								if (Object.keys(text).length < 4000)
 									bot.sendMessage(message.chat.id, text, html);
-								} else {
+								else
 									bot.sendMessage(message.chat.id, "Troppi risultati, prova con un filtro più limitato");
-								}
-							} else {
+							} else
 								bot.sendMessage(message.chat.id, "Non ho trovato nessun offerta in corso per gli oggetti specificati");
-							}
 						}
 					}.bind({
 						i: this.i,
@@ -7306,7 +7439,7 @@ function classSym(className) {
 	else if (className == "Spaccateste")
 		classSym = "🦍";
 	else if (className == "Discepolo dei Draghi")
-		classSym = "🐉";
+		classSym = "🐲";
 	else if (className == "Barbaro")
 		classSym = "🦏";
 	else if (className == "Predone")
@@ -7853,7 +7986,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																						if (from == 1)
 																							message.chat.id = account_id;
 
-																						bot.sendMessage(message.chat.id, "<b>" + gender_text + "</b> 👤\n" +
+																						bot.sendMessage(message.chat.id, "<b>" + gender_text + "</b> " + class_sym + "\n" +
 																										gender_sym + " " + nickname + (player_custom_nickname != null ? " <i>" + player_custom_nickname + "</i>": "") + "\n" +
 																										team_desc + 
 																										stars + " " + formatNumber(lev) + " (" + formatNumber(exp) + " xp)\n\n" +
@@ -7918,13 +8051,12 @@ bot.onText(/^\/giocatore|^\/giocatrice/, function (message) {
 bot.onText(/^\/ispeziona/, function (message) {
 
 	if (message.reply_to_message == undefined) {
-		bot.sendMessage(message.from.id, "Questo comando va utilizzato in _risposta_", mark);
+		bot.sendMessage(message.chat.id, message.from.username + ", questo comando va utilizzato in <i>risposta</i>", html);
 		return;
 	}
 
-	if (!checkSpam(message)) {
+	if (!checkSpam(message))
 		return;
-	}
 
 	var usr = message.reply_to_message.from.username;
 
@@ -8181,13 +8313,12 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, account_
 bot.onText(/^\/spia/, function (message) {
 
 	if (message.reply_to_message == undefined) {
-		bot.sendMessage(message.chat.id, "Questo comando va utilizzato in _risposta_", mark);
+		bot.sendMessage(message.chat.id, message.from.username + ", questo comando va utilizzato in <i>risposta</i>", html);
 		return;
 	}
 
-	if (!checkSpam(message)) {
+	if (!checkSpam(message))
 		return;
-	}
 
 	var player = message.reply_to_message.from.username;
 
@@ -8317,7 +8448,6 @@ bot.onText(/^\/scrigni/, function (message, match) {
 		if (err) throw err;
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
@@ -8361,7 +8491,6 @@ bot.onText(/^\/zaino (.+)|^\/zaino/, function (message, match) {
 		if (err) throw err;
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
-			console.log("BANNATO! (" + message.from.username + ")");
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;

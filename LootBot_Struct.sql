@@ -1,8 +1,8 @@
--- MySQL dump 10.16  Distrib 10.1.26-MariaDB, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.16  Distrib 10.1.37-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: LootBot
 -- ------------------------------------------------------
--- Server version	10.1.26-MariaDB-0+deb9u1
+-- Server version	10.1.37-MariaDB-0+deb9u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -467,7 +467,7 @@ CREATE TABLE `auction_list` (
   KEY `item_id` (`item_id`),
   CONSTRAINT `CREATORID_AU` FOREIGN KEY (`creator_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `ITEMID_AU` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -501,6 +501,24 @@ CREATE TABLE `banlist` (
   `reason` varchar(255) NOT NULL,
   `until` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `birth_gift`
+--
+
+DROP TABLE IF EXISTS `birth_gift`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `birth_gift` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `player_id` int(11) NOT NULL,
+  `cnt` int(11) NOT NULL,
+  `year` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `birth_player` (`player_id`),
+  CONSTRAINT `birth_player` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1591,7 +1609,7 @@ CREATE TABLE `global_msg` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `chat_id` bigint(16) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3422,4 +3440,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-11-09 15:00:10
+-- Dump completed on 2018-11-22  9:00:10
