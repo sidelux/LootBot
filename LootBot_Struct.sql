@@ -467,7 +467,7 @@ CREATE TABLE `auction_list` (
   KEY `item_id` (`item_id`),
   CONSTRAINT `CREATORID_AU` FOREIGN KEY (`creator_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `ITEMID_AU` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1609,7 +1609,7 @@ CREATE TABLE `global_msg` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `chat_id` bigint(16) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2730,6 +2730,7 @@ SET character_set_client = utf8;
 /*!50001 CREATE TABLE `player_public` (
   `id` tinyint NOT NULL,
   `nickname` tinyint NOT NULL,
+  `grater_50` tinyint NOT NULL,
   `team_id` tinyint NOT NULL,
   `team` tinyint NOT NULL
 ) ENGINE=MyISAM */;
@@ -3066,8 +3067,10 @@ CREATE TABLE `team` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
   `slogan` varchar(255) DEFAULT NULL,
+  `story` text,
   `level` int(3) NOT NULL DEFAULT '1',
   `point` int(11) NOT NULL DEFAULT '10',
+  `point_spent` int(11) NOT NULL DEFAULT '0',
   `players` int(3) NOT NULL DEFAULT '1',
   `max_players` int(3) NOT NULL DEFAULT '3',
   `min_lev` int(11) NOT NULL DEFAULT '0',
@@ -3369,7 +3372,7 @@ CREATE TABLE `travel` (
 /*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `player_public` AS select `player`.`id` AS `id`,`player`.`nickname` AS `nickname`,`team`.`id` AS `team_id`,`team`.`name` AS `team` from ((`player` left join `team_player` on((`player`.`id` = `team_player`.`player_id`))) left join `team` on((`team_player`.`team_id` = `team`.`id`))) */;
+/*!50001 VIEW `player_public` AS select `player`.`id` AS `id`,`player`.`nickname` AS `nickname`,if(((floor((`player`.`exp` / 10)) > 50) or (`player`.`reborn` > 1)),1,0) AS `grater_50`,`team`.`id` AS `team_id`,`team`.`name` AS `team` from ((`player` left join `team_player` on((`player`.`id` = `team_player`.`player_id`))) left join `team` on((`team_player`.`team_id` = `team`.`id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -3440,4 +3443,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-11-22  9:00:10
+-- Dump completed on 2018-11-30 15:00:10
