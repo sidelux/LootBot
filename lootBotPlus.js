@@ -379,13 +379,13 @@ bot.onText(/^\/comandigiocatore/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per il giocatore*\n" +
 					"/giocatore o /giocatrice - Mostra la scheda giocatore\n" +
 					"/zaino - Mostra gli oggetti contenuti nello zaino\n" +
-					"/zainoc/b - Mostra gli oggetti creati/base contenuti nello zaino\n" +
+					"/zainoc/b - Mostra gli oggetti creati/base contenuti nello zaino (specifica anche la rarità)\n" +
 					"/oggetto - Mostra i dettagli di un oggetto posseduto\n" +
 					"/oggetti - Mostra i dettagli di più oggetti posseduti\n" +
 					"/scrigni - Mostra gli scrigni posseduti\n" +
-					"/valorezaino - Mostra il valore complessivo degli oggetti posseduti\n" +
-					"/valorezainob - Mostra il valore complessivo degli oggetti base posseduti\n" +
-					"/valorezainoc - Mostra il valore complessivo degli oggetti creati posseduti\n" +
+					"/valorezaino - Mostra il valore complessivo degli oggetti posseduti (specifica anche la rarità)\n" +
+					"/valorezainob - Mostra il valore complessivo degli oggetti base posseduti (specifica anche la rarità)\n" +
+					"/valorezainoc - Mostra il valore complessivo degli oggetti creati posseduti (specifica anche la rarità)\n" +
 					"/gruzzolo - Mostra le monete possedute\n" +
 					"/creazioni - Mostra i punti creazione ottenuti\n" +
 					"/spia - Spia un giocatore mostrando la scheda giocatore\n" +
@@ -418,7 +418,7 @@ bot.onText(/^\/comandilotteria/, function (message) {
 bot.onText(/^\/comandiasta/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per gestire le aste*\n" +
 					"/statoasta - Mostra lo stato di un'asta\n" +
-					"/creaasta - Permette di creare un'asta\n" +
+					"/creaasta - Permette di creare un'asta (specifica solo l'oggetto per inserirlo a prezzo base)\n" +
 					"/pubblicaasta - Permette di pubblicare l'asta con i relativi pulsanti (prova anche 'tutte')\n" +
 					"/asta - Iscrive ad un'asta\n" +
 					"/aste - Mostra tutte le aste disponibili\n" +
@@ -2870,7 +2870,7 @@ bot.onText(/^\/cancellalotteria/, function (message) {
 	});
 });
 
-bot.onText(/^\/creaasta(?!p) ([^\s]+) (.+)|^\/creaasta(?!p)$/, function (message, match) {
+bot.onText(/^\/creaasta(?!p) ([^\s]+) (.+)|^\/creaasta(?!p) ([^\s]+)|^\/creaasta(?!p)$/, function (message, match) {
 	if ((message.chat.id == "-1001069842056") || (message.chat.id == "-1001064571576")) {
 		bot.sendMessage(message.chat.id, "Non possono essere create aste in questo gruppo");
 		return;
@@ -2878,9 +2878,20 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+) (.+)|^\/creaasta(?!p)$/, function (message
 
 	var prezzo = parseInt(match[1]);
 	var oggetto = match[2];
-	if ((oggetto == undefined) || (oggetto == "") || (prezzo == undefined) || (prezzo == 0) || (isNaN(prezzo))) {
-		bot.sendMessage(message.chat.id, "Per inserire un'asta utilizza la seguente sintassi: /creaasta PrezzoBase NomeOggetto, l'oggetto viene rimosso dall'inventario appena creata l'asta");
-		return;
+	if (match[3] == undefined){
+		if ((oggetto == undefined) || (oggetto == "") || (prezzo == undefined) || (prezzo == 0) || (isNaN(prezzo))) {
+			bot.sendMessage(message.chat.id, "Per inserire un'asta utilizza la seguente sintassi: /creaasta PrezzoBase NomeOggetto, l'oggetto viene rimosso dall'inventario appena creata l'asta");
+			return;
+		}
+	} else {
+		var item = connection_sync.query("SELECT value FROM item WHERE name = '" + match[3] + "'");
+		if (Object.keys(item).length == 0) {
+			console.log("Non trovato: " + match[3]);
+			bot.sendMessage(message.chat.id, "L'oggetto specificato non esiste");
+			return;
+		}
+		prezzo = item[0].value;
+		oggetto = match[3];
 	}
 
 	connection.query('SELECT id, account_id, market_ban, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -2964,7 +2975,7 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+) (.+)|^\/creaasta(?!p)$/, function (message
 								callback_data: "asta:" + id + ":" + "10000"
 							}]);
 
-							bot.sendMessage(message.chat.id, "<b>Asta per " + oggetto + "</b>\n\n<b>Offerta</b>: " + prezzo + " §\n\nAppena pubblicata, scade tra 1 ore, ogni offerta consente 2 ore per rilanciare.", {
+							bot.sendMessage(message.chat.id, "<b>Asta per " + oggetto + "</b>\n\n<b>Offerta</b>: " + formatNumber(prezzo) + " §\n\nAppena pubblicata, scade tra 1 ore, ogni offerta consente 2 ore per rilanciare.", {
 								parse_mode: 'HTML',
 								reply_markup: {
 									inline_keyboard: iKeys
@@ -6836,34 +6847,48 @@ bot.onText(/^\/valorezaino (.+)|^\/valorezaino$/, function (message, match) {
 	});
 });
 
-bot.onText(/^\/valorezainob$/, function (message, match) {
+bot.onText(/^\/valorezainob (.+)|^\/valorezainob$/, function (message, match) {
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
+		
+		var rarity = "";
+		var raritytxt = "";
+		if (match[1] != undefined){
+			rarity = " AND rarity = '" + match[1] + "'";
+			raritytxt = " " + match[1].toUpperCase();
+		}
 
 		var player_id = rows[0].id;
-		connection.query('SELECT SUM(I.value*IV.quantity) As val FROM item I, inventory IV WHERE I.craftable = 0 AND I.id = IV.item_id AND IV.player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT SUM(I.value*IV.quantity) As val FROM item I, inventory IV, rarity R WHERE R.shortname = I.rarity AND I.craftable = 0 AND I.id = IV.item_id AND IV.player_id = ' + player_id + rarity, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (rows[0].val == null)
 				rows[0].val = 0;
 
-			bot.sendMessage(message.chat.id, message.from.username + ", il tuo zaino per gli oggetti <i>base</i> vale <b>" + formatNumber(rows[0].val) + "</b> §", html);
+			bot.sendMessage(message.chat.id, message.from.username + ", il tuo zaino per gli oggetti <i>Base</i> vale <b>" + formatNumber(rows[0].val) + "</b> §", html);
 		});
 	});
 });
 
-bot.onText(/^\/valorezainoc$/, function (message, match) {
+bot.onText(/^\/valorezainoc (.+)|^\/valorezainoc$/, function (message, match) {
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
+		
+		var rarity = "";
+		var raritytxt = "";
+		if (match[1] != undefined){
+			rarity = " AND rarity = '" + match[1] + "'";
+			raritytxt = " " + match[1].toUpperCase();
+		}
 
 		var player_id = rows[0].id;
-		connection.query('SELECT SUM(I.value*IV.quantity) As val FROM item I, inventory IV WHERE I.craftable = 1 AND I.id = IV.item_id AND IV.player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT SUM(I.value*IV.quantity) As val FROM item I, inventory IV, rarity R WHERE R.shortname = I.rarity AND I.craftable = 1 AND I.id = IV.item_id AND IV.player_id = ' + player_id + rarity, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (rows[0].val == null)
 				rows[0].val = 0;
 
-			bot.sendMessage(message.chat.id, message.from.username + ", il tuo zaino per gli oggetti <i>creati</i> vale <b>" + formatNumber(rows[0].val) + "</b> §", html);
+			bot.sendMessage(message.chat.id, message.from.username + ", il tuo zaino per gli oggetti <i>Creati" + raritytxt + "</i> vale <b>" + formatNumber(rows[0].val) + "</b> §", html);
 		});
 	});
 });
@@ -8589,7 +8614,7 @@ bot.onText(/^\/zaino (.+)|^\/zaino$/, function (message, match) {
 	});
 });
 
-bot.onText(/^\/zainob$|^\/zainoc$/, function (message, match) {
+bot.onText(/^\/zainob (.+)|^\/zainoc (.+)|^\/zainob|^\/zainoc/, function (message, match) {
 	if (message.chat.id == "-1001069842056") {
 		bot.sendMessage(message.chat.id, "Lo zaino non può essere visualizzato in questo gruppo");
 		return;
@@ -8605,22 +8630,31 @@ bot.onText(/^\/zainob$|^\/zainoc$/, function (message, match) {
 		}
 
 		var player_id = rows[0].id;
-		var craftable = 1;
+		var craftable = 0;
 		var craftTxt = "";
-		if (message.text == "/zainob"){
-			craftable = 1;
+		if (message.text.indexOf("/zainob") != -1)
 			craftTxt = "Base";
-		} else if (message.text == "/zainoc"){
-			craftable = 0;
+		else if (message.text.indexOf("/zainoc") != -1){
+			craftable = 1;
 			craftTxt = "Creati";
 		} else {
 			bot.sendMessage(message.chat.id, "Comando non valido");
 			return;
 		}
+		
+		var rarity = "";
+		var desc = "";
+		if (match[1] != undefined){
+			rarity = " AND rarity.shortname = '" + match[1] + "'";
+			desc = " - " + match[1].toUpperCase();
+		} else if (match[2] != undefined){
+			rarity = " AND rarity.shortname = '" + match[2] + "'";
+			desc = " - " + match[2].toUpperCase();
+		}
 
-		var bottext = "<b>" + message.from.username + "</b> possiedi (" + craftTxt + "):\n";
+		var bottext = "<b>" + message.from.username + "</b> possiedi (" + craftTxt + desc + "):\n";
 
-		connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND item.craftable = ' + craftable + ' AND inventory.quantity > 0 ORDER BY item.name ASC', function (err, rows, fields) {
+		connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND item.craftable = ' + craftable + ' AND inventory.quantity > 0' + rarity + ' ORDER BY item.name ASC', function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
 				for (i = 0, len = Object.keys(rows).length; i < len; i++)
