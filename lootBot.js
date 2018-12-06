@@ -14201,10 +14201,10 @@ bot.onText(/fai nascere il drago|accudisci drago|nutri ancora|^drago$|^drago �
 								if (err) throw err;
 								var iKeys = [];
 								if (Object.keys(rows).length > 0) {
-									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+									for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 										iKeys.push(["Dai " + rows[i].name + " (" + rows[i].num + ")"]);
-									}
 									iKeys.push(["Dai tutte"]);
+									iKeys.push(["Dai tutte tranne epiche"]);
 								}
 
 								iKeys.push(["Equipaggia Drago 🐉"]);
@@ -15326,7 +15326,7 @@ function checkDragon(player_id, is_dummy = 0) {
 	});
 };
 
-bot.onText(/dai tutte/i, function (message) {
+bot.onText(/dai tutte|dai tutte tranne (.+)/i, function (message, match) {
 
 	var foodmore = {
 		parse_mode: "Markdown",
@@ -15335,6 +15335,12 @@ bot.onText(/dai tutte/i, function (message) {
 			keyboard: [["Nutri Ancora"], ["Torna al menu"]]
 		}
 	};
+		
+	var filter = "";
+	if (match[1] != undefined){
+		if (match[1] == "epiche")
+			filter = " AND item.id != 73";
+	}
 
 	connection.query('SELECT account_id, holiday, id, charm_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -15391,7 +15397,7 @@ bot.onText(/dai tutte/i, function (message) {
 				bot.sendMessage(message.chat.id, "Sei sicuro?", yesno).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text.toLowerCase() == "si") {
-							connection.query('SELECT item.name, item.id, inventory.quantity FROM item, inventory WHERE inventory.player_id = ' + player_id + ' AND item.id = inventory.item_id AND item.name LIKE "Pietra%" AND item.rarity = "D"', function (err, rows, fields) {
+							connection.query('SELECT item.name, item.id, inventory.quantity FROM item, inventory WHERE inventory.player_id = ' + player_id + ' AND item.id = inventory.item_id AND item.name LIKE "Pietra%" AND item.rarity = "D"' + filter, function (err, rows, fields) {
 								if (err) throw err;
 								if (Object.keys(rows).length > 0) {
 									var val = 0;
@@ -31031,7 +31037,6 @@ function cercaTermine(message, param, player_id) {
 							});
 						}
 
-
 						var poss = getItemCnt(player_id, item_id);
 
 						connection.query('SELECT (SELECT COUNT(id) FROM player) As player, COUNT(id) As cnt FROM inventory WHERE item_id = ' + item_id, function (err, rows, fields) {
@@ -31070,21 +31075,34 @@ function cercaTermine(message, param, player_id) {
 														iKeys2.push(["Cerca *" + rows[i].name]);
 													}
 												}
-												iKeys2.push(["Vendi " + name, "Cerca Ancora"]);
+												
+												if (poss > 0)
+													iKeys2.push(["Vendi " + name, "Cerca Ancora"]);
+												else
+													iKeys2.push(["Compra " + name, "Cerca Ancora"]);
 												if (prev == 1)
 													iKeys2.push([prevtxt]);
 												iKeys2.push(["Torna al menu"]);
 
 												bot.sendMessage(message.chat.id, bottext, kb2);
 											} else {
-
-												search = {
-													parse_mode: "Markdown",
-													reply_markup: {
-														resize_keyboard: true,
-														keyboard: [["Vendi " + name, "Cerca Ancora"], ["Torna al menu"]]
-													}
-												};
+												if (poss > 0){
+													search = {
+														parse_mode: "Markdown",
+														reply_markup: {
+															resize_keyboard: true,
+															keyboard: [["Vendi " + name, "Cerca Ancora"], ["Torna al menu"]]
+														}
+													};
+												} else {
+													search = {
+														parse_mode: "Markdown",
+														reply_markup: {
+															resize_keyboard: true,
+															keyboard: [["Compra " + name, "Cerca Ancora"], ["Torna al menu"]]
+														}
+													};
+												}
 
 												bot.sendMessage(message.chat.id, bottext, search);
 											}
@@ -31215,13 +31233,19 @@ function cercaTermine(message, param, player_id) {
 															iKeys3.push(["Cerca *" + rows[i].name]);
 														}
 
-														iKeys3.push(["Vendi " + name, "Cerca Ancora"]);
+														if (poss > 0)
+															iKeys3.push(["Vendi " + name, "Cerca Ancora"]);
+														else
+															iKeys3.push(["Compra " + name, "Cerca Ancora"]);
 														if (prev == 1)
 															iKeys3.push([prevtxt]);
 														iKeys3.push(["Torna al menu"]);
 														bot.sendMessage(message.chat.id, bottext, kb);
 													} else {
-														iKeys3.push(["Vendi " + name, "Cerca Ancora"]);
+														if (poss > 0)
+															iKeys3.push(["Vendi " + name, "Cerca Ancora"]);
+														else
+															iKeys3.push(["Compra " + name, "Cerca Ancora"]);
 														if (prev == 1)
 															iKeys3.push([prevtxt]);
 														iKeys3.push(["Torna al menu"]);
@@ -36203,7 +36227,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 
 													if (cost > 0) {
 														if (money < cost) {
-															bot.sendMessage(message.chat.id, "Ti servono " + cost + " § per creare questo oggetto.", craft_fail);
+															bot.sendMessage(message.chat.id, "Ti servono " + formatNumber(cost) + " § per creare questo oggetto.", craft_fail);
 															return;
 														} else {
 															connection.query('UPDATE player SET money = money-' + cost + ' WHERE `nickname` = "' + message.from.username + '"', function (err, rows, fields) {
@@ -37443,7 +37467,6 @@ bot.onText(/arena/i, function (message) {
 						});
 					});
 				} else {
-
 					var d1 = rows[0].dragon_1;
 					var d2 = rows[0].dragon_2;
 					var choice = rows[0].choice;
@@ -39939,19 +39962,18 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 													key += 5;
 												*/
 
-												connection.query('SELECT id FROM player ORDER BY ability DESC LIMIT 1', function (err, rows, fields) {
+												connection.query('SELECT ability FROM player ORDER BY ability DESC LIMIT 1', function (err, rows, fields) {
 													if (err) throw err;
 
-													var ability_top = rows[0].id;
+													var ability_top = rows[0].ability;
 
 													connection.query('SELECT ability FROM player WHERE id = ' + toId, function (err, rows, fields) {
 														if (err) throw err;
 
 														if (isMatch == 1) {
 															var enemy_ability = rows[0].ability;
-															if (ability <= enemy_ability)
-																key += 1;
-															else if (ability_top == player_id)
+															var prob = (Math.sqrt(ability)/Math.sqrt(ability_top)) - ((ability-enemy_ability)/ability);
+															if (prob > Math.random())
 																key += 1;
 														}
 
@@ -45882,7 +45904,7 @@ function setFinishedMission(element, index, array) {
 								m = 3+mplus;
 								connection.query('UPDATE player SET boost_id = 7, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
 									if (err) throw err;
-									bot.sendMessage(chat_id, "Hai trovato una Bevanda Bottino! Per " + m + " missioni fornisce x10 monete.");
+									bot.sendMessage(chat_id, "Hai trovato una Bevanda Bottino! Per " + m + " missioni e/o dungeon fornisce x10 monete.");
 								});
 							} else if (rand2 == 7) {
 								if (reborn > 1){

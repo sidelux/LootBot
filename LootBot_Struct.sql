@@ -1962,6 +1962,7 @@ CREATE TABLE `market` (
   `item_2_id` text,
   `time_end` timestamp NULL DEFAULT NULL,
   `buyer` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -2083,6 +2084,7 @@ CREATE TABLE `market_history` (
   `from_id` int(8) DEFAULT NULL,
   `to_id` int(8) DEFAULT NULL,
   `buyer` int(11) DEFAULT NULL,
+  `quantity` int(11) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `item_1` (`item_1`),
   KEY `item_2` (`item_2`),
@@ -3443,4 +3445,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-12-05  9:00:10
+-- Dump completed on 2018-12-06 12:00:15
