@@ -859,9 +859,9 @@ bot.onText(/^\/gban ([^\s]+) (.+)|^\/gban|^\/🍌/, function (message, match) {
 	if (message.from.id == 20471035) {
 
 		if (match[1] == undefined) {
-			if (message.reply_to_message != undefined) {
+			if (message.reply_to_message != undefined)
 				match[1] = message.reply_to_message.from.username;
-			}else{
+			else {
 				bot.sendMessage(message.chat.id, "Sintassi: /gban nickname motivo (ban dal gioco, anche in risposta)");
 				return;
 			}
@@ -2868,7 +2868,7 @@ bot.onText(/^\/cancellalotteria/, function (message) {
 	});
 });
 
-bot.onText(/^\/creaasta(?!p) ([^\s]+) (.+)|^\/creaasta(?!p) ([^\s]+)|^\/creaasta(?!p)$/, function (message, match) {
+bot.onText(/^\/creaasta(?!p) ([^\s]+) (.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p)$/, function (message, match) {
 	if ((message.chat.id == "-1001069842056") || (message.chat.id == "-1001064571576")) {
 		bot.sendMessage(message.chat.id, "Non possono essere create aste in questo gruppo");
 		return;
@@ -7028,7 +7028,10 @@ bot.onText(/^\/gruzzolo/, function (message) {
 				bot.sendMessage(message.chat.id, message.from.username + ", possiedi <b>troppissimi</b> §", html);
 				return;
 			}
-			bot.sendMessage(message.chat.id, message.from.username + ", possiedi <b>" + formatNumber(rows[0].money) + "</b> §", html);
+			var options = {parse_mode: 'HTML'};
+			if (message.reply_to_message != undefined)
+				options = {parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id};
+			bot.sendMessage(message.chat.id, message.from.username + ", possiedi <b>" + formatNumber(rows[0].money) + "</b> §", options);
 		}
 	});
 });
@@ -7117,6 +7120,10 @@ bot.onText(/^\/oggetti (.+)|^\/oggetti/, function (message, match) {
 		bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
 		return;
 	}
+	
+	var options = {parse_mode: 'HTML'};
+	if (message.reply_to_message != undefined)
+		options = {parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id};
 
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -7165,7 +7172,7 @@ bot.onText(/^\/oggetti (.+)|^\/oggetti/, function (message, match) {
 				if (this.i + 1 == this.len) {
 					if (Object.keys(text).length > 0) {
 						if (Object.keys(text).length < 4000)
-							bot.sendMessage(message.chat.id, intro + text, html);
+							bot.sendMessage(message.chat.id, intro + text, options);
 						else
 							bot.sendMessage(message.chat.id, "Troppi risultati, prova con un filtro più limitato");
 					} else
@@ -8490,27 +8497,26 @@ bot.onText(/^\/spia/, function (message) {
 function getRankName(rank) {
 	var text = "";
 
-	if (rank <= rankList[0]) {
+	if (rank <= rankList[0])
 		text = "Esploratore Novizio";
-	} else if (rank <= rankList[1]) {
+	else if (rank <= rankList[1])
 		text = "Esploratore Modesto";
-	} else if (rank <= rankList[2]) {
+	else if (rank <= rankList[2])
 		text = "Esploratore Professionista";
-	} else if (rank <= rankList[3]) {
+	else if (rank <= rankList[3])
 		text = "Avventuriero Giovane";
-	} else if (rank <= rankList[4]) {
+	else if (rank <= rankList[4])
 		text = "Avventuriero Forestiero";
-	} else if (rank <= rankList[5]) {
+	else if (rank <= rankList[5])
 		text = "Avventuriero della Notte";
-	} else if (rank <= rankList[6]) { //500
+	else if (rank <= rankList[6])	//500
 		text = "Avventuriero Impavido";
-	} else if (rank <= rankList[7]) { //750
+	else if (rank <= rankList[7]) 	//750
 		text = "Avventuriero Eroico";
-	} else if (rank <= rankList[8]) { //1000
+	else if (rank <= rankList[8]) 	//1000
 		text = "Eroe delle Esplorazioni";
-	} else {
+	else
 		text = "Mappatore Avanzato";
-	}
 
 	return text;
 };
@@ -8563,6 +8569,10 @@ bot.onText(/^\/zaino (.+)|^\/zaino$/, function (message, match) {
 		bot.sendMessage(message.chat.id, "La sintassi è la seguente: /zaino rarità (esempio: /zaino E)");
 		return;
 	}
+	
+	var options = {parse_mode: 'HTML'};
+	if (message.reply_to_message != undefined)
+		options = {parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id};
 
 	connection.query('SELECT id, total_life, life, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -8599,7 +8609,7 @@ bot.onText(/^\/zaino (.+)|^\/zaino$/, function (message, match) {
 						}
 					} else
 						bottext = bottext + "Nessun incantesimo disponibile\n";
-					bot.sendMessage(message.chat.id, bottext, html);
+					bot.sendMessage(message.chat.id, bottext, options);
 				});
 			});
 		} else {
@@ -8627,7 +8637,7 @@ bot.onText(/^\/zaino (.+)|^\/zaino$/, function (message, match) {
 					if (Object.keys(bottext).length > 4000)
 						bottext = "Purtroppo lo zaino non può essere visualizzato poichè contiene troppi oggetti";
 
-					bot.sendMessage(message.chat.id, bottext, html)
+					bot.sendMessage(message.chat.id, bottext, options)
 				});
 			});
 		}
@@ -8757,23 +8767,23 @@ function getRankName(rank, opt) {
 	if (opt == 0) {
 		var text = "";
 
-		if (rank <= rankList[0])
+		if (rank < rankList[0])
 			text = "Esploratore Novizio";
-		else if (rank <= rankList[1])
+		else if (rank < rankList[1])
 			text = "Esploratore Modesto";
-		else if (rank <= rankList[2])
+		else if (rank < rankList[2])
 			text = "Esploratore Professionista";
-		else if (rank <= rankList[3])
+		else if (rank < rankList[3])
 			text = "Avventuriero Giovane";
-		else if (rank <= rankList[4])
+		else if (rank < rankList[4])
 			text = "Avventuriero Forestiero";
-		else if (rank <= rankList[5])
+		else if (rank < rankList[5])
 			text = "Avventuriero della Notte";
-		else if (rank <= rankList[6]) //500
+		else if (rank < rankList[6]) //500
 			text = "Avventuriero Impavido";
-		else if (rank <= rankList[7]) //750
+		else if (rank < rankList[7]) //750
 			text = "Avventuriero Eroico";
-		else if (rank <= rankList[8]) //1000
+		else if (rank < rankList[8]) //1000
 			text = "Eroe delle Esplorazioni";
 		else
 			text = "Mappatore Avanzato";
@@ -8781,14 +8791,12 @@ function getRankName(rank, opt) {
 		return text;
 	} else if (opt == 1) {
 		var next = 0;
-
 		for (var i = 0, len = Object.keys(rankList).length; i < len; i++) {
 			if (rank < rankList[i]) {
 				next = rankList[i];
 				break;
 			}
 		}
-
 		return next;
 	}
 }
