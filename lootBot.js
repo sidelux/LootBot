@@ -30,7 +30,7 @@ var wanted = 0;				// svuota event_wanted_status
 var eventTeamStory = 0;		// svuota event_team_story
 var eventFestival = 0;		// event_crafting_status con total_cnt a 0
 var specialMission = 0;		// nulla
-var checkDragonTopOn = 0;	// alla chiusura: svuota tabelle dragon_ e auto increment dummy a 100000
+var checkDragonTopOn = 1;	// alla chiusura: svuota tabelle dragon_ e auto increment dummy a 100000
 var gnomorra = 0;			// svuota tabella event_gnomorra
 
 // Festività o disattivati
@@ -7750,7 +7750,7 @@ bot.onText(/dungeon/i, function (message) {
 											  "Potresti entrare nella prossima stanza già ora, ma sei sicuro accada qualcosa li dentro tra %min%!",
 											  "Continui a correre come un forsennato in giro per i corridoi ancora per %min%...",
 											  "Girovaghi ancora per i menù per %min% prima di arrivare a una stanza",
-											  "Aspetti che il moto rotatorio terrestre cambi andando a tuo favore. Secondo i tuoi calcoli ci dovrebbe volere %min%!",
+											  "Aspetti che il moto rotatorio terrestre cambi andando a tuo favore. Secondo i tuoi calcoli ci dovrebbero volere %min%!",
 											  "Durante la tua bella attesa trovi un dizionario bello dei sinonimi. Decidi bellamente di ignorarlo e proseguire verso la bella porta per altri %min%."
 											 ];
 								var rand = Math.round(Math.random() * (Object.keys(strArr).length - 1));
@@ -11512,11 +11512,12 @@ bot.onText(/dungeon/i, function (message) {
 																bot.sendMessage(message.chat.id, "Ti senti talmente pronto da non necessitare di ulteriore concentrazione, prosegui così alla prossima stanza...", dNext);
 															} else {
 																var rand = Math.random() * 100;
+																param = param*2;
 																if (rand < 70) {
 																	bot.sendMessage(message.chat.id, "Per la concentrazione prolungata, il il saggio dello Spirito Libero ti premia con " + param + " exp!", dNext);
 																	setExp(player_id, param);
 																} else {
-																	param = param * 2;
+																	param = param*2;
 																	bot.sendMessage(message.chat.id, "Per la concentrazione prolungata ed una particolare dose di fortuna, il saggio dello Spirito Libero ti premia con " + param + " exp!", dNext);
 																	setExp(player_id, param);
 																}
@@ -12803,16 +12804,20 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																								var d = new Date();
 																								var rand = Math.random() * 100;
 																								if (d.getDay() == 6) {
-																									if (rand < 25) {
+																									if (rand < 25)
 																										rankPoint = 2;
-																									}
 																								} else if (d.getDay() == 0) {
-																									if (rand < 25) {
+																									if (rand < 25)
 																										rankPoint = 2;
-																									} else if ((rand > 25) && (rand < 50)) {
+																									else if ((rand > 25) && (rand < 50))
 																										rankPoint = 0;
-																									}
 																								}
+																							}
+																							
+																							if (crazyMode == 1){
+																								var prob = Math.round()*100;
+																								if (prob < 50)
+																									rankPoint = 2;
 																							}
 
 																							var refill = "";
@@ -12829,7 +12834,6 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																								var getrank1 = 0;
 
 																								if (pass_id != 0) {
-
 																									var getrank2 = 0;
 																									if (rank - rows[0].rank >= 150){
 																										connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + pass_id, function (err, rows, fields) {
@@ -16946,8 +16950,14 @@ bot.onText(/^Risorse/i, function (message) {
 										return;
 									}
 									
-									if (item_id == 706)
-										setAchievement(message.chat.id, player_id, 64, 1);
+									if (item_id == 706){
+										if (((dragon_level == 100) && (dragon_evolved == 0)) ||
+											((dragon_level == 200) && (dragon_evolved == 1)) || 
+											(dragon_level == 300))
+											setAchievement(message.chat.id, player_id, 64, 999);
+										else
+											setAchievement(message.chat.id, player_id, 64, 1);
+									}
 
 									if (item_id != 706) {
 										if (inCombat == 0) {
@@ -16971,8 +16981,6 @@ bot.onText(/^Risorse/i, function (message) {
 										}
 									}
 
-									delItem(player_id, item_id, 1);
-
 									if ((item_id == 700) || (item_id == 701) || (item_id == 702)) {
 
 										var scale = 0;
@@ -16989,6 +16997,7 @@ bot.onText(/^Risorse/i, function (message) {
 										connection.query('UPDATE dragon SET scale = scale+' + scale + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 											bot.sendMessage(message.chat.id, "Hai ottenuto " + scale + " ⚜️!", kbNext);
+											delItem(player_id, item_id, 1);
 										});
 									} else if ((item_id == 703) || (item_id == 704) || (item_id == 705)) {
 
@@ -17011,10 +17020,13 @@ bot.onText(/^Risorse/i, function (message) {
 											if (err) throw err;
 											life = life * 100;
 											bot.sendMessage(message.chat.id, "Il tuo drago ha recuperato la salute e ora possiede " + dragon_life + " hp!", kbNext);
+											delItem(player_id, item_id, 1);
 										});
 									} else if (item_id == 706) {
 
-										if (((dragon_level == 100) && (dragon_evolved == 0)) || ((dragon_level == 200) && (dragon_evolved == 1)) || (dragon_level == 300)){
+										if (((dragon_level == 100) && (dragon_evolved == 0)) || 
+											((dragon_level == 200) && (dragon_evolved == 1)) || 
+											(dragon_level == 300)){
 											bot.sendMessage(message.chat.id, "Non puoi usare questo oggetto su un drago al livello massimo!", kbNext);
 											return;
 										}
@@ -17033,6 +17045,7 @@ bot.onText(/^Risorse/i, function (message) {
 											if (err) throw err;
 											bot.sendMessage(message.chat.id, "Il tuo drago ha " + text + " un livello!", kbNext);
 											checkDragon(player_id);
+											delItem(player_id, item_id, 1);
 										});
 									};
 								});
@@ -32819,7 +32832,8 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 														}
 														c++;
 													}
-													text = text + "\n*Potenziamenti Flaridion*: " + mypos + "° con " + formatNumber(mypnt);
+													if (mypos != 0)
+														text = text + "\n*Potenziamenti Flaridion*: " + mypos + "° con " + formatNumber(mypnt);
 													c = 1;
 													mypnt = 0;
 													mypos = 0;
@@ -34809,7 +34823,6 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 			var ablist = "";
 			var abarr = [];
 			var abname = [];
-			var total = Object.keys(rows).length;
 			var completed = 0;
 
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
@@ -34834,8 +34847,10 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 				if (err) throw err;
 
 				var tot = 0;
+				var total = Object.keys(rows).length;
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					iKeys.push([rows[i].name]);
+					if ((abarr[rows[i].id] < 10) || (abarr[rows[i].id] == undefined))
+						iKeys.push([rows[i].name]);
 					abname[rows[i].id] = rows[i].name;
 					tot++;
 				}
@@ -37087,6 +37102,7 @@ bot.onText(/weekend della follia/i, function (message) {
 	var bonus = "> Tutte le missioni velocizzate\n" +
 		"> Ricompense aumentate di scrigni ed exp nelle missioni\n" +
 		"> Danno raddoppiato in assalto e dungeon\n" +
+		"> Possibilità di ottenere 2 punti rango al completamento del dungeon\n" +
 		"> Monete raddoppiate nelle ispezioni\n" +
 		"> Possibilità maggiore di trovare U Base e missioni U!\n" +
 		"> Eventi in missione particolari e curiosi\n" +
@@ -40136,8 +40152,10 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 														}
 
 														var extra = "";
-														if (key > 0)
+														if (key > 0){
 															extra = " e " + key + "x Chiave Mistica  🗝!";
+															setAchievement(message.chat.id, player_id, 65, 1);
+														}
 
 														connection.query('UPDATE player SET mkeys = mkeys+' + key + ' WHERE id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
@@ -42433,11 +42451,11 @@ bot.onText(/viaggi/i, function (message) {
 
 				if (rows[0].travel_id != 0) {
 					var time = new Date(rows[0].travel_time_end);
-					bot.sendMessage(message.chat.id, "Sei in esplorazione in cava o in terre lontane fino, tornerai alle " + addZero(time.getHours()) + ":" + addZero(time.getMinutes()) + ":" + addZero(time.getSeconds()) + " del " + addZero(time.getDate()) + "/" + addZero(time.getMonth() + 1) + "/" + time.getFullYear(), abort_travel);
+					bot.sendMessage(message.chat.id, "Sei in esplorazione in terre lontane, tornerai alle " + addZero(time.getHours()) + ":" + addZero(time.getMinutes()) + ":" + addZero(time.getSeconds()) + " del " + addZero(time.getDate()) + "/" + addZero(time.getMonth() + 1) + "/" + time.getFullYear(), abort_travel);
 					return;
 				} else if (rows[0].cave_id != 0) {
 					var time = new Date(rows[0].cave_time_end);
-					bot.sendMessage(message.chat.id, "Sei in esplorazione in cava o in terre lontane fino, tornerai alle " + addZero(time.getHours()) + ":" + addZero(time.getMinutes()) + ":" + addZero(time.getSeconds()) + " del " + addZero(time.getDate()) + "/" + addZero(time.getMonth() + 1) + "/" + time.getFullYear(), abort_travel_2);
+					bot.sendMessage(message.chat.id, "Sei in esplorazione in cava, tornerai alle " + addZero(time.getHours()) + ":" + addZero(time.getMinutes()) + ":" + addZero(time.getSeconds()) + " del " + addZero(time.getDate()) + "/" + addZero(time.getMonth() + 1) + "/" + time.getFullYear(), abort_travel_2);
 					return;
 				} else {
 					var extra = "SELECT name, duration FROM cave UNION ALL ";
@@ -43774,7 +43792,7 @@ function setEvents(element, index, array) {
 			if (err) throw err;
 			if (rows[0].life - damage <= 0)
 				return;
-			connection.query('UPDATE player SET life = life - ' + damage + ' WHERE player.id=' + player_id, function (err, rows, fields) {
+			connection.query('UPDATE player SET life = life - ' + damage + ' WHERE player.id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				text = "Durante la missione incontri Jovanotti che ti lancia un faffo. Perdi " + formatNumber(damage) + " hp";
 				bot.sendMessage(chat_id, text);

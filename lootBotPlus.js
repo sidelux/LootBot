@@ -2868,7 +2868,7 @@ bot.onText(/^\/cancellalotteria/, function (message) {
 	});
 });
 
-bot.onText(/^\/creaasta(?!p) ([^\s]+) (.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p)$/, function (message, match) {
+bot.onText(/^\/creaasta(?!p) ([^\s]+),(.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p)$/, function (message, match) {
 	if ((message.chat.id == "-1001069842056") || (message.chat.id == "-1001064571576")) {
 		bot.sendMessage(message.chat.id, "Non possono essere create aste in questo gruppo");
 		return;
@@ -2878,7 +2878,7 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+) (.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p
 	var oggetto = match[2];
 	if (match[3] == undefined){
 		if ((oggetto == undefined) || (oggetto == "") || (prezzo == undefined) || (prezzo == 0) || (isNaN(prezzo))) {
-			bot.sendMessage(message.chat.id, "Per inserire un'asta utilizza la seguente sintassi: /creaasta PrezzoBase NomeOggetto, l'oggetto viene rimosso dall'inventario appena creata l'asta");
+			bot.sendMessage(message.chat.id, "Per inserire un'asta utilizza la seguente sintassi: /creaasta PrezzoBase, NomeOggetto, l'oggetto viene rimosso dall'inventario appena creata l'asta");
 			return;
 		}
 	} else {
@@ -2891,6 +2891,8 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+) (.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p
 		prezzo = item[0].value;
 		oggetto = match[3];
 	}
+	
+	oggetto = oggetto.trim();
 
 	connection.query('SELECT id, account_id, market_ban, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
