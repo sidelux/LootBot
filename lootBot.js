@@ -7581,7 +7581,6 @@ bot.onText(/dungeon/i, function (message) {
 						});
 					});
 				} else {
-
 					var dng_pass = rows[0].pass;
 
 					if (dungeon_time != null) {
@@ -7845,6 +7844,10 @@ bot.onText(/dungeon/i, function (message) {
 										arr.push([rand]);
 									} else {
 										rand = Math.round(Math.random() * (max_rooms_neg+10) - max_rooms_neg);	//minimo = max_rooms_neg, massimo = 10
+										if ((i < 3) && (rand == 5)){	// per evitare che le leve siano a inizio dungeon
+											i--;
+											continue;
+										}
 										arr.push([rand]);
 									}
 								}
@@ -7888,7 +7891,6 @@ bot.onText(/dungeon/i, function (message) {
 										}));
 									}
 									if ((top == -4) || (right == -4) || (left == -4)) {
-
 										var rand_trade = Math.random()*100;
 										var craftable = 1;
 										if (rand_trade > 15)
@@ -23538,7 +23540,10 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		var potSum = pot1+pot2+pot3;
 																		if (potSum == 0)
 																			player_text += "\n> " + player[i].nickname + " non recupera salute";
-																		else{
+																		else {
+																			
+																			setAchievement(player[i].chat_id, player[i].id, 25, potSum);
+																			
 																			if (player_life <= player_total_life*0.2)
 																				setAchievement(player[i].chat_id, player[i].id, 20, 1);
 																			var plur = "i";
