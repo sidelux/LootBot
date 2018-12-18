@@ -1187,7 +1187,7 @@ bot.onText(/^\/gruppi/, function (message) {
 																						"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
 																						"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
 																						"<a href='https://t.me/joinchat/CXTRTE60M2WLQR2fvG_q7A'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
-																						"<a href='https://t.me/joinchat/B0siAkhfd9ieAbo1PyL3zA'>Ade's Mappers</a> (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
+																						"<a href='@Adesmappers'>Ade's Mappers</a> (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
 																						"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ") - La musica ed il diverimento di Lootia!\n" +
 																						"@LootAste (" + c18 + ") - Gruppo dedicato alle aste\n" +
 																						"<a href='https://t.me/joinchat/B8_tHk9nThsWfDL-k-Fazw'>Loot Nabbi</a> (" + c19 + ") - Dedicato ai nabbi di Lootia!\n" +
@@ -8690,7 +8690,7 @@ bot.onText(/^\/zainob (.+)|^\/zainoc (.+)|^\/zainob|^\/zainoc/, function (messag
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
 				for (i = 0, len = Object.keys(rows).length; i < len; i++)
-					bottext = bottext + "> " + rows[i].name + " (" + formatNumber(rows[i].num) + ")\n";
+					bottext = bottext + "> " + rows[i].name + " (" + rows[i].rname + ", " + formatNumber(rows[i].num) + ")\n";
 			} else
 				bottext = bottext + "Nessun oggetto con questo filtro disponibile\n";
 			if (Object.keys(bottext).length > 4000)
