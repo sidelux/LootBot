@@ -2862,7 +2862,7 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+),(.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p
 		return;
 	}
 
-	var prezzo = parseInt(match[1]);
+	var prezzo = parseInt(match[1].replaceAll(/\./, ""));
 	var oggetto = match[2];
 	if (match[3] == undefined){
 		if ((oggetto == undefined) || (oggetto == "") || (prezzo == undefined) || (prezzo == 0) || (isNaN(prezzo))) {
@@ -2880,7 +2880,6 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+),(.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p
 		oggetto = match[3];
 	}
 	
-	prezzo = prezzo.toString().replaceAll(/\./, "");
 	oggetto = oggetto.trim();
 
 	connection.query('SELECT id, account_id, market_ban, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -3145,14 +3144,13 @@ bot.onText(/^\/asta(?!p) ([^\s]+) (.+)|^\/asta(?!p)/, function (message, match) 
 		return;
 	}
 
-	var prezzo = parseInt(match[1]);
+	var prezzo = parseInt(match[1].replaceAll(/\./, ""));
 	var nickname = match[2];
 	if ((nickname == undefined) || (nickname == "") || (prezzo == undefined) || (isNaN(prezzo))) {
 		bot.sendMessage(message.chat.id, "Per partecipare ad un asta utilizza la seguente sintassi: /asta Prezzo @nickname, mentre /creaasta per iniziarne una nuova");
 		return;
 	}
 
-	prezzo = prezzo.toString().replaceAll(/\./, "");
 	nickname = nickname.replace("@", "");
 
 	connection.query('SELECT id, money, account_id, market_ban FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -3711,13 +3709,12 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 					if (splitted[1] == undefined)
 						price = 0;
 					else
-						price = parseInt(splitted[1].replace(/[^\w\s]/gi, '').trim());
+						price = parseInt(splitted[1].replace(/[^\w\s]/gi, '').trim().replaceAll(/\./, ""));
 					if (splitted[2] == undefined)
 						quantity = 1;
 					else
 						quantity = parseInt(splitted[2].replace(/[^\w\s]/gi, '').trim());
 
-					price = price.toString().replaceAll(/\./, "");
 					if (isNaN(price))
 						price = 0;
 
@@ -3801,13 +3798,12 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 					if (splitted[1] == undefined)
 						price = 0;
 					else
-						price = parseInt(splitted[1].replace(/[^\w\s]/gi, '').trim());
+						price = parseInt(splitted[1].replace(/[^\w\s]/gi, '').trim().replaceAll(/\./, ""));
 					if (splitted[2] == undefined)
 						quantity = 1;
 					else
 						quantity = parseInt(splitted[2].replace(/[^\w\s]/gi, '').trim());
 
-					price = price.toString().replaceAll(/\./, "");
 					if (isNaN(price))
 						price = 0;
 
@@ -4643,14 +4639,12 @@ bot.onText(/^\/crealotteriap ([^\s]+) (.+)|^\/crealotteriap$/, function (message
 		return;
 	}
 
+	var prezzo = parseInt(match[1].replaceAll(/\./, ""));
 	var oggetto = match[2];
-	var prezzo = match[1];
 	if ((oggetto == undefined) || (oggetto == "") || (isNaN(prezzo)) || (prezzo == 0)) {
 		bot.sendMessage(message.chat.id, "Per inserire una lotteria a pagamento utilizza la seguente sintassi: /crealotteriap Prezzo NomeOggetto, l'oggetto viene rimosso dall'inventario appena creata la lotteria e il numero di partecipanti minimo è 5. Se la lotteria viene annullata le monete vengono restituite.", mark);
 		return;
 	}
-	
-	prezzo = prezzo.toString().replaceAll(/\./, "");
 
 	connection.query('SELECT id, account_id, market_ban, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -4893,10 +4887,8 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 		return;
 	}
 
-	var price = parseInt(elements[0].replace(/\D+/gi, '').trim());
+	var price = parseInt(elements[0].replace(/\D+/gi, '').trim().replaceAll(/\./, ""));
 	var buyer = elements[1].replace('@', '').trim();
-	
-	price = price.toString().replaceAll(/\./, "");
 
 	var custom_message = "";
 	if (message.reply_to_message != undefined)
@@ -5061,10 +5053,8 @@ bot.onText(/^\/offri/i, function (message) {
 	}
 
 	item = elements[0].trim();
-	price = parseInt(elements[1].replace(/[^\w\s]/gi, '').trim());
+	price = parseInt(elements[1].replace(/[^\w\s]/gi, '').trim().replaceAll(/\./, ""));
 	buyer = elements[2].replace('@', '').trim();
-	
-	price = price.toString().replaceAll(/\./, "");
 
 	if (item == "") {
 		bot.sendMessage(message.from.id, "Il parametro oggetto è obbligatorio");
@@ -9215,12 +9205,10 @@ function getNow(lang, obj) {
 		var datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 	} else if (lang == "en") {
 		var datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-	} else {
+	} else
 		var datetime = "Lingua non specificata";
-	}
-	if (obj == true) {
+	if (obj == true)
 		datetime = new Date(datetime);
-	}
 	return datetime;
 }
 
@@ -9235,18 +9223,16 @@ function callNTimes(time, fn) {
 
 function findAndRemove(array, str) {
 	for (var i = 0; i < array.length; i++) {
-		if (array[i] == str) {
+		if (array[i] == str)
 			array.splice(i, 1);
-		}
 	}
 	return array;
 }
 
 function findInArray(array, str) {
 	for (var i = 0; i < array.length; i++) {
-		if (array[i] == str) {
+		if (array[i] == str)
 			return true;
-		}
 	}
 	return false;
 }

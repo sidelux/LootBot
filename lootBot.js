@@ -23826,15 +23826,15 @@ bot.onText(/cura completa/i, function (message) {
 			var text = "";
 			if (pot1 > 0){
 				setAchievement(message.chat.id, player_id, 35, pot1);
-				text += "\n> *" + pot1 + "*x Pozioni Piccole";
+				text += "\n> *" + pot1 + "*x Pozione Piccola";
 			}
 			if (pot2 > 0){
 				setAchievement(message.chat.id, player_id, 35, pot2);
-				text += "\n> *" + pot2 + "*x Pozioni Medie";
+				text += "\n> *" + pot2 + "*x Pozione Media";
 			}
 			if (pot3 > 0){
 				setAchievement(message.chat.id, player_id, 35, pot3);
-				text += "\n> *" + pot3 + "*x Pozioni Grandi";
+				text += "\n> *" + pot3 + "*x Pozione Grande";
 			}
 
 			delItem(player_id, 92, pot1);
@@ -28037,10 +28037,10 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 						if ((class_id == 6) && (reborn > 1))
 							quantity -= quantity * 0.1;
 
+						quantity = Math.floor(quantity);
+
 						connection.query('SELECT mana.name, chat_id, nickname, player_id, rate, type, ROUND(TIMESTAMPDIFF(MINUTE,time_start,NOW())/60*rate,0) As quantity FROM event_mana_status, event_mana_zone, player, mana WHERE mana.id = event_mana_zone.type AND player.id = player_id AND event_mana_status.time_start IS NOT NULL AND event_mana_status.zone_id = event_mana_zone.id AND player.id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
-
-							quantity = Math.floor(quantity);
 
 							bot.sendMessage(message.chat.id, "Attualmente stai estraendo da una miniera, vuoi interrompere e ottenere " + quantity + " Mana " + name + "?", mYesNo2).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
@@ -28072,12 +28072,35 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 					"Giallo: " + formatNumber(rows[0].mana_2) + "\n" +
 					"Rosso: " + formatNumber(rows[0].mana_3);
 
-				connection.query('SELECT name, mana_name, rate FROM event_mana_zone', function (err, rows, fields) {
+				connection.query('SELECT name, type, mana_name, rate FROM event_mana_zone', function (err, rows, fields) {
 					if (err) throw err;
 
 					var iKeys = [];
-					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-						iKeys.push([rows[i].name + " (" + rows[i].mana_name + " " + rows[i].rate + "/ora)"]);
+					var quantity = 0;
+					for (var i = 0, len = Object.keys(rows).length; i < len; i++){
+						
+						quantity = rows[i].rate;
+						
+						if ((class_id == 2) && (reborn > 1))
+							quantity += quantity * 0.3;
+						if ((class_id == 3) && (rows[i].type == 2) && (reborn > 1))
+							quantity += quantity * 0.5;
+						if ((class_id == 3) && (rows[i].type != 2) && (reborn > 1))
+							quantity -= quantity * 0.2;
+						if ((class_id == 4) && (rows[i].type == 3) && (reborn > 1))
+							quantity += quantity * 0.5;
+						if ((class_id == 4) && (rows[i].type != 3) && (reborn > 1))
+							quantity -= quantity * 0.2;
+						if ((class_id == 5) && (rows[i].type == 1) && (reborn > 1))
+							quantity += quantity * 1;
+						if ((class_id == 5) && (rows[i].type != 1) && (reborn > 1))
+							quantity -= quantity * 0.1;
+						if ((class_id == 6) && (reborn > 1))
+							quantity -= quantity * 0.1;
+						
+						quantity = Math.floor(quantity);
+						
+						iKeys.push([rows[i].name + " (" + rows[i].mana_name + " " + quantity + "/ora)"]);
 					}
 
 					iKeys.push(["Sintesi"]);
@@ -28091,11 +28114,10 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 						}
 					};
 
-					bot.sendMessage(message.chat.id, "Seleziona la miniera dalla quale iniziare a estrarre mana.\nAl momento possiedi:\n" + text + "\nAvrai possibilità di estrarre ogni giovedì e venerdì della settimana", kb).then(function () {
+					bot.sendMessage(message.chat.id, "Seleziona la miniera dalla quale iniziare a estrarre mana.\n\nAl momento possiedi:\n" + text + "\nAvrai possibilità di estrarre ogni giovedì e venerdì della settimana", kb).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
-							if ((answer.text == "Torna al menu") || (answer.text == "Sintesi")) {
+							if ((answer.text == "Torna al menu") || (answer.text == "Sintesi"))
 								return;
-							}
 
 							var zone = answer.text.substring(0, answer.text.indexOf("(") - 1);
 
