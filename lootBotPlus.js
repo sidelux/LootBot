@@ -578,9 +578,8 @@ bot.onText(/^\/([0-9]+)+birre$/, function (message, match) {
 	}
 
 	var t = "";
-	for (var i = 0; i < match[1]; i++) {
+	for (var i = 0; i < match[1]; i++)
 		t += "🍺";
-	}
 
 	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -930,9 +929,9 @@ bot.onText(/^\/gb (.+)|^\/gb$/, function (message, match) {
 		return;
 
 	if (match[1] == undefined) {
-		if (message.reply_to_message != undefined) {
+		if (message.reply_to_message != undefined)
 			match[1] = message.reply_to_message.from.username;
-		}else{
+		else{
 			bot.sendMessage(message.chat.id, "Sintassi: /gb nickname (ban dai gruppi)");
 			return;
 		}
@@ -975,9 +974,8 @@ bot.onText(/^\/gb (.+)|^\/gb$/, function (message, match) {
 							connection.query("SELECT chat_id FROM plus_groups WHERE groupban = 1", function (err, rows, fields) {
 								if (err) throw err;
 
-								for (i = 0; i < Object.keys(rows).length; i++) {
+								for (i = 0; i < Object.keys(rows).length; i++)
 									bot.unbanChatMember(rows[i].chat_id, account_id);
-								}
 							});
 						}
 					}
@@ -1016,9 +1014,8 @@ bot.onText(/^\/last (.+)/, function (message, match) {
 				var d = new Date(rows[0].time);
 				var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth()+1) + "/" + d.getFullYear();
 				bot.sendMessage(message.chat.id, long_date);
-			} else {
+			} else
 				bot.sendMessage(message.chat.id, "Boh!");
-			}
 		});
 	};
 });
@@ -1078,9 +1075,8 @@ function toDate(lang, d) {
 		var datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 	} else if (lang == "en") {
 		var datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-	} else {
+	} else
 		var datetime = "Lingua non specificata";
-	}
 	return datetime;
 }
 
@@ -1899,9 +1895,8 @@ bot.onText(/^\/compact (.+)/, function (message, match) {
 });
 
 bot.onText(/^\/hardmode (.+)/, function (message, match) {
-	if (message.chat.id > 0) {
+	if (message.chat.id > 0)
 		return;
-	}
 
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
@@ -1924,9 +1919,8 @@ bot.onText(/^\/hardmode (.+)/, function (message, match) {
 						connection.query('UPDATE plus_groups SET always = ' + val + ' WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 							if (err) throw err;
 						});
-					} else {
+					} else
 						bot.sendMessage(message.chat.id, "Parametro non valido, on/off.");
-					}
 				}
 			});
 		}
@@ -1934,9 +1928,8 @@ bot.onText(/^\/hardmode (.+)/, function (message, match) {
 });
 
 bot.onText(/^\/setwelcome (.+)/, function (message, match) {
-	if (message.chat.id > 0) {
+	if (message.chat.id > 0)
 		return;
-	}
 
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
@@ -1957,9 +1950,8 @@ bot.onText(/^\/setwelcome (.+)/, function (message, match) {
 });
 
 bot.onText(/^\/welcome (.+)/, function (message, match) {
-	if (message.chat.id > 0) {
+	if (message.chat.id > 0)
 		return;
-	}
 
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == "creator") || (data.status == "administrator")) {
@@ -1982,9 +1974,8 @@ bot.onText(/^\/welcome (.+)/, function (message, match) {
 						connection.query('UPDATE plus_groups SET welcome = ' + val + ' WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 							if (err) throw err;
 						});
-					} else {
+					} else
 						bot.sendMessage(message.chat.id, "Parametro non valido, on/off.");
-					}
 				}
 			});
 		}
@@ -2175,9 +2166,8 @@ function getRealLevel(reb, lev) {
 }
 
 bot.onText(/^\/teamall/i, function (message, match) {
-	if (message.from.id != 20471035){
+	if (message.from.id != 20471035)
 		return;
-	}
 	connection.query('SELECT id FROM team WHERE players > 1', function (err, rows, fields) {
 		if (err) throw err;
 		for (var j = 0, len = Object.keys(rows).length; j < len; j++) {
@@ -2220,9 +2210,8 @@ bot.onText(/^\/teamall/i, function (message, match) {
 });
 
 bot.onText(/^\/team (.+)/i, function (message, match) {
-	if (message.from.id != 20471035){
+	if (message.from.id != 20471035)
 		return;
-	}
 	connection.query('SELECT team.name, player.reborn, player.nickname, FLOOR(player.exp/10) As level FROM team, team_player, player WHERE team.id = team_player.team_id AND team_player.player_id = player.id AND team.name = "' + match[1] + '" ORDER BY player.reborn, player.exp DESC', function (err, rows, fields) {
 		if (err) throw err;
 		var mediaTeam = 0;
@@ -2263,9 +2252,8 @@ bot.onText(/^\/team (.+)/i, function (message, match) {
 });
 
 bot.onText(/^\/contrabb (.+)/i, function (message, match) {
-	if (message.from.id != 20471035){
+	if (message.from.id != 20471035)
 		return;
-	}
 	connection.query('SELECT id, base_sum, price_sum, name, value FROM item WHERE name = "' + match[1] + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var val = parseInt(rows[0].base_sum);
@@ -2892,6 +2880,7 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+),(.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p
 		oggetto = match[3];
 	}
 	
+	prezzo = prezzo.toString().replaceAll(/\./, "");
 	oggetto = oggetto.trim();
 
 	connection.query('SELECT id, account_id, market_ban, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -3163,6 +3152,7 @@ bot.onText(/^\/asta(?!p) ([^\s]+) (.+)|^\/asta(?!p)/, function (message, match) 
 		return;
 	}
 
+	prezzo = prezzo.toString().replaceAll(/\./, "");
 	nickname = nickname.replace("@", "");
 
 	connection.query('SELECT id, money, account_id, market_ban FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -3727,6 +3717,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 					else
 						quantity = parseInt(splitted[2].replace(/[^\w\s]/gi, '').trim());
 
+					price = price.toString().replaceAll(/\./, "");
 					if (isNaN(price))
 						price = 0;
 
@@ -3816,6 +3807,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 					else
 						quantity = parseInt(splitted[2].replace(/[^\w\s]/gi, '').trim());
 
+					price = price.toString().replaceAll(/\./, "");
 					if (isNaN(price))
 						price = 0;
 
@@ -4657,6 +4649,8 @@ bot.onText(/^\/crealotteriap ([^\s]+) (.+)|^\/crealotteriap$/, function (message
 		bot.sendMessage(message.chat.id, "Per inserire una lotteria a pagamento utilizza la seguente sintassi: /crealotteriap Prezzo NomeOggetto, l'oggetto viene rimosso dall'inventario appena creata la lotteria e il numero di partecipanti minimo è 5. Se la lotteria viene annullata le monete vengono restituite.", mark);
 		return;
 	}
+	
+	prezzo = prezzo.toString().replaceAll(/\./, "");
 
 	connection.query('SELECT id, account_id, market_ban, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -4901,6 +4895,8 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 
 	var price = parseInt(elements[0].replace(/\D+/gi, '').trim());
 	var buyer = elements[1].replace('@', '').trim();
+	
+	price = price.toString().replaceAll(/\./, "");
 
 	var custom_message = "";
 	if (message.reply_to_message != undefined)
@@ -5048,13 +5044,11 @@ bot.onText(/^\/offri/i, function (message) {
 
 	var elements = text.split(",");
 
-	if (Object.keys(elements).length == 1) {
+	if (Object.keys(elements).length == 1)
 		elements.push("1");
-	}
 
-	if (message.reply_to_message != undefined) {
+	if (message.reply_to_message != undefined)
 		elements.push(message.reply_to_message.from.username);
-	}
 
 	if (Object.keys(elements).length != 3) {
 		bot.sendMessage(message.from.id, "Numero parametri errato nell'offerta: " + Object.keys(elements).length + " su 3\n" + syntax);
@@ -5069,6 +5063,8 @@ bot.onText(/^\/offri/i, function (message) {
 	item = elements[0].trim();
 	price = parseInt(elements[1].replace(/[^\w\s]/gi, '').trim());
 	buyer = elements[2].replace('@', '').trim();
+	
+	price = price.toString().replaceAll(/\./, "");
 
 	if (item == "") {
 		bot.sendMessage(message.from.id, "Il parametro oggetto è obbligatorio");
@@ -7401,9 +7397,8 @@ bot.onText(/^\/prezzo (.+)|^\/prezzo/, function (message, match) {
 		return;
 	}
 
-	if (message.chat.id < 0) {
+	if (message.chat.id < 0)
 		bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
-	}
 
 	connection.query('SELECT quantity, price, (SELECT nickname FROM market_direct_history, player WHERE player.id = from_id AND item_id = (SELECT id FROM item WHERE name = "' + oggetto + '") LIMIT 1) As fromId, (SELECT nickname FROM market_direct_history, player WHERE player.id = to_id AND item_id = (SELECT id FROM item WHERE name = "' + oggetto + '") LIMIT 1) As toId, (SELECT SUM(quantity) FROM market_direct_history WHERE item_id = (SELECT id FROM item WHERE name = "' + oggetto + '")) As cnt, market_direct_history.time FROM market_direct_history WHERE item_id = (SELECT id FROM item WHERE name = "' + oggetto + '") ORDER BY id DESC', function (err, rows, fields) {
 		if (err) throw err;
@@ -7436,9 +7431,8 @@ bot.onText(/^\/totale (.+)|^\/totale/, function (message, match) {
 		return;
 	}
 
-	if (message.chat.id < 0) {
+	if (message.chat.id < 0)
 		bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
-	}
 
 	connection.query('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = (SELECT id FROM item WHERE name = "' + oggetto + '" LIMIT 1)', function (err, rows, fields) {
 		if (err) throw err;
@@ -7462,52 +7456,42 @@ bot.onText(/^\/totale (.+)|^\/totale/, function (message, match) {
 				var text = "Prezzi calcolati per " + oggetto + " (basato sulle ultime 100 transazioni):";
 
 				var len = 10;
-				if (Object.keys(rows).length < len) {
+				if (Object.keys(rows).length < len)
 					len = Object.keys(rows).length;
-				}
 
-				for (var i = 0; i < len; i++) {
+				for (var i = 0; i < len; i++)
 					m1.push([Math.round(rows[i].price)]);
-				}
 
 				connection.query('SELECT price, (SELECT nickname FROM market_direct_history, player WHERE player.id = from_id AND item_id = ' + material_2 + ' LIMIT 1) As fromId, (SELECT nickname FROM market_direct_history, player WHERE player.id = to_id AND item_id = ' + material_2 + ' LIMIT 1) As toId, (SELECT SUM(quantity) FROM market_direct_history WHERE item_id = ' + material_2 + ') As cnt FROM market_direct_history WHERE item_id = ' + material_2 + ' ORDER BY id DESC', function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0) {
-						if (Object.keys(rows).length < len) {
+						if (Object.keys(rows).length < len)
 							len = Object.keys(rows).length;
-						}
 
-						for (var i = 0; i < len; i++) {
+						for (var i = 0; i < len; i++)
 							m2.push([Math.round(rows[i].price)]);
-						}
 
 						connection.query('SELECT price, (SELECT nickname FROM market_direct_history, player WHERE player.id = from_id AND item_id = ' + material_3 + ' LIMIT 1) As fromId, (SELECT nickname FROM market_direct_history, player WHERE player.id = to_id AND item_id = ' + material_3 + ' LIMIT 1) As toId, (SELECT SUM(quantity) FROM market_direct_history WHERE item_id = ' + material_3 + ') As cnt FROM market_direct_history WHERE item_id = ' + material_3 + ' ORDER BY id DESC', function (err, rows, fields) {
 							if (err) throw err;
 							if (Object.keys(rows).length > 0) {
-								if (Object.keys(rows).length < len) {
+								if (Object.keys(rows).length < len)
 									len = Object.keys(rows).length;
-								}
 
-								for (var i = 0; i < len; i++) {
+								for (var i = 0; i < len; i++)
 									m3.push([Math.round(rows[i].price)]);
-								}
 
-								for (var i = 0; i < len; i++) {
+								for (var i = 0; i < len; i++)
 									text += "\n> " + (parseInt(m1[i]) + parseInt(m2[i]) + parseInt(m3[i])) + " §";
-								}
 
 								bot.sendMessage(message.from.id, text);
-							} else {
+							} else
 								bot.sendMessage(message.from.id, "Non ho trovato dati sufficienti per l'oggetto specificato");
-							}
 						});
-					} else {
+					} else
 						bot.sendMessage(message.from.id, "Non ho trovato dati sufficienti per l'oggetto specificato");
-					}
 				});
-			} else {
+			} else
 				bot.sendMessage(message.from.id, "Non ho trovato dati sufficienti per l'oggetto specificato");
-			}
 		});
 	});
 });

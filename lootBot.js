@@ -30,7 +30,7 @@ var wanted = 0;				// svuota event_wanted_status
 var eventTeamStory = 0;		// svuota event_team_story
 var eventFestival = 0;		// event_crafting_status con total_cnt a 0
 var specialMission = 0;		// nulla
-var checkDragonTopOn = 1;	// alla chiusura: svuota tabelle dragon_ e auto increment dummy a 100000
+var checkDragonTopOn = 0;	// alla chiusura: svuota tabelle dragon_ e auto increment dummy a 100000
 var gnomorra = 0;			// svuota tabella event_gnomorra
 
 // Festività o disattivati
@@ -2545,7 +2545,7 @@ function lacrima(player_id, chat_id) {
 					connection.query('INSERT INTO tear (player_id, type) VALUES (' + player_id + ',1)', function (err, rows, fields) {
 						if (err) throw err;
 					});
-					bot.sendMessage(chat_id, "Hai raggiunto il livello 300!\nPer questo hai ottenuto una *Lacrima dell'Immortale* come ricompensa!\nOra crea l'oggetto finale che preferisci e ottieni 2 artefatti per continuare con la rinascita!", mark);
+					bot.sendMessage(chat_id, "Hai ottenuto una *Lacrima dell'Immortale* come ricompensa per il tuo impegno!", mark);
 					console.log("Lacrima 1 consegnata a " + player_id);
 				}
 			});
@@ -2564,7 +2564,7 @@ function lacrima2(player_id, chat_id) {
 					connection.query('INSERT INTO tear (player_id, type) VALUES (' + player_id + ',2)', function (err, rows, fields) {
 						if (err) throw err;
 					});
-					bot.sendMessage(chat_id, "Hai raggiunto il livello 500!\nPer questo hai ottenuto una *Lacrima del Rinnegato* come ricompensa!", mark);
+					bot.sendMessage(chat_id, "Hai ottenuto una *Lacrima del Rinnegato* come ricompensa per il tuo impegno!", mark);
 					console.log("Lacrima 2 consegnata a " + player_id);
 				};
 			});
@@ -2583,7 +2583,7 @@ function lacrima3(player_id, chat_id) {
 					connection.query('INSERT INTO tear (player_id, type) VALUES (' + player_id + ',3)', function (err, rows, fields) {
 						if (err) throw err;
 					});
-					bot.sendMessage(chat_id, "Hai raggiunto il livello 900!\nPer questo hai ottenuto una *Lacrima dell'Impavido* come ricompensa!", mark);
+					bot.sendMessage(chat_id, "Hai ottenuto una *Lacrima dell'Impavido* come ricompensa per il tuo impegno!", mark);
 					console.log("Lacrima 3 consegnata a " + player_id);
 				};
 			})
@@ -7177,8 +7177,11 @@ bot.onText(/dungeon/i, function (message) {
 		var boost_mission = rows[0].boost_mission;
 
 		var gender_text = "a";
-		if (rows[0].gender == "M")
+		var gender_text_g = "esploratrice";
+		if (rows[0].gender == "M"){
 			gender_text = "o";
+			gender_text_g = "esploratore";
+		}
 
 		if (rows[0].holiday == 1) {
 			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back)
@@ -10972,7 +10975,7 @@ bot.onText(/dungeon/i, function (message) {
 																	}
 																};
 
-																bot.sendMessage(message.chat.id, "Non fai che un passo, una voce mite ma ferma ti paralizza:\n«Gli uomini» dice «sono artefici del proprio destino: possono commettere sempre gli stessi errori, possono fuggire costantemente da ciò che desiderano, e che magari la vita gli offre in modo generoso; oppure possono abbandonarsi e lottare per i propri sogni accettando il fatto che si presentano spesso nel momento giusto...\nAd esempio, scambieresti il tuo *" + item1_name + "* per *" + item2_name + "*?", dOptions).then(function () {
+																bot.sendMessage(message.chat.id, "Non fai che un passo, una voce mite ma ferma ti paralizza:\n«Gli uomini» dice «sono artefici del proprio destino: possono commettere sempre gli stessi errori, possono fuggire costantemente da ciò che desiderano, e che magari la vita gli offre in modo generoso; oppure possono abbandonarsi e lottare per i propri sogni accettando il fatto che si presentano spesso nel momento giusto...\nL'uomo prosegue: «Io sono l'Alchimista dell'Ovest e ti chiedo, giovane " + gender_text_g + ": scambieresti il tuo *" + item1_name + "* per *" + item2_name + "*?»", dOptions).then(function () {
 																	answerCallbacks[message.chat.id] = function (answer) {
 																		if (answer.text == "Si") {
 
@@ -13987,7 +13990,7 @@ bot.onText(/^Incanta|Torna all'incantamento/i, function (message) {
 	if (message.text == "Incantaspade")
 		return;
 
-	connection.query('SELECT account_id, holiday, id, gems, class, reborn, exp, weapon, weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, weapon_enchant_end, weapon2_enchant_end, weapon3_enchant_end, weapon_enchant_bonus, weapon2_enchant_bonus, weapon3_enchant_bonus FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, holiday, id, gems, class, reborn, exp, weapon, weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, weapon_enchant_end, weapon2_enchant_end, weapon3_enchant_end, weapon_enchant_bonus, weapon2_enchant_bonus, weapon3_enchant_bonus, power_weapon, power_armor, power_shield FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -14010,6 +14013,9 @@ bot.onText(/^Incanta|Torna all'incantamento/i, function (message) {
 		var w1 = parseInt(rows[0].weapon);
 		var w2 = parseInt(rows[0].weapon2);
 		var w3 = parseInt(rows[0].weapon3);
+		var p1 = rows[0].power_weapon;
+		var p2 = rows[0].power_armor;
+		var p3 = rows[0].power_shield;
 		var e1 = rows[0].weapon_enchant;
 		var e2 = rows[0].weapon2_enchant;
 		var e3 = rows[0].weapon3_enchant;
@@ -14255,7 +14261,7 @@ function setEnchant(message, player_id, type, rand, class_id, reborn, week = 0) 
 
 		var extra = "";
 		extra = ", inoltre ora può utilizzare il potere del mana *" + magicN + "*!";
-		extra += "\nL'effetto terminerà  alle " + short_date;
+		extra += "\nL'effetto terminerà alle " + short_date;
 
 		var kbBack = {
 			parse_mode: "Markdown",
@@ -16139,7 +16145,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 
 			if (player_id != 1){
 				if (checkDragonTopOn == 0) {
-					bot.sendMessage(message.chat.id, "\nProssima stagione: 12 dicembre 12:00 - 19 dicembre 12:00\nSe hai partecipato alla stagione precedente, riceverai i premi a breve!", back_html);
+					bot.sendMessage(message.chat.id, "\nProssima stagione: 16 gennaio 12:00 - 23 gennaio 12:00\nSe hai partecipato alla stagione precedente, riceverai i premi a breve!", back_html);
 					return;
 				}
 			}
@@ -16211,7 +16217,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 			connection.query('SELECT id, top_id, enemy_dragon_id, wait_time, no_match_time, is_dummy FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
-				var finishD = new Date("2018-12-19 12:00:00");
+				var finishD = new Date("2019-01-23 12:00:00");
 				var finish_date = addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes()) + " del " + addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + "/" + finishD.getFullYear();
 
 				if (Object.keys(rows).length == 0) {
@@ -23643,7 +23649,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			player_text += "\n> " + player[i].nickname + " non recupera salute";
 																		else {
 																			
-																			setAchievement(player[i].chat_id, player[i].id, 25, potSum);
+																			setAchievement(player[i].chat_id, player[i].id, 35, potSum);
 																			
 																			if (player_life <= player_total_life*0.2)
 																				setAchievement(player[i].chat_id, player[i].id, 20, 1);
@@ -29873,7 +29879,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 									};
 								});
 							} else if (answer.text.toLowerCase().indexOf("accetta") != -1) {
-								bot.sendMessage(message.chat.id, "Sei sicuro di voler vendere il tuo " + name + " per " + formatNumber(price) + " §?", kbYesNo).then(function () {
+								bot.sendMessage(message.chat.id, "Sei sicuro di voler vendere " + name + " per " + formatNumber(price) + " §?", kbYesNo).then(function () {
 									answerCallbacks[message.chat.id] = function (answer) {
 										if (answer.text.toLowerCase() == "si") {
 
@@ -37432,7 +37438,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 							if (err) throw err;
 
 							if (rows[0].moon_coin < 2) {
-								bot.sendMessage(message.chat.id, "Non hai abbastanza 🌕, te ne servono 2 per girare la ruota, puoi trovarle durante le missioni o ottenerle attraverso le donazioni!", kbBack);
+								bot.sendMessage(message.chat.id, "Non hai abbastanza 🌕, te ne servono 2 per girare la ruota, al momento ne possiedi " + rows[0].moon_coin + " ma puoi trovarle durante le missioni o ottenerle attraverso le donazioni!", kbBack);
 								return;
 							}
 
@@ -39716,12 +39722,16 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 									return;
 								}
 
-								bot.sendMessage(message.chat.id, "Inserisci le <b>posizioni</b> delle Rune che vuoi cambiare, separate da una virgola. Dopo 5 minuti il tuo gnomo tornerà con le nuove rune.", kbNum).then(function () {
+								bot.sendMessage(message.chat.id, "Inserisci le <b>posizioni</b> delle Rune che vuoi cambiare, separate da una virgola o scritti uno vicino all'altro. Dopo 5 minuti il tuo gnomo tornerà con le nuove rune.", kbNum).then(function () {
 									answerCallbacks[message.chat.id] = function (answer) {
 										if ((answer.text == "Torna al rifugio") || (answer.text == "Torna dallo gnomo"))
 											return;
 
-										var numbers = answer.text.trim().split(",").map(Number);
+										var numbers;
+										if (answer.text.indexOf(",") != -1)
+											numbers = answer.text.trim().split(",").map(Number);
+										else
+											numbers = answer.text.trim().split("").map(Number);
 										var len = Object.keys(numbers).length;
 
 										if (len < 1) {
@@ -46474,7 +46484,9 @@ function setFinishedMission(element, index, array) {
 									});
 								}
 
-								if ((boost_id == 2) || (boost_id == 4) || (boost_id == 5) || (boost_id == 7))
+								if ((boost_id == 2) && (chest_id != 7))	// solo se non U
+									setBoost(element.id, boost_mission, 2);
+								else if ((boost_id == 4) || (boost_id == 5) || (boost_id == 7))
 									setBoost(element.id, boost_mission, boost_id);
 
 								if ((snowHouse == 1) && (snowHouseEnd == 0)){
