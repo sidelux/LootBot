@@ -1426,46 +1426,6 @@ CREATE TABLE `event_mana_zone` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `event_robot_list`
---
-
-DROP TABLE IF EXISTS `event_robot_list`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `event_robot_list` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `title` varchar(64) NOT NULL,
-  `text` mediumtext NOT NULL,
-  `r1` varchar(255) NOT NULL,
-  `r2` varchar(255) NOT NULL,
-  `r3` varchar(255) NOT NULL,
-  `p1` int(11) NOT NULL DEFAULT '0',
-  `p2` int(11) NOT NULL DEFAULT '0',
-  `p3` int(11) NOT NULL DEFAULT '0',
-  `item_id` int(11) DEFAULT '0',
-  `money` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `event_robot_status`
---
-
-DROP TABLE IF EXISTS `event_robot_status`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `event_robot_status` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `player_id` int(11) NOT NULL,
-  `phase` int(11) NOT NULL DEFAULT '0',
-  `craft_time` timestamp NULL DEFAULT NULL,
-  `wait_time` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `event_snowball_list`
 --
 
@@ -3445,4 +3405,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-12-21 15:00:10
+-- Dump completed on 2019-01-15 12:00:10
