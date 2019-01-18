@@ -3970,11 +3970,14 @@ function mainMenu(message) {
 															msgtext = msgtext + "\n🍹 Bevanda Furia attiva per " + boost_end + " attacc" + plur;
 													}
 													if (boost_id == 7) {
-														var plur = "i";
-														if (boost_end == 1)
-															plur = "e";
+														var plur = "e";
+														var plur2 = "i";
+														if (boost_end == 1){
+															plur = "a"
+															plur2 = "e";
+														}
 														if (boost_end > 0)
-															msgtext = msgtext + "\n🍹 Bevanda Bottino attiva per " + boost_end + " mission" + plur;
+															msgtext = msgtext + "\n🍹 Bevanda Bottino attiva per " + boost_end + " stanz" + plur + " dungeon/mission" + plur2;
 													}
 													if (boost_id == 8) {
 														var plur = "e";
@@ -20615,7 +20618,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 											selected_name = rows[i].name;
 											selected_level = rows[i].level;
 										}else
-											text += "> " + rows[i].nickname + "\n";
+											text += "> " + rows[i].nickname + " - " + classSym(rows[i].class) + " " + Math.floor(rows[i].exp/10) + " " + rebSym(rows[i].reborn) + "\n";
 									}else
 										text += "<i>Nessun membro in questa postazione</i>\n";
 								}
@@ -46590,7 +46593,7 @@ function setFinishedMission(element, index, array) {
 								m = 3+mplus;
 								connection.query('UPDATE player SET boost_id = 7, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
 									if (err) throw err;
-									bot.sendMessage(chat_id, "Hai trovato una Bevanda Bottino! Per " + m + " missioni e/o dungeon fornisce x10 monete.");
+									bot.sendMessage(chat_id, "Hai trovato una Bevanda Bottino! Per " + m + " missioni e/o stanze dungeon fornisce x10 monete.");
 								});
 							} else if (rand2 == 7) {
 								if (reborn > 1){
