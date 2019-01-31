@@ -8607,7 +8607,7 @@ bot.onText(/^\/spia/, function (message) {
 
 	var player = message.reply_to_message.from.username;
 
-	connection.query('SELECT account_id, holiday, spy_count, heist_protection, account_id, id, exp, weapon, house_id, money FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, holiday, spy_count, heist_protection, account_id, id, exp, weapon, house_id, money, spy_description FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -8635,6 +8635,10 @@ bot.onText(/^\/spia/, function (message) {
 		var level = Math.floor(rows[0].exp / 10);
 		var power = rows[0].weapon;
 		var myhouse = rows[0].house_id;
+		
+		var spy_description = "";
+		if (rows[0].spy_description != null)
+			spy_description = "\nPortano con sè un messaggio su una pergamena: <i>" + rows[0].spy_description + "</i>";
 
 		if (rows[0].money < 500) {
 			bot.sendMessage(account_id, "Non hai abbastanza monete");
@@ -8679,13 +8683,13 @@ bot.onText(/^\/spia/, function (message) {
 
 				if (message.from.id != 20471035) {
 					if (house_id == 1) {
-						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno ha spiato il tuo rifugio!");
+						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno ha spiato il tuo rifugio!" + spy_description);
 					} else if (house_id == 2) {
-						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno *di livello " + level + "* ha spiato il tuo rifugio!", mark);
+						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno *di livello " + level + "* ha spiato il tuo rifugio!" + spy_description, mark);
 					} else if ((house_id == 3) || (house_id == 4)) {
-						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che *un livello " + level + ", con +" + power + " di danno* ha spiato il tuo rifugio!", mark);
+						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che *un livello " + level + ", con +" + power + " di danno* ha spiato il tuo rifugio!" + spy_description, mark);
 					} else if (house_id >= 5) {
-						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che <b>" + message.from.username + "</b> ha spiato il tuo rifugio!", html);
+						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che <b>" + message.from.username + "</b> ha spiato il tuo rifugio!" + spy_description, html);
 					}
 				}
 			} else {

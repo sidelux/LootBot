@@ -618,9 +618,9 @@ CREATE TABLE `config` (
   `global_eventwait` int(11) NOT NULL DEFAULT '0' COMMENT 'Raccogliendo dati',
   `global_eventhide` int(11) NOT NULL DEFAULT '0' COMMENT 'Cap non visibile',
   `global_cap` bigint(32) NOT NULL DEFAULT '1000',
-  `global_item1` int(11) NOT NULL DEFAULT '0',
+  `global_item1` int(11) NOT NULL DEFAULT '0' COMMENT 'Più costosa',
   `global_item2` int(11) NOT NULL DEFAULT '0',
-  `global_item3` int(11) NOT NULL,
+  `global_item3` int(11) NOT NULL COMMENT 'Meno costosa',
   `epic_var_record` int(11) NOT NULL DEFAULT '0',
   `epic_var_record_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `food` int(11) NOT NULL DEFAULT '0',
@@ -2631,6 +2631,7 @@ CREATE TABLE `player` (
   `custom_name_h` varchar(32) DEFAULT NULL,
   `player_description` varchar(512) DEFAULT NULL,
   `heist_description` varchar(512) DEFAULT NULL,
+  `spy_description` varchar(512) DEFAULT NULL,
   `player_custom_nickname` varchar(32) DEFAULT NULL,
   `lore_page` int(11) NOT NULL DEFAULT '0',
   `lore_mission` int(11) NOT NULL DEFAULT '0',
@@ -3407,4 +3408,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-01-31  9:00:12
+-- Dump completed on 2019-01-31 15:00:10
