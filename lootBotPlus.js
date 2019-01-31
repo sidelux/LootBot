@@ -1206,7 +1206,7 @@ bot.onText(/^\/gruppi/, function (message) {
 																						"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
 																						"<a href='https://t.me/joinchat/AVqFykBMfmvrULAUQv-MmQ'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
 																						"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
-																						"<a href='https://t.me/joinchat/AAAAAEDH8FbelcVFTmw-mQ'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
+																						"<a href='https://t.me/joinchat/AThc-0DH8FaFEpYpLg-rOA'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
 																						"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
 																						"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
 																						"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
@@ -3728,12 +3728,12 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 
 			var len = Object.keys(elements).length;
 			if (len > 10) {
-				bot.sendMessage(message.chat.id, "Massimo 10 oggetti grazie!");
+				bot.sendMessage(message.chat.id, "Massimo 10 oggetti nel negozio, stai provando ad inserirne " + len);
 				return;
 			}
 
 			if (((Object.keys(rows).length + len) > 10) && (func == "add")) {
-				bot.sendMessage(message.chat.id, "Massimo 10 oggetti grazie!");
+				bot.sendMessage(message.chat.id, "Massimo 10 oggetti nel negozio, al momento ce ne sono " + Object.keys(rows).length);
 				return;
 			}
 
@@ -5308,7 +5308,7 @@ bot.onText(/^\/offri/i, function (message) {
 
 								connection.query('SELECT chat_id, id, account_id FROM player WHERE nickname = "' + buyer + '"', function (err, rows, fields) {
 									if (err) throw err;
-									bot.sendMessage(rows[0].account_id, message.from.username + " vuole completare con te questa vendita:\n" +
+									bot.sendMessage(rows[0].account_id, message.from.username + " vuole vendere:\n" +
 													"> " + item + " per " + formatNumber(price) + " §\n" +
 													"Usa /accettav o /rifiutav");
 									var toId = rows[0].id;
@@ -5561,7 +5561,7 @@ bot.onText(/^\/scambia/i, function (message) {
 								connection.query('SELECT chat_id, account_id, id, nickname FROM player WHERE nickname = "' + buyer + '"', function (err, rows, fields) {
 									if (err) throw err;
 
-									bot.sendMessage(rows[0].account_id, message.from.username + " vuole completare con te questo scambio:\n" +
+									bot.sendMessage(rows[0].account_id, message.from.username + " vuole scambiare:\n" +
 													"> " + quantity + "x " + item1 + " per " + quantity + "x " + item2 + "\n" +
 													"Usa /accettas o /rifiutas");
 									var buyer_id = rows[0].id;

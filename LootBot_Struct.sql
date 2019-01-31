@@ -1029,6 +1029,7 @@ CREATE TABLE `dungeon_list` (
   `notified` int(11) NOT NULL DEFAULT '0',
   `creator_id` int(11) NOT NULL DEFAULT '0',
   `creator_comment` varchar(1024) DEFAULT NULL,
+  `cursed` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`) USING BTREE,
   KEY `creator_id` (`creator_id`)
@@ -2629,6 +2630,7 @@ CREATE TABLE `player` (
   `custom_name3` varchar(32) DEFAULT NULL,
   `custom_name_h` varchar(32) DEFAULT NULL,
   `player_description` varchar(512) DEFAULT NULL,
+  `heist_description` varchar(512) DEFAULT NULL,
   `player_custom_nickname` varchar(32) DEFAULT NULL,
   `lore_page` int(11) NOT NULL DEFAULT '0',
   `lore_mission` int(11) NOT NULL DEFAULT '0',
@@ -3405,4 +3407,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-01-28  9:00:10
+-- Dump completed on 2019-01-31  9:00:12
