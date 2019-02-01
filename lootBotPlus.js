@@ -323,6 +323,10 @@ bot.on("inline_query", function (query) {
 		iKeys.push([{
 			text: "♻️ Aggiorna",
 			callback_data: "update:" + code.toString()
+		},
+		{
+			text: "🗑 Elimina",
+			callback_data: "delete:" + code.toString()
 		}]);
 
 		connection.query('SELECT nickname FROM player WHERE id = ' + rows[0].player_id, function (err, rows, fields) {
@@ -453,12 +457,12 @@ bot.onText(/^\/comandicommercio/, function (message) {
 
 bot.onText(/^\/comanditeam/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per i team*\n" +
-					"/chiamaparty - Invia un messaggio taggando tutti i membri del proprio party (escluso il chiamante)\n" +
-					"/chiamaparty<numero> - Invia un messaggio taggando tutti i membri del party <numero> (solo per amministratori)\n" +
-					"/votaparty - Invia un messaggio taggando solo i membri del proprio party che devono ancora votare\n" +
-					"/incremento - Invia un messaggio taggando solo i membri del proprio team che devono ancora attivare l'incremento nell'assalto\n" +
+					"/chiamaparty - Invia un messaggio taggando tutti i membri del proprio party (escluso il chiamante) anche in privato\n" +
+					"/chiamaparty<numero> - Invia un messaggio taggando tutti i membri del party <numero> (solo per amministratori) anche in privato\n" +
+					"/votaparty - Invia un messaggio taggando solo i membri del proprio party che devono ancora votare anche in privato\n" +
+					"/incremento - Invia un messaggio taggando solo i membri del proprio team che devono ancora attivare l'incremento nell'assalto anche in privato\n" +
 					"/chiedoaiuto - Invia un messaggio taggando solo i membri disponibili ad uno scambio nel dungeon\n" +
-					"/chiamateam - Invia un messaggio taggando tutti i membri del proprio team", mark);
+					"/chiamateam - Invia un messaggio taggando tutti i membri del proprio team anche in privato", mark);
 });
 
 bot.onText(/^\/comandigenerali/, function (message) {
@@ -1301,13 +1305,15 @@ bot.onText(/^\/chiamaparty( .+)?$/, function (message, match) {
 				return;	
 			}
 
-			connection.query('SELECT P.nickname FROM mission_team_party_player T, player P WHERE T.player_id = P.id AND T.party_id = ' + party_id + ' AND T.team_id = ' + team_id + ' AND P.id != ' + player_id, function (err, rows, fields) {
+			connection.query('SELECT P.nickname, P.chat_id FROM mission_team_party_player T, player P WHERE T.player_id = P.id AND T.party_id = ' + party_id + ' AND T.team_id = ' + team_id + ' AND P.id != ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				var nicklist = "";
 
-				for (i = 0; i < Object.keys(rows).length; i++)
+				for (i = 0; i < Object.keys(rows).length; i++){
 					nicklist += "@" + rows[i].nickname + " ";
+					bot.sendMessage(rows[i].chat_id, "<b>" + message.from.username + "</b> del tuo party ti sta chiamando a rapporto!", html);
+				}
 
 				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> chiama i suoi compagni di party!\n" + nicklist, html);
 			});
@@ -1336,13 +1342,15 @@ bot.onText(/^\/chiamateam$/, function (message, match) {
 		var team_id = rows[0].team_id;
 		var player_id = rows[0].player_id;
 
-		connection.query('SELECT P.nickname FROM team_player T, player P WHERE T.player_id = P.id AND T.team_id = ' + team_id + ' AND P.id != ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT P.nickname, P.chat_id FROM team_player T, player P WHERE T.player_id = P.id AND T.team_id = ' + team_id + ' AND P.id != ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			var nicklist = "";
 
-			for (i = 0; i < Object.keys(rows).length; i++)
+			for (i = 0; i < Object.keys(rows).length; i++){
 				nicklist += "@" + rows[i].nickname + " ";
+				bot.sendMessage(rows[i].chat_id, "<b>" + message.from.username + "</b> del tuo team ti chiama a rapporto!", html);
+			}
 
 			bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> chiama i suoi compagni di team!\n" + nicklist, html);
 		});
@@ -1394,13 +1402,15 @@ bot.onText(/^\/chiamaparty([0-9])( .+)?$/, function (message, match) {
 				return;	
 			}
 
-			connection.query('SELECT P.nickname FROM mission_team_party_player T, player P WHERE T.player_id = P.id AND T.party_id = ' + party_id + ' AND T.team_id = ' + team_id, function (err, rows, fields) {
+			connection.query('SELECT P.nickname, P.chat_id FROM mission_team_party_player T, player P WHERE T.player_id = P.id AND T.party_id = ' + party_id + ' AND T.team_id = ' + team_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				var nicklist = "";
 
-				for (i = 0; i < Object.keys(rows).length; i++)
+				for (i = 0; i < Object.keys(rows).length; i++){
 					nicklist += "@" + rows[i].nickname + " ";
+					bot.sendMessage(rows[i].chat_id, "<b>" + message.from.username + "</b> del tuo party ti sta chiamando a rapporto!", html);
+				}
 
 				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b>" + sym + " chiama i componenti del party " + party_id + "!\n" + nicklist, html);
 			});
@@ -1443,7 +1453,7 @@ bot.onText(/^\/votaparty$/, function (message, match) {
 				return;
 			}
 
-			connection.query('SELECT P.nickname FROM mission_team_party_player T, player P WHERE T.player_id = P.id AND T.party_id = ' + party_id + ' AND T.team_id = ' + team_id + ' AND P.id != ' + player_id + ' AND answ_id = 0', function (err, rows, fields) {
+			connection.query('SELECT P.nickname, P.chat_id FROM mission_team_party_player T, player P WHERE T.player_id = P.id AND T.party_id = ' + party_id + ' AND T.team_id = ' + team_id + ' AND P.id != ' + player_id + ' AND answ_id = 0', function (err, rows, fields) {
 				if (err) throw err;
 
 				var nicklist = "";
@@ -1453,8 +1463,10 @@ bot.onText(/^\/votaparty$/, function (message, match) {
 					return;
 				}
 
-				for (i = 0; i < Object.keys(rows).length; i++)
+				for (i = 0; i < Object.keys(rows).length; i++){
 					nicklist += "@" + rows[i].nickname + " ";
+					bot.sendMessage(rows[i].chat_id, "<b>" + message.from.username + "</b> ti incita a votare per l'incarico!", html);
+				}
 
 				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> incita i suoi compagni del Party " + party_id + " a votare!\n" + nicklist, html);
 			});
@@ -1496,7 +1508,7 @@ bot.onText(/^\/incremento$/, function (message, match) {
 				return;
 			}
 
-			connection.query('SELECT P.nickname FROM assault_place_player_id A LEFT JOIN assault_place_miniboost M ON A.player_id = M.player_id, player P WHERE A.player_id = P.id AND A.place_id NOT IN (1,2) AND M.player_id IS NULL AND P.id != ' + player_id + ' AND A.team_id = ' + team_id, function (err, rows, fields) {
+			connection.query('SELECT P.nickname, P.chat_id FROM assault_place_player_id A LEFT JOIN assault_place_miniboost M ON A.player_id = M.player_id, player P WHERE A.player_id = P.id AND A.place_id NOT IN (1,2) AND M.player_id IS NULL AND P.id != ' + player_id + ' AND A.team_id = ' + team_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				var nicklist = "";
@@ -1506,6 +1518,9 @@ bot.onText(/^\/incremento$/, function (message, match) {
 					bot.sendMessage(message.chat.id, "Non manca nessun compagno!");
 					return;
 				}
+				
+				for (i = 0; i < Object.keys(rows).length; i++)
+					bot.sendMessage(rows[i].chat_id, "<b>" + message.from.username + "</b> ti incita ad attivare l'incremento nell'assalto!", html);
 				
 				if (Object.keys(rows).length < 5){
 					for (i = 0; i < Object.keys(rows).length; i++)
@@ -4289,7 +4304,7 @@ bot.on('callback_query', function (message) {
 		if (shop_id.indexOf(":") == -1)
 			updateShop(message, shop_id, 1);
 
-		if ((shop_id.indexOf(":") == -1) || (shop_id.indexOf("all") != -1)) {
+		if ((shop_id.indexOf(":") == -1) || (shop_id.indexOf("all") != -1) || (shop_id.indexOf("delete") != -1)) {
 			if (index == -1) {
 				check.push(message.from.id);
 				bot.answerCallbackQuery(message.id, {text: 'Premi ancora per confermare'});
@@ -4324,6 +4339,30 @@ bot.on('callback_query', function (message) {
 			if (split[0] == "update"){
 				updateShop(message, code);
 				check.splice(index, 1);
+			}else if (split[0] == "delete"){
+				connection.query('SELECT player_id FROM public_shop WHERE code = ' + code, function (err, rows, fields) {
+					if (err) throw err;
+
+					if (Object.keys(rows).length == 0){
+						bot.answerCallbackQuery(message.id, {text: "Il codice negozio non esiste"});
+						check.splice(index, 1);
+						return;
+					}
+					
+					if (player_id != rows[0].player_id){
+						bot.answerCallbackQuery(message.id, {text: "Puoi cancellare solo i negozi che hai creato tu"});
+						check.splice(index, 1);
+						return;
+					}
+					
+					connection.query('DELETE FROM public_shop WHERE code = ' + code, function (err, rows, fields) {
+						if (err) throw err;
+						bot.answerCallbackQuery(message.id, {text: "Negozio eliminato!"});
+						
+						updateShop(message, code);
+						check.splice(index, 1);
+					});
+				});
 			}else if (split[0] == "all"){
 				connection.query('SELECT SUM(quantity) As cnt FROM public_shop WHERE code = ' + code, function (err, rows, fields) {
 					if (err) throw err;
@@ -4664,6 +4703,10 @@ function updateShop(message, code, isId){
 		iKeys.push([{
 			text: "♻️ Aggiorna",
 			callback_data: "update:" + code.toString()
+		},
+		{
+			text: "🗑 Elimina",
+			callback_data: "delete:" + code.toString()
 		}]);
 
 		var d = new Date();

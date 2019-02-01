@@ -24242,65 +24242,58 @@ bot.onText(/cura completa/i, function (message) {
 			return;
 		}
 
-		bot.sendMessage(message.chat.id, "Sicuro di volerti curare completamente?", kbYesNo).then(function () {
-			answerCallbacks[message.chat.id] = function (answer) {
-				if (answer.text == "Torna al menu")
-					return;
+		connection.query('SELECT cons_val FROM item WHERE id IN (92,93,94) ORDER BY id', function (err, rows, fields) {
+			if (err) throw err;
+			var perc1 = rows[0].cons_val/100;
+			var perc2 = rows[1].cons_val/100;
+			var perc3 = rows[2].cons_val/100;
 
-				connection.query('SELECT cons_val FROM item WHERE id IN (92,93,94) ORDER BY id', function (err, rows, fields) {
-					if (err) throw err;
-					var perc1 = rows[0].cons_val/100;
-					var perc2 = rows[1].cons_val/100;
-					var perc3 = rows[2].cons_val/100;
+			var pot1 = 0;
+			var pot2 = 0;
+			var pot3 = 0;
+			while (player_life < player_total_life){
+				if ((player_life+Math.round(player_total_life*perc3) <= player_total_life) && (getItemCnt(player_id, 94)-pot3 > 0)){
+					player_life += Math.round(player_total_life*perc3);
+					pot3++;
+				}else if ((player_life+Math.round(player_total_life*perc2) <= player_total_life) && (getItemCnt(player_id, 93)-pot2 > 0)){
+					player_life += Math.round(player_total_life*perc2);
+					pot2++;
+				}else if (getItemCnt(player_id, 92)-pot1 > 0){
+					player_life += Math.round(player_total_life*perc1);
+					pot1++;
+				}else
+					break;
+			}
 
-					var pot1 = 0;
-					var pot2 = 0;
-					var pot3 = 0;
-					while (player_life < player_total_life){
-						if ((player_life+Math.round(player_total_life*perc3) <= player_total_life) && (getItemCnt(player_id, 94)-pot3 > 0)){
-							player_life += Math.round(player_total_life*perc3);
-							pot3++;
-						}else if ((player_life+Math.round(player_total_life*perc2) <= player_total_life) && (getItemCnt(player_id, 93)-pot2 > 0)){
-							player_life += Math.round(player_total_life*perc2);
-							pot2++;
-						}else if (getItemCnt(player_id, 92)-pot1 > 0){
-							player_life += Math.round(player_total_life*perc1);
-							pot1++;
-						}else
-							break;
-					}
+			var text = "";
+			if (pot1 > 0){
+				setAchievement(message.chat.id, player_id, 35, pot1);
+				text += "\n> *" + pot1 + "*x Pozione Piccola";
+			}
+			if (pot2 > 0){
+				setAchievement(message.chat.id, player_id, 35, pot2);
+				text += "\n> *" + pot2 + "*x Pozione Media";
+			}
+			if (pot3 > 0){
+				setAchievement(message.chat.id, player_id, 35, pot3);
+				text += "\n> *" + pot3 + "*x Pozione Grande";
+			}
 
-					var text = "";
-					if (pot1 > 0){
-						setAchievement(message.chat.id, player_id, 35, pot1);
-						text += "\n> *" + pot1 + "*x Pozione Piccola";
-					}
-					if (pot2 > 0){
-						setAchievement(message.chat.id, player_id, 35, pot2);
-						text += "\n> *" + pot2 + "*x Pozione Media";
-					}
-					if (pot3 > 0){
-						setAchievement(message.chat.id, player_id, 35, pot3);
-						text += "\n> *" + pot3 + "*x Pozione Grande";
-					}
+			delItem(player_id, 92, pot1);
+			delItem(player_id, 93, pot2);
+			delItem(player_id, 94, pot3);
 
-					delItem(player_id, 92, pot1);
-					delItem(player_id, 93, pot2);
-					delItem(player_id, 94, pot3);
+			if (player_life > player_total_life)
+				player_life = player_total_life;
 
-					if (player_life > player_total_life)
-						player_life = player_total_life;
+			connection.query('UPDATE player SET life = ' + player_life + ' WHERE id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
 
-					connection.query('UPDATE player SET life = ' + player_life + ' WHERE id = ' + player_id, function (err, rows, fields) {
-						if (err) throw err;
+				if (player_life <= player_total_life*0.2)
+					setAchievement(message.chat.id, player_id, 20, 1);
 
-						if (player_life <= player_total_life*0.2)
-							setAchievement(message.chat.id, player_id, 20, 1);
-
-						bot.sendMessage(message.chat.id, "Hai recuperato la salute (" + formatNumber(player_life) + " hp) utilizzando:" + text, kbBack);
-					});
-				});
-			};
+				bot.sendMessage(message.chat.id, "Hai recuperato la salute (" + formatNumber(player_life) + " hp) utilizzando:" + text, kbBack);
+			});
 		});
 	});
 });
@@ -28405,9 +28398,8 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 	connection.query('SELECT id, class, reborn, holiday, account_id, travel_id, cave_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		if (Object.keys(rows).length == 0) {
+		if (Object.keys(rows).length == 0)
 			return;
-		}
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -28479,7 +28471,7 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 					var time_start = new Date(rows[0].time_start);
 					var time_creation = time_start.setHours(time_start.getHours());
 					var now = new Date();
-					var diff = Math.round(((now - time_creation) / 1000) / 60);
+					var diff = Math.round(((now - time_creation) / 1000) / 60);	// minuti
 					diff = Math.abs(diff);
 
 					connection.query('SELECT rate, mana_name, type FROM event_mana_zone WHERE id = ' + rows[0].zone_id, function (err, rows, fields) {
@@ -28488,7 +28480,8 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 						var rate = rows[0].rate;
 						var name = rows[0].mana_name;
 						var type = rows[0].type;
-						var quantity = Math.floor(diff / 60 * rate);
+						var hours = diff / 60;
+						var quantity = Math.floor(hours * rate);
 
 						if ((class_id == 2) && (reborn > 1))
 							quantity += quantity * 0.3;
@@ -28511,8 +28504,13 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 
 						connection.query('SELECT mana.name, chat_id, nickname, player_id, rate, type, ROUND(TIMESTAMPDIFF(MINUTE,time_start,NOW())/60*rate,0) As quantity FROM event_mana_status, event_mana_zone, player, mana WHERE mana.id = event_mana_zone.type AND player.id = player_id AND event_mana_status.time_start IS NOT NULL AND event_mana_status.zone_id = event_mana_zone.id AND player.id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
+							
+							hours = Math.round(hours);
+							var plur = "a";
+							if (hours > 1)
+								plur = "e";
 
-							bot.sendMessage(message.chat.id, "Attualmente stai estraendo da una miniera, vuoi interrompere e ottenere " + quantity + " Mana " + name + "?", mYesNo2).then(function () {
+							bot.sendMessage(message.chat.id, "Stai effettuato l'estrazione di Mana " + name + " da " + hours + " or" + plur + ", vuoi interrompere ottenendo " + quantity + " unità di mana grezzo?", mYesNo2).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text.toLowerCase() == "si") {
 										connection.query('SELECT zone_id FROM event_mana_status WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -28526,7 +28524,10 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 											var mana_type = 'mana_' + type;
 											connection.query('UPDATE event_mana_status SET ' + mana_type + ' = ' + mana_type + ' + ' + quantity + ', zone_id = 0, time_start = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
-												bot.sendMessage(message.chat.id, "Hai ricevuto " + quantity + " Mana " + name + "!", mBack);
+												if (quantity > 0)
+													bot.sendMessage(message.chat.id, "Hai ricevuto " + quantity + " Mana " + name + "!", mBack);
+												else
+													bot.sendMessage(message.chat.id, "Non hai raccolto mana!", mBack);
 											});
 										});
 									}
@@ -37203,9 +37204,9 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 														});
 
 														setAchievement(message.chat.id, player_id, 10, craftexp);
-														setAchievement(message.chat.id, player_id, 12, quantity, result_rarity_id);
+														setAchievement(message.chat.id, player_id, 12, quantity, matR);	// id oggetto
 														if (result_cons == 1)
-															setAchievement(message.chat.id, player_id, 68, quantity, result_rarity_id);
+															setAchievement(message.chat.id, player_id, 68, quantity, result_rarity_id);	// rarità
 														var today = new Date();
 														if (((today.getDay() == 6) || (today.getDay() == 0)) && (eventFestival == 1))
 															checkFestival(message.chat.id, player_id, matR);
