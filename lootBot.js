@@ -13297,6 +13297,10 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																									});
 																									refill = "Inoltre la tua salute è stata ricaricata fino al 50%!";
 																								}
+																										
+																								var plur = "o";
+																								if (rankPoint > 1)
+																									plur = "i";
 
 																								connection.query('SELECT chat_id, rank FROM player WHERE id = ' + pass_id, function (err, rows, fields) {
 																									if (err) throw err;
@@ -13322,7 +13326,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																										}
 
 																										if (getrank2 == 1) {
-																											bot.sendMessage(rows[0].chat_id, "Il tuo compagno " + message.from.username + " ha completato il dungeon ed hai ottenuto " + rankPoint + " punti rango!");
+																											bot.sendMessage(rows[0].chat_id, "Il tuo compagno " + message.from.username + " ha completato il dungeon ed hai ottenuto " + rankPoint + " punt" + plur + " rango!");
 																										} else {
 																											bot.sendMessage(rows[0].chat_id, "Il tuo compagno " + message.from.username + " ha completato il dungeon!");
 																										}
@@ -13349,7 +13353,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																										};
 
 																										if (getrank1 == 1) {
-																											bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*! Hai ottenuto " + rankPoint + " punto rango!\n" + refill, dBack);
+																											bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*! Hai ottenuto " + rankPoint + " punt" + plur + " rango!\n" + refill, dBack);
 																										} else {
 																											bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*!\n" + refill, dBack);
 																										}
@@ -28510,7 +28514,7 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 							if (hours > 1)
 								plur = "e";
 
-							bot.sendMessage(message.chat.id, "Stai effettuato l'estrazione di Mana " + name + " da " + hours + " or" + plur + ", vuoi interrompere ottenendo " + quantity + " unità di mana grezzo?", mYesNo2).then(function () {
+							bot.sendMessage(message.chat.id, "Stai estraendo Mana " + name + " da " + hours + " or" + plur + ", vuoi interrompere ottenendo " + quantity + " unità di mana grezzo?", mYesNo2).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text.toLowerCase() == "si") {
 										connection.query('SELECT zone_id FROM event_mana_status WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -39602,7 +39606,7 @@ bot.onText(/spia rifugio|spia:/i, function (message) {
 	if (!checkSpam(message))
 		return;
 
-	connection.query('SELECT account_id, holiday, spy_count, id, exp, weapon, house_id, money, heist_protection FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, holiday, spy_count, id, exp, weapon, house_id, money, heist_protection, spy_description FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
