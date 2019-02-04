@@ -5191,7 +5191,7 @@ bot.onText(/annulla bevanda/i, function (message) {
 });
 
 bot.onText(/descrizione rifugio/i, function (message) {
-	connection.query('SELECT id, ability FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, ability, heist_description FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		
 		if (rows[0].ability < 200){
@@ -5200,8 +5200,12 @@ bot.onText(/descrizione rifugio/i, function (message) {
 		}
 		
 		var player_id = rows[0].id;
+		
+		var text = "";
+		if (rows[0].heist_description != null)
+			text = "\nLa descrizione rifugio attuale impostata è: " + rows[0].heist_description;
 
-		bot.sendMessage(message.chat.id, "Inserisci la descrizione che comparirà quando altri giocatori ti ispezionano e falliscono.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti. Scrivi _cancella_ per rimuovere la descrizione.", back).then(function () {
+		bot.sendMessage(message.chat.id, "Inserisci la descrizione che comparirà quando altri giocatori ti ispezionano e falliscono.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti. Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text != "Torna al menu") {
 					var resp = answer.text;
@@ -5230,7 +5234,7 @@ bot.onText(/descrizione rifugio/i, function (message) {
 });
 
 bot.onText(/descrizione spia/i, function (message) {
-	connection.query('SELECT id, ability, house_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, ability, house_id, spy_description FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		
 		if ((rows[0].ability < 200) || (rows[0].house_id < 6)){
@@ -5239,8 +5243,12 @@ bot.onText(/descrizione spia/i, function (message) {
 		}
 		
 		var player_id = rows[0].id;
+		
+		var text = "";
+		if (rows[0].spy_description != null)
+			text = "\nLa descrizione spia attuale impostata è: " + rows[0].spy_description;
 
-		bot.sendMessage(message.chat.id, "Inserisci la descrizione che comparirà quando spii altri giocatori.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti. Scrivi _cancella_ per rimuovere la descrizione.", back).then(function () {
+		bot.sendMessage(message.chat.id, "Inserisci la descrizione che comparirà quando spii altri giocatori.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti. Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text != "Torna al menu") {
 					var resp = answer.text;
@@ -5269,11 +5277,16 @@ bot.onText(/descrizione spia/i, function (message) {
 });
 
 bot.onText(/descrizione personale/i, function (message) {
-	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, player_description FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
+		
 		var player_id = rows[0].id;
+		
+		var text = "";
+		if (rows[0].player_description != null)
+			text = "\nLa descrizione personale attuale impostata è: " + rows[0].player_description;
 
-		bot.sendMessage(message.chat.id, "Inserisci la descrizione del tuo personaggio, comparirà quando altri giocatori ti spiano.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti. Scrivi _cancella_ per rimuovere la descrizione.", back).then(function () {
+		bot.sendMessage(message.chat.id, "Inserisci la descrizione del tuo personaggio, comparirà quando altri giocatori ti spiano.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti. Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text != "Torna al menu") {
 					var resp = answer.text;
@@ -5302,7 +5315,7 @@ bot.onText(/descrizione personale/i, function (message) {
 });
 
 bot.onText(/soprannome/i, function (message) {
-	connection.query('SELECT id, exp FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, exp, player_custom_nickname FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
 
@@ -5310,8 +5323,12 @@ bot.onText(/soprannome/i, function (message) {
 			bot.sendMessage(message.chat.id, "Puoi impostare il soprannome solo al livello 1.000", back);
 			return;
 		}
+		
+		var text = "";
+		if (rows[0].player_custom_nickname != null)
+			text = "\nIl soprannome attuale impostato è: " + rows[0].player_custom_nickname;
 
-		bot.sendMessage(message.chat.id, "Inserisci il soprannome per il tuo personaggio, comparirà a fianco al tuo nome, come ad esempio 'fenix45 l'ubriaco'.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 20 caratteri, non andare a capo e non tutti i simboli sono consentiti. Scrivi _cancella_ per rimuovere il soprannome.", back).then(function () {
+		bot.sendMessage(message.chat.id, "Inserisci il soprannome per il tuo personaggio, comparirà a fianco al tuo nome, come ad esempio 'fenix45 l'ubriaco'.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 20 caratteri, non andare a capo e non tutti i simboli sono consentiti. Scrivi _cancella_ per rimuovere il soprannome." + text, back).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text != "Torna al menu") {
 					var resp = answer.text;
@@ -9881,7 +9898,11 @@ bot.onText(/dungeon/i, function (message) {
 																		} else {
 																			connection.query('UPDATE player SET life = life - ' + life + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
-																				bot.sendMessage(message.chat.id, "Come avanzi di due passi scatta un meccanismo e un'ascia gigantesca ti precipita addosso, il tuo drago non è abbastanza forte per proteggerti, l'ascia ti prende in pieno e perdi metà della tua salute!", dNext);
+																				if (cursed == 1){
+																					bot.sendMessage(message.chat.id, "Come avanzi di due passi scatta un meccanismo e un'ascia gigantesca ti precipita addosso, il tuo drago non è abbastanza forte per proteggerti, l'ascia ti prende in pieno e perdi l'intera salute!", dNext);
+																				} else {
+																					bot.sendMessage(message.chat.id, "Come avanzi di due passi scatta un meccanismo e un'ascia gigantesca ti precipita addosso, il tuo drago non è abbastanza forte per proteggerti, l'ascia ti prende in pieno e perdi metà della tua salute!", dNext);
+																				}
 																			});
 																		}
 																		if (boost_id == 8)
@@ -11414,7 +11435,7 @@ bot.onText(/dungeon/i, function (message) {
 												if (cursed == 1)
 													qnt = 2;
 
-												connection.query('SELECT id FROM item WHERE estimate >= 100000 AND rarity IN ("E","L") ORDER BY RAND()', function (err, rows, fields) {
+												connection.query('SELECT id FROM item WHERE estimate BETWEEN 50000 AND 250000 AND rarity IN ("E","L") ORDER BY RAND()', function (err, rows, fields) {
 													if (err) throw err;
 
 													var itemid = rows[0].id;
@@ -26209,7 +26230,7 @@ bot.onText(/^accademia/i, function (message) {
 											}
 										}
 
-										connection.query('SELECT name, id FROM team WHERE name = "' + answer.text + '"', function (err, rows, fields) {
+										connection.query('SELECT name, id, closed FROM team WHERE name = "' + answer.text + '"', function (err, rows, fields) {
 											if (err) throw err;
 											if (Object.keys(rows).length == 0) {
 												bot.sendMessage(message.chat.id, "Questo team non esiste", team);
@@ -26229,15 +26250,15 @@ bot.onText(/^accademia/i, function (message) {
 												return;
 											}
 
-											connection.query('SELECT closed FROM team WHERE child_team = ' + team_id2, function (err, rows, fields) {
+											if (rows[0].closed == 1){
+												bot.sendMessage(message.chat.id, "Non puoi impostare come accademia un team chiuso", team);
+												return;
+											}
+
+											connection.query('SELECT 1 FROM team WHERE child_team = ' + team_id2, function (err, rows, fields) {
 												if (err) throw err;
 												if (Object.keys(rows).length > 0) {
 													bot.sendMessage(message.chat.id, "Questo team è già un accademia di un altro team", team);
-													return;
-												}
-
-												if (rows[0].closed == 1){
-													bot.sendMessage(message.chat.id, "Non puoi impostare come accademia un team chiuso", team);
 													return;
 												}
 
