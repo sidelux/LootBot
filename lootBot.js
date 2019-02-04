@@ -7598,7 +7598,7 @@ bot.onText(/dungeon/i, function (message) {
 																		
 																		var isCursed = 0;
 																		var cursedText = "";
-																		var days = 4;
+																		var days = 7;
 																		var rand = Math.random()*100;
 																		if (rand <= 5){
 																			isCursed = 1;
