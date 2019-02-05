@@ -522,11 +522,12 @@ bot.onText(/^\/calcola (.+)|^\/calcola/, function (message, match) {
 });
 
 bot.onText(/^\/birra/, function (message) {
-	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, market_ban, account_id, money, holiday, birth_date FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
 		var money = rows[0].money;
+		var birth_date = rows[0].birth_date;
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -550,7 +551,10 @@ bot.onText(/^\/birra/, function (message) {
 		} else {
 			connection.query('UPDATE player SET money = money-100 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
-				bot.sendMessage(message.chat.id, "🍺");
+				if (calculateAge(new Date(birth_date)) < 18)
+					bot.sendMessage(message.chat.id, "🥛");
+				else
+					bot.sendMessage(message.chat.id, "🍺");
 			});
 			connection.query('UPDATE config SET food = food+1', function (err, rows, fields) {
 				if (err) throw err;
@@ -955,6 +959,13 @@ function removeFromAssault(player_id){
 	});
 }
 
+function calculateAge(dob) { 
+	var diff_ms = Date.now() - dob.getTime();
+	var age_dt = new Date(diff_ms);
+	
+	return Math.abs(age_dt.getUTCFullYear() - 1970);
+}
+
 bot.onText(/^\/gb (.+)|^\/gb$/, function (message, match) {
 	if (message.chat.id > 0)
 		return;
@@ -1215,7 +1226,7 @@ bot.onText(/^\/gruppi/, function (message) {
 																						"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
 																						"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
 																						"<a href='https://t.me/joinchat/CXTRTE60M2WLQR2fvG_q7A'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
-																						"<a href='@Adesmappers'>Ade's Mappers</a> (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
+																						"@Adesmappers (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
 																						"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ") - La musica ed il diverimento di Lootia!\n" +
 																						"@LootAste (" + c18 + ") - Gruppo dedicato alle aste\n" +
 																						"<a href='https://t.me/joinchat/B8_tHk9nThsWfDL-k-Fazw'>Loot Nabbi</a> (" + c19 + ") - Dedicato ai nabbi di Lootia!\n" +
@@ -4193,6 +4204,284 @@ bot.on('callback_query', function (message) {
 			});
 			return;
 		}
+		
+		if (message.data.indexOf("okbuy") != -1) {	
+			var split = message.data.split(":");
+			var buy_id = parseInt(split[1]);
+			
+			if (rows[0].market_ban == 1)
+				return;
+
+			if (rows[0].holiday == 1)
+				return;
+
+			var player_id = rows[0].id;
+			var my_money = rows[0].money;
+
+			connection.query('SELECT id, item_id, money, buyer, player_id FROM market_direct WHERE id = ' + buy_id, function (err, rows, fields) {
+				if (err) throw err;
+
+				if (Object.keys(rows).length == 0) {
+					bot.answerCallbackQuery(message.id, {text: 'La vendita non è disponibile.'});
+					return;
+				} else {
+					var marketid = rows[0].id;
+					var item_id = rows[0].item_id;
+					var money = rows[0].money;
+					var buyer_id = rows[0].buyer;
+					var player_id2 = rows[0].player_id;
+					
+					if (buyer_id != player_id) {
+						bot.answerCallbackQuery(message.id, {text: "Non puoi accettare questa vendita"});
+						return;
+					}
+
+					if (player_id == player_id2) {
+						bot.answerCallbackQuery(message.id, {text: "Non puoi concludere un acquisto con te stesso"});
+						return;
+					}
+
+					if (my_money < money) {
+						bot.answerCallbackQuery(message.id, {text: "Non hai abbastanza credito per completare l'acquisto."});
+						return;
+					} else {
+						connection.query('SELECT id, chat_id, account_id, nickname FROM player WHERE id = ' + player_id2, function (err, rows, fields) {
+							if (err) throw err;
+
+							var player_id2 = rows[0].id;
+							var chat_id2 = rows[0].account_id;
+							var nick2 = rows[0].nickname;
+
+							connection.query('DELETE FROM market_direct WHERE id = ' + marketid, function (err, rows, fields) {
+								if (err) throw err;
+								connection.query('UPDATE player SET money = money-' + money + ' WHERE id = ' + player_id, function (err, rows, fields) {
+									if (err) throw err;
+									connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + player_id2, function (err, rows, fields) {
+										if (err) throw err;
+
+										addItem(player_id, item_id);
+
+										connection.query('SELECT name FROM item WHERE id = ' + item_id, function (err, rows, fields) {
+											if (err) throw err;
+											bot.sendMessage(chat_id2, message.from.username + " ha acquistato " + rows[0].name + " per " + formatNumber(money) + " §!");
+											bot.answerCallbackQuery(message.id, {text: message.from.username + ", hai completato l'acquisto!"});
+
+											if (buyer_id == -1)
+												buyer_id = null;
+
+											var d = new Date();
+											var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+											connection.query('INSERT INTO market_direct_history (item_id, price, time, from_id, to_id, buyer, type) VALUES (' + item_id + ',' + money + ',"' + long_date + '",' + player_id2 + ',' + player_id + ',' + buyer_id + ',1)', function (err, rows, fields) {
+												if (err) throw err;
+											});
+											
+											bot.editMessageText("Vendita tra " + message.from.username + " e " + nick2 + " completata!", {
+												chat_id: message.message.chat.id,
+												message_id: message.message.message_id,
+												parse_mode: 'HTML'
+											});
+										});
+									});
+								});
+							});
+						});
+					}
+				}
+			});
+			return;
+		}
+		
+		if (message.data.indexOf("notbuy") != -1) {
+			var split = message.data.split(":");
+			var buy_id = parseInt(split[1]);
+			
+			connection.query('SELECT player_id, item_id, buyer FROM market_direct WHERE id = ' + buy_id, function (err, rows, fields) {
+				if (err) throw err;
+
+				if (Object.keys(rows).length == 0) {
+					bot.answerCallbackQuery(message.id, {text: "Nessuna vendita da rifiutare"});
+					return;
+				}
+				
+				if (rows[0].buyer != player_id) {
+					bot.answerCallbackQuery(message.id, {text: "Non puoi rifiutare questa vendita"});
+					return;
+				}
+
+				var creator_id = rows[0].player_id;
+				var item_id = rows[0].item_id;
+				addItem(creator_id, item_id);
+				connection.query('DELETE FROM market_direct WHERE player_id = ' + creator_id, function (err, rows, fields) {
+					if (err) throw err;
+					bot.answerCallbackQuery(message.id, {text: "Vendita rifiutata!"});
+					connection.query('SELECT id, chat_id, nickname FROM player WHERE id = ' + creator_id, function (err, rows, fields) {
+						if (err) throw err;
+						
+						var nick2 = rows[0].nickname;
+						
+						bot.sendMessage(rows[0].chat_id, message.from.username + " ha rifiutato la tua vendita!");
+
+						var d = new Date();
+						d.setMinutes(d.getMinutes() + 10);
+						var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+						connection.query('INSERT INTO plus_shop_timeout (player_id, player_id2, datetime) VALUES (' + player_id + ',' + rows[0].id + ',"' + long_date + '")', function (err, rows, fields) {
+							if (err) throw err;
+						});
+						
+						bot.editMessageText("Vendita tra " + message.from.username + " e " + nick2 + " rifiutata!", {
+							chat_id: message.message.chat.id,
+							message_id: message.message.message_id,
+							parse_mode: 'HTML'
+						});
+					});
+				});
+			});
+			return;
+		}
+		
+		if (message.data.indexOf("oktrade") != -1) {
+			var split = message.data.split(":");
+			var trade_id = parseInt(split[1]);
+
+			if (rows[0].holiday == 1)
+				return;
+			
+			if (rows[0].market_ban == 1)
+				return;
+
+			var player_id = rows[0].id;
+
+			connection.query('SELECT * FROM market WHERE id = ' + trade_id, function (err, rows, fields) {
+				if (err) throw err;
+
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.from.id, "Lo scambio non è disponibile.");
+					return;
+				} else {
+					var marketid = rows[0].id;
+					var item1 = rows[0].item_1_id;
+					var item2 = rows[0].item_2_id;
+					var buyer_id = rows[0].buyer;
+					var player_id2 = rows[0].player_id;
+					var quantity = rows[0].quantity;
+					
+					if (rows[0].buyer != player_id) {
+						bot.answerCallbackQuery(message.id, {text: "Non puoi rifiutare questo scambio"});
+						return;
+					}
+
+					if (player_id == player_id2) {
+						bot.answerCallbackQuery(message.id, {text: "Non puoi concludere uno scambio con te stesso"});
+						return;
+					}
+
+					connection.query('SELECT item.id, item.name, quantity FROM item, inventory WHERE item.id = inventory.item_id AND inventory.item_id = ' + item2 + ' AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
+						if (err) throw err;
+
+						if (Object.keys(rows).length == 0) {
+							bot.answerCallbackQuery(message.id, {text: "Non possiedi l'oggetto richiesto."});
+							return;
+						}
+
+						if (rows[0].quantity < quantity) {
+							bot.answerCallbackQuery(message.id, {text: "Non possiedi abbastanza copie dell'oggetto richiesto."});
+							return;
+						}
+
+						connection.query('SELECT id, chat_id, account_id, nickname FROM player WHERE id = ' + player_id2, function (err, rows, fields) {
+							if (err) throw err;
+							if (Object.keys(rows).length == 0) {
+								bot.answerCallbackQuery(message.id, {text: "Non ho trovato il giocatore con cui completare lo scambio!"});
+								return;
+							}
+
+							var player_id2 = rows[0].id;
+							var chat_id2 = rows[0].account_id;
+							var nick2 = rows[0].nickname;
+
+							connection.query('DELETE FROM market WHERE id = ' + marketid, function (err, rows, fields) {
+								if (err) throw err;
+								addItem(player_id, item1, quantity);
+								addItem(player_id2, item2, quantity);
+								delItem(player_id, item2, quantity);
+
+								if (buyer_id == -1)
+									buyer_id = null;
+
+								var d = new Date();
+								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+								connection.query('INSERT INTO market_history (item_1, item_2, time, from_id, to_id, buyer, quantity) VALUES (' + item1 + ',' + item2 + ',"' + long_date + '",' + player_id2 + ',' + player_id + ',' + buyer_id + ', ' + quantity + ')', function (err, rows, fields) {
+									if (err) throw err;
+								});
+
+								bot.answerCallbackQuery(message.id, {text: message.from.username + ", hai completato lo scambio!"});
+								bot.sendMessage(chat_id2, "Il giocatore " + message.from.username + " ha accettato la tua offerta di scambio!");
+								
+								bot.editMessageText("Scambio tra " + message.from.username + " e " + nick2 + " completato!", {
+									chat_id: message.message.chat.id,
+									message_id: message.message.message_id,
+									parse_mode: 'HTML'
+								});
+							});
+						});
+					});
+				}
+			});
+			return;
+		}
+		
+		if (message.data.indexOf("nottrade") != -1) {
+			var split = message.data.split(":");
+			var trade_id = parseInt(split[1]);
+			
+			connection.query('SELECT player_id, item_1_id, quantity, buyer FROM market WHERE id = ' + trade_id, function (err, rows, fields) {
+				if (err) throw err;
+
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.from.id, "Nessuno scambio da rifiutare");
+					return;
+				}
+				
+				if (rows[0].buyer != player_id) {
+					bot.answerCallbackQuery(message.id, {text: "Non puoi rifiutare questo scambio"});
+					return;
+				}
+
+				var creator_id = rows[0].player_id;
+				var item_id = rows[0].item_1_id;
+				var quantity = rows[0].quantity;
+
+				addItem(creator_id, item_id, quantity);
+
+				connection.query('DELETE FROM market WHERE player_id = ' + creator_id, function (err, rows, fields) {
+					if (err) throw err;
+					bot.answerCallbackQuery(message.id, {text: "Scambio rifiutato!"});
+					connection.query('SELECT id, chat_id, nickname FROM player WHERE id = ' + creator_id, function (err, rows, fields) {
+						if (err) throw err;
+						
+						var nick2 = rows[0].nickname;
+						
+						bot.sendMessage(rows[0].chat_id, message.from.username + " ha rifiutato il tuo scambio!");
+
+						var d = new Date();
+						d.setMinutes(d.getMinutes() + 10);
+						var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+						connection.query('INSERT INTO plus_shop_timeout (player_id, player_id2, datetime) VALUES (' + player_id + ',' + rows[0].id + ',"' + long_date + '")', function (err, rows, fields) {
+							if (err) throw err;
+						});
+						
+						bot.editMessageText("Scambio tra " + message.from.username + " e " + nick2 + " rifiutato!", {
+							chat_id: message.message.chat.id,
+							message_id: message.message.message_id,
+							parse_mode: 'HTML'
+						});
+					});
+				});
+			});
+			return;
+		}
 
 		if (message.data.indexOf("asta") != -1) {
 			var split = message.data.split(":");
@@ -5320,22 +5609,24 @@ bot.onText(/^\/offri/i, function (message) {
 								bot.sendMessage(message.from.id, "Prezzo per " + item_name + " impostato al minimo: " + formatNumber(item_val) + " §");
 								price = item_val;
 							}
+							
+							var buyer_id = rows[0].id;
 
 							if (message.from.id != 20471035) {
-								if (buyer.toLowerCase() == message.from.username.toLowerCase()) {
+								if (buyer_id == player_id) {
 									bot.sendMessage(message.from.id, "Non puoi vendere a te stesso");
 									return;
 								}
-							}
-
-							if (timeout_id == rows[0].id) {
-								if (timeout_date < now) {
-									connection.query('DELETE FROM plus_shop_timeout WHERE player_id2 = ' + player_id, function (err, rows, fields) {
-										if (err) throw err;
-									});
-								} else {
-									bot.sendMessage(message.from.id, "Attendi un po' di tempo prima di poter commerciare ancora con questo utente");
-									return;
+								
+								if (timeout_id == buyer_id) {
+									if (timeout_date < now) {
+										connection.query('DELETE FROM plus_shop_timeout WHERE player_id2 = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+										});
+									} else {
+										bot.sendMessage(message.from.id, "Attendi un po' di tempo prima di poter commerciare ancora con questo utente");
+										return;
+									}
 								}
 							}
 
@@ -5360,7 +5651,25 @@ bot.onText(/^\/offri/i, function (message) {
 
 									connection.query('INSERT INTO market_direct VALUES (DEFAULT, ' + player_id + ',"' + item_id + '",' + price + ',"' + long_date + '",' + toId + ')', function (err, rows, fields) {
 										if (err) throw err;
-										bot.sendMessage(message.chat.id, "La messa in vendita da parte di " + message.from.username + " per " + item_name + " a " + formatNumber(price) + " § verso " + nick + " è stata registrata (scadenza: " + short_date + ")\n" + message.from.username + ", puoi usare /annullav\n" + nick + ", puoi usare /accettav o /rifiutav");
+										
+										var iKeys = [];
+									
+										iKeys.push([{
+											text: "✅ Accetta",
+											callback_data: "okbuy:" + rows.insertId
+										},
+										{
+											text: "❌ Rifiuta",
+											callback_data: "notbuy:" + rows.insertId
+										}]);
+										
+										bot.sendMessage(message.chat.id, "La messa in vendita da parte di " + message.from.username + " per " + item_name + " a " + formatNumber(price) + " § verso " + nick + " è stata registrata (scadenza: " + short_date + ")\n" + message.from.username + ", puoi usare /annullav\n" + nick + ", puoi usare /accettav o /rifiutav", {
+											parse_mode: 'HTML',
+											disable_web_page_preview: true,
+											reply_markup: {
+												inline_keyboard: iKeys
+											}
+										});
 									});
 								});
 							});
@@ -5536,23 +5845,16 @@ bot.onText(/^\/scambia/i, function (message) {
 						bot.sendMessage(message.from.id, "L'acquirente inserito non esiste");
 						return;
 					}
+					
+					var buyer_id = rows[0].id;
 
 					if (message.from.id != 20471035) {
-						if (buyer.toLowerCase() == message.from.username.toLowerCase()) {
+						if (buyer_id == player_id) {
 							bot.sendMessage(message.from.id, "Non puoi scambiare a te stesso");
 							return;
 						}
-					}
-
-					connection.query('SELECT COUNT(id) As qnt FROM market WHERE buyer = ' + rows[0].id, function (err, rows, fields) {
-						if (err) throw err;
-
-						if (rows[0].qnt > 0) {
-							bot.sendMessage(message.chat.id, "Questo utente ha già uno scambio in corso");
-							return;
-						}
-
-						if (timeout_id == rows[0].id) {
+						
+						if (timeout_id == buyer_id) {
 							if (timeout_date < now) {
 								connection.query('DELETE FROM plus_shop_timeout WHERE player_id2 = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
@@ -5561,6 +5863,15 @@ bot.onText(/^\/scambia/i, function (message) {
 								bot.sendMessage(message.from.id, "Attendi un po' di tempo prima di poter commerciare ancora con questo utente");
 								return;
 							}
+						}
+					}
+
+					connection.query('SELECT COUNT(id) As qnt FROM market WHERE buyer = ' + buyer_id, function (err, rows, fields) {
+						if (err) throw err;
+
+						if (rows[0].qnt > 0) {
+							bot.sendMessage(message.chat.id, "Questo utente ha già uno scambio in corso");
+							return;
 						}
 
 						var d2 = new Date();
@@ -5612,10 +5923,27 @@ bot.onText(/^\/scambia/i, function (message) {
 
 									connection.query('INSERT INTO market VALUES (DEFAULT, ' + player_id + ', ' + item1_id + ',' + item2_id + ',"' + long_date + '",' + buyer_id + ', ' + quantity + ')', function (err, rows, fields) {
 										if (err) throw err;
+										
+										var iKeys = [];
+									
+										iKeys.push([{
+											text: "✅ Accetta",
+											callback_data: "oktrade:" + rows.insertId
+										},
+										{
+											text: "❌ Rifiuta",
+											callback_data: "nottrade:" + rows.insertId
+										}]);
 
 										delItem(player_id, item1_id, quantity);
 
-										bot.sendMessage(message.chat.id, "Lo scambio dove " + message.from.username + " offre " + quantity + "x " + item1 + " e " + nick + " offre " + quantity + "x " + item2 + " è stato registrato (scadenza: " + short_date + ")\n" + message.from.username + " puoi annullarla con /annullas");
+										bot.sendMessage(message.chat.id, "Lo scambio dove " + message.from.username + " offre " + quantity + "x " + item1 + " e " + nick + " offre " + quantity + "x " + item2 + " è stato registrato (scadenza: " + short_date + ")\n" + message.from.username + " puoi annullarla con /annullas", {
+											parse_mode: 'HTML',
+											disable_web_page_preview: true,
+											reply_markup: {
+												inline_keyboard: iKeys
+											}
+										});
 									});
 								});
 							});

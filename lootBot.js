@@ -9675,10 +9675,13 @@ bot.onText(/dungeon/i, function (message) {
 																		type = 2;
 																	}
 																}
+																var cnt = 100;
+																if (cursed == 1)
+																	cnt = 50;
 																if (color != "") {
-																	connection.query('UPDATE event_mana_status SET mana_' + type + ' = mana_' + type + '+100 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE event_mana_status SET mana_' + type + ' = mana_' + type + '+' + cnt + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
-																		bot.sendMessage(message.chat.id, "Ti avvicini alla fontana e vedi che l'acqua ha uno strano colore, la esamini meglio ed ottieni 100 Mana " + color + "!", dNext);
+																		bot.sendMessage(message.chat.id, "Ti avvicini alla fontana e vedi che l'acqua ha uno strano colore, la esamini meglio ed ottieni " + cnt + " Mana " + color + "!", dNext);
 																	});
 																	if (boost_id == 8)
 																		setBoost(player_id, boost_mission, boost_id);
@@ -12643,7 +12646,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 													var weapon_dmg = rows[0].power;
 													if ((weapon_id == 221) || (weapon_id == 638) || (weapon_id == 639) || (weapon_id == 640) || (weapon_id == 754))
 														weapon_dmg = calcNecro(300, monster_level, 3, 1);
-													if (weapon_id == 373)
+													else if (weapon_id == 373)
 														weapon_dmg = power_dmg;
 													var weapon_name = rows[0].name + " (+" + weapon_dmg + ")";
 													var en_crit = rows[0].critical;
@@ -12657,7 +12660,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 														if (Object.keys(rows).length > 0) {
 															weapon2_dmg = rows[0].power_armor;
 															if ((weapon2_id == 577) || (weapon2_id == 688) || (weapon2_id == 689) || (weapon2_id == 690)){
-																power = -Math.abs(calcNecro(250, monster_level, 3, 1));
+																weapon2_dmg = -Math.abs(calcNecro(250, monster_level, 3, 1));
 																extra = ", Probab. /2: " + critic + "%";
 															}
 															weapon2_name = rows[0].name + " (" + weapon2_dmg + ")";
@@ -12673,7 +12676,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 															if (Object.keys(rows).length > 0) {
 																weapon3_dmg = rows[0].power_shield;
 																if ((weapon3_id == 600) || (weapon3_id == 671) || (weapon3_id == 672) || (weapon3_id == 673))
-																	power = -Math.abs(calcNecro(250, monster_level, 3, 1));
+																	weapon3_dmg = -Math.abs(calcNecro(250, monster_level, 3, 1));
 																weapon3_name = rows[0].name + " (" + weapon3_dmg + ")";
 																en_crit3 = rows[0].critical;
 															}
@@ -13448,7 +13451,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																					if ((player_paralyzed - 1) != 0)
 																						bot.sendMessage(message.chat.id, "Non sei riuscito a colpire il mostro, sei ancora paralizzato per " + (player_paralyzed - 1) + " turni");
 																					else
-																						bot.sendMessage(message.chat.id, "Non sei riuscito a colpire il mostro, e ora non sei più paralizzato");
+																						bot.sendMessage(message.chat.id, "Non sei riuscito a colpire il mostro, ma ora non sei più paralizzato");
 																				}
 																				connection.query('UPDATE dungeon_status SET monster_life = ' + lifesum + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
@@ -21617,6 +21620,8 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 														var wall_max_life = mob_damage * place[0].level * players[0].cnt;
 														wall_max_life += wall_max_life*(class_bonus_val/100);
 														wall_max_life = Math.round(wall_max_life);
+														
+														console.log("Mura: " + team_id + " " + formatNumber(wall_max_life));
 
 														text += "A questo livello fornisce <b>" + formatNumber(wall_max_life) + "</b> salute alle mura per protezione, possiede ancora la capacità di proteggere da <b>" + formatNumber(life) + "</b> danni\nSi ripara automaticamente fino al 50% di salute alla sconfitta di un nemico, ma puoi comunque ripararla usando oggetti base (scrivi il nome se non lo vedi nella lista)." + class_bonus + "\n";
 
@@ -45331,11 +45336,13 @@ function regenItems(team_id, place_id, level){
 		var assault = connection_sync.query('SELECT boss_num, mob_turn FROM assault WHERE team_id = ' + team_id);
 		var players_num = connection_sync.query("SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE team_id = " + team_id);
 		var mob_damage = mobDamage(team[0].boss_count, players_num[0].cnt, assault[0].boss_num, 1, assault[0].mob_turn, 1);
-		var place = connection_sync.query('SELECT level FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id);
+		//var place = connection_sync.query('SELECT level FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id);
 		var players = connection_sync.query('SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE place_id = 5 AND team_id = ' + team_id);
-		var wall_max_life = mob_damage * place[0].level * players[0].cnt;
+		var wall_max_life = mob_damage * (level+1) * players[0].cnt;
 		wall_max_life += wall_max_life*(class_bonus_val/100);
 		wall_max_life = Math.round(wall_max_life);
+		
+		console.log("Mura aggiornamento: " + team_id + " " + formatNumber(wall_max_life));
 
 		connection.query('SELECT life FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -45355,7 +45362,7 @@ function regenItems(team_id, place_id, level){
 function setFinishedAssaultsItem(element, index, array) {
 	var place_id = element.place_id;
 	var team_id = element.team_id;
-	var level = element.level;
+	var level = element.level;		// livello attuale, non di destinazione
 	connection.query('SELECT name FROM assault_place WHERE id = ' + place_id, function (err, rows, fields) {
 		if (err) throw err;
 		var name = rows[0].name;
