@@ -91,8 +91,6 @@ var crazyMode;					// nulla
 var luckyMode;					// svuota contest
 var arena;						// azzera le due tabelle
 var lootteria;					// svuota event_lottery_coins e event_lottery_prize con extracted a 0
-var lootteriaBlock = 0;
-var autoEstrazione = 0;
 var villa;						// update a 10 punti e svuota tabella
 var wanted;						// svuota event_wanted_status
 var eventTeamStory;				// svuota event_team_story
@@ -100,6 +98,8 @@ var eventFestival;				// event_crafting_status con total_cnt a 0
 var specialMission;				// nulla
 var checkDragonTopOn;			// alla chiusura: svuota tabelle dragon_ e auto increment dummy a 100000
 var gnomorra;					// svuota tabella event_gnomorra
+var lootteriaBlock = 0;
+var autoEstrazione = 0;
 
 function reloadEvents(){
 	crazyMode = getValue("crazyMode");
@@ -114,6 +114,8 @@ function reloadEvents(){
 	checkDragonTopOn = getValue("checkDragonTopOn");
 	gnomorra = getValue("gnomorra");
 }
+
+reloadEvents();
 
 var token = config.maintoken;
 var bot = new TelegramBot(token);
@@ -760,6 +762,7 @@ function activateEvent(){
 		reloadEvents();
 		checkKeyboard();
 		console.log("Evento attivato: " + rows[0].next_event_name);
+		bot.sendMessage(20471035, "Evento attivato: " + rows[0].next_event_name);
 	});
 }
 
@@ -772,6 +775,7 @@ function deactivateEvent(){
 		reloadEvents();
 		checkKeyboard();
 		console.log("Evento disattivato: " + rows[0].next_event_name);
+		bot.sendMessage(20471035, "Evento disattivato: " + rows[0].next_event_name);
 		
 		connection.query('UPDATE config SET next_event_name = NULL', function (err, rows, fields) {
 			if (err) throw err;
@@ -12608,7 +12612,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 						}
 						if (magicrand < (30 + boost_cast)) {
 							if (player_weapon_id == 754) {
-								magic = 4;
+								var randMagic = Math.round(getRandomArbitrary(1, 4));
+								magic = randMagic;
 								automagic = 1;
 								magicPow = 150;
 							}
@@ -23161,7 +23166,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		}
 																		if (magic_rand < 30) {
 																			if (weapon_id == 754) {
-																				magic_type = 4;
+																				var randMagic = Math.round(getRandomArbitrary(1, 4));
+																				magic_type = randMagic;
 																				magic_power = 150;
 																				magic_enchant = 1;
 																				epic_var++;
@@ -23875,7 +23881,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		}
 																		if (magic_rand < 30) {
 																			if (weapon_id == 754) {
-																				magic_type = 4;
+																				var randMagic = Math.round(getRandomArbitrary(1, 4));
+																				magic_type = randMagic;
 																				magic_power = 150;
 																				magic_enchant = 1;
 																				epic_var++;
@@ -31316,9 +31323,8 @@ bot.onText(/^Poste/, function (message) {
 
 bot.onText(/cron (.+)/i, function (message, match) {
 
-	if (message.from.id != 20471035) {
+	if (message.from.id != 20471035)
 		return;
-	}
 
 	connection.query('SELECT id FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -31338,13 +31344,12 @@ bot.onText(/cron (.+)/i, function (message, match) {
 				d = new Date(rows[i].time);
 				long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1);
 
-				if (rows[i].type == 1) {
+				if (rows[i].type == 1)
 					tipo = "Mercato";
-				} else if (rows[i].type == 2) {
+				else if (rows[i].type == 2)
 					tipo = "Negozi";
-				} else {
+				else
 					tipo = "?";
-				}
 
 				if (rows[i].from_id == player_id) {
 					text += "⏩ " + rows[i].quantity + "x <b>" + rows[i].name + "</b> a " + rows[i].price + " § a " + rows[i].to_nick + " " + long_date + " (" + tipo + ")\n";
@@ -31387,13 +31392,12 @@ bot.onText(/Affari Passati/i, function (message) {
 				d = new Date(rows[i].time);
 				long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1);
 
-				if (rows[i].type == 1) {
+				if (rows[i].type == 1)
 					tipo = "Mercato";
-				} else if (rows[i].type == 2) {
+				else if (rows[i].type == 2)
 					tipo = "Negozi";
-				} else {
+				else
 					tipo = "?";
-				}
 
 				if (rows[i].from_id == player_id) {
 					text += "⏩ " + rows[i].quantity + "x <b>" + rows[i].name + "</b> a " + formatNumber(rows[i].price) + " § a " + rows[i].to_nick + " - " + long_date + " (" + tipo + ")\n";
@@ -31414,11 +31418,10 @@ bot.onText(/Affari Passati/i, function (message) {
 					d = new Date(rows[i].hist_time);
 					long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1);
 
-					if (rows[i].from_id == player_id) {
+					if (rows[i].from_id == player_id)
 						text += "⏩ <b>" + formatNumber(rows[i].price) + " §</b> a " + rows[i].to_nick + " - " + long_date + "\n";
-					} else if (rows[i].to_id == player_id) {
+					else if (rows[i].to_id == player_id)
 						text += "⏪ <b>" + formatNumber(rows[i].price) + " §</b> da " + rows[i].from_nick + " - " + long_date + "\n";
-					}
 				}
 
 				connection.query('SELECT P1.nickname As creator, P2.nickname As winner, price, I.name, time FROM auction_history A INNER JOIN player P1 ON P1.id = A.creator_id INNER JOIN player P2 ON P2.id = A.player_id INNER JOIN item I ON A.item_id = I.id WHERE A.player_id = ' + player_id + ' ORDER BY A.id DESC LIMIT 25', function (err, rows, fields) {
@@ -41148,7 +41151,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 									var history_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
 									connection.query('INSERT INTO heist_history (from_id, to_id, rate1, fail, time) VALUES ' +
-													 '(' + player_id + ',' + toId + ',0,0,"' + history_date + '")',
+													 '(' + player_id + ', ' + toId + ', 0, 0, "' + history_date + '")',
 													 function (err, rows, fields) {
 										if (err) throw err;
 									});
@@ -41200,7 +41203,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 									var history_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
 									connection.query('INSERT INTO heist_history (from_id, to_id, rate1, fail, time) VALUES ' +
-													 '(' + player_id + ',' + toId + ',0,1,"' + history_date + '")',
+													 '(' + player_id + ', ' + toId + ', 0, 1, "' + history_date + '")',
 													 function (err, rows, fields) {
 										if (err) throw err;
 									});
@@ -41230,7 +41233,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 											var history_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
 											connection.query('INSERT INTO heist_history (from_id, to_id, rate1, fail, time) VALUES ' +
-															 '(' + player_id + ',' + toId + ',0,1,"' + history_date + '")',
+															 '(' + player_id + ', ' + toId + ', 0, 1, "' + history_date + '")',
 															 function (err, rows, fields) {
 												if (err) throw err;
 											});
@@ -41254,7 +41257,7 @@ bot.onText(/^rifugio|Torna al rifugio/i, function (message) {
 	if (message.text.indexOf("Elettricista") != -1)
 		return;
 
-	connection.query('SELECT account_id, holiday, id, exp, house_id, life, reborn, ability, heist_protection, heist_streak, custom_name_h, heist_count, spy_count, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, holiday, id, exp, house_id, life, reborn, ability, heist_protection, heist_streak, custom_name_h, heist_count, spy_count, gender, heist_limit FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0)
@@ -41283,6 +41286,8 @@ bot.onText(/^rifugio|Torna al rifugio/i, function (message) {
 		var custom_name_h = rows[0].custom_name_h;
 		var heist_count = rows[0].heist_count;
 		var spy_count = rows[0].spy_count;
+		var heist_limit = rows[0].heist_limit;
+		var heist_limit_val = 3;
 
 		var gender_text = "a";
 		if (rows[0].gender == "M")
@@ -41292,79 +41297,136 @@ bot.onText(/^rifugio|Torna al rifugio/i, function (message) {
 			bot.sendMessage(message.chat.id, "Il tuo livello è ancora troppo basso, torna quando avrai raggiunto il livello 15.", back);
 			return;
 		}
-
-		var iKeys = [];
-		connection.query('SELECT 1 FROM heist_progress WHERE from_id = ' + player_id, function (err, rows, fields) {
+		
+		connection.query('SELECT 1 FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
-			if (Object.keys(rows).length > 0) {
-				iKeys.push(["Contatta lo Gnomo 💭"]);
-			}
-			iKeys.push(["Ispezione 🔦", "Spia Rifugio 👀"]);
-			iKeys.push(["Prelevazione 🌐", "Migliora Rifugio 🏕", "Protezione 💫"]);
-			iKeys.push(["Torna al menu"]);
-
-			var kb = {
-				parse_mode: "Markdown",
-				reply_markup: {
-					resize_keyboard: true,
-					keyboard: iKeys
-				}
-			};
-
-			//var cost = Math.min(2000, ability*10);
-
-			var kb2 = {
-				parse_mode: "Markdown",
-				reply_markup: {
-					resize_keyboard: true,
-					keyboard: [["Matchmaking (2.000 §)"], ["Inserisci il Nickname (3.000 §)"], ["Torna al Rifugio"]]
-				}
-			};
-
-			connection.query('SELECT name FROM house WHERE id = ' + house_id, function (err, rows, fields) {
+			
+			if (Object.keys(rows).length > 0)
+				heist_limit_val = 10;
+			
+			var iKeys = [];
+			connection.query('SELECT 1 FROM heist_progress WHERE from_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
+				if (Object.keys(rows).length > 0)
+					iKeys.push(["Contatta lo Gnomo 💭"]);
+				iKeys.push(["Ispezione 🔦", "Spia Rifugio 👀"]);
+				iKeys.push(["Prelevazione 🌐", "Migliora Rifugio 🏕", "Protezione 💫"]);
+				iKeys.push(["Ispezioni passate 📃"]);
+				iKeys.push(["Torna al menu"]);
 
-				if (custom_name_h != null)
-					rifugio = "Rifugio " + custom_name_h + " (" + house_id + ")";
-				else
-					rifugio = rows[0].name + " (" + house_id + ")";
+				var kb = {
+					parse_mode: "Markdown",
+					reply_markup: {
+						resize_keyboard: true,
+						keyboard: iKeys
+					}
+				};
 
-				bot.sendMessage(message.chat.id, "Bentornat" + gender_text + " nel tuo 🏕 *" + rifugio + "*, possiedi *" + ability + "* punti abilità!\nPuoi ancora effettuare " + ((10 - heist_count) < 0 ? 0 : (10 - heist_count)) + " ispezioni e spiare " + (30 - spy_count) + " giocatori.", kb).then(function () {
-					answerCallbacks[message.chat.id] = function (answer) {
-						if (answer.text.indexOf("Ispezione") != -1){
-							connection.query('SELECT id FROM heist_progress WHERE from_id = ' + player_id, function (err, rows, fields) {
-								if (err) throw err;
-								if (Object.keys(rows).length > 0) {
-									bot.sendMessage(message.chat.id, "Stai svolgendo un ispezione, completala prima di iniziarne un'altra", back);
-									return;
-								}
+				//var cost = Math.min(2000, ability*10);
 
-								connection.query('SELECT datetime FROM heist WHERE from_id = ' + player_id, function (err, rows, fields) {
+				var kb2 = {
+					parse_mode: "Markdown",
+					reply_markup: {
+						resize_keyboard: true,
+						keyboard: [["Matchmaking (2.000 §)"], ["Inserisci il Nickname (3.000 §)"], ["Torna al Rifugio"]]
+					}
+				};
+
+				connection.query('SELECT name FROM house WHERE id = ' + house_id, function (err, rows, fields) {
+					if (err) throw err;
+
+					if (custom_name_h != null)
+						rifugio = "Rifugio " + custom_name_h + " (" + house_id + ")";
+					else
+						rifugio = rows[0].name + " (" + house_id + ")";
+
+					bot.sendMessage(message.chat.id, "Bentornat" + gender_text + " nel tuo 🏕 *" + rifugio + "*, possiedi *" + ability + "* punti abilità!\nPuoi ancora effettuare " + ((10 - heist_count) < 0 ? 0 : (10 - heist_count)) + " ispezioni, subirne " + ((heist_limit_val - heist_limit) < 0 ? 0 : (heist_limit_val - heist_limit)) + " e spiare " + (30 - spy_count) + " giocatori.", kb).then(function () {
+						answerCallbacks[message.chat.id] = function (answer) {
+							if (answer.text.indexOf("Ispezione") != -1){
+								connection.query('SELECT id FROM heist_progress WHERE from_id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
 									if (Object.keys(rows).length > 0) {
-										var date = new Date(rows[0].datetime);
-										var short_date = addZero(date.getHours()) + ":" + addZero(date.getMinutes());
-										var text = "Ispezione in corso fino alle " + short_date;
-										bot.sendMessage(message.chat.id, text, abort_heist);
+										bot.sendMessage(message.chat.id, "Stai svolgendo un ispezione, completala prima di iniziarne un'altra", back);
 										return;
 									}
 
-									if (heist_protection != null) {
-										bot.sendMessage(message.chat.id, "A causa del campo di forza non puoi ispezionare gli altri utenti", back);
-										return;
-									}
+									connection.query('SELECT datetime FROM heist WHERE from_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+										if (Object.keys(rows).length > 0) {
+											var date = new Date(rows[0].datetime);
+											var short_date = addZero(date.getHours()) + ":" + addZero(date.getMinutes());
+											var text = "Ispezione in corso fino alle " + short_date;
+											bot.sendMessage(message.chat.id, text, abort_heist);
+											return;
+										}
 
-									bot.sendMessage(message.chat.id, "Invia uno gnomo ad un rifugio di un altro giocatore per cercare di ottenere il suo bottino e una Chiave Mistica, puoi usare il Matchmaking per sceglierlo casualmente (esclusi i compagni di team, di accademia o madre) in base alla tua abilità oppure inserire il suo nickname", kb2);
+										if (heist_protection != null) {
+											bot.sendMessage(message.chat.id, "A causa del campo di forza non puoi ispezionare gli altri utenti", back);
+											return;
+										}
+
+										bot.sendMessage(message.chat.id, "Invia uno gnomo ad un rifugio di un altro giocatore per cercare di ottenere il suo bottino e una Chiave Mistica, puoi usare il Matchmaking per sceglierlo casualmente (esclusi i compagni di team, di accademia o madre) in base alla tua abilità oppure inserire il suo nickname", kb2);
+									});
 								});
-							});
-						}
-					};
+							}
+						};
+					});
 				});
 			});
 		});
 	});
 });
 
+bot.onText(/Ispezioni Passate/i, function (message) {
+	connection.query('SELECT account_id, holiday, id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0)
+			return;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+		if (rows[0].holiday == 1) {
+			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back);
+			return;
+		}
+
+		var player_id = rows[0].id;
+		
+		connection.query('SELECT P1.nickname As from_nick, P2.nickname As to_nick, fail, time FROM heist_history H INNER JOIN player P1 ON H.from_id = P1.id INNER JOIN player P2 ON H.to_id = P2.id WHERE from_id = ' + player_id + ' OR to_id = ' + player_id + ' ORDER BY time DESC LIMIT 25', function (err, rows, fields) {
+			if (err) throw err;
+
+			var text = "<b>Ispezioni passate</b>:\n\n";
+			var d;
+			var long_date;
+			var fail = "";
+			for (var i = 0, len = Object.keys(rows).length; i < len; i++){
+				d = new Date(rows[i].time);
+				long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1);
+				
+				if (message.from.username == rows[i].from_nick){
+					if (rows[i].fail == 0)
+						fail = " e vinta!";
+					else
+						fail = " e persa!";
+					text += "> Inviata contro <i>" + rows[i].to_nick + "</i> alle " + long_date + fail + "\n";
+				} else {
+					if (rows[i].fail == 0)
+						fail = " e persa!";
+					else
+						fail = " e vinta!";
+					text += "> Subita da <i>" + rows[i].from_nick + "</i> alle " + long_date + fail + "\n";
+				}
+			}
+			
+			bot.sendMessage(message.chat.id, text, back_html);
+		});
+	});
+});
 
 bot.onText(/matchmaking/i, function (message) {
 	connection.query('SELECT account_id, holiday, heist_protection, exp, reborn, ability, id, weapon, life, house_id, money, heist_count, last_mm, global_end, boost_id, boost_mission, travel_id, cave_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -47808,7 +47870,7 @@ function setFinishedHeist(element, index, array) {
 								var history_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
 								connection.query('INSERT INTO heist_history (from_id, to_id, rate1, fail, time) VALUES ' +
-												 '(' + fromId + ',' + toId + ',0,1,"' + history_date + '")',
+												 '(' + fromId + ', ' + toId + ', 0, 1, "' + history_date + '")',
 												 function (err, rows, fields) {
 									if (err) throw err;
 								});
