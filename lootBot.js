@@ -758,11 +758,72 @@ function activateEvent(){
 		if (err) throw err;
 		if (rows[0].next_event_name == null)
 			return;
-		updateValue(rows[0].next_event_name, 1);
+		
+		var event = rows[0].next_event_name;
+		
+		if (event == "luckyMode") {
+			connection.query('DELETE FROM contest', function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
+		if (event == "arena") {
+			connection.query('DELETE FROM event_arena_status', function (err, rows, fields) {
+				if (err) throw err;
+				connection.query('DELETE FROM event_arena_dragon', function (err, rows, fields) {
+					if (err) throw err;
+				});
+			});
+		}
+		if (event == "lootteria") {
+			connection.query('DELETE FROM event_lottery_coins', function (err, rows, fields) {
+				if (err) throw err;
+				connection.query('UPDATE event_lottery_prize SET extracted = 0', function (err, rows, fields) {
+					if (err) throw err;
+				});
+			});
+		}
+		if (event == "villa") {
+			connection.query('DELETE FROM event_villa_gift', function (err, rows, fields) {
+				if (err) throw err;
+			});
+			connection.query('UPDATE event_villa_status SET points = 10', function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
+		if (event == "wanted") {
+			connection.query('DELETE FROM event_wanted_status', function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
+		if (event == "eventTeamStory") {
+			connection.query('DELETE FROM event_team_story', function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
+		if (event == "eventFestival") {
+			connection.query('UPDATE event_crafting_status SET total_cnt = 0', function (err, rows, fields) {
+				if (err) throw err;
+				reloadFestival(1);
+			});
+		}
+		if (event == "checkDragonTopOn"){
+			checkDragonTopOn = onoff;
+			connection.query('UPDATE config SET global_msg = "Le <b>Vette dei Draghi</b> sono aperte!\nPartecipa agli incontri tra draghi più popolari delle terre di Lootia e vinci sostanziosi <b>premi</b>!\nBuon divertimento!", global_msg_on = 1', function (err, rows, fields) {
+				if (err) throw err;
+				bot.sendMessage(20471035, "Lancia /sendmsg per inviare l'avviso di apertura vette");
+			});
+		}
+		if (event == "gnomorra") {
+			connection.query('DELETE FROM event_gnomorra', function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
+		
+		updateValue(event, 1);
 		reloadEvents();
 		checkKeyboard();
-		console.log("Evento attivato: " + rows[0].next_event_name);
-		bot.sendMessage(20471035, "Evento attivato: " + rows[0].next_event_name);
+		console.log("Evento attivato: " + event);
+		bot.sendMessage(20471035, "Evento attivato: " + event);
 	});
 }
 
@@ -771,11 +832,45 @@ function deactivateEvent(){
 		if (err) throw err;
 		if (rows[0].next_event_name == null)
 			return;
-		updateValue(rows[0].next_event_name, 0);
+		
+		var event = rows[0].next_event_name;
+		
+		if (event == "wanted"){
+			connection.query('UPDATE event_wanted_status SET wanted_id = 0', function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
+
+		if (event == "checkDragonTopOn"){
+			/*
+			ALTER TABLE dragon_dummy AUTO_INCREMENT = 100000;
+			DELETE FROM dragon_dummy;
+			DELETE FROM dragon_top_dummy;
+			DELETE FROM dragon_top_rank;
+			DELETE FROM dragon_top_status;
+			*/
+			connection.query('ALTER TABLE dragon_dummy AUTO_INCREMENT = 100000', function (err, rows, fields) {
+				if (err) throw err;
+			});
+			connection.query('DELETE FROM dragon_dummy', function (err, rows, fields) {
+				if (err) throw err;
+			});
+			connection.query('DELETE FROM dragon_top_dummy', function (err, rows, fields) {
+				if (err) throw err;
+			});
+			connection.query('DELETE FROM dragon_top_rank', function (err, rows, fields) {
+				if (err) throw err;
+			});
+			connection.query('DELETE FROM dragon_top_status', function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
+		
+		updateValue(event, 0);
 		reloadEvents();
 		checkKeyboard();
-		console.log("Evento disattivato: " + rows[0].next_event_name);
-		bot.sendMessage(20471035, "Evento disattivato: " + rows[0].next_event_name);
+		console.log("Evento disattivato: " + event);
+		bot.sendMessage(20471035, "Evento disattivato: " + event);
 		
 		connection.query('UPDATE config SET next_event_name = NULL', function (err, rows, fields) {
 			if (err) throw err;
@@ -783,6 +878,7 @@ function deactivateEvent(){
 	});
 }
 
+/*
 bot.onText(/^\/eventon (.+)|^\/eventon|^\/eventoff (.+)|^\/eventoff/, function (message, match) {
 	if (message.from.id == 20471035) {
 		var event = "";
@@ -933,13 +1029,6 @@ bot.onText(/^\/eventon (.+)|^\/eventon|^\/eventoff (.+)|^\/eventoff/, function (
 			}
 
 			if (event == "top"){
-				/*
-				ALTER TABLE dragon_dummy AUTO_INCREMENT = 100000;
-				DELETE FROM dragon_dummy;
-				DELETE FROM dragon_top_dummy;
-				DELETE FROM dragon_top_rank;
-				DELETE FROM dragon_top_status;
-				*/
 				connection.query('ALTER TABLE dragon_dummy AUTO_INCREMENT = 100000', function (err, rows, fields) {
 					if (err) throw err;
 				});
@@ -969,6 +1058,7 @@ bot.onText(/^\/eventon (.+)|^\/eventon|^\/eventoff (.+)|^\/eventoff/, function (
 		bot.sendMessage(message.chat.id, "Evento " + event + " impostato a " + onoff);
 	}
 });
+*/
 
 var dMana = new Date();
 if ((dMana.getDay() == 4) || (dMana.getDay() == 5))
