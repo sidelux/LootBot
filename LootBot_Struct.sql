@@ -614,6 +614,7 @@ DROP TABLE IF EXISTS `config`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `config` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `next_event_name` varchar(32) DEFAULT NULL,
   `global_eventon` int(11) NOT NULL DEFAULT '0',
   `global_eventwait` int(11) NOT NULL DEFAULT '0' COMMENT 'Raccogliendo dati',
   `global_eventhide` int(11) NOT NULL DEFAULT '0' COMMENT 'Cap non visibile',
@@ -3408,4 +3409,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-05 15:00:11
+-- Dump completed on 2019-02-06 12:00:11

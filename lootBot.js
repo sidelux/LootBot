@@ -18,21 +18,6 @@ var answerCallbacks = {};
 var eventMana = 0;
 var eventDust = 0;
 
-// Eventi attivati
-var crazyMode = 0;			// nulla
-var luckyMode = 0;			// svuota contest
-var arena = 0;				// azzera le due tabelle
-var lootteria = 0;			// svuota event_lottery_coins e event_lottery_prize con extracted a 0
-var lootteriaBlock = 0;
-var autoEstrazione = 0;
-var villa = 0;				// update a 10 punti e svuota tabella
-var wanted = 0;				// svuota event_wanted_status
-var eventTeamStory = 0;		// svuota event_team_story
-var eventFestival = 0;		// event_crafting_status con total_cnt a 0
-var specialMission = 0;		// nulla
-var checkDragonTopOn = 0;	// alla chiusura: svuota tabelle dragon_ e auto increment dummy a 100000
-var gnomorra = 0;			// svuota tabella event_gnomorra
-
 // Festività o disattivati
 var eventStory = 0;
 var halloween = 0;
@@ -86,6 +71,49 @@ var http = require('http');
 var https = require('https');
 var fs = require('fs');
 var bodyParser = require('body-parser');
+var iniBuilder = require('ini-builder');
+
+function updateValue(keyName, valueName){
+	var data = iniBuilder.parse(fs.readFileSync('events.ini'));
+	var entry = iniBuilder.find(data, keyName);
+	entry.value = valueName;
+	fs.writeFileSync('events.ini', iniBuilder.serialize(data));
+}
+
+function getValue(keyName){
+	var data = iniBuilder.parse(fs.readFileSync('events.ini'));
+	var entry = iniBuilder.find(data, keyName);
+	return entry.value;
+}
+
+// Eventi
+var crazyMode;					// nulla
+var luckyMode;					// svuota contest
+var arena;						// azzera le due tabelle
+var lootteria;					// svuota event_lottery_coins e event_lottery_prize con extracted a 0
+var lootteriaBlock = 0;
+var autoEstrazione = 0;
+var villa;						// update a 10 punti e svuota tabella
+var wanted;						// svuota event_wanted_status
+var eventTeamStory;				// svuota event_team_story
+var eventFestival;				// event_crafting_status con total_cnt a 0
+var specialMission;				// nulla
+var checkDragonTopOn;			// alla chiusura: svuota tabelle dragon_ e auto increment dummy a 100000
+var gnomorra;					// svuota tabella event_gnomorra
+
+function reloadEvents(){
+	crazyMode = getValue("crazyMode");
+	luckyMode = getValue("luckyMode");
+	arena = getValue("arena");
+	lootteria = getValue("lootteria");
+	villa = getValue("villa");
+	wanted = getValue("wanted");
+	eventTeamStory = getValue("eventTeamStory");
+	eventFestival = getValue("eventFestival");
+	specialMission = getValue("specialMission");
+	checkDragonTopOn = getValue("checkDragonTopOn");
+	gnomorra = getValue("gnomorra");
+}
 
 var token = config.maintoken;
 var bot = new TelegramBot(token);
@@ -158,6 +186,14 @@ var j5 = Schedule.scheduleJob('00 15 * * *', function () { //15:00
 		updateSpecialItem();
 	else if (d.getDay() == 2)
 		resetSpecialItem();
+});
+
+var j6 = Schedule.scheduleJob('00 10 * * 6', function () { //10:00
+	activateEvent();
+});
+
+var j7 = Schedule.scheduleJob('00 10 * * 1', function () { //10:00
+	deactivateEvent();
 });
 
 callNTimes(20000, function () { //20 secondi
@@ -666,6 +702,83 @@ bot.onText(/^\/assaultstop/, function (message, match) {
 	}
 });
 
+bot.onText(/^\/nextevent (.+)|^\/nextevent/, function (message, match) {
+	if (message.from.id != 20471035)
+		return;
+	connection.query('SELECT next_event_name FROM config', function (err, rows, fields) {
+		if (err) throw err;
+	
+		if (match[1] == undefined) {
+			if (rows[0].next_event_name != null)
+				bot.sendMessage(message.chat.id, "Evento impostato: " + rows[0].next_event_name + ", null per rimuoverlo");
+			else
+				bot.sendMessage(message.chat.id, "Evento non ancora impostato");
+			return;
+		}
+		
+		if (match[1] == "null"){
+			connection.query('UPDATE config SET next_event_name = NULL', function (err, rows, fields) {
+			if (err) throw err;
+				bot.sendMessage(message.chat.id, "Prossimo evento annullato");
+			});
+		} else {
+			var eventList = ["crazyMode", "luckyMode", "arena", "lootteria", "villa", "wanted", "eventTeamStory", "eventFestival", "specialMission", "checkDragonTopOn", "gnomorra"];
+
+			if (eventList.indexOf(match[1]) == -1){
+				bot.sendMessage(message.chat.id, "Evento non valido");
+				return;
+			}
+
+			connection.query('UPDATE config SET next_event_name = "' + match[1] + '"', function (err, rows, fields) {
+				if (err) throw err;
+				bot.sendMessage(message.chat.id, "Salvato!\nProssimo evento: " + match[1]);
+			});		 
+		}
+	});
+});
+
+bot.onText(/^\/activateevent/, function (message, match) {
+	if (message.from.id != 20471035)
+		return;
+	activateEvent();
+	console.log("Attivazione manuale evento");
+});
+
+bot.onText(/^\/deactivateevent/, function (message, match) {
+	if (message.from.id != 20471035)
+		return;
+	deactivateEvent();
+	console.log("Disattivazione manuale evento");
+});
+
+function activateEvent(){
+	connection.query('SELECT next_event_name FROM config', function (err, rows, fields) {
+		if (err) throw err;
+		if (rows[0].next_event_name == null)
+			return;
+		updateValue(rows[0].next_event_name, 1);
+		reloadEvents();
+		checkKeyboard();
+		console.log("Evento attivato: " + rows[0].next_event_name);
+	});
+}
+
+function deactivateEvent(){
+	connection.query('SELECT next_event_name FROM config', function (err, rows, fields) {
+		if (err) throw err;
+		if (rows[0].next_event_name == null)
+			return;
+		updateValue(rows[0].next_event_name, 0);
+		reloadEvents();
+		checkKeyboard();
+		console.log("Evento disattivato: " + rows[0].next_event_name);
+		
+		connection.query('UPDATE config SET next_event_name = NULL', function (err, rows, fields) {
+			if (err) throw err;
+		});
+	});
+}
+
 bot.onText(/^\/eventon (.+)|^\/eventon|^\/eventoff (.+)|^\/eventoff/, function (message, match) {
 	if (message.from.id == 20471035) {
 		var event = "";
@@ -683,12 +796,15 @@ bot.onText(/^\/eventon (.+)|^\/eventon|^\/eventoff (.+)|^\/eventoff/, function (
 			onoff = 0;
 
 		if (onoff == 1){	// eventon
-			if (event == "crazy")
+			if (event == "crazy"){
+				updateValue("crazyMode", 1);
 				crazyMode = onoff;
+			}
 			if (event == "lucky") {
 				connection.query('DELETE FROM contest', function (err, rows, fields) {
 					if (err) throw err;
 					luckyMode = onoff;
+					updateValue("luckyMode", 1);
 				});
 			}
 			if (event == "arena") {
@@ -697,6 +813,7 @@ bot.onText(/^\/eventon (.+)|^\/eventon|^\/eventoff (.+)|^\/eventoff/, function (
 					connection.query('DELETE FROM event_arena_dragon', function (err, rows, fields) {
 						if (err) throw err;
 						arena = onoff;
+						updateValue("arena", 1);
 					});
 				});
 			}
@@ -706,6 +823,7 @@ bot.onText(/^\/eventon (.+)|^\/eventon|^\/eventoff (.+)|^\/eventoff/, function (
 					connection.query('UPDATE event_lottery_prize SET extracted = 0', function (err, rows, fields) {
 						if (err) throw err;
 						lootteria = onoff;
+						updateValue("lootteria", 1);
 					});
 				});
 			}
@@ -716,18 +834,21 @@ bot.onText(/^\/eventon (.+)|^\/eventon|^\/eventoff (.+)|^\/eventoff/, function (
 				connection.query('UPDATE event_villa_status SET points = 10', function (err, rows, fields) {
 					if (err) throw err;
 					villa = onoff;
+					updateValue("villa", 1);
 				});
 			}
 			if (event == "wanted") {
 				connection.query('DELETE FROM event_wanted_status', function (err, rows, fields) {
 					if (err) throw err;
 					wanted = onoff;
+					updateValue("wanted", 1);
 				});
 			}
 			if (event == "teamstory") {
 				connection.query('DELETE FROM event_team_story', function (err, rows, fields) {
 					if (err) throw err;
 					eventTeamStory = onoff;
+					updateValue("eventTeamStory", 1);
 				});
 			}
 			if (event == "festival") {
@@ -736,56 +857,76 @@ bot.onText(/^\/eventon (.+)|^\/eventon|^\/eventoff (.+)|^\/eventoff/, function (
 					// svuota anche event_crafting_item?
 					eventFestival = onoff;
 					reloadFestival(1);
+					updateValue("eventFestival", 1);
 				});
 			}
-			if (event == "specialmission")
+			if (event == "specialmission"){
 				specialMission = onoff;
-			if (event == "top")
+				updateValue("specialmission", 1);
+			}
+			if (event == "top"){
 				checkDragonTopOn = onoff;
+				connection.query('UPDATE config SET global_msg = "Le <b>Vette dei Draghi</b> sono aperte!\nPartecipa agli incontri tra draghi più popolari delle terre di Lootia e vinci sostanziosi <b>premi</b>!\nBuon divertimento!", global_msg_on = 1', function (err, rows, fields) {
+					if (err) throw err;
+					bot.sendMessage(message.chat.id, "Lancia /sendmsg per inviare l'avviso di apertura vette");
+					updateValue("checkDragonTopOn", 1);
+				});
+			}
 			if (event == "gnomorra") {
 				connection.query('DELETE FROM event_gnomorra', function (err, rows, fields) {
 					if (err) throw err;
 					gnomorra = onoff;
-				});
-			}
-
-			if (event == "top"){
-				connection.query('UPDATE config SET global_msg = "Le <b>Vette dei Draghi</b> sono aperte!\nPartecipa agli incontri tra draghi più popolari delle terre di Lootia e vinci sostanziosi <b>premi</b>!\nBuon divertimento!", global_msg_on = 1', function (err, rows, fields) {
-					if (err) throw err;
-					bot.sendMessage(message.chat.id, "Lancia /sendmsg per inviare l'avviso di apertura vette");
+					updateValue("gnomorra", 1);
 				});
 			}
 		}else{	// eventoff
-			if (event == "crazy")
+			if (event == "crazy"){
 				crazyMode = onoff;
+				updateValue("crazyMode", 0);
+			}
 
-			if (event == "lucky")
+			if (event == "lucky"){
 				luckyMode = onoff;
+				updateValue("luckyMode", 0);
+			}
 
-			if (event == "arena")
+			if (event == "arena"){
 				arena = onoff;
+				updateValue("arena", 0);
+			}
 
-			if (event == "lottery")
+			if (event == "lottery"){
 				lootteria = onoff;
+				updateValue("lootteria", 0);
+			}
 
-			if (event == "villa")
+			if (event == "villa"){
 				villa = onoff;
+				updateValue("villa", 0);
+			}
 
 			if (event == "wanted"){
 				connection.query('UPDATE event_wanted_status SET wanted_id = 0', function (err, rows, fields) {
 					if (err) throw err;
 				});
 				wanted = onoff;
+				updateValue("wanted", 0);
 			}
 
-			if (event == "teamstory")
+			if (event == "teamstory"){
 				eventTeamStory = onoff;
+				updateValue("eventTeamStory", 0);
+			}
 
-			if (event == "festival")
+			if (event == "festival"){
 				eventFestival = onoff;
+				updateValue("eventFestival", 0);
+			}
 
-			if (event == "specialmission")
+			if (event == "specialmission"){
 				specialMission = onoff;
+				updateValue("specialmission", 0);
+			}
 
 			if (event == "top"){
 				/*
@@ -811,10 +952,13 @@ bot.onText(/^\/eventon (.+)|^\/eventon|^\/eventoff (.+)|^\/eventoff/, function (
 					if (err) throw err;
 				});
 				checkDragonTopOn = onoff;
+				updateValue("checkDragonTopOn", 0);
 			}
 
-			if (event == "gnomorra")
+			if (event == "gnomorra"){
 				gnomorra = onoff;
+				updateValue("gnomorra", 0);
+			}
 		}
 
 		checkKeyboard();
@@ -13180,8 +13324,11 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																			danno = Math.round(danno);
 
-																			if (danno > 0)
+																			if (danno > 0) {
 																				setAchievement(message.chat.id, player_id, 2, danno);
+																				if ((player_weapon_id == 0) && (player_weapon2_id == 0) && (player_weapon3_id == 0))
+																					setAchievement(message.chat.id, player_id, 71, danno);
+																			}
 
 																			var lifesum = monster_life - danno;
 																			if (lifesum <= 0) {
