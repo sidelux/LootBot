@@ -1614,7 +1614,11 @@ CREATE TABLE `heist_history` (
   `rate3` int(11) NOT NULL DEFAULT '0',
   `fail` int(11) NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `heist_history_from_id` (`from_id`),
+  KEY `heist_history_to_id` (`to_id`),
+  CONSTRAINT `heist_history_from_id` FOREIGN KEY (`from_id`) REFERENCES `player` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `heist_history_to_id` FOREIGN KEY (`to_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -3409,4 +3413,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-06 15:00:10
+-- Dump completed on 2019-02-07  9:00:12
