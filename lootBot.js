@@ -4364,16 +4364,27 @@ bot.onText(/torna al menu$/i, function (message) {
 					console.log(message.from.username + " aggiunto");
 				});
 			} else {
-				connection.query('SELECT real_name, gender, id, birth_date FROM player WHERE account_id = "' + message.from.id + '"', function (err, rows, fields) {
+				connection.query('SELECT id, real_name, gender, birth_date FROM player WHERE account_id = "' + message.from.id + '"', function (err, rows, fields) {
 					if (err) throw err;
 
+					var query = "";
 					if (Object.keys(rows).length > 0) {
-						if ((rows[0].real_name == null) || (rows[0].gender == null) || (rows[0].birth_date)){
+						if (rows[0].real_name != null)
+							query += ", real_name = '" + rows[0].real_name + "'";
+						if (rows[0].gender != null)
+							query += ", gender = '" + rows[0].gender + "'";
+						if (rows[0].birth_date != null){
+							var d = new Date(rows[0].birth_date);
+							var long_date = d.getFullYear() + "-" + addZero(d.getMonth()+1) + "-" + addZero(d.getDate());
+							query += ", birth_date = '" + long_date + "'";
+						}
+						
+						if (query == ""){
 							connection.query('UPDATE plus_players SET nickname = "' + message.from.username + '" WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 								if (err) throw err;
 							});
 						}else{
-							connection.query('UPDATE plus_players SET nickname = "' + message.from.username + '", gender = "' + rows[0].gender + '", real_name = "' + rows[0].real_name + '", birth_date = "' + rows[0].birth_date + '" WHERE account_id = ' + message.from.id, function (err, rows, fields) {
+							connection.query('UPDATE plus_players SET nickname = "' + message.from.username + '"' + query + ' WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 								if (err) throw err;
 							});
 						}
@@ -24724,7 +24735,7 @@ function generateMobWeakness(team_id, mob_cnt){
 				if (i == mob_cnt-1)
 					is_boss = 1;
 				if ((boss_num == 31) && (is_boss))
-					place_arr.splice(index, 1);	// rimuove la piattaforma di lancio per la fenice
+					place_arr.splice(1, 1);	// rimuove la piattaforma di lancio per la fenice
 				place_arr = shuffle(place_arr);
 				weak_to = place_arr[0];
 				strong_to = place_arr[1];
