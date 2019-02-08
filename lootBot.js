@@ -4043,7 +4043,7 @@ function mainMenu(message) {
 										if (err) throw err;
 										if (Object.keys(rows).length > 0) {
 											var heist_end = new Date(rows[0].datetime);
-											msgtext = msgtext + "\n🔦 Gnomo in ispezione alle " + addZero(heist_end.getHours()) + ":" + addZero(heist_end.getMinutes());
+											msgtext = msgtext + "\n🔦 Gnomo in ispezione fino alle " + addZero(heist_end.getHours()) + ":" + addZero(heist_end.getMinutes());
 										}
 
 										connection.query('SELECT name, progress, value, ROUND(progress/IF(multiply=0, value, value*' + reborn + ')*100) As perc, multiply FROM achievement_daily, achievement_list, achievement_status WHERE achievement_daily.achievement_id = achievement_list.id AND achievement_status.achievement_id = achievement_list.id AND player_id = ' + player_id + ' AND completed = 0 ORDER BY perc DESC', function (err, rows, fields) {
@@ -21875,8 +21875,10 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 														wall_max_life = Math.round(wall_max_life);
 														
 														console.log("Mura: " + team_id + " " + formatNumber(wall_max_life));
+														
+														var perc = Math.round(life/wall_max_life*100);
 
-														text += "A questo livello fornisce <b>" + formatNumber(wall_max_life) + "</b> salute alle mura per protezione, possiede ancora la capacità di proteggere da <b>" + formatNumber(life) + "</b> danni\nSi ripara automaticamente fino al 50% di salute alla sconfitta di un nemico, ma puoi comunque ripararla usando oggetti base (scrivi il nome se non lo vedi nella lista)." + class_bonus + "\n";
+														text += "A questo livello fornisce <b>" + formatNumber(wall_max_life) + "</b> salute alle mura per protezione, possiede ancora la capacità di proteggere da <b>" + formatNumber(life) + "</b> danni (" + perc + "%)\nSi ripara automaticamente fino al 50% di salute alla sconfitta di un nemico, ma puoi comunque ripararla usando oggetti base (scrivi il nome se non lo vedi nella lista)." + class_bonus + "\n";
 
 														if (total_life != wall_max_life){
 															connection_sync.query("UPDATE assault_place_team SET total_life = " + wall_max_life + " WHERE team_id = " + team_id + " AND place_id = 5");
