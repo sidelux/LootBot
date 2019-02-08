@@ -44461,7 +44461,7 @@ function checkTeamCd() {
 };
 
 function checkEvents() {
-	connection.query('SELECT mission_id, id, chat_id, exp, money FROM player WHERE event = 0 AND mission_id != 0 AND money > 500 AND exp > 100 ORDER BY RAND() LIMIT 10', function (err, rows, fields) {
+	connection.query('SELECT mission_id, id, chat_id, exp, money, life, total_life FROM player WHERE event = 0 AND mission_id != 0 AND money > 500 AND exp > 100 ORDER BY RAND() LIMIT 10', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1) {
@@ -44485,6 +44485,8 @@ function setEvents(element, index, array) {
 	var itemName3 = "";
 	var chat_id_t = 0;
 	var money = 0;
+	var life = 0;
+	var total_life = 0;
 	var mission_id = element.mission_id;
 
 	rand = Math.round(Math.random() * 46);
@@ -44497,6 +44499,8 @@ function setEvents(element, index, array) {
 	exp = element.exp;
 	level = Math.floor(exp/10);
 	money = element.money;
+	life = element.life;
+	total_life = element.total_life;
 
 	if (mission_id == 1002) {
 		text = "Durante la Missione vieni distratto da una rauca voce che invoca il tuo nome dall'oscuro portone di un edificio in rovina. La voce appartiene a una figura incappucciata che, al tuo apparire, senza mostrare il volto, ti porge cauta un tomo possente. Ne è adorno il fronte, che a una bianca gemma ne cinge tre: così è rossa, gialla ed eguale blu. Scompare la figura, ciò tuttavia s'accresce l'ardore: desideri leggerlo, desideri imparare. Un luogo conosciuto potrebbe aiutarti.";
@@ -44568,17 +44572,16 @@ function setEvents(element, index, array) {
 			bot.sendMessage(chat_id, text);
 		});
 	} else if (rand == 6) {
-		connection.query('SELECT life, total_life FROM player WHERE id=' + player_id, function (err, rows, fields) {
-			if (err) throw err;
-
-			var value = Math.round(getRandomArbitrary(rows[0].total_life/5, rows[0].total_life/3));
-
+		if (life < total_life){
+			var value = Math.round(getRandomArbitrary(total_life/5, total_life/3));
+			if (value+life > total_life)
+				value = total_life-life;
 			connection.query('UPDATE player SET life = life + ' + value + ' WHERE player.id=' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				text = "Durante la missione ti imbatti in un piccolo villaggio, vieni medicato e recuperi " + formatNumber(value) + " hp";
 				bot.sendMessage(chat_id, text);
 			});
-		});
+		}
 	} else if (rand == 7) {
 		connection.query('SELECT item.id, item.name, item.rarity FROM `item` WHERE item.rarity IN ("C", "NC", "R", "UR", "L") AND item.craftable = 0 ORDER BY RAND()', function (err, rows, fields) {
 			if (err) throw err;
@@ -44588,12 +44591,16 @@ function setEvents(element, index, array) {
 			bot.sendMessage(chat_id, text);
 		});
 	} else if (rand == 8) {
-		var value = Math.round(getRandomArbitrary(level*10, level*20));
-		connection.query('UPDATE player SET life = life + ' + value + ' WHERE player.id = ' + player_id, function (err, rows, fields) {
-			if (err) throw err;
-			text = "Durante una missione ricevi una bevanda rigenerante, grazie ad essa recuperi " + formatNumber(value) + " hp";
-			bot.sendMessage(chat_id, text);
-		});
+		if (life < total_life){
+			var value = Math.round(getRandomArbitrary(level*10, level*20));
+			if (value+life > total_life)
+				value = total_life-life;
+			connection.query('UPDATE player SET life = life + ' + value + ' WHERE player.id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				text = "Durante una missione ricevi una bevanda rigenerante, grazie ad essa recuperi " + formatNumber(value) + " hp";
+				bot.sendMessage(chat_id, text);
+			});
+		}
 	} else if (rand == 9) {
 		connection.query('SELECT item.id, item.name, item.rarity FROM `item` WHERE item.rarity IN ("NC","R", "L") AND item.craftable = 0 ORDER BY RAND()', function (err, rows, fields) {
 			if (err) throw err;
@@ -44827,11 +44834,13 @@ function setEvents(element, index, array) {
 			bot.sendMessage(chat_id, text);
 		});
 	} else if (rand == 28) {
-		connection.query('UPDATE player SET life = total_life WHERE id = ' + player_id, function (err, rows, fields) {
-			if (err) throw err;
-			text = "Durante la missione vedi sfrecciare sopra di te una figura rossa. Ti distrai non tanto per la figura, ma per il fatto che sembra aver perso una nocciolina che precipitando ti urta la fronte attirando la tua attenzione. Un po'per vendetta un po' per fame mangi la nocciolina con tutto il guscio e scopri con sommo piacere che era una super arachide di super Pippo. Recuperi così tutti gli hp!";
-			bot.sendMessage(chat_id, text);
-		});
+		if (life < total_life){
+			connection.query('UPDATE player SET life = total_life WHERE id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				text = "Durante la missione vedi sfrecciare sopra di te una figura rossa. Ti distrai non tanto per la figura, ma per il fatto che sembra aver perso una nocciolina che precipitando ti urta la fronte attirando la tua attenzione. Un po'per vendetta un po' per fame mangi la nocciolina con tutto il guscio e scopri con sommo piacere che era una super arachide di super Pippo. Recuperi così tutti gli hp!";
+				bot.sendMessage(chat_id, text);
+			});
+		}
 	} else if (rand == 29) {
 		connection.query('SELECT life FROM player WHERE id=' + player_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -44982,18 +44991,14 @@ function setEvents(element, index, array) {
 			addChest(player_id, rows[0].id);
 		});
 	} else if (rand == 41) {
-		connection.query('SELECT life, total_life FROM player WHERE id = ' + player_id, function (err, rows, fields) {
-			if (err) throw err;
+		if (life < total_life) {
+			text = "Durante una missione incontri una fata graziosissima, diventate così amici che decide di ricaricarti la vita al massimo!";
+			bot.sendMessage(chat_id, text);
 
-			if (rows[0].life < rows[0].total_life) {
-				text = "Durante una missione incontri una fata graziosissima, diventate così amici che decide di ricaricarti la vita al massimo!";
-				bot.sendMessage(chat_id, text);
-
-				connection.query('UPDATE player SET life = total_life WHERE player.id=' + player_id, function (err, rows, fields) {
-					if (err) throw err;
-				});
-			};
-		});
+			connection.query('UPDATE player SET life = total_life WHERE player.id=' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+		};
 	} else if (rand == 42) {
 		connection.query('SELECT mission_time_end, money FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
