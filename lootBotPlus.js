@@ -396,7 +396,8 @@ bot.onText(/^\/comandigiocatore/, function (message) {
 					"/spia - Spia un giocatore mostrando la scheda giocatore\n" +
 					"/ispeziona - Ispeziona un giocatore\n" +
 					"/rango - Visualizza informazioni sul rango del giocatore\n" +
-					"/abilità - Visualizza informazioni sull'abilità del giocatore", mark);
+					"/abilità - Visualizza informazioni sull'abilità del giocatore\n" +
+					"/posizione - Indica la posizione in classifica globale e se si otterrà il relativo punto partecipazione", mark);
 });
 
 bot.onText(/^\/comandioggetto/, function (message) {
@@ -845,11 +846,12 @@ bot.onText(/^\/caffè/, function (message) {
 });
 
 bot.onText(/^\/whisky/, function (message) {
-	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, market_ban, account_id, money, holiday, birth_date FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
 		var money = rows[0].money;
+		var birth_date = rows[0].birth_date;
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -873,7 +875,10 @@ bot.onText(/^\/whisky/, function (message) {
 		} else {
 			connection.query('UPDATE player SET money = money-100 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
-				bot.sendMessage(message.chat.id, "🥃");
+				if (calculateAge(new Date(birth_date)) < 18)
+					bot.sendMessage(message.chat.id, "🥛");
+				else
+					bot.sendMessage(message.chat.id, "🥃");
 			});
 			connection.query('UPDATE config SET food = food+1', function (err, rows, fields) {
 				if (err) throw err;

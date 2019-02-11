@@ -10041,7 +10041,7 @@ bot.onText(/dungeon/i, function (message) {
 																}
 																connection.query('UPDATE player SET money = money - ' + money + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
-																	bot.sendMessage(message.chat.id, "Scegli di inserire nella fessura " + money + " §, il portone ti ringrazia con una voce inquietante, e si apre lentamente, così da aprire la strada per la stanza seguente.", dNext);
+																	bot.sendMessage(message.chat.id, "Scegli di inserire nella fessura " + formatNumber(money) + " §, il portone ti ringrazia con una voce inquietante, e si apre lentamente, così da aprire la strada per la stanza seguente.", dNext);
 																});
 																if (boost_id == 8)
 																	setBoost(player_id, boost_mission, boost_id);
@@ -19761,7 +19761,7 @@ bot.onText(/team/i, function (message) {
 										if ((isAdmin == 1) || (isViceAdmin == 1)) {
 											// ADMIN
 											var show_type = "Aperto";
-											var show_details = "Visibili";
+											var show_details = "Non Visibili";
 											iKeys.push(["Assalto 🐺 (Beta)", "Incarichi 📜"]);
 											iKeys.push(["Dettaglio Membri 👥"]);
 											iKeys.push(["Hall of Fame 🏆", "Liste Membri 🔎"]);
@@ -19778,7 +19778,7 @@ bot.onText(/team/i, function (message) {
 											if (team_closed == 1)
 												show_type = "Chiuso";
 											if (team_details == 1)
-												show_details = "Non Visibili";
+												show_details = "Visibili";
 											iKeys.push(["Tipo: " + show_type, "Dettagli: " + show_details]);
 											iKeys.push(["Torna al menu"]);
 										} else {
@@ -28796,6 +28796,8 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 							var plur = "a";
 							if (hours > 1)
 								plur = "e";
+							if (hours == 0)
+								hours = "meno di 1";
 
 							bot.sendMessage(message.chat.id, "Stai estraendo Mana " + name + " da " + hours + " or" + plur + ", vuoi interrompere ottenendo " + quantity + " unità di mana grezzo?", mYesNo2).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
@@ -29943,7 +29945,7 @@ bot.onText(/ricercato/i, function (message) {
 							var len = Object.keys(rows).length;
 							var rand = Math.round(Math.random() * len - 1);
 
-							if (len < 2){
+							if (len < 5){
 								bot.sendMessage(message.chat.id, "Non ci sono abbastanza cacciatori di taglie, torna tra qualche minuto!!", back);
 								return;
 							}
@@ -47864,10 +47866,19 @@ function setFinishedHeist(element, index, array) {
 											money = 150000;
 
 										//bot.sendMessage(wanted_chat, "Lo gnomo di " + fromNick + " è riuscito a catturarti! Andrà meglio la prossima volta!");
+										
+										var key = 0;
+										var key_text = "";
+										var keyRand = Math.random()*100;
+										if (keyRand < 5){
+											key = 1;
+											key_text = " (Bonus: 1 Chiave Mistica 🗝!)";
+										}
 
-										connection.query('UPDATE player SET money = money + ' + money + ' WHERE id = ' + fromId, function (err, rows, fields) {
+										connection.query('UPDATE player SET money = money + ' + money + ', mkeys = mkeys+' + key + ' WHERE id = ' + fromId, function (err, rows, fields) {
 											if (err) throw err;
-											bot.sendMessage(fromChat, "Il tuo gnomo ha catturato il ricercato e hai ottenuto la sua taglia pari a *" + money + "* §\nTorna nella schermata dell'evento per visualizzare il nuovo ricercato!", mark);
+											bot.sendMessage(fromChat, "Il tuo gnomo ha catturato il ricercato e hai ottenuto la sua taglia pari a *" + formatNumber(money) + "* §" + key_text + "\nTorna nella schermata dell'evento per visualizzare il nuovo ricercato!", mark);
+											globalAchievement(fromId, 1);
 										});
 
 										connection.query('UPDATE event_wanted_status SET heist_win = heist_win+1 WHERE player_id = ' + fromId, function (err, rows, fields) {
@@ -47892,6 +47903,7 @@ function setFinishedHeist(element, index, array) {
 									} else {
 										//bot.sendMessage(wanted_chat, "Lo gnomo di " + fromNick + " ha tentato di catturarti, ma fortunatamente sei riuscito a scappare!");
 										bot.sendMessage(fromChat, "Il tuo tentativo di cattura è stato un FALLIMENTO, riprova tentando ancora!");
+										globalAchievement(wantedId, 1);
 
 										connection.query('UPDATE event_wanted_status SET heist_lost = heist_lost+1 WHERE player_id = ' + fromId, function (err, rows, fields) {
 											if (err) throw err;

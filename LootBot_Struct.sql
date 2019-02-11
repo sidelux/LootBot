@@ -3056,6 +3056,7 @@ CREATE TABLE `team` (
   `child_time` timestamp NULL DEFAULT NULL,
   `kill_num` int(11) NOT NULL DEFAULT '0',
   `boost_id` int(11) NOT NULL DEFAULT '0',
+  `creation_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `child_team` (`child_team`) USING BTREE,
   CONSTRAINT `team_child_team` FOREIGN KEY (`child_team`) REFERENCES `team` (`id`) ON DELETE SET NULL
@@ -3413,4 +3414,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-08  9:00:11
+-- Dump completed on 2019-02-11  9:00:11
