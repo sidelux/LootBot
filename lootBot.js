@@ -22494,6 +22494,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 														}
 													};
 
+													/*
 													if ((place_id == 1) || (place_id == 2)){
 														if (place_active == 1)
 															active = "Disattiva ⚙️";
@@ -22506,6 +22507,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															}
 														};
 													}
+													*/
 
 													var text = "\n\nProsegui lo scontro per sconfiggere i nemici!";
 													if ((elected == 0) && (isAdmin == 0)){
@@ -22551,10 +22553,12 @@ bot.onText(/riprendi battaglia/i, function (message) {
 														}
 													}
 
+													/*
 													if ((place_id == 1) || (place_id == 2)){
 														setAchievement(message.chat.id, player_id, 44, 999);
 														setAchievement(message.chat.id, player_id, 19, 999);
 													}
+													*/
 
 													if (elected == 0)
 														text = "\n\nIncita l'eletto <b>" + elected_nickname + "</b> a proseguire lo scontro e attiva l'incremento!";
@@ -22853,7 +22857,15 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																var minivalTot = 0;
 																for (var i = 0, len = Object.keys(miniboost).length; i < len; i++){
 																	miniboost_arr[miniboost[i].place_id-1] = miniboost[i].cnt;
-																	if ((miniboost[i].place_id == 3) || (miniboost[i].place_id == 4)){
+																	if (miniboost[i].place_id == 1){
+																		minival = 0.5;
+																		minitext = "riduzione probabilità lancio incantesimi dei nemici";
+																		miniunit = "%";
+																	}else if (miniboost[i].place_id == 2){
+																		minival = 0.5;
+																		minitext = "riduzione probabilità colpo critico dei nemici";
+																		miniunit = "%";
+																	}else if ((miniboost[i].place_id == 3) || (miniboost[i].place_id == 4)){
 																		minival = 2;
 																		minitext = "danno";
 																		miniunit = "%";
@@ -23670,12 +23682,26 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			divided_damage_att = divided_damage_att*2;
 																			mob_critic--;
 																			status.push("colpo critico");
+																		} else {
+																			var critRand = Math.random()*100;
+																			var prob = 10;
+																			
+																			if (miniboost_arr[2] > 0)
+																				prob -= prob*(0.005*miniboost_arr[2]);
+																			
+																			if (prob > critRand){
+																				divided_damage_att = divided_damage_att*2;
+																				status.push("colpo critico");
+																			}
 																		}
 
 																		var rand = Math.random()*100;
 																		var prob = 5;
 																		if (is_boss == 1)
 																			prob = 10;
+																		
+																		if (miniboost_arr[1] > 0)
+																			prob -= prob*(0.005*miniboost_arr[1]);
 
 																		if (prob > rand){
 																			rand = Math.random()*100;
@@ -24324,60 +24350,64 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																		var player_life = player[i].life;
 																		var player_total_life = player[i].total_life;
-																		var pot1 = 0;
-																		var pot2 = 0;
-																		var pot3 = 0;
-																		while (player_life < player_total_life){
-																			if (pot1+pot2+pot3 == Math.round(place8_level/2))
-																				break;
-																			if ((player_life+Math.round(player_total_life*perc3) <= player_total_life) && (getItemCnt(player[i].id, 94)-pot3 > 0)){
-																				//console.log("pozione grande");
-																				player_life += Math.round(player_total_life*perc3);
-																				pot3++;
-																				epic_var++;
-																			}else if ((player_life+Math.round(player_total_life*perc2) <= player_total_life) && (getItemCnt(player[i].id, 93)-pot2 > 0)){
-																				//console.log("pozione media");
-																				player_life += Math.round(player_total_life*perc2);
-																				pot2++;
-																				epic_var++;
-																			}else if (getItemCnt(player[i].id, 92)-pot1 > 0){
-																				//console.log("pozione piccola");
-																				player_life += Math.round(player_total_life*perc1);
-																				pot1++;
-																				epic_var++;
-																			}else
-																				break;
-																		}
+																		
+																		if (player_life <= player_total_life*0.2)
+																			setAchievement(player[i].chat_id, player[i].id, 20, 1);
+																		
+																		if (player_life < player_total_life){
+																			var pot1 = 0;
+																			var pot2 = 0;
+																			var pot3 = 0;
+																			while (player_life < player_total_life){
+																				if (pot1+pot2+pot3 == Math.round(place8_level/2))
+																					break;
+																				if ((player_life+Math.round(player_total_life*perc3) <= player_total_life) && (getItemCnt(player[i].id, 94)-pot3 > 0)){
+																					//console.log("pozione grande");
+																					player_life += Math.round(player_total_life*perc3);
+																					pot3++;
+																					epic_var++;
+																				}else if ((player_life+Math.round(player_total_life*perc2) <= player_total_life) && (getItemCnt(player[i].id, 93)-pot2 > 0)){
+																					//console.log("pozione media");
+																					player_life += Math.round(player_total_life*perc2);
+																					pot2++;
+																					epic_var++;
+																				}else if (getItemCnt(player[i].id, 92)-pot1 > 0){
+																					//console.log("pozione piccola");
+																					player_life += Math.round(player_total_life*perc1);
+																					pot1++;
+																					epic_var++;
+																				}else
+																					break;
+																			}
 
-																		if (pot1 > 0)
-																			setAchievement(player[i].chat_id, player[i].id, 35, pot1);
-																		if (pot2 > 0)
-																			setAchievement(player[i].chat_id, player[i].id, 35, pot2);
-																		if (pot3 > 0)
-																			setAchievement(player[i].chat_id, player[i].id, 35, pot3);
+																			if (pot1 > 0)
+																				setAchievement(player[i].chat_id, player[i].id, 35, pot1);
+																			if (pot2 > 0)
+																				setAchievement(player[i].chat_id, player[i].id, 35, pot2);
+																			if (pot3 > 0)
+																				setAchievement(player[i].chat_id, player[i].id, 35, pot3);
 
-																		delItem(player[i].id, 92, pot1);
-																		delItem(player[i].id, 93, pot2);
-																		delItem(player[i].id, 94, pot3);
+																			delItem(player[i].id, 92, pot1);
+																			delItem(player[i].id, 93, pot2);
+																			delItem(player[i].id, 94, pot3);
 
-																		if (player_life > player_total_life)
-																			player_life = player_total_life;
+																			if (player_life > player_total_life)
+																				player_life = player_total_life;
 
-																		connection_sync.query('UPDATE player SET life = ' + player_life + ' WHERE id = ' + player[i].id);
+																			connection_sync.query('UPDATE player SET life = ' + player_life + ' WHERE id = ' + player[i].id);
 
-																		var potSum = pot1+pot2+pot3;
-																		if (potSum == 0)
-																			player_text += "\n> " + player[i].nickname + " non recupera salute";
-																		else {
+																			var potSum = pot1+pot2+pot3;
+																			if (potSum == 0)
+																				player_text += "\n> " + player[i].nickname + " non recupera salute";
+																			else {
 
-																			setAchievement(player[i].chat_id, player[i].id, 35, potSum);
+																				setAchievement(player[i].chat_id, player[i].id, 35, potSum);
 
-																			if (player_life <= player_total_life*0.2)
-																				setAchievement(player[i].chat_id, player[i].id, 20, 1);
-																			var plur = "i";
-																			if (potSum == 1)
-																				plur = "e";
-																			player_text += "\n> " + player[i].nickname + " raggiunge i <b>" + formatNumber(player_life) + "</b> hp utilizzando " + potSum + " pozion" + plur;
+																				var plur = "i";
+																				if (potSum == 1)
+																					plur = "e";
+																				player_text += "\n> " + player[i].nickname + " raggiunge i <b>" + formatNumber(player_life) + "</b> hp utilizzando " + potSum + " pozion" + plur;
+																			}
 																		}
 																	}
 																}
@@ -24534,6 +24564,9 @@ bot.onText(/cura completa/i, function (message) {
 			var perc1 = rows[0].cons_val/100;
 			var perc2 = rows[1].cons_val/100;
 			var perc3 = rows[2].cons_val/100;
+			
+			if (player_life <= player_total_life*0.2)
+				setAchievement(message.chat.id, player_id, 20, 1);
 
 			var pot1 = 0;
 			var pot2 = 0;
@@ -24575,9 +24608,6 @@ bot.onText(/cura completa/i, function (message) {
 
 			connection.query('UPDATE player SET life = ' + player_life + ' WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
-
-				if (player_life <= player_total_life*0.2)
-					setAchievement(message.chat.id, player_id, 20, 1);
 
 				bot.sendMessage(message.chat.id, "Hai recuperato la salute (" + formatNumber(player_life) + " hp) utilizzando:" + text, kbBack);
 			});
@@ -24684,10 +24714,12 @@ function assaultIncrement(message, player_id, team_id, kbBack){
 			if (err) throw err;
 			var my_place_id = rows[0].place_id;
 
+			/*
 			if ((my_place_id == 1) || (my_place_id == 2)){
 				bot.sendMessage(message.chat.id, "In questa postazione non è possibile attivare l'incremento", kbBack);
 				return;
 			}
+			*/
 
 			connection.query('INSERT INTO assault_place_miniboost (team_id, place_id, player_id) VALUES (' + team_id + ',' + my_place_id + ',' + player_id + ')', function (err, rows, fields) {
 				if (err) throw err;
