@@ -7525,7 +7525,7 @@ function setBoost(player_id, boost_mission, boost_id){
 	}
 }
 
-bot.onText(/dungeon/i, function (message) {
+bot.onText(/dungeon|^dg$/i, function (message) {
 
 	if (message.text.indexOf("velocemente") != -1)
 		return;
@@ -12990,14 +12990,15 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																	});
 																}
 
-																bot.sendMessage(message.chat.id, "*" + monster_name + "*\nStato mob: " + status + "\n" +
-																				"Salute mob: *" + formatNumber(monster_life) + "* hp\n" +
-																				"Arma: " + weapon_name + "\n" +
-																				(weapon2_name != "-" ? "Armatura: " + weapon2_name + "\n" : "") +
-																				(weapon3_name != "-" ? "Scudo: " + weapon3_name + "\n" : "") +
-																				(charm_name != "-" ? "Talismano: " + charm_name + "\n" : "") +
-																				"Il tuo stato: " + my_status + "\n" +
-																				"La tua salute: *" + formatNumber(player_life) + "* hp", dBattleM).then(function () {
+																bot.sendMessage(message.chat.id, "*" + monster_name + "* _" + 
+																				formatNumber(monster_life) + " hp_\n" +
+																				status + "\n" +
+																				"🗡 " + weapon_name + "\n" +
+																				(weapon2_name != "-" ? "🥋 " + weapon2_name + "\n" : "") +
+																				(weapon3_name != "-" ? "🛡 " + weapon3_name + "\n" : "") +
+																				(charm_name != "-" ? "📿 " + charm_name + "\n" : "") +
+																				"\nLa tua salute: _" + formatNumber(player_life) + " hp_\n" +
+																				my_status, dBattleM).then(function () {
 																	answerCallbacks[message.chat.id] = function (answer) {
 
 																		if (answer.text == "Scappa") {
@@ -22736,6 +22737,11 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															if (answer.text.toLowerCase().indexOf("cambia") != -1){
 																connection.query('SELECT P.nickname FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND AP.role = 0 ORDER BY AP.id', function (err, rows, fields) {
 																	if (err) throw err;
+																	
+																	if (Object.keys(rows).length == 0) {
+																		bot.sendMessage(message.chat.id, "Nessun membro è disponibile per essere impostato come eletto", kbBack);
+																		return;
+																	}
 
 																	var iKeys = [];
 																	for (var i = 0, len = Object.keys(rows).length; i < len; i++)
