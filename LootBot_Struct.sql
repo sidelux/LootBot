@@ -832,7 +832,7 @@ CREATE TABLE `dragon_dummy` (
   `evolved` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `type` (`type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -893,7 +893,7 @@ CREATE TABLE `dragon_top_dummy` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `dragon_id` (`dragon_id`),
   CONSTRAINT `DRAGONID_VETTAD` FOREIGN KEY (`dragon_id`) REFERENCES `dragon_dummy` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -962,7 +962,7 @@ CREATE TABLE `dragon_top_rank` (
   CONSTRAINT `DRAGONID_RANK` FOREIGN KEY (`dragon_id`) REFERENCES `dragon` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `PLAYERID_RANK` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `TOPID_LIST` FOREIGN KEY (`top_id`) REFERENCES `dragon_top_list` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1571,7 +1571,7 @@ CREATE TABLE `global_msg` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `chat_id` bigint(16) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1948,21 +1948,6 @@ CREATE TABLE `map_history_players` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `map_list`
---
-
-DROP TABLE IF EXISTS `map_list`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `map_list` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `map_json` text NOT NULL,
-  `creation_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `map_lobby`
 --
 
@@ -1975,6 +1960,13 @@ CREATE TABLE `map_lobby` (
   `lobby_id` int(11) DEFAULT NULL,
   `posX` int(11) DEFAULT NULL,
   `posY` int(11) DEFAULT NULL,
+  `life` int(11) DEFAULT NULL,
+  `total_life` int(11) DEFAULT NULL,
+  `wait_time` timestamp NULL DEFAULT NULL,
+  `weapon_id` int(11) DEFAULT NULL,
+  `weapon2_id` int(11) DEFAULT NULL,
+  `weapon3_id` int(11) DEFAULT NULL,
+  `money` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `map_lobby_player_id` (`player_id`),
   KEY `map_lobby_lobby_id` (`lobby_id`),
@@ -3500,4 +3492,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-13  9:00:11
+-- Dump completed on 2019-02-13 15:00:14

@@ -7730,7 +7730,7 @@ bot.onText(/^vai in battaglia$/i, function (message) {
 			}
 		};
 		
-		connection.query('SELECT lobby_id FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT * FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			
 			if (Object.keys(rows).length == 0){
@@ -7745,7 +7745,28 @@ bot.onText(/^vai in battaglia$/i, function (message) {
 				return;
 			}
 			
-			connection.query('SELECT map_json FROM map_lobby_list WHERE lobby_id = ' + player_id, function (err, rows, fields) {
+			var posX = rows[0].posX;
+			var posY = rows[0].posY;
+			
+			if ((posX == null) || (posY == null)){
+				bot.sendMessage(message.chat.id, "La posizione di partenza non è stata caricata correttamente", kbBack);
+				return;
+			}
+			
+			var life = rows[0].life;
+			var total_life = rows[0].total_life;
+			
+			if ((life == null) || (total_life == null)){
+				bot.sendMessage(message.chat.id, "La salute di partenza non è stata caricata correttamente", kbBack);
+				return;
+			}
+			
+			var weapon_id = rows[0].weapon_id;
+			var weapon2_id = rows[0].weapon2_id;
+			var weapon3_id = rows[0].weapon3_id;
+			var money = rows[0].money;
+			
+			connection.query('SELECT map_json FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 				if (err) throw err;
 				
 				if (Object.keys(rows).length == 0){
@@ -7756,13 +7777,132 @@ bot.onText(/^vai in battaglia$/i, function (message) {
 				var mapMatrix = JSON.parse(rows[0].map_json);
 				var map = printMap(mapMatrix);
 				
-				bot.sendMessage(message.chat.id, map, dSelect).then(function () {
-					answerCallbacks[message.chat.id] = function (answer) {
-						if (answer.text == "Torna al menu")
-							return;
-						
-						//asd
+				connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+					if (err) throw err;
+					
+					var total_players = rows[0].cnt;
+					var iKeys = [];
+					var btnSx = 0;
+					var btnDx = 0;
+					var btnUp = 0;
+					var btnDw = 0;
+					//controllo direzioni possibili
+					if (isUndefined(mapMatrix, posX-1, posY) == 0)
+						btnSx = 1;
+					if (isUndefined(mapMatrix, posX, posY-1) == 0)
+						btnUp = 1;
+					if (isUndefined(mapMatrix, posX+1, posY) == 0)
+						btnDx = 1;
+					if (isUndefined(mapMatrix, posX, posY+1) == 0)
+						btnDw = 1;
+					
+					if (btnUp)
+						iKeys.push(["⬆️"]);
+					if (btnDw)
+						iKeys.push(["⬇️"]);
+					if ((btnDx == 1) && (btnSx == 1))
+						iKeys.push(["⬅️", "➡️"]);
+					else {
+						if (btnDx)
+							iKeys.push(["➡️"]);
+						if (btnSx)
+							iKeys.push(["⬅️"]);
+					}
+					
+					iKeys.push(["⚒ Sacca"]);
+					iKeys.push(["Torna al menu"]);
+		
+					var kbSel = {
+						parse_mode: "HTML",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: iKeys
+						}
 					};
+				
+					bot.sendMessage(message.chat.id, "👥 " + total_players + " su " + lobby_total_space + " sopravvissuti\n❤️ " + formatNumber(life) + "\n\n" + map, kbSel).then(function () {
+						answerCallbacks[message.chat.id] = function (answer) {
+							if (answer.text == "Torna al menu")
+								return;
+							
+							if (answer.text.toLowerCase().indexOf("sacca") != -1){
+								var weapon_desc = "🗡 ";
+								var weapon2_desc = "🥋 ";
+								var weapon3_desc = "🛡 ";
+								var money_desc = "💰 " + formatNumber(money);
+								if (weapon_id != null){
+									var weapon = connection_sync.query("SELECT name, power FROM item WHERE id = " + weapon_id);
+									weapon_desc += weapon[0].name + " (" + weapon[0].power + ")";
+								} else
+									weapon_desc += "-";
+								if (weapon2_id != null){
+									var weapon2 = connection_sync.query("SELECT name, power_armor FROM item WHERE id = " + weapon2_id);
+									weapon2_desc += weapon2[0].name + " (" + weapon2[0].power_armor + ")";
+								} else
+									weapon2_desc += "-";
+								if (weapon3_id != null){
+									var weapon = connection_sync.query("SELECT name, power_shield FROM item WHERE id = " + weapon3_id);
+									weapon3_desc += weapon3[0].name + " (" + weapon3[0].power_shield + ")";
+								} else
+									weapon3_desc += "-";
+								
+								bot.sendMessage(message.chat.id, "Equipaggiamento attuale:\n" + weapon_desc + "\n" + weapon2_desc + "\n" + weapon3_desc + "\n" + money_desc, kbBack);
+								return;
+							}
+
+							if (answer.text == "⬆️"){
+								if (btnUp == 0){
+									bot.sendMessage(message.chat.id, "Non puoi spostarti in questa posizione", kbBack);
+									return;
+								}
+								posY--;
+							} else if (answer.text == "⬇️"){
+								if (btnDw == 0){
+									bot.sendMessage(message.chat.id, "Non puoi spostarti in questa posizione", kbBack);
+									return;
+								}
+								posY++;
+							} else if (answer.text == "➡️"){
+								if (btnDx == 0){
+									bot.sendMessage(message.chat.id, "Non puoi spostarti in questa posizione", kbBack);
+									return;
+								}
+								posX++;
+							} else if (answer.text == "⬅️"){
+								if (btnSx == 0){
+									bot.sendMessage(message.chat.id, "Non puoi spostarti in questa posizione", kbBack);
+									return;
+								}
+								posX--;
+							}
+							
+							var objId = mapMatrix[posY][posX];
+							var text = "";
+							//asd
+							
+							if (objId == 1){	// scrigno
+								var rand = Math.random()*100;
+								var money = 0;
+								var item_id = 0;
+								text = "Hai trovato uno <b>Scrigno</b> con al suo interno:\n";
+								if (rand < 70){
+									money = Math.round(getRandomArbitrary(1000, 2000));
+									text += "> " + formatNumber(money) + " §";
+								} else {
+									var item = connection_sync.query("SELECT id, name, power, power_armor, power_shield FROM item WHERE power > 1 OR power_armor < -1 OR power_shield < -1 ORDER BY RAND()");
+									item_id = item[0].id;
+									text += "> " + item[0].name + " (" + item[0].rarity + ")";
+								}
+							}
+							
+							connection.query('UPDATE map_lobby SET posX = ' + posX + ' AND posY = ' + posY + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+							
+								bot.sendMessage(message.chat.id, text, kbBack);
+								
+							});
+						};
+					});
 				});
 			});
 		});
@@ -47121,7 +47261,6 @@ bot.onText(/^\/firstfestival/, function (message, match) {
 	});
 });
 
-//asd
 function checkFullLobby() {
 	connection.query('SELECT lobby_id, COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL GROUP BY lobby_id HAVING cnt = ' + lobby_total_space + ' ORDER BY id', function (err, rows, fields) {
 		if (err) throw err;
@@ -47143,7 +47282,7 @@ function setFullLobby(element, index, array) {
 	connection.query('INSERT INTO map_lobby_list (lobby_id, map_json) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '")', function (err, rows, fields) {
 		if (err) throw err;
 
-		connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
+		connection.query('SELECT id, chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
 			if (err) throw err;
 			
 			var kb = {
@@ -47156,19 +47295,20 @@ function setFullLobby(element, index, array) {
 			
 			var posX = 0;
 			var posY = 0;
+			var posArr = [];
+			
+			for(i = 0; i < mapMatrix.length; i++){
+				for(j = 0; j < mapMatrix[i].length; j++){
+					if (mapMatrix[i][j] == 8)
+						posArr.push([i, j]);
+				}
+			}
+			
+			var life = 10000;
 
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 				
-				// salva posizioni giocatori nel db
-				
-				for(i = 0; i < mapMatrix.length; i++){
-					for(j = 0; j < mapMatrix[i].length; j++){
-						posX = i;
-						posy = j;
-					}
-				}
-				
-				connection.query('UPDATE ...', function (err, rows, fields) {
+				connection.query('UPDATE map_lobby SET posX = ' + posArr[i][0] + ', posY = ' + posArr[i][1] + ', life = ' + life + ', total_life = ' + life + ' WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
 					if (err) throw err;
 				});
 				
