@@ -612,16 +612,21 @@ bot.onText(/^\/([0-9]+)+birre$/, function (message, match) {
 			return;
 		}
 	}
-
-	var t = "";
-	for (var i = 0; i < match[1]; i++)
-		t += "🍺";
-
-	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	
+	connection.query('SELECT id, market_ban, account_id, money, holiday, birth_date FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
 		var money = rows[0].money;
+		var birth_date = rows[0].birth_date;
+	
+		var t = "";
+		for (var i = 0; i < match[1]; i++){
+			if (calculateAge(new Date(birth_date)) < 18)
+				t += "🥛";
+			else
+				t += "🍺";
+		}
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
