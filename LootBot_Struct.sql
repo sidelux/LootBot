@@ -1968,6 +1968,11 @@ CREATE TABLE `map_lobby` (
   `weapon2_id` int(11) DEFAULT NULL,
   `weapon3_id` int(11) DEFAULT NULL,
   `money` int(11) NOT NULL DEFAULT '0',
+  `scrap` int(11) NOT NULL DEFAULT '0',
+  `pulsePosX` int(11) DEFAULT NULL,
+  `pulsePosY` int(11) DEFAULT NULL,
+  `last_obj` int(11) DEFAULT NULL,
+  `last_obj_val` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `map_lobby_player_id` (`player_id`),
   KEY `map_lobby_lobby_id` (`lobby_id`),
@@ -3493,4 +3498,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-14  9:00:12
+-- Dump completed on 2019-02-14 15:00:12

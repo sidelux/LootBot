@@ -1529,7 +1529,7 @@ bot.onText(/^\/incremento$/, function (message, match) {
 				return;
 			}
 
-			connection.query('SELECT P.nickname, P.chat_id FROM assault_place_player_id A LEFT JOIN assault_place_miniboost M ON A.player_id = M.player_id, player P WHERE A.player_id = P.id AND A.place_id NOT IN (1,2) AND M.player_id IS NULL AND P.id != ' + player_id + ' AND A.team_id = ' + team_id, function (err, rows, fields) {
+			connection.query('SELECT P.nickname, P.chat_id FROM assault_place_player_id A LEFT JOIN assault_place_miniboost M ON A.player_id = M.player_id, player P WHERE A.player_id = P.id AND M.player_id IS NULL AND P.id != ' + player_id + ' AND A.team_id = ' + team_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				var nicklist = "";
@@ -8880,6 +8880,10 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, account_
 		var heist_limit = parseInt(rows[0].heist_limit);
 		var ability = parseInt(rows[0].ability);
 		var custom_name_h = rows[0].custom_name_h;
+		
+		// per contare anche quelli in viaggio nelle subite
+		var limitProgress = connection_sync.query("SELECT COUNT(id) As cnt FROM heist_progress WHERE to_id = " + to_id);
+		heist_limit += limitProgress[0].cnt;
 
 		if (rows[0].heist_protection != null) {
 			bot.sendMessage(message.from.id, "Il bersaglio è sotto protezione");

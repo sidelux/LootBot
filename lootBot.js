@@ -7702,7 +7702,53 @@ bot.onText(/esci dalla lobby/i, function (message) {
 	});
 });
 
-bot.onText(/^vai in battaglia$/i, function (message) {	
+bot.onText(/attacca!/i, function (message) {
+	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		var player_id = rows[0].id;
+		
+		var kbBack = {
+			parse_mode: "HTML",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Torna alla mappa"], ["Torna al menu"]]
+			}
+		};
+
+		connection.query('SELECT lobby_id, enemy_id, my_turn FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+			
+			if (Object.keys(rows).length == 0){
+				bot.sendMessage(message.chat.id, "Accedi all'evento per entrare in combattimento", kbBack);
+				return;
+			}
+			
+			var lobby_id = rows[0].lobby_id;
+			
+			if (lobby_id == null){
+				bot.sendMessage(message.chat.id, "Accedi ad una lobby per entrare in combattimento", kbBack);
+				return;
+			}
+			
+			var enemy_id = rows[0].enemy_id;
+			
+			if (enemy_id == null){
+				bot.sendMessage(message.chat.id, "Non sei in combattimento", kbBack);
+				return;
+			}
+			
+			if (my_turn == 0){
+				bot.sendMessage(message.chat.id, "Non è il tuo turno", kbBack);
+				return;
+			}
+			
+			//asd
+		});
+	});
+});
+
+bot.onText(/^vai in battaglia$|accedi all'edificio/i, function (message) {	
 	connection.query('SELECT id, holiday, account_id, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -7728,6 +7774,30 @@ bot.onText(/^vai in battaglia$/i, function (message) {
 			reply_markup: {
 				resize_keyboard: true,
 				keyboard: [["Torna alla mappa"], ["Torna al menu"]]
+			}
+		};
+		
+		var kbBackBuild = {
+			parse_mode: "HTML",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Accedi all'edificio"], ["Torna al menu"]]
+			}
+		};
+		
+		var kbYesNo = {
+			parse_mode: "HTML",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Si"], ["No"], ["Torna al menu"]]
+			}
+		};
+		
+		var kbBackEnemy = {
+			parse_mode: "HTML",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Attacca!"], ["Torna al menu"]]
 			}
 		};
 		
@@ -7766,6 +7836,12 @@ bot.onText(/^vai in battaglia$/i, function (message) {
 			var weapon2_id = rows[0].weapon2_id;
 			var weapon3_id = rows[0].weapon3_id;
 			var money = rows[0].money;
+			var scrap = rows[0].scrap;
+			var last_obj = rows[0].last_obj;
+			var last_obj_val = rows[0].last_obj_val;
+			var pulsePosX = rows[0].pulsePosX;
+			var pulsePosY = rows[0].pulsePosY;
+			var enemy_id = rows[0].id;
 			
 			connection.query('SELECT map_json FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -7775,11 +7851,229 @@ bot.onText(/^vai in battaglia$/i, function (message) {
 					return;
 				}
 				
+				if (enemy_id != null){
+					bot.sendMessage(message.chat.id, "Battaglia in corso!", kbBackEnemy);
+					return;
+				}
+				
 				var mapMatrix = JSON.parse(rows[0].map_json);
-				var map = printMap(mapMatrix);
+				var map = printMap(mapMatrix, pulsePosX, pulsePosY);
 				
 				connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 					if (err) throw err;
+					
+					if (last_obj == 4){
+						var perc = (total_life-life) / total_life*100;
+						var price = perc*1000;
+						bot.sendMessage(message.chat.id, "Puoi recuperare tutta la salute al costo di <b>" + formatNumber(price) + "</b> §, al momento possiedi " + formatNumber(money) + " §, procedi?", kbYesNo).then(function () {
+							answerCallbacks[message.chat.id] = function (answer) {
+								if (answer.text == "Torna al menu")
+									return;
+
+								if (answer.text.toLowerCase().indexOf("si") != -1){
+									if (money < price){
+										bot.sendMessage(message.chat.id, "Non hai abbastanza monete nella sacca!", kbBack);
+										return;
+									}
+
+									connection.query('UPDATE map_lobby SET life = total_life, money = money-' + price + ', last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+										bot.sendMessage(message.chat.id, "Hai recuperato tutta la salute!", kbBack);
+									});
+								} else {
+									connection.query('UPDATE map_lobby SET last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+										bot.sendMessage(message.chat.id, "Hai rinunciato a recuperare la salute", kbBack);
+									});
+								}
+							};
+						});
+						return;
+					} else if (last_obj == 5){
+						var split = last_obj_val.split(":");
+						var item_id = split[0];
+						var price = split[1];
+						connection.query('SELECT name, power, power_armor, power_shield FROM item WHERE id = ' + item_id, function (err, rows, fields) {
+							if (err) throw err;
+							
+							var item_name = rows[0].name;
+							
+							var plur = "i";
+							if (price == 1)
+								plur = "e";
+							
+							var item_type = 0;
+							var item_power = 0;
+							if (rows[0].power > 0){
+								item_type = 1;
+								item_power = rows[0].power;
+							} else if (rows[0].power_armor < 0){
+								item_type = 2;
+								item_power = rows[0].power_armor;
+							} else if (rows[0].power_shield < 0){
+								item_type = 3;
+								item_power = rows[0].power_shield;
+							}
+							
+							bot.sendMessage(message.chat.id, "Puoi scambiare " + price + " 🔩 Rottam" + plur + " per <b>" + item_name + "</b>, al momento ne possiedi " + scrap + ", procedi?", kbYesNo).then(function () {
+								answerCallbacks[message.chat.id] = function (answer) {
+									if (answer.text == "Torna al menu")
+										return;
+
+									if (answer.text.toLowerCase().indexOf("si") != -1){
+										if (scrap < price){
+											bot.sendMessage(message.chat.id, "Non hai abbastanza rottami nella sacca!", kbBack);
+											return;
+										}
+										
+										var text = "";
+										
+										// modifica anche sotto
+										var item_query = "";
+										if (item_id != 0){
+											if (item_type == 1){ 
+												if (weapon_id != null){
+													var weapon = connection_sync.query("SELECT power FROM item WHERE id = " + weapon_id);
+													if (item_power > weapon[0].power){
+														text += "\nArma sotituita!";
+														item_query = ", weapon_id = '" + item_id + "'";
+													}
+												} else {
+													text += "\nArma equipaggiata!";
+													item_query = ", weapon_id = '" + item_id + "'";
+												}
+											} else if (item_type == 2){
+												if (weapon2_id != null){
+													var weapon2 = connection_sync.query("SELECT power_armor FROM item WHERE id = " + weapon2_id);
+													if (item_power < weapon2[0].power_armor){
+														text += "\nArmatura sotituita!";
+														item_query = ", weapon2_id = '" + item_id + "'";
+													}
+												} else {
+													text += "\nArmatura equipaggiata!";
+													item_query = ", weapon2_id = '" + item_id + "'";
+												}
+											} else if (item_type == 3){
+												if (weapon3_id != null){
+													var weapon3 = connection_sync.query("SELECT power_shield FROM item WHERE id = " + weapon3_id);
+													if (item_power < weapon3[0].power_shield){
+														text += "\nScudo sotituito!";
+														item_query = ", weapon3_id = '" + item_id + "'";
+													}
+												} else {
+													text += "\nScudo equipaggiato!";
+													item_query = ", weapon3_id = '" + item_id + "'";
+												}
+											}
+										}
+
+										connection.query('UPDATE map_lobby SET scrap = scrap-' + price + ', last_obj = NULL, last_obj_val = NULL' + item_query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+											bot.sendMessage(message.chat.id, "Hai accettato lo scambio!" + text, kbBack);
+										});
+									} else {
+										connection.query('UPDATE map_lobby SET last_obj = NULL, last_obj_val = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+											bot.sendMessage(message.chat.id, "Hai rinunciato allo scambio", kbBack);
+										});
+									}
+								}
+							});
+						});
+						return;
+					} else if (last_obj == 6){
+						var split = last_obj_val.split(":");
+						var item_id = split[0];
+						var price = split[1];
+						connection.query('SELECT name, power, power_armor, power_shield FROM item WHERE id = ' + item_id, function (err, rows, fields) {
+							if (err) throw err;
+							
+							var item_name = rows[0].name;
+							
+							var plur = "i";
+							if (price == 1)
+								plur = "e";
+							
+							var item_type = 0;
+							var item_power = 0;
+							if (rows[0].power > 0){
+								item_type = 1;
+								item_power = rows[0].power;
+							} else if (rows[0].power_armor < 0){
+								item_type = 2;
+								item_power = rows[0].power_armor;
+							} else if (rows[0].power_shield < 0){
+								item_type = 3;
+								item_power = rows[0].power_shield;
+							}
+							
+							bot.sendMessage(message.chat.id, "Puoi acquistare <b>" + item_name + "</b> per " + formatNumber(price) + " §, al momento possiedi " + formatNumber(money) + " §, procedi?", kbYesNo).then(function () {
+								answerCallbacks[message.chat.id] = function (answer) {
+									if (answer.text == "Torna al menu")
+										return;
+
+									if (answer.text.toLowerCase().indexOf("si") != -1){
+										if (scrap < price){
+											bot.sendMessage(message.chat.id, "Non hai abbastanza monete nella sacca!", kbBack);
+											return;
+										}
+										
+										var text = "";
+										
+										// modifica anche sotto
+										var item_query = "";
+										if (item_id != 0){
+											if (item_type == 1){ 
+												if (weapon_id != null){
+													var weapon = connection_sync.query("SELECT power FROM item WHERE id = " + weapon_id);
+													if (item_power > weapon[0].power){
+														text += "\nArma sotituita!";
+														item_query = ", weapon_id = '" + item_id + "'";
+													}
+												} else {
+													text += "\nArma equipaggiata!";
+													item_query = ", weapon_id = '" + item_id + "'";
+												}
+											} else if (item_type == 2){
+												if (weapon2_id != null){
+													var weapon2 = connection_sync.query("SELECT power_armor FROM item WHERE id = " + weapon2_id);
+													if (item_power < weapon2[0].power_armor){
+														text += "\nArmatura sotituita!";
+														item_query = ", weapon2_id = '" + item_id + "'";
+													}
+												} else {
+													text += "\nArmatura equipaggiata!";
+													item_query = ", weapon2_id = '" + item_id + "'";
+												}
+											} else if (item_type == 3){
+												if (weapon3_id != null){
+													var weapon3 = connection_sync.query("SELECT power_shield FROM item WHERE id = " + weapon3_id);
+													if (item_power < weapon3[0].power_shield){
+														text += "\nScudo sotituito!";
+														item_query = ", weapon3_id = '" + item_id + "'";
+													}
+												} else {
+													text += "\nScudo equipaggiato!";
+													item_query = ", weapon3_id = '" + item_id + "'";
+												}
+											}
+										}
+
+										connection.query('UPDATE map_lobby SET money = money-' + price + ', last_obj = NULL, last_obj_val = NULL' + item_query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+											bot.sendMessage(message.chat.id, "Hai completato l'acquisto!" + text, kbBack);
+										});
+									} else {
+										connection.query('UPDATE map_lobby SET last_obj = NULL, last_obj_val = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+											bot.sendMessage(message.chat.id, "Hai rinunciato all'acquisto", kbBack);
+										});
+									}
+								}
+							});
+						});
+						return;
+					}
 					
 					var total_players = rows[0].cnt;
 					var iKeys = [];
@@ -7891,134 +8185,226 @@ bot.onText(/^vai in battaglia$/i, function (message) {
 								posX--;
 							}
 							
-							var objId = mapMatrix[posY][posX];
-							var text = "";
-							//asd
+							// resetta impulso
+							connection.query('UPDATE map_lobby SET pulsePosX = NULL, pulsePosY = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+							});
 							
-							if (objId == 1){			// scrigno
-								var rand = Math.random()*100;
-								var money = 0;
-								var item_id = 0;
-								var item_type = 0;
-								var item_power = 0;
-								text = "Hai trovato uno <b>Scrigno</b> con al suo interno:\n";
-								if (rand < 70){
-									money = Math.round(getRandomArbitrary(1000, 2000));
-									text += "> " + formatNumber(money) + " §";
-								} else {
-									var randRarity = Math.random()*100;
-									var rarity = "";
-									if (randRarity < 10)
-										rarity = "L";
-									else if (randRarity < 30)
-										rarity = "UR";
-									else if (randRarity < 60)
-										rarity = "R";
-									else
-										rarity = "NC";
-									var item = connection_sync.query("SELECT id, name, rarity, power, power_armor, power_shield FROM item WHERE (power > 1 OR power_armor < -1 OR power_shield < -1) AND rarity = '" + rarity + "' ORDER BY RAND()");
-									if (item[0].power > 0){
-										item_type = 1;
-										item_power = item[0].power;
-									} else if (item[0].power_armor < 0){
-										item_type = 2;
-										item_power = item[0].power_armor;
-									} else if (item[0].power_shield < 0){
-										item_type = 3;
-										item_power = item[0].power_shield;
-									}
-									item_id = item[0].id;
-									text += "> " + item[0].name + " (" + item[0].rarity + ")";
-								}
-							} else if (objId == 2){		// scrigno epico
-								var rand = Math.random()*100;
-								var money = 0;
-								var item_id = 0;
-								text = "Hai trovato uno <b>Scrigno Epico</b> con al suo interno:\n";
-								if (rand < 70){
-									money = Math.round(getRandomArbitrary(2000, 3000));
-									text += "> " + formatNumber(money) + " §";
-								} else {
-									var randRarity = Math.random()*100;
-									var rarity = "";
-									if (randRarity < 20)
-										rarity = "UE";
-									else
-										rarity = "E";
-									var item = connection_sync.query("SELECT id, name, rarity, power, power_armor, power_shield FROM item WHERE (power > 1 OR power_armor < -1 OR power_shield < -1) AND rarity = '" + rarity + "' ORDER BY RAND()");
-									if (item[0].power > 0){
-										item_type = 1;
-										item_power = item[0].power;
-									} else if (item[0].power_armor < 0){
-										item_type = 2;
-										item_power = item[0].power_armor;
-									} else if (item[0].power_shield < 0){
-										item_type = 3;
-										item_power = item[0].power_shield;
-									}
-									item_id = item[0].id;
-									text += "> " + item[0].name + " (" + item[0].rarity + ")";
-								}
-							} else if (objId == 3){		// trappola
-								var perc = Math.round(getRandomArbitrary(1, 5));
-								var life_lost = total_life*(perc/100);
-								
-								if (life <= life_lost){
-									mapPlayerKilled(lobby_id, player_id, 1);
-									text = "Cadi in una trappola e perdi <b>" + life_lost + "</b> hp, vieni ucciso e perdi la partita!\n";
-								} else
-									text = "Cadi in una trappola e perdi <b>" + life_lost + "</b> hp!\n";
-							} else if (objId == 4){		// farmacia
-								
-							}
-							
-							var item_query = "";
-							
-							if (item_id != 0){
-								if (item_type == 1){ 
-									if (weapon_id != null){
-										var weapon = connection_sync.query("SELECT power FROM item WHERE id = " + weapon_id);
-										if (item_power > weapon[0].power){
-											text += "\nArma sotituita!";
-											item_query = " AND weapon_id = '" + weapon_id + "'";
-										}
-									} else {
-										text += "\nArma equipaggiata!";
-										item_query = " AND weapon_id = '" + weapon_id + "'";
-									}
-								} else if (item_type == 2){
-									if (weapon2_id != null){
-										var weapon2 = connection_sync.query("SELECT power_armor FROM item WHERE id = " + weapon2_id);
-										if (item_power < weapon2[0].power_armor){
-											text += "\nArmatura sotituita!";
-											item_query = " AND weapon2_id = '" + weapon2_id + "'";
-										}
-									} else {
-										text += "\nArmatura equipaggiata!";
-										item_query = " AND weapon2_id = '" + weapon2_id + "'";
-									}
-								} else if (item_type == 3){
-									if (weapon3_id != null){
-										var weapon3 = connection_sync.query("SELECT power_shield FROM item WHERE id = " + weapon3_id);
-										if (item_power < weapon3[0].power_shield){
-											text += "\nScudo sotituito!";
-											item_query = " AND weapon3_id = '" + weapon3_id + "'";
-										}
-									} else {
-										text += "\nScudo equipaggiato!";
-										item_query = " AND weapon3_id = '" + weapon3_id + "'";
-									}
-								}
-							}
-							
-							var d = new Date();
-							d.setMinutes(d.getMinutes() + 10);
-							var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-							
-							connection.query('UPDATE map_lobby SET wait_time = "' + long_date + '", posX = ' + posX + ' AND posY = ' + posY + item_query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+							connection.query('SELECT map_json FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 								if (err) throw err;
 							
-								bot.sendMessage(message.chat.id, text, kbBack);
+								// ricarica mappa per eventuali modifiche
+								var mapMatrix = JSON.parse(rows[0].map_json);
+							
+								var objId = mapMatrix[posY][posX];
+								var text = "";
+								var last_obj_query = "";
+								var scrape_query = "";
+								var pulse_query = "";
+								var enemy_query = "";
+								var isBuild = 0;
+								var isEnemy = 0;
+								var toClear = 0;
+								
+								var checkEnemy = connection_sync.query('SELECT player_id, nickname FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + posX + ' AND posY = ' + posY + ' AND lobby_id = ' + lobby_id);
+								if (Object.keys(checkEnemy).length > 0){
+									objId = 8; // salta gli item dopo
+									isEnemy = 1;
+									text += "Hai incontrato un altro giocatore!\nScambi uno sguardo di sfida a <b>" + checkEnemy[0].nickname + "</b> e ti prepari al combattimento!";
+									enemy_query = ", enemy_id = " + checkEnemy[0].player_id;
+								}
+
+								if (objId == 1){			// scrigno
+									var rand = Math.random()*100;
+									var money = 0;
+									var item_id = 0;
+									var item_type = 0;
+									var item_power = 0;
+									text = "Hai trovato uno 💰 <b>Scrigno</b> con al suo interno:\n";
+									if (rand < 70){
+										money = Math.round(getRandomArbitrary(1000, 2000));
+										text += "> " + formatNumber(money) + " §";
+									} else {
+										var randRarity = Math.random()*100;
+										var rarity = "";
+										if (randRarity < 10)
+											rarity = "L";
+										else if (randRarity < 30)
+											rarity = "UR";
+										else if (randRarity < 60)
+											rarity = "R";
+										else
+											rarity = "NC";
+										var item = connection_sync.query("SELECT id, name, rarity, power, power_armor, power_shield FROM item WHERE (power > 1 OR power_armor < -1 OR power_shield < -1) AND rarity = '" + rarity + "' ORDER BY RAND()");
+										if (item[0].power > 0){
+											item_type = 1;
+											item_power = item[0].power;
+										} else if (item[0].power_armor < 0){
+											item_type = 2;
+											item_power = item[0].power_armor;
+										} else if (item[0].power_shield < 0){
+											item_type = 3;
+											item_power = item[0].power_shield;
+										}
+										item_id = item[0].id;
+										text += "> " + item[0].name + " (" + item[0].rarity + ")";
+									}
+									toClear = 1;
+								} else if (objId == 2){		// scrigno epico
+									var rand = Math.random()*100;
+									var money = 0;
+									var item_id = 0;
+									text = "Hai trovato uno 💰 <b>Scrigno Epico</b> con al suo interno:\n";
+									if (rand < 70){
+										money = Math.round(getRandomArbitrary(2000, 3000));
+										text += "> " + formatNumber(money) + " §";
+									} else {
+										var randRarity = Math.random()*100;
+										var rarity = "";
+										if (randRarity < 20)
+											rarity = "UE";
+										else
+											rarity = "E";
+										var item = connection_sync.query("SELECT id, name, rarity, power, power_armor, power_shield FROM item WHERE (power > 1 OR power_armor < -1 OR power_shield < -1) AND rarity = '" + rarity + "' ORDER BY RAND()");
+										if (item[0].power > 0){
+											item_type = 1;
+											item_power = item[0].power;
+										} else if (item[0].power_armor < 0){
+											item_type = 2;
+											item_power = item[0].power_armor;
+										} else if (item[0].power_shield < 0){
+											item_type = 3;
+											item_power = item[0].power_shield;
+										}
+										item_id = item[0].id;
+										text += "> " + item[0].name + " (" + item[0].rarity + ")";
+									}
+									toClear = 1;
+								} else if (objId == 3){		// trappola
+									var perc = Math.round(getRandomArbitrary(1, 5));
+									var life_lost = total_life*(perc/100);
+
+									if (life <= life_lost){
+										mapPlayerKilled(lobby_id, player_id, 1);
+										text = "Cadi in una ⚡️ Trappola e perdi <b>" + life_lost + "</b> hp, vieni ucciso e perdi la partita!\n";
+									} else
+										text = "Cadi in una ⚡️ Trappola e perdi <b>" + life_lost + "</b> hp!\n";
+								} else if (objId == 4){		// farmacia
+									last_obj_query = ", last_obj = 4";
+									isBuild = 1;
+									text = "Raggiungi una 💊 Farmacia, qui puoi recuperare la salute ad un costo onesto.\n";
+								} else if (objId == 5){		// scambio
+									last_obj_query = ", last_obj = 5";
+									var randRarity = Math.random()*100;
+									var rarity = "";
+									var price = 0;
+									if (randRarity < 20){
+										rarity = "L";
+										price = 3;
+									} else if (randRarity < 50) {
+										rarity = "UR";
+										price = 2;
+									} else {
+										rarity = "R";
+										price = 1;
+									}
+									var item = connection_sync.query("SELECT id FROM item WHERE (power > 1 OR power_armor < -1 OR power_shield < -1) AND rarity = '" + rarity + "' ORDER BY RAND()");
+									last_obj_query += ", last_obj_val = '" + item[0].id + ":" + price + "'";
+									isBuild = 1;
+									text = "Raggiungi un 🔁 Centro Scambi, qui puoi scambiare oggetti che ti potranno essere utili.\n";
+								} else if (objId == 6){		// vendita
+									last_obj_query = ", last_obj = 6";
+									var randRarity = Math.random()*100;
+									var rarity = "";
+									var price = 0;
+									if (randRarity < 20){
+										rarity = "L";
+										price = 3000;
+									} else if (randRarity < 50) {
+										rarity = "UR";
+										price = 2000;
+									} else {
+										rarity = "R";
+										price = 1000;
+									}
+									var item = connection_sync.query("SELECT id FROM item WHERE (power > 1 OR power_armor < -1 OR power_shield < -1) AND rarity = '" + rarity + "' ORDER BY RAND()");
+									last_obj_query += ", last_obj_val = '" + item[0].id + ":" + price + "'";
+									isBuild = 1;
+									text = "Raggiungi un Emporio, qui puoi acquistare oggetti che ti potranno essere utili.\n";
+								} else if (objId == 7){		// impulso
+									pulse_query = ", pulsePosX = " + posX + ", pulsePosY = " + posY;
+									text = "Calpesti uno strano pulsante che emana un'onda di energia: un ✨ <b>Impulso</b>! L'area circostante si vede più chiaramente, ma l'effetto può durare per poco tempo.";
+									toClear = 1;
+								} else if (objId == 9){		// rottame
+									scrape_query = ", scrape = scrape+1";
+									text = "Hai trovato uno <b>Strano Congegno</b> con al suo interno un 🔩 <b>Rottame</b>, utile per gli scambi!";
+									toClear = 1;
+								}
+
+								// svuota la risorsa
+								if (toClear){
+									connection.query('SELECT map_json FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+										if (err) throw err;
+										var updatedMap = updateMap(rows[0].map_json, posY, posX, 0);
+										connection.query('UPDATE map_lobby_list SET map_json = "' + updatedMap + '" WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+											if (err) throw err;
+										});
+									});
+								}
+
+								// modifica anche sopra
+								var item_query = "";
+								if (item_id != 0){
+									if (item_type == 1){ 
+										if (weapon_id != null){
+											var weapon = connection_sync.query("SELECT power FROM item WHERE id = " + weapon_id);
+											if (item_power > weapon[0].power){
+												text += "\nArma sotituita!";
+												item_query = ", weapon_id = '" + item_id + "'";
+											}
+										} else {
+											text += "\nArma equipaggiata!";
+											item_query = ", weapon_id = '" + item_id + "'";
+										}
+									} else if (item_type == 2){
+										if (weapon2_id != null){
+											var weapon2 = connection_sync.query("SELECT power_armor FROM item WHERE id = " + weapon2_id);
+											if (item_power < weapon2[0].power_armor){
+												text += "\nArmatura sotituita!";
+												item_query = ", weapon2_id = '" + item_id + "'";
+											}
+										} else {
+											text += "\nArmatura equipaggiata!";
+											item_query = ", weapon2_id = '" + item_id + "'";
+										}
+									} else if (item_type == 3){
+										if (weapon3_id != null){
+											var weapon3 = connection_sync.query("SELECT power_shield FROM item WHERE id = " + weapon3_id);
+											if (item_power < weapon3[0].power_shield){
+												text += "\nScudo sotituito!";
+												item_query = ", weapon3_id = '" + item_id + "'";
+											}
+										} else {
+											text += "\nScudo equipaggiato!";
+											item_query = ", weapon3_id = '" + item_id + "'";
+										}
+									}
+								}
+
+								var d = new Date();
+								d.setMinutes(d.getMinutes() + 10);
+								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+								connection.query('UPDATE map_lobby SET wait_time = "' + long_date + '", posX = ' + posX + ', posY = ' + posY + item_query + last_obj_query + scrape_query + enemy_query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+									if (err) throw err;
+
+									if (isBuild)
+										bot.sendMessage(message.chat.id, text, kbBackBuild);
+									else if (isEnemy)
+										bot.sendMessage(message.chat.id, text, kbBackEnemy);
+									else
+										bot.sendMessage(message.chat.id, text, kbBack);
+								});
 							});
 						};
 					});
@@ -8029,7 +8415,7 @@ bot.onText(/^vai in battaglia$/i, function (message) {
 });
 
 function mapPlayerKilled(lobby_id, player_id, cause){
-	connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
+	connection.query('SELECT chat_id, match_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 		if (err) throw err;
 		
 		var text = "";
@@ -8039,8 +8425,37 @@ function mapPlayerKilled(lobby_id, player_id, cause){
 		for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 			bot.sendMessage(rows[i].chat_id, text);
 		
+		var match_kills = rows[0].match_kills;
+		
+		// salva in history
+		connection.query('SELECT id FROM map_lobby_list WHERE lobby_id = ' + lobby_id,  function (err, rows, fields) {
+			if (err) throw err;
+
+			var map_lobby_id = rows[0].id;
+				
+			connection.query('SELECT COUNT(id) As cnt FROM map_history WHERE map_lobby_id = ' + map_lobby_id,  function (err, rows, fields) {
+				if (err) throw err;
+				
+				var pos = lobby_total_space-rows[0].cnt;
+				
+				connection.query('INSERT INTO map_history (map_lobby_id, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + player_id + ', ' + pos + ', ' + match_kills + ')', function (err, rows, fields) {
+					if (err) throw err;
+				});
+			});
+		});
+		
+		// concludi
 		connection.query('UPDATE map_lobby SET killed = 1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
+			
+			connection.query('SELECT 1 FROM map_lobby WHERE killed = 0',  function (err, rows, fields) {
+				if (err) throw err;
+				
+				// fine partita
+				if (Object.keys(rows).length <= 1){
+					
+				}
+			});
 		});
 	});
 }
@@ -8052,6 +8467,7 @@ function generateMap(width, height, players){
 	var chestEpicRate = 2;
 	var trapRate = 10;
 	var pulseRate = 5;
+	var scrapRate = 5;
 	
 	console.log("Generazione mappa da " + width + "x" + height + " ticks");
 	
@@ -8066,6 +8482,7 @@ function generateMap(width, height, players){
 	6 = vendita
 	7 = impulso
 	8 = giocatore
+	9 = rottame
 	
 	*/
 	
@@ -8125,9 +8542,22 @@ function generateMap(width, height, players){
 	for(i = 0; i < players; i++)
 		matrix = insertRandomPos(matrix, 8, 2);
 	
+	// genera rottami
+	
+	var scrapeTicks = Math.round(totTicks*(scrapeRate/100));
+	console.log("Generazione " + scrapeTicks + " rottami...");
+	for(i = 0; i < scrapeTicks; i++)
+		matrix = insertRandomPos(matrix, 9, 0);
+	
 	console.log("Generazione completata");
 	
 	return matrix;
+}
+
+function updateMap(matrix, posY, posX, value){
+	var mapMatrix = JSON.parse(rows[0].map_json);
+	mapMatrix[posX][posY] = value;
+	return JSON.stringify(mapMatrix);
 }
 
 function insertRandomPos(matrix, objId, distanceValue){
@@ -8248,23 +8678,32 @@ function checkDistance(matrix, objId, posY, posX, distance){
 	return 1;
 }
 
-function printMap(mapMatrix){
+function printMap(mapMatrix, pulsePosY, pulsePosX){
 	var text = "";
 	
 	for(i = 0; i < mapMatrix.length; i++){
 		text += "\n";
-		for(j = 0; j < mapMatrix[i].length; j++)
-			text += mapIdToSym(mapMatrix[i][j]) + " ";
+		for(j = 0; j < mapMatrix[i].length; j++) {
+			if (((i == pulsePosX-1) && (j == pulsePosY-1)) ||
+				((i == pulsePosX) && (j == pulsePosY-1)) ||
+				((i == pulsePosX+1) && (j == pulsePosY-1)) ||
+				((i == pulsePosX-1) && (j == pulsePosY)) ||
+				((i == pulsePosX+1) && (j == pulsePosY)) ||
+				((i == pulsePosX-1) && (j == pulsePosY+1)) ||
+				((i == pulsePosX) && (j == pulsePosY+1)) ||
+				((i == pulsePosX+1) && (j == pulsePosY+1)))
+				text += mapIdToSym(mapMatrix[i][j]) + " ";
+			else
+				text += "◼️ ";
+		}
 	}
 	
 	return text;
 }
 
 function mapIdToSym(objId){
-	/*
-	var symArr = ["", "", "", "", "", "", "", ""];
+	var symArr = ["◻️", "💰", "💰", "⚡️", "💊", "🔁", "💸", "✨", "👣", "🔩"];
 	return symArr[objId];
-	*/
 	return objId;
 }
 
@@ -23405,7 +23844,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			bot.sendMessage(message.chat.id, "I membri mancanti sono stati incitati da poco! Riprova alle " + addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + "!", kbBack);
 																			return;
 																		}
-																		connection.query('SELECT P.nickname, P.chat_id FROM player P, assault_place_miniboost APM RIGHT JOIN assault_place_player_id APP ON APM.player_id = APP.player_id AND APM.team_id = APP.team_id WHERE APM.player_id IS NULL AND P.id = APP.player_id AND APP.place_id NOT IN (1,2) AND APP.player_id != ' + player_id + ' AND APP.team_id = ' + team_id, function (err, rows, fields) {
+																		connection.query('SELECT P.nickname, P.chat_id FROM player P, assault_place_miniboost APM RIGHT JOIN assault_place_player_id APP ON APM.player_id = APP.player_id AND APM.team_id = APP.team_id WHERE APM.player_id IS NULL AND P.id = APP.player_id AND APP.player_id != ' + player_id + ' AND APP.team_id = ' + team_id, function (err, rows, fields) {
 																			if (err) throw err;
 
 																			var text = "";
@@ -43061,7 +43500,11 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 		var heist_limit = parseInt(rows[0].heist_limit);
 		var ability = parseInt(rows[0].ability);
 		var custom_name_h = rows[0].custom_name_h;
-		var player_custom_nickname = (rows[0].player_custom_nickname != null ? " " + rows[0].player_custom_nickname : "")
+		var player_custom_nickname = (rows[0].player_custom_nickname != null ? " " + rows[0].player_custom_nickname : "");
+		
+		// per contare anche quelli in viaggio nelle subite
+		var limitProgress = connection_sync.query("SELECT COUNT(id) As cnt FROM heist_progress WHERE to_id = " + to_id);
+		heist_limit += limitProgress[0].cnt;
 
 		var match = {
 			parse_mode: "Markdown",
