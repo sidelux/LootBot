@@ -3349,9 +3349,8 @@ bot.onText(/\/globali/, function (message, match) {
 	connection.query('SELECT global_msg FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		if (Object.keys(rows).length == 0) {
+		if (Object.keys(rows).length == 0)
 			return;	
-		}
 
 		if (rows[0].global_msg == 1) {
 			connection.query('UPDATE player SET global_msg = 0 WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -3863,6 +3862,8 @@ function mainMenu(message) {
 			msgtext += " Buona Pasqua! 🐣";
 		else if (((day == 31) && (month == 9) && (hour >= 12)) || ((day == 1) && (month == 10) && (hour <= 12)))
 			msgtext += " Buon Halloween! 🎃";
+		else if ((day == 14) && (month == 1))
+			msgtext += " Buon San Valentino! 💘";
 
 		var player_id = rows[0].id;
 		var mission_id = rows[0].mission_id;
@@ -7849,6 +7850,20 @@ bot.onText(/^vai in battaglia$/i, function (message) {
 								bot.sendMessage(message.chat.id, "Equipaggiamento attuale:\n" + weapon_desc + "\n" + weapon2_desc + "\n" + weapon3_desc + "\n" + money_desc, kbBack);
 								return;
 							}
+							
+							var time = connection_sync.query("SELECT wait_time FROM map_lobby WHERE player_id = " + player_id);
+							if (time[0].wait_time != null){
+								var now = new Date();
+								var wait_time = new Date(time[0].wait_time);
+								var min = Math.round(((wait_time - now) / 1000) / 60);
+								var plur = "i";
+								if (min <= 1)
+									plur = "o";
+								if (min < 0)
+									min = "meno di 1";
+								bot.sendMessage(message.chat.id, "Ti stai riposando!\nPrima di procedere dovrai attendere ancora " + min + " minut" + plur + "!", kbBack);
+								return;
+							}
 
 							if (answer.text == "⬆️"){
 								if (btnUp == 0){
@@ -7880,26 +7895,130 @@ bot.onText(/^vai in battaglia$/i, function (message) {
 							var text = "";
 							//asd
 							
-							if (objId == 1){	// scrigno
+							if (objId == 1){			// scrigno
 								var rand = Math.random()*100;
 								var money = 0;
 								var item_id = 0;
+								var item_type = 0;
+								var item_power = 0;
 								text = "Hai trovato uno <b>Scrigno</b> con al suo interno:\n";
 								if (rand < 70){
 									money = Math.round(getRandomArbitrary(1000, 2000));
 									text += "> " + formatNumber(money) + " §";
 								} else {
-									var item = connection_sync.query("SELECT id, name, power, power_armor, power_shield FROM item WHERE power > 1 OR power_armor < -1 OR power_shield < -1 ORDER BY RAND()");
+									var randRarity = Math.random()*100;
+									var rarity = "";
+									if (randRarity < 10)
+										rarity = "L";
+									else if (randRarity < 30)
+										rarity = "UR";
+									else if (randRarity < 60)
+										rarity = "R";
+									else
+										rarity = "NC";
+									var item = connection_sync.query("SELECT id, name, rarity, power, power_armor, power_shield FROM item WHERE (power > 1 OR power_armor < -1 OR power_shield < -1) AND rarity = '" + rarity + "' ORDER BY RAND()");
+									if (item[0].power > 0){
+										item_type = 1;
+										item_power = item[0].power;
+									} else if (item[0].power_armor < 0){
+										item_type = 2;
+										item_power = item[0].power_armor;
+									} else if (item[0].power_shield < 0){
+										item_type = 3;
+										item_power = item[0].power_shield;
+									}
 									item_id = item[0].id;
 									text += "> " + item[0].name + " (" + item[0].rarity + ")";
 								}
+							} else if (objId == 2){		// scrigno epico
+								var rand = Math.random()*100;
+								var money = 0;
+								var item_id = 0;
+								text = "Hai trovato uno <b>Scrigno Epico</b> con al suo interno:\n";
+								if (rand < 70){
+									money = Math.round(getRandomArbitrary(2000, 3000));
+									text += "> " + formatNumber(money) + " §";
+								} else {
+									var randRarity = Math.random()*100;
+									var rarity = "";
+									if (randRarity < 20)
+										rarity = "UE";
+									else
+										rarity = "E";
+									var item = connection_sync.query("SELECT id, name, rarity, power, power_armor, power_shield FROM item WHERE (power > 1 OR power_armor < -1 OR power_shield < -1) AND rarity = '" + rarity + "' ORDER BY RAND()");
+									if (item[0].power > 0){
+										item_type = 1;
+										item_power = item[0].power;
+									} else if (item[0].power_armor < 0){
+										item_type = 2;
+										item_power = item[0].power_armor;
+									} else if (item[0].power_shield < 0){
+										item_type = 3;
+										item_power = item[0].power_shield;
+									}
+									item_id = item[0].id;
+									text += "> " + item[0].name + " (" + item[0].rarity + ")";
+								}
+							} else if (objId == 3){		// trappola
+								var perc = Math.round(getRandomArbitrary(1, 5));
+								var life_lost = total_life*(perc/100);
+								
+								if (life <= life_lost){
+									mapPlayerKilled(lobby_id, player_id, 1);
+									text = "Cadi in una trappola e perdi <b>" + life_lost + "</b> hp, vieni ucciso e perdi la partita!\n";
+								} else
+									text = "Cadi in una trappola e perdi <b>" + life_lost + "</b> hp!\n";
+							} else if (objId == 4){		// farmacia
+								
 							}
 							
-							connection.query('UPDATE map_lobby SET posX = ' + posX + ' AND posY = ' + posY + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+							var item_query = "";
+							
+							if (item_id != 0){
+								if (item_type == 1){ 
+									if (weapon_id != null){
+										var weapon = connection_sync.query("SELECT power FROM item WHERE id = " + weapon_id);
+										if (item_power > weapon[0].power){
+											text += "\nArma sotituita!";
+											item_query = " AND weapon_id = '" + weapon_id + "'";
+										}
+									} else {
+										text += "\nArma equipaggiata!";
+										item_query = " AND weapon_id = '" + weapon_id + "'";
+									}
+								} else if (item_type == 2){
+									if (weapon2_id != null){
+										var weapon2 = connection_sync.query("SELECT power_armor FROM item WHERE id = " + weapon2_id);
+										if (item_power < weapon2[0].power_armor){
+											text += "\nArmatura sotituita!";
+											item_query = " AND weapon2_id = '" + weapon2_id + "'";
+										}
+									} else {
+										text += "\nArmatura equipaggiata!";
+										item_query = " AND weapon2_id = '" + weapon2_id + "'";
+									}
+								} else if (item_type == 3){
+									if (weapon3_id != null){
+										var weapon3 = connection_sync.query("SELECT power_shield FROM item WHERE id = " + weapon3_id);
+										if (item_power < weapon3[0].power_shield){
+											text += "\nScudo sotituito!";
+											item_query = " AND weapon3_id = '" + weapon3_id + "'";
+										}
+									} else {
+										text += "\nScudo equipaggiato!";
+										item_query = " AND weapon3_id = '" + weapon3_id + "'";
+									}
+								}
+							}
+							
+							var d = new Date();
+							d.setMinutes(d.getMinutes() + 10);
+							var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+							
+							connection.query('UPDATE map_lobby SET wait_time = "' + long_date + '", posX = ' + posX + ' AND posY = ' + posY + item_query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
 							
 								bot.sendMessage(message.chat.id, text, kbBack);
-								
 							});
 						};
 					});
@@ -7908,6 +8027,23 @@ bot.onText(/^vai in battaglia$/i, function (message) {
 		});
 	});
 });
+
+function mapPlayerKilled(lobby_id, player_id, cause){
+	connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
+		if (err) throw err;
+		
+		var text = "";
+		if (cause == 1)
+			text = "Un giocatore è stato ucciso da una trappola!";
+
+		for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+			bot.sendMessage(rows[i].chat_id, text);
+		
+		connection.query('UPDATE map_lobby SET killed = 1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
+	});
+}
 
 function generateMap(width, height, players){
 	var buildQnt = 3;
@@ -23039,7 +23175,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 									if (err) throw err;
 
 									if (Object.keys(rows).length == 0){
-										bot.sendMessage(message.chat.id, "Si è verificato un errore, contatta l'amministratore", kbBack2);
+										bot.sendMessage(message.chat.id, "Si è verificato un errore (" + place_id + "), contatta l'amministratore", kbBack2);
 										return;
 									}
 
@@ -23101,6 +23237,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 													var miniboost_count = rows[0].cnt;
 													var active = "Attiva ⚙️";
+													var text = "\n\nProsegui lo scontro per sconfiggere i nemici!";
 
 													var kb = {
 														parse_mode: "HTML",
@@ -23110,8 +23247,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 														}
 													};
 
-													/*
-													if ((place_id == 1) || (place_id == 2)){
+													if ((elected == 1) && ((place_id == 1) || (place_id == 2))){
 														if (place_active == 1)
 															active = "Disattiva ⚙️";
 
@@ -23122,11 +23258,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																keyboard: [["Scatena attacco ☄️"], ["Incita 💢", "Incremento 💢"], ["Cambia eletto 🗡", active], ["Notifiche 💤"], ["Partecipanti 👥", "Arrenditi 🏳"],["Torna al menu"]]
 															}
 														};
-													}
-													*/
-
-													var text = "\n\nProsegui lo scontro per sconfiggere i nemici!";
-													if ((elected == 0) && (isAdmin == 0)){
+													} else if ((elected == 0) && (isAdmin == 0)){
 														kb = {
 															parse_mode: "HTML",
 															reply_markup: {
@@ -23147,7 +23279,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																}
 															};
 														}
-													}else if ((elected == 0) && (isAdmin == 1)){
+													} else if ((elected == 0) && (isAdmin == 1)){
 														kb = {
 															parse_mode: "HTML",
 															reply_markup: {
@@ -23168,13 +23300,6 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															};
 														}
 													}
-
-													/*
-													if ((place_id == 1) || (place_id == 2)){
-														setAchievement(message.chat.id, player_id, 44, 999);
-														setAchievement(message.chat.id, player_id, 19, 999);
-													}
-													*/
 
 													if (elected == 0)
 														text = "\n\nIncita l'eletto <b>" + elected_nickname + "</b> a proseguire lo scontro e attiva l'incremento!";
@@ -44482,11 +44607,10 @@ function checkDragonSleep() {
 	connection.query('SELECT player.chat_id, dragon.id, dragon.name, dragon.sleep_h, dragon.total_life, dragon.life FROM dragon, player WHERE dragon.player_id = player.id AND sleep_time_end < NOW() AND sleep_time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 drago svegliato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " draghi svegliati\x1b[0m");
-			}
 			rows.forEach(setDragonSleep);
 		}
 	});
@@ -44524,11 +44648,10 @@ function checkDragonSearchCd() {
 	connection.query('SELECT id, chat_id FROM player WHERE status IS NOT NULL AND status_cnt >= 30', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 ricerca scaduta\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " ricerche scadute\x1b[0m");
-			}
 			rows.forEach(setDragonSearchCd);
 		}
 	});
@@ -44550,11 +44673,10 @@ function checkDragonSearch() {
 	connection.query('SELECT player.chat_id, MIN(player.status) As status, player.id As player_id, dragon_top_rank.top_id, dragon_top_rank.dragon_id, dragon.name, dragon.type, dragon.arms_id, player.status_cnt, dragon.level, dragon_top_rank.rank, dragon.exp, dragon.life FROM dragon_top_rank, player, dragon WHERE dragon_top_rank.dragon_id = dragon.id AND dragon_top_rank.player_id = player.id AND player.status IS NOT NULL GROUP BY top_id ORDER BY top_id DESC, status ASC', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 ricerca drago avversario in corso\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " ricerche draghi in corso\x1b[0m");
-			}
 			rows.forEach(setDragonSearch);
 		}
 	});
@@ -44812,11 +44934,10 @@ function checkDragonTop() {
 	connection.query('SELECT player.chat_id, player.id As player_id, dragon_top_rank.rank, dragon_top_rank.top_id FROM dragon_top_rank, player WHERE dragon_top_rank.player_id = player.id', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 drago passato di monte\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " draghi passati di monte\x1b[0m");
-			}
 			rows.forEach(setDragonTop);
 		}
 	});
@@ -44878,11 +44999,10 @@ function checkDragonBattle() {
 	connection.query('SELECT player.chat_id, player.id, enemy_dragon_id, dragon_id, is_dummy, top_id FROM dragon_top_status, player WHERE dragon_top_status.player_id = player.id AND battle_time < NOW() AND battle_time IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 battaglia drago scaduta\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " battaglie drago scadute\x1b[0m");
-			}
 			rows.forEach(setDragonBattle);
 		}
 	});
@@ -45046,11 +45166,10 @@ function checkDragonTopCd() {
 	connection.query('SELECT player.chat_id, dragon_top_status.id, dragon.sleep_h FROM dragon_top_status, player, dragon WHERE dragon.id = dragon_top_status.dragon_id AND dragon_top_status.player_id = player.id AND wait_time < NOW() AND wait_time IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 drago timeout vetta\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " draghi timeout vetta\x1b[0m");
-			}
 			rows.forEach(setDragonTopCd);
 		}
 	});
@@ -45125,11 +45244,10 @@ function checkEvents() {
 	connection.query('SELECT mission_id, id, chat_id, exp, money, life, total_life FROM player WHERE event = 0 AND mission_id != 0 AND money > 500 AND exp > 100 ORDER BY RAND() LIMIT 10', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 evento da notificare\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " eventi da notificare\x1b[0m");
-			}
 			rows.forEach(setEvents);
 		}
 	});
@@ -45802,11 +45920,10 @@ function checkAct() {
 	connection.query('SELECT P.nickname, P.id As player_id, P.chat_id, CAST(L.time As date) As last_action, CURDATE(), DATEDIFF(CURDATE(), CAST(L.time As date)) As last_access FROM player P INNER JOIN last_command L ON P.account_id = L.account_id WHERE P.holiday != 1 HAVING last_access > 60 LIMIT 20', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 giocatore espulso\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " giocatori espulsi\x1b[0m");
-			}
 			rows.forEach(setFinishedAct);
 		}
 	});
@@ -45841,11 +45958,10 @@ function checkTeamAct() {
 	connection.query('SELECT P.nickname, P.chat_id, T.team_id, T.player_id, CAST(L.time As date) As last_action, CURDATE(), DATEDIFF(CURDATE(), CAST(L.time As date)) As last_access, T.role FROM player P INNER JOIN team_player T ON P.id = T.player_id INNER JOIN last_command L ON P.account_id = L.account_id WHERE P.holiday != 1 HAVING last_access > 14 LIMIT 20', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 giocatore espulso\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " giocatori espulsi\x1b[0m");
-			}
 			rows.forEach(setFinishedTeamAct);
 		}
 	});
@@ -45910,11 +46026,10 @@ function checkHeists() {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 ispezione terminata\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " ispezioni terminate\x1b[0m");
-			}
 			rows.forEach(setFinishedHeist);
 		}
 	});
@@ -45925,11 +46040,10 @@ function checkHeistsProgress() {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 ispezione progressiva terminata\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " ispezioni progressive terminate\x1b[0m");
-			}
 			rows.forEach(setFinishedHeistProgress);
 		}
 	});
@@ -45980,11 +46094,10 @@ function checkAssaults() {
 	connection.query('SELECT team_id, phase FROM assault WHERE time_end < NOW() AND time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 fase assalto terminata\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " fase assalto terminata\x1b[0m");
-			}
 			rows.forEach(setFinishedAssaults);
 		}
 	});
@@ -46113,11 +46226,10 @@ function checkAssaultsMob() {
 	connection.query('SELECT team_id, mob_count, boss_num, completed, lost FROM assault WHERE refresh_mob = 1', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 mob assalto generato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " mob assalto generati\x1b[0m");
-			}
 			rows.forEach(setFinishedAssaultsMob);
 		}
 	});
@@ -46162,11 +46274,10 @@ function checkAssaultsItem() {
 	connection.query('SELECT team_id, place_id, level FROM assault_place_team WHERE time_end < NOW() AND time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 costruzione assalto terminata\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " costruzioni assalto terminate\x1b[0m");
-			}
 			rows.forEach(setFinishedAssaultsItem);
 		}
 	});
@@ -46364,11 +46475,10 @@ function checkAssaultsEnd() {
 	connection.query('SELECT team_id FROM assault WHERE time_wait_end < NOW() AND time_wait_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 attesa fine assalto terminata\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " attesa fine assalto terminata\x1b[0m");
-			}
 			rows.forEach(setFinishedAssaultsEnd);
 		}
 	});
@@ -46393,33 +46503,30 @@ function checkAssaultsLock() {
 	connection.query('SELECT team_id FROM assault WHERE lock_time_end < NOW() AND lock_time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 incita assalto terminato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " incita assalto terminati\x1b[0m");
-			}
 			rows.forEach(setFinishedAssaultsLock);
 		}
 	});
 	connection.query('SELECT team_id FROM assault WHERE elected_lock_time_end < NOW() AND elected_lock_time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 incita assalto da eletto terminato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " incita assalto da eletto terminati\x1b[0m");
-			}
 			rows.forEach(setFinishedAssaultsLock2);
 		}
 	});
 	connection.query('SELECT team_id FROM assault WHERE weak_time_end < NOW() AND weak_time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 rapporto incarico terminato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " rapporti incarico terminati\x1b[0m");
-			}
 			rows.forEach(setFinishedAssaultsLock3);
 		}
 	});	
@@ -46459,11 +46566,10 @@ function checkMissions() {
 	connection.query('SELECT nickname, id, mission_id, chat_id, charm_id, class, global_end, mission_auto_id, boost_id, boost_mission, reborn, exp, mission_gem, mission_count, global_end FROM player WHERE mission_time_end < NOW() AND mission_time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 missione terminata\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " missioni terminate\x1b[0m");
-			}
 			rows.forEach(setFinishedMission);
 		}
 	});
@@ -46473,11 +46579,10 @@ function checkTeamMissions() {
 	connection.query('SELECT party_id, assigned_to, part_id, team_id, report_id, text_user FROM mission_team_party T WHERE T.mission_time_end < NOW() AND T.mission_time_end IS NOT NULL AND wait = 0', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 missione team terminata\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " missioni team terminate\x1b[0m");
-			}
 			rows.forEach(setFinishedTeamMission);
 		}
 	});
@@ -46964,11 +47069,10 @@ function checkSpecialMissions() {
 	connection.query('SELECT nickname, id, mission_special_id, chat_id FROM `player` WHERE mission_special_time_end < NOW() AND mission_special_time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 itinerario terminato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " itinerari terminati\x1b[0m");
-			}
 			rows.forEach(setFinishedSpecialMission);
 		}
 	});
@@ -46978,11 +47082,10 @@ function checkEnchant() {
 	connection.query('SELECT id, chat_id FROM `player` WHERE weapon_enchant_end < NOW() AND weapon_enchant_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 incantamento arma terminato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " incantamento terminato\x1b[0m");
-			}
 			rows.forEach(setFinishedEnchant1);
 		}
 	});
@@ -46992,11 +47095,10 @@ function checkEnchant2() {
 	connection.query('SELECT id, chat_id FROM `player` WHERE weapon2_enchant_end < NOW() AND weapon2_enchant_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 incantamento armatura terminato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " incantamento terminato\x1b[0m");
-			}
 			rows.forEach(setFinishedEnchant2);
 		}
 	});
@@ -47006,11 +47108,10 @@ function checkEnchant3() {
 	connection.query('SELECT id, chat_id FROM `player` WHERE weapon3_enchant_end < NOW() AND weapon3_enchant_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 incantamento scudo terminato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " incantamento terminato\x1b[0m");
-			}
 			rows.forEach(setFinishedEnchant3);
 		}
 	});
@@ -47050,11 +47151,10 @@ function checkDragonArena() {
 	connection.query('SELECT player_id, chat_id FROM player, event_arena_status WHERE event_arena_status.player_id = player.id AND fight_time < NOW() AND fight_time IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 scontro drago terminato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " draghi terminati\x1b[0m");
-			}
 			rows.forEach(setFinishedArena);
 		}
 	});
@@ -47064,11 +47164,10 @@ function checkMerchant() {
 	connection.query('SELECT M.player_id, P.chat_id, M.day_cnt FROM player P, merchant_offer M WHERE P.id = M.player_id AND M.time_end < NOW() AND M.time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 contrabbandiere terminato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " contrabbandieri terminati\x1b[0m");
-			}
 			rows.forEach(setFinishedMerchant);
 		}
 	});
@@ -47261,15 +47360,36 @@ bot.onText(/^\/firstfestival/, function (message, match) {
 	});
 });
 
+function checkLobbyTime() {
+	connection.query('SELECT P.id As player_id, P.chat_id As chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND M.wait_time < NOW() AND wait_time IS NOT NULL', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length == 1)
+				console.log(getNow("it") + "\x1b[32m 1 tempo attesa lobby\x1b[0m");
+			else
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + "  tempo attesa lobby\x1b[0m");
+			rows.forEach(setLobbyTime);
+		}
+	});
+};
+
+function setLobbyTime(element, index, array) {
+	var player_id = element.player_id;
+	var chat_id = element.chat_id;
+	connection.query('UPDATE map_lobby SET wait_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+		bot.sendMessage(chat_id, "Puoi procedere all'interno della mappa!");
+	});
+}
+
 function checkFullLobby() {
 	connection.query('SELECT lobby_id, COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL GROUP BY lobby_id HAVING cnt = ' + lobby_total_space + ' ORDER BY id', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 lobby avviata\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " lobby avviate\x1b[0m");
-			}
 			rows.forEach(setFullLobby);
 		}
 	});
@@ -47322,11 +47442,10 @@ function checkDungeonNotification() {
 	connection.query('SELECT player_id, id FROM dungeon_status WHERE TIMESTAMPDIFF(MINUTE, NOW(), finish_time) < 60 AND finish_time IS NOT NULL AND notified = 0', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 dungeon notificato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " dungeon notificati\x1b[0m");
-			}
 			rows.forEach(setFinishedDungeonNotification);
 		}
 	});
@@ -47336,11 +47455,10 @@ function checkDungeonNotificationIstance() {
 	connection.query('SELECT id FROM dungeon_list WHERE TIMESTAMPDIFF(MINUTE, NOW(), finish_date) < 180 AND finish_date IS NOT NULL AND notified = 0', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 istanza dungeon notificata\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " istanze dungeon notificate\x1b[0m");
-			}
 			rows.forEach(setFinishedDungeonNotificationIstance);
 		}
 	});
@@ -47383,11 +47501,10 @@ function checkDungeonRoom() {
 	connection.query('SELECT dungeon_status.id As room_id, player.id As player_id, player.chat_id As chat_id FROM dungeon_status, player WHERE dungeon_status.player_id = player.id AND room_time < NOW() AND room_time IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 stanza terminata\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " stanze terminate\x1b[0m");
-			}
 			rows.forEach(setFinishedDungeonRoom);
 		}
 	});
@@ -47397,11 +47514,10 @@ function checkGnome() {
 	connection.query('SELECT heist_progress.id As progressId, player.id As player_id, player.chat_id As chat_id FROM heist_progress, player WHERE heist_progress.from_id = player.id AND time_end < NOW() AND time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 gnomo scaduto\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " gnomi scaduti\x1b[0m");
-			}
 			rows.forEach(setFinishedGnome);
 		}
 	});
@@ -47420,11 +47536,10 @@ function checkDungeonEnd() {
 	connection.query('SELECT id, chat_id FROM player WHERE dungeon_time < NOW() AND dungeon_time IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 dungeon terminato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " dungeon terminati\x1b[0m");
-			}
 			rows.forEach(setFinishedDungeonEnd);
 		}
 	});
@@ -47434,11 +47549,10 @@ function checkMissionTeamExpire() {
 	connection.query('SELECT party_id, team_id, report_id FROM mission_team_party WHERE mission_time_limit < NOW() AND mission_time_limit IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 missione team scaduta\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " missioni team scadute\x1b[0m");
-			}
 			rows.forEach(setFinishedMissionTeamExpire);
 		}
 	});
@@ -47481,11 +47595,10 @@ function checkDungeonExpire() {
 	connection.query('SELECT dungeon_status.id As dungeon_status_id, dungeon_status.dungeon_id As dungeon_id, player.id As player_id, player.chat_id FROM dungeon_status, player WHERE dungeon_status.player_id = player.id AND dungeon_status.finish_time < NOW() AND dungeon_status.finish_time IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 giocatore istanza dungeon scaduto\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " giocatori in istanze dungeon scaduti\x1b[0m");
-			}
 			rows.forEach(setFinishedDungeonExpire);
 		}
 	});
@@ -47495,11 +47608,10 @@ function checkIstanceExpire() {
 	connection.query('SELECT dungeon_list.id As dungeon_id FROM dungeon_list WHERE dungeon_list.finish_date < NOW() AND dungeon_list.finish_date IS NOT NULL AND dungeon_list.main = 0 LIMIT 100', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 istanza dungeon scaduta\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " istanze dungeon scadute\x1b[0m");
-			}
 			rows.forEach(setFinishedIstanceExpire);
 		}
 	});
@@ -47508,16 +47620,10 @@ function checkIstanceExpire() {
 function setFinishedIstanceExpire(element, index, array) {
 	var dungeon_id = element.dungeon_id;
 
-	//console.log("Cancellazione istanza ID " + dungeon_id);
-
-	connection.query('SELECT player.id As player_id, player.chat_id FROM dungeon_status, player, dungeon_list ' +
-					 'WHERE dungeon_status.dungeon_id = dungeon_list.id AND dungeon_status.player_id = player.id AND dungeon_list.id = ' + dungeon_id,
-					 function (err, rows, fields) {
+	connection.query('SELECT player.id As player_id, player.chat_id FROM dungeon_status, player, dungeon_list WHERE dungeon_status.dungeon_id = dungeon_list.id AND dungeon_status.player_id = player.id AND dungeon_list.id = ' + dungeon_id, function (err, rows, fields) {
 		if (Object.keys(rows).length > 0) {
-			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-				//console.log("Notifica crollo istanza ID " + dungeon_id + " del player id " + rows[i].player_id);
+			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 				bot.sendMessage(rows[i].chat_id, "L'intera istanza è scaduta, sei costretto ad uscire dal dungeon!");
-			}
 		}
 		connection.query('DELETE FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -47582,11 +47688,10 @@ function checkEventMissions() {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 missione evento terminata\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " missioni evento terminate\x1b[0m");
-			}
 			rows.forEach(setFinishedEventMission);
 		}
 	});
@@ -47597,11 +47702,10 @@ function checkTravels() {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 viaggio terminato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " viaggi terminati\x1b[0m");
-			}
 			rows.forEach(setFinishedTravel);
 		}
 	});
@@ -47630,11 +47734,10 @@ function checkCave() {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 viaggio cava terminato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " viaggi cava terminati\x1b[0m");
-			}
 			rows.forEach(setFinishedCave);
 		}
 	});
@@ -47697,11 +47800,10 @@ function checkProtection() {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 protezione terminata\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " protezioni terminate\x1b[0m");
-			}
 			rows.forEach(setFinishedProtection);
 		}
 	});
@@ -47720,11 +47822,10 @@ function checkBoost() {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 boost terminato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " boost terminati\x1b[0m");
-			}
 			rows.forEach(setFinishedBoost);
 		}
 	});
@@ -49091,11 +49192,10 @@ function checkTeamClean() {
 	connection.query('SELECT team.id, team.name, team.players, COUNT(team_player.player_id) As cnt FROM team LEFT JOIN team_player ON team.id = team_player.team_id GROUP BY team.id HAVING cnt = 0', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 team da cancellare\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " team da cancellare\x1b[0m");
-			}
 			rows.forEach(setFinishedTeamClean);
 		}
 	});
@@ -49115,11 +49215,10 @@ function checkTeamPlayers() {
 	connection.query('SELECT team.id, team.name, team.players, COUNT(team_player.player_id) As cnt FROM team LEFT JOIN team_player ON team.id = team_player.team_id GROUP BY team.id', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 team adeguato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " team adeguato\x1b[0m");
-			}
 			rows.forEach(setFinishedTeamPlayers);
 		}
 	});
@@ -49144,11 +49243,10 @@ function checkGnomorraGame() {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 partita scaduta\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " partite scadute\x1b[0m");
-			}
 			rows.forEach(setFinishedGnomorraGame);
 		}
 	});
@@ -49201,11 +49299,10 @@ function checkGnomorraInvite() {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 invito scaduto\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " inviti scaduti\x1b[0m");
-			}
 			rows.forEach(setFinishedGnomorraInvite);
 		}
 	});

@@ -1962,6 +1962,7 @@ CREATE TABLE `map_lobby` (
   `posY` int(11) DEFAULT NULL,
   `life` int(11) DEFAULT NULL,
   `total_life` int(11) DEFAULT NULL,
+  `killed` tinyint(4) NOT NULL DEFAULT '0',
   `wait_time` timestamp NULL DEFAULT NULL,
   `weapon_id` int(11) DEFAULT NULL,
   `weapon2_id` int(11) DEFAULT NULL,
@@ -3492,4 +3493,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-13 15:00:14
+-- Dump completed on 2019-02-14  9:00:12
