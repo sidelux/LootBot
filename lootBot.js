@@ -7702,10 +7702,24 @@ bot.onText(/esci dalla lobby/i, function (message) {
 });
 
 bot.onText(/attacca!/i, function (message) {
-	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, account_id, holiday, class_id, reborn, exp FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-
+		
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+		if (rows[0].holiday == 1) {
+			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back)
+			return;
+		}
+		
 		var player_id = rows[0].id;
+		var class_id = rows[0].class_id;
+		var reborn = rows[0].reborn;
+		var exp = rows[0].exp;
 		
 		var kbBack = {
 			parse_mode: "HTML",
@@ -7715,7 +7729,7 @@ bot.onText(/attacca!/i, function (message) {
 			}
 		};
 
-		connection.query('SELECT lobby_id, enemy_id, my_turn FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT lobby_id, enemy_id, my_turn, life, total_life, weapon_id, weapon2_id, weapon3_id, battle_heavy FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			
 			if (Object.keys(rows).length == 0){
@@ -7731,6 +7745,7 @@ bot.onText(/attacca!/i, function (message) {
 			}
 			
 			var enemy_id = rows[0].enemy_id;
+			var enemy_player_id = enemy_id;
 			
 			if (enemy_id == null){
 				bot.sendMessage(message.chat.id, "Non sei in combattimento", kbBack);
@@ -7742,7 +7757,237 @@ bot.onText(/attacca!/i, function (message) {
 				return;
 			}
 			
-			//asd
+			var life = rows[0].life;
+			var total_life = rows[0].total_life;
+			var battle_heavy = rows[0].battle_heavy;
+			
+			var weapon_id = rows[0].weapon_id;
+			var weapon2_id = rows[0].weapon2_id;
+			var weapon3_id = rows[0].weapon3_id;
+			
+			var weapon = 0;
+			var weapon2 = 0;
+			var weapon3 = 0;
+			var weapon_crit = 0;
+			var weapon2_crit = 0;
+			var weapon3_crit = 0;
+			
+			if (weapon_id != null){
+				var weapon_info = connection_sync.query("SELECT power, critical FROM item WHERE id = " + weapon_id);
+				weapon = weapon_info[0].power;
+				weapon_crit = weapon_info[0].critical;
+			}
+			if (weapon2_id != null){
+				var weapon2_info = connection_sync.query("SELECT power_armor, critical FROM item WHERE id = " + weapon2_id);
+				weapon2 = weapon2_info[0].power_armor;
+				weapon2_crit = weapon2_info[0].critical;
+			}
+			if (weapon3_id != null){
+				var weapon3_info = connection_sync.query("SELECT power_shield, critical FROM item WHERE id = " + weapon3_id);
+				weapon3 = weapon3_info[0].power_shield;
+				weapon3_crit = weapon3_info[0].critical;
+			}
+			
+			var weapon_enchant = 0;
+			var weapon3_enchant = 0;
+			var charm_id = null;
+			var power_dmg = 0;
+			var power_def = 0;
+			var power_weapon = 0;
+			var power_armor = 0;
+			var power_shield = 0;
+			var boost_mission = null;
+			var boost_id = null;
+			
+			var kbFight = {
+				parse_mode: "HTML",
+				reply_markup: {
+					resize_keyboard: true,
+					keyboard: [["🗡 Attacco"], ["⚔️ Attacco caricato"], ["🛡 Difendi"], ["Torna al menu"]]
+				}
+			};
+			
+			if (battle_heavy) {
+				kbFight = {
+					parse_mode: "HTML",
+					reply_markup: {
+						resize_keyboard: true,
+						keyboard: [["🗡 Sferra attacco"], ["Torna al menu"]]
+					}
+				};
+			}
+			
+			var kbFightWait = {
+				parse_mode: "HTML",
+				reply_markup: {
+					resize_keyboard: true,
+					keyboard: [["Torna alla mappa"], ["Torna al menu"]]
+				}
+			};
+			
+			connection.query('SELECT P.chat_id, M.money, P.nickname, M.life, M.total_life, P.class_id, P.reborn, P.exp, M.battle_shield FROM player P, map_lobby M WHERE M.player_id = P.id AND P.id = ' + enemy_id, function (err, rows, fields) {
+				if (err) throw err;
+				
+				var enemy_chat_id = rows[0].chat_id;
+				var enemy_money = rows[0].money;
+				var enemy_battle_shield = rows[0].battle_shield;
+				
+				var enemy_life = rows[0].life;
+				var enemy_total_life = rows[0].total_life;
+				var enemy_class_id = rows[0].class_id;
+				var enemy_reborn = rows[0].reborn;
+				var enemy_exp = rows[0].exp;
+				
+				var enemy_weapon_id = rows[0].weapon_id;
+				var enemy_weapon2_id = rows[0].weapon2_id;
+				var enemy_weapon3_id = rows[0].weapon3_id;
+
+				var enemy_weapon = 0;
+				var enemy_weapon2 = 0;
+				var enemy_weapon3 = 0;
+				var enemy_weapon_crit = 0;
+				var enemy_weapon2_crit = 0;
+				var enemy_weapon3_crit = 0;
+
+				if (enemy_weapon_id != null){
+					var enemy_weapon_info = connection_sync.query("SELECT power, critical FROM item WHERE id = " + enemy_weapon_id);
+					enemy_weapon = enemy_weapon_info[0].power;
+					enemy_weapon_crit = enemy_weapon_info[0].critical;
+				}
+				if (enemy_weapon2_id != null){
+					var enemy_weapon2_info = connection_sync.query("SELECT power_armor, critical FROM item WHERE id = " + enemy_weapon2_id);
+					enemy_weapon2 = enemy_weapon2_info[0].power_armor;
+					enemy_weapon2_crit = enemy_weapon2_info[0].critical;
+				}
+				if (enemy_weapon3_id != null){
+					var enemy_weapon3_info = connection_sync.query("SELECT power_shield, critical FROM item WHERE id = " + enemy_weapon3_id);
+					enemy_weapon3 = enemy_weapon3_info[0].power_shield;
+					enemy_weapon3_crit = enemy_weapon3_info[0].critical;
+				}
+
+				var enemy_weapon_enchant = 0;
+				var enemy_weapon3_enchant = 0;
+				var enemy_charm_id = null;
+				var enemy_power_dmg = 0;
+				var enemy_power_def = 0;
+				var enemy_power_weapon = 0;
+				var enemy_power_armor = 0;
+				var enemy_power_shield = 0;
+				var enemy_boost_mission = null;
+				var enemy_boost_id = null;
+			
+				bot.sendMessage(message.chat.id, "Stai combattendo contro <b>" + rows[0].nickname + "</b>\n❤️ " + formatNumber(rows[0].life) + "\nLa tua salute: " + formatNumber(life) + "\n\nCosa vuoi fare?", kbFight).then(function () {
+					answerCallbacks[message.chat.id] = function (answer) {
+						if (answer.text == "Torna al menu")
+							return;
+						
+						var damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn);
+						var defence = getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def);
+						var crit = getPlayerCritics(player_id, weapon_crit, weapon2_crit, weapon3_crit, charm_id, power_weapon, power_armor, power_shield, class_id, reborn);
+						var dragon = getPlayerDragon(player_id, class_id, reborn, charm_id);
+						
+						var full_damage = damage+dragon[0];
+						var full_critical = crit[0]+dragon[2];
+						var full_defence = defence+dragon[1];;
+
+						var enemy_damage = getPlayerDamage(enemy_exp, enemy_weapon, enemy_weapon_enchant, enemy_charm_id, enemy_power_dmg, enemy_class_id, enemy_reborn);
+						var enemy_defence = getPlayerDefence(enemy_weapon2, enemy_weapon3, enemy_weapon_enchant, enemy_weapon2_enchant, enemy_weapon3_enchant, enemy_exp, enemy_power_def);
+						var enemy_crit = getPlayerCritics(enemy_player_id, enemy_weapon_crit, enemy_weapon2_crit, enemy_weapon3_crit, enemy_charm_id, enemy_power_weapon, enemy_power_armor, enemy_power_shield, enemy_class_id, enemy_reborn);
+						var enemy_dragon = getPlayerDragon(enemy_player_id, enemy_class_id, enemy_reborn, enemy_charm_id);
+						
+						var enemy_full_damage = enemy_damage+enemy_dragon[0];
+						var enemy_full_critical = enemy_crit[0]+enemy_dragon[2];
+						var enemy_full_defence = enemy_defence+enemy_dragon[1];;
+						
+						full_damage = full_damage-enemy_full_defence;
+						full_damage = Math.round(full_damage);
+						
+						if (full_damage < 0)
+							full_damage = 0;
+						
+						var query = "";
+						var enemy_query = "";
+						
+						var d = new Date();
+						d.setMinutes(d.getMinutes() + 10);
+						var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+						
+						query = "my turn = 0, battle_timeout = NULL, battle_shield = 0";
+						enemy_query = "my_turn = 1, battle_timeout = '" + long_date + "', battle_shield = 0";
+						
+						//asd
+						var text = "";
+						var enemy_text = "";
+						var dmg = 0;
+						if (answer.text.toLowerCase().indexOf("caricato") != -1){
+							if (battle_heavy == 1){
+								bot.sendMessage(message.chat.id, "Non puoi caricare un'altro attacco!", kbFight);
+								return;
+							}
+							text += "Carichi l'attacco che verrà sferrato al turno successivo!";
+							enemy_text += "L'avversario inizia a caricare l'attacco!";
+							query += ", battle_heavy = 1";
+						} else if (answer.text.toLowerCase().indexOf("attacco") != -1){
+							var heavyText = "";
+							if (battle_heavy == 1){
+								full_damage = full_damage*2;
+								heavyText = " con attacco caricato";
+								query += ", battle_heavy = 0";
+							}
+							if (enemy_battle_shield == 1) {
+								text += "L'avversario si protegge con lo scudo!";
+								enemy_query += ", battle_shield = 0";
+							} else {
+								var randCrit = Math.random()*100;
+								var critText = "";
+								if (full_critical < randCrit){
+									full_damage = full_damage*2;
+									critText = " critici";
+								}
+
+								var randDodge = Math.random()*100;
+								var probDodge = 10;
+								if (probDodge < randDodge){
+									text += "L'avversario riesce a schivare il tuo attacco!";
+									enemy_text += "Riesci a schivare l'attacco del tuo avversario!";
+								} else {
+									dmg = full_damage;
+									text += "Attacchi l'avversario e gli infliggi <b>" + formatNumber(full_damage) + "</b> danni" + critText + heavyText + "!";
+									enemy_text += "Vieni colpito dall'avversario subendo <b>" + formatNumber(full_damage) + "</b> danni" + critText + heavyText +  "!";
+								}
+							}
+						} else if (answer.text.toLowerCase().indexOf("difendi") != -1){
+							if (battle_heavy == 1){
+								bot.sendMessage(message.chat.id, "Non puoi difenderti se stai caricando un attacco!", kbFight);
+								return;
+							}
+							
+							text += "Ti metti in posizione difensiva in attesa dell'avversario!";
+							enemy_text += "L'avversario si mette in posizione difensiva con lo scudo pronto!";
+							query += ", battle_shield = 1";
+						}
+						
+						if (enemy_life - dmg <= 0){
+							query += ", money = money+" + enemy_money + ", match_kills = match_kills+1, global_kills = global_kills+1";
+							enemy_query += ", life = 0, money = money-" + enemy_money;
+							text += "\nIn modo da sconfiggerlo definitivamente con un colpo mortale!\nFrugando nella sua sacca ottieni <b>" + formatNumber(enemy_money) + "</b> §!";
+							enemy_text += "\nVieni sconfitto definitivamente con un colpo mortale!";
+							mapPlayerKilled(lobby_id, enemy_id, 2);
+						} else
+							enemy_query += ", life = life-" + dmg;
+						
+						connection.query('UPDATE map_lobby SET ' + query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+						connection.query('UPDATE map_lobby SET ' + enemy_query + ' WHERE player_id = ' + enemy_id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+						
+						bot.sendMessage(message.chat.id, text, kbFightWait);
+						bot.sendMessage(enemy_chat_id, enemy_text, kbFight);
+					}
+				});
+			});
 		});
 	});
 });
@@ -8204,13 +8449,17 @@ bot.onText(/^vai in battaglia$|accedi all'edificio/i, function (message) {
 								var isBuild = 0;
 								var isEnemy = 0;
 								var toClear = 0;
+								var enemy_id = 0;
+								var enemy_chat_id = 0;
 								
-								var checkEnemy = connection_sync.query('SELECT player_id, nickname FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + posX + ' AND posY = ' + posY + ' AND lobby_id = ' + lobby_id);
+								var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + posX + ' AND posY = ' + posY + ' AND killed = 0 AND enemy_id IS NULL AND lobby_id = ' + lobby_id);
 								if (Object.keys(checkEnemy).length > 0){
 									objId = 8; // salta gli item dopo
 									isEnemy = 1;
-									text += "Hai incontrato un altro giocatore!\nScambi uno sguardo di sfida a <b>" + checkEnemy[0].nickname + "</b> e ti prepari al combattimento!";
-									enemy_query = ", enemy_id = " + checkEnemy[0].player_id;
+									text += "Hai incontrato un altro giocatore!\nScambi uno sguardo di sfida a <b>" + checkEnemy[0].nickname + "</b> e ti prepari al duello!";
+									enemy_id = checkEnemy[0].player_id;
+									enemy_chat_id = checkEnemy[0].chat_id;
+									enemy_query = ", enemy_id = " + enemy_id;
 								}
 
 								if (objId == 1){			// scrigno
@@ -8393,15 +8642,24 @@ bot.onText(/^vai in battaglia$|accedi all'edificio/i, function (message) {
 								var d = new Date();
 								d.setMinutes(d.getMinutes() + 10);
 								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+								
+								var d = new Date();
+								d.setMinutes(d.getMinutes() + 60);
+								var long_date_battle = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-								connection.query('UPDATE map_lobby SET wait_time = "' + long_date + '", posX = ' + posX + ', posY = ' + posY + item_query + last_obj_query + scrape_query + enemy_query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+								connection.query('UPDATE map_lobby SET wait_time = "' + long_date + '", battle_timeout_limit = "' + long_date_battle + '", posX = ' + posX + ', posY = ' + posY + item_query + last_obj_query + scrape_query + enemy_query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
 
 									if (isBuild)
 										bot.sendMessage(message.chat.id, text, kbBackBuild);
-									else if (isEnemy)
-										bot.sendMessage(message.chat.id, text, kbBackEnemy);
-									else
+									else if (isEnemy) {
+										connection.query('UPDATE map_lobby SET enemy_id = ' + player_id + ' WHERE player_id = ' + enemy_id, function (err, rows, fields) {
+											if (err) throw err;
+											
+											bot.sendMessage(message.chat.id, text, kbBackEnemy);
+											bot.sendMessage(enemy_chat_id, "Sei stato sfidato a duello da un altro giocatore!\nOsservi <b>" + message.from.username + "</b> ricambiando lo sguardo di sfida!", html);
+										});
+									} else
 										bot.sendMessage(message.chat.id, text, kbBack);
 								});
 							});
@@ -8414,17 +8672,25 @@ bot.onText(/^vai in battaglia$|accedi all'edificio/i, function (message) {
 });
 
 function mapPlayerKilled(lobby_id, player_id, cause){
-	connection.query('SELECT chat_id, match_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+	connection.query('SELECT chat_id, match_kills, enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 		if (err) throw err;
 		
 		var text = "";
 		if (cause == 1)
 			text = "Un giocatore è stato ucciso da una trappola!";
+		else (cause == 2)
+			text = "Un giocatore è stato ucciso da un altro giocatore!";
 
 		for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 			bot.sendMessage(rows[i].chat_id, text);
 		
 		var match_kills = rows[0].match_kills;
+		
+		if (rows[0].enemy_id != null){
+			connection.query('UPDATE map_lobby SET enemy_id = NULL, battle_timeout = NULL, battle_timeout_limit = NULL, battle_shield = 0, battle_heavy = 0 WHERE player_id = ' + enemy_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
 		
 		// salva in history
 		connection.query('SELECT id FROM map_lobby_list WHERE lobby_id = ' + lobby_id,  function (err, rows, fields) {
@@ -8439,21 +8705,45 @@ function mapPlayerKilled(lobby_id, player_id, cause){
 				
 				connection.query('INSERT INTO map_history (map_lobby_id, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + player_id + ', ' + pos + ', ' + match_kills + ')', function (err, rows, fields) {
 					if (err) throw err;
-				});
-			});
-		});
 		
-		// concludi
-		connection.query('UPDATE map_lobby SET killed = 1 WHERE player_id = ' + player_id, function (err, rows, fields) {
-			if (err) throw err;
-			
-			connection.query('SELECT 1 FROM map_lobby WHERE killed = 0',  function (err, rows, fields) {
-				if (err) throw err;
-				
-				// fine partita
-				if (Object.keys(rows).length <= 1){
-					
-				}
+					// concludi
+					connection.query('UPDATE map_lobby SET killed = 1, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_timeout = NULL, battle_timeout_limit = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+
+						connection.query('SELECT M.player_id, P.chat_id, P.nickname FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0',  function (err, rows, fields) {
+							if (err) throw err;
+
+							var winner_nickname = rows[0].nickname;
+							var winner_player_id = rows[0].player_id;
+
+							// fine partita
+							if (Object.keys(rows).length == 1){
+								connection.query('SELECT nickname, position, kills FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position', function (err, rows, fields) {
+									if (err) throw err;
+
+									var list = "";
+									for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+										list += rows[i].position + "° " + rows[i].nickname + " (" + rows[i].kills + " uccisioni)\n";
+
+									connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+										if (err) throw err;
+
+										for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+											bot.sendMessage(rows[i].chat_id, "La partità è terminata!\n🎉 Il vincitore è <b>" + winner_nickname + "</b>! 🎉\n\n" + list, back);
+										
+										// pulizia
+										connection.query('DELETE FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+											if (err) throw err;
+											connection.query('UPDATE map_lobby SET match_kills = 0, posX = NULL, posY = NULL, life = NULL, total_life = NULL, killed = 0, wait_time = NULL, weapon_id = NULL, weapon2_id = NULL, weapon3_id = NULL, money = 0, scrap = 0, pulsePosX = NULL, pulsePosY = NULL, last_obj = NULL, last_obj_val = NULL, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_timeout = NULL, battle_timeout_limit = NULL WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+												if (err) throw err;
+											});
+										});
+									});
+								});
+							}
+						});
+					});
+				});
 			});
 		});
 	});
@@ -24399,7 +24689,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		playerid = player[i].id;
 																		class_id = player[i].class_id;
 																		reborn = player[i].reborn;
-																		exp = player[i].reborn;
+																		exp = player[i].exp;
 																		weapon = player[i].weapon;
 																		weapon_id = player[i].weapon_id;
 																		weapon_crit = player[i].weapon_crit;
@@ -25123,7 +25413,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		playerid = player[i].id;
 																		class_id = player[i].class_id;
 																		reborn = player[i].reborn;
-																		exp = player[i].reborn;
+																		exp = player[i].exp;
 																		weapon = player[i].weapon;
 																		weapon_id = player[i].weapon_id;
 																		weapon_crit = player[i].weapon_crit;
@@ -47824,8 +48114,74 @@ function setLobbyTime(element, index, array) {
 	});
 }
 
+function checkBattleTime() {
+	connection.query('SELECT M.lobby_id, P.id As player_id, P.chat_id, M.enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND M.battle_timeout < NOW() AND battle_timeout IS NOT NULL', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length == 1)
+				console.log(getNow("it") + "\x1b[32m 1 timeout combattimento scaduto\x1b[0m");
+			else
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " timeout combattimento scaduti\x1b[0m");
+			rows.forEach(setBattleTime);
+		}
+	});
+};
+
+function setBattleTime(element, index, array) {
+	var player_id = element.player_id;
+	var chat_id = element.chat_id;
+	var lobby_id = element.lobby_id;
+	var enemy_id = element.enemy_id;
+	
+	connection.query('SELECT chat_id FROM player WHERE id = ' + enemy_id, function (err, rows, fields) {
+		if (err) throw err;
+		
+		mapPlayerKilled(lobby_id, player_id, 2);
+		
+		bot.sendMessage(chat_id, "Il tempo per il turno è scaduto!\nDal nulla arriva una freccia a gran velocità e decreta il tuo avversario come vincitore dello scontro!");
+		bot.sendMessage(rows[0].chat_id, "Il tempo per il turno da parte dell'avversario è scaduto!\nHai vinto lo scontro!");
+		
+		connection.query('UPDATE map_lobby SET battle_timeout = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
+	});
+}
+
+function checkBattleTimeLimit() {
+	connection.query('SELECT M.lobby_id, P.id As player_id, P.chat_id, M.enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND M.battle_timeout_limit < NOW() AND battle_timeout_limit IS NOT NULL', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length == 1)
+				console.log(getNow("it") + "\x1b[32m 1 timeout limite combattimento scaduto\x1b[0m");
+			else
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " timeout limite combattimento scaduti\x1b[0m");
+			rows.forEach(setBattleTimeLimit);
+		}
+	});
+};
+
+function setBattleTimeLimit(element, index, array) {
+	var player_id = element.player_id;
+	var chat_id = element.chat_id;
+	var lobby_id = element.lobby_id;
+	var enemy_id = element.enemy_id;
+	
+	connection.query('SELECT chat_id FROM player WHERE id = ' + enemy_id, function (err, rows, fields) {
+		if (err) throw err;
+	
+		mapPlayerKilled(lobby_id, player_id, 2);
+		
+		bot.sendMessage(chat_id, "Il tempo per il combattimento è scaduto!\nDal nulla arriva una freccia a gran velocità e decreta il tuo avversario come vincitore dello scontro!");
+		bot.sendMessage(rows[0].chat_id, "Il tempo per il combattimento da parte dell'avversario è scaduto!\nHai vinto lo scontro!");
+		
+		connection.query('UPDATE map_lobby SET battle_timeout_limit = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
+	});
+}
+
 function checkFullLobby() {
-	connection.query('SELECT lobby_id, COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL GROUP BY lobby_id HAVING cnt = ' + lobby_total_space + ' ORDER BY id', function (err, rows, fields) {
+	connection.query('SELECT M.lobby_id, COUNT(M.lobby_id) As cnt FROM map_lobby M LEFT JOIN map_lobby_list L ON M.lobby_id = L.lobby_id WHERE M.lobby_id IS NOT NULL AND L.id IS NULL GROUP BY M.lobby_id HAVING cnt = ' + lobby_total_space + ' ORDER BY M.id', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)

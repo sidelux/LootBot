@@ -1950,6 +1950,7 @@ CREATE TABLE `map_lobby` (
   `posY` int(11) DEFAULT NULL,
   `life` int(11) DEFAULT NULL,
   `total_life` int(11) DEFAULT NULL,
+  `killed` tinyint(1) NOT NULL DEFAULT '0',
   `wait_time` timestamp NULL DEFAULT NULL,
   `weapon_id` int(11) DEFAULT NULL,
   `weapon2_id` int(11) DEFAULT NULL,
@@ -1961,6 +1962,9 @@ CREATE TABLE `map_lobby` (
   `last_obj` int(11) DEFAULT NULL,
   `last_obj_val` varchar(32) DEFAULT NULL,
   `enemy_id` int(11) DEFAULT NULL,
+  `battle_shield` tinyint(4) NOT NULL DEFAULT '0',
+  `battle_heavy` tinyint(4) NOT NULL DEFAULT '0',
+  `battle_timeout` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `map_lobby_player_id` (`player_id`),
   KEY `map_lobby_lobby_id` (`lobby_id`),
@@ -3486,4 +3490,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-15  9:00:11
+-- Dump completed on 2019-02-15 15:00:10
