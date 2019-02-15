@@ -7508,13 +7508,13 @@ bot.onText(/^\/posizione/, function (message, match) {
 			return;
 		}
 
-		connection.query('(SELECT nickname, A.value As cnt FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY A.value DESC LIMIT 100) UNION (SELECT nickname, A.value As cnt FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 ORDER BY A.value DESC LIMIT 100)', function (err, rows, fields) {
+		connection.query('(SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY A.value DESC LIMIT 100) UNION (SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 ORDER BY A.value DESC LIMIT 100)', function (err, rows, fields) {
 			if (err) throw err;
 
 			var found = 0;
 			var text = "\n<b>NON verrà</b> considerata nelle tue statistiche!";
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-				if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+				if (rows[i].id == player_id) {
 					found = 1;
 					break;
 				}
@@ -7523,7 +7523,7 @@ bot.onText(/^\/posizione/, function (message, match) {
 			if (found == 1)
 				text = "\n<b>Verrà considerata</b> nelle tue statistiche!";
 
-			connection.query('SELECT nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
+			connection.query('SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
 				if (err) throw err;
 
 				if (Object.keys(rows).length == 0) {
@@ -7534,7 +7534,7 @@ bot.onText(/^\/posizione/, function (message, match) {
 				var pos = 0;
 				var pnt = 0;
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()){
+					if (rows[i].id == player_id){
 						pos = i+1;
 						pnt = rows[i].cnt;
 					}

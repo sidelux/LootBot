@@ -1923,27 +1923,13 @@ DROP TABLE IF EXISTS `map_history`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `map_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `match_id` int(11) NOT NULL,
-  `match_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `winner` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `map_history_players`
---
-
-DROP TABLE IF EXISTS `map_history_players`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `map_history_players` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `history_id` int(11) NOT NULL,
+  `map_lobby_id` int(11) NOT NULL,
   `player_id` int(11) NOT NULL,
   `position` int(11) NOT NULL,
   `kills` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `map_history_player_id` (`player_id`),
+  CONSTRAINT `map_history_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1958,11 +1944,12 @@ CREATE TABLE `map_lobby` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
   `lobby_id` int(11) DEFAULT NULL,
+  `match_kills` int(11) NOT NULL DEFAULT '0',
+  `global_kills` tinyint(4) NOT NULL DEFAULT '0',
   `posX` int(11) DEFAULT NULL,
   `posY` int(11) DEFAULT NULL,
   `life` int(11) DEFAULT NULL,
   `total_life` int(11) DEFAULT NULL,
-  `killed` tinyint(4) NOT NULL DEFAULT '0',
   `wait_time` timestamp NULL DEFAULT NULL,
   `weapon_id` int(11) DEFAULT NULL,
   `weapon2_id` int(11) DEFAULT NULL,
@@ -1973,6 +1960,7 @@ CREATE TABLE `map_lobby` (
   `pulsePosY` int(11) DEFAULT NULL,
   `last_obj` int(11) DEFAULT NULL,
   `last_obj_val` varchar(32) DEFAULT NULL,
+  `enemy_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `map_lobby_player_id` (`player_id`),
   KEY `map_lobby_lobby_id` (`lobby_id`),
@@ -3498,4 +3486,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-14 15:00:12
+-- Dump completed on 2019-02-15  9:00:11

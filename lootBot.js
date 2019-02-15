@@ -1370,14 +1370,13 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 											bot.sendMessage(rows[i].chat_id, "Per il completamento dell'*Impresa Globale* hai ricevuto:\n" + text, mark);
 										}
 									});
-									connection.query('(SELECT A.player_id, chat_id, nickname, A.value As val, global_event FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY A.value DESC LIMIT 100) UNION (SELECT A.player_id, chat_id, nickname, A.value As val, global_event FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 ORDER BY A.value DESC LIMIT 100)', function (err, rows, fields) {
+									connection.query('(SELECT A.player_id, chat_id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY A.value DESC LIMIT 100) UNION (SELECT A.player_id, chat_id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 ORDER BY A.value DESC LIMIT 100)', function (err, rows, fields) {
 										if (err) throw err;
 										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 											connection.query('UPDATE player SET global_event = global_event+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
 												if (err) throw err;
 											});
 											bot.sendMessage(rows[i].chat_id, "Inoltre per il tuo posizionamento in classifica la tua impresa globale viene conteggiata nelle statistiche!", mark);
-											//console.log(rows[i].nickname + " - Punto globale");
 										}
 									});
 									bot.sendMessage(message.chat.id, "Fatto!", back);
@@ -35379,7 +35378,7 @@ function getRankAch(message, size) {
 					});
 
 					if (top_min == 1) {
-						connection.query('SELECT nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
+						connection.query('SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
 							if (err) throw err;
 
 							if (Object.keys(rows).length == 0) {
@@ -35390,7 +35389,7 @@ function getRankAch(message, size) {
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 								if (c < size + 1)
 									text += c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].cnt) + ")\n";
-								if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+								if (rows[i].id == player_id) {
 									mypnt = rows[i].cnt;
 									mypos = c;
 								}
@@ -35398,12 +35397,12 @@ function getRankAch(message, size) {
 							}
 							text += "\nTu:\n" + mypos + "° " + message.from.username + " (" + formatNumber(mypnt) + ")";
 
-							connection.query('(SELECT nickname, A.value As cnt FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY A.value DESC LIMIT 100) UNION (SELECT nickname, A.value As cnt FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 ORDER BY A.value DESC LIMIT 100)', function (err, rows, fields) {
+							connection.query('(SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY A.value DESC LIMIT 100) UNION (SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 ORDER BY A.value DESC LIMIT 100)', function (err, rows, fields) {
 								if (err) throw err;
 
 								var found = 0;
 								for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-									if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+									if (rows[i].id == player_id) {
 										found = 1;
 										break;
 									}
@@ -35418,7 +35417,7 @@ function getRankAch(message, size) {
 							});
 						});
 					} else {
-						connection.query('SELECT nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
+						connection.query('SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
 							if (err) throw err;
 
 							if (Object.keys(rows).length == 0) {
@@ -35435,7 +35434,7 @@ function getRankAch(message, size) {
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 								nickname.push(rows[i].nickname);
 								point.push(rows[i].cnt);
-								if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase())
+								if (player_id == rows[i].id)
 									mypos = i;
 							}
 
@@ -35448,12 +35447,12 @@ function getRankAch(message, size) {
 								}
 							}
 
-							connection.query('(SELECT nickname, A.value As cnt FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY A.value DESC LIMIT 100) UNION (SELECT nickname, A.value As cnt FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 ORDER BY A.value DESC LIMIT 100)', function (err, rows, fields) {
+							connection.query('(SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY A.value DESC LIMIT 100) UNION (SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 ORDER BY A.value DESC LIMIT 100)', function (err, rows, fields) {
 								if (err) throw err;
 
 								var found = 0;
 								for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-									if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+									if (rows[i].id == player_id) {
 										found = 1;
 										break;
 									}
@@ -46119,7 +46118,7 @@ function setEvents(element, index, array) {
 			time_end.setMinutes(time_end.getMinutes() + 60);
 
 			var long_date = time_end.getFullYear() + "-" + addZero(time_end.getMonth() + 1) + "-" + addZero(time_end.getDate()) + " " + addZero(time_end.getHours()) + ':' + addZero(time_end.getMinutes()) + ':' + addZero(time_end.getSeconds());
-			connection.query('UPDATE player SET mission_time_end = "' + long_date + '" WHERE id=' + player_id, function (err, rows, fields) {
+			connection.query('UPDATE player SET mission_time_end = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
 
@@ -46133,16 +46132,16 @@ function setEvents(element, index, array) {
 			});
 		});
 	} else if (rand == 34) {
-		var damage = Math.round(getRandomArbitrary(level*40, level*60));;
-		connection.query('SELECT nickname FROM player WHERE exp > 30 ORDER BY RAND()', function (err, rows, fields) {
+		var life = Math.round(getRandomArbitrary(level*40, level*60));;
+		connection.query('SELECT id, nickname FROM player WHERE exp > 30 ORDER BY RAND()', function (err, rows, fields) {
 			if (err) throw err;
-			text = "Durante la missione incontri " + rows[0].nickname + " e vi salutate. Entrambi recuperate " + formatNumber(damage) + " hp (d'altronde è salutare).";
+			text = "Durante la missione incontri " + rows[0].nickname + " e vi salutate. Entrambi recuperate " + formatNumber(life) + " hp (d'altronde è salutare).";
 			bot.sendMessage(chat_id, text);
 
-			connection.query('UPDATE player SET life = life + ' + damage + ' WHERE nickname = "' + rows[0].nickname + '"', function (err, rows, fields) {
+			connection.query('UPDATE player SET life = life + ' + life + ' WHERE id = ' + rows[0].id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			connection.query('UPDATE player SET life = life + ' + damage + ' WHERE nickname = "' + element.nickname + '"', function (err, rows, fields) {
+			connection.query('UPDATE player SET life = life + ' + life + ' WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
 		});
