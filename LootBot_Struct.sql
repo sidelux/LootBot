@@ -1962,9 +1962,11 @@ CREATE TABLE `map_lobby` (
   `last_obj` int(11) DEFAULT NULL,
   `last_obj_val` varchar(32) DEFAULT NULL,
   `enemy_id` int(11) DEFAULT NULL,
+  `my_turn` tinyint(1) NOT NULL DEFAULT '0',
   `battle_shield` tinyint(4) NOT NULL DEFAULT '0',
   `battle_heavy` tinyint(4) NOT NULL DEFAULT '0',
   `battle_timeout` timestamp NULL DEFAULT NULL,
+  `battle_timeout_limit` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `map_lobby_player_id` (`player_id`),
   KEY `map_lobby_lobby_id` (`lobby_id`),
@@ -2962,8 +2964,8 @@ CREATE TABLE `public_shop` (
   `price` int(11) NOT NULL,
   `quantity` int(11) NOT NULL,
   `time_end` timestamp NULL DEFAULT NULL,
-  `notified` int(3) NOT NULL DEFAULT '0',
-  `public` int(11) NOT NULL DEFAULT '0',
+  `notified` tinyint(1) NOT NULL DEFAULT '0',
+  `public` tinyint(1) NOT NULL DEFAULT '0',
   `massive` int(11) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `shop_no_duplicate` (`code`,`item_id`),
@@ -3490,4 +3492,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-15 15:00:10
+-- Dump completed on 2019-02-18  9:00:13

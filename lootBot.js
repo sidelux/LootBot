@@ -7286,101 +7286,117 @@ bot.onText(/statistiche/i, function (message) {
 						scalateOk = "Si";
 					}
 				}
-
-				connection.query('SELECT total_cnt FROM merchant_offer WHERE player_id = ' + player_id, function (err, rows, fields) {
+				
+				connection.query('SELECT COUNT(id) As cnt FROM dragon_top_log WHERE (player_id = ' + player_id + ' AND win = 1) OR (enemy_player_id = ' + player_id + ' AND win = 2)', function (err, rows, fields) {
 					if (err) throw err;
+					
+					var dragon_top_win = rows[0].cnt;
+					
+					connection.query('SELECT COUNT(id) As cnt FROM dragon_top_log WHERE (player_id = ' + player_id + ' AND win = 2) OR (enemy_player_id = ' + player_id + ' AND win = 1)', function (err, rows, fields) {
+					if (err) throw err;
+					
+						var dragon_top_lose = rows[0].cnt;
 
-					var contrabbandiere = 0;
-					if (Object.keys(rows).length > 0)
-						contrabbandiere = rows[0].total_cnt;
-
-					connection.query('SELECT COUNT(*) As cnt FROM heist_history WHERE from_id = ' + player_id, function (err, rows, fields) {
-						if (err) throw err;
-						var ispezioniEffettuate = rows[0].cnt;
-						connection.query('SELECT COUNT(*) As cnt FROM heist_history WHERE fail > 0 AND to_id = ' + player_id, function (err, rows, fields) {
+						connection.query('SELECT total_cnt FROM merchant_offer WHERE player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
-							var ispezioniSubiteVinte = rows[0].cnt;
-							connection.query('SELECT COUNT(*) As cnt FROM heist_history WHERE fail = 0 AND to_id = ' + player_id, function (err, rows, fields) {
+
+							var contrabbandiere = 0;
+							if (Object.keys(rows).length > 0)
+								contrabbandiere = rows[0].total_cnt;
+
+							connection.query('SELECT COUNT(*) As cnt FROM heist_history WHERE from_id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
-								var ispezioniSubitePerse = rows[0].cnt;
-								connection.query('SELECT COUNT(*) As cnt FROM heist_history WHERE fail = 0 AND from_id = ' + player_id, function (err, rows, fields) {
+								var ispezioniEffettuate = rows[0].cnt;
+								connection.query('SELECT COUNT(*) As cnt FROM heist_history WHERE fail > 0 AND to_id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
-									var ispezioniEffettuateVinte = rows[0].cnt;
-									connection.query('SELECT COUNT(*) As cnt FROM heist_history WHERE fail > 0 AND from_id = ' + player_id, function (err, rows, fields) {
+									var ispezioniSubiteVinte = rows[0].cnt;
+									connection.query('SELECT COUNT(*) As cnt FROM heist_history WHERE fail = 0 AND to_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
-										var ispezioniEffettuatePerse = rows[0].cnt;
-										connection.query('SELECT COUNT(*) As cnt FROM search_history WHERE player_id = ' + player_id, function (err, rows, fields) {
+										var ispezioniSubitePerse = rows[0].cnt;
+										connection.query('SELECT COUNT(*) As cnt FROM heist_history WHERE fail = 0 AND from_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
-											var ricerche = rows[0].cnt;
-											connection.query('SELECT SUM(quantity) As cnt FROM market_direct_history WHERE from_id = ' + player_id, function (err, rows, fields) {
+											var ispezioniEffettuateVinte = rows[0].cnt;
+											connection.query('SELECT COUNT(*) As cnt FROM heist_history WHERE fail > 0 AND from_id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
-												var vendite = rows[0].cnt;
-												connection.query('SELECT SUM(quantity) As cnt FROM market_direct_history WHERE to_id = ' + player_id, function (err, rows, fields) {
+												var ispezioniEffettuatePerse = rows[0].cnt;
+												connection.query('SELECT COUNT(*) As cnt FROM search_history WHERE player_id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
-													var acquisti = rows[0].cnt;
-													connection.query('SELECT COUNT(*) As cnt FROM market_history WHERE from_id = ' + player_id, function (err, rows, fields) {
+													var ricerche = rows[0].cnt;
+													connection.query('SELECT SUM(quantity) As cnt FROM market_direct_history WHERE from_id = ' + player_id, function (err, rows, fields) {
 														if (err) throw err;
-														var scambiOut = rows[0].cnt;
-														connection.query('SELECT COUNT(*) As cnt FROM market_history WHERE to_id = ' + player_id, function (err, rows, fields) {
+														var vendite = rows[0].cnt;
+														connection.query('SELECT SUM(quantity) As cnt FROM market_direct_history WHERE to_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
-															var scambiIn = rows[0].cnt;
-															connection.query('SELECT COUNT(*) As cnt FROM referral_list WHERE player_id = ' + player_id, function (err, rows, fields) {
+															var acquisti = rows[0].cnt;
+															connection.query('SELECT COUNT(*) As cnt FROM market_history WHERE from_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
-																var invitati = rows[0].cnt;
-																connection.query('SELECT SUM(quantity) As cnt FROM inventory WHERE player_id = ' + player_id, function (err, rows, fields) {
+																var scambiOut = rows[0].cnt;
+																connection.query('SELECT COUNT(*) As cnt FROM market_history WHERE to_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
-																	var oggetti = rows[0].cnt;
-																	connection.query('SELECT COUNT(*) As cnt FROM public_lottery_history WHERE creator_id = ' + player_id, function (err, rows, fields) {
+																	var scambiIn = rows[0].cnt;
+																	connection.query('SELECT COUNT(*) As cnt FROM referral_list WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
-																		var lotterie = rows[0].cnt;
-																		connection.query('SELECT COUNT(*) As cnt FROM public_lottery_history WHERE player_id = ' + player_id, function (err, rows, fields) {
+																		var invitati = rows[0].cnt;
+																		connection.query('SELECT SUM(quantity) As cnt FROM inventory WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
-																			var lotterieVinte = rows[0].cnt;
-																			connection.query('SELECT COUNT(*) As cnt FROM ability WHERE player_id = ' + player_id, function (err, rows, fields) {
+																			var oggetti = rows[0].cnt;
+																			connection.query('SELECT COUNT(*) As cnt FROM public_lottery_history WHERE creator_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
-																				var abilita = rows[0].cnt;
-
-																				connection.query("SELECT SUM(ability_level) As cnt FROM ability WHERE player_id = " + player_id, function (err, rows, fields) {
+																				var lotterie = rows[0].cnt;
+																				connection.query('SELECT COUNT(*) As cnt FROM public_lottery_history WHERE player_id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
+																					var lotterieVinte = rows[0].cnt;
+																					connection.query('SELECT COUNT(*) As cnt FROM ability WHERE player_id = ' + player_id, function (err, rows, fields) {
+																						if (err) throw err;
+																						var abilita = rows[0].cnt;
 
-																					var talenti = rows[0].cnt
+																						connection.query("SELECT SUM(ability_level) As cnt FROM ability WHERE player_id = " + player_id, function (err, rows, fields) {
+																							if (err) throw err;
 
-																					var text = "*Statistiche giocatore*\n" +
-																						"\n👤 *Giocatore*:\n" +
-																						registrazione +
-																						"*Ricerche*: " + ricerche + " (ultimi 30g)\n" +
-																						"*Utenti invitati*: " + invitati + "\n" +
-																						"*Talenti sbloccati*: " + formatNumber(abilita) + "\n" +
-																						"*Scalate personali nel team attuale*: " + formatNumber(scalate) + "\n" +
-																						"*3 scalate raggiunte*: " + scalateOk + "\n" +
-																						"*Oggetti posseduti*: " + formatNumber(oggetti) + "\n" +
-																						"*Imprese globali (partecipando attivamente)*: " + global_event + "\n" +
-																						"*Esperienza accumulata*: " + formatNumber(gain_exp) + "\n" +
-																						"*Offerte contrabbandiere accettate*: " + formatNumber(contrabbandiere) + "\n" +
-																						"*Livelli Talenti raggiunti*: " + talenti + "\n" +
-																						"*Incarichi completati*: " + mission_team_count + "\n" +
+																							var talenti = rows[0].cnt
 
-																						"\n⚔️ *Hai completato*:\n" +
-																						"*Missioni*: " + formatNumber(missioni) + "\n" +
-																						"*Imprese giornaliere*: " + formatNumber(imprese) + "\n" +
-																						"*Dungeon*: " + formatNumber(dungeon_tot) + "\n" +
+																							var text = "*Statistiche giocatore*\n" +
+																								"\n👤 *Giocatore*:\n" +
+																								registrazione +
+																								"*Ricerche*: " + ricerche + " (ultimi 30g)\n" +
+																								"*Utenti invitati*: " + invitati + "\n" +
+																								"*Talenti sbloccati*: " + formatNumber(abilita) + "\n" +
+																								"*Scalate personali nel team attuale*: " + formatNumber(scalate) + "\n" +
+																								"*3 scalate raggiunte*: " + scalateOk + "\n" +
+																								"*Oggetti posseduti*: " + formatNumber(oggetti) + "\n" +
+																								"*Imprese globali (partecipando attivamente)*: " + global_event + "\n" +
+																								"*Esperienza accumulata*: " + formatNumber(gain_exp) + "\n" +
+																								"*Offerte contrabbandiere accettate*: " + formatNumber(contrabbandiere) + "\n" +
+																								"*Livelli Talenti raggiunti*: " + talenti + "\n" +
+																								"*Incarichi completati*: " + mission_team_count + "\n" +
 
-																						"\n🔦 *Hai avviato " + formatNumber(ispezioniEffettuateVinte+ispezioniEffettuatePerse) + " ispezioni*:\n" +
-																						"*Vinte*: " + formatNumber(ispezioniEffettuateVinte) + "\n" +
-																						"*Perse*: " + formatNumber(ispezioniEffettuatePerse) + "\n" +
+																								"\n⚔️ *Hai completato*:\n" +
+																								"*Missioni*: " + formatNumber(missioni) + "\n" +
+																								"*Imprese giornaliere*: " + formatNumber(imprese) + "\n" +
+																								"*Dungeon*: " + formatNumber(dungeon_tot) + "\n" +
+																								
+																								"\n🎲 *Eventi*:\n" +
+																								"*Scontri Vette vinti*: " + formatNumber(dragon_top_win) + "\n" +
+																								"*Scontri Vette persi*: " + formatNumber(dragon_top_lose) + "\n" +
 
-																						"\n🔦 *Hai subito " + formatNumber(ispezioniSubite) + " ispezioni*:\n" +
-																						"*Vinte*: " + formatNumber(ispezioniSubiteVinte) + "\n" +
-																						"*Perse*: " + formatNumber(ispezioniSubitePerse) + "\n" +
+																								"\n🔦 *Hai avviato " + formatNumber(ispezioniEffettuateVinte+ispezioniEffettuatePerse) + " ispezioni*:\n" +
+																								"*Vinte*: " + formatNumber(ispezioniEffettuateVinte) + "\n" +
+																								"*Perse*: " + formatNumber(ispezioniEffettuatePerse) + "\n" +
 
-																						"\n💰 *Mercato*:\n" +
-																						"*Acquisti*: " + formatNumber(acquisti) + "\n" +
-																						"*Vendite*: " + formatNumber(vendite) + "\n" +
-																						"*Scambi in uscita*: " + formatNumber(scambiOut) + "\n" +
-																						"*Scambi in entrata*: " + formatNumber(scambiIn) + "\n" +
-																						"*Lotterie*: " + formatNumber(lotterie) + "\n" +
-																						"*Lotterie vinte*: " + formatNumber(lotterieVinte);
-																					bot.sendMessage(message.chat.id, text, back);
+																								"\n🔦 *Hai subito " + formatNumber(ispezioniSubite) + " ispezioni*:\n" +
+																								"*Vinte*: " + formatNumber(ispezioniSubiteVinte) + "\n" +
+																								"*Perse*: " + formatNumber(ispezioniSubitePerse) + "\n" +
+
+																								"\n💰 *Mercato*:\n" +
+																								"*Acquisti*: " + formatNumber(acquisti) + "\n" +
+																								"*Vendite*: " + formatNumber(vendite) + "\n" +
+																								"*Scambi in uscita*: " + formatNumber(scambiOut) + "\n" +
+																								"*Scambi in entrata*: " + formatNumber(scambiIn) + "\n" +
+																								"*Lotterie*: " + formatNumber(lotterie) + "\n" +
+																								"*Lotterie vinte*: " + formatNumber(lotterieVinte);
+																							bot.sendMessage(message.chat.id, text, back);
+																						});
+																					});
 																				});
 																			});
 																		});
@@ -18581,7 +18597,10 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																				if (err) throw err;
 
 																				if (rows[0].sleep_time_end != null) {
-																					bot.sendMessage(message.chat.id, "Il tuo drago sta riposando...", kbBack);
+																					var d = new Date(rows[0].sleep_time_end);
+																					var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
+																					bot.sendMessage(message.chat.id, "Il tuo drago sta riposando... Si sveglierà alle " + short_date, kbBack);
+																					return;
 																					return;
 																				}
 
@@ -23354,7 +23373,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 														wall_max_life += wall_max_life*(class_bonus_val/100);
 														wall_max_life = Math.round(wall_max_life);
 
-														console.log("Mura: " + team_id + " " + formatNumber(wall_max_life));
+														//console.log("Mura: " + team_id + " " + formatNumber(wall_max_life));
 
 														var perc = Math.round(life/wall_max_life*100);
 
@@ -23629,7 +23648,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 								parse_mode: "HTML",
 								reply_markup: {
 									resize_keyboard: true,
-									keyboard: [["Torna al menu"]]
+									keyboard: [["Torna al team"], ["Torna al menu"]]
 								}
 							};
 
@@ -26089,7 +26108,7 @@ bot.onText(/cura completa/i, function (message) {
 	});
 });
 
-bot.onText(/incremento/i, function (message) {
+bot.onText(/incremento|^inc$/i, function (message) {
 	var kbBack = {
 		parse_mode: "HTML",
 		reply_markup: {
@@ -43157,7 +43176,7 @@ bot.onText(/matchmaking/i, function (message) {
 							var rand;
 
 							for(i = 0; i < 15; i++){
-								var rows = connection_sync.query("SELECT nickname, exp, team_player.team_id FROM player, team_player WHERE player.heist_limit < " + heist_limit + " AND player.account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) AND team_player.player_id = player.id AND team_player.team_id NOT IN (" + team_id + ") AND heist_protection IS NULL AND ability BETWEEN " + (myab - offset) + " AND " + (myab + offset2) + " AND player.id != " + from_id + " AND money > 0 AND exp > " + minexp + " AND holiday = 0 AND player.id != " + last_mm + " ORDER BY ability DESC, heist_limit ASC, RAND() LIMIT " + limit);
+								var rows = connection_sync.query("SELECT nickname, exp, team_player.team_id FROM player, team_player WHERE player.heist_limit+(SELECT COUNT(id) FROM heist_progress WHERE to_id = player.id) < " + heist_limit + " AND player.account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) AND team_player.player_id = player.id AND team_player.team_id NOT IN (" + team_id + ") AND heist_protection IS NULL AND ability BETWEEN " + (myab - offset) + " AND " + (myab + offset2) + " AND player.id != " + from_id + " AND money > 0 AND exp > " + minexp + " AND holiday = 0 AND player.id != " + last_mm + " ORDER BY ability DESC, heist_limit ASC, RAND() LIMIT " + limit);
 
 								if (Object.keys(rows).length < 10) {
 									offset += i*10;
@@ -47163,7 +47182,7 @@ function regenItems(team_id, place_id, level){
 		wall_max_life += wall_max_life*(class_bonus_val/100);
 		wall_max_life = Math.round(wall_max_life);
 
-		console.log("Mura aggiornamento: " + team_id + " " + formatNumber(wall_max_life));
+		//console.log("Mura aggiornamento: " + team_id + " " + formatNumber(wall_max_life));
 
 		connection.query('SELECT life FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id, function (err, rows, fields) {
 			if (err) throw err;

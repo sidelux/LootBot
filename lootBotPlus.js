@@ -661,11 +661,18 @@ bot.onText(/^\/([0-9]+)+birre$/, function (message, match) {
 });
 
 bot.onText(/^\/duebirre/, function (message) {
-	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, market_ban, account_id, money, holiday, birth_date FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
 		var money = rows[0].money;
+		var birth_date = rows[0].birth_date;
+		
+		var t = "";
+		if (calculateAge(new Date(birth_date)) < 18)
+			t += "🥛🥛";
+		else
+			t += "🍻";
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -689,7 +696,7 @@ bot.onText(/^\/duebirre/, function (message) {
 		} else {
 			connection.query('UPDATE player SET money = money-200 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
-				bot.sendMessage(message.chat.id, "🍻");
+				bot.sendMessage(message.chat.id, "");
 			});
 			connection.query('UPDATE config SET food = food+2', function (err, rows, fields) {
 				if (err) throw err;
@@ -3732,7 +3739,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				d.setDate(d.getDate() - 2);
 				long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-				connection.query('UPDATE public_shop SET time_end = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+				connection.query('UPDATE public_shop SET time_end = "' + long_date + '", notified = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 					bot.sendMessage(message.chat.id, "Tutti i negozi rinnovati per 2 giorni");
 				});
@@ -3744,7 +3751,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				code = elements[i];
 				var shopQuery = connection.query('SELECT 1 FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id);
 				if (Object.keys(shopQuery).length > 0) {
-					connection.query('UPDATE public_shop SET time_end = "' + long_date + '" WHERE code = ' + code, function (err, rows, fields) {
+					connection.query('UPDATE public_shop SET time_end = "' + long_date + '", notified = 0 WHERE code = ' + code, function (err, rows, fields) {
 						if (err) throw err;
 					});
 					bot.sendMessage(message.chat.id, "Negozio " + code + " rinnovato per 4 giorni");
@@ -3817,7 +3824,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				if (cnt == 0)
 					text += "Nessun oggetto rimosso";
 				else{
-					connection.query('UPDATE public_shop SET time_end = "' + long_date + '" WHERE code = ' + code, function (err, rows, fields) {
+					connection.query('UPDATE public_shop SET time_end = "' + long_date + '", notified = 0 WHERE code = ' + code, function (err, rows, fields) {
 						if (err) throw err;
 					});
 				}
@@ -3901,14 +3908,14 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				if (cnt == 0)
 					text += "Nessun oggetto aggiornato";
 				else{
-					connection.query('UPDATE public_shop SET time_end = "' + long_date + '" WHERE code = ' + code, function (err, rows, fields) {
+					connection.query('UPDATE public_shop SET time_end = "' + long_date + '", notified = 0 WHERE code = ' + code, function (err, rows, fields) {
 						if (err) throw err;
 					});
 				}
 			} else if ((func == "add") || (func == "new")) {
 				text = "Riassunto oggetti aggiunti:\n";
 
-				connection.query('UPDATE public_shop SET time_end = "' + long_date + '" WHERE code = ' + code, function (err, rows, fields) {
+				connection.query('UPDATE public_shop SET time_end = "' + long_date + '", notified = 0 WHERE code = ' + code, function (err, rows, fields) {
 					if (err) throw err;
 				});
 
