@@ -39254,7 +39254,24 @@ function setAchievement(chat_id, player_id, type, increment, itemId = 0) {
 									chest_name = "Scrigno Epico";
 								}
 								addChest(player_id, chest_id);
-								bot.sendMessage(chat_id, "Hai completato *10 imprese* e hai ricevuto *" + chest_name + "*!", mark);
+								bot.sendMessage(chat_id, "Hai completato *10 imprese* e hai ricevuto uno *" + chest_name + "*!", mark);
+							}
+							if ((achievement_count % 50) == 0) {
+								var randChest = Math.random() * 100;
+								var chest_id = 0;
+								var chest_name = "";
+								if (randChest <= 60) {
+									chest_id = 9;
+									chest_name = "Scrigno Scaglia";
+								} else if (randChest <= 90) {
+									chest_id = 8;
+									chest_name = "Scrigno Mistico";
+								} else {
+									chest_id = 7;
+									chest_name = "Scrigno Capsula";
+								}
+								addChest(player_id, chest_id);
+								bot.sendMessage(chat_id, "Hai completato *50 imprese* e hai ricevuto uno *" + chest_name + "*!", mark);
 							}
 						}
 						if (completed == 0) {
@@ -43176,7 +43193,7 @@ bot.onText(/matchmaking/i, function (message) {
 							var rand;
 
 							for(i = 0; i < 15; i++){
-								var rows = connection_sync.query("SELECT nickname, exp, team_player.team_id FROM player, team_player WHERE player.heist_limit+(SELECT COUNT(id) FROM heist_progress WHERE to_id = player.id) < " + heist_limit + " AND player.account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) AND team_player.player_id = player.id AND team_player.team_id NOT IN (" + team_id + ") AND heist_protection IS NULL AND ability BETWEEN " + (myab - offset) + " AND " + (myab + offset2) + " AND player.id != " + from_id + " AND money > 0 AND exp > " + minexp + " AND holiday = 0 AND player.id != " + last_mm + " ORDER BY ability DESC, heist_limit ASC, RAND() LIMIT " + limit);
+								var rows = connection_sync.query("SELECT nickname, exp, team_player.team_id FROM player, team_player WHERE player.heist_limit+(SELECT COUNT(id) FROM heist WHERE to_id = player.id) < " + heist_limit + " AND player.account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) AND team_player.player_id = player.id AND team_player.team_id NOT IN (" + team_id + ") AND heist_protection IS NULL AND ability BETWEEN " + (myab - offset) + " AND " + (myab + offset2) + " AND player.id != " + from_id + " AND money > 0 AND exp > " + minexp + " AND holiday = 0 AND player.id != " + last_mm + " ORDER BY ability DESC, heist_limit ASC, RAND() LIMIT " + limit);
 
 								if (Object.keys(rows).length < 10) {
 									offset += i*10;
@@ -43811,7 +43828,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 		var player_custom_nickname = (rows[0].player_custom_nickname != null ? " " + rows[0].player_custom_nickname : "");
 		
 		// per contare anche quelli in viaggio nelle subite
-		var limitProgress = connection_sync.query("SELECT COUNT(id) As cnt FROM heist_progress WHERE to_id = " + to_id);
+		var limitProgress = connection_sync.query("SELECT COUNT(id) As cnt FROM heist WHERE to_id = " + to_id);
 		heist_limit += limitProgress[0].cnt;
 
 		var match = {
