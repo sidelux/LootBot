@@ -3765,7 +3765,6 @@ function printStart(message) {
 						'- Dopo 6 mesi di inattività il tuo account sarà eliminato senza possibilità di ripristinarlo.\n' +
 						'- Come ultima attività si intende un qualsiasi comando inviato tramite il bot principale o il Plus.\n\n' +
 						'<b>Link Utili</b> 📃\n' +
-						'- Vota il bot nello <a href="https://telegram.me/storebot?start=lootgamebot">Storebot</a>\n' +
 						'- Per aiutarmi a mantenere il server, <a href="https://www.paypal.me/EdoardoCortese">fai una donazione</a>, riceverai delle Monete Lunari 🌕!\n\n' +
 						'<b>Crediti</b> 👑\n' +
 						'- Edoardo Cortese @fenix45\n' +
@@ -3804,8 +3803,7 @@ function mainMenu(message) {
 		} else if (n == 2)
 			price_drop_msg = "\n🍀 Oggi giornata <b>fortunata</b>!";
 		else {
-			var links = ["<a href='http://telegram.me/storebot?start=lootgamebot'>Vota</a> il bot 🔝!",
-						 "Entra nella <a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> 🍺!",
+			var links = ["Entra nella <a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> 🍺!",
 						 "Commercia nel <a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> 💰!",
 						 "Iscriviti a @LootBotAvvisi per seguire le novità!",
 						 "<a href='https://www.paypal.me/EdoardoCortese'>Dona</a> e riceverai 🌕 per la Ruota della Luna!",
@@ -26057,9 +26055,10 @@ bot.onText(/cura completa/i, function (message) {
 			var perc1 = rows[0].cons_val/100;
 			var perc2 = rows[1].cons_val/100;
 			var perc3 = rows[2].cons_val/100;
-
+			
+			var achievement = 0;
 			if (player_life <= player_total_life*0.2)
-				setAchievement(message.chat.id, player_id, 20, 1);
+				achievement = 1;
 
 			var pot1 = 0;
 			var pot2 = 0;
@@ -26077,6 +26076,9 @@ bot.onText(/cura completa/i, function (message) {
 				}else
 					break;
 			}
+			
+			if (achievement == 1)
+				setAchievement(message.chat.id, player_id, 20, (pot1+pot2+pot3));
 
 			var text = "";
 			if (pot1 > 0){
@@ -36086,7 +36088,7 @@ bot.onText(/ricicla/i, function (message) {
 
 								setAchievement(message.chat.id, player_id, 15, calc_qnt);
 
-								delItem(player_id, rows[0].item_id, qnt);
+								delItem(player_id, item_id, qnt);
 								var text = "Hai riciclato " + qnt + "x " + oggetto + " ed hai ottenuto:\n";
 
 								for (var i = 0; i < calc_qnt; i++) {
@@ -36096,7 +36098,7 @@ bot.onText(/ricicla/i, function (message) {
 
 									addItem(player_id, rows[0].id);
 								
-									if ((nRarity == "D") && (item_id >= 68) && (item_id <= 72) && 
+									if ((nRarity == "D") && (item_id >= 68) && (item_id <= 73) && 
 										((rows[0].id == 705) || (rows[0].id == 703) || (rows[0].id == 704) ||
 										 (rows[0].id == 700) || (rows[0].id == 701) || (rows[0].id == 702)))
 										setAchievement(message.chat.id, player_id, 72, calc_qnt);
@@ -36216,6 +36218,12 @@ bot.onText(/ricicla/i, function (message) {
 													if (err) throw err;
 													var itemName = rows[0].name;
 													addItem(player_id, rows[0].id);
+												
+													if ((nRarity == "D") && (item_id >= 68) && (item_id <= 73) && 
+														((rows[0].id == 705) || (rows[0].id == 703) || (rows[0].id == 704) ||
+														 (rows[0].id == 700) || (rows[0].id == 701) || (rows[0].id == 702)))
+														setAchievement(message.chat.id, player_id, 72, 1);
+													
 													bot.sendMessage(message.chat.id, "Hai riciclato gli oggetti e ricevuto *" + itemName + "* (" + nRarity + ")!", kb2);
 												});
 											});
@@ -43050,33 +43058,47 @@ bot.onText(/Ispezioni Passate/i, function (message) {
 
 		var player_id = rows[0].id;
 
-		connection.query('SELECT P1.nickname As from_nick, P2.nickname As to_nick, fail, time FROM heist_history H INNER JOIN player P1 ON H.from_id = P1.id INNER JOIN player P2 ON H.to_id = P2.id WHERE from_id = ' + player_id + ' OR to_id = ' + player_id + ' ORDER BY time DESC LIMIT 25', function (err, rows, fields) {
+		connection.query('SELECT P1.nickname As from_nick, P2.nickname As to_nick, fail, time FROM heist_history H INNER JOIN player P1 ON H.from_id = P1.id INNER JOIN player P2 ON H.to_id = P2.id WHERE from_id = ' + player_id + ' OR to_id = ' + player_id + ' ORDER BY time DESC', function (err, rows, fields) {
 			if (err) throw err;
 
 			var text = "<b>Ispezioni passate</b>:\n\n";
 			var d;
 			var long_date;
 			var fail = "";
+			var sent = "<b>Inviate</b>:\n";
+			var received = "\n<b>Subite</b>:\n";
+			var limit = 25;
+			var limitSent = 0;
+			var limitReceived = 0;
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++){
 				d = new Date(rows[i].time);
 				long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1);
 
 				if (message.from.username == rows[i].from_nick){
-					if (rows[i].fail == 0)
-						fail = " e vinta!";
-					else
-						fail = " e persa!";
-					text += "> Inviata contro <i>" + rows[i].to_nick + "</i> alle " + long_date + fail + "\n";
+					if (limitSent < limit){
+						if (rows[i].fail == 0)
+							fail = "Vinta";
+						else
+							fail = "Persa";
+						sent += "> " + fail + " contro <i>" + rows[i].to_nick + "</i> alle " + long_date + "\n";
+						limitSent++;
+					}
 				} else {
-					if (rows[i].fail == 0)
-						fail = " e persa!";
-					else
-						fail = " e vinta!";
-					text += "> Subita da <i>" + rows[i].from_nick + "</i> alle " + long_date + fail + "\n";
+					if (limitReceived < limit){
+						if (rows[i].fail == 0)
+							fail = "Persa";
+						else
+							fail = "Vinta";
+						received += "> " + fail + " contro <i>" + rows[i].from_nick + "</i> alle " + long_date + "\n";
+						limitReceived++;
+					}
 				}
+				
+				if ((limitSent >= limit) && (limitReceived >= limit))
+					break;
 			}
 
-			bot.sendMessage(message.chat.id, text, back_html);
+			bot.sendMessage(message.chat.id, text + sent + received, back_html);
 		});
 	});
 });
@@ -46153,7 +46175,7 @@ function setEvents(element, index, array) {
 			if (err) throw err;
 			itemName = rows[0].name;
 			addItem(player_id, rows[0].id);
-			text = "Durante la missione trovi un piccolo scrigno che potrebbe contentere qualcosa di interessante, lo apri e trovi " + itemName;
+			text = "Durante la missione trovi un piccolo scrigno che potrebbe contenere qualcosa di interessante, lo apri e trovi " + itemName;
 			bot.sendMessage(chat_id, text);
 		});
 	} else if (rand == 10) {
