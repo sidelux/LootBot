@@ -3756,7 +3756,7 @@ function printStart(message) {
 						'- Leggi i <a href="http://telegra.ph/Introduzione-a-Loot-Bot-12-15">Suggerimenti per i nuovi avventurieri</a>\n' +
 						'- Segui il canale @wikilootbot\n' +
 						'- Visualizza i /gruppi e le /faq avviando l\'importantissimo bot di supporto @lootplusbot\n' +
-						'- Entra nella <a href="https://t.me/joinchat/AAAAAEDH8FbelcVFTmw-mQ">Lootbot School</a> per imparare le basi\n' +
+						'- Entra nella <a href="https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg">Lootbot School</a> per imparare le basi\n' +
 						'- Cerca un team per imparare e collaborare, visita la <a href="https://t.me/LaBachecaDiLootia">Bacheca di Lootia</a>\n\n' +
 						'<b>Regolamento</b> 🚫\n' +
 						'- Importante! Leggi il <a href="http://telegra.ph/Regolamento-di-LOOT-01-13">Regolamento Completo di Loot</a>.\n\n' +
@@ -11551,6 +11551,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																var life = Math.round(rows[0].total_life * getRandomArbitrary(0.3, 0.6));
 																if (cursed == 1)
 																	life = life*2;
+																if (life >= rows[0].total_life*0.9)
+																	life = rows[0].total_life*0.9;
 																if (rows[0].life - life <= 0) {
 																	connection.query('UPDATE player SET life = life - ' + life + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
@@ -11602,11 +11604,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												bot.sendMessage(message.chat.id, "Un cartello con un punto esclamativo ti preoccupa, al centro della stanza c'è un taglio che la percorre per tutta la sua larghezza, l'unica alternativa è procedere.", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = function (answer) {
 														if (answer.text == "Procedi") {
-															connection.query('SELECT life FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+															connection.query('SELECT life, total_life FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 																var life = Math.round(rows[0].life / 2);
 																if (cursed == 1)
-																	life = life*2;
+																	life = rows[0].total_life*0.9;
 																var rand = Math.random() * 100;
 
 																connection.query('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -18304,7 +18306,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 
 			if (player_id != 1){
 				if (checkDragonTopOn == 0) {
-					bot.sendMessage(message.chat.id, "\nProssima stagione: 13 febbraio 12:00 - 20 febbraio 12:00\nSe hai partecipato alla stagione precedente, riceverai i premi a breve!", back_html);
+					bot.sendMessage(message.chat.id, "\nProssima stagione: 13 marzo 12:00 - 20 marzo 12:00\nSe hai partecipato alla stagione precedente, riceverai i premi a breve!", back_html);
 					return;
 				}
 			}
@@ -18376,7 +18378,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 			connection.query('SELECT id, top_id, enemy_dragon_id, wait_time, no_match_time, is_dummy FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
-				var finishD = new Date("2019-02-20 12:00:00");
+				var finishD = new Date("2019-03-20 12:00:00");
 				var finish_date = addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes()) + " del " + addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + "/" + finishD.getFullYear();
 
 				if (Object.keys(rows).length == 0) {

@@ -1305,23 +1305,19 @@ bot.onText(/^\/mercatini/, function (message) {
 
 	bot.sendMessage(message.from.id, "<b>Valutazione Mercatini</b>\n@lootadvisor\n\n" +
 					"<b>Mercatini</b>\n" +
+					"@IlNegozioDelDrago\n" +
+					"@BeardedStore\n" +
+					"@lootamazon\n" +
+					"@Craftia\n" +
+					"@emporiodelgargoyle\n" +
 					"@LEMPORIOdiLootbot - Il primo negozio di Loot!\n" +
-					"@fancazzisti_shop - Vendita oggetti per grandi, piccini e poveri\n" +
-					"@SoloCoseBellee - Prezzi belli per veri poverelli!\n" +
-					"@LootTatori - Store per veri Guerrieri!\n" +
 					"@dogestore - Such Prices! So Cheap! Much Items! #DogeCraft\n" +
-					"@lootspar - il risparmio è dietro l'angolo\n" +
-					"@AngoloRottureLootBot - Tutte le rarità a basso costo!\n" +
-					"@roomlootbot - Un mercatino che sembra una stanza!\n" +
-					"@Zaino_Dell_Imperatore - Prezzi basati sul bot Loot Quotazioni!\n" +
-					"@paupershop - Un negozio di LootBot per poveri\n" +
-					"@mercaloot - Negozio Honesto\n" +
 					"@EdicolaDiLootia - Sempre più conveniente 👍\n" +
-					"@lootnoce - Prezzi aggiornati ogni due giorni!\n" +
-					"@Fenixstore - Il primo negozio a fare distinzioni tra poveri e ricchi\n" +
 					"@Lootkea - L'IKEA di Loot dal 13/11/2016\n" +
 					"@lootemporio - Lotterie e prezzi minori della ricerca!\n" +
 					"@latanadellupo - Entra qui per eventi, negozi e lotterie lupesche 🐺!\n" +
+					"@ShopdellaNebulosa - ✨Concorsi ed oggetti Draconici✨\n" +
+					"@JollyTC - Offerte e sorprese al Centro Scambi!\n" +
 
 					"\nVisita anche /gruppi. Per comparire qua chiedi all'amministratore.", html);
 });
@@ -3394,7 +3390,19 @@ bot.onText(/^\/asta(?!p) ([^\s]+) (.+)|^\/asta(?!p)/, function (message, match) 
 							var account_id = rows[0].account_id;
 							connection.query('UPDATE player SET money = money + ' + last_price + ' WHERE id = ' + last_player, function (err, rows, fields) {
 								if (err) throw err;
-								bot.sendMessage(account_id, "Sei stato superato nell'asta di " + nickname + " per " + itemName + ", dove *" + message.from.username + "* ha offerto *" + prezzo + "* §", mark);
+								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + last_player + ' AND type = 2', function (err, rows, fields) {
+									if (err) throw err;
+									var notify = 0;
+									if (Object.keys(rows).length == 0)
+										notify = 1;
+									else {
+										if (rows[0].deny == 0)
+											notify = 1;
+									}
+									if (notify == 1) {
+										bot.sendMessage(account_id, "Sei stato superato nell'asta di " + nickname + " per " + itemName + ", dove *" + message.from.username + "* ha offerto *" + prezzo + "* §", mark);
+									};
+								});
 							});
 						}
 					});
@@ -4861,12 +4869,11 @@ bot.on('callback_query', function (message) {
 											connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + player_id2 + ' AND type = 2', function (err, rows, fields) {
 												if (err) throw err;
 												var notify = 0;
-												if (Object.keys(rows).length == 0) {
+												if (Object.keys(rows).length == 0)
 													notify = 1;
-												} else {
-													if (rows[0].deny == 0) {
+												else {
+													if (rows[0].deny == 0)
 														notify = 1;
-													}
 												}
 												if (notify == 1) {
 													bot.sendMessage(chat_id2, message.from.username + " ha acquistato tutto il tuo negozio (" + code + ") per " + formatNumber(total_price) + " §!\nDi conseguenza tutte le quantità sono state impostate a zero.");
@@ -4983,12 +4990,11 @@ bot.on('callback_query', function (message) {
 								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + player_id2 + ' AND type = 2', function (err, rows, fields) {
 									if (err) throw err;
 									var notify = 0;
-									if (Object.keys(rows).length == 0) {
+									if (Object.keys(rows).length == 0)
 										notify = 1;
-									} else {
-										if (rows[0].deny == 0) {
+									else {
+										if (rows[0].deny == 0)
 											notify = 1;
-										}
 									}
 									if (notify == 1) {
 										bot.sendMessage(chat_id2, message.from.username + " ha acquistato " + item_name + " per " + formatNumber(price) + " § dal tuo negozio (" + code + ")!");
@@ -6535,12 +6541,11 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 						connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + creator_id + ' AND type = 1', function (err, rows, fields) {
 							if (err) throw err;
 							var notify = 0;
-							if (Object.keys(rows).length == 0) {
+							if (Object.keys(rows).length == 0)
 								notify = 1;
-							} else {
-								if (rows[0].deny == 0) {
+							else {
+								if (rows[0].deny == 0)
 									notify = 1;
-								}
 							}
 							if (notify == 1) {
 								connection.query('SELECT chat_id FROM player WHERE id = ' + creator_id, function (err, rows, fields) {
@@ -6668,12 +6673,11 @@ bot.onText(/^\/dlotteria(?!p) (.+)|^\/dlotteria(?!p)/, function (message, match)
 						connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + creator_id + ' AND type = 1', function (err, rows, fields) {
 							if (err) throw err;
 							var notify = 0;
-							if (Object.keys(rows).length == 0) {
+							if (Object.keys(rows).length == 0)
 								notify = 1;
-							} else {
-								if (rows[0].deny == 0) {
+							else {
+								if (rows[0].deny == 0)
 									notify = 1;
-								}
 							}
 							if (notify == 1) {
 								connection.query('SELECT chat_id FROM player WHERE id = ' + creator_id, function (err, rows, fields) {
@@ -8113,17 +8117,19 @@ bot.onText(/^\/necessari (.+)|^\/necessari/, function (message, match) {
 
 bot.onText(/^\/notifiche (.+)|^\/notifiche/, function (message, match) {
 	if (match[1] == undefined) {
-		bot.sendMessage(message.chat.id, "Usa /notifiche <funzione> per disattivare le notifiche relative a quella funzione. Funzioni possibili:\n- lotterie\n- negozi");
+		bot.sendMessage(message.chat.id, "Usa /notifiche <funzione> per disattivare le notifiche relative a quella funzione. Funzioni possibili:\n- lotterie\n- negozi\n- aste");
 		return;
 	}
 
 	var func = match[1];
 	var type = 0;
-	if (func == "lotterie") {
+	if (func == "lotterie")
 		type = 1;
-	}else if (func == "negozi") {
+	else if (func == "negozi")
 		type = 2;
-	} else {
+	else if (func == "aste")
+		type = 3;
+	else {
 		bot.sendMessage(message.chat.id, "Funzione non valida, riprova");
 		return;
 	}
