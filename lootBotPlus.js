@@ -1278,6 +1278,7 @@ bot.onText(/^\/gruppi/, function (message) {
 																						"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
 																						"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
 																						"@yellowlootshop - Join for eventi free!\n" +
+																						"<a href='https://t.me/joinchat/AAAAAFfCIOoiRA2xApWn3A'>Scommesse sulle globali</a> - Scommetti sui risultati delle globali!\n" +
 
 																						"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
 																	});
@@ -5350,11 +5351,10 @@ bot.onText(/^\/estrazione/, function (message) {
 						connection.query('SELECT chat_id, nickname, account_id FROM public_lottery_players, player WHERE player.id = player_id AND lottery_id = ' + lottery_id, function (err, rows, fields) {
 							if (err) throw err;
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-								if (rows[i].nickname != nickname) {
+								if (rows[i].nickname != nickname)
 									bot.sendMessage(rows[i].chat_id, "Estrazione per " + itemName + " terminata, purtroppo hai perso!");
-								} else {
+								else
 									bot.sendMessage(rows[i].chat_id, "Estrazione per " + itemName + " terminata, HAI VINTO!");
-								}
 							}
 							connection.query('DELETE FROM public_lottery_players WHERE lottery_id = ' + lottery_id, function (err, rows, fields) {
 								if (err) throw err;
@@ -5402,7 +5402,7 @@ bot.onText(/^\/lotterie/, function (message) {
 					if (rows[i].subs != 0)
 						s = " ✅";
 
-					text += "- " + rows[i].nickname + p + s + "\n";
+					text += "- <code>" + rows[i].nickname + "</code> " + p + s + "\n";
 				}
 
 				text += "\nPer iscriverti ad una lotteria usa /lotteria o /lotteriap";
@@ -9618,11 +9618,10 @@ function checkAuction() {
 	connection.query('SELECT creator_id FROM `auction_list` WHERE time_end < NOW() AND time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 asta terminata\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " aste terminate\x1b[0m");
-			}
 			rows.forEach(setFinishedAuction);
 		}
 	});
@@ -9632,11 +9631,10 @@ function checkShopNotification() {
 	connection.query('SELECT DISTINCT(code) AS code, player_id FROM `public_shop` WHERE TIMESTAMPDIFF(MINUTE, NOW(), time_end) < 60 AND time_end IS NOT NULL AND notified = 0', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 negozio notificato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " negozi notificati\x1b[0m");
-			}
 			rows.forEach(setFinishedShopNotification);
 		}
 	});
@@ -9697,7 +9695,7 @@ function setFinishedAuction(element, index, array) {
 		var last_price = rows[0].last_price;
 		var chat_id = rows[0].chat_id;
 
-		connection.query('SELECT nickname FROM player WHERE id = ' + last_player, function (err, rows, fields) {
+		connection.query('SELECT chat_id, nickname FROM player WHERE id = ' + last_player, function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length == 0) {
 				connection.query('UPDATE player SET money = money + ' + last_price + ' WHERE id = ' + last_player, function (err, rows, fields) {
@@ -9710,12 +9708,16 @@ function setFinishedAuction(element, index, array) {
 				});
 				return;
 			}
+			
 			var nickname = rows[0].nickname;
+			var winner_chat_id = rows[0].chat_id;
+			
 			addItem(last_player, item_id);
 			connection.query('SELECT item.name FROM item WHERE id = ' + item_id, function (err, rows, fields) {
 				if (err) throw err;
 				var itemName = rows[0].name;
 				bot.sendMessage(chat_id, "Asta terminata per " + itemName + "!\n\nIl vincitore è: @" + nickname + " con l'offerta di " + formatNumber(last_price) + " §!");
+				bot.sendMessage(winner_chat_id, "Asta terminata per " + itemName + "!\n\nSei il vincitore!");
 
 				connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + element.creator_id, function (err, rows, fields) {
 					if (err) throw err;
@@ -9815,11 +9817,10 @@ function setFinishedLottery(element, index, array) {
 					connection.query('SELECT nickname, account_id, chat_id FROM public_lottery_players, player WHERE player.id = player_id AND lottery_id = ' + lottery_id, function (err, rows, fields) {
 						if (err) throw err;
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-							if (rows[i].nickname != nickname) {
+							if (rows[i].nickname != nickname)
 								bot.sendMessage(rows[i].chat_id, "Estrazione automatica per " + itemName + " terminata, purtroppo hai perso!");
-							} else {
+							else
 								bot.sendMessage(rows[i].chat_id, "Estrazione automatica per " + itemName + " terminata, HAI VINTO!");
-							}
 						}
 						connection.query('DELETE FROM public_lottery_players WHERE lottery_id = ' + lottery_id, function (err, rows, fields) {
 							if (err) throw err;

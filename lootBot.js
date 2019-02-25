@@ -7929,7 +7929,6 @@ bot.onText(/attacca!/i, function (message) {
 						query = "my turn = 0, battle_timeout = NULL, battle_shield = 0";
 						enemy_query = "my_turn = 1, battle_timeout = '" + long_date + "', battle_shield = 0";
 						
-						//asd
 						var text = "";
 						var enemy_text = "";
 						var dmg = 0;
@@ -9423,14 +9422,19 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			}
 																		};
 
-																		connection.query('SELECT nickname, room_id FROM dungeon_status S, dungeon_list L, player P WHERE L.id = ' + dungeon_id + ' AND L.id = S.dungeon_id AND S.player_id = P.id', function (err, rows, fields) {
+																		connection.query('SELECT nickname, room_id, rooms FROM dungeon_status S, dungeon_list L, player P WHERE L.id = ' + dungeon_id + ' AND L.id = S.dungeon_id AND S.player_id = P.id', function (err, rows, fields) {
 																			if (err) throw err;
 
 																			var playerlist = "";
 																			if (Object.keys(rows).length > 0) {
 																				playerlist = "\n";
-																				for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-																					playerlist += "> " + rows[i].nickname + " (stanza " + rows[i].room_id + ")\n";
+																				var room;
+																				for (var i = 0, len = Object.keys(rows).length; i < len; i++){
+																					room = rows[i].room_id;
+																					if (rows[i].room_id > rows[i].rooms)
+																						room = "finale";
+																					playerlist += "> " + rows[i].nickname + " (stanza " + room + ")\n";
+																				}
 																				playerlist += "\n";
 																			};
 
@@ -10160,9 +10164,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 
 													var iKeys = [];
-													for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+													for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 														iKeys.push([rows[i].name + " (" + rows[i].num + ")"]);
-													}
 													iKeys.push(["Torna al dungeon"]);
 
 													var dPass = {
@@ -10173,7 +10176,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														}
 													};
 
-													bot.sendMessage(message.chat.id, "Puoi utilizzare un *Pass* per chiedere aiuto ad un tuo compagno di team (di pari rinascita) e farlo entrare nel dungeon al posto tuo: il Pass *Bronzo* ti permette di chiedere aiuto ad un compagno con Rinascita pari alla tua, il Pass *Argento* ad un compagno con 1 rinascita di differenza, mentre il Pass *Oro* con 2 rinascite di differenza. Nota: Entrambi i compagni ottengono il punto rango se la differenza rango è inferiore a 150", dPass).then(function () {
+													bot.sendMessage(message.chat.id, "Avventuriero, in caso di difficoltà puoi ricorrere all'uso di un *Pass* che ti permette di chiedere aiuto ad un tuo compagno di team e fargli proseguire il dungeon al tuo posto.\nPuoi usare il Pass Bronzo per compagni di Rinascita pari alla tua, Pass Argento per compagni entro 1 rinascita di differenza, il Pass Oro entro 2 rinascite di differenza.\nNota: al completamento del dungeon otterrete entrambi il punto solo se la vostra differenza rango è inferiore a 150.", dPass).then(function () {
 														answerCallbacks[message.chat.id] = function (answer) {
 
 															if (answer.text != "Torna al dungeon") {
@@ -24359,12 +24362,12 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		minitext = "riduzione probabilità colpo critico dei nemici";
 																		miniunit = "%";
 																	}else if ((miniboost[i].place_id == 3) || (miniboost[i].place_id == 4)){
-																		minival = 2;
-																		minitext = "danno";
-																		miniunit = "%";
-																	}else if (miniboost[i].place_id == 7){
 																		minival = 0.5;
 																		minitext = "probabilità colpo critico";
+																		miniunit = "%";
+																	}else if (miniboost[i].place_id == 7){
+																		minival = 2;
+																		minitext = "danno";
 																		miniunit = "%";
 																	}else if (miniboost[i].place_id == 6){
 																		minival = 1;
@@ -24424,7 +24427,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		for (var i = 0; i < Object.keys(cons).length; i++){
 																			if (cnt >= lap_qnt)
 																				break;
-																			calc_damage = Math.round(mob_total_life*(cons[i].cons_val/100));
+																			calc_damage = Math.round(mob_total_life*(cons[i].cons_val/150));
 																			calc_damage += calc_damage*(0.02*place2_class_bonus[0].cnt);
 																			damage += calc_damage;
 																			connection.query("DELETE FROM assault_place_cons WHERE id = " + cons[i].id, function (err, rows, fields) {
@@ -24818,8 +24821,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		if (magic_type > 0)
 																			setAchievement(player[i].chat_id, playerid, 6, 1);
 
-																		if (miniboost_arr[6] > 0)
-																			critical += critical*(0.005*miniboost_arr[6]);
+																		if (miniboost_arr[3] > 0)
+																			critical += critical*(0.005*miniboost_arr[3]);
 
 																		var rand = Math.random()*100;
 																		if (critical > rand){
@@ -24844,8 +24847,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			damage = damage*2;
 																		}
 
-																		if (miniboost_arr[3] > 0)
-																			damage += damage*(0.02*miniboost_arr[3]);
+																		if (miniboost_arr[6] > 0)
+																			damage += damage*(0.02*miniboost_arr[6]);
 
 																		if (team_boost_id == 1)
 																			damage += damage * 0.5;
@@ -25179,8 +25182,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			var critRand = Math.random()*100;
 																			var prob = 10;
 
-																			if (miniboost_arr[2] > 0)
-																				prob -= prob*(0.005*miniboost_arr[2]);
+																			if (miniboost_arr[1] > 0)
+																				prob -= prob*(0.005*miniboost_arr[1]);
 
 																			if (prob > critRand){
 																				divided_damage_att = divided_damage_att*2;
@@ -25193,8 +25196,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		if (is_boss == 1)
 																			prob = 10;
 
-																		if (miniboost_arr[1] > 0)
-																			prob -= prob*(0.005*miniboost_arr[1]);
+																		if (miniboost_arr[0] > 0)
+																			prob -= prob*(0.005*miniboost_arr[0]);
 
 																		if (prob > rand){
 																			rand = Math.random()*100;
@@ -25547,8 +25550,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		if (magic_type > 0)
 																			setAchievement(player[i].chat_id, playerid, 6, 1);
 
-																		if (miniboost_arr[6] > 0)
-																			critical += critical*(0.005*miniboost_arr[6]);
+																		if (miniboost_arr[2] > 0)
+																			critical += critical*(0.005*miniboost_arr[2]);
 
 																		var rand = Math.random()*100;
 																		if ((critical+5) > rand){				//per pesante
@@ -25573,8 +25576,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			damage = damage*2;
 																		}
 
-																		if (miniboost_arr[2] > 0)
-																			damage += damage*(0.02*miniboost_arr[2]);
+																		if (miniboost_arr[6] > 0)
+																			damage += damage*(0.02*miniboost_arr[6]);
 
 																		if (team_boost_id == 1)
 																			damage += damage * 0.5;
@@ -26012,7 +26015,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 	});
 });
 
-bot.onText(/cura completa/i, function (message) {
+bot.onText(/cura completa|^cura$/i, function (message) {
 
 	var kbBack = {
 		parse_mode: "Markdown",
@@ -31923,16 +31926,14 @@ function randomChest() {
 
 bot.onText(/piazza di lootia|piazza/i, function (message) {
 
-	if (message.text == "Piazza degli Affilamenti") {
+	if (message.text == "Piazza degli Affilamenti")
 		return;
-	}
 
 	connection.query('SELECT account_id, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		if (Object.keys(rows).length == 0) {
+		if (Object.keys(rows).length == 0)
 			return;
-		}
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -32036,6 +32037,10 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 				var total_cnt = rows[0].total_cnt;
 				var day_cnt = rows[0].day_cnt;
 				var item_id = rows[0].item_id;
+				
+				var offers = merchant_limit - day_cnt;
+				if (offers < 0)
+						offers = 0;
 
 				if (rows[0].time_end != null) {
 					var time_end = new Date(rows[0].time_end);
@@ -32044,7 +32049,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 					if ((time_end.getHours() > 22) || (day_cnt >= merchant_limit))
 						bot.sendMessage(message.chat.id, "Al momento il Contrabbandiere non ha offerte per te, torna domani", back);
 					else
-						bot.sendMessage(message.chat.id, "Al momento il Contrabbandiere non ha offerte per te, torna alle " + short_date, back);
+						bot.sendMessage(message.chat.id, "Al momento il Contrabbandiere non ha offerte per te, torna alle " + short_date + ", puoi ancora accettare " + offers + " offerte", back);
 					return;
 				}
 
@@ -32107,10 +32112,6 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 					var activeCoupon = "";
 					if (getItemCnt(player_id, 677) > 0)
 						activeCoupon = "\n<b>Il coupon è attivo!</b>";
-
-					var offers = merchant_limit - day_cnt;
-					if (offers < 0)
-						offers = 0;
 
 					var extra = "";
 					/*
@@ -32732,7 +32733,7 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 						return;
 					if (rarity[1] == undefined)
 						return;
-					connection.query('SELECT pack_id, SUM(price) As tot FROM market_pack, rarity WHERE market_pack.pack_id = rarity.id AND rarity.name = "' + rarity[1] + '"', function (err, rows, fields) {
+					connection.query('SELECT pack_id, SUM(price) As tot, rarity.id As rarity_id FROM market_pack, rarity WHERE market_pack.pack_id = rarity.id AND rarity.name = "' + rarity[1] + '"', function (err, rows, fields) {
 						if (err) throw err;
 
 						if (Object.keys(rows).length == 0) {
@@ -32745,7 +32746,8 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 						}
 
 						var pack_id = rows[0].pack_id;
-						var price = rows[0].tot;
+						var qnt = 11-rows[0].rarity_id;
+						var price = rows[0].tot*qnt;
 
 						connection.query('SELECT pack_id, item.name, item.id, price FROM market_pack, item WHERE market_pack.item_id = item.id AND pack_id = ' + pack_id, function (err, rows, fields) {
 							if (err) throw err;
@@ -32753,7 +32755,8 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 							var items = [];
 							var prices = [];
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-								text += "> " + rows[i].name + "\n";
+								rows[i].price = rows[i].price*qnt;
+								text += "> " + qnt + "x " + rows[i].name + "\n";
 								items.push(rows[i].id);
 								if (price_drop == 1)
 									prices.push(Math.round(rows[i].price - (rows[i].price / 100 * sconto)));
@@ -32794,13 +32797,12 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 												var d = new Date();
 												var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 												for (var i = 0, len = Object.keys(items).length; i < len; i++) {
-													addItem(player_id, items[i]);
-													connection.query('INSERT INTO market_direct_history (item_id, price, time, from_id, to_id, type) VALUES (' + items[i] + ',' + prices[i] + ',"' + long_date + '",' + player_id + ',NULL,4)', function (err, rows, fields) {
+													addItem(player_id, items[i], qnt);
+													connection.query('INSERT INTO market_direct_history (item_id, price, time, from_id, to_id, type, quantity) VALUES (' + items[i] + ', ' + prices[i] + ', "' + long_date + '", ' + player_id + ', NULL, 4, ' + qnt + ')', function (err, rows, fields) {
 														if (err) throw err;
 													});
 												}
 												bot.sendMessage(message.chat.id, "Acquisto pacchetto *" + rarity[1] + "* completato! Hai speso *" + formatNumber(price) + "* §!", kbBack);
-												//console.log("Pacchetto acquistato");
 												setAchievement(message.chat.id, player_id, 45, 1);
 											});
 										});
