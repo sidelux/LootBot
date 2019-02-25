@@ -12214,9 +12214,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_id = ' + room_id + ', last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-														} else {
+														} else
 															return;
-														}
 													};
 												});
 											} else if (dir == -7) {
@@ -25222,7 +25221,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																					if (mob_life > mob_total_life)
 																						mob_life = mob_total_life;
 																					player_text += "\nIl nemico lancia <b>" + magicToName(1) + "</b> e recupera " + formatNumber(heal) + " hp";
-																					setAchievement(message.chat.id, playerid, 66, 1);
+																					setAchievement(player[i].chat_id, playerid, 66, 1);
 																					if ((weapon2_id == 689) || (weapon2_enchant == 1)) {
 																						var rand = Math.random()*100;
 																						if (rand < 50) {
@@ -25248,7 +25247,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																					if (turn == 1)
 																						ally = "alleato";
 																					player_text += "\nIl nemico lancia <b>" + magicToName(2) + "</b> e paralizza per " + turn + " " + ally;
-																					setAchievement(message.chat.id, playerid, 66, 1);
+																					setAchievement(player[i].chat_id, playerid, 66, 1);
 																					if ((weapon2_id == 690) || (weapon2_enchant == 2)) {
 																						var rand = Math.random()*100;
 																						if (rand < 50) {
@@ -25270,7 +25269,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																					epic_var++;
 																					divided_damage_att = divided_damage_att*3;
 																					player_text += "\nIl nemico lancia <b>" + magicToName(3) + "</b> ed incrementa il suo danno";
-																					setAchievement(message.chat.id, playerid, 66, 1);
+																					setAchievement(player[i].chat_id, playerid, 66, 1);
 																					if ((weapon2_id == 688) || (weapon2_enchant == 3)) {
 																						var rand = Math.random()*100;
 																						if (rand < 50) {
@@ -25291,7 +25290,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				if (turn == 1)
 																					ally = "alleato";
 																				player_text += "\nIl nemico lancia " + magicToName(4) + " e aumenta la probabilità di critico contro " + turn + " " + ally;
-																				setAchievement(message.chat.id, playerid, 66, 1);
+																				setAchievement(player[i].chat_id, playerid, 66, 1);
 																			}
 																		}
 
@@ -32695,12 +32694,12 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 
 		if (crazyMode == 0) {
 			if (rows[0].market_pack > 0) {
-				bot.sendMessage(message.chat.id, "Oggi hai già acquistato un pacchetto, torna domani", back);
+				bot.sendMessage(message.chat.id, "Oggi hai già acquistato un pacchetto, torna domani!", back);
 				return;
 			}
 		} else {
 			if (rows[0].market_pack > 2) {
-				bot.sendMessage(message.chat.id, "Oggi hai già acquistato tre pacchetti grazie al folle, torna domani", back);
+				bot.sendMessage(message.chat.id, "Oggi hai già acquistato tre pacchetti grazie al folle, torna domani!", back);
 				return;
 			}
 		}
