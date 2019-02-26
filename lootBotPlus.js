@@ -7667,7 +7667,7 @@ bot.onText(/^\/posizione/, function (message, match) {
 				if (err) throw err;
 
 				var found = 0;
-				var text = "\n<b>NON verrà</b> considerata nelle tue statistiche!";
+				var text = "\nSe dovesse riuscire, <b>NON verrà</b> considerata nelle tue statistiche!";
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					if (rows[i].id == player_id) {
 						found = 1;
@@ -7676,7 +7676,7 @@ bot.onText(/^\/posizione/, function (message, match) {
 				}
 
 				if (found == 1)
-					text = "\n<b>Verrà considerata</b> nelle tue statistiche!";
+					text = "\nSe dovesse riuscire, <b>verrà considerata</b> nelle tue statistiche!";
 
 				connection.query('SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
 					if (err) throw err;

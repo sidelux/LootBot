@@ -44911,10 +44911,10 @@ bot.onText(/^imprese/i, function (message) {
 					else if (globalVal >= global_cap)
 						text += "Impresa completata! ✅\nSe hai partecipato, riceverai una ricompensa ed il bonus l'ultimo giorno del mese!\n";
 					else {
-						var cap = global_cap;
 						if (global_wait == 1)
 							text += "L'impresa sta raccogliendo dati, pazienta fino ai primi giorni del mese!\n";
-						else{
+						else {
+							var cap = global_cap;
 							if (global_hide == 1)
 								cap = "???";
 							text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> ispezioni vinte nello scontro tra rune, l'avversario perde nello scontro tra rune o non arriva al rifugio\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
