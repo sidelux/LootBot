@@ -32704,12 +32704,12 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 			}
 		}
 
-		connection.query('SELECT rarity.name, SUM(price) As tot FROM market_pack, rarity WHERE market_pack.pack_id = rarity.id GROUP BY pack_id', function (err, rows, fields) {
+		connection.query('SELECT rarity.name, rarity.id As rarity_id, SUM(price) As tot FROM market_pack, rarity WHERE market_pack.pack_id = rarity.id GROUP BY pack_id', function (err, rows, fields) {
 			if (err) throw err;
 
 			var iKeys = [];
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-				iKeys.push(["Pacchetto " + rows[i].name + " (" + formatNumber(rows[i].tot) + " §)"]);
+				iKeys.push(["Pacchetto " + rows[i].name + " (" + formatNumber(rows[i].tot*(11-rows[i].rarity_id)) + " §)"]);
 			iKeys.push(["Torna al menu"]);
 
 			var kb = {
@@ -36850,7 +36850,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 				return;
 			}
 
-			bot.sendMessage(message.chat.id, "Gli Artefatti 🔱\nSono cinque strumenti di incredibile potenza, premio degli avventurieri piu tenaci.\nPer ambire a questi riconoscimenti sarà necessario dimostrare le propre abilità nel commercio, il proprio coraggio nell'esplorazione delle terre remote, la propria dedizione alle nobili arti del combattimento, della truffa e dell'allevamento di draghi.\nPochi sono i guerrieri che possono vantarsi d'una collezione completa, vuoi aspirare ad ottenerne uno?", artifacts).then(function () {
+			bot.sendMessage(message.chat.id, "Gli Artefatti 🔱\nSono cinque strumenti di incredibile potenza, premio degli avventurieri piu tenaci.\nPer ambire a questi riconoscimenti sarà necessario dimostrare le proprie abilità nel commercio, il proprio coraggio nell'esplorazione delle terre remote, la propria dedizione alle nobili arti del combattimento, della truffa e dell'allevamento di draghi.\nPochi sono i guerrieri che possono vantarsi d'una collezione completa, vuoi aspirare ad ottenerne uno?", artifacts).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if (answer.text == "Artefatto Fiammeggiante") {
 						bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
@@ -38131,7 +38131,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 											parse_mode: "Markdown",
 											reply_markup: {
 												resize_keyboard: true,
-												keyboard: [["Conferma"], ["Cerca " + item_name], ["Torna all'Albero"]]
+												keyboard: [["Conferma"], ["Cerca " + item_name], ["Torna all'Albero"], ["Torna al menu"]]
 											}
 										};
 
