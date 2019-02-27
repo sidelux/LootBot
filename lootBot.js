@@ -15743,8 +15743,8 @@ bot.onText(/Termina subito/i, function (message) {
 		var diff = Math.round(((now - d) / 1000) / 60); //minuti
 		diff = Math.abs(diff);
 
-		if (diff < 1) {
-			bot.sendMessage(message.chat.id, "Manca meno di un minuto al termine della missione, pazienta!", back)
+		if (diff < 5) {
+			bot.sendMessage(message.chat.id, "Manca meno di 5 minuti al termine della missione, pazienta!", back)
 			return;
 		}
 
@@ -15812,8 +15812,8 @@ bot.onText(/Completa immediatamente/i, function (message) {
 			var diff = Math.round(((now - d) / 1000) / 60); //minuti
 			diff = Math.abs(diff);
 
-			if (diff < 1) {
-				bot.sendMessage(message.chat.id, "Manca meno di un minuto al termine dell'ispezione, pazienta!", back)
+			if (diff < 5) {
+				bot.sendMessage(message.chat.id, "Manca meno di 5 minuti al termine dell'ispezione, pazienta!", back)
 				return;
 			}
 
@@ -15872,8 +15872,8 @@ bot.onText(/Concludi immediatamente/i, function (message) {
 		var diff = Math.round(((now - d) / 1000) / 60); //minuti
 		diff = Math.abs(diff);
 
-		if (diff < 1) {
-			bot.sendMessage(message.chat.id, "Manca meno di un minuto al termine dell'esplorazione della cava, pazienta!", back)
+		if (diff < 5) {
+			bot.sendMessage(message.chat.id, "Manca meno di 5 minuti al termine dell'esplorazione della cava, pazienta!", back)
 			return;
 		}
 
@@ -36965,8 +36965,8 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 								return;
 							}
 							bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
-											"> Portare al livello 10 almeno 5 Talenti\n" +
-											"> Possedere almeno 20 💎 (verranno consumate)\n" +
+											"> Portare al livello 10 almeno 10 Talenti\n" +
+											"> Possedere almeno 50 💎 (verranno consumate)\n" +
 											"> Aver raggiunto almeno 200 Imprese giornaliere completate", get).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text == "Ottieni Artefatto") {
@@ -36981,7 +36981,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 											connection.query('SELECT COUNT(id) As num FROM ability WHERE player_id = ' + player_id + ' AND ability_level = 10', function (err, rows, fields) {
 												if (err) throw err;
 
-												if (rows[0].num < 5) {
+												if (rows[0].num < 10) {
 													bot.sendMessage(message.chat.id, "I Talenti non sono ancora ad un livello sufficiente", back);
 													return;
 												}
@@ -36994,14 +36994,14 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 														return;
 													}
 
-													if (rows[0].gems < 20) {
-														bot.sendMessage(message.chat.id, "Non hai abbastanza 💎 (" + rows[0].gems + "/20)", back);
+													if (rows[0].gems < 50) {
+														bot.sendMessage(message.chat.id, "Non hai abbastanza 💎 (" + rows[0].gems + "/50)", back);
 														return;
 													}
 
 													connection.query('INSERT INTO artifacts (player_id, item_id) VALUES (' + player_id + ',644)', function (err, rows, fields) {
 														if (err) throw err;
-														connection.query('UPDATE player SET gems = gems - ' + 20 + ' WHERE id = ' + player_id, function (err, rows, fields) {
+														connection.query('UPDATE player SET gems = gems - ' + 50 + ' WHERE id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 															addItem(player_id, 644);
 															bot.sendMessage(message.chat.id, "Hai ottenuto l'*Artefatto Tempesta*!", back);
@@ -37086,11 +37086,11 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 							}
 
 							bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
-											"> Aver raggiunto il livello 1.000 R4\n" +
+											"> Aver raggiunto il livello 1.000\n" +
 											"> Aver raggiunto almeno il rango dungeon 200\n" +
 											"> Aver completato almeno 300 incarichi\n" +
 											"> Aver completato almeno 3 scalate nello stesso team (senza cambiarlo)\n" +
-											"> Aver venduto almeno 500 oggetti al Contrabbandiere\n" +
+											"> Aver venduto almeno 1000 oggetti al Contrabbandiere\n" +
 											"> Aver partecipato attivamente ad almeno 5 imprese globali\n\n" +
 											"L'ottenimento di questo artefatto sbloccherà nuove funzionalità!", get).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
@@ -37134,8 +37134,8 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 												connection.query('SELECT total_cnt FROM merchant_offer WHERE player_id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
 
-													if (rows[0].total_cnt < 500) {
-														bot.sendMessage(message.chat.id, "Non hai completato raggiunto le offerte contrabbandiere necessarie (" + rows[0].total_cnt + "/500)", back);
+													if (rows[0].total_cnt < 1000) {
+														bot.sendMessage(message.chat.id, "Non hai completato raggiunto le offerte contrabbandiere necessarie (" + rows[0].total_cnt + "/1000)", back);
 														return;
 													}
 
