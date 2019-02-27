@@ -120,7 +120,7 @@ bot.on('message', function (message) {
 					if (result != true)
 						console.log("Errore cancellazione messaggio " + message.chat.id + " " + message.message_id);
 				});
-			}else{
+			} else {
 				connection.query('INSERT INTO plus_history (account_id) VALUES (' + message.from.id + ')', function (err, rows, fields) {
 					if (err) throw err;
 					connection.query('SELECT id FROM plus_history WHERE account_id = ' + message.from.id + " ORDER BY id DESC LIMIT 2", function (err, rows, fields) {
@@ -137,7 +137,7 @@ bot.on('message', function (message) {
 									if (result != true)
 										console.log("Errore cancellazione messaggio " + message.chat.id + " " + message.message_id);
 								});
-							}else{
+							} else {
 								connection.query('DELETE FROM plus_history WHERE account_id = ' + message.from.id + ' AND id != ' + rows[0].id, function (err, rows, fields) {
 									if (err) throw err;
 								});
@@ -182,7 +182,7 @@ bot.on('message', function (message) {
 			if (message.new_chat_members != undefined) {
 				if (message.new_chat_member.is_bot == 0)
 					checkStatus(message, message.new_chat_member.username, message.new_chat_member.id, 0);
-			}else{
+			} else {
 				if (Object.keys(rows).length > 0) {
 					if (rows[0].always == 1) {
 						if (message.from.is_bot == 0)
@@ -221,7 +221,7 @@ bot.on('message', function (message) {
 					if (err) throw err;
 					console.log(message.from.username + " aggiunto");
 				});
-			}else{
+			} else {
 				connection.query('SELECT real_name, gender FROM player WHERE account_id = "' + message.from.id + '"', function (err, rows, fields) {
 					if (err) throw err;
 
@@ -230,7 +230,7 @@ bot.on('message', function (message) {
 							connection.query('UPDATE plus_players SET nickname = "' + message.from.username + '" WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 								if (err) throw err;
 							});
-						}else{
+						} else {
 							connection.query('UPDATE plus_players SET nickname = "' + message.from.username + '", gender = "' + rows[0].gender + '", real_name = "' + rows[0].real_name + '" WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 								if (err) throw err;
 							});
@@ -2925,36 +2925,49 @@ bot.onText(/^\/rune (.+)/i, function (message, match) {
 		bot.sendMessage(message.chat.id, text + "\nVince 2 (" + final1 + ", " + final2 + ")");
 });
 
-bot.onText(/^\/iscritto (.+)|^\/iscritto/i, function (message, match) {
-	var n = "";
-	n = match[1];
+bot.onText(/^\/iscritto ([\w,\-\s]+)|^\/iscritto/i, function (message, match) {
+	var nick = match[1];
+	if ((nick == undefined) || (nick == ""))
+		nick = message.from.username;
 
-	if ((n == undefined) || (n == ""))
-		n = message.from.username;
+	if (message.reply_to_message.text.indexOf("@") != -1)
+		nick = message.reply_to_message.text;
+	else if (message.reply_to_message != undefined)
+		nick = message.reply_to_message.from.username;
 
-	if (message.reply_to_message != undefined)
-		n = message.reply_to_message.from.username;
-
-	n = n.replace("@", "");
-
-	connection.query('SELECT market_ban, account_id FROM player WHERE nickname = "' + n + '"', function (err, rows, fields) {
+	nick = nick.toString().replaceAll(/@/, "");
+	nick = nick.toString().replaceAll(/\s/, ",");
+	nick = nick.toString().replaceAll(/\-/, ",");
+	
+	var nicknames = [];
+	if (nick.indexOf(",") != -1)
+		nicknames = nick.split(",");
+	else
+		nicknames[0] = nick;
+	
+	var text = "";
+	for (var i = 0, len = nicknames.length; i < len; i++) {
+		nicknames[i] = nicknames[i].trim();
+		if (nicknames[i] == "")
+			continue;
+		var rows = connection_sync.query('SELECT market_ban, account_id FROM player WHERE nickname = "' + nicknames[i] + '"');
 		if (Object.keys(rows).length == 0)
-			bot.sendMessage(message.chat.id, "👎", mark);
+			text += nicknames[i] + ": 👎\n";
 		else {
 			var banReason = isBanned(rows[0].account_id);
 			if (banReason != null)
-				bot.sendMessage(message.chat.id, "🚫", mark);
+				text += nicknames[i] + ": 🚫\n";
 			else {
 				if (rows[0].market_ban == 0)
-					bot.sendMessage(message.chat.id, "👍", mark);
+					text += nicknames[i] + ": 👍\n";
 				else
-					bot.sendMessage(message.chat.id, "❌", mark);
+					text += nicknames[i] + ": ❌\n";
 			}
 		}
-	});
+	}
+	
+	bot.sendMessage(message.chat.id, text, mark);
 });
-
-
 
 bot.onText(/^\/cancellalotteria/, function (message) {
 	connection.query('SELECT id, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -9325,18 +9338,15 @@ bot.onText(/^\/scrigni/, function (message, match) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length > 0) {
-				for (i = 0, len = Object.keys(rows).length; i < len; i++) {
+				for (i = 0, len = Object.keys(rows).length; i < len; i++)
 					bottext = bottext + "> " + rows[i].name + " (" + formatNumber(rows[i].num) + ")\n";
-				}
-			} else {
+			} else
 				bottext = bottext + "Nessuno scrigno disponibile\n";
-			}
 
-			if ((new Date().getDate() == 1) && (new Date().getMonth() == 3)){
+			if ((new Date().getDate() == 1) && (new Date().getMonth() == 3))
 				bot.sendMessage(message.chat.id, "Nessuno scrigno disponibile 👀", html);
-			}else{
+			else
 				bot.sendMessage(message.chat.id, bottext, html);
-			}
 		});
 	});
 });
@@ -10009,9 +10019,9 @@ function getChestCnt(player_id, chest_id) {
 
 function isBanned(account_id){
 	var banned = connection_sync.query('SELECT reason FROM banlist WHERE account_id = ' + account_id);
-	if (Object.keys(banned).length == 0){
+	if (Object.keys(banned).length == 0)
 		return null;
-	}else{
+	else {
 		console.log(account_id + " è bannato");
 		return banned[0].reason;
 	}
