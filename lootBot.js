@@ -1340,8 +1340,8 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 									connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY val DESC', function (err, rows, fields) {
 										if (err) throw err;
 
-										var minValue = 200;
-										var bonusText = "-25% tempo missioni";
+										var minValue = 100;
+										var bonusText = "+50% probabilità ottenimento Chiave Mistica in ispezione";
 
 										var text = "";
 
@@ -9880,8 +9880,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
-																bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + dmg + " hp, " + exText, back);
-
+																bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
 															}
 														}
 													});
@@ -9991,7 +9990,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
-																		bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + dmg + " hp, " + exText, back);
+																		bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
 																	}
 																}
 															});
@@ -10435,7 +10434,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																					connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 																					});
-																					bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + dmg + " hp, " + exText, back);
+																					bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
 																				}
 																			}
 																		});
@@ -10544,7 +10543,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																							connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
-																							bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + dmg + " hp, " + exText, back);
+																							bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
 																						}
 																					}
 																				});
@@ -10891,7 +10890,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																							connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
-																							bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + dmg + " hp, " + exText, back);
+																							bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
 																						}
 																					}
 																				});
@@ -11231,7 +11230,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																							connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
-																							bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + dmg + " hp, " + exText, back);
+																							bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
 																						}
 																					}
 																				});
@@ -11500,7 +11499,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																								connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
-																								bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + dmg + " hp, " + exText, back);
+																								bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
 																							}
 																						}
 																					});
@@ -14548,7 +14547,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																						connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																							if (err) throw err;
 																						});
-																						bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + dmg + " hp, " + exText, back);
+																						bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
 																					}
 																				}
 																			});
@@ -26224,6 +26223,9 @@ function assaultIncrement(message, player_id, team_id, kbBack){
 				if (err) throw err;
 				bot.sendMessage(message.chat.id, "Hai attivato l'incremento per questo turno!", kbBack);
 				setAchievement(message.chat.id, player_id, 44, 1);
+				/* todo
+				globalAchievement(player_id, 1);
+				*/
 			});
 		});
 	});
@@ -42752,6 +42754,10 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 														if (isMatch == 1) {
 															var enemy_ability = rows[0].ability;
 															var prob = (Math.sqrt(ability)/Math.sqrt(ability_top)) - ((ability-enemy_ability)/ability);
+															/* todo
+															if (global_end == 1)
+																prob += 50;
+															*/
 															if (prob > Math.random())
 																key += 1;
 														}
@@ -49175,7 +49181,6 @@ function setFinishedMission(element, index, array) {
 
 								if (mission_gem == 0) {
 									// non gemmata
-									// globalAchievement(element.id, 1);
 								}
 
 								var extra = "";
@@ -49325,7 +49330,6 @@ function setFinishedSpecialMission(element, index, array) {
 
 					addItem(element.id, item_id);
 					addItem(element.id, 646, dust);
-					// globalAchievement(element.id, 1);
 
 					connection.query('UPDATE player SET exp = exp+' + exp + ' WHERE nickname = "' + element.nickname + '"', function (err, rows, fields) {
 						if (err) throw err;
