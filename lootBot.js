@@ -26427,7 +26427,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 					}
 					placeAvg = Math.round(placeAvg/Object.keys(rows).length);
 
-					connection.query('SELECT P.id, P.chat_id, APT.level, TP.suspended, P.boost_id, P.boost_mission, P.global_end FROM team_player TP, assault_place_player_id APP, player P, assault_place_team APT WHERE TP.player_id = P.id AND APT.place_id = APP.place_id AND APP.player_id = P.id AND APT.team_id = APP.team_id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
+					connection.query('SELECT P.id, P.chat_id, APT.level, TP.suspended, P.boost_id, P.boost_mission, P.global_end, T.boost_id As team_boost_id FROM team_player TP, assault_place_player_id APP, player P, assault_place_team APT, team T WHERE TP.team_id = T.id AND TP.player_id = P.id AND APT.place_id = APP.place_id AND APP.player_id = P.id AND APT.team_id = APP.team_id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
 						if (err) throw err;
 
 						var place_text = "";
@@ -26486,6 +26486,10 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 							money = 100000*(1+boss_num)
 							if (!is_boss)
 								money = money/(4-mob_count);
+							console.log("Prima del boost temporaneo: " + money);
+							if (rows[i].team_boost_id == 2)	// boost temporaneo monete
+								money += money*0.5;
+							console.log("Dopo boost temporaneo: " + money);
 							money += money*team_boost_money;
 							if (Object.keys(ability).length > 0)
 								money += money*((ability[0].ability_level*ability[0].val)/100);

@@ -9388,11 +9388,11 @@ bot.onText(/^\/zaino (.+)|^\/zaino$/, function (message, match) {
 
 			var bottext = "<b>" + message.from.username + "</b> possiedi (Consumabili):\n";
 
-			connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND item.cons = 1 AND inventory.quantity > 0 ' + orderBy, function (err, rows, fields) {
+			connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.shortname As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND item.cons = 1 AND inventory.quantity > 0 ' + orderBy, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length > 0) {
 					for (i = 0, len = Object.keys(rows).length; i < len; i++)
-						bottext = bottext + "> " + rows[i].name + " (" + formatNumber(rows[i].num) + ")\n";
+						bottext = bottext + "> " + rows[i].name + " (" + rows[i].rname + ", " + formatNumber(rows[i].num) + ")\n";
 				} else
 					bottext = bottext + "Nessun oggetto per questo filtro disponibile\n";
 				if (Object.keys(bottext).length > 4000)
@@ -9442,11 +9442,11 @@ bot.onText(/^\/zaino (.+)|^\/zaino$/, function (message, match) {
 
 				var bottext = "<b>" + message.from.username + "</b> possiedi (" + rows[0].shortname + "):\n";
 
-				connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND rarity.shortname = "' + rows[0].shortname + '" AND inventory.quantity > 0 ' + orderBy, function (err, rows, fields) {
+				connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.shortname As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND rarity.shortname = "' + rows[0].shortname + '" AND inventory.quantity > 0 ' + orderBy, function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0) {
 						for (i = 0, len = Object.keys(rows).length; i < len; i++)
-							bottext = bottext + "> " + rows[i].name + " (" + formatNumber(rows[i].num) + ")\n";
+							bottext = bottext + "> " + rows[i].name + " (" + rows[i].rname + ", " + formatNumber(rows[i].num) + ")\n";
 					} else
 						bottext = bottext + "Nessun oggetto di questa rarità disponibile\n";
 					if (Object.keys(bottext).length > 4000)
@@ -9503,7 +9503,7 @@ bot.onText(/^\/zainob (.+)|^\/zainoc (.+)|^\/zainob|^\/zainoc/, function (messag
 
 		var bottext = "<b>" + message.from.username + "</b> possiedi (" + craftTxt + desc + "):\n";
 
-		connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND item.craftable = ' + craftable + ' AND inventory.quantity > 0' + rarity + ' ORDER BY item.name ASC', function (err, rows, fields) {
+		connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.shortname As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND item.craftable = ' + craftable + ' AND inventory.quantity > 0' + rarity + ' ORDER BY item.name ASC', function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
 				for (i = 0, len = Object.keys(rows).length; i < len; i++)
