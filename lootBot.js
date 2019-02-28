@@ -4117,8 +4117,12 @@ function mainMenu(message) {
 														msgtext = msgtext + "\n🛡 Prossima stanza tra " + dungeon_min + " minut" + plur + " (" + room_txt + ")" + dungeon_diff;
 													}
 
-													if ((room_time == null) && (dungeon_time == null))
-														msgtext = msgtext + "\n❗️ Prosegui il dungeon!";
+													if ((room_time == null) && (dungeon_time == null)) {
+														var room_txt = room_num + "/" + room_tot_num;
+														if (room_num > room_tot_num)
+															room_txt = "Stanza finale";
+														msgtext = msgtext + "\n❗️ Prosegui il dungeon! (" + room_txt + ")" + dungeon_diff;
+													}
 
 													if (Object.keys(rows).length > 0) {
 
@@ -22294,7 +22298,8 @@ bot.onText(/^party$|gestisci party|torna ai party/i, function (message) {
 
 									var text = "Membri disponibili:\n";
 									for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-										text += "> " + rows[i].nickname + "\n";
+										text += "> <code>" + rows[i].nickname + "</code>\n";
+									
 									text += "\nScrivi la lista dei membri per il party separati da virgola, possono essere composti massimo da 5 giocatori, minimo da 3.";
 
 									bot.sendMessage(message.chat.id, text, kbBack2).then(function () {
@@ -26486,10 +26491,11 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 							money = 100000*(1+boss_num)
 							if (!is_boss)
 								money = money/(4-mob_count);
-							console.log("Prima del boost temporaneo: " + money);
-							if (rows[i].team_boost_id == 2)	// boost temporaneo monete
+							if (rows[i].team_boost_id == 2) {	// boost temporaneo monete
+								console.log("Prima del boost temporaneo: " + money);
 								money += money*0.5;
-							console.log("Dopo boost temporaneo: " + money);
+								console.log("Dopo boost temporaneo: " + money);
+							}
 							money += money*team_boost_money;
 							if (Object.keys(ability).length > 0)
 								money += money*((ability[0].ability_level*ability[0].val)/100);
@@ -36311,9 +36317,8 @@ bot.onText(/^vendi/i, function (message) {
 
 							var total = rows[0].total;
 
-							if (crazyMode == 1) {
+							if (crazyMode == 1)
 								total = total + (total * 10 / 100);
-							}
 
 							if (total == null) {
 								bot.sendMessage(message.chat.id, "Non hai oggetti da vendere!", store);
@@ -36349,6 +36354,7 @@ bot.onText(/^vendi/i, function (message) {
 													if (err) throw err;
 													bot.sendMessage(message.chat.id, "Hai venduto tutta la rarità *" + oggetto + "* per *" + formatNumber(total) + "* §!", store);
 
+													/*
 													if (getItemCnt(player_id, 677) < 2){
 														var rand = Math.random()*100;
 														if ((total >= 10000000) && (rand <= 25)) {
@@ -36357,6 +36363,7 @@ bot.onText(/^vendi/i, function (message) {
 															console.log("Coupon consegnato per vendita rarità");
 														}
 													}
+													*/
 												});
 											});
 										});
@@ -36423,6 +36430,7 @@ bot.onText(/^vendi/i, function (message) {
 								value = value + (value * 10 / 100);
 
 							var bonus = ""
+							/*
 							if (getItemCnt(player_id, 677) > 0) {
 								value = value + Math.round(value / 3);
 								bonus = ", aumentati grazie al Coupon";
@@ -36432,6 +36440,7 @@ bot.onText(/^vendi/i, function (message) {
 									delItem(player_id, 677, 1);
 								}
 							}
+							*/
 
 							setAchievement(message.chat.id, player_id, 7, value);
 
@@ -38205,7 +38214,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 	});
 });
 
-bot.onText(/equipaggia/i, function (message) {
+bot.onText(/equipaggia|^equip$/i, function (message) {
 
 	if (message.text.indexOf("Equipaggia Drago") != -1)
 		return;
