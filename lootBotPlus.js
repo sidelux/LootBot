@@ -8083,6 +8083,7 @@ bot.onText(/^\/oggetto (.+)|^\/oggetto/, function (message, match) {
 			var id = rows[0].id;
 			var name = rows[0].name;
 			var value = rows[0].value;
+			var max_value = rows[0].max_value;
 			var est = rows[0].estimate;
 			var power = rows[0].power;
 			var power_s = rows[0].power_shield;
@@ -8103,17 +8104,17 @@ bot.onText(/^\/oggetto (.+)|^\/oggetto/, function (message, match) {
 					var diff = Math.round((rows[0].num / rows[0].tot) * 100 * 1000) / 1000 + "%";
 
 					var pow = "";
-					if (power != 0) {
+					if (power != 0)
 						pow = "\n*Giocatore:* " + power + ", " + critical + "%";
-					} else if (power_a != 0) {
+					else if (power_a != 0)
 						pow = "\n*Giocatore:* " + power_a + ", " + critical + "%";
-					} else if (power_s != 0) {
+					else if (power_s != 0)
 						pow = "\n*Giocatore:* " + power_s + ", " + critical + "%";
-					}
 
 					bot.sendMessage(message.chat.id, "*Nome oggetto:* " + name + "\n" +
 									"*Rarità:* " + rarity + pow + "\n" +
 									"*Prezzo base:* " + formatNumber(value) + " §\n" +
+									"*Prezzo massimo:* " + formatNumber(max_value) + " §\n" +
 									(est != 0 ? "*Valore:* " + formatNumber(est) + " §\n" : "") +
 									"*Posseduti:* " + formatNumber(posseduti) + "\n" +
 									"*Diffusione:* " + diff, mark);
