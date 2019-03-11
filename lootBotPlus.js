@@ -437,6 +437,7 @@ bot.onText(/^\/comandinegozio/, function (message) {
 					"/negozio - Crea un negozio per la vendita di oggetti\n" +
 					"/privacy - Modifica la privacy del negozio da pubblico a privato e vice versa\n" +
 					"/massivo - Modifica la possibilità di acquistare in modo massivo dal negozio\n" +
+					"/protetto - Modifica la possibilità di acquistare dal negozio\n" +
 					"/negozioa - Permette di aggiungere oggetti al negozio\n" +
 					"/negozior - Permette di rimuovere oggetti dal negozio\n" +
 					"/negoziom - Permette di modificare oggetti inseriti nel negozio\n" +
@@ -480,7 +481,7 @@ bot.onText(/^\/comandigenerali/, function (message) {
 });
 
 bot.onText(/^\/calcola (.+)|^\/calcola/, function (message, match) {
-
+	return;
 	if (match[1] == undefined){
 		bot.sendMessage(message.chat.id, "Inserisci un operazione da risolvere. Esempio: /calcola 1+2\nGuida: http://mathjs.org/docs/index.html", no_preview);
 		return;
@@ -525,7 +526,7 @@ bot.onText(/^\/calcola (.+)|^\/calcola/, function (message, match) {
 bot.onText(/^\/birra/, function (message) {
 	connection.query('SELECT id, market_ban, account_id, money, holiday, birth_date FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -615,17 +616,17 @@ bot.onText(/^\/([0-9]+)+birre$/, function (message, match) {
 			return;
 		}
 	}
-	
+
 	connection.query('SELECT id, market_ban, account_id, money, holiday, birth_date FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
 		var player_id = rows[0].id;
 		var money = rows[0].money;
 		var birth_date = rows[0].birth_date;
-	
+
 		var t = "";
 		for (var i = 0; i < match[1]; i++){
 			if (calculateAge(new Date(birth_date)) < 18)
@@ -669,14 +670,14 @@ bot.onText(/^\/([0-9]+)+birre$/, function (message, match) {
 bot.onText(/^\/duebirre/, function (message) {
 	connection.query('SELECT id, market_ban, account_id, money, holiday, birth_date FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
 		var player_id = rows[0].id;
 		var money = rows[0].money;
 		var birth_date = rows[0].birth_date;
-		
+
 		var t = "";
 		if (calculateAge(new Date(birth_date)) < 18)
 			t += "🥛🥛";
@@ -717,7 +718,7 @@ bot.onText(/^\/duebirre/, function (message) {
 bot.onText(/^\/popcorn/, function (message) {
 	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -758,7 +759,7 @@ bot.onText(/^\/popcorn/, function (message) {
 bot.onText(/^\/ovetto/, function (message) {
 	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -799,7 +800,7 @@ bot.onText(/^\/ovetto/, function (message) {
 bot.onText(/^\/salmone/, function (message) {
 	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -840,7 +841,7 @@ bot.onText(/^\/salmone/, function (message) {
 bot.onText(/^\/caffè/, function (message) {
 	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -881,7 +882,7 @@ bot.onText(/^\/caffè/, function (message) {
 bot.onText(/^\/whisky/, function (message) {
 	connection.query('SELECT id, market_ban, account_id, money, holiday, birth_date FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -1261,7 +1262,7 @@ bot.onText(/^\/gruppi/, function (message) {
 																						"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
 																						"<a href='https://t.me/joinchat/AVqFykBMfmvrULAUQv-MmQ'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
 																						"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
-																						"<a href='https://t.me/joinchat/AThc-0DH8FaFEpYpLg-rOA'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
+																						"<a href='https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
 																						"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
 																						"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
 																						"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
@@ -1278,7 +1279,6 @@ bot.onText(/^\/gruppi/, function (message) {
 																						"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
 																						"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
 																						"@yellowlootshop - Join for eventi free!\n" +
-																						"<a href='https://t.me/joinchat/AAAAAFfCIOoiRA2xApWn3A'>Scommesse sulle globali</a> - Scommetti sui risultati delle globali!\n" +
 
 																						"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
 																	});
@@ -1319,6 +1319,7 @@ bot.onText(/^\/mercatini/, function (message) {
 					"@latanadellupo - Entra qui per eventi, negozi e lotterie lupesche 🐺!\n" +
 					"@ShopdellaNebulosa - ✨Concorsi ed oggetti Draconici✨\n" +
 					"@JollyTC - Offerte e sorprese al Centro Scambi!\n" +
+					"<a href='https://t.me/joinchat/AAAAAFfCIOoiRA2xApWn3A'>Scommesse sulle globali</a> - Scommetti sui risultati delle globali!\n" +
 
 					"\nVisita anche /gruppi. Per comparire qua chiedi all'amministratore.", html);
 });
@@ -1655,7 +1656,7 @@ bot.onText(/^\/token/, function (message) {
 
 	connection.query('SELECT id, account_id, exp, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -2284,7 +2285,7 @@ function checkStatus(message, nickname, accountid, type) {
 								custom_name_text = " detto <i>" + player_custom_nickname + "</i>";
 
 							if (haveTeam == 0){
-								welcome = "Benvenuto nella Taverna, giovane <b>" + nickname + "</b> 🍻\nStai cercando un gruppo di avventurieri a cui unirti?\nPotrebbe esserci qualcuno pronto ad accogliere un Lv " + lev + " R" + (reb-1) + "...\nPer imparare le basi del gioco, entra nella <a href='https://t.me/joinchat/AAAAAEDH8FbelcVFTmw-mQ'>LootBot School</a>!";
+								welcome = "Benvenuto nella Taverna, giovane <b>" + nickname + "</b> 🍻\nStai cercando un gruppo di avventurieri a cui unirti?\nPotrebbe esserci qualcuno pronto ad accogliere un Lv " + lev + " R" + (reb-1) + "...\nPer imparare le basi del gioco, entra nella <a href='https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg'>LootBot School</a>!";
 							}else if ((haveTeam == 1) && (lev < 250)){
 								var team_name = connection_sync.query('SELECT name FROM team WHERE id = ' + team[0].team_id);
 								welcome = "Benvenuto nella Taverna, <b>" + nickname + "</b> del team <b>" + team_name[0].name + "</b>\nCosa porta un Lv " + lev + " R" + (reb-1) + " da queste parti?";
@@ -2940,19 +2941,19 @@ bot.onText(/^\/iscritto ([\w,\-\s]+)|^\/iscritto/i, function (message, match) {
 	nick = nick.toString().replaceAll(/@/, "");
 	nick = nick.toString().replaceAll(/\s/, ",");
 	nick = nick.toString().replaceAll(/\-/, ",");
-	
+
 	var nicknames = [];
 	if (nick.indexOf(",") != -1)
 		nicknames = nick.split(",");
 	else
 		nicknames[0] = nick;
-	
+
 	var text = "";
 	for (var i = 0, len = nicknames.length; i < len; i++) {
 		nicknames[i] = nicknames[i].trim();
 		if (nicknames[i] == "")
 			continue;
-		var rows = connection_sync.query('SELECT market_ban, account_id FROM player WHERE nickname = "' + nicknames[i] + '"');
+		var rows = connection_sync.query('SELECT market_ban, account_id FROM player WHERE nickname = "' + escape(nicknames[i]) + '"');
 		if (Object.keys(rows).length == 0)
 			text += nicknames[i] + ": 👎\n";
 		else {
@@ -2967,17 +2968,17 @@ bot.onText(/^\/iscritto ([\w,\-\s]+)|^\/iscritto/i, function (message, match) {
 			}
 		}
 	}
-	
+
 	bot.sendMessage(message.chat.id, text, mark);
 });
 
 bot.onText(/^\/cancellalotteria/, function (message) {
 	connection.query('SELECT id, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var player_id = rows[0].id;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -3062,10 +3063,10 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+),(.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p
 
 	connection.query('SELECT id, account_id, market_ban, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var player_id = rows[0].id;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -3169,10 +3170,10 @@ bot.onText(/^\/pubblicaasta (.+)|^\/pubblicaasta/, function (message, match) {
 
 	connection.query('SELECT id, account_id, market_ban, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var player_id = rows[0].id;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -3342,10 +3343,10 @@ bot.onText(/^\/asta(?!p) ([^\s]+) (.+)|^\/asta(?!p)/, function (message, match) 
 
 	connection.query('SELECT id, money, account_id, market_ban FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var player_id = rows[0].id;
 		var money = rows[0].money;
 
@@ -3447,19 +3448,20 @@ bot.onText(/^\/negozi$/, function (message, match) {
 
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
 		var player_id = rows[0].id;
 		var text = "I tuoi negozi:\n\n";
 
-		connection.query('SELECT item.name, public_shop.public, public_shop.code, public_shop.price, public_shop.time_end, public_shop.quantity, public_shop.massive FROM public_shop, item WHERE item.id = public_shop.item_id AND player_id = ' + player_id + ' ORDER BY time_end, code ASC', function (err, rows, fields) {
+		connection.query('SELECT item.name, public_shop.public, public_shop.code, public_shop.price, public_shop.time_end, public_shop.quantity, public_shop.massive, public_shop.protected FROM public_shop, item WHERE item.id = public_shop.item_id AND player_id = ' + player_id + ' ORDER BY time_end, code ASC', function (err, rows, fields) {
 			if (err) throw err;
 
 			var d = new Date();
 			var isPublic = "";
 			var isMassive = "";
+			var isProtected = "";
 
 			if (Object.keys(rows).length > 0) {
 				d = new Date(rows[0].time_end);
@@ -3468,21 +3470,34 @@ bot.onText(/^\/negozi$/, function (message, match) {
 					isPublic = "Privato";
 				else
 					isPublic = "Pubblico";
-
 				if (rows[0].massive == 0)
 					isMassive = ", Massivo Disabilitato";
 				else
 					isMassive = ", Massivo Abilitato";
+				if (rows[0].protected == 0)
+					isProtected = ", Non Protetto";
+				else
+					isProtected = ", Protetto";
 
-				text += "<code>" + rows[0].code + "</code> (Scadenza: " + toDate("it", d) + ") <i>" + isPublic + isMassive + "</i>\n";
+				text += "<code>" + rows[0].code + "</code> (Scadenza: " + toDate("it", d) + ") <i>" + isPublic + isMassive + isProtected + "</i>\n";
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					if ((i > 0) && (rows[i].code != rows[i - 1].code)) {
 						d = new Date(rows[i].time_end);
+						
 						if (rows[i].public == 0)
 							isPublic = "Privato";
 						else
 							isPublic = "Pubblico";
-						text += "\n<code>" + rows[i].code + "</code> (Scadenza: " + toDate("it", d) + ") <i>" + isPublic + "</i>\n";
+						if (rows[i].massive == 0)
+							isMassive = ", Massivo Disabilitato";
+						else
+							isMassive = ", Massivo Abilitato";
+						if (rows[i].protected == 0)
+							isProtected = ", Non Protetto";
+						else
+							isProtected = ", Protetto";
+						
+						text += "\n<code>" + rows[i].code + "</code> (Scadenza: " + toDate("it", d) + ") <i>" + isPublic + isMassive + isProtected + "</i>\n";
 					}
 					text += "> " + rows[i].quantity + "x " + rows[i].name + " (" + formatNumber(rows[i].price) + " §)\n";
 				}
@@ -3495,8 +3510,16 @@ bot.onText(/^\/negozi$/, function (message, match) {
 						isPublic = "Privato";
 					else
 						isPublic = "Pubblico";
+					if (rows[0].massive == 0)
+						isMassive = ", Massivo Disabilitato";
+					else
+						isMassive = ", Massivo Abilitato";
+					if (rows[0].protected == 0)
+						isProtected = ", Non Protetto";
+					else
+						isProtected = ", Protetto";
 
-					text += "<code>" + rows[0].code + "</code> (Scadenza: " + toDate("it", d) + ") <i>" + isPublic + "</i>\n";
+					text += "<code>" + rows[0].code + "</code> (Scadenza: " + toDate("it", d) + ") <i>" + isPublic + isMassive + isProtected + "</i>\n";
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 						if ((i > 0) && (rows[i].code != rows[i - 1].code)) {
 
@@ -3504,11 +3527,22 @@ bot.onText(/^\/negozi$/, function (message, match) {
 							text = "";
 
 							d = new Date(rows[i].time_end);
+							
 							if (rows[i].public == 0)
 								isPublic = "Privato";
 							else
 								isPublic = "Pubblico";
-							text += "\n<code>" + rows[i].code + "</code> (Scadenza: " + toDate("it", d) + ") <i>" + isPublic + "</i>\n";
+							if (rows[i].massive == 0)
+								isMassive = ", Massivo Disabilitato";
+							else
+								isMassive = ", Massivo Abilitato";
+
+							if (rows[i].protected == 0)
+								isProtected = ", Non Protetto";
+							else
+								isProtected = ", Protetto";
+							
+							text += "\n<code>" + rows[i].code + "</code> (Scadenza: " + toDate("it", d) + ") <i>" + isPublic + isMassive + isProtected + "</i>\n";
 						}
 						text += "> " + rows[i].quantity + "x " + rows[i].name + " (" + formatNumber(rows[i].price) + " §)\n";
 					}
@@ -3521,10 +3555,10 @@ bot.onText(/^\/negozi$/, function (message, match) {
 	});
 });
 
-bot.onText(/^\/privacy (.+)/, function (message, match) {
+bot.onText(/^\/privacy (.+)|^\/privacy/, function (message, match) {
 	connection.query('SELECT id, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -3536,6 +3570,12 @@ bot.onText(/^\/privacy (.+)/, function (message, match) {
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
+		}
+		
+		if (message.reply_to_message != undefined) {
+			var cod = message.reply_to_message.text.match(/[0-9]{7,11}/g);
+			if (cod != undefined)
+				code = cod[0];
 		}
 
 		if ((code == undefined) || (code == "")) {
@@ -3604,10 +3644,10 @@ bot.onText(/^\/privacy (.+)/, function (message, match) {
 	});
 });
 
-bot.onText(/^\/massivo (.+)/, function (message, match) {
+bot.onText(/^\/massivo (.+)|^\/massivo/, function (message, match) {
 	connection.query('SELECT id, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -3619,6 +3659,12 @@ bot.onText(/^\/massivo (.+)/, function (message, match) {
 			var text = "...";
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
+		}
+		
+		if (message.reply_to_message != undefined) {
+			var cod = message.reply_to_message.text.match(/[0-9]{7,11}/g);
+			if (cod != undefined)
+				code = cod[0];
 		}
 
 		if ((code == undefined) || (code == "")) {
@@ -3686,6 +3732,94 @@ bot.onText(/^\/massivo (.+)/, function (message, match) {
 	});
 });
 
+bot.onText(/^\/protetto (.+)|^\/protetto/, function (message, match) {
+	connection.query('SELECT id, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0)
+			return;
+
+		var code = match[1];
+		var player_id = rows[0].id;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "...";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+		
+		if (message.reply_to_message != undefined) {
+			var cod = message.reply_to_message.text.match(/[0-9]{7,11}/g);
+			if (cod != undefined)
+				code = cod[0];
+		}
+
+		if ((code == undefined) || (code == "")) {
+			bot.sendMessage(message.chat.id, "La sintassi è: /protetto CODICE, puoi anche usare /protetto tutti");
+			return;
+		}
+
+		if (code == "tutti") {
+			connection.query('SELECT player_id, protected FROM public_shop WHERE player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Non possiedi nessun negozio");
+					return;
+				}
+
+				var protected = rows[0].protected;
+
+				if (protected == 0) {
+					connection.query('UPDATE public_shop SET protected = 1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+						bot.sendMessage(message.chat.id, "Applicata la protezione a tutti i negozi!", mark);
+					});
+				} else if (protected == 1) {
+					connection.query('UPDATE public_shop SET protected = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+						bot.sendMessage(message.chat.id, "Rimossa la protezione da tutti i negozi!", mark);
+					});
+				}
+			});
+			return;
+		}
+
+		connection.query('SELECT player_id, protected FROM public_shop WHERE code = ' + code, function (err, rows, fields) {
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Non esiste un negozio con quel codice");
+				return;
+			}
+
+			if (player_id != rows[0].player_id) {
+				bot.sendMessage(message.chat.id, "Non sei l'amministratore del negozio");
+				return;
+			}
+
+			var protected = rows[0].protected;
+
+			code = parseInt(code);
+			if (isNaN(code)){
+				bot.sendMessage(message.chat.id, "Non sei l'amministratore del negozio");
+				return;
+			}
+			if (protected == 0) {
+				connection.query('UPDATE public_shop SET protected = 1 WHERE code = ' + code, function (err, rows, fields) {
+					if (err) throw err;
+					bot.sendMessage(message.chat.id, "Hai applicato la protezione al negozio!", mark);
+				});
+			} else if (protected == 1) {
+				connection.query('UPDATE public_shop SET protected = 0 WHERE code = ' + code, function (err, rows, fields) {
+					if (err) throw err;
+					bot.sendMessage(message.chat.id, "Hai rimosso la protezione al negozio!", mark);
+				});
+			}
+		});
+	});
+});
+
 bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|^\/negozioa ([^\s]+) (.+)|^\/negozior ([^\s]+) (.+)|^\/negoziom$|^\/negoziom ([^\s]+) (.+)|^\/negoziou (.+)/, function (message, match) {
 
 	if (!checkSpam(message))
@@ -3693,7 +3827,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 
 	connection.query('SELECT id, account_id, market_ban, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -3790,6 +3924,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 
 		var privacy = 0;
 		var massive = 1;
+		var protected = 0;
 		if (text.indexOf("#") != -1) {
 			privacy = 1;
 			text = text.replace("#", "");
@@ -3797,6 +3932,10 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 		if (text.indexOf("!") != -1) {
 			massive = 0;
 			text = text.replace("!", "");
+		}
+		if (text.indexOf("*") != -1) {
+			protected = 1;
+			text = text.replace("*", "");
 		}
 
 		var d = new Date();
@@ -4062,16 +4201,17 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 								quantity = 1;
 							}
 
-							var paramQuery = connection_sync.query('SELECT public, massive FROM public_shop WHERE code = ' + code);
-							var shopQuery = connection_sync.query('SELECT id, public, massive FROM public_shop WHERE item_id = ' + item_id + ' AND code = ' + code);
+							var paramQuery = connection_sync.query('SELECT public, massive, protected FROM public_shop WHERE code = ' + code);
+							var shopQuery = connection_sync.query('SELECT id, public, massive, protected FROM public_shop WHERE item_id = ' + item_id + ' AND code = ' + code);
 							if (Object.keys(shopQuery).length > 0)
 								text += "Oggetto già presente: " + item_name + "\n";
 							else{
 								if (func == "add") {
 									privacy = paramQuery[0].public;
 									massive = paramQuery[0].massive;
+									protected = paramQuery[0].protected;
 								}
-								connection.query('INSERT INTO public_shop (player_id, code, item_id, price, quantity, time_end, public, massive) VALUES (' + player_id + ',' + code + ',' + item_id + ',' + price + ',' + quantity + ',"' + long_date + '",' + privacy + ',' + massive + ')', function (err, rows, fields) {
+								connection.query('INSERT INTO public_shop (player_id, code, item_id, price, quantity, time_end, public, massive, protected) VALUES (' + player_id + ',' + code + ',' + item_id + ',' + price + ',' + quantity + ',"' + long_date + '",' + privacy + ',' + massive + ', ' + protected + ')', function (err, rows, fields) {
 									if (err) throw err;
 								});
 
@@ -4088,6 +4228,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 					if (func == "new") {
 						text += "\nPrivacy negozio: " + ((privacy == 1) ? "_Pubblico_" : "_Privato_");
 						text += "\nAcquisto massivo: " + ((massive == 1) ? "_Abilitato_" : "_Disabilitato_");
+						text += "\nProtezione negozio: " + ((protected == 1) ? "_Abilitata_" : "_Disabilitata_");
 					}
 				}
 			}
@@ -4117,7 +4258,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 bot.onText(/^\/cancellanegozio (.+)|^\/cancellanegozio$/, function (message, match) {
 	connection.query('SELECT id, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -4759,7 +4900,7 @@ bot.on('callback_query', function (message) {
 						return;
 					}
 
-					connection.query('SELECT player_id, price, item_id, quantity, massive FROM public_shop WHERE code = ' + code, function (err, rows, fields) {
+					connection.query('SELECT player_id, price, item_id, quantity, massive, protected FROM public_shop WHERE code = ' + code, function (err, rows, fields) {
 						if (err) throw err;
 
 						if (Object.keys(rows).length == 0){
@@ -4770,6 +4911,12 @@ bot.on('callback_query', function (message) {
 
 						if (rows[0].massive == 0){
 							bot.answerCallbackQuery(message.id, {text: "Acquisto massivo disabilitato per questo negozio"});
+							check.splice(index, 1);
+							return;
+						}
+
+						if (rows[0].protected == 1){
+							bot.answerCallbackQuery(message.id, {text: "Il negozio è protetto"});
 							check.splice(index, 1);
 							return;
 						}
@@ -4909,7 +5056,7 @@ bot.on('callback_query', function (message) {
 			return;
 		}
 
-		connection.query('SELECT player_id, price, item_id, quantity, code FROM public_shop WHERE id = ' + shop_id, function (err, rows, fields) {
+		connection.query('SELECT player_id, price, item_id, quantity, code, protected FROM public_shop WHERE id = ' + shop_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
@@ -4923,6 +5070,12 @@ bot.on('callback_query', function (message) {
 			var item_id = rows[0].item_id;
 			var quantity = rows[0].quantity;
 			var code = rows[0].code;
+
+			if (rows[0].protected == 1){
+				bot.answerCallbackQuery(message.id, {text: 'Il negozio è protetto!'});
+				check.splice(index, 1);
+				return;
+			}
 
 			connection.query('SELECT nickname, account_id, market_ban FROM player WHERE id = ' + player_id2, function (err, rows, fields) {
 				if (err) throw err;
@@ -5055,7 +5208,7 @@ function updateShop(message, code, isId){
 		}
 		code = shopCode[0].code;
 	}
-	connection.query('SELECT public_shop.id, player.nickname, quantity, item.name, price, massive FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code + ' ORDER BY item.name', function (err, rows, fields) {
+	connection.query('SELECT public_shop.id, player.nickname, quantity, item.name, price, massive, protected FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code + ' ORDER BY item.name', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0) {
@@ -5096,7 +5249,10 @@ function updateShop(message, code, isId){
 		var d = new Date();
 		var short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
 
-		var text = "Negozio di " + rows[0].nickname + " aggiornato alle " + short_date + "!";
+		var protected = "";
+		if (rows[0].protected == 1)
+			protected = " 🚫";
+		var text = "Negozio di " + rows[0].nickname + " aggiornato alle " + short_date + "!" + protected;
 
 		bot.editMessageText(text, {
 			inline_message_id: message.inline_message_id,
@@ -5119,10 +5275,10 @@ bot.onText(/^\/crealotteria(?!p) (.+)|^\/crealotteria(?!p)$/, function (message,
 
 	connection.query('SELECT id, account_id, market_ban, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var player_id = rows[0].id;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -5203,10 +5359,10 @@ bot.onText(/^\/crealotteriap ([^\s]+) (.+)|^\/crealotteriap$/, function (message
 
 	connection.query('SELECT id, account_id, market_ban, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var player_id = rows[0].id;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -5289,10 +5445,10 @@ bot.onText(/^\/estrazione/, function (message) {
 
 	connection.query('SELECT id, account_id, market_ban, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var player_id = rows[0].id;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -5389,7 +5545,7 @@ bot.onText(/^\/estrazione/, function (message) {
 bot.onText(/^\/lotterie/, function (message) {
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -5478,7 +5634,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 
 	connection.query('SELECT account_id, id, money, holiday, market_ban, exp, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -5565,7 +5721,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 bot.onText(/^\/annullav/i, function (message) {
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -5642,7 +5798,7 @@ bot.onText(/^\/offri/i, function (message) {
 
 	connection.query('SELECT account_id, holiday, market_ban, id, money FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -5802,7 +5958,7 @@ bot.onText(/^\/offri/i, function (message) {
 bot.onText(/^\/rifiutav/i, function (message) {
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -5842,7 +5998,7 @@ bot.onText(/^\/rifiutav/i, function (message) {
 bot.onText(/^\/annullas/i, function (message) {
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -5872,7 +6028,7 @@ bot.onText(/^\/annullas/i, function (message) {
 bot.onText(/^\/scambia/i, function (message) {
 	connection.query('SELECT account_id, market_ban, holiday, id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -6089,10 +6245,10 @@ bot.onText(/^\/accettav/i, function (message) {
 
 	connection.query('SELECT exp, holiday, id, money, account_id, market_ban FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
 			var text = "...";
@@ -6176,7 +6332,7 @@ bot.onText(/^\/accettav/i, function (message) {
 bot.onText(/^\/rifiutas/i, function (message) {
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -6223,10 +6379,10 @@ bot.onText(/^\/accettas/i, function (message) {
 
 	connection.query('SELECT id, exp, holiday, account_id, market_ban FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
 			var text = "...";
@@ -6349,10 +6505,10 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 
 	connection.query('SELECT id, market_ban, money, account_id, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var player_id = rows[0].id;
 		var money = rows[0].money;
 
@@ -6591,10 +6747,10 @@ bot.onText(/^\/dlotteria(?!p) (.+)|^\/dlotteria(?!p)/, function (message, match)
 
 	connection.query('SELECT id, market_ban, money, account_id, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var player_id = rows[0].id;
 		var money = rows[0].money;
 
@@ -6719,7 +6875,7 @@ bot.onText(/^\/statolotteria (.+)|^\/statolotteria/, function (message, match) {
 
 	connection.query('SELECT id, nickname FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0) {
 			bot.sendMessage(message.chat.id, "Il nickname che hai inserito non esiste, riprova");
 			return;
@@ -6784,7 +6940,7 @@ bot.onText(/^\/statoasta (.+)|^\/statoasta/, function (message, match) {
 
 	connection.query('SELECT id, nickname FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0) {
 			bot.sendMessage(message.chat.id, "Il nickname che hai inserito non esiste, riprova");
 			return;
@@ -6853,10 +7009,10 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 
 	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var player_id = rows[0].id;
 		var money = rows[0].money;
 
@@ -7156,10 +7312,10 @@ bot.onText(/^\/dlotteriap (.+)|^\/dlotteriap/, function (message, match) {
 
 	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var player_id = rows[0].id;
 		var money = rows[0].money;
 
@@ -7499,7 +7655,7 @@ bot.onText(/^\/statistiche/, function (message) {
 bot.onText(/^\/valorezaino (.+)|^\/valorezaino$/, function (message, match) {
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -7548,7 +7704,7 @@ bot.onText(/^\/valorezaino (.+)|^\/valorezaino$/, function (message, match) {
 bot.onText(/^\/valorezainob (.+)|^\/valorezainob$/, function (message, match) {
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -7574,7 +7730,7 @@ bot.onText(/^\/valorezainob (.+)|^\/valorezainob$/, function (message, match) {
 bot.onText(/^\/valorezainoc (.+)|^\/valorezainoc$/, function (message, match) {
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -7600,7 +7756,7 @@ bot.onText(/^\/valorezainoc (.+)|^\/valorezainoc$/, function (message, match) {
 bot.onText(/^\/creazioni/, function (message, match) {
 	connection.query('SELECT id, craft_count, craft_week, craft_day FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -7611,7 +7767,7 @@ bot.onText(/^\/creazioni/, function (message, match) {
 bot.onText(/^\/rango/, function (message, match) {
 	connection.query('SELECT id, rank, dungeon_count FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -7636,7 +7792,7 @@ bot.onText(/^\/abilità/, function (message, match) {
 
 		connection.query('SELECT id, ability FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 			if (err) throw err;
-			
+
 			if (Object.keys(rows).length == 0)
 				return;
 
@@ -7664,12 +7820,12 @@ bot.onText(/^\/abilità/, function (message, match) {
 bot.onText(/^\/posizione/, function (message, match) {	
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var player_id = rows[0].id;
-	
+
 		connection.query('SELECT global_eventwait FROM config', function (err, rows, fields) {
 			if (err) throw err;
 
@@ -7806,10 +7962,10 @@ bot.onText(/^\/checkmarketAll (.+)|^\/checkmarketAll/, function (message, match)
 bot.onText(/^\/gruzzolo/, function (message) {
 	connection.query('SELECT id, money FROM player WHERE id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		if (rows[0].id == 1){
 			bot.sendMessage(message.chat.id, message.from.username + ", possiedi <b>troppissimi</b> §", html);
 			return;
@@ -8151,10 +8307,10 @@ bot.onText(/^\/notifiche (.+)|^\/notifiche/, function (message, match) {
 
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var player_id = rows[0].id;
 		connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + player_id + ' AND type = ' + type, function (err, rows, fields) {
 			if (err) throw err;
@@ -8929,7 +9085,7 @@ bot.onText(/^\/ispeziona/, function (message) {
 
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
 
@@ -9060,7 +9216,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, account_
 		var heist_limit = parseInt(rows[0].heist_limit);
 		var ability = parseInt(rows[0].ability);
 		var custom_name_h = rows[0].custom_name_h;
-		
+
 		// per contare anche quelli in viaggio nelle subite
 		var limitProgress = connection_sync.query("SELECT COUNT(id) As cnt FROM heist WHERE to_id = " + to_id);
 		heist_limit += limitProgress[0].cnt;
@@ -9193,10 +9349,10 @@ bot.onText(/^\/spia/, function (message) {
 
 	connection.query('SELECT account_id, holiday, spy_count, heist_protection, account_id, id, exp, weapon, house_id, money, spy_description FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
 			bot.sendMessage(message.chat.id, "...", mark);
@@ -9271,18 +9427,17 @@ bot.onText(/^\/spia/, function (message) {
 
 				if (message.from.id != 20471035) {
 					if (house_id == 1) {
-						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno ha spiato il tuo rifugio!" + spy_description);
+						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno ha spiato il tuo rifugio!" + spy_description, html);
 					} else if (house_id == 2) {
-						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno *di livello " + level + "* ha spiato il tuo rifugio!" + spy_description, mark);
+						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno <b>di livello " + level + "</b> ha spiato il tuo rifugio!" + spy_description, html);
 					} else if ((house_id == 3) || (house_id == 4)) {
-						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che *un livello " + level + ", con +" + power + " di danno* ha spiato il tuo rifugio!" + spy_description, mark);
+						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che <b>un livello " + level + ", con +" + power + " di danno</b> ha spiato il tuo rifugio!" + spy_description, html);
 					} else if (house_id >= 5) {
 						bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che <b>" + message.from.username + "</b> ha spiato il tuo rifugio!" + spy_description, html);
 					}
 				}
-			} else {
+			} else
 				bot.sendMessage(account_id, "Giocatore non trovato.");
-			}
 		});
 	});
 });
@@ -9322,10 +9477,10 @@ bot.onText(/^\/scrigni/, function (message, match) {
 
 	connection.query('SELECT id, total_life, life, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
 			var text = "...";
@@ -9370,10 +9525,10 @@ bot.onText(/^\/zaino (.+)|^\/zaino$/, function (message, match) {
 
 	connection.query('SELECT id, total_life, life, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
 			var text = "...";
@@ -9467,10 +9622,10 @@ bot.onText(/^\/zainob (.+)|^\/zainoc (.+)|^\/zainob|^\/zainoc/, function (messag
 
 	connection.query('SELECT id, total_life, life, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
 			var text = "...";
@@ -9526,10 +9681,10 @@ bot.onText(/^\/zainor/, function (message, match) {
 
 	connection.query('SELECT id, total_life, life, account_id, gems, mkeys, money, moon_coin, necro_pnt, gain_exp FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
 			var text = "...";
@@ -9720,10 +9875,10 @@ function setFinishedAuction(element, index, array) {
 				});
 				return;
 			}
-			
+
 			var nickname = rows[0].nickname;
 			var winner_chat_id = rows[0].chat_id;
-			
+
 			addItem(last_player, item_id);
 			connection.query('SELECT item.name FROM item WHERE id = ' + item_id, function (err, rows, fields) {
 				if (err) throw err;

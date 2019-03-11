@@ -21238,8 +21238,12 @@ bot.onText(/team/i, function (message) {
 
 											if (rows[i].in_dungeon == 0)
 												in_dungeon = "Non in dungeon";
-											else
-												in_dungeon = "Dungeon (" + rows[i].room_id + "/" + rows[i].rooms + ")";
+											else {
+												if (rows[i].room_id > rows[i].rooms)
+													in_dungeon = "Dungeon (Stanza finale)";
+												else
+													in_dungeon = "Dungeon (" + rows[i].room_id + "/" + rows[i].rooms + ")";
+											}
 
 											base_text = admin + "<i>" + nickname + "</i> " + stars + " " + lev + " \n" +
 												"🏹 " + class_name + " " + classSym(class_name) + "\n" +
@@ -26228,9 +26232,13 @@ function assaultIncrement(message, player_id, team_id, kbBack){
 				if (err) throw err;
 				bot.sendMessage(message.chat.id, "Hai attivato l'incremento per questo turno!", kbBack);
 				setAchievement(message.chat.id, player_id, 44, 1);
-				/* todo
-				globalAchievement(player_id, 1);
-				*/
+				
+				connection.query('SELECT level, max_level FROM assault_place_team, assault_place WHERE assault_place.id = assault_place_team.place_id AND team_id = ' + team_id + ' AND place_id = ' + my_place_id, function (err, rows, fields) {
+					if (err) throw err;
+					
+					var val = Math.round(rows[0].level*10/rows[0].max_level);
+					globalAchievement(player_id, val);
+				});
 			});
 		});
 	});
@@ -26492,9 +26500,9 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 							if (!is_boss)
 								money = money/(4-mob_count);
 							if (rows[i].team_boost_id == 2) {	// boost temporaneo monete
-								console.log("Prima del boost temporaneo: " + money);
+								// console.log("Prima del boost temporaneo: " + money);
 								money += money*0.5;
-								console.log("Dopo boost temporaneo: " + money);
+								// console.log("Dopo boost temporaneo: " + money);
 							}
 							money += money*team_boost_money;
 							if (Object.keys(ability).length > 0)
@@ -35988,7 +35996,7 @@ bot.onText(/ricicla/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["C", "NC", "R"], ["UR", "L", "E"], ["D"], ["Torna all'emporio"], ["Torna al menu"]]
+				keyboard: [["C", "NC", "R"], ["UR", "L", "E"], ["Torna all'emporio"], ["Torna al menu"]]
 			}
 		};
 
@@ -36084,7 +36092,8 @@ bot.onText(/ricicla/i, function (message) {
 										return;
 									}
 								} else {
-									if ((nRarity != "C") && (nRarity != "NC") && (nRarity != "R") && (nRarity != "UR") && (nRarity != "L") && (nRarity != "E") && (nRarity != "D")){
+									//if ((nRarity != "C") && (nRarity != "NC") && (nRarity != "R") && (nRarity != "UR") && (nRarity != "L") && (nRarity != "E") && (nRarity != "D")){
+									if ((nRarity != "C") && (nRarity != "NC") && (nRarity != "R") && (nRarity != "UR") && (nRarity != "L") && (nRarity != "E")){
 										bot.sendMessage(message.chat.id, "Non puoi riciclare questa rarità!", back);
 										return;
 									}
@@ -36211,7 +36220,8 @@ bot.onText(/ricicla/i, function (message) {
 														return;
 													}
 												} else {
-													if ((nRarity != "C") && (nRarity != "NC") && (nRarity != "R") && (nRarity != "UR") && (nRarity != "L") && (nRarity != "E") && (nRarity != "D")){
+													//if ((nRarity != "C") && (nRarity != "NC") && (nRarity != "R") && (nRarity != "UR") && (nRarity != "L") && (nRarity != "E") && (nRarity != "D")){
+													if ((nRarity != "C") && (nRarity != "NC") && (nRarity != "R") && (nRarity != "UR") && (nRarity != "L") && (nRarity != "E")){
 														bot.sendMessage(message.chat.id, "Non puoi riciclare questa rarità!", back);
 														return;
 													}
@@ -41553,11 +41563,11 @@ bot.onText(/spia rifugio|spia:/i, function (message) {
 
 					if (player_id != 1) {
 						if (house_id == 1) {
-							bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno ha spiato il tuo rifugio!" + spy_description);
+							bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno ha spiato il tuo rifugio!" + spy_description, html);
 						} else if (house_id == 2) {
-							bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno *di livello " + level + "* ha spiato il tuo rifugio!" + spy_description, mark);
+							bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno <b>di livello " + level + "</b> ha spiato il tuo rifugio!" + spy_description, html);
 						} else if ((house_id == 3) || (house_id == 4)) {
-							bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che *un livello " + level + ", con +" + power + " di danno* ha spiato il tuo rifugio!" + spy_description, mark);
+							bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che <b>un livello " + level + ", con +" + power + " di danno</b> ha spiato il tuo rifugio!" + spy_description, html);
 						} else if (house_id >= 5) {
 							bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che <b>" + message.from.username + "</b> ha spiato il tuo rifugio!" + spy_description, html);
 						}
@@ -41624,11 +41634,11 @@ bot.onText(/spia rifugio|spia:/i, function (message) {
 
 						if (player_id != 1) {
 							if (house_id == 1) {
-								bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno ha spiato il tuo rifugio!" + spy_description);
+								bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno ha spiato il tuo rifugio!" + spy_description, html);
 							} else if (house_id == 2) {
-								bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno *di livello " + level + "* ha spiato il tuo rifugio!" + spy_description, mark);
+								bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno <b>di livello " + level + "</b> ha spiato il tuo rifugio!" + spy_description, html);
 							} else if ((house_id == 3) || (house_id == 4)) {
-								bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che *un livello " + level + ", con +" + power + " di danno* ha spiato il tuo rifugio!" + spy_description, mark);
+								bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che <b>un livello " + level + ", con +" + power + " di danno</b> ha spiato il tuo rifugio!" + spy_description, html);
 							} else if (house_id >= 5) {
 								bot.sendMessage(chat_id, "Le pattuglie intorno al villaggio ci hanno avvisato che <b>" + message.from.username + "</b> ha spiato il tuo rifugio!" + spy_description, html);
 							}
@@ -42767,10 +42777,8 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 														if (isMatch == 1) {
 															var enemy_ability = rows[0].ability;
 															var prob = (Math.sqrt(ability)/Math.sqrt(ability_top)) - ((ability-enemy_ability)/ability);
-															/* todo
 															if (global_end == 1)
 																prob += 50;
-															*/
 															if (prob > Math.random())
 																key += 1;
 														}
@@ -42786,8 +42794,6 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 														});
 
 														bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è migliore di quella del guardiano (" + combi + ")!\nIn una stanzetta all'interno del rifugio hai trovato un sacchettino contenente " + moneytxt + extra, kbBack);
-
-														globalAchievement(player_id, 1);
 													});
 
 													bot.sendMessage(toChat, message.from.username + " è riuscito a sconfiggere il guardiano del tuo rifugio, purtroppo avendo lasciato incustodito un sacchettino, hai perso " + moneytxt, html);
@@ -42866,8 +42872,6 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 										bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è peggiore di quella del guardiano (" + combi + ")! Il portone del rifugio si blocca ed il tuo gnomo è costretto a tornare indietro", kbBack);
 
 										bot.sendMessage(toChat, "<b>" + message.from.username + "</b> non è riuscito a sconfiggere il guardiano del tuo portone, così è stato respinto", html);
-
-										globalAchievement(toId, 1);
 									});
 
 									if (isMatch == 1) {
@@ -44540,12 +44544,12 @@ bot.onText(/missione/i, function (message) {
 							name += " (Estesa per malus globale)";
 							duration_extend += 25;
 						}
-						*/
 
 						if (global_end == 1){
 							name += " (Ridotta per bonus globale)";
 							duration_reduce += 25;
 						}
+						*/
 
 						if (duration_reduce > 0)
 							duration -= (duration / 100 * duration_reduce);
@@ -44908,7 +44912,7 @@ bot.onText(/^imprese/i, function (message) {
 					else
 						text += formatNumber(mission_team_count) + " su " + formatNumber(progMissionTeam[end]) + " incarichi completati (" + formatNumber(progMissionTeamRew[end]) + " §)\n";
 
-					var time_end = new Date("2019-03-01 12:00:00");
+					var time_end = new Date("2019-04-01 12:00:00");
 					var now = new Date();
 					var diffD = Math.floor(((time_end - now) / 1000) / 60 / 60 / 24);
 					var diffH = Math.floor(((time_end - now) / 1000) / 60 / 60);
@@ -44934,7 +44938,7 @@ bot.onText(/^imprese/i, function (message) {
 							var cap = global_cap;
 							if (global_hide == 1)
 								cap = "???";
-							text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> ispezioni vinte nello scontro tra rune, l'avversario perde nello scontro tra rune o non arriva al rifugio\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
+							text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> incrementi attivati sulla base del livello della postazione.\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
 						}
 					}
 
@@ -49569,7 +49573,6 @@ function setFinishedHeist(element, index, array) {
 										connection.query('UPDATE player SET money = money + ' + money + ', mkeys = mkeys+' + key + ' WHERE id = ' + fromId, function (err, rows, fields) {
 											if (err) throw err;
 											bot.sendMessage(fromChat, "Il tuo gnomo ha catturato il ricercato e hai ottenuto la sua taglia pari a *" + formatNumber(money) + "* §" + key_text + "\nTorna nella schermata dell'evento per visualizzare il nuovo ricercato!", mark);
-											globalAchievement(fromId, 1);
 										});
 
 										connection.query('UPDATE event_wanted_status SET heist_win = heist_win+1 WHERE player_id = ' + fromId, function (err, rows, fields) {
@@ -49594,7 +49597,6 @@ function setFinishedHeist(element, index, array) {
 									} else {
 										//bot.sendMessage(wanted_chat, "Lo gnomo di " + fromNick + " ha tentato di catturarti, ma fortunatamente sei riuscito a scappare!");
 										bot.sendMessage(fromChat, "Il tuo tentativo di cattura è stato un FALLIMENTO, riprova tentando ancora!");
-										globalAchievement(wantedId, 1);
 
 										connection.query('UPDATE event_wanted_status SET heist_lost = heist_lost+1 WHERE player_id = ' + fromId, function (err, rows, fields) {
 											if (err) throw err;
@@ -49674,7 +49676,6 @@ function setFinishedHeist(element, index, array) {
 									bot.sendMessage(rows[0].chat_id, "Lo gnomo di <b>" + fromNick + "</b> è stato respinto dal tuo guardiano del cancello!", html);
 									if (isMatch == 1)
 										setAchievement(rows[0].chat_id, toId, 9, 1);
-									globalAchievement(toId, 1);
 								});
 
 								var d = new Date();

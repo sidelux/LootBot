@@ -2967,6 +2967,7 @@ CREATE TABLE `public_shop` (
   `notified` tinyint(1) NOT NULL DEFAULT '0',
   `public` tinyint(1) NOT NULL DEFAULT '0',
   `massive` tinyint(1) NOT NULL DEFAULT '1',
+  `protected` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `shop_no_duplicate` (`code`,`item_id`),
   KEY `PLAYERID` (`player_id`),
@@ -3492,4 +3493,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-28 15:00:11
+-- Dump completed on 2019-03-11 12:00:13
