@@ -481,7 +481,6 @@ bot.onText(/^\/comandigenerali/, function (message) {
 });
 
 bot.onText(/^\/calcola (.+)|^\/calcola/, function (message, match) {
-	return;
 	if (match[1] == undefined){
 		bot.sendMessage(message.chat.id, "Inserisci un operazione da risolvere. Esempio: /calcola 1+2\nGuida: http://mathjs.org/docs/index.html", no_preview);
 		return;
@@ -512,8 +511,12 @@ bot.onText(/^\/calcola (.+)|^\/calcola/, function (message, match) {
 		match[1] = match[1].replace("zaino", inventory[0].val);
 	}
 
-	//var evalValue = match[1].replace(/[^\-\+\/\*\^\(\)x0-9]/g, "");
 	var evalValue = match[1];
+	if (evalValue.indexOf(":") != -1){
+		bot.sendMessage(message.chat.id, "Usa / al posto di : per le divisioni");
+		return;
+	}
+	
 	try {
 		var result = math.eval(evalValue);
 		bot.sendMessage(message.chat.id, "Risultato: <code>" + result + "</code>", html);
