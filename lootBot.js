@@ -1806,6 +1806,29 @@ bot.onText(/^\/comandi/, function (message, match) {
 		bot.sendMessage(message.chat.id, "Piacerebbe :D");
 });
 
+bot.onText(/^\/scorciatoia/, function (message, match) {
+		bot.sendMessage(message.chat.id, "Lista comandi e scorciatoie\n" +
+						"> mnu - Mostra il menù principale del bot\n" +
+						"> 'cerca' - Apre il menù per la ricerca degli oggetti\n" +
+						"> 'cerca nomeoggetto' - Ricerca uno specifico oggetto\n" +
+						"> 'cerca (asterisco)nomeoggetto' - Forza la ricerca per uno specifico oggetto\n" +
+						"> 'vendi nomeoggetto' - Accede direttamente alla vendita dell'oggetto specificato\n" +
+						"> '/ricicla NomeOggetto,quantità' - Ricicla oggetti. Le quantità devono essere multipli di 5, massimo 50\n" +
+						"> 'incremento (abbrev. inc) - Attiva l'incremento in assalto per il turno corrente\n" +
+						"> 'equipaggia (equip) - Porta al menù equipaggiamento\n" +
+						"> rimuovi - Porta al menù rimuovi equipaggiamento\n" +
+						"> cura completa (cura) - Cura il giocatore utilizzando automaticamente le pozioni possedute\n" +
+						"> dungeon (dg) - Apre il menù del dungeon\n" +
+						"> party - Apre il menù della gestione party\n" +
+						"> '/sciogliX' - Scioglie il party specificato dal numero X\n" +
+						"> albero talenti (albero) - Apre il menù relativo ai Talenti\n" +
+						"> riposa (per far riposare drago) - Cura il drago dopo una specifica attesa\n" +
+						"> incarichi (va al menù incarichi) - Apre il menù incaricih\n" +
+						"> '/invitati' - Mostra i player che si sono registrati usando il link invito\n" +
+						"> '/sintesi 100,200,300' (blu, giallo, rosso) - Apre il menù per procedere alla sintesi incantesimi\n" +
+						"> '/trasmo bianca,gialla,rosso (spada, armatura, scudo)' - Apre il menù per modificare l'equipaggiamento necro");
+});
+
 bot.onText(/^\/marketban (.+)/, function (message, match) {
 	match[1] = match[1].replace("@", "");
 	if (message.from.id == 20471035) {
@@ -32087,7 +32110,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							keyboard: [["Accetta Vendita di " + name + " (" + qnt + ")"], ["Cerca *" + name], ["Cambia offerta", "Torna al menu"]]
+							keyboard: [["Accetta Vendita di " + name + " (" + qnt + ")"], ["Cerca *" + name], ["Cambia offerta"], ["Torna alla piazza", "Torna al menu"]]
 						}
 					};
 
@@ -32142,9 +32165,9 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 
 					bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " <b>" + message.from.username + "</b>!\nPuoi creare oggetti per il <b>Contrabbandiere</b> ed egli provvederà a valutarli e ricompensarti adeguatamente, purtroppo però è disponibile solamente di giorno. Quando lascia la piazza, aggiorna la sua fornitura e quando torna ti propone affari diversi.\n\n<b>" + name + " (" + rarity + ")</b> al prezzo di <i>" + formatNumber(price) + "</i> §" + extra + poss + "\n\nAccetti l'incarico di questo oggetto? Se l'offerta che ti propone non ti sembra valida, puoi cambiarla.\nHai ancora a disposizione <b>" + offers + " offerte</b> per oggi." + activeCoupon, kb).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
-							if (answer.text == "Torna al menu") {
+							if ((answer.text == "Torna al menu") || (answer.text == "Torna alla piazza"))
 								return;
-							} else if (answer.text == "Cambia offerta") {
+							else if (answer.text == "Cambia offerta") {
 								bot.sendMessage(message.chat.id, "Per chiedere un nuovo oggetto istantaneamente ti servirà una 💎, oppure puoi attendere 4 ore per dare il tempo al contrabbandiere di rifornirsi, cosa vuoi fare?\nAl momento possiedi " + formatNumber(gems) + " 💎", kbSel).then(function () {
 									answerCallbacks[message.chat.id] = function (answer) {
 										if (answer.text == "Istantaneo") {
@@ -41887,23 +41910,22 @@ bot.onText(/necro del destino/i, function (message) {
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									keyboard: [["1","5","10"],["Torna alla Necro del Destino"]]
+									keyboard: [["1","5","10"], ["Torna alla Necro del Destino"]]
 								}
 							};
 
 							bot.sendMessage(message.chat.id, "Seleziona l'oggetto U da scambiare", itemList).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
-									if (answer.text == "Torna al menu"){
+									if (answer.text == "Torna al menu")
 										return;
-									} else {
+									else {
 										var itemName = answer.text.substr(0, answer.text.indexOf("(")-1);
 
 										bot.sendMessage(message.chat.id, "Inserisci la quantità di copie dell'oggetto da scambiare", itemQnt).then(function () {
 											answerCallbacks[message.chat.id] = function (answer) {
-												if (answer.text == "Torna al menu"){
+												if (answer.text == "Torna al menu")
 													return;
-												} else {
-
+												else {
 													var qnt = parseInt(answer.text);
 													if (isNaN(qnt)){
 														bot.sendMessage(message.chat.id, "Quantità non valida", kbBack);
@@ -41913,7 +41935,6 @@ bot.onText(/necro del destino/i, function (message) {
 														bot.sendMessage(message.chat.id, "Quantità non valida, minimo 1 e massimo 10 copie", kbBack);
 														return;
 													}
-
 
 													connection.query('SELECT item.id, inventory.quantity As cnt FROM inventory, item WHERE inventory.item_id = item.id AND item.rarity = "U" AND inventory.player_id = ' + player_id + ' AND item.name = "' + itemName  + '"', function (err, rows, fields) {
 														if (err) throw err;
@@ -44933,7 +44954,7 @@ bot.onText(/^imprese/i, function (message) {
 						text += "Impresa completata! ✅\nSe hai partecipato, riceverai una ricompensa ed il bonus l'ultimo giorno del mese!\n";
 					else {
 						if (global_wait == 1)
-							text += "L'impresa sta raccogliendo dati, pazienta fino ai primi giorni del mese!\n";
+							text += "È in corso la raccolta dati per la prossima impresa globale, pazienta questi primi giorni del mese!\n";
 						else {
 							var cap = global_cap;
 							if (global_hide == 1)

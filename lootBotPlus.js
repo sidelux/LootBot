@@ -438,6 +438,7 @@ bot.onText(/^\/comandinegozio/, function (message) {
 					"/privacy - Modifica la privacy del negozio da pubblico a privato e vice versa\n" +
 					"/massivo - Modifica la possibilità di acquistare in modo massivo dal negozio\n" +
 					"/protetto - Modifica la possibilità di acquistare dal negozio\n" +
+					"/negoziodesc - Imposta o modifica la descrizione del negozio specificato\n" +
 					"/negozioa - Permette di aggiungere oggetti al negozio\n" +
 					"/negozior - Permette di rimuovere oggetti dal negozio\n" +
 					"/negoziom - Permette di modificare oggetti inseriti nel negozio\n" +
@@ -1580,7 +1581,7 @@ bot.onText(/^\/incremento$/, function (message, match) {
 				} else {
 					for (i = 0; i < 5; i++)
 						nicklist += "@" + rows[i].nickname + " ";
-					for (i = 4; i < Object.keys(rows).length; i++)
+					for (i = 5; i < Object.keys(rows).length; i++)
 						nicklist2 += "@" + rows[i].nickname + " ";
 				}
 
@@ -3717,7 +3718,7 @@ bot.onText(/^\/massivo (.+)|^\/massivo/, function (message, match) {
 
 			code = parseInt(code);
 			if (isNaN(code)){
-				bot.sendMessage(message.chat.id, "Non sei l'amministratore del negozio");
+				bot.sendMessage(message.chat.id, "Codice negozio non valido");
 				return;
 			}
 			if (massive == 0) {
@@ -3805,7 +3806,7 @@ bot.onText(/^\/protetto (.+)|^\/protetto/, function (message, match) {
 
 			code = parseInt(code);
 			if (isNaN(code)){
-				bot.sendMessage(message.chat.id, "Non sei l'amministratore del negozio");
+				bot.sendMessage(message.chat.id, "Codice negozio non valido");
 				return;
 			}
 			if (protected == 0) {
@@ -3817,6 +3818,73 @@ bot.onText(/^\/protetto (.+)|^\/protetto/, function (message, match) {
 				connection.query('UPDATE public_shop SET protected = 0 WHERE code = ' + code, function (err, rows, fields) {
 					if (err) throw err;
 					bot.sendMessage(message.chat.id, "Hai rimosso la protezione al negozio!", mark);
+				});
+			}
+		});
+	});
+});
+
+bot.onText(/^\/negoziodesc (.+),(.+)|^\/negoziodesc/, function (message, match) {
+	connection.query('SELECT id, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0)
+			return;
+
+		var code = match[1];
+		var text = match[2];
+		var player_id = rows[0].id;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "...";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+
+		if ((code == undefined) || (code == "")) {
+			bot.sendMessage(message.chat.id, "La sintassi è: '/negoziodesc CODICE,Descrizione'. Scrivi svuota al posto della descrizione per rimuoverla");
+			return;
+		}
+		
+		if ((text == undefined) || (text == "")) {
+			bot.sendMessage(message.chat.id, "La sintassi è: '/negoziodesc CODICE,Descrizione'. Scrivi svuota al posto della descrizione per rimuoverla");
+			return;
+		}
+		
+		var reg = new RegExp("^[a-zA-Z0-9àèìòùé.,\\\?\!\'\@\(\) ]{1,500}$");
+		if (reg.test(text) == false) {
+			bot.sendMessage(message.chat.id, "Descrizione non valida, riprova");
+			return;
+		}
+
+		connection.query('SELECT player_id FROM public_shop WHERE code = ' + code, function (err, rows, fields) {
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Non esiste un negozio con quel codice");
+				return;
+			}
+
+			if (player_id != rows[0].player_id) {
+				bot.sendMessage(message.chat.id, "Non sei l'amministratore del negozio");
+				return;
+			}
+
+			code = parseInt(code);
+			if (isNaN(code)){
+				bot.sendMessage(message.chat.id, "Codice negozio non valido");
+				return;
+			}
+			if (text.toLowerCase() == "svuota"){
+				connection.query('UPDATE public_shop SET description = NULL WHERE code = ' + code, function (err, rows, fields) {
+					if (err) throw err;
+					bot.sendMessage(message.chat.id, "Hai impostato correttamente la descrizione del negozio!", mark);
+				});
+			} else {
+				connection.query('UPDATE public_shop SET description = "' + text + '" WHERE code = ' + code, function (err, rows, fields) {
+					if (err) throw err;
+					bot.sendMessage(message.chat.id, "Hai impostato correttamente la descrizione del negozio!", mark);
 				});
 			}
 		});
@@ -4057,6 +4125,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				var cnt = 0;
 				var item_id = 0;
 				var item_value = 0;
+				var item_max_value = 0;
 				var item_name = "";
 
 				for (var i = 0; i < len; i++) {
@@ -4090,20 +4159,21 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 						return;
 					}
 
-					var itemQuery = connection_sync.query('SELECT id, name, craftable, value FROM item WHERE name = "' + item + '"');
+					var itemQuery = connection_sync.query('SELECT id, name, craftable, value, max_value FROM item WHERE name = "' + item + '"');
 					if (Object.keys(itemQuery).length == 0)
 						text += "Oggetto non trovato: " + item + "\n";
 					else{
 						item_name = itemQuery[0].name;
 						item_id = itemQuery[0].id;
 						item_value = itemQuery[0].value;
+						item_max_value = itemQuery[0].max_value;
 						if (price < item_value){
 							text += "Oggetto impostato prezzo minimo: " + item_name + " (" + formatNumber(item_value) + ")\n";
 							price = item_value;
 						}
-						if (price > 1000000000){
-							text += "Oggetto impostato prezzo massimo: " + item_name + " (" + formatNumber(1000000000) + ")\n";
-							price = 1000000000;
+						if (price > item_max_value){
+							text += "Oggetto impostato prezzo massimo: " + item_name + " (" + formatNumber(item_max_value) + ")\n";
+							price = item_max_value;
 						}
 
 						if ((quantity == 0) || (quantity == "")){
@@ -4145,6 +4215,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				var cnt = 0;
 				var item_id = 0;
 				var item_value = 0;
+				var item_max_value = 0;
 				var item_name = "";
 				var cnt = 0;
 
@@ -4179,7 +4250,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 						return;
 					}
 
-					var itemQuery = connection_sync.query('SELECT id, name, craftable, value, allow_sell FROM item WHERE name = "' + item + '"');
+					var itemQuery = connection_sync.query('SELECT id, name, craftable, value, max_value, allow_sell FROM item WHERE name = "' + item + '"');
 					if (Object.keys(itemQuery).length == 0)
 						text += "Oggetto non trovato: " + item + "\n";
 					else{
@@ -4189,14 +4260,15 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 						else {
 							item_id = itemQuery[0].id;
 							item_value = itemQuery[0].value;
+							item_max_value = itemQuery[0].max_value;
 							if (price < item_value){
 								text += "Oggetto impostato prezzo minimo: " + item_name + " (" + formatNumber(item_value) + ")\n";
 								price = item_value;
 							}
 
-							if (price > 1000000000){
-								text += "Oggetto impostato prezzo massimo: " + item_name + " (" + formatNumber(1000000000) + ")\n";
-								price = 1000000000;
+							if (price > item_max_value){
+								text += "Oggetto impostato prezzo massimo: " + item_name + " (" + formatNumber(item_max_value) + ")\n";
+								price = item_max_value;
 							}
 
 							if ((quantity == 0) || (quantity == "")){
@@ -5243,11 +5315,10 @@ function updateShop(message, code, isId){
 		iKeys.push([{
 			text: "♻️ Aggiorna",
 			callback_data: "update:" + code.toString()
-		},
-					{
-						text: "🗑 Elimina",
-						callback_data: "delete:" + code.toString()
-					}]);
+		},{
+			text: "🗑 Elimina",
+			callback_data: "delete:" + code.toString()
+		}]);
 
 		var d = new Date();
 		var short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
@@ -5255,7 +5326,11 @@ function updateShop(message, code, isId){
 		var protected = "";
 		if (rows[0].protected == 1)
 			protected = " 🚫";
-		var text = "Negozio di " + rows[0].nickname + " aggiornato alle " + short_date + "!" + protected;
+		var description = "";
+		if (rows[0].description != null)
+			description = "\n" + rows[0].description;
+		
+		var text = "Negozio di " + rows[0].nickname + " aggiornato alle " + short_date + "!" + protected + description;
 
 		bot.editMessageText(text, {
 			inline_message_id: message.inline_message_id,
@@ -5850,7 +5925,7 @@ bot.onText(/^\/offri/i, function (message) {
 						return;
 					}
 
-					connection.query('SELECT item.allow_sell, item.value, item.id, item.name, inventory.quantity FROM item, inventory WHERE item.id = inventory.item_id AND item.name = "' + item + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
+					connection.query('SELECT item.allow_sell, item.value, item.max_value, item.id, item.name, inventory.quantity FROM item, inventory WHERE item.id = inventory.item_id AND item.name = "' + item + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
 						if (err) throw err;
 						if (Object.keys(rows).length == 0) {
 							bot.sendMessage(message.from.id, "Non possiedi l'oggetto che hai inserito.");
@@ -5865,8 +5940,9 @@ bot.onText(/^\/offri/i, function (message) {
 							return;
 						}
 
-						var item_val = parseInt(rows[0].value);
-						var item_id = parseInt(rows[0].id);
+						var item_val = rows[0].value;
+						var item_max_val = rows[0].max_value;
+						var item_id = rows[0].id;
 						var item_name = rows[0].name;
 
 						var d2 = new Date();
@@ -5885,6 +5961,11 @@ bot.onText(/^\/offri/i, function (message) {
 							if (price < item_val) {
 								bot.sendMessage(message.from.id, "Prezzo per " + item_name + " impostato al minimo: " + formatNumber(item_val) + " §");
 								price = item_val;
+							}
+							
+							if (price > item_max_val) {
+								bot.sendMessage(message.from.id, "Prezzo per " + item_name + " impostato al massimo: " + formatNumber(item_max_val) + " §");
+								price = item_max_val;
 							}
 
 							var buyer_id = rows[0].id;
@@ -5934,11 +6015,10 @@ bot.onText(/^\/offri/i, function (message) {
 										iKeys.push([{
 											text: "✅ Accetta",
 											callback_data: "okbuy:" + rows.insertId
-										},
-													{
-														text: "❌ Rifiuta",
-														callback_data: "notbuy:" + rows.insertId
-													}]);
+										},{
+											text: "❌ Rifiuta",
+											callback_data: "notbuy:" + rows.insertId
+										}]);
 
 										bot.sendMessage(message.chat.id, "La messa in vendita da parte di " + message.from.username + " per " + item_name + " a " + formatNumber(price) + " § verso " + nick + " è stata registrata (scadenza: " + short_date + ")\n" + message.from.username + ", puoi usare /annullav\n" + nick + ", puoi usare /accettav o /rifiutav", {
 											parse_mode: 'HTML',
@@ -7579,48 +7659,52 @@ bot.onText(/^\/statistiche/, function (message) {
 																																connection.query('SELECT COUNT(id) As cnt FROM assault WHERE time_end IS NOT NULL', function (err, rows, fields) {
 																																	if (err) throw err;
 																																	var assaults = rows[0].cnt;
+																																	connection.query('SELECT SUM(completed) As compl, SUM(lost) As persi FROM assault', function (err, rows, fields) {
+																																		if (err) throw err;
+																																		var assaults_win = rows[0].compl;
+																																		var assaults_lost = rows[0].persi;
 
-																																	bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
-																																					"*Giocatori registrati:* " + formatNumber(tot) + "\n" +
-																																					"*Missioni in corso*: " + miss + "\n" +
-																																					"*Missioni completate*: " + formatNumber(miss2) + "\n" +
-																																					"*Viaggi in corso*: " + travel + "\n" +
-																																					"*Utenti attivi (1):* " + formatNumber(act) + "\n" +
-																																					"_Dei quali " + formatNumber(act_male) + " esploratori e " + formatNumber(act_female) + " esploratrici_\n" +
-																																					"_Età media: " + avg_age + " anni_\n" +
-																																					"*Utenti attivi mensili (2):* " + formatNumber(act_monthly) + "\n" +
-																																					"*Monete attuali*: " + formatNumber(money) + " §\n" +
-																																					"*Oggetti*: " + formatNumber(inv) + "\n" +
-																																					"*Scrigni attuali*: " + formatNumber(chest) + "\n" +
-																																					"*Creazioni*: " + formatNumber(craft) + "\n" +
-																																					"*Draghi*: " + formatNumber(dragon) + "\n" +
-																																					"*Team:* " + formatNumber(teamn) + "\n" +
-																																					"*Ispezioni/In corso/Rapporto:* " + formatNumber(heist) + "/" + heistn + "/" + perc + "%\n" +
-																																					"*Lotterie:* " + formatNumber(lottery) + "\n" +
-																																					"*Oggetti nei negozi:* " + formatNumber(shop) + "\n" +
-																																					"*Oggetti acquistati:* " + formatNumber(shop_tot) + "\n" +
-																																					"*Scrigni giornalieri consegnati:* " + formatNumber(daily) + "\n" +
-																																					"*Dungeon completati:* " + formatNumber(dungeon_tot) + "\n" +
-																																					"*Dungeon creati:* " + formatNumber(dungeon) + "\n" +
-																																					"*Stanze create:* " + formatNumber(room) + "\n" +
-																																					"*Livelli skill:* " + formatNumber(ablevel) + "\n" +
-																																					"*Utenti invitati:* " + formatNumber(invite) + "\n" +
-																																					"*Mana grezzo:* " + formatNumber(mana) + "\n" +
-																																					"*Polvere:* " + formatNumber(dust) + "\n" +
-																																					"*Incantesimi:* " + formatNumber(magic) + "\n" +
-																																					"*Oggetti cercati:* " + formatNumber(search) + "\n" +
-																																					"*Imprese completate:* " + formatNumber(achievement) + "\n" +
-																																					"*Spese Casa dei Giochi:* " + formatNumber(house_tot) + " §\n" +
-																																					"*Battaglie nella Vetta:* " + formatNumber(top_log) + "\n" +
-																																					"*Incarichi completati:* " + formatNumber(mission_team) + "\n" +
-																																					"*Artefatti ottenuti:* " + formatNumber(artifacts) + "\n" +
-																																					"*Assalti in corso:* " + formatNumber(assaults) + "\n" +
-																																					birthday + 
-																																					"\n*Gruppi attivi (3):* " + formatNumber(groups) + "\n" +
-																																					"*Membri nei gruppi attivi (3):* " + formatNumber(members) + "\n" +
+																																		bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
+																																						"*Giocatori registrati:* " + formatNumber(tot) + "\n" +
+																																						"*Missioni in corso*: " + miss + "\n" +
+																																						"*Missioni completate*: " + formatNumber(miss2) + "\n" +
+																																						"*Viaggi in corso*: " + travel + "\n" +
+																																						"*Utenti attivi (1):* " + formatNumber(act) + "\n" +
+																																						"_Dei quali " + formatNumber(act_male) + " esploratori e " + formatNumber(act_female) + " esploratrici_\n" +
+																																						"_Età media: " + avg_age + " anni_\n" +
+																																						"*Utenti attivi mensili (2):* " + formatNumber(act_monthly) + "\n" +
+																																						"*Monete attuali*: " + formatNumber(money) + " §\n" +
+																																						"*Oggetti*: " + formatNumber(inv) + "\n" +
+																																						"*Scrigni attuali*: " + formatNumber(chest) + "\n" +
+																																						"*Creazioni*: " + formatNumber(craft) + "\n" +
+																																						"*Draghi*: " + formatNumber(dragon) + "\n" +
+																																						"*Team:* " + formatNumber(teamn) + "\n" +
+																																						"*Ispezioni/in corso/rapporto:* " + formatNumber(heist) + "/" + heistn + "/" + perc + "%\n" +
+																																						"*Lotterie:* " + formatNumber(lottery) + "\n" +
+																																						"*Oggetti nei negozi:* " + formatNumber(shop) + "\n" +
+																																						"*Oggetti acquistati:* " + formatNumber(shop_tot) + "\n" +
+																																						"*Scrigni giornalieri consegnati:* " + formatNumber(daily) + "\n" +
+																																						"*Dungeon completati:* " + formatNumber(dungeon_tot) + "\n" +
+																																						"*Dungeon creati:* " + formatNumber(dungeon) + "\n" +
+																																						"*Stanze create:* " + formatNumber(room) + "\n" +
+																																						"*Livelli skill:* " + formatNumber(ablevel) + "\n" +
+																																						"*Utenti invitati:* " + formatNumber(invite) + "\n" +
+																																						"*Mana grezzo:* " + formatNumber(mana) + "\n" +
+																																						"*Polvere:* " + formatNumber(dust) + "\n" +
+																																						"*Incantesimi:* " + formatNumber(magic) + "\n" +
+																																						"*Oggetti cercati:* " + formatNumber(search) + "\n" +
+																																						"*Imprese completate:* " + formatNumber(achievement) + "\n" +
+																																						"*Spese Casa dei Giochi:* " + formatNumber(house_tot) + " §\n" +
+																																						"*Battaglie nella Vetta:* " + formatNumber(top_log) + "\n" +
+																																						"*Incarichi completati:* " + formatNumber(mission_team) + "\n" +
+																																						"*Artefatti ottenuti:* " + formatNumber(artifacts) + "\n" +
+																																						"*Assalti in corso/completati/falliti:* " + formatNumber(assaults) + "/" + formatNumber(assaults_win) + "/" + formatNumber(assaults_lost) + "\n" +
+																																						birthday + 
+																																						"\n*Gruppi attivi (3):* " + formatNumber(groups) + "\n" +
+																																						"*Membri nei gruppi attivi (3):* " + formatNumber(members) + "\n" +
 
-																																					"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti che hanno inviato un comando negli ultimi 30 giorni\n(3) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark);
-
+																																						"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti che hanno inviato un comando negli ultimi 30 giorni\n(3) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark);
+																																	});
 																																});
 																															});
 																														});
