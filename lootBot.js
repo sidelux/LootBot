@@ -4526,6 +4526,14 @@ function getInfo(message, player, myhouse_id) {
 							weapon_name = custom_name + rows[0].name.replace("Necro", "");
 						else
 							weapon_name = rows[0].name;
+						if (weapon_id == 638)
+							weapon_name += " ⚡️";
+						else if (weapon_id == 639)
+							weapon_name += " 🔥";
+						else if (weapon_id == 640)
+							weapon_name += " 💧";
+						else if (weapon_id == 754)
+							weapon_name += " ✨";
 					} else
 						weapon_name = rows[0].name;
 				};
@@ -4597,6 +4605,12 @@ function getInfo(message, player, myhouse_id) {
 														weapon2_name = rows[0].name.replace("Necro", custom_name2);
 													else
 														weapon2_name = rows[0].name;
+													if (weapon2_id == 688)
+														weapon2_name += " ⚡️";
+													else if (weapon2_id == 689)
+														weapon2_name += " 🔥";
+													else if (weapon2_id == 690)
+														weapon2_name += " 💧";
 												} else
 													weapon2_name = rows[0].name;
 											}
@@ -4610,6 +4624,12 @@ function getInfo(message, player, myhouse_id) {
 															weapon3_name = rows[0].name.replace("Necro", custom_name3);
 														else
 															weapon3_name = rows[0].name;
+														if (weapon3_id == 671)
+															weapon3_name += " ⚡️";
+														else if (weapon3_id == 672)
+															weapon3_name += " 🔥";
+														else if (weapon3_id == 673)
+															weapon3_name += " 💧";
 													} else
 														weapon3_name = rows[0].name;
 												}
@@ -9371,7 +9391,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		if (rand <= 5){
 																			isCursed = 1;
 																			days = 4;
-																			cursedText = "\nHai generato un Dungeon Maledetto 🧨 Alcune stanze possiedono caratteristiche diverse, i mostri sono più potenti, ma riceverai 2 Punti Rango al termine.";
+																			cursedText = "\nHai generato un Dungeon Maledetto 🧨 Alcune stanze possiedono caratteristiche diverse, i mostri sono più potenti, riceverai 2 Punti Rango al termine e ne perderai 2 in caso di sconfitta.";
 																		}
 
 																		var d = new Date();
@@ -9889,10 +9909,22 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
-																	if (player_rank > 0) {
-																		connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
-																			if (err) throw err;
-																		});
+																	if (cursed == 1){
+																		if (rank == 1) {
+																			connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																				if (err) throw err;
+																			});
+																		} else if (rank > 1) {
+																			connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																				if (err) throw err;
+																			});
+																		}
+																	} else {
+																		if (rank > 0) {
+																			connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																				if (err) throw err;
+																			});
+																		}
 																	}
 																} else {
 																	exText = "e sei sopravvissuto, di conseguenza torni alla stanza precedente, ma impiegherai un po' di tempo per riprenderti";
@@ -9996,10 +10028,22 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
-																			if (player_rank > 0) {
-																				connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
-																					if (err) throw err;
-																				});
+																			if (cursed == 1){
+																				if (rank == 1) {
+																					connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																						if (err) throw err;
+																					});
+																				} else if (rank > 1) {
+																					connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																						if (err) throw err;
+																					});
+																				}
+																			} else {
+																				if (rank > 0) {
+																					connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																						if (err) throw err;
+																					});
+																				}
 																			}
 																		} else {
 																			exText = "e sei sopravvissuto, di conseguenza torni alla stanza precedente, ma impiegherai un po' di tempo per riprenderti";
@@ -10443,10 +10487,22 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																						connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
 																							if (err) throw err;
 																						});
-																						if (player_rank > 0) {
-																							connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
-																								if (err) throw err;
-																							});
+																						if (cursed == 1){
+																							if (rank == 1) {
+																								connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																									if (err) throw err;
+																								});
+																							} else if (rank > 1) {
+																								connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																									if (err) throw err;
+																								});
+																							}
+																						} else {
+																							if (rank > 0) {
+																								connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																									if (err) throw err;
+																								});
+																							}
 																						}
 																					} else {
 																						exText = "e sei sopravvissuto, di conseguenza torni alla stanza precedente, ma impiegherai un po' di tempo per riprenderti";
@@ -10552,10 +10608,22 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																								connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
-																								if (player_rank > 0) {
-																									connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
-																										if (err) throw err;
-																									});
+																								if (cursed == 1){
+																									if (rank == 1) {
+																										connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																											if (err) throw err;
+																										});
+																									} else if (rank > 1) {
+																										connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																											if (err) throw err;
+																										});
+																									}
+																								} else {
+																									if (rank > 0) {
+																										connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																											if (err) throw err;
+																										});
+																									}
 																								}
 																							} else {
 																								exText = "e sei sopravvissuto, di conseguenza torni alla stanza precedente, ma impiegherai un po' di tempo per riprenderti";
@@ -10896,10 +10964,22 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																								connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
-																								if (player_rank > 0) {
-																									connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
-																										if (err) throw err;
-																									});
+																								if (cursed == 1){
+																									if (rank == 1) {
+																										connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																											if (err) throw err;
+																										});
+																									} else if (rank > 1) {
+																										connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																											if (err) throw err;
+																										});
+																									}
+																								} else {
+																									if (rank > 0) {
+																										connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																											if (err) throw err;
+																										});
+																									}
 																								}
 																							} else {
 																								exText = "e sei sopravvissuto, di conseguenza torni alla stanza precedente, ma impiegherai un po' di tempo per riprenderti";
@@ -11118,10 +11198,22 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
-																		if (player_rank > 0) {
-																			connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
+																		if (cursed == 1){
+																			if (rank == 1) {
+																				connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																					if (err) throw err;
+																				});
+																			} else if (rank > 1) {
+																				connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																					if (err) throw err;
+																				});
+																			}
+																		} else {
+																			if (rank > 0) {
+																				connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																					if (err) throw err;
+																				});
+																			}
 																		}
 																	}
 
@@ -11239,10 +11331,22 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																								connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
-																								if (player_rank > 0) {
-																									connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
-																										if (err) throw err;
-																									});
+																								if (cursed == 1){
+																									if (rank == 1) {
+																										connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																											if (err) throw err;
+																										});
+																									} else if (rank > 1) {
+																										connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																											if (err) throw err;
+																										});
+																									}
+																								} else {
+																									if (rank > 0) {
+																										connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																											if (err) throw err;
+																										});
+																									}
 																								}
 																							} else {
 																								exText = "e sei sopravvissuto, di conseguenza torni alla stanza precedente, ma impiegherai un po' di tempo per riprenderti";
@@ -11508,10 +11612,22 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																									connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
 																										if (err) throw err;
 																									});
-																									if (player_rank > 0) {
-																										connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
-																											if (err) throw err;
-																										});
+																									if (cursed == 1){
+																										if (rank == 1) {
+																											connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																												if (err) throw err;
+																											});
+																										} else if (rank > 1) {
+																											connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																												if (err) throw err;
+																											});
+																										}
+																									} else {
+																										if (rank > 0) {
+																											connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																												if (err) throw err;
+																											});
+																										}
 																									}
 																								} else {
 																									exText = "e sei sopravvissuto, di conseguenza torni alla stanza precedente, ma impiegherai un po' di tempo per riprenderti";
@@ -11675,7 +11791,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			connection.query('UPDATE player SET life = life - ' + life + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																				if (cursed == 1){
-																					bot.sendMessage(message.chat.id, "Come avanzi di due passi scatta un meccanismo e un'ascia gigantesca ti precipita addosso, il tuo drago non è abbastanza forte per proteggerti, l'ascia ti prende in pieno e perdi l'intera salute!", dNext);
+																					bot.sendMessage(message.chat.id, "Come avanzi di due passi scatta un meccanismo e un'ascia gigantesca ti precipita addosso, il tuo drago non è abbastanza forte per proteggerti, l'ascia ti prende in pieno e perdi quasi l'intera salute!", dNext);
 																				} else {
 																					bot.sendMessage(message.chat.id, "Come avanzi di due passi scatta un meccanismo e un'ascia gigantesca ti precipita addosso, il tuo drago non è abbastanza forte per proteggerti, l'ascia ti prende in pieno e perdi metà della tua salute!", dNext);
 																				}
@@ -12276,7 +12392,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			if (rows[0].level > rand) {
 																				addItem(player_id, 72);
 																				bot.sendMessage(message.chat.id, "Il tuo drago riesce a sconfiggere il grande Drago Darkrai, passi accanto al cadavere e prendi velocemente una Pietra Cuore Leggendario dal suo nascondiglio!", dNext);
-																			} else if (rand < 60) {
+																			} else {
 																				connection.query('UPDATE dragon SET exp = exp-5 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
 																					bot.sendMessage(message.chat.id, "Il tuo drago viene spazzato via dal grande Drago Darkrai, e così perde 5 punti esperienza!", dNext);
@@ -14553,10 +14669,22 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
-																							if (rank > 0) {
-																								connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
-																									if (err) throw err;
-																								});
+																							if (cursed == 1){
+																								if (rank == 1) {
+																									connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																										if (err) throw err;
+																									});
+																								} else if (rank > 1) {
+																									connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																										if (err) throw err;
+																									});
+																								}
+																							} else {
+																								if (rank > 0) {
+																									connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																										if (err) throw err;
+																									});
+																								}
 																							}
 																							connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
 																								if (err) throw err;
@@ -15276,10 +15404,22 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							if (err) throw err;
 																						});
 
-																						if (rank > 0) {
-																							connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
-																								if (err) throw err;
-																							});
+																						if (cursed == 1){
+																							if (rank == 1) {
+																								connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																									if (err) throw err;
+																								});
+																							} else if (rank > 1) {
+																								connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																									if (err) throw err;
+																								});
+																							}
+																						} else {
+																							if (rank > 0) {
+																								connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																									if (err) throw err;
+																								});
+																							}
 																						}
 																					});
 																				});
@@ -30220,9 +30360,7 @@ bot.onText(/festival/i, function (message) {
 
 							var d = new Date(rows[0].time);
 							var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
-							bot.sendMessage(message.chat.id, "L'oggetto da creare è:\n\n*" + rows[0].name + " (" + rows[0].rarity + ")*, il gruzzolone ha raggiunto la quota di *" + formatNumber(rows[0].total_price) + 
-											" §*\n\nCreato *" + formatNumber(rows[0].cnt) + "* volt" + plur + ", verrà aggiornato alle *" + short_date + "* o al raggiungimento di un valore massimo (bonus cap: *" + rows[0].increm + "%*)!\n\nCompletamento: " + calcBar(incremDelta, cap) + 
-											"\n\nCompleta l'oggetto per incrementare il bonus cap! In caso contrario verrà resettato." + extra, rKb);
+							bot.sendMessage(message.chat.id, "L'oggetto da creare è:\n\n*" + rows[0].name + " (" + rows[0].rarity + ")*, il gruzzolone ha raggiunto la quota di *" + formatNumber(rows[0].total_price) + " §*\n\nCreato *" + formatNumber(rows[0].cnt) + "* volt" + plur + ", verrà aggiornato alle *" + short_date + "* o al raggiungimento di un valore massimo (bonus cap: *" + rows[0].increm + "%*)!\n\nCompletamento: " + calcBar(incremDelta, cap) + "\n\nCompleta l'oggetto per incrementare il bonus cap! In caso contrario verrà resettato." + extra, rKb);
 						}
 					}
 				});
@@ -38260,8 +38398,10 @@ bot.onText(/equipaggia|^equip$/i, function (message) {
 		}
 	};
 
+	// rarità in caso
 	var oggetto = message.text.substring(message.text.indexOf(" ") + 1, message.text.lenght);
-	if ((message.text.indexOf(" ") != -1) && (oggetto != "Ancora") && (oggetto != "🗡")) {
+	
+	if ((message.text.indexOf(" ") != -1) && (oggetto != "Ancora") && (oggetto != "🗡") && (oggetto.length > 2)) {
 		connection.query('SELECT account_id, id, reborn, exp, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 			if (err) throw err;
 
@@ -38470,12 +38610,19 @@ bot.onText(/equipaggia|^equip$/i, function (message) {
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
+		
+		var filter = "";
+		var filterTxt = "";
+		if (((oggetto.length == 1) || (oggetto.length == 2)) && (oggetto != "🗡")) {
+			filter = "AND item.rarity = '" + oggetto + "' ";
+			filterTxt = " " + oggetto;
+		}
 
-		connection.query('SELECT item.power, item.power_armor, item.power_shield, item.critical, item.name, item.id FROM inventory, item WHERE inventory.item_id = item.id AND inventory.player_id = ' + player_id + ' AND (item.power <> 0 OR item.power_armor <> 0 OR item.power_shield <> 0) AND inventory.quantity > 0 ORDER BY id DESC', function (err, rows, fields) {
+		connection.query('SELECT item.power, item.power_armor, item.power_shield, item.critical, item.name, item.id FROM inventory, item WHERE inventory.item_id = item.id AND inventory.player_id = ' + player_id + ' AND (item.power <> 0 OR item.power_armor <> 0 OR item.power_shield <> 0) AND inventory.quantity > 0 ' + filter + 'ORDER BY id DESC', function (err, rows, fields) {
 			if (err) throw err;
 			var iKeys = [];
 			if (Object.keys(rows).length > 0) {
-				bottext = bottext + "\n*Armi/Protezioni:*\n";
+				bottext = bottext + "\n*Armi/Protezioni" + filterTxt + ":*\n";
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					if (rows[i].id == 221)
 						rows[i].power = calcNecro(300, player_level, player_reborn, 1);
@@ -38516,16 +38663,15 @@ bot.onText(/equipaggia|^equip$/i, function (message) {
 			}
 			bottext = bottext + "\n";
 
-			connection.query('SELECT item.name, item.id FROM inventory, item WHERE inventory.item_id = item.id AND inventory.player_id = ' + player_id + ' AND item.name LIKE "Talismano%" AND inventory.quantity > 0', function (err, rows, fields) {
+			connection.query('SELECT item.name, item.id FROM inventory, item WHERE inventory.item_id = item.id AND inventory.player_id = ' + player_id + ' AND item.name LIKE "Talismano%" AND inventory.quantity > 0 ' + filter, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length > 0) {
-					bottext = bottext + "*Talismani:*\n";
+					bottext = bottext + "*Talismani" + filterTxt + ":*\n";
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-						if (rows[i].id == charm_id) {
+						if (rows[i].id == charm_id)
 							bottext = bottext + "> " + rows[i].name + " ✅\n";
-						} else {
+						else
 							bottext = bottext + "> " + rows[i].name + "\n";
-						}
 						iKeys.push(["Equipaggia " + rows[i].name]);
 					}
 				} else {
@@ -47102,6 +47248,13 @@ function setFinishedAssaultsMob(element, index, array) {
 
 	connection.query('UPDATE assault SET refresh_mob = 0, mob_name = "' + mob_name + '", mob_life = ' + mob_life + ', mob_total_life = ' + mob_life + ', mob_paralyzed = 0, mob_critic = 0, is_boss = ' + is_boss + ' WHERE team_id = ' + team_id, function (err, rows, fields) {
 		if (err) throw err;
+		
+		connection.query('SELECT player_id, chat_id FROM team_player, player WHERE team_player.player_id = player.id AND team_id = ' + team_id + ' ORDER BY team_player.id', function (err, rows, fields) {
+			if (err) throw err;
+
+			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+				bot.sendMessage(rows[i].chat_id, "*" + mob_name + "* ha raggiunto la magione, entra in battaglia e difendila prima che venga distrutta!", mark);
+		});
 	});
 };
 

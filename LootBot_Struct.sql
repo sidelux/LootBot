@@ -1802,6 +1802,7 @@ CREATE TABLE `item` (
   `rarity` varchar(3) NOT NULL,
   `description` varchar(256) DEFAULT NULL,
   `value` int(8) NOT NULL,
+  `max_value` int(8) NOT NULL DEFAULT '0',
   `estimate` int(11) NOT NULL DEFAULT '0',
   `reload_est` int(11) NOT NULL DEFAULT '0',
   `base_sum` int(11) NOT NULL DEFAULT '0',
@@ -3494,4 +3495,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-03-11 15:00:12
+-- Dump completed on 2019-03-12 15:00:11

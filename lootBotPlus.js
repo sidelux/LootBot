@@ -4354,7 +4354,7 @@ bot.onText(/^\/cancellanegozio (.+)|^\/cancellanegozio$/, function (message, mat
 		}
 
 		if ((code == undefined) || (code == "")) {
-			bot.sendMessage(message.chat.id, "La sintassi è: /cancellanegozio CODICE, puoi anche usare /cancellanegozio tutti/privati/pubblici. Se usato in risposta il messaggio principale deve contenere il codice negozio intero");
+			bot.sendMessage(message.chat.id, "La sintassi è: /cancellanegozio CODICE, puoi anche usare /cancellanegozio tutti/privati/pubblici/vuoti. Se usato in risposta il messaggio principale deve contenere il codice negozio intero");
 			return;
 		}
 
@@ -4399,6 +4399,23 @@ bot.onText(/^\/cancellanegozio (.+)|^\/cancellanegozio$/, function (message, mat
 					if (err) throw err;
 					bot.sendMessage(message.chat.id, "Tutti i negozi pubblici sono stati eliminati!");
 				});
+			});
+			return;
+		}
+		
+		if (code == "vuoti") {
+			connection.query('SELECT code, SUM(quantity) As cnt FROM public_shop WHERE player_id = ' + player_id + ' GROUP BY code HAVING cnt = 0', function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Non possiedi nessun negozio vuoto");
+					return;
+				}
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+					connection.query('DELETE FROM public_shop WHERE code = "' + rows[i].code + '"', function (err, rows, fields) {
+						if (err) throw err;
+					});
+				}
+				bot.sendMessage(message.chat.id, "Tutti i negozi vuoti sono stati eliminati!");
 			});
 			return;
 		}
@@ -4506,9 +4523,9 @@ bot.on('callback_query', function (message) {
 		if (message.data.indexOf("token_del") != -1) {
 			connection.query('SELECT id FROM token WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
-				if (Object.keys(rows).length == 0) {
+				if (Object.keys(rows).length == 0)
 					bot.sendMessage(message.from.id, "Nessun token impostato");
-				} else {
+				else {
 					connection.query('UPDATE token SET token = NULL, status = "REVOKED" WHERE player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(message.from.id, "Il token è stato revocato con successo");
@@ -5273,9 +5290,7 @@ bot.on('callback_query', function (message) {
 
 function updateShop(message, code, isId){
 	var query = "";
-	if (isId == undefined){
-		query = 'SELECT public_shop.id, player.nickname, quantity, item.name, price, massive FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code;
-	}else if (isId == 1){
+	if (isId == 1){
 		var shopCode = connection_sync.query("SELECT code FROM public_shop WHERE id = " + code);
 		if (shopCode[0] == undefined){
 			bot.answerCallbackQuery(message.id, {text: "Codice negozio non specificato!"});
@@ -5283,7 +5298,7 @@ function updateShop(message, code, isId){
 		}
 		code = shopCode[0].code;
 	}
-	connection.query('SELECT public_shop.id, player.nickname, quantity, item.name, price, massive, protected FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code + ' ORDER BY item.name', function (err, rows, fields) {
+	connection.query('SELECT public_shop.id, player.nickname, quantity, item.name, price, massive, protected, public_shop.description FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code + ' ORDER BY item.name', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0) {
@@ -5328,19 +5343,22 @@ function updateShop(message, code, isId){
 			protected = " 🚫";
 		var description = "";
 		if (rows[0].description != null)
-			description = "\n" + rows[0].description;
+			description = "\n<i>" + rows[0].description + "</i>";
 		
 		var text = "Negozio di " + rows[0].nickname + " aggiornato alle " + short_date + "!" + protected + description;
 
 		bot.editMessageText(text, {
 			inline_message_id: message.inline_message_id,
+			parse_mode: "HTML",
 			reply_markup: {
 				inline_keyboard: iKeys
 			}
 		});
 
-		if (isId == 0)
+		if (isId == undefined)
 			bot.answerCallbackQuery(message.id, {text: 'Negozio aggiornato!'});
+		else
+			bot.answerCallbackQuery(message.id);
 	});
 }
 
@@ -8660,6 +8678,14 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 							weapon_name = custom_name + rows[0].name.replace("Necro", "");
 						else
 							weapon_name = rows[0].name;
+						if (weapon_id == 638)
+							weapon_name += " ⚡️";
+						else if (weapon_id == 639)
+							weapon_name += " 🔥";
+						else if (weapon_id == 640)
+							weapon_name += " 💧";
+						else if (weapon_id == 754)
+							weapon_name += " ✨";
 					} else
 						weapon_name = rows[0].name;
 				};
@@ -8731,6 +8757,12 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 														weapon2_name = rows[0].name.replace("Necro", custom_name2);
 													else
 														weapon2_name = rows[0].name;
+													if (weapon2_id == 688)
+														weapon2_name += " ⚡️";
+													else if (weapon2_id == 689)
+														weapon2_name += " 🔥";
+													else if (weapon2_id == 690)
+														weapon2_name += " 💧";
 												} else
 													weapon2_name = rows[0].name;
 											}
@@ -8744,6 +8776,12 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 															weapon3_name = rows[0].name.replace("Necro", custom_name3);
 														else
 															weapon3_name = rows[0].name;
+														if (weapon3_id == 671)
+															weapon3_name += " ⚡️";
+														else if (weapon3_id == 672)
+															weapon3_name += " 🔥";
+														else if (weapon3_id == 673)
+															weapon3_name += " 💧";
 													} else
 														weapon3_name = rows[0].name;
 												}
@@ -9800,8 +9838,15 @@ bot.onText(/^\/zainor/, function (message, match) {
 			bottext += "Polvere: " + formatNumber(dust[0].quantity) + " ♨️\n";
 		var inventory_val = connection_sync.query('SELECT SUM(I.value*IV.quantity) As val FROM item I, inventory IV WHERE I.id = IV.item_id AND IV.player_id = ' + player_id);
 		bottext += "Valore zaino: " + formatNumber(inventory_val[0].val) + " §\n";
+		
+		connection.query('SELECT mana_1, mana_2, mana_3 FROM event_mana_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
 
-		bot.sendMessage(message.chat.id, bottext, html)
+			if (Object.keys(rows).length > 0)
+				bottext += "Mana: " + formatNumber(rows[0].mana_1) + " Blu - " + formatNumber(rows[0].mana_2) + " Giallo - " + formatNumber(rows[0].mana_3) + " Rosso\n";
+
+			bot.sendMessage(message.chat.id, bottext, html);
+		});
 	});
 });
 
