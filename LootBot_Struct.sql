@@ -467,7 +467,7 @@ CREATE TABLE `auction_list` (
   KEY `item_id` (`item_id`),
   CONSTRAINT `CREATORID_AU` FOREIGN KEY (`creator_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `ITEMID_AU` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1571,7 +1571,7 @@ CREATE TABLE `global_msg` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `chat_id` bigint(16) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3495,4 +3495,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-03-13 12:00:11
+-- Dump completed on 2019-03-13 15:00:05

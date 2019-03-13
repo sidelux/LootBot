@@ -26676,12 +26676,12 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 							if (is_boss == 1)
 								exp = 20;
 
-							chest1 = Math.round(4*placeAvg*boss_molt);
-							chest2 = Math.round(2.4*placeAvg*boss_molt);
-							chest3 = Math.round(1.6*placeAvg*boss_molt);
-							chest4 = Math.round(1.2*placeAvg*boss_molt);
-							chest5 = Math.round(0.8*placeAvg*boss_molt);
-							chest6 = Math.round(0.4*placeAvg*boss_molt);
+							chest1 = Math.round(3.2*placeAvg*boss_molt);
+							chest2 = Math.round(2.0*placeAvg*boss_molt);
+							chest3 = Math.round(1.4*placeAvg*boss_molt);
+							chest4 = Math.round(1.0*placeAvg*boss_molt);
+							chest5 = Math.round(0.6*placeAvg*boss_molt);
+							chest6 = Math.round(0.3*placeAvg*boss_molt);
 
 							/*
 							if (rows[i].global_end == 1){
@@ -38007,7 +38007,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 											text2 += "\n> " + itemqnt + "x Soffio di Morte";
 											itemid = 598;
 										} else if (level < 8) {
-											money = 50000 * (level + 1);
+											money = 90000 * (level + 1);
 											itemqnt = 1;
 											text2 += "\n> " + formatNumber(money) + " §";
 											text2 += "\n> " + itemqnt + "x Necronucleo";

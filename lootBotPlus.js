@@ -1322,7 +1322,6 @@ bot.onText(/^\/mercatini/, function (message) {
 					"@lootemporio - Lotterie e prezzi minori della ricerca!\n" +
 					"@latanadellupo - Entra qui per eventi, negozi e lotterie lupesche 🐺!\n" +
 					"@ShopdellaNebulosa - ✨Concorsi ed oggetti Draconici✨\n" +
-					"@JollyTC - Offerte e sorprese al Centro Scambi!\n" +
 					"<a href='https://t.me/joinchat/AAAAAFfCIOoiRA2xApWn3A'>Scommesse sulle globali</a> - Scommetti sui risultati delle globali!\n" +
 
 					"\nVisita anche /gruppi. Per comparire qua chiedi all'amministratore.", html);
