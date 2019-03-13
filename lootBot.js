@@ -1865,7 +1865,7 @@ bot.onText(/^\/sendmsg/, function (message, match) {
 				if (err) throw err;
 				connection.query('UPDATE config SET global_msg_on = 1', function (err, rows, fields) {
 					if (err) throw err;
-					connection.query('INSERT INTO global_msg (chat_id) SELECT P.chat_id FROM last_command L, player P WHERE L.account_id = P.account_id AND L.time > NOW() - INTERVAL 2 WEEK AND P.global_msg = 1 AND P.account_id NOT IN (SELECT account_id FROM banlist)', function (err, rows, fields) {
+					connection.query('INSERT INTO global_msg (chat_id) SELECT P.chat_id FROM last_command L, player P WHERE L.account_id = P.account_id AND L.time > NOW() - INTERVAL 4 WEEK AND P.global_msg = 1 AND P.account_id NOT IN (SELECT account_id FROM banlist)', function (err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Inserite " + rows.affectedRows + " voci");
 					});
@@ -3933,7 +3933,7 @@ function mainMenu(message) {
 		connection.query('SELECT phase, time_end FROM assault A, team_player T WHERE A.team_id = T.team_id AND T.player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
-				var dayDesc = "In attesa";
+				var dayDesc = "Dungeon in attesa";
 				var phase = rows[0].phase;
 				if (rows[0].time_end != null){
 					var d = new Date(rows[0].time_end);
@@ -4531,7 +4531,7 @@ function getInfo(message, player, myhouse_id) {
 						else if (weapon_id == 639)
 							weapon_name += " 🔥";
 						else if (weapon_id == 640)
-							weapon_name += " 💧";
+							weapon_name += " 🌊";
 						else if (weapon_id == 754)
 							weapon_name += " ✨";
 					} else
@@ -4606,11 +4606,11 @@ function getInfo(message, player, myhouse_id) {
 													else
 														weapon2_name = rows[0].name;
 													if (weapon2_id == 688)
-														weapon2_name += " ⚡️";
-													else if (weapon2_id == 689)
 														weapon2_name += " 🔥";
+													else if (weapon2_id == 689)
+														weapon2_name += " 🌊";
 													else if (weapon2_id == 690)
-														weapon2_name += " 💧";
+														weapon2_name += " ⚡️";
 												} else
 													weapon2_name = rows[0].name;
 											}
@@ -4629,7 +4629,7 @@ function getInfo(message, player, myhouse_id) {
 														else if (weapon3_id == 672)
 															weapon3_name += " 🔥";
 														else if (weapon3_id == 673)
-															weapon3_name += " 💧";
+															weapon3_name += " 🌊";
 													} else
 														weapon3_name = rows[0].name;
 												}
@@ -36157,7 +36157,7 @@ bot.onText(/ricicla/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["C", "NC", "R"], ["UR", "L", "E"], ["Torna all'emporio"], ["Torna al menu"]]
+				keyboard: [["C", "NC", "R"], ["UR", "L", "E"], ["D"], ["Torna all'emporio"], ["Torna al menu"]]
 			}
 		};
 
@@ -36253,8 +36253,7 @@ bot.onText(/ricicla/i, function (message) {
 										return;
 									}
 								} else {
-									//if ((nRarity != "C") && (nRarity != "NC") && (nRarity != "R") && (nRarity != "UR") && (nRarity != "L") && (nRarity != "E") && (nRarity != "D")){
-									if ((nRarity != "C") && (nRarity != "NC") && (nRarity != "R") && (nRarity != "UR") && (nRarity != "L") && (nRarity != "E")){
+									if ((nRarity != "C") && (nRarity != "NC") && (nRarity != "R") && (nRarity != "UR") && (nRarity != "L") && (nRarity != "E") && (nRarity != "D")){
 										bot.sendMessage(message.chat.id, "Non puoi riciclare questa rarità!", back);
 										return;
 									}
@@ -36271,9 +36270,21 @@ bot.onText(/ricicla/i, function (message) {
 									if (err) throw err;
 								});
 
-								setAchievement(message.chat.id, player_id, 15, calc_qnt);
-
 								delItem(player_id, item_id, qnt);
+								
+								if ((nRarity == "D") && (item_id < 100)){
+									var stone_item_id = item_id-67;	// 1-6
+									var prob = 100-(stone_item_id*15);
+									var rand = Math.random()*100;
+
+									if (prob >= rand){
+										bot.sendMessage(message.chat.id, "La macchina di riciclo si è inceppata e non è stato possibile produrre alcun oggetto!", kb2);
+										return;
+									}
+								}
+
+								setAchievement(message.chat.id, player_id, 15, calc_qnt);
+								
 								var text = "Hai riciclato " + qnt + "x " + oggetto + " ed hai ottenuto:\n";
 
 								for (var i = 0; i < calc_qnt; i++) {
@@ -36299,7 +36310,7 @@ bot.onText(/ricicla/i, function (message) {
 
 		var iKeys = [];
 
-		bot.sendMessage(message.chat.id, "Seleziona la rarità dell'oggetto da riciclare, puoi anche usare /ricicla NomeOggetto,quantità", kbR).then(function () {
+		bot.sendMessage(message.chat.id, "Seleziona la rarità dell'oggetto da riciclare, puoi anche usare /ricicla NomeOggetto,quantità\nIn caso di rarità D, c'è una possibilità che il riciclo fallisca, questa probabilità dipende dalla rarità della Pietra utilizzata", kbR).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				var r = answer.text;
 
@@ -36381,8 +36392,7 @@ bot.onText(/ricicla/i, function (message) {
 														return;
 													}
 												} else {
-													//if ((nRarity != "C") && (nRarity != "NC") && (nRarity != "R") && (nRarity != "UR") && (nRarity != "L") && (nRarity != "E") && (nRarity != "D")){
-													if ((nRarity != "C") && (nRarity != "NC") && (nRarity != "R") && (nRarity != "UR") && (nRarity != "L") && (nRarity != "E")){
+													if ((nRarity != "C") && (nRarity != "NC") && (nRarity != "R") && (nRarity != "UR") && (nRarity != "L") && (nRarity != "E") && (nRarity != "D")){
 														bot.sendMessage(message.chat.id, "Non puoi riciclare questa rarità!", back);
 														return;
 													}
@@ -36396,10 +36406,22 @@ bot.onText(/ricicla/i, function (message) {
 												connection.query('UPDATE player SET money = money-' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
 												});
+												
+												delItem(player_id, item_id, 5);
+												
+												if ((nRarity == "D") && (item_id < 100)){
+													var stone_item_id = item_id-67;	// 1-6
+													var prob = 100-(stone_item_id*15);
+													var rand = Math.random()*100;
+													
+													if (prob >= rand){
+														bot.sendMessage(message.chat.id, "La macchina di riciclo si è inceppata e non è stato possibile produrre alcun oggetto!", kb2);
+														return;
+													}
+												}
 
 												setAchievement(message.chat.id, player_id, 15, 1);
 
-												delItem(player_id, item_id, 5);
 												connection.query('SELECT id, name FROM item WHERE rarity = "' + nRarity + '" AND name != "' + oggetto + '" AND craftable = 0 ORDER BY RAND()', function (err, rows, fields) {
 													if (err) throw err;
 													var itemName = rows[0].name;
@@ -37529,6 +37551,13 @@ bot.onText(/^Edificio/i, function (message) {
 
 bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 
+	/*
+	if (message.from.id != 20471035){
+		bot.sendMessage(message.chat.id, "Manutenzione in corso, riprova tra poco", back);
+		return;
+	}
+	*/
+	
 	var next = {
 		parse_mode: "Markdown",
 		reply_markup: {
@@ -37671,410 +37700,77 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 
 									if (ability_id == 1) { // 1% ogni livello
 										text3 += val + sym + " " + forlevel;
-										if (level == 0) {
-											money = 300000;
-											itemqnt = 1;
+										if (level < 1){
+											money = 200000;
+											itemqnt = 30;
 											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Scheggia di Hatrurite";
-											itemid = 91;
-										} else if (level == 1) {
-											money = 400000;
+											text2 += "\n> " + itemqnt + "x Frammento di Osmio";
+											itemid = 663;
+										}else if (level < 2){
+											money = 500000;
+											itemqnt = 50;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Frammento di Osmio";
+											itemid = 663;
+										}else if (level < 3){
+											money = 750000;
+											itemqnt = 10;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Kit Fuga";
+											itemid = 616;
+										}else if (level < 4){
+											money = 1000000;
+											itemqnt = 5;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Chiave Tipo 1";
+											itemid = 604;
+										}else if (level < 5){
+											money = 1250000;
 											itemqnt = 2;
 											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Scheggia di Palladio";
-											itemid = 151;
-										} else if (level >= 2) {
-											money = 500000;
-											itemqnt = 1;
+											text2 += "\n> " + itemqnt + "x Pass Argento";
+											itemid = 609;
+										}else if (level < 6){
+											money = 1500000;
+											itemqnt = 3;
 											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Componente Ultra Cristallo";
-											itemid = 562;
+											text2 += "\n> " + itemqnt + "x Capsula Estrazione";
+											itemid = 618;
+										}else if (level < 7){
+											money = 1750000;
+											itemqnt = 10;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Chiave Tipo 2";
+											itemid = 605;
+										}else if (level < 8){
+											money = 2250000;
+											itemqnt = 25;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Varco Temporale";
+											itemid = 645;
+										}else if (level < 9){
+											money = 3000000;
+											itemqnt = 150;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Piuma di Fenice";
+											itemid = 619;
+										}else if (level < 10){
+											money = 5000000;
+											itemqnt = 3;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Trasduttore dell'Apocalisse";
+											itemid = 626;
 										}
 									} else if (ability_id == 2) { // 100 monete ogni livello
 										text3 += val + sym + " " + forlevel;
 										if (level < 10) {
-											money = 5000 * (level + 1);
+											money = 50000 * (level + 1);
 											itemqnt = (level + 1);
 											text2 += "\n> " + formatNumber(money) + " §";
 											text2 += "\n> " + itemqnt + "x Ala della Fenice";
 											itemid = 345;
 										}
 									} else if (ability_id == 3) { // -30 secondi ogni livello
-										text3 += val + sym + " " + forlevel;
-										if (level < 10) {
-											money = 50000 * (level + 1);
-											itemqnt = (level * 2);
-											if (itemqnt == 0) {
-												itemqnt = 1;
-											}
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Lama Maledetta";
-											itemid = 104;
-										}
-									} else if (ability_id == 4) { // +2% riuscita ispezione
-										text3 += val + sym + " " + forlevel;
-										if (level < 5) {
-											money = 50000 * (level + 1);
-											itemqnt = (level * 2);
-											if (itemqnt == 0) {
-												itemqnt = 1;
-											}
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Sfera Tempesta";
-											itemid = 296;
-										} else if (level < 10) {
-											money = 25000 * (level + 1);
-											itemqnt = (level * 2);
-											if (itemqnt == 0) {
-												itemqnt = 1;
-											}
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Spirito di Palladio";
-											itemid = 357;
-										}
-									} else if (ability_id == 5) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 5) {
-											money = 10000 * (level + 1);
-											itemqnt = level;
-											if (itemqnt == 0) {
-												itemqnt = 1;
-											}
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Frammento Divino";
-											itemid = 190;
-										} else if (level < 10) {
-											money = 10000 * (level + 1);
-											itemqnt = level;
-											if (itemqnt == 0) {
-												itemqnt = 1;
-											}
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Nucleo Supernova";
-											itemid = 565;
-										}
-									} else if (ability_id == 6) {
-										text3 += "+1 utilizzo ogni 2 livelli, " + val + sym + " salute recuperata quando si torna in vita " + forlevel;
-										if (level < 2) {
-											money = 25000 * (level + 1);
-											itemqnt = 300;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Polvere";
-											itemid = 646;
-										} else if (level < 4) {
-											money = 50000 * (level + 1);
-											itemqnt = 30;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Oro Bianco";
-											itemid = 276;
-										} else if (level < 5) {
-											money = 50000 * (level + 1);
-											itemqnt = 1;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Urlo di Morte";
-											itemid = 532;
-										} else if (level < 6) {
-											money = 50000 * (level + 1);
-											itemqnt = 1;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Respiro di Morte";
-											itemid = 201;
-										} else if (level < 7) {
-											money = 75000 * (level + 1);
-											itemqnt = 1;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Soffio di Morte";
-											itemid = 598;
-										} else if (level < 8) {
-											money = 50000 * (level + 1);
-											itemqnt = 1;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Necronucleo";
-											itemid = 200;
-										} else if (level < 9) {
-											money = 100000 * (level + 1);
-											itemqnt = 1;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Concentrato Ultraterreno Vulcano";
-											itemid = 636;
-										} else if (level < 10) {
-											money = 100000 * (level + 1);
-											itemqnt = 2;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Concentrato Ultraterreno Tsunami";
-											itemid = 637;
-										}
-									} else if (ability_id == 7) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 1) {
-											money = 50000 * (level + 1);
-											itemqnt = 50;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Cuscino";
-											itemid = 10;
-										} else if (level < 2) {
-											money = 50000 * (level + 1);
-											itemqnt = 40;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Molla";
-											itemid = 11;
-										} else if (level < 3) {
-											money = 50000 * (level + 1);
-											itemqnt = 30;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Metallo";
-											itemid = 23;
-										} else if (level < 4) {
-											money = 50000 * (level + 1);
-											itemqnt = 30;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Carta";
-											itemid = 1;
-										} else if (level < 6) {
-											money = 50000 * (level + 1);
-											itemqnt = 30;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Cordino Fragile";
-											itemid = 5;
-										} else if (level < 8) {
-											money = 50000 * (level + 1);
-											itemqnt = 25;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Diamante";
-											itemid = 9;
-										} else if (level < 10) {
-											money = 50000 * (level + 1);
-											itemqnt = 25;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Pietra del Sangue";
-											itemid = 20;
-										}
-									} else if (ability_id == 8) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 1) {
-											money = 50000 * (level + 1);
-											itemqnt = 3;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Rubino del Dio Vulcano";
-											itemid = 451;
-										} else if (level < 2) {
-											money = 50000 * (level + 1);
-											itemqnt = 2;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Pendolo";
-											itemid = 403;
-										} else if (level < 4) {
-											money = 50000 * (level + 1);
-											itemqnt = 1;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Spirito del Fato";
-											itemid = 288;
-										} else if (level < 5) {
-											money = 50000 * (level + 1);
-											itemqnt = 1;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Struttura della Piramide Meteorite";
-											itemid = 427;
-										} else if (level < 6) {
-											money = 60000 * (level + 1);
-											itemqnt = 10;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Frammento di Osmio";
-											itemid = 663;
-										} else if (level < 7) {
-											money = 60000 * (level + 1);
-											itemqnt = 10;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Zaffiro del Dio Eolo";
-											itemid = 450;
-										} else if (level < 8) {
-											money = 60000 * (level + 1);
-											itemqnt = 20;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Smeraldo della Dea Gea";
-											itemid = 452;
-										} else if (level < 9) {
-											money = 70000 * (level + 1);
-											itemqnt = 20;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Mithril";
-											itemid = 311;
-										} else if (level < 10) {
-											money = 90000 * (level + 1);
-											itemqnt = 40;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Laccio Antico";
-											itemid = 406;
-										}
-									} else if (ability_id == 9) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 5) {
-											money = 15000 * (level + 1);
-											itemqnt = (level + 1);
-											if (itemqnt == 0) {
-												itemqnt = 1;
-											}
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Propulsore X";
-											itemid = 202;
-										} else if (level < 10) {
-											money = 15000 * (level + 1);
-											itemqnt = (level + 1) - 5;
-											if (itemqnt == 0) {
-												itemqnt = 1;
-											}
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Generatore del Vuoto";
-											itemid = 321;
-										}
-									} else if (ability_id == 10) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 5) {
-											money = 20000 * (level + 1);
-											itemqnt = (level + 1);
-											if (itemqnt == 0) {
-												itemqnt = 1;
-											}
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Anima delle Ere";
-											itemid = 317;
-										} else if (level < 10) {
-											money = 30000 * (level + 1);
-											itemqnt = (level + 1) - 5;
-											if (itemqnt == 0) {
-												itemqnt = 1;
-											}
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Batteria Infinita";
-											itemid = 479;
-										}
-									} else if (ability_id == 11) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 10) {
-											money = 30000 * (level + 1);
-											itemqnt = (level + 1);
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Plutonio";
-											itemid = 238;
-										}
-									} else if (ability_id == 12) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 5) {
-											money = 30000 * (level + 1);
-											itemqnt = (level + 1);
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Lama Celeste";
-											itemid = 102;
-										} else if (level < 10) {
-											money = 35000 * (level + 1);
-											itemqnt = (level + 1);
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Manico Diabolico";
-											itemid = 103;
-										}
-									} else if (ability_id == 13) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 3) {
-											money = 10000 * (level + 1);
-											itemqnt = 1;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Respiro di Morte";
-											itemid = 201;
-										} else if (level < 6) {
-											money = 10000 * (level + 1);
-											itemqnt = 1;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Urlo di Morte";
-											itemid = 532;
-										} else if (level < 8) {
-											money = 10000 * (level + 1);
-											itemqnt = 1;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Soffio di Morte";
-											itemid = 598;
-										} else if (level < 10) {
-											money = 10000 * (level + 1);
-											itemqnt = 1;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Necronucleo";
-											itemid = 200;
-										}
-									} else if (ability_id == 14) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 2) {
-											money = 50000 * (level + 1);
-											itemqnt = 10;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Gesso";
-											itemid = 142;
-										} else if (level < 6) {
-											money = 100000 * (level + 1);
-											itemqnt = 5;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Ambra";
-											itemid = 223;
-										} else if (level < 8) {
-											money = 100000 * (level + 1);
-											itemqnt = 10;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Mithril";
-											itemid = 311;
-										} else if (level < 10) {
-											money = 150000 * (level + 1);
-											itemqnt = 10;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Generatore di Ioni";
-											itemid = 165;
-										}
-									} else if (ability_id == 15) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 5) {
-											money = 20000 * (level + 1);
-											itemqnt = 5;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Anfora di Vento";
-											itemid = 428;
-										} else if (level < 10) {
-											money = 50000 * (level + 1);
-											itemqnt = 10;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Stemma Ciclonico";
-											itemid = 434;
-										}
-									} else if (ability_id == 16) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 3) {
-											money = 100000 * (level + 1);
-											itemqnt = 1;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Runa Supernova";
-											itemid = 343;
-										} else if (level < 5) {
-											money = 200000 * (level + 1);
-											itemqnt = 1;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Carica G";
-											itemid = 529;
-										} else if (level < 8) {
-											money = 300000 * (level + 1);
-											itemqnt = 3;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Nucleo Celeste";
-											itemid = 625;
-										} else if (level < 9) {
-											money = 400000 * (level + 1);
-											itemqnt = 3;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Nucleo Cremisi";
-											itemid = 624;
-										} else if (level < 10) {
-											money = 500000 * (level + 1);
-											itemqnt = 3;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Nucleo Elettrico";
-											itemid = 623;
-										}
-									} else if (ability_id == 17) {
 										text3 += toTime(val*60,0) + " " + forlevel;
 										if (level < 1) {
 											money = 1000000;
@@ -38137,7 +37833,244 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 											text2 += "\n> " + itemqnt + "x Artigli Oscuri Neutrali";
 											itemid = 728;
 										}
-									} else if (ability_id == 18) {
+									} else if (ability_id == 4) { // +2% riuscita ispezione
+										text3 += val + sym + " " + forlevel;
+										if (level < 1) {
+											money = 50000 * (level + 1);
+											itemqnt = 3;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Rubino del Dio Vulcano";
+											itemid = 451;
+										} else if (level < 2) {
+											money = 50000 * (level + 1);
+											itemqnt = 2;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Pendolo";
+											itemid = 403;
+										} else if (level < 4) {
+											money = 50000 * (level + 1);
+											itemqnt = 1;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Spirito del Fato";
+											itemid = 288;
+										} else if (level < 5) {
+											money = 50000 * (level + 1);
+											itemqnt = 1;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Struttura della Piramide Meteorite";
+											itemid = 427;
+										} else if (level < 6) {
+											money = 60000 * (level + 1);
+											itemqnt = 10;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Frammento di Osmio";
+											itemid = 663;
+										} else if (level < 7) {
+											money = 60000 * (level + 1);
+											itemqnt = 10;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Zaffiro del Dio Eolo";
+											itemid = 450;
+										} else if (level < 8) {
+											money = 60000 * (level + 1);
+											itemqnt = 20;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Smeraldo della Dea Gea";
+											itemid = 452;
+										} else if (level < 9) {
+											money = 70000 * (level + 1);
+											itemqnt = 20;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Mithril";
+											itemid = 311;
+										} else if (level < 10) {
+											money = 90000 * (level + 1);
+											itemqnt = 40;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Laccio Antico";
+											itemid = 406;
+										}
+									} else if (ability_id == 5) {
+										text3 += val + sym + " " + forlevel;
+										if (level < 5) {
+											money = 30000 * (level + 1);
+											itemqnt = (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Lama Celeste";
+											itemid = 102;
+										} else if (level < 10) {
+											money = 35000 * (level + 1);
+											itemqnt = (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Manico Diabolico";
+											itemid = 103;
+										}
+									} else if (ability_id == 6) {
+										text3 += val + sym + " " + forlevel;
+										if (level < 2) {
+											money = 50000 * (level + 1);
+											itemqnt = 10;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Gesso";
+											itemid = 142;
+										} else if (level < 6) {
+											money = 100000 * (level + 1);
+											itemqnt = 5;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Ambra";
+											itemid = 223;
+										} else if (level < 8) {
+											money = 100000 * (level + 1);
+											itemqnt = 10;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Mithril";
+											itemid = 311;
+										} else if (level < 10) {
+											money = 150000 * (level + 1);
+											itemqnt = 10;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Generatore di Ioni";
+											itemid = 165;
+										}
+									} else if (ability_id == 7) {
+										text3 += toTime(val*60,0) + " " + forlevel;
+										if (level < 10){
+											gems = 5 * (level+1);
+											itemqnt = 1;
+											text2 += "\n> " + gems + " 💎";
+											text2 += "\n> " + itemqnt + "x Runa Supernova";
+											itemid = 343;
+										}
+									} else if (ability_id == 8) {
+										text3 += val + sym + " " + forlevel;
+										if (level < 10) {
+											money = 50000 * (level + 1);
+											itemqnt = (level * 2);
+											if (itemqnt == 0) {
+												itemqnt = 1;
+											}
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Lama Maledetta";
+											itemid = 104;
+										}
+									} else if (ability_id == 9) {
+										text3 += val + sym + " " + forlevel;
+										if (level < 5) {
+											money = 15000 * (level + 1);
+											itemqnt = (level + 1);
+											if (itemqnt == 0) {
+												itemqnt = 1;
+											}
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Propulsore X";
+											itemid = 202;
+										} else if (level < 10) {
+											money = 15000 * (level + 1);
+											itemqnt = (level + 1) - 5;
+											if (itemqnt == 0) {
+												itemqnt = 1;
+											}
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Generatore del Vuoto";
+											itemid = 321;
+										}
+									} else if (ability_id == 10) {
+										text3 += "+1 utilizzo ogni 2 livelli, " + val + sym + " salute recuperata quando si torna in vita " + forlevel;
+										if (level < 2) {
+											money = 25000 * (level + 1);
+											itemqnt = 300;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Polvere";
+											itemid = 646;
+										} else if (level < 4) {
+											money = 50000 * (level + 1);
+											itemqnt = 30;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Oro Bianco";
+											itemid = 276;
+										} else if (level < 5) {
+											money = 50000 * (level + 1);
+											itemqnt = 1;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Urlo di Morte";
+											itemid = 532;
+										} else if (level < 6) {
+											money = 50000 * (level + 1);
+											itemqnt = 1;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Respiro di Morte";
+											itemid = 201;
+										} else if (level < 7) {
+											money = 75000 * (level + 1);
+											itemqnt = 1;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Soffio di Morte";
+											itemid = 598;
+										} else if (level < 8) {
+											money = 50000 * (level + 1);
+											itemqnt = 1;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Necronucleo";
+											itemid = 200;
+										} else if (level < 9) {
+											money = 100000 * (level + 1);
+											itemqnt = 1;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Concentrato Ultraterreno Vulcano";
+											itemid = 636;
+										} else if (level < 10) {
+											money = 100000 * (level + 1);
+											itemqnt = 2;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Concentrato Ultraterreno Tsunami";
+											itemid = 637;
+										}
+									} else if (ability_id == 11) {
+										text3 += val + sym + " " + forlevel;
+										if (level < 1) {
+											money = 50000 * (level + 1);
+											itemqnt = 50;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Cuscino";
+											itemid = 10;
+										} else if (level < 2) {
+											money = 50000 * (level + 1);
+											itemqnt = 40;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Molla";
+											itemid = 11;
+										} else if (level < 3) {
+											money = 50000 * (level + 1);
+											itemqnt = 30;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Metallo";
+											itemid = 23;
+										} else if (level < 4) {
+											money = 50000 * (level + 1);
+											itemqnt = 30;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Carta";
+											itemid = 1;
+										} else if (level < 6) {
+											money = 50000 * (level + 1);
+											itemqnt = 30;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Cordino Fragile";
+											itemid = 5;
+										} else if (level < 8) {
+											money = 50000 * (level + 1);
+											itemqnt = 25;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Diamante";
+											itemid = 9;
+										} else if (level < 10) {
+											money = 50000 * (level + 1);
+											itemqnt = 25;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Pietra del Sangue";
+											itemid = 20;
+										}
+									} else if (ability_id == 12) {
 										text3 += val + sym + " " + forlevel;
 										if (level < 1) {
 											money = 500000 * (level + 1);
@@ -38200,77 +38133,173 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 											text2 += "\n> " + itemqnt + "x Alabarda Elementale";
 											itemid = 634;
 										}
-									} else if (ability_id == 19) {
+									} else if (ability_id == 13) {
 										text3 += val + sym + " " + forlevel;
-										if (level < 1){
-											money = 200000;
-											itemqnt = 30;
+										if (level < 5) {
+											money = 20000 * (level + 1);
+											itemqnt = level;
+											if (itemqnt == 0) {
+												itemqnt = 1;
+											}
 											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Frammento di Osmio";
-											itemid = 663;
-										}else if (level < 2){
-											money = 500000;
-											itemqnt = 50;
+											text2 += "\n> " + itemqnt + "x Frammento Divino";
+											itemid = 190;
+										} else if (level < 10) {
+											money = 20000 * (level + 1);
+											itemqnt = level;
+											if (itemqnt == 0) {
+												itemqnt = 1;
+											}
 											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Frammento di Osmio";
-											itemid = 663;
-										}else if (level < 3){
-											money = 750000;
-											itemqnt = 10;
+											text2 += "\n> " + itemqnt + "x Nucleo Supernova";
+											itemid = 565;
+										}
+									} else if (ability_id == 14) {
+										text3 += val + sym + " " + forlevel;
+										if (level == 0) {
+											money = 300000;
+											itemqnt = 1;
 											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Kit Fuga";
-											itemid = 616;
-										}else if (level < 4){
-											money = 1000000;
-											itemqnt = 5;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Chiave Tipo 1";
-											itemid = 604;
-										}else if (level < 5){
-											money = 1250000;
+											text2 += "\n> " + itemqnt + "x Scheggia di Hatrurite";
+											itemid = 91;
+										} else if (level == 1) {
+											money = 400000;
 											itemqnt = 2;
 											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Pass Argento";
-											itemid = 609;
-										}else if (level < 6){
-											money = 1500000;
-											itemqnt = 3;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Capsula Estrazione";
-											itemid = 618;
-										}else if (level < 7){
-											money = 1750000;
-											itemqnt = 10;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Chiave Tipo 2";
-											itemid = 605;
-										}else if (level < 8){
-											money = 2250000;
-											itemqnt = 25;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Varco Temporale";
-											itemid = 645;
-										}else if (level < 9){
-											money = 3000000;
-											itemqnt = 150;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Piuma di Fenice";
-											itemid = 619;
-										}else if (level < 10){
-											money = 5000000;
-											itemqnt = 3;
-											text2 += "\n> " + formatNumber(money) + " §";
-											text2 += "\n> " + itemqnt + "x Trasduttore dell'Apocalisse";
-											itemid = 626;
-										}
-									} else if (ability_id == 20) {
-										text3 += toTime(val*60,0) + " " + forlevel;
-										if (level < 10){
-											gems = 5 * (level+1);
+											text2 += "\n> " + itemqnt + "x Scheggia di Palladio";
+											itemid = 151;
+										} else if (level >= 2) {
+											money = 500000;
 											itemqnt = 1;
-											text2 += "\n> " + gems + " 💎";
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Componente Ultra Cristallo";
+											itemid = 562;
+										}
+									} else if (ability_id == 15) {
+										text3 += val + sym + " " + forlevel;
+										if (level < 5) {
+											money = 30000 * (level + 1);
+											itemqnt = (level + 1);
+											if (itemqnt == 0) {
+												itemqnt = 1;
+											}
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Anima delle Ere";
+											itemid = 317;
+										} else if (level < 10) {
+											money = 40000 * (level + 1);
+											itemqnt = (level + 1) - 5;
+											if (itemqnt == 0) {
+												itemqnt = 1;
+											}
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Batteria Infinita";
+											itemid = 479;
+										}
+									} else if (ability_id == 16) {
+										text3 += val + sym + " " + forlevel;
+										if (level < 3) {
+											money = 100000 * (level + 1);
+											itemqnt = 1;
+											text2 += "\n> " + formatNumber(money) + " §";
 											text2 += "\n> " + itemqnt + "x Runa Supernova";
 											itemid = 343;
+										} else if (level < 5) {
+											money = 200000 * (level + 1);
+											itemqnt = 1;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Carica G";
+											itemid = 529;
+										} else if (level < 8) {
+											money = 300000 * (level + 1);
+											itemqnt = 3;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Nucleo Celeste";
+											itemid = 625;
+										} else if (level < 9) {
+											money = 400000 * (level + 1);
+											itemqnt = 3;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Nucleo Cremisi";
+											itemid = 624;
+										} else if (level < 10) {
+											money = 500000 * (level + 1);
+											itemqnt = 3;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Nucleo Elettrico";
+											itemid = 623;
+										}
+									} else if (ability_id == 17) {
+										text3 += val + sym + " " + forlevel;
+										if (level < 5) {
+											money = 50000 * (level + 1);
+											itemqnt = (level * 2);
+											if (itemqnt == 0) {
+												itemqnt = 1;
+											}
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Sfera Tempesta";
+											itemid = 296;
+										} else if (level < 10) {
+											money = 25000 * (level + 1);
+											itemqnt = (level * 2);
+											if (itemqnt == 0) {
+												itemqnt = 1;
+											}
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Spirito di Palladio";
+											itemid = 357;
+										}
+									} else if (ability_id == 18) {
+										text3 += val + sym + " " + forlevel;
+										if (level < 3) {
+											money = 20000 * (level + 1);
+											itemqnt = 1;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Respiro di Morte";
+											itemid = 201;
+										} else if (level < 6) {
+											money = 20000 * (level + 1);
+											itemqnt = 1;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Urlo di Morte";
+											itemid = 532;
+										} else if (level < 8) {
+											money = 20000 * (level + 1);
+											itemqnt = 1;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Soffio di Morte";
+											itemid = 598;
+										} else if (level < 10) {
+											money = 20000 * (level + 1);
+											itemqnt = 1;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Necronucleo";
+											itemid = 200;
+										}
+									} else if (ability_id == 19) {
+										text3 += val + sym + " " + forlevel;
+										if (level < 10) {
+											money = 30000 * (level + 1);
+											itemqnt = (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Plutonio";
+											itemid = 238;
+										}
+									} else if (ability_id == 20) {
+										text3 += val + sym + " " + forlevel;
+										if (level < 5) {
+											money = 30000 * (level + 1);
+											itemqnt = 5;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Anfora di Vento";
+											itemid = 428;
+										} else if (level < 10) {
+											money = 50000 * (level + 1);
+											itemqnt = 10;
+											text2 += "\n> " + formatNumber(money) + " §";
+											text2 += "\n> " + itemqnt + "x Stemma Ciclonico";
+											itemid = 434;
 										}
 									} else {
 										bot.sendMessage(message.chat.id, "Talento non valido", prev);

@@ -8683,7 +8683,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 						else if (weapon_id == 639)
 							weapon_name += " 🔥";
 						else if (weapon_id == 640)
-							weapon_name += " 💧";
+							weapon_name += " 🌊";
 						else if (weapon_id == 754)
 							weapon_name += " ✨";
 					} else
@@ -8758,11 +8758,11 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 													else
 														weapon2_name = rows[0].name;
 													if (weapon2_id == 688)
-														weapon2_name += " ⚡️";
-													else if (weapon2_id == 689)
 														weapon2_name += " 🔥";
+													else if (weapon2_id == 689)
+														weapon2_name += " 🌊";
 													else if (weapon2_id == 690)
-														weapon2_name += " 💧";
+														weapon2_name += " ⚡️";
 												} else
 													weapon2_name = rows[0].name;
 											}
@@ -8781,7 +8781,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 														else if (weapon3_id == 672)
 															weapon3_name += " 🔥";
 														else if (weapon3_id == 673)
-															weapon3_name += " 💧";
+															weapon3_name += " 🌊";
 													} else
 														weapon3_name = rows[0].name;
 												}
