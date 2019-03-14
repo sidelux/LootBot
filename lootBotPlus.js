@@ -426,7 +426,7 @@ bot.onText(/^\/comandiasta/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per gestire le aste*\n" +
 					"/statoasta - Mostra lo stato di un'asta\n" +
 					"/creaasta - Permette di creare un'asta (specifica solo l'oggetto per inserirlo a prezzo base)\n" +
-					"/pubblicaasta - Permette di pubblicare l'asta con i relativi pulsanti (prova anche 'tutte')\n" +
+					"/pubblicaasta - Permette di pubblicare l'asta con i relativi pulsanti (usa anche 'tutte')\n" +
 					"/asta - Iscrive ad un'asta\n" +
 					"/aste - Mostra tutte le aste disponibili\n" +
 					"/cancellaasta - Elimina un'asta in corso", mark);
@@ -435,10 +435,10 @@ bot.onText(/^\/comandiasta/, function (message) {
 bot.onText(/^\/comandinegozio/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per gestire i negozi*\n" +
 					"/negozio - Crea un negozio per la vendita di oggetti\n" +
-					"/privacy - Modifica la privacy del negozio da pubblico a privato e vice versa\n" +
-					"/massivo - Modifica la possibilità di acquistare in modo massivo dal negozio\n" +
-					"/protetto - Modifica la possibilità di acquistare dal negozio\n" +
-					"/negoziodesc - Imposta o modifica la descrizione del negozio specificato\n" +
+					"/privacy - Modifica la privacy del negozio da pubblico a privato e vice versa (usa anche 'tutti')\n" +
+					"/massivo - Modifica la possibilità di acquistare in modo massivo dal negozio (usa anche 'tutti')\n" +
+					"/protetto - Modifica la possibilità di acquistare dal negozio (usa anche 'tutti')\n" +
+					"/negoziodesc - Imposta o modifica la descrizione del negozio specificato (usa anche 'tutti')\n" +
 					"/negozioa - Permette di aggiungere oggetti al negozio\n" +
 					"/negozior - Permette di rimuovere oggetti dal negozio\n" +
 					"/negoziom - Permette di modificare oggetti inseriti nel negozio\n" +
@@ -3856,37 +3856,62 @@ bot.onText(/^\/negoziodesc (.+),(.+)|^\/negoziodesc/, function (message, match) 
 			bot.sendMessage(message.chat.id, "Descrizione non valida, riprova");
 			return;
 		}
+		
+		if (code == "tutte") {
+			connection.query('SELECT code FROM public_shop WHERE player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Non possiedi nessun negozio");
+					return;
+				}
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+					if (text.toLowerCase() == "svuota"){
+						connection.query('UPDATE public_shop SET description = NULL WHERE code = "' + rows[i].code + '"', function (err, rows, fields) {
+						if (err) throw err;
+						});
+					} else {
+						connection.query('UPDATE public_shop SET description = "' + text + '" WHERE code = "' + rows[i].code + '"', function (err, rows, fields) {
+							if (err) throw err;
+						});
+					}
+				}
+				if (text.toLowerCase() == "svuota")
+					bot.sendMessage(message.chat.id, "Hai rimosso correttamente la descrizione a tutti i negozi!");
+				else
+					bot.sendMessage(message.chat.id, "Hai impostato correttamente la descrizione a tutti i negozi!");
+			});
+		} else {
+			connection.query('SELECT player_id FROM public_shop WHERE code = ' + code, function (err, rows, fields) {
+				if (err) throw err;
 
-		connection.query('SELECT player_id FROM public_shop WHERE code = ' + code, function (err, rows, fields) {
-			if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Non esiste un negozio con quel codice");
+					return;
+				}
 
-			if (Object.keys(rows).length == 0) {
-				bot.sendMessage(message.chat.id, "Non esiste un negozio con quel codice");
-				return;
-			}
+				if (player_id != rows[0].player_id) {
+					bot.sendMessage(message.chat.id, "Non sei l'amministratore del negozio");
+					return;
+				}
 
-			if (player_id != rows[0].player_id) {
-				bot.sendMessage(message.chat.id, "Non sei l'amministratore del negozio");
-				return;
-			}
-
-			code = parseInt(code);
-			if (isNaN(code)){
-				bot.sendMessage(message.chat.id, "Codice negozio non valido");
-				return;
-			}
-			if (text.toLowerCase() == "svuota"){
-				connection.query('UPDATE public_shop SET description = NULL WHERE code = ' + code, function (err, rows, fields) {
-					if (err) throw err;
-					bot.sendMessage(message.chat.id, "Hai impostato correttamente la descrizione del negozio!", mark);
-				});
-			} else {
-				connection.query('UPDATE public_shop SET description = "' + text + '" WHERE code = ' + code, function (err, rows, fields) {
-					if (err) throw err;
-					bot.sendMessage(message.chat.id, "Hai impostato correttamente la descrizione del negozio!", mark);
-				});
-			}
-		});
+				code = parseInt(code);
+				if (isNaN(code)){
+					bot.sendMessage(message.chat.id, "Codice negozio non valido");
+					return;
+				}
+				if (text.toLowerCase() == "svuota"){
+					connection.query('UPDATE public_shop SET description = NULL WHERE code = ' + code, function (err, rows, fields) {
+						if (err) throw err;
+						bot.sendMessage(message.chat.id, "Hai rimosso correttamente la descrizione del negozio!", mark);
+					});
+				} else {
+					connection.query('UPDATE public_shop SET description = "' + text + '" WHERE code = ' + code, function (err, rows, fields) {
+						if (err) throw err;
+						bot.sendMessage(message.chat.id, "Hai impostato correttamente la descrizione del negozio!", mark);
+					});
+				}
+			});
+		}
 	});
 });
 
@@ -5014,30 +5039,27 @@ bot.on('callback_query', function (message) {
 
 						var player_id2 = rows[0].player_id;
 						var total_price = 0;
+						var pQnt = 0;
 
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-							var item = connection_sync.query('SELECT item.name, inventory.quantity FROM inventory, item WHERE inventory.item_id = item.id AND item.id = ' + rows[i].item_id + ' AND inventory.player_id = ' + rows[i].player_id + ' AND inventory.quantity > 0');
-
-							if (Object.keys(item).length == 0) {
-								bot.answerCallbackQuery(message.id, {text: "Il proprietario non possiede tutti gli oggetti!"});
-								check.splice(index, 1);
-								return;
-							}
-							if (rows[i].quantity < 1) {
-								bot.answerCallbackQuery(message.id, {text: "Sono finite le scorte per " + item[0].name});
-								check.splice(index, 1);
-								return;
-							}
-							if (item[0].quantity < rows[i].quantity) {
-								bot.answerCallbackQuery(message.id, {text: "Il proprietario non possiede abbastanza " + item[0].name});
-								check.splice(index, 1);
-								return;
-							}
-							total_price += rows[i].price*rows[i].quantity;
+							pQnt = getItemCnt(player_id2, rows[i].item_id);
+							if ((rows[i].quantity < 1) || (pQnt < 1))
+								continue;
+							
+							if (pQnt > rows[i].quantity)
+								pQnt = rows[i].quantity;
+							
+							total_price += rows[i].price*pQnt;
+						}
+						
+						if (total_price == 0){
+							bot.answerCallbackQuery(message.id, {text: 'Il proprietario non possiede abbastanza oggetti!'});
+							check.splice(index, 1);
+							return;
 						}
 
 						if (money - total_price < 0) {
-							bot.answerCallbackQuery(message.id, {text: 'Non hai abbastanza credito, ti servono ' + formatNumber(total_price) + ' §!'});
+							bot.answerCallbackQuery(message.id, {text: 'Non hai abbastanza monete, ti servono ' + formatNumber(total_price) + ' §!'});
 							check.splice(index, 1);
 							return;
 						}
@@ -5090,18 +5112,28 @@ bot.on('callback_query', function (message) {
 
 										var text = "Hai acquistato il negozio di " + player2 + " contenente:\n";
 										var len = Object.keys(rows).length;
-
-										//console.log("Acquisto completo negozio:");
+										var qnt = 0;
+										var pQnt = 0;
+										
 										for (var i = 0; i < len; i++) {
-											if (rows[i].quantity > 0){
-												addItem(player_id, rows[i].item_id, rows[i].quantity);
-												delItem(player_id2, rows[i].item_id, rows[i].quantity);
+											pQnt = getItemCnt(player_id2, rows[i].item_id);
+											if ((rows[i].quantity > 0) && (pQnt > 0)){
+												if (pQnt > rows[i].quantity)
+													qnt = rows[i].quantity;
+												else
+													qnt = pQnt;
+												addItem(player_id, rows[i].item_id, qnt);
+												delItem(player_id2, rows[i].item_id, qnt);
+												
 												var item = connection_sync.query('SELECT name FROM item WHERE id = ' + rows[i].item_id);
-												text += "> " + formatNumber(rows[i].quantity) + "x " + item[0].name + " per " + formatNumber(rows[i].quantity*rows[i].price) + " §\n";
+												text += "> " + formatNumber(qnt) + "x " + item[0].name + " per " + formatNumber(qnt*rows[i].price) + " §\n";
+												console.log(formatNumber(qnt) + " " + item[0].name + " " + formatNumber(qnt*rows[i].price));
 
-												//console.log(formatNumber(rows[i].quantity) + "x " + item[0].name + " per " + formatNumber(rows[i].quantity*rows[i].price));
-
-												connection.query('INSERT INTO market_direct_history (item_id, price, quantity, time, from_id, to_id, type) VALUES (' + rows[i].item_id + ',' + rows[i].price + ',' + rows[i].quantity + ',"' + long_date + '",' + player_id2 + ',' + player_id + ',2)', function (err, rows, fields) {
+												connection.query('INSERT INTO market_direct_history (item_id, price, quantity, time, from_id, to_id, type) VALUES (' + rows[i].item_id + ',' + rows[i].price + ',' + qnt + ',"' + long_date + '",' + player_id2 + ',' + player_id + ',2)', function (err, rows, fields) {
+													if (err) throw err;
+												});
+												
+												connection.query('UPDATE public_shop SET quantity = quantity-' + qnt + ' WHERE quantity > 0 AND item_id = ' + rows[i].item_id + ' AND code = ' + code, function (err, rows, fields) {
 													if (err) throw err;
 												});
 											}
@@ -5110,33 +5142,25 @@ bot.on('callback_query', function (message) {
 
 										console.log(getNow("it") + " - Acquisto di tutto il negozio da parte di " + message.from.username + " (" + shop_id + ", " + total_price + " §)");
 
-										connection.query('UPDATE public_shop SET quantity = 0 WHERE quantity > 0 AND code = ' + code, function (err, rows, fields) {
+										bot.sendMessage(message.from.id, text);
+										bot.answerCallbackQuery(message.id, {text: 'Acquisto completato per ' + formatNumber(total_price) + ' §!'});
+
+										connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + player_id2 + ' AND type = 2', function (err, rows, fields) {
 											if (err) throw err;
-											if (rows.affectedRows == 0) {
-												bot.answerCallbackQuery(message.id, {text: 'Errore durante l\'acquisto, riprova'});
-												return;
-											}
-
-											bot.sendMessage(message.from.id, text);
-											bot.answerCallbackQuery(message.id, {text: 'Acquisto completato per ' + formatNumber(total_price) + ' §!'});
-
-											connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + player_id2 + ' AND type = 2', function (err, rows, fields) {
-												if (err) throw err;
-												var notify = 0;
-												if (Object.keys(rows).length == 0)
+											var notify = 0;
+											if (Object.keys(rows).length == 0)
+												notify = 1;
+											else {
+												if (rows[0].deny == 0)
 													notify = 1;
-												else {
-													if (rows[0].deny == 0)
-														notify = 1;
-												}
-												if (notify == 1) {
-													bot.sendMessage(chat_id2, message.from.username + " ha acquistato tutto il tuo negozio (" + code + ") per " + formatNumber(total_price) + " §!\nDi conseguenza tutte le quantità sono state impostate a zero.");
-												};
-											});
-
-											updateShop(message, code);
-											check.splice(index, 1);
+											}
+											if (notify == 1) {
+												bot.sendMessage(chat_id2, message.from.username + " ha acquistato tutto il tuo negozio (" + code + ") per " + formatNumber(total_price) + " §!\nDi conseguenza le quantità relative agli oggetti acquistati sono state ridotte.");
+											};
 										});
+
+										updateShop(message, code);
+										check.splice(index, 1);
 									});
 								});
 							});
@@ -5297,7 +5321,7 @@ function updateShop(message, code, isId){
 		}
 		code = shopCode[0].code;
 	}
-	connection.query('SELECT public_shop.id, player.nickname, quantity, item.name, price, massive, protected, public_shop.description FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code + ' ORDER BY item.name', function (err, rows, fields) {
+	connection.query('SELECT public_shop.id, player.id As player_id, player.nickname, quantity, item.name, price, massive, protected, public_shop.description, item_id FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code + ' ORDER BY item.name', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0) {
@@ -5310,13 +5334,17 @@ function updateShop(message, code, isId){
 		var iKeys = [];
 		var name = "";
 		var total_price = 0;
+		var pQnt = 0;
 		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 			name = cutText(rows[i].name);
 			iKeys.push([{
 				text: name + " (" + rows[i].quantity + ") - " + formatNumber(rows[i].price) + " §",
 				callback_data: rows[i].id.toString()
 			}]);
-			total_price += parseInt(rows[i].price*rows[i].quantity);
+			pQnt = getItemCnt(rows[i].player_id, rows[i].item_id);
+			if (pQnt > rows[i].quantity)
+				pQnt = rows[i].quantity;
+			total_price += parseInt(rows[i].price*pQnt);
 		}
 
 		if (rows[0].massive == 1){

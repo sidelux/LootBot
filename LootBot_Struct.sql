@@ -2662,6 +2662,7 @@ CREATE TABLE `player` (
   `mission_count` int(11) NOT NULL DEFAULT '0',
   `mission_team_count` int(11) NOT NULL DEFAULT '0',
   `achievement_count` int(11) NOT NULL DEFAULT '0',
+  `achievement_count_all` int(11) NOT NULL DEFAULT '0',
   `boss_id` int(3) DEFAULT NULL,
   `team_time` timestamp NULL DEFAULT NULL,
   `boss_time` timestamp NULL DEFAULT NULL,
@@ -3495,4 +3496,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-03-13 15:00:05
+-- Dump completed on 2019-03-14 15:00:05

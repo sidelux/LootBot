@@ -5885,9 +5885,9 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 				else if (weapon1_id == 638)
 					weapon1_status = " ⚡️";
 				else if (weapon1_id == 640)
-					weapon1_status = " 💧";
+					weapon1_status = " 🌊";
 				else if (weapon1_id == 754)
-					weapon1_status = " 🌪";
+					weapon1_status = " ✨";
 
 				var weapon2_status = "Non equipaggiata";
 				if (weapon2_id == 688)
@@ -5895,7 +5895,7 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 				else if (weapon2_id == 690)
 					weapon2_status = " ⚡️";
 				else if (weapon2_id == 689)
-					weapon2_status = " 💧";
+					weapon2_status = " 🌊";
 
 				var weapon3_status = "Non equipaggiato";
 				if (weapon3_id == 672)
@@ -5903,7 +5903,7 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 				else if (weapon3_id == 671)
 					weapon3_status = " ⚡️";
 				else if (weapon3_id == 673)
-					weapon3_status = " 💧";
+					weapon3_status = " 🌊";
 
 				var text = 	"Stato attuale:\n" +
 					"Arma: " + weapon1_status + "\n" +
@@ -6249,9 +6249,8 @@ bot.onText(/resetta guide/i, function (message) {
 bot.onText(/casa dei giochi/i, function (message) {
 
 	var s = 1;
-	if ((message.from.id != 20471035) && (message.from.username != "Gaius87") && (message.from.username != "lorsalv") && (message.from.username != "Juri_L") && (message.from.username != "CH4R124RD") && (message.from.username != "Raukonar") && (message.from.username != "Shaeryen")) {
+	if ((message.from.id != 20471035) && (message.from.username != "Gaius87") && (message.from.username != "Raukonar"))
 		s = 0;
-	}
 
 	if (s == 0) {
 		var d = new Date();
@@ -6302,7 +6301,7 @@ bot.onText(/casa dei giochi/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Numero Fortunato 🥇", "Combo Craft 💎"], ["Carte e Pirata 📃"], ["Torna al menu"]]
+				keyboard: [["Numero Fortunato 🥇", "Combo Craft 💎"], ["Carte e Pirata 📃", "Minatore Lancia-dadi 🎲"], ["Torna al menu"]]
 			}
 		};
 
@@ -6327,7 +6326,7 @@ bot.onText(/casa dei giochi/i, function (message) {
 			reply_markup: {
 				resize_keyboard: true,
 				one_time_keyboard: true,
-				keyboard: [["Gira Rotelle"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["Gira Rotelle ⚙️"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -6335,7 +6334,7 @@ bot.onText(/casa dei giochi/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Gioca Numeri"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["Gioca Numeri 🔢"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -6344,6 +6343,14 @@ bot.onText(/casa dei giochi/i, function (message) {
 			reply_markup: {
 				resize_keyboard: true,
 				keyboard: [["Vedi la Carta 📃"], ["Classifica", "Tabella Premi"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+			}
+		};
+		
+		var kbDice = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Lancia il Dado 🎲"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -6381,63 +6388,260 @@ bot.onText(/casa dei giochi/i, function (message) {
 				});
 			}
 		});
+		
+		connection.query('SELECT id FROM game_house_stats WHERE type = 4 AND player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+			if (Object.keys(rows).length == 0) {
+				connection.query('INSERT INTO game_house_stats (player_id, type) VALUES (' + player_id + ', 4)', function (err, rows, fields) {
+					if (err) throw err;
+				});
+			}
+		});
+		
+		connection.query('SELECT mana_1, mana_2, mana_3 FROM event_mana_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
 
-		setAchievement(message.chat.id, player_id, 70, 1);
+			var mana_txt = "";
+			if (Object.keys(rows).length > 0)
+				mana_txt += formatNumber(rows[0].mana_1) + " Mana Blu, " + formatNumber(rows[0].mana_2) + " Mana Giallo, " + formatNumber(rows[0].mana_3) + " Mana Rosso\n";
+			else
+				mana_txt += "0 Mana Blu, 0 Mana Giallo, 0 Mana Rosso\n";
 
-		bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella Casa dei Giochi!\nSeleziona il gioco a cui vuoi partecipare", game).then(function () {
+			setAchievement(message.chat.id, player_id, 70, 1);
+
+			bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella Casa dei Giochi!\nSeleziona il gioco a cui vuoi partecipare", game).then(function () {
+				answerCallbacks[message.chat.id] = function (answer) {
+					if ((answer.text.indexOf("Numero Fortunato") != -1)) {
+						bot.sendMessage(message.chat.id, "*Numero Fortunato*\n\nIn questo gioco puoi puntare su uno o più numeri e offrire una certa somma di §, quando avrai specificato entrambe le informazioni, la _Sfera Tempesta_ verrà fatta girare nel grosso campo da gioco e si fermerà su uno dei 36 numeri (37 considerando lo 0, che però è sempre perdente). Se almeno una delle tue previsioni sarà corretta, otterrai una vincita pari a quanto puntato per il numero di previsioni.\n\nAl momento possiedi " + formatNumber(myMoney) + " §", kbNum);
+					} else if ((answer.text.indexOf("Combo Craft") != -1)) {
+						var price = 10000;
+						bot.sendMessage(message.chat.id, "*Combo di Craft*\n\nIn questo gioco puoi tentare la fortuna facendo girare le 3 _Rotelle X_ e tentare di vincere qualcosa. Quando tutte e 3 segneranno lo stesso simbolo, otterrai oggetti o strumenti particolari. Ogni giocata ti costerà " + price + " §, procedi?\n\nAl momento possiedi " + formatNumber(myMoney) + " §", kbRote);
+					} else if ((answer.text.indexOf("Carte e Pirata") != -1)) {
+						var price = 5000;
+						bot.sendMessage(message.chat.id, "*Carte e Pirata*\n\nIn questo gioco dovrai sfidare il Pirata a _Carte Stropicciate_ e indovinare più volte possibili di fila se la carta successiva sarà più alta o più bassa della precedente. Le carte hanno un valore che varia casualmente tra 1 e 20. Giocare ti costerà " + price + " § a carta, il gioco finisce quando non indovini e riceverai un premio partendo dalle 5 vittorie di fila, procedi?\n\nAl momento possiedi " + formatNumber(myMoney) + " §", kbCard).then(function () {
+							answerCallbacks[message.chat.id] = function (answer) {
+								if (answer.text == "Classifica") {
+
+									var text = "Classifica per vittorie consecutive:\n";
+									var c = 1;
+									var mypnt = 0;
+									var totpnt = 0;
+									var mypos = 0;
+									var size = 20;
+
+									connection.query('SELECT nickname, record FROM game_house_stats, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND game_house_stats.player_id = player.id AND player.id NOT IN (1,3) AND game_house_stats.type = 3 ORDER BY record DESC', function (err, rows, fields) {
+										if (err) throw err;
+										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+											if (c < size + 1) {
+												rows[i].total_cnt = formatNumber(rows[i].record);
+												text = text + c + "° " + rows[i].nickname + " (" + rows[i].record + ")\n";
+											}
+											if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+												mypnt = rows[i].record;
+												mypos = c;
+											}
+											c++;
+										}
+										text = text + "\nTu:\n" + mypos + "° " + message.from.username + " (" + mypnt + ")";
+
+										bot.sendMessage(message.chat.id, text, kbBack2);
+									});
+								} else if (answer.text == "Tabella Premi") {
+									var text = "*Tabella premi*:\n\n" +
+										"_(Vittorie consecutive)_\n" +
+										"5-6: 5x Scrigno di Legno\n" +
+										"7-9: 5x Scrigno di Ferro\n" +
+										"10-11: 5x Scrigno Prezioso\n" +
+										"12-14: 5x Scrigno di Diamante\n" +
+										"15-19: 5x Scrigno Leggendario\n" +
+										"20-24: 5x Scrigno Epico\n" +
+										"25-29: 15x Scrigno Epico\n" +
+										"30-in su: 1x Scrigno Capsula";
+
+									bot.sendMessage(message.chat.id, text, kbBack);
+								}
+							};
+						});
+					} else if (answer.text.indexOf("Minatore") != -1) {
+						bot.sendMessage(message.chat.id, "*Minatore*\n\nIn questo gioco puoi tentare la fortuna scommettendo unità di Mana contro il misterioso Minatore. Se il tuo dado si avvicinerà più di quello avversario al numero sul tavolo, vincerai il doppio del Mana giocato. In caso di parità la vittoria è assegnata al Minatore.\n\nAl momento possiedi " + mana_txt, kbDice);
+					}
+				};
+			});
+		});
+	});
+});
+
+bot.onText(/lancia il dado/i, function (message) {
+	if (!checkSpam(message))
+		return;
+	
+	var s = 1;
+	if ((message.from.id != 20471035) && (message.from.username != "Gaius87") && (message.from.username != "Raukonar"))
+		s = 0;
+
+	if (s == 0) {
+		var d = new Date();
+		if (d.getDay() != 3) {
+			bot.sendMessage(message.chat.id, "La Casa dei Giochi è aperta solo il mercoledì, dalle 10:00 alle 22:00", back);
+			return;
+		}
+		if ((d.getHours() < 10) || (d.getHours() > 21)) {
+			bot.sendMessage(message.chat.id, "La Casa dei Giochi è aperta solo il mercoledì, dalle 10:00 alle 22:00", back);
+			return;
+		}
+	}
+
+	connection.query('SELECT account_id, market_ban, holiday, id, reborn, money, exp FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+
+		if (rows[0].market_ban == 1) {
+			bot.sendMessage(message.chat.id, "Sei bannato dal mercato", back);
+			return;
+		}
+
+		if (rows[0].holiday == 1) {
+			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back)
+			return;
+		}
+
+		var player_id = rows[0].id;
+		var level = Math.floor(rows[0].exp/10);
+
+		if ((level < 50) && (rows[0].reborn == 1)){
+			bot.sendMessage(message.chat.id, "Sblocca la casa dei giochi per accedere a questa funzione!", back);
+			return;
+		}
+
+		var kbChoice = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["50 Blu", "100 Blu"], ["50 Giallo", "100 Giallo"], ["50 Rosso", "100 Rosso"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+			}
+		};
+
+		var kbBack = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Torna alla casa dei giochi"], ["Torna al menu"]]
+			}
+		};
+
+		var kbNum = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Lancia"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+			}
+		};
+		
+		var kbAgain = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Rilancia il dado"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+			}
+		};
+
+		bot.sendMessage(message.chat.id, "Seleziona la quantità di *Mana* che vuoi giocare contro il _Minatore_, poi lancia il dado.", kbChoice).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
-				if ((answer.text.indexOf("Numero Fortunato") != -1)) {
-					bot.sendMessage(message.chat.id, "*Numero Fortunato*\n\nIn questo gioco puoi puntare su uno o più numeri e offrire una certa somma di §, quando avrai specificato entrambe le informazioni, la _Sfera Tempesta_ verrà fatta girare nel grosso campo da gioco e si fermerà su uno dei 36 numeri (37 considerando lo 0, che però è sempre perdente). Se almeno una delle tue previsioni sarà corretta, otterrai una vincita pari a quanto puntato per il numero di previsioni.\n\nAl momento possiedi " + formatNumber(myMoney) + " §", kbNum);
-				} else if ((answer.text.indexOf("Combo Craft") != -1)) {
-					var price = 10000;
-					bot.sendMessage(message.chat.id, "*Combo di Craft*\n\nIn questo gioco puoi tentare la fortuna facendo girare le 3 _Rotelle X_ e tentare di vincere qualcosa. Quando tutte e 3 segneranno lo stesso simbolo, otterrai oggetti o strumenti particolari. Ogni giocata ti costerà " + price + " §, procedi?\n\nAl momento possiedi " + formatNumber(myMoney) + " §", kbRote);
-				} else if ((answer.text.indexOf("Carte e Pirata") != -1)) {
-					var price = 5000;
-					bot.sendMessage(message.chat.id, "*Carte e Pirata*\n\nIn questo gioco dovrai sfidare il Pirata a _Carte Stropicciate_ e indovinare più volte possibili di fila se la carta successiva sarà più alta o più bassa della precedente. Le carte hanno un valore che varia casualmente tra 1 e 20. Giocare ti costerà " + price + " § a carta, il gioco finisce quando non indovini e riceverai un premio partendo dalle 5 vittorie di fila, procedi?\n\nAl momento possiedi " + formatNumber(myMoney) + " §", kbCard).then(function () {
-						answerCallbacks[message.chat.id] = function (answer) {
-							if (answer.text == "Classifica") {
 
-								var text = "Classifica per vittorie consecutive:\n";
-								var c = 1;
-								var mypnt = 0;
-								var totpnt = 0;
-								var mypos = 0;
-								var size = 20;
-
-								connection.query('SELECT nickname, record FROM game_house_stats, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND game_house_stats.player_id = player.id AND player.id NOT IN (1,3) AND game_house_stats.type = 3 ORDER BY record DESC', function (err, rows, fields) {
-									if (err) throw err;
-									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-										if (c < size + 1) {
-											rows[i].total_cnt = formatNumber(rows[i].record);
-											text = text + c + "° " + rows[i].nickname + " (" + rows[i].record + ")\n";
-										}
-										if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
-											mypnt = rows[i].record;
-											mypos = c;
-										}
-										c++;
-									}
-									text = text + "\nTu:\n" + mypos + "° " + message.from.username + " (" + mypnt + ")";
-
-									bot.sendMessage(message.chat.id, text, kbBack2);
-								});
-							} else if (answer.text == "Tabella Premi") {
-								var text = "*Tabella premi*:\n\n" +
-									"_(Vittorie consecutive)_\n" +
-									"5-6: 5x Scrigno di Legno\n" +
-									"7-9: 5x Scrigno di Ferro\n" +
-									"10-11: 5x Scrigno Prezioso\n" +
-									"12-14: 5x Scrigno di Diamante\n" +
-									"15-19: 5x Scrigno Leggendario\n" +
-									"20-24: 5x Scrigno Epico\n" +
-									"25-29: 15x Scrigno Epico\n" +
-									"30-in su: 1x Scrigno Capsula";
-
-								bot.sendMessage(message.chat.id, text, kbBack);
-							}
-						};
-					});
+				if (answer.text == "Torna alla casa dei giochi")
+					return;
+				
+				if (answer.text.indexOf(" ") == -1){
+					bot.sendMessage(message.chat.id, "Usa uno dei pulsanti per selezionare il mana", kbBack);
+					return;
 				}
+				
+				var mana = answer.text.trim().split(" ");
+				var color = mana[1].trim().toLowerCase();
+				var qnt = mana[0].trim();
+
+				if ((color != "blu") && (color != "rosso") && (color != "giallo")) {
+					bot.sendMessage(message.chat.id, "Colore del mana non valido", kbBack);
+					return;
+				}
+				
+				var mana_num = 0;
+				if (color == "blu")
+					mana_num = 1;
+				else if (color == "giallo")
+					mana_num = 2;
+				else if (color == "rosso")
+					mana_num = 3;
+				
+				if ((qnt != 50) && (qnt != 100)) {
+					bot.sendMessage(message.chat.id, "Quantità del mana non valida", kbBack);
+					return;
+				}
+				
+				var extracted = Math.round(getRandomArbitrary(1, 10));
+
+				bot.sendMessage(message.chat.id, "In caso di vittoria otterrai " + qnt + " mana " + color + ", in caso di sconfitta perderai quello giocato.\nIl numero sul tavolo indica *" + extracted + "*, lanci il dado?", kbNum).then(function () {
+					answerCallbacks[message.chat.id] = function (answer) {
+						if ((answer.text != "Torna alla casa dei giochi") && (answer.text != "Torna al menu")) {
+							connection.query('SELECT mana_1, mana_2, mana_3 FROM event_mana_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+								
+								if (Object.keys(rows).length == 0){
+									bot.sendMessage(message.chat.id, "Accedi almeno una volta alle Miniere di Mana per utilizzare questo gioco", kbBack);
+									return;
+								}
+
+								var checkMana = 0;
+								if (mana_num == 1)
+									checkMana = rows[0].mana_1;
+								else if (mana_num == 2)
+									checkMana = rows[0].mana_2;
+								else if (mana_num == 3)
+									checkMana = rows[0].mana_3;
+								
+								if (checkMana < qnt) {
+									bot.sendMessage(message.chat.id, "Non hai abbastanza mana " + color + ", riprova", kbBack);
+									return;
+								}
+								
+								connection.query('UPDATE event_mana_status SET mana_' + mana_num + ' = mana_' + mana_num + '-' + qnt + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+									if (err) throw err;
+								
+									var my_num = Math.round(getRandomArbitrary(1, 10));
+									var enemy_num = Math.round(getRandomArbitrary(1, 10));
+
+									var my_diff = Math.abs(extracted-my_num);
+									var enemy_diff = Math.abs(extracted-enemy_num);
+
+									var win = 0;
+									var win_text = "il minatore ha vinto, hai perso *" + qnt + "* mana " + color + "!";
+									if (my_diff < enemy_diff){
+										win = 1;
+										win_text = "hai vinto ed ottenuto *" + qnt + "* mana " + color + "!";
+										connection.query('UPDATE event_mana_status SET mana_' + mana_num + ' = mana_' + mana_num + '+' + (qnt*2) + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+										});
+										connection.query('UPDATE game_house_stats SET win = win+1 WHERE player_id = ' + player_id + ' AND type = 4', function (err, rows, fields) {
+											if (err) throw err;
+										});
+									} else {
+										connection.query('UPDATE game_house_stats SET lose = lose+1 WHERE player_id = ' + player_id + ' AND type = 4', function (err, rows, fields) {
+												if (err) throw err;
+										});
+									}
+									
+									bot.sendMessage(message.chat.id, "Il dado del tuo avversario mostra un *" + enemy_num + "*, il tuo mostra un *" + my_num + "*, " + win_text, kbAgain);
+								});
+							});
+						};
+					};
+				});
 			};
 		});
 	});
@@ -6449,9 +6653,8 @@ bot.onText(/gioca numeri/i, function (message) {
 		return;
 
 	var s = 1;
-	if ((message.from.id != 20471035) && (message.from.username != "Gaius87") && (message.from.username != "lorsalv") && (message.from.username != "Juri_L") && (message.from.username != "CH4R124RD") && (message.from.username != "Raukonar") && (message.from.username != "Shaeryen")) {
+	if ((message.from.id != 20471035) && (message.from.username != "Gaius87") && (message.from.username != "Raukonar"))
 		s = 0;
-	}
 
 	if (s == 0) {
 		var d = new Date();
@@ -6689,14 +6892,20 @@ bot.onText(/gira rotelle/i, function (message) {
 	if (!checkSpam(message))
 		return;
 
-	var d = new Date();
-	if (d.getDay() != 3) {
-		bot.sendMessage(message.chat.id, "La Casa dei Giochi è aperta solo il mercoledì, dalle 10:00 alle 22:00", back);
-		return;
-	}
-	if ((d.getHours() < 10) || (d.getHours() > 21)) {
-		bot.sendMessage(message.chat.id, "La Casa dei Giochi è aperta solo il mercoledì, dalle 10:00 alle 22:00", back);
-		return;
+	var s = 1;
+	if ((message.from.id != 20471035) && (message.from.username != "Gaius87") && (message.from.username != "Raukonar"))
+		s = 0;
+
+	if (s == 0) {
+		var d = new Date();
+		if (d.getDay() != 3) {
+			bot.sendMessage(message.chat.id, "La Casa dei Giochi è aperta solo il mercoledì, dalle 10:00 alle 22:00", back);
+			return;
+		}
+		if ((d.getHours() < 10) || (d.getHours() > 21)) {
+			bot.sendMessage(message.chat.id, "La Casa dei Giochi è aperta solo il mercoledì, dalle 10:00 alle 22:00", back);
+			return;
+		}
 	}
 
 	var kbBack = {
@@ -6882,9 +7091,8 @@ bot.onText(/vedi la carta/i, function (message) {
 		return;
 
 	var s = 1;
-	if ((message.from.id != 20471035) && (message.from.username != "Gaius87") && (message.from.username != "lorsalv") && (message.from.username != "Juri_L") && (message.from.username != "CH4R124RD") && (message.from.username != "Raukonar") && (message.from.username != "Shaeryen")) {
+	if ((message.from.id != 20471035) && (message.from.username != "Gaius87") && (message.from.username != "Raukonar"))
 		s = 0;
-	}
 
 	if (s == 0) {
 		var d = new Date();
@@ -18010,19 +18218,18 @@ bot.onText(/equipaggia drago/i, function (message) {
 			var dragon_type = rows[0].type;
 			var arms_duration = rows[0].arms_duration;
 
-			connection.query('SELECT item.name, item.dragon_power, item.description FROM item, inventory WHERE inventory.player_id = ' + player_id + ' AND item.id = inventory.item_id AND (item.dragon_power <> 0 OR (item.name LIKE "Stemma%" AND rarity = "UE")) AND inventory.quantity > 0', function (err, rows, fields) {
+			connection.query('SELECT item.name, item.dragon_power, item.description FROM item, inventory WHERE inventory.player_id = ' + player_id + ' AND item.id = inventory.item_id AND (item.dragon_power <> 0 OR (item.name LIKE "Stemma%" AND rarity = "UE")) AND inventory.quantity > 0 ORDER BY item.name', function (err, rows, fields) {
 				if (err) throw err;
 				var Keys = [];
 
 				if (Object.keys(rows).length > 0) {
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-						if (rows[i].dragon_power > 0) {
+						if (rows[i].dragon_power > 0)
 							Keys.push([rows[i].name + " (+" + rows[i].dragon_power + " attacco)"]);
-						} else if (rows[i].dragon_power < 0) {
+						else if (rows[i].dragon_power < 0)
 							Keys.push([rows[i].name + " (+" + Math.abs(rows[i].dragon_power) + " difesa)"]);
-						} else {
+						else
 							Keys.push([rows[i].name + " (Efficace solo sulla Vetta)"]);
-						}
 					}
 				}
 
@@ -37906,7 +38113,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 											itemid = 103;
 										}
 									} else if (ability_id == 6) {
-										text3 += val + sym + " " + forlevel;
+										text3 += "+1 utilizzo ogni 2 livelli, " + val + sym + " salute recuperata quando si torna in vita " + forlevel;
 										if (level < 2) {
 											money = 50000 * (level + 1);
 											itemqnt = 10;
@@ -37975,7 +38182,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 											itemid = 321;
 										}
 									} else if (ability_id == 10) {
-										text3 += "+1 utilizzo ogni 2 livelli, " + val + sym + " salute recuperata quando si torna in vita " + forlevel;
+										text3 += val + sym + " " + forlevel;
 										if (level < 2) {
 											money = 25000 * (level + 1);
 											itemqnt = 300;
@@ -39419,6 +39626,18 @@ function setAchievement(chat_id, player_id, type, increment, itemId = 0) {
 									if (err) throw err;
 									bot.sendMessage(chat_id, "Hai completato l'impresa giornaliera *" + name + "* e hai ricevuto *" + formatNumber(reward) + "  §*!", mark);
 									setAchievement(chat_id, player_id, 40, 1);
+									
+									connection.query("SELECT COUNT(*) As cnt, IFNULL(SUM(completed), 0) As compl FROM achievement_status WHERE player_id = " + player_id, function (err, rows, fields) {
+										if (err) throw err;
+
+										if (Object.keys(rows).length > 0) {
+											if ((rows[0].cnt == 3) && (rows[0].compl == 3)) {
+												connection.query('UPDATE player SET achievement_count_all = achievement_count_all+1 WHERE id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+												});
+											}
+										}
+									});
 								});
 								if ((achievement_count % 10) == 0) {
 									var randChest = Math.random() * 100;
@@ -39471,6 +39690,18 @@ function setAchievement(chat_id, player_id, type, increment, itemId = 0) {
 								if (err) throw err;
 								bot.sendMessage(chat_id, "Hai completato l'impresa giornaliera *" + name + "* e hai ricevuto *" + formatNumber(reward) + " §*!", mark);
 								setAchievement(chat_id, player_id, 40, 1);
+								
+								connection.query("SELECT COUNT(*) As cnt, IFNULL(SUM(completed), 0) As compl FROM achievement_status WHERE player_id = " + player_id, function (err, rows, fields) {
+									if (err) throw err;
+
+									if (Object.keys(rows).length > 0) {
+										if ((rows[0].cnt == 3) && (rows[0].compl == 3)) {
+											connection.query('UPDATE player SET achievement_count_all = achievement_count_all+1 WHERE id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+											});
+										}
+									}
+								});
 							});
 
 							if ((achievement_count % 10) == 0) {
@@ -44998,7 +45229,7 @@ bot.onText(/^imprese/i, function (message) {
 	if (message.text.toLowerCase().indexOf("completate") != -1)
 		return;
 
-	connection.query('SELECT id, account_id, achievement_count, dungeon_count, mission_count, craft_count, mission_team_count, exp, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, account_id, achievement_count, achievement_count_all, dungeon_count, mission_count, craft_count, mission_team_count, exp, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -45010,6 +45241,7 @@ bot.onText(/^imprese/i, function (message) {
 
 		var player_id = rows[0].id;
 		var cnt = rows[0].achievement_count;
+		var cnt_all = rows[0].achievement_count_all;
 		var lev = Math.floor(rows[0].exp / 10);
 		var mission_count = rows[0].mission_count;
 		var dungeon_count = rows[0].dungeon_count;
@@ -45146,7 +45378,7 @@ bot.onText(/^imprese/i, function (message) {
 						}
 					};
 
-					bot.sendMessage(message.chat.id, text + "\n<b>Imprese giornaliere completate</b>: " + formatNumber(cnt) + "\n\nLe imprese giornaliere con il * in caso di cap raggiunto (livello drago, talenti, ecc.), verranno completate automaticamente accedendo alla relativa sezione\nAlcune imprese giornaliere diventano più complicate ma allo stesso tempo più remunerative procedendo con le rinascite", kb).then(function () {
+					bot.sendMessage(message.chat.id, text + "\n<b>Imprese giornaliere completate</b>: " + formatNumber(cnt) + " (" + formatNumber(cnt_all) + " triplette)\n\nLe imprese giornaliere con il * in caso di cap raggiunto (livello drago, talenti, ecc.), verranno completate automaticamente accedendo alla relativa sezione\nAlcune imprese giornaliere diventano più complicate ma allo stesso tempo più remunerative procedendo con le rinascite", kb).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							if (answer.text.indexOf("Informazioni") != -1){
 								bot.sendMessage(message.chat.id, "Informazioni sulle Imprese Globali:\n\n" +
