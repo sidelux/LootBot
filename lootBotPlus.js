@@ -3857,7 +3857,7 @@ bot.onText(/^\/negoziodesc (.+),(.+)|^\/negoziodesc/, function (message, match) 
 			return;
 		}
 		
-		if (code == "tutte") {
+		if (code == "tutti") {
 			connection.query('SELECT code FROM public_shop WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {

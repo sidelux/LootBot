@@ -6463,7 +6463,7 @@ bot.onText(/casa dei giochi/i, function (message) {
 							};
 						});
 					} else if (answer.text.indexOf("Minatore") != -1) {
-						bot.sendMessage(message.chat.id, "*Minatore*\n\nIn questo gioco puoi tentare la fortuna scommettendo unità di Mana contro il misterioso Minatore. Se il tuo dado si avvicinerà più di quello avversario al numero sul tavolo, vincerai il doppio del Mana giocato. In caso di parità la vittoria è assegnata al Minatore.\n\nAl momento possiedi " + mana_txt, kbDice);
+						bot.sendMessage(message.chat.id, "*Minatore*\n\nIn questo gioco puoi tentare la fortuna scommettendo unità di Mana contro il misterioso Minatore. Se il tuo dado si avvicinerà più di quello avversario al numero sul tavolo, vincerai il doppio del Mana giocato. In caso di parità la vittoria è assegnata al Minatore, i dadi sono di 10 facce.\n\nAl momento possiedi " + mana_txt, kbDice);
 					}
 				};
 			});
@@ -6564,12 +6564,7 @@ bot.onText(/lancia il dado/i, function (message) {
 				
 				var mana = answer.text.trim().split(" ");
 				var color = mana[1].trim().toLowerCase();
-				var qnt = mana[0].trim();
-
-				if ((color != "blu") && (color != "rosso") && (color != "giallo")) {
-					bot.sendMessage(message.chat.id, "Colore del mana non valido", kbBack);
-					return;
-				}
+				var qnt = parseInt(mana[0].trim());
 				
 				var mana_num = 0;
 				if (color == "blu")
@@ -6578,6 +6573,15 @@ bot.onText(/lancia il dado/i, function (message) {
 					mana_num = 2;
 				else if (color == "rosso")
 					mana_num = 3;
+				else {
+					bot.sendMessage(message.chat.id, "Colore del mana non valido", kbBack);
+					return;
+				}
+				
+				if ((qnt == NaN) || (qnt == undefined)) {
+					bot.sendMessage(message.chat.id, "Quantità del mana non valida", kbBack);
+					return;
+				}
 				
 				if ((qnt != 50) && (qnt != 100)) {
 					bot.sendMessage(message.chat.id, "Quantità del mana non valida", kbBack);
@@ -6636,7 +6640,13 @@ bot.onText(/lancia il dado/i, function (message) {
 										});
 									}
 									
-									bot.sendMessage(message.chat.id, "Il dado del tuo avversario mostra un *" + enemy_num + "*, il tuo mostra un *" + my_num + "*, " + win_text, kbAgain);
+									connection.query('SELECT mana_1, mana_2, mana_3 FROM event_mana_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+
+										var mana_txt = "\n\nPossiedi " + formatNumber(rows[0].mana_1) + " Mana Blu, " + formatNumber(rows[0].mana_2) + " Mana Giallo e " + formatNumber(rows[0].mana_3) + " Mana Rosso, vuoi ritentare?";
+									
+										bot.sendMessage(message.chat.id, "Il dado del tuo avversario mostra un *" + enemy_num + "*, il tuo mostra un *" + my_num + "*, " + win_text + mana_txt + "", kbAgain);
+									});
 								});
 							});
 						};
@@ -47891,17 +47901,17 @@ function setFinishedTeamMission(element, index, array) {
 							var paPnt = 10;
 							if (luckyMode == 1) {
 								var d = new Date();
-								if (d.getDay() == 6) {
+								if (d.getDay() == 6)
 									paPnt = paPnt*2;
-								} else if (d.getDay() == 0) {
+								else if (d.getDay() == 0) {
 									var r = Math.random() * 100;
-									if (r < 50) {
+									if (r < 50)
 										paPnt = 0;
-									} else if ((r > 50) && (r < 75)) {
+									else if ((r > 50) && (r < 75))
 										paPnt = paPnt*3;
-									}
 								}
 							}
+							
 							var expPnt = Math.floor((duration*(parts+1))/60/60);
 							var qnt = rewardLevel*rewardStr[0];
 							if (paPnt > 0)
@@ -47968,9 +47978,8 @@ function setFinishedTeamMission(element, index, array) {
 							}else if (rewardStr[1] == "pietre"){
 								qnt = Math.round(qnt/2);
 								for (i = 4; i > 0; i--) {
-									if (qnt % (i+1) === 0){
+									if (qnt % (i+1) === 0)
 										break;
-									}
 								}
 								var val = (i+1);
 								qnt = qnt/val;
