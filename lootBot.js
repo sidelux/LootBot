@@ -3933,7 +3933,7 @@ function mainMenu(message) {
 		connection.query('SELECT phase, time_end FROM assault A, team_player T WHERE A.team_id = T.team_id AND T.player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
-				var dayDesc = "Dungeon in attesa";
+				var dayDesc = "Assalto in attesa";
 				var phase = rows[0].phase;
 				if (rows[0].time_end != null){
 					var d = new Date(rows[0].time_end);
@@ -16604,7 +16604,14 @@ bot.onText(/^Incanta|Torna all'incantamento/i, function (message) {
 					if (t1 != null) {
 						var d = new Date(t1);
 						var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-						bot.sendMessage(message.chat.id, "L'incantamento su questo oggetto è ancora efficace fino alle " + short_date, kbBack);
+						var kbExt = {
+							parse_mode: "Markdown",
+							reply_markup: {
+								resize_keyboard: true,
+								keyboard: [["Estendi Arma"], ["Torna all'incantamento"],["Torna al menu"]]
+							}
+						};
+						bot.sendMessage(message.chat.id, "L'incantamento su questo oggetto è ancora efficace fino alle " + short_date + ", puoi estenderlo di due ore al costo di 1 💎", kbExt);
 						return;
 					}
 				}
@@ -16614,7 +16621,14 @@ bot.onText(/^Incanta|Torna all'incantamento/i, function (message) {
 					if (t2 != null) {
 						var d = new Date(t2);
 						var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-						bot.sendMessage(message.chat.id, "L'incantamento su questo oggetto è ancora efficace fino alle " + short_date, kbBack);
+						var kbExt = {
+							parse_mode: "Markdown",
+							reply_markup: {
+								resize_keyboard: true,
+								keyboard: [["Estendi Armatura"], ["Torna all'incantamento"],["Torna al menu"]]
+							}
+						};
+						bot.sendMessage(message.chat.id, "L'incantamento su questo oggetto è ancora efficace fino alle " + short_date + ", puoi estenderlo di due ore al costo di 1 💎", kbExt);
 						return;
 					}
 				}
@@ -16624,7 +16638,14 @@ bot.onText(/^Incanta|Torna all'incantamento/i, function (message) {
 					if (t3 != null) {
 						var d = new Date(t3);
 						var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-						bot.sendMessage(message.chat.id, "L'incantamento su questo oggetto è ancora efficace fino alle " + short_date, kbBack);
+						var kbExt = {
+							parse_mode: "Markdown",
+							reply_markup: {
+								resize_keyboard: true,
+								keyboard: [["Estendi Scudo"], ["Torna all'incantamento"],["Torna al menu"]]
+							}
+						};
+						bot.sendMessage(message.chat.id, "L'incantamento su questo oggetto è ancora efficace fino alle " + short_date + ", puoi estenderlo di due ore al costo di 1 💎", kbExt);
 						return;
 					}
 				}
@@ -16750,6 +16771,129 @@ bot.onText(/^Incanta|Torna all'incantamento/i, function (message) {
 		}
 
 		bot.sendMessage(message.chat.id, "Per incantare un oggetto dell'equipaggiamento ti serve una Runa E oppure 2 💎, aumenterai il valore dell'oggetto e la probabilità di lanciare incantesimi.\n" + status, kb);
+	});
+});
+
+bot.onText(/^estendi (.+)/i, function (message, match) {
+	connection.query('SELECT account_id, holiday, id, gems, weapon_enchant, weapon2_enchant, weapon3_enchant, weapon_enchant_end, weapon2_enchant_end, weapon3_enchant_end, weapon_enchant_bonus, weapon2_enchant_bonus, weapon3_enchant_bonus, power_weapon, power_armor, power_shield FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+
+		if (rows[0].holiday == 1) {
+			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back)
+			return;
+		}
+
+		var player_id = rows[0].id;
+		var gems = rows[0].gems;
+	
+		var weapon = match[1].toLowerCase();
+
+		var kbBack = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Torna all'incantamento"],["Torna al menu"]]
+			}
+		};
+		
+		var kbYesNo = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Si"], ["Torna all'incantamento"],["Torna al menu"]]
+			}
+		};
+		
+		var weapon_desc = "";
+		if (weapon == "arma") {
+			if (rows[0].weapon_enchant == 0){
+				bot.sendMessage(message.chat.id, "Per poter estenderne l'incantamento, l'arma deve essere incantata", kbBack)
+				return;
+			}
+			weapon_desc = "dell'arma";
+		} else if (weapon == "armatura") {
+			if (rows[0].weapon2_enchant == 0){
+				bot.sendMessage(message.chat.id, "Per poter estenderne l'incantamento, l'armatura deve essere incantata", kbBack)
+				return;
+			}
+			weapon_desc = "dell'armatura";
+		} else if (weapon == "scudo") {
+			if (rows[0].weapon3_enchant == 0){
+				bot.sendMessage(message.chat.id, "Per poter estenderne l'incantamento, lo scudo deve essere incantato", kbBack)
+				return;
+			}
+			weapon_desc = "dello scudo";
+		} else {
+			bot.sendMessage(message.chat.id, "Tipo di equipaggiamento non valido", kbBack);
+			return;
+		}
+
+		bot.sendMessage(message.chat.id, "Puoi estendere di 2 ore l'incantamento attuale " + weapon_desc + ", ti costerà 1 💎, procedi?", kbYesNo).then(function () {
+			answerCallbacks[message.chat.id] = function (answer) {
+				if (answer.text.toLowerCase() == "si"){
+					
+					if (gems < 1) {
+						bot.sendMessage(message.chat.id, "Non hai abbastanza 💎", kbBack);
+						return;
+					}
+					
+					connection.query('SELECT weapon_enchant, weapon2_enchant, weapon3_enchant, weapon_enchant_end, weapon2_enchant_end, weapon3_enchant_end FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+					
+						if (weapon == "arma") {
+							if (rows[0].weapon_enchant == 0){
+								bot.sendMessage(message.chat.id, "L'arma non è incantata", kbBack);
+								return;
+							}
+							var d = new Date(rows[0].weapon_enchant_end);
+							d.setHours(d.getHours() + 2);
+							var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+							var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
+							
+							connection.query('UPDATE player SET gems = gems-1, weapon_enchant_end = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+								bot.sendMessage(message.chat.id, "L'incantamento dell'arma è stato esteso fino alle " + short_date, kbBack);
+							});
+						} else if (weapon == "armatura") {
+							if (rows[0].weapon2_enchant == 0){
+								bot.sendMessage(message.chat.id, "L'armatura non è incantata", kbBack);
+								return;
+							}
+							var d = new Date(rows[0].weapon2_enchant_end);
+							d.setHours(d.getHours() + 2);
+							var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+							var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
+							
+							connection.query('UPDATE player SET gems = gems-1, weapon2_enchant_end = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+								bot.sendMessage(message.chat.id, "L'incantamento dell'armatura è stato esteso fino alle " + short_date, kbBack);
+							});
+						} else if (weapon == "scudo") {
+							if (rows[0].weapon3_enchant == 0){
+								bot.sendMessage(message.chat.id, "Lo scudo non è incantato", kbBack);
+								return;
+							}
+							var d = new Date(rows[0].weapon3_enchant_end);
+							d.setHours(d.getHours() + 2);
+							var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+							var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
+							
+							connection.query('UPDATE player SET gems = gems-1, weapon3_enchant_end = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+								bot.sendMessage(message.chat.id, "L'incantamento dello scudo è stato esteso fino alle " + short_date, kbBack);
+							});
+						}
+					});
+				}
+			}
+		});
 	});
 });
 

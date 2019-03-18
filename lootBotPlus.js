@@ -2935,10 +2935,12 @@ bot.onText(/^\/iscritto ([\w,\-\s]+)|^\/iscritto/i, function (message, match) {
 		nick = message.from.username;
 
 	if (message.reply_to_message != undefined) {
-		if (message.reply_to_message.text.indexOf("@") != -1)
-			nick = message.reply_to_message.text;
-		else
-			nick = message.reply_to_message.from.username;
+		if (message.reply_to_message.text != undefined) {
+			if (message.reply_to_message.text.indexOf("@") != -1)
+				nick = message.reply_to_message.text;
+			else
+				nick = message.reply_to_message.from.username;
+		}
 	}
 
 	nick = nick.toString().replaceAll(/@/, "");
