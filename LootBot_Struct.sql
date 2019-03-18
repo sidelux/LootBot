@@ -242,6 +242,27 @@ CREATE TABLE `assault` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `assault_increment_history`
+--
+
+DROP TABLE IF EXISTS `assault_increment_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `assault_increment_history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `team_id` int(11) NOT NULL,
+  `player_id` int(11) NOT NULL,
+  `increment_count` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id` (`id`),
+  KEY `player_increment_history` (`player_id`),
+  KEY `team_increment_history` (`team_id`),
+  CONSTRAINT `player_increment_history` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `team_increment_history` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `assault_mob_weak`
 --
 
@@ -3496,4 +3517,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-03-18  9:00:04
+-- Dump completed on 2019-03-18 15:00:05
