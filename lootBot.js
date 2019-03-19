@@ -23923,12 +23923,12 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 
 														if (total_life != wall_max_life){
 															connection_sync.query("UPDATE assault_place_team SET total_life = " + wall_max_life + " WHERE team_id = " + team_id + " AND place_id = 5");
-															console.log("Salute mura adeguata (diversa da db)");
+															console.log("Salute mura adeguata (diversa da db) " + formatNumber(wall_max_life) + " - " + formatNumber(total_life));
 														}
 
 														if (life > wall_max_life){
 															connection_sync.query("UPDATE assault_place_team SET life = " + wall_max_life + " WHERE team_id = " + team_id + " AND place_id = 5");
-															console.log("Salute mura adeguata (superato il max)");
+															console.log("Salute mura adeguata (superato il max) " + formatNumber(life));
 														}
 
 														if (life >= wall_max_life){
@@ -24472,12 +24472,9 @@ bot.onText(/riprendi battaglia/i, function (message) {
 								connection.query('SELECT active FROM assault_place_team WHERE team_id = ' + team_id + ' AND place_id = ' + place_id, function (err, rows, fields) {
 									if (err) throw err;
 
-									if (Object.keys(rows).length == 0){
-										bot.sendMessage(message.chat.id, "Si è verificato un errore (" + place_id + "), contatta l'amministratore", kbBack2);
-										return;
-									}
-
-									var place_active = rows[0].active;
+									var place_active = 1;
+									if (Object.keys(rows).length > 0)
+										place_active = rows[0].active;
 
 									connection.query('SELECT P.nickname FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.role = 1 AND AP.team_id = ' + team_id, function (err, rows, fields) {
 										if (err) throw err;
@@ -25524,7 +25521,6 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															var mob_critic = mob[0].mob_critic;
 															var team_reduce = mob[0].team_reduce;
 
-															var range = getRandomArbitrary(2500, 10000);
 															var mob_damage = mobDamage(boss_count, players_num, boss_num, mob_count, mob_turn, 0);
 
 															if (debug)
@@ -25598,7 +25594,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	total_perc -= player_place5_perc;
 																}
 
-																var perc_players = connection_sync.query('SELECT place_id, COUNT(id) As cnt FROM assault_place_player_id WHERE killed = 0 AND place_id IN (3,4,1,6) AND team_id = ' + team_id + ' GROUP BY place_id HAVING cnt > 0');
+																var perc_players = connection_sync.query('SELECT place_id, COUNT(id) As cnt FROM assault_place_player_id WHERE killed = 0 AND place_id IN (5,3,4,1,6) AND team_id = ' + team_id + ' GROUP BY place_id HAVING cnt > 0');
 
 																var perc_place_cnt = Object.keys(perc_players).length;
 																var perc = Math.round(total_perc/perc_place_cnt);
@@ -25608,8 +25604,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		console.log(perc_players[i].place_id, perc);
 																}
 
-
-																var player = connection_sync.query('SELECT P.*, place_id, (SELECT COUNT(id) FROM assault_place_player_id WHERE place_id = AP.place_id) As cnt FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND place_id IN (5,3,4,1,6) AND killed = 0 ORDER BY FIELD(place_id,5,3,4,1,6), RAND()');
+																var player = connection_sync.query('SELECT P.*, place_id, (SELECT COUNT(id) FROM assault_place_player_id WHERE place_id = AP.place_id AND team_id = AP.team_id) As cnt FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND place_id IN (5,3,4,1,6) AND killed = 0 ORDER BY FIELD(place_id,5,3,4,1,6), RAND()');
 
 																if (Object.keys(player).length > 0){
 																	var playerid = 0;
@@ -25650,11 +25645,19 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	for (var i = 0, len = Object.keys(place_cnt).length; i < len; i++)
 																		tot_perc += eval("player_place" + place_cnt[i].place_id + "_perc");
 
+																	console.log("other damage: " + other_damage);
+																	
 																	for (var i = 0, len = Object.keys(player).length; i < len; i++){
 																		var status = [];
 																		this_perc = eval("player_place" + player[i].place_id + "_perc");
 																		divided_damage_att = other_damage * this_perc / (tot_perc*player[i].cnt);
-
+																		
+																		if (divided_damage_att == NaN){
+																			console.log("divided_damage_att a NaN:");
+																			console.log(divided_damage_att);
+																			console.log(other_damage, this_perc, tot_perc, player[i].cnt);
+																		}
+																		
 																		if (debug)
 																			console.log(player[i].nickname, Math.round(divided_damage_att));
 
@@ -25918,7 +25921,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 															if (checkAllKilled(team_id) == 1){
 																saveEpic(team_id, epic_var);
-																console.log("Tutto il team sconfitto");
+																console.log("Tutto il team sconfitto " + team_id);
 																final_report += assaultEmojiList[10] + " I compagni non sono più in grado di combattere, assalto fallito";
 
 																connection.query('SELECT chat_id FROM assault_place_player_id APP, player WHERE APP.player_id = player.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
@@ -26859,7 +26862,7 @@ function mobDamage(boss_count, players_num, boss_num, mob_count, mob_turn, custo
 	var range = getRandomArbitrary(2500, 10000);
 	if (customRange == 1)
 		range = 6000;
-	var mob_damage = (Math.sqrt(boss_count)+1) * (Math.sqrt(players_num)) * (boss_num/6) * range;
+	var mob_damage = (Math.sqrt(boss_count)+1) * (Math.sqrt(players_num)) * (boss_num/10) * range;
 	mob_damage = mob_damage / (4 - mob_count);
 	mob_damage = incremDamage(mob_damage, players_num, mob_turn);
 	mob_damage = Math.round(mob_damage);
@@ -37608,8 +37611,8 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 														return;
 													}
 
-													if (craft_count < 10000) {
-														bot.sendMessage(message.chat.id, "Non hai abbastanza punti creazione (" + craft_count + "/10.000)", back);
+													if (craft_count < 20000) {
+														bot.sendMessage(message.chat.id, "Non hai abbastanza punti creazione (" + craft_count + "/20.000)", back);
 														return;
 													}
 
@@ -47940,17 +47943,8 @@ function regenItems(team_id, place_id, level){
 
 		//console.log("Mura aggiornamento: " + team_id + " " + formatNumber(wall_max_life));
 
-		connection.query('SELECT life FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id, function (err, rows, fields) {
+		connection.query('UPDATE assault_place_team SET life = ' + wall_max_life + ', total_life = ' + wall_max_life + ' WHERE place_id = 5 AND team_id = ' + team_id, function (err, rows, fields) {
 			if (err) throw err;
-			if (rows[0].life > wall_max_life){
-				connection.query('UPDATE assault_place_team SET life = ' + wall_max_life + ', total_life = ' + wall_max_life + ' WHERE place_id = 5 AND team_id = ' + team_id, function (err, rows, fields) {
-					if (err) throw err;
-				});
-			} else {
-				connection.query('UPDATE assault_place_team SET total_life = ' + wall_max_life + ' WHERE place_id = 5 AND team_id = ' + team_id, function (err, rows, fields) {
-					if (err) throw err;
-				});
-			}
 		});
 	}
 }
