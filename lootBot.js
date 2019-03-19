@@ -2481,7 +2481,7 @@ bot.on('callback_query', function (message) {
 											if (isRandom)
 												randomText = " (in modo casuale tra le scelte a pari merito)";
 											for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-												bot.sendMessage(rows[i].chat_id, "La decisione presa è stata _" + choice + "_ da parte di " + choiceNum + " membri del party" + randomText + ", " + txt, mark);
+												bot.sendMessage(rows[i].chat_id, "La decisione presa, da parte di " + choiceNum + " membri del party" + randomText + ", è _" + choice + "_; " + txt, mark);
 											}
 
 											connection.query('UPDATE mission_team_party SET wait = 0, text_user = NULL WHERE party_id = ' + party_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
@@ -25694,8 +25694,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		dragon = getPlayerDragon(playerid, class_id, reborn, charm_id);
 
 																		defence += dragon[1];
-																		critical_armor = crit[1];
-																		critical_shield = crit[2];
+																		player_critical_armor = crit[1];
+																		player_critical_shield = crit[2];
 
 																		divided_damage_att -= defence;
 
@@ -26862,7 +26862,7 @@ function mobDamage(boss_count, players_num, boss_num, mob_count, mob_turn, custo
 	var range = getRandomArbitrary(2500, 10000);
 	if (customRange == 1)
 		range = 6000;
-	var mob_damage = (Math.sqrt(boss_count)+1) * (Math.sqrt(players_num)) * (boss_num/10) * range;
+	var mob_damage = (Math.sqrt(boss_count)+1) * (Math.sqrt(players_num)) * (boss_num/12) * range;
 	mob_damage = mob_damage / (4 - mob_count);
 	mob_damage = incremDamage(mob_damage, players_num, mob_turn);
 	mob_damage = Math.round(mob_damage);
