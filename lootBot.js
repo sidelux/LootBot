@@ -27323,9 +27323,12 @@ function playerKilled(team_id, player_id, place_id, is_boss){
 	if (place_id == 5)
 		prob += 5;
 	if (((is_boss == 0) && (rand <= prob)) || ((is_boss == 1) && (rand <= (prob+30)))){
-		connection_sync.query("UPDATE assault_place_team SET level = level-1 WHERE level > 1 AND place_id = " + place_id + " AND team_id = " + team_id);
-		var rows = connection_sync.query("SELECT id, name FROM assault_place WHERE id = " + place_id);
-		return "\nLa postazione " + assaultEmojiList[rows[0].id-1] + " <b>" + rows[0].name + "</b> è retrocessa di un livello!";
+		var rows = connection_sync.query("SELECT level FROM assault_place_team WHERE place_id = " + place_id + " AND team_id = " + team_id);
+		if (rows[0].level > 1) {
+			connection_sync.query("UPDATE assault_place_team SET level = level-1 WHERE level > 1 AND place_id = " + place_id + " AND team_id = " + team_id);
+			var rows = connection_sync.query("SELECT id, name FROM assault_place WHERE id = " + place_id);
+			return "\nLa postazione " + assaultEmojiList[rows[0].id-1] + " <b>" + rows[0].name + "</b> è retrocessa di un livello!";
+		}
 	}
 	return "";
 }
@@ -30921,7 +30924,7 @@ bot.onText(/scava!/i, function (message) {
 			var zone_id = rows[0].zone_id;
 			var qnt = Math.round(getRandomArbitrary(20, 50));
 			
-			connection.query('UPDATE event_mana_status SET boost_time = NULL, mana_' + zone_id + ' = ' + qnt + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+			connection.query('UPDATE event_mana_status SET boost_time = NULL, mana_' + zone_id + ' = mana_' + zone_id + '+' + qnt + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				
 				var color = "";
@@ -31641,13 +31644,10 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 			connection.query('DELETE FROM magic WHERE quantity <= 0 AND player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
-				var c = 0;
-
 				connection.query('SELECT type, power, quantity FROM magic WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length > 0) {
-						c = 1;
 						text = text + "\n\n*Incantesimi posseduti:*\n\n";
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 							text += "> " + magicToName(rows[i].type) + " " + rows[i].power + " (" + rows[i].quantity + ")\n";
@@ -31659,19 +31659,12 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 						if (err) throw err;
 
 						if (Object.keys(rows).length > 0) {
-							if (c == 0)
-								text += "\n\n*Materiali finali posseduti:*\n\n";
-							else
-								text += "\n*Materiali finali posseduti:*\n\n";
+							text += "\n*Materiali finali posseduti:*\n\n";
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 								text += "> " + rows[i].name + " (" + rows[i].quantity + ")\n";
 							text += "\n";
-						} else {
-							if (c == 0)
-								text += "\n\nNessun materiale finale posseduto\n";
-							else
-								text += "\nNessun materiale finale posseduto\n";
-						}
+						} else
+							text += "\nNessun materiale finale posseduto\n";
 
 						connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 13', function (err, rows, fields) {
 							if (err) throw err;
