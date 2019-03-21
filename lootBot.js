@@ -173,6 +173,7 @@ var j3 = Schedule.scheduleJob('01 00 * * *', function () { //00:01 notte
 	resetGnomorra();
 	refreshHeists();
 	refreshLife();
+	refreshManaBoost();
 });
 
 var j4 = Schedule.scheduleJob('05 00 * * *', function () { //00:05 notte
@@ -297,7 +298,9 @@ callNTimes(300000, function () { //Ogni 5 minuti
 	checkEnchant();
 	checkEnchant2();
 	checkEnchant3();
-	checkMana();
+	var d = new Date();
+	if ((d.getHours() > 9) && (d.getHours() < 22))
+		checkMana();
 });
 
 callNTimes(1800000, function () { //Ogni mezz'ora
@@ -6472,7 +6475,7 @@ bot.onText(/casa dei giochi/i, function (message) {
 							};
 						});
 					} else if (answer.text.indexOf("Minatore") != -1) {
-						bot.sendMessage(message.chat.id, "*Minatore*\n\nIn questo gioco puoi tentare la fortuna scommettendo unità di Mana contro il misterioso Minatore. Se il tuo dado si avvicinerà più di quello avversario al numero sul tavolo, vincerai il doppio del Mana giocato. In caso di parità la vittoria è assegnata al Minatore, i dadi sono di 10 facce.\n\nAl momento possiedi " + mana_txt, kbDice);
+						bot.sendMessage(message.chat.id, "*Minatore*\n\nIn questo gioco puoi tentare la fortuna scommettendo unità di Mana contro il misterioso Minatore. Se il tuo dado si avvicinerà più di quello avversario al numero sul tavolo, vincerai la stessa quantità di Mana giocato. In caso di parità la vittoria è assegnata al Minatore, i dadi sono di 10 facce.\n\nAl momento possiedi " + mana_txt, kbDice);
 					}
 				};
 			});
@@ -18844,7 +18847,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 
 			if (player_id != 1){
 				if (checkDragonTopOn == 0) {
-					bot.sendMessage(message.chat.id, "\nProssima stagione: 13 marzo 12:00 - 20 marzo 12:00\nSe hai partecipato alla stagione precedente, riceverai i premi a breve!", back_html);
+					bot.sendMessage(message.chat.id, "\nProssima stagione: 17 aprile 12:00 - 24 aprile 12:00\nSe hai partecipato alla stagione precedente, riceverai i premi a breve!", back_html);
 					return;
 				}
 			}
@@ -25855,11 +25858,11 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			var rand2 = Math.random()*100;
 																			if (player_critical_armor > rand1){
 																				divided_damage_att = divided_damage_att/1.5;
-																				status.push("ridotto dall'armatura");
+																				status.push("🥋");
 																				setAchievement(player[i].chat_id, playerid, 31, 1);
 																			}else if (player_critical_shield > rand2){
 																				divided_damage_att = 0;
-																				status.push("azzerato dallo scudo");
+																				status.push("🛡");
 																				setAchievement(player[i].chat_id, playerid, 32, 1);
 																			}
 																		}
@@ -26663,6 +26666,11 @@ bot.onText(/cura completa|^cura$/i, function (message) {
 			bot.sendMessage(message.chat.id, "Non necessiti di cure", kbBack);
 			return;
 		}
+		
+		if (player_life <= 0){
+			bot.sendMessage(message.chat.id, "Torna in vita prima di recuperare salute", revive);
+			return;
+		}
 
 		connection.query('SELECT cons_val FROM item WHERE id IN (92,93,94) ORDER BY id', function (err, rows, fields) {
 			if (err) throw err;
@@ -26859,18 +26867,18 @@ function assaultIncrement(message, player_id, team_id, kbBack){
 }
 
 function mobDamage(boss_count, players_num, boss_num, mob_count, mob_turn, assault_lost, customRange){
-	var range = getRandomArbitrary(2500, 10000);
+	var range = getRandomArbitrary(250, 1000);
 	if (customRange == 1)
-		range = 6000;
-	var mob_damage = (Math.sqrt(boss_count)+1) * (Math.sqrt(players_num)) * (boss_num/(20+Math.sqrt(assault_lost))) * range;
+		range = 600;
+	var mob_damage = (Math.sqrt(boss_count)+1) * (Math.sqrt(players_num)) * (boss_num/(2+Math.sqrt(assault_lost))) * range;
 	mob_damage = mob_damage / (4 - mob_count);
-	mob_damage = incremDamage(mob_damage, players_num, mob_turn);
+	mob_damage = incremDamage(mob_damage, players_num, mob_turn/2);
 	mob_damage = Math.round(mob_damage);
 	return mob_damage;
 }
 
 function incremDamage(damage, players_num, mob_turn){
-	// Moltiplicatore danno
+	// Moltiplicatore danno per turni
 	var mul = Math.floor(mob_turn/10);
 	damage = damage*(mul*mul > 0 ? mul*mul : 1);
 	return damage;
@@ -26880,7 +26888,6 @@ function saveEpic(team_id, epic_var){
 	connection.query("UPDATE assault SET epic_var = " + epic_var + " WHERE team_id = " + team_id, function (err, rows, fields) {
 		if (err) throw err;
 	});
-	//console.log("epic_var aggiornato: " + epic_var);
 }
 
 function generateMobWeakness(team_id, mob_cnt){
@@ -27127,12 +27134,12 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 							if (is_boss == 1)
 								exp = 20;
 
-							chest1 = Math.round(3.2*placeAvg*boss_molt);
-							chest2 = Math.round(2.0*placeAvg*boss_molt);
-							chest3 = Math.round(1.4*placeAvg*boss_molt);
-							chest4 = Math.round(1.0*placeAvg*boss_molt);
-							chest5 = Math.round(0.6*placeAvg*boss_molt);
-							chest6 = Math.round(0.3*placeAvg*boss_molt);
+							chest1 = Math.round(1.1*placeAvg*boss_molt);
+							chest2 = Math.round(0.9*placeAvg*boss_molt);
+							chest3 = Math.round(0.7*placeAvg*boss_molt);
+							chest4 = Math.round(0.5*placeAvg*boss_molt);
+							chest5 = Math.round(0.3*placeAvg*boss_molt);
+							chest6 = Math.round(0.1*placeAvg*boss_molt);
 
 							/*
 							if (rows[i].global_end == 1){
@@ -41810,7 +41817,7 @@ bot.onText(/^pozioni|^⚒$/i, function (message) {
 		var total_life = rows[0].total_life;
 
 		if (life <= 0) {
-			bot.sendMessage(message.chat.id, "Sei morto, per tornare in vita ti serve una Piuma di Fenice!", revive);
+			bot.sendMessage(message.chat.id, "Sei morto, torna in vita per poter proseguire le tue avventure!", revive);
 			return;
 		}
 
@@ -41886,7 +41893,7 @@ bot.onText(/Torna in Vita/i, function (message) {
 				bot.sendMessage(message.chat.id, "Sei in salute, non è necessario tornare in vita", back);
 				return;
 			}
-			bot.sendMessage(message.chat.id, "Vuoi usare una Piuma di Fenice o una Cenere di Fenice per tornare in vita?", kbHeal).then(function () {
+			bot.sendMessage(message.chat.id, "Vuoi usare una Piuma di Fenice, una Cenere di Fenice o l'Intervento Divino per tornare in vita?", kbHeal).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if (answer.text.indexOf("Piuma di Fenice") != -1) {
 						if (life > 0) {
@@ -46170,6 +46177,12 @@ function refreshLife() {
 	});
 }
 
+function refreshManaBoost() {
+	connection.query('UPDATE event_mana_status SET boost_cnt = 0, boost_time = NULL', function (err, rows, fields) {
+		if (err) throw err;
+	});
+}
+
 function refreshDragonLife() {
 	connection.query('UPDATE dragon SET life = total_life', function (err, rows, fields) {
 		if (err) throw err;
@@ -47641,8 +47654,13 @@ function checkHeistsProgress() {
 function checkMana() {
 	connection.query('SELECT player_id, chat_id FROM event_mana_status E, player P WHERE E.player_id = P.id AND time_start IS NOT NULL AND boost_time IS NULL AND boost_cnt < 3', function (err, rows, fields) {
 		if (err) throw err;
-		if (Object.keys(rows).length > 0)
+		if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length == 1)
+				console.log(getNow("it") + "\x1b[32m 1 evento mana lanciato\x1b[0m");
+			else
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " eventi mana lanciati\x1b[0m");
 			rows.forEach(setMana);
+		}
 	});
 }
 
@@ -47669,7 +47687,7 @@ function setMana(element, index, array) {
 			}
 		};
 		
-		bot.sendMessage(chat_id, "Durante l'estrazione di Mana trovi una vena più ricca del solito!\nHai tempo fino alle " + short_date + " prima che la zona crolli", kb);
+		bot.sendMessage(chat_id, "Durante l'estrazione di Mana trovi una vena più ricca del solito!\nHai tempo fino alle " + short_date + " prima che la zona crolli, scava!", kb);
 	});
 }
 
@@ -49922,7 +49940,7 @@ function setFinishedMission(element, index, array) {
 									return;
 								}
 								var chest_id = rows[0].id;
-								var money = Math.round(((Math.random() * 100) + 100) * mission_chest);
+								var money = Math.round(((Math.random() * 500) + 500) * mission_chest);
 
 								if (luckyMode == 1) {
 									var d = new Date();
@@ -50006,6 +50024,7 @@ function setFinishedMission(element, index, array) {
 									money = money * Math.round(6-level/20);
 
 								money = Math.round(money);
+								//console.log("monete miss " + chest_id + ": " + formatNumber(money));
 
 								if (mission_gem == 0) {
 									// non gemmata

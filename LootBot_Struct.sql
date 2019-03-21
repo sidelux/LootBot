@@ -1425,6 +1425,8 @@ CREATE TABLE `event_mana_status` (
   `mana_1` int(11) NOT NULL DEFAULT '0' COMMENT 'Blu',
   `mana_2` int(11) NOT NULL DEFAULT '0' COMMENT 'Giallo',
   `mana_3` int(11) NOT NULL DEFAULT '0' COMMENT 'Rosso',
+  `boost_cnt` tinyint(4) NOT NULL DEFAULT '0',
+  `boost_time` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `player_id` (`player_id`),
   CONSTRAINT `PLAYERID_MANAS` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -3517,4 +3519,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-03-20  9:00:07
+-- Dump completed on 2019-03-21  9:00:05
