@@ -2206,7 +2206,7 @@ bot.onText(/Donazioni|Lunari/i, function (message) {
 
 	var date = new Date();
 
-	connection.query("SELECT ROUND(SUM(amount)) As tot FROM donation_history WHERE MONTH(time) = " + (date.getMonth()+1), function (err, rows, fields) {
+	connection.query("SELECT ROUND(SUM(amount)) As tot FROM donation_history WHERE YEAR(time) = " + date.getFullYear() + " AND MONTH(time) = " + (date.getMonth()+1), function (err, rows, fields) {
 		if (err) throw err;
 
 		if (rows[0].tot == null)
@@ -14858,6 +14858,10 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																		if (err) throw err;
 																	});
 																}
+																
+																var heart = "❤️";
+																if (player_life/player_total_life*100 < 15)
+																	heart = "‼️";
 
 																bot.sendMessage(message.chat.id, "*" + monster_name + "*\n" +
 																				"\n❤️ *" + formatNumber(monster_life) + "* hp\n" +
@@ -14866,7 +14870,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																				(weapon2_name != "-" ? "🥋 " + weapon2_name + "\n" : "") +
 																				(weapon3_name != "-" ? "🛡 " + weapon3_name + "\n" : "") +
 																				(charm_name != "-" ? "📿 " + charm_name + "\n" : "") +
-																				"\n❤️ *" + formatNumber(player_life) + "* hp\n" +
+																				"\n" + heart + " *" + formatNumber(player_life) + "* hp\n" +
 																				my_status, dBattleM).then(function () {
 																	answerCallbacks[message.chat.id] = function (answer) {
 
@@ -49830,7 +49834,7 @@ function setFinishedMission(element, index, array) {
 								m = 3+mplus;
 								connection.query('UPDATE player SET boost_id = 7, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
 									if (err) throw err;
-									bot.sendMessage(chat_id, "Hai trovato una Bevanda Bottino! Per " + m + " missioni e/o stanze dungeon fornisce x10 monete.");
+									bot.sendMessage(chat_id, "Hai trovato una Bevanda Bottino! Per " + m + " missioni fornisce x3 monete, per altrettante stanze dungeon fornisce x10 monete.");
 									setAchievement(chat_id, element.id, 69, 1);
 								});
 							} else if (rand2 == 7) {
@@ -49953,7 +49957,7 @@ function setFinishedMission(element, index, array) {
 								money += abBonus;
 
 								if (boost_id == 7)
-									money = money * 10;
+									money = money * 3;
 
 								if ((class_id == 3) && (reborn == 5))
 									money += money * 0.1;
