@@ -6187,9 +6187,9 @@ bot.onText(/^\/scambia/i, function (message) {
 
 		var syntax = "Sintassi: '/scambia oggetto1,oggetto2,acquirente,quantità' (senza acquirente in caso di risposta)";
 
-		if (message.text.indexOf(" ") != -1) {
+		if (message.text.indexOf(" ") != -1)
 			text = message.text.substring(message.text.indexOf(" ") + 1, message.text.lenght);
-		} else {
+		else {
 			bot.sendMessage(message.from.id, syntax);
 			return;
 		}
