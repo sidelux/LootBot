@@ -5272,6 +5272,7 @@ bot.on('callback_query', function (message) {
 								addItem(player_id, item_id);
 
 								bot.answerCallbackQuery(message.id, {text: 'Acquistato ' + item_name + ' per ' + formatNumber(price) + ' §!'});
+								bot.sendMessage(message.from.id, "Hai acquistato " + item_name + " per " + formatNumber(price) + " § dal negozio di " + player2 + "!");
 
 								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + player_id2 + ' AND type = 2', function (err, rows, fields) {
 									if (err) throw err;
