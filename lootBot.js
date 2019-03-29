@@ -9915,7 +9915,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 											  "Destra? Sinistra? È tutto così dannatamente uguale e ben renderizzato in questo posto! Resterei ancora qui a guardarlo per %min%!",
 											  "Aspettando di entrare in una stanza fai per sbaglio cadere questo testo: stanza ti %min%! alla arrivare per mancano",
 											  "Stai percorrendo un tunnel in cui non c'è segnale, riprova tra %min%!",
-											  "Potresti entrare nella prossima stanza già ora, ma sei sicuro accadrà qualcosa li dentro tra %min%!",
+											  "Potresti entrare nella prossima stanza già ora, ma sei sicuro accadrà qualcosa li dentro entro %min%!",
 											  "Continui a correre come un forsennato in giro per i corridoi ancora per %min%...",
 											  "Girovaghi ancora per i menù per %min% prima di arrivare a una stanza",
 											  "Aspetti che il moto rotatorio terrestre cambi andando a tuo favore. Secondo i tuoi calcoli ci dovrebbero volere %min%!",
@@ -10322,6 +10322,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 									bot.sendMessage(message.chat.id, text, dNav).then(function () {
 										answerCallbacks[message.chat.id] = function (answer) {
+											if (answer.text == "Torna al menu")
+												return;
 											if ((answer.text == "⬆️") || (answer.text.toLowerCase() == "su"))
 												dir = dir_top;
 											else if ((answer.text == "⬅️") || (answer.text.toLowerCase() == "sinistra") || (answer.text.toLowerCase() == "sx"))
@@ -31194,7 +31196,7 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 
 							hours = Math.round(hours);
 							var plur = "a";
-							if (hours > 1)
+							if (hours >= 1)
 								plur = "e";
 							if (hours == 0)
 								hours = "meno di 1";
@@ -37712,6 +37714,14 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 			keyboard: [["Ottieni Artefatto"], ["Torna agli artefatti"], ["Torna al menu"]]
 		}
 	};
+	
+	var rBack = {
+		parse_mode: "Markdown",
+		reply_markup: {
+			resize_keyboard: true,
+			keyboard: [["Torna agli artefatti"], ["Torna al menu"]]
+		}
+	};
 
 	connection.query('SELECT account_id, id, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -37788,7 +37798,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 							if (err) throw err;
 
 							if (Object.keys(rows).length == 0) {
-								bot.sendMessage(message.chat.id, "Devi prima ottenere l'*Artefatto Fiammeggiante*!", back);
+								bot.sendMessage(message.chat.id, "Devi prima ottenere l'*Artefatto Fiammeggiante*!", rBack);
 								return;
 							}
 
@@ -37849,7 +37859,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 						connection.query('SELECT id FROM artifacts WHERE item_id = 615 AND player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 							if (Object.keys(rows).length == 0) {
-								bot.sendMessage(message.chat.id, "Devi prima ottenere l'*Artefatto Elettrico*!", back);
+								bot.sendMessage(message.chat.id, "Devi prima ottenere l'*Artefatto Elettrico*!", rBack);
 								return;
 							}
 							bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
@@ -37906,7 +37916,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 						connection.query('SELECT id FROM artifacts WHERE item_id = 644 AND player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 							if (Object.keys(rows).length == 0) {
-								bot.sendMessage(message.chat.id, "Devi prima ottenere l'*Artefatto Tempesta*!", back);
+								bot.sendMessage(message.chat.id, "Devi prima ottenere l'*Artefatto Tempesta*!", rBack);
 								return;
 							}
 							bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
@@ -37969,7 +37979,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 						connection.query('SELECT id FROM artifacts WHERE item_id = 648 AND player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 							if (Object.keys(rows).length == 0) {
-								bot.sendMessage(message.chat.id, "Devi prima ottenere l'*Artefatto Buio*!", back);
+								bot.sendMessage(message.chat.id, "Devi prima ottenere l'*Artefatto Buio*!", rBack);
 								return;
 							}
 
@@ -42897,19 +42907,19 @@ bot.onText(/necro del destino/i, function (message) {
 									}
 
 									var cost = 0;
-									if (num == 1){
+									if (num == 1)
 										cost = 1;
-									}else if (num == 2){
+									else if (num == 2)
 										cost = 5;
-									}else if (num == 3){
+									else if (num == 3)
 										cost = 10;
-									}else if (num == 4){
+									else if (num == 4)
 										cost = 15;
-									}else if (num == 5){
+									else if (num == 5)
 										cost = 25;
-									}else if (num == 6){
+									else if (num == 6)
 										cost = 50;
-									} else {
+									else {
 										bot.sendMessage(message.chat.id, "Ricompensa non valida", kbBack);
 										return;
 									}
@@ -51203,7 +51213,7 @@ function setExp(player_id, exp) {
 				connection.query('UPDATE player SET exp = exp+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 				});
-			} else if (my_exp == 10000) {
+			} else {
 				connection.query('SELECT COUNT(id) As cnt FROM artifacts WHERE item_id = 675 AND player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 					if (rows[0].cnt > 0) {

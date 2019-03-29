@@ -4171,7 +4171,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 						price = 0;
 
 					if (isNaN(quantity))
-						quantity = 1;
+						quantity = 0;
 
 					if ((price < 0) || (re.test(price) == false)) {
 						bot.sendMessage(message.chat.id, "Il prezzo " + formatNumber(price) + " non è valido");
@@ -4193,24 +4193,32 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 						item_id = itemQuery[0].id;
 						item_value = itemQuery[0].value;
 						item_max_value = itemQuery[0].max_value;
-						if (price < item_value){
-							text += "Oggetto impostato prezzo minimo: " + item_name + " (" + formatNumber(item_value) + ")\n";
-							price = item_value;
-						}
-						if (price > item_max_value){
-							text += "Oggetto impostato prezzo massimo: " + item_name + " (" + formatNumber(item_max_value) + ")\n";
-							price = item_max_value;
-						}
-
-						if ((quantity == 0) || (quantity == "")){
-							text += "Oggetto impostato quantità: " + item_name + " (1)\n";
-							quantity = 1;
-						}
-
+						
 						var shopQuery = connection_sync.query('SELECT id FROM public_shop WHERE item_id = ' + item_id + ' AND code = ' + code);
 						if (Object.keys(shopQuery).length == 0)
 							text += "Oggetto non presente nel negozio: " + item_name + "\n";
-						else{
+						else {
+							var itemShopQuery = connection_sync.query('SELECT price, quantity FROM public_shop WHERE id = ' + shopQuery[0].id);
+
+							if (price == 0)
+								price = itemShopQuery[0].price;
+							if (quantity == 0)
+								quantity = itemShopQuery[0].quantity;
+							
+							if (price < item_value){
+								text += "Oggetto impostato prezzo minimo: " + item_name + " (" + formatNumber(item_value) + ")\n";
+								price = item_value;
+							}
+							if (price > item_max_value){
+								text += "Oggetto impostato prezzo massimo: " + item_name + " (" + formatNumber(item_max_value) + ")\n";
+								price = item_max_value;
+							}
+
+							if ((quantity == 0) || (quantity == "")){
+								text += "Oggetto impostato quantità: " + item_name + " (1)\n";
+								quantity = 1;
+							}
+						
 							connection.query('UPDATE public_shop SET price = ' + price + ', quantity = ' + quantity + ' WHERE id = ' + shopQuery[0].id, function (err, rows, fields) {
 								if (err) throw err;
 							});
@@ -4947,7 +4955,7 @@ bot.on('callback_query', function (message) {
 		var diff = 0;
 
 		if (shop_id.indexOf(":") == -1)
-			updateShop(message, shop_id, 1);
+			updateShop(message, shop_id, 1, "");
 
 		if ((shop_id.indexOf(":") == -1) || (shop_id.indexOf("all") != -1) || (shop_id.indexOf("delete") != -1)) {
 			if (index == -1) {
@@ -4982,7 +4990,7 @@ bot.on('callback_query', function (message) {
 			var code = split[1];
 
 			if (split[0] == "update"){
-				updateShop(message, code);
+				updateShop(message, code, undefined, "");
 				check.splice(index, 1);
 			}else if (split[0] == "delete"){
 				connection.query('SELECT player_id FROM public_shop WHERE code = ' + code, function (err, rows, fields) {
@@ -5004,7 +5012,7 @@ bot.on('callback_query', function (message) {
 						if (err) throw err;
 						bot.answerCallbackQuery(message.id, {text: "Negozio eliminato!"});
 
-						updateShop(message, code);
+						updateShop(message, code, undefined, "");
 						check.splice(index, 1);
 					});
 				});
@@ -5129,7 +5137,7 @@ bot.on('callback_query', function (message) {
 												
 												var item = connection_sync.query('SELECT name FROM item WHERE id = ' + rows[i].item_id);
 												text += "> " + formatNumber(qnt) + "x " + item[0].name + " per " + formatNumber(qnt*rows[i].price) + " §\n";
-												console.log(formatNumber(qnt) + " " + item[0].name + " " + formatNumber(qnt*rows[i].price));
+												//console.log(formatNumber(qnt) + " " + item[0].name + " " + formatNumber(qnt*rows[i].price));
 
 												connection.query('INSERT INTO market_direct_history (item_id, price, quantity, time, from_id, to_id, type) VALUES (' + rows[i].item_id + ',' + rows[i].price + ',' + qnt + ',"' + long_date + '",' + player_id2 + ',' + player_id + ',2)', function (err, rows, fields) {
 													if (err) throw err;
@@ -5145,7 +5153,6 @@ bot.on('callback_query', function (message) {
 										console.log(getNow("it") + " - Acquisto di tutto il negozio da parte di " + message.from.username + " (" + shop_id + ", " + total_price + " §)");
 
 										bot.sendMessage(message.from.id, text);
-										bot.answerCallbackQuery(message.id, {text: 'Acquisto completato per ' + formatNumber(total_price) + ' §!'});
 
 										connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + player_id2 + ' AND type = 2', function (err, rows, fields) {
 											if (err) throw err;
@@ -5161,7 +5168,7 @@ bot.on('callback_query', function (message) {
 											};
 										});
 
-										updateShop(message, code);
+										updateShop(message, code, undefined, 'Acquisto completato per ' + formatNumber(total_price) + ' §!');
 										check.splice(index, 1);
 									});
 								});
@@ -5271,7 +5278,6 @@ bot.on('callback_query', function (message) {
 								delItem(player_id2, item_id, 1);
 								addItem(player_id, item_id);
 
-								bot.answerCallbackQuery(message.id, {text: 'Acquistato ' + item_name + ' per ' + formatNumber(price) + ' §!'});
 								bot.sendMessage(message.from.id, "Hai acquistato " + item_name + " per " + formatNumber(price) + " § dal negozio di " + player2 + "!");
 
 								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + player_id2 + ' AND type = 2', function (err, rows, fields) {
@@ -5300,7 +5306,7 @@ bot.on('callback_query', function (message) {
 
 								console.log(getNow("it") + " - Acquisto da parte di " + message.from.username + " (" + shop_id + ", " + item_name + ", " + price + " §)");
 
-								updateShop(message, code);
+								updateShop(message, code, undefined, 'Acquisto di ' + item_name + ' per ' + formatNumber(price) + ' §!');
 
 								check.splice(index, 1);
 								if (Object.keys(check).length > 100)
@@ -5314,7 +5320,7 @@ bot.on('callback_query', function (message) {
 	});
 });
 
-function updateShop(message, code, isId){
+function updateShop(message, code, isId, customQueryMessage){
 	var query = "";
 	if (isId == 1){
 		var shopCode = connection_sync.query("SELECT code FROM public_shop WHERE id = " + code);
@@ -5385,9 +5391,14 @@ function updateShop(message, code, isId){
 			}
 		});
 
-		if (isId == undefined)
-			bot.answerCallbackQuery(message.id, {text: 'Negozio aggiornato!'});
-		else
+		if (isId == undefined) {
+			if (customQueryMessage != "") {
+				if (customQueryMessage.length > 200)
+					customQueryMessage = customQueryMessage.substr(0, 197) + "...";
+				bot.answerCallbackQuery(message.id, {text: customQueryMessage});
+			} else
+				bot.answerCallbackQuery(message.id, {text: 'Negozio aggiornato!'});
+		} else
 			bot.answerCallbackQuery(message.id);
 	});
 }
