@@ -150,6 +150,9 @@ var j1 = Schedule.scheduleJob('00 8 * * *', function () { //8 di mattina
 
 var j2 = Schedule.scheduleJob('59 23 * * *', function () { //23:59 notte
 	saveActive();
+	var d = new Date();
+	if ((lootteria == 1) && (d.getDay() == 6))
+		cleanLottery();
 });
 
 var j21 = Schedule.scheduleJob('59 23 1 * *', function (){
@@ -1381,7 +1384,7 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 											extra = "";
 											if (i < 25) {
 												addChest(rows[i].player_id, 7);
-												extra = "ed ottieni uno Scrigno Capsula extra";
+												extra = " ed ottieni uno Scrigno Capsula extra";
 											}
 											connection.query('UPDATE player SET global_event = global_event+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
 												if (err) throw err;
@@ -1595,7 +1598,7 @@ function marketGeneration() {
 								}
 
 								for (var i = 0, len = items.length; i < len; i++) {
-									est[i] = Math.round(getRandomArbitrary(est[i] - (est[i] * 0.3), est[i] + (est[i] * 0.3)));
+									est[i] = Math.round(getRandomArbitrary(est[i] - (est[i] * 0.4), est[i] + (est[i] * 0.2)));
 									connection.query('INSERT INTO market_pack (pack_id, item_id, price) VALUES (' + rarity[i] + ',' + items[i] + ',' + est[i] + ')', function (err, rows, fields) {
 										if (err) throw err;
 									});
@@ -2373,28 +2376,26 @@ bot.on('callback_query', function (message) {
 									val3++;
 							}
 
-							if ((val1 > val2) && (val1 > val3)){
+							if ((val1 > val2) && (val1 > val3))
 								valmax = 1;
-							}else if ((val2 > val1) && (val2 > val3)){
+							else if ((val2 > val1) && (val2 > val3))
 								valmax = 2;
-							}else if ((val3 > val2) && (val3 > val1)){
+							else if ((val3 > val2) && (val3 > val1))
 								valmax = 3;
-							}
 
 							var isRandom = 0;
 
 							if (valmax == 0){
-								if ((val1 == val2) && (val2 == val3)){
+								if ((val1 == val2) && (val2 == val3))
 									valmax = [1,2,3].randomElement();
-								}else if (val1 == val2){
+								else if (val1 == val2)
 									valmax = [1,2].randomElement();
-								}else if (val1 == val3){
+								else if (val1 == val3)
 									valmax = [1,3].randomElement();
-								}else if (val2 == val3){
+								else if (val2 == val3)
 									valmax = [2,3].randomElement();
-								} else {
+								else
 									valmax = [1,2,3].randomElement();
-								}
 								isRandom = 1;
 							}
 
@@ -2565,6 +2566,11 @@ bot.onText(/avvEstraz/, function (message) {
 	};
 });
 
+bot.onText(/prossimaEstraz/, function (message) {
+	if (message.from.id == 20471035)
+		bot.sendMessage("@EstrazioniLootteria", "Acquista ora i biglietti per la Lootteria di oggi!");
+});
+
 bot.onText(/fineEstraz/, function (message) {
 	if (message.from.id == 20471035) {
 		var kb = {
@@ -2599,7 +2605,7 @@ bot.onText(/Scrigno di Consolazione/i, function (message) {
 
 		var date = new Date();
 
-		connection.query('SELECT extracted FROM event_lottery_prize WHERE day >= ' + date.getDay() + ' ORDER BY id DESC', function (err, rows, fields) {
+		connection.query('SELECT extracted FROM event_lottery_prize WHERE day = ' + date.getDay() + ' ORDER BY id DESC', function (err, rows, fields) {
 			if (err) throw err;
 			if (rows[0].extracted == 0) {
 				bot.sendMessage(message.chat.id, "L'estrazione è in corso!", back)
@@ -2652,10 +2658,7 @@ bot.onText(/Scrigno di Consolazione/i, function (message) {
 function estrazione() {
 	var date = new Date();
 
-	connection.query('SELECT E.id, item_id, I.name As item_name, money, chest_id, exp, C.name As chest_name, gems, mana, extracted, quantity ' +
-					 'FROM event_lottery_prize As E LEFT JOIN item As I ON E.item_id = I.id LEFT JOIN chest As C ON E.chest_id = C.id ' +
-					 'WHERE E.extracted = 0 AND E.day >= ' + date.getDay(),
-					 function (err, rows, fields) {
+	connection.query('SELECT E.id, item_id, I.name As item_name, money, chest_id, exp, C.name As chest_name, gems, mana, extracted, quantity FROM event_lottery_prize As E LEFT JOIN item As I ON E.item_id = I.id LEFT JOIN chest As C ON E.chest_id = C.id WHERE E.extracted = 0 AND E.day >= ' + date.getDay(), function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0) {
@@ -2744,18 +2747,15 @@ function estrazione() {
 					nick_extracted.push(playerId);
 					console.log("Estratto " + nickname);
 
-					if (quantity > 1) {
+					if (quantity > 1)
 						text += "> " + nickname + "\n";
-					} else {
+					else
 						text += "Il vincitore è <b>" + nickname + "</b>\n";
-					}
 
-					if (type == "item") {
+					if (type == "item")
 						addItem(playerId, item_id);
-					}
-					if (type == "chest") {
+					if (type == "chest")
 						addChest(playerId, chest_id);
-					}
 					if (type == "money") {
 						connection.query('UPDATE player SET money = money + ' + money + ' WHERE id = ' + playerId, function (err, rows, fields) {
 							if (err) throw err;
@@ -2766,9 +2766,8 @@ function estrazione() {
 							if (err) throw err;
 						});
 					}
-					if (type == "exp") {
+					if (type == "exp")
 						setExp(playerId, exp);
-					}
 					if (type == "mana") {
 						connection.query('UPDATE event_mana_status SET mana_1 = mana_1 + ' + mana + ', mana_2 = mana_2 + ' + mana + ', mana_3 = mana_3 + ' + mana + ' WHERE player_id = ' + playerId, function (err, rows, fields) {
 							if (err) throw err;
@@ -2798,11 +2797,10 @@ function estrazione() {
 
 bot.onText(/^\/estrazione$/, function (message) {
 	if (message.from.id == 20471035) {
-		if (autoEstrazione == 0) {
+		if (autoEstrazione == 0)
 			autoEstrazione = 1;
-		} else {
+		else
 			autoEstrazione = 0;
-		}
 		bot.sendMessage(message.chat.id, "Autoestrazione impostato a " + autoEstrazione);
 	};
 });
@@ -3886,14 +3884,17 @@ function mainMenu(message) {
 		var hour = fest_d.getHours();
 		var day = fest_d.getDate();
 		var month = fest_d.getMonth();
+		var easter = getEaster();
 		if ((day == 25) && (month == 11))
 			msgtext += " Buon Natale! " + christmas;
-		else if ((day == 1) && (month == 3))
+		else if ((day == easter[1]) && (month == easter[0]-1))
 			msgtext += " Buona Pasqua! 🐣";
 		else if (((day == 31) && (month == 9) && (hour >= 12)) || ((day == 1) && (month == 10) && (hour <= 12)))
 			msgtext += " Buon Halloween! 🎃";
 		else if ((day == 14) && (month == 1))
 			msgtext += " Buon San Valentino! 💘";
+		else if ((day == 15) && (month == 4))
+			msgtext += " Buon Compleanno Loot! ⚔️";
 
 		var player_id = rows[0].id;
 		var mission_id = rows[0].mission_id;
@@ -4360,6 +4361,22 @@ function mainMenu(message) {
 			});
 		});
 	});
+}
+
+function getEaster() {
+	var d = new Date();
+	var year = d.getFullYear();
+	var f = Math.floor,
+		G = year % 19,
+		C = f(year / 100),
+		H = (C - f(C / 4) - f((8 * C + 13)/25) + 19 * G + 15) % 30,
+		I = H - f(H/28) * (1 - f(29/(H + 1)) * f((21-G)/11)),
+		J = (year + f(year / 4) + I + 2 - C + f(C / 4)) % 7,
+		L = I - J,
+		month = 3 + f((L + 40)/44),
+		day = L + 28 - 31 * f(month / 4);
+
+	return [month, day];
 }
 
 function classSym(className) {
@@ -13885,7 +13902,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																if (cursed == 1)
 																	param = param*2;
 																if (rand < 70) {
-																	bot.sendMessage(message.chat.id, "Per la concentrazione prolungata, il il saggio dello Spirito Libero ti premia con " + param + " exp!", dNext);
+																	bot.sendMessage(message.chat.id, "Per la concentrazione prolungata, il saggio dello Spirito Libero ti premia con " + param + " exp!", dNext);
 																	setExp(player_id, param);
 																} else {
 																	param = param*2;
@@ -14170,7 +14187,7 @@ bot.onText(/stato dungeon/i, function (message){
 
 		var player_id = rows[0].id;
 		
-		connection.query('SELECT room_id, last_dir, dungeon_id FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT room_id, last_dir, dungeon_id, finish_time FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			
 			if (Object.keys(rows).length == 0){
@@ -14191,7 +14208,7 @@ bot.onText(/stato dungeon/i, function (message){
 			
 				var instance_tot = Math.round((rows[0].finish_date - now) / 1000); // In secondi
 
-				bot.sendMessage(message.from.username, "Ti trovi nella stanza numero " + room_id + last_dir_txt + "\nCrollo dungeon tra " + toTime(dungeon_tot, 0) + "\nCrollo istanza tra " + toTime(instance_tot, 0), dBack);
+				bot.sendMessage(message.chat.id, "Ti trovi nella stanza numero " + room_id + last_dir_txt + "\nCrollo dungeon tra " + toTime(dungeon_tot, 0) + "\nCrollo istanza tra " + toTime(instance_tot, 0), dBack);
 			});
 		});
 	});
@@ -26950,7 +26967,7 @@ function assaultIncrement(message, player_id, team_id){
 					if (err) throw err;
 					
 					var val = Math.round(rows[0].level*10/rows[0].max_level);
-					globalAchievement(player_id, val);
+					//globalAchievement(player_id, val);
 				});
 			});
 		});
@@ -27259,10 +27276,10 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 									chest5 = Math.round(chest5/2);
 									chest6 = Math.round(chest6/2);
 								}
+								*/
 								
 								if (rows[i].global_end == 1)
 									paPnt += 7;
-								*/
 
 								if (is_boss == 1){
 									randProb = Math.random()*100;
@@ -33651,7 +33668,7 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 										connection.query('SELECT money FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 											if (rows[0].money < price) {
-												bot.sendMessage(message.chat.id, "Non hai abbatanza monete!", back);
+												bot.sendMessage(message.chat.id, "Non hai abbastanza monete!", back);
 												return;
 											}
 											connection.query('UPDATE player SET market_pack = market_pack+1, money = money - ' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
@@ -42577,7 +42594,7 @@ bot.onText(/lootteria/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [["1 Biglietto (2.500 §)", "5 Biglietti (10.000 §)"], ["20 Biglietti (40.000 §)"], ["Torna al menu"]]
+			keyboard: [["1 Biglietto (10.000 §)", "5 Biglietti (40.000 §)"], ["20 Biglietti (160.000 §)"], ["30 Biglietti (240.000 §)"], ["Torna al menu"]]
 		}
 	};
 
@@ -42618,7 +42635,7 @@ bot.onText(/lootteria/i, function (message) {
 		var date = new Date();
 		var text = "";
 
-		connection.query('SELECT extracted FROM `event_lottery_prize` WHERE day >= ' + date.getDay(), function (err, rows, fields) {
+		connection.query('SELECT extracted FROM `event_lottery_prize` WHERE day = ' + date.getDay(), function (err, rows, fields) {
 			if (err) throw err;
 			if (rows[0].extracted == 1) {
 				bot.sendMessage(message.chat.id, "L'estrazione è in corso o è terminata, segui @EstrazioniLootteria!", back)
@@ -42627,7 +42644,7 @@ bot.onText(/lootteria/i, function (message) {
 			connection.query('SELECT COUNT(*) As num FROM event_lottery_coins WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
 				if (err) throw err;
 				var ticketNum = rows[0].num;
-				bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella Lootteria!\nAcquista biglietti per avere più probabilità di essere estratt" + gender_text + ", l'estrazione avverrà ogni sabato e domenica tra le 17 e le 20 e potrà essere seguita su @EstrazioniLootteria!\nPossiedi " + ticketNum + "/20 biglietti", kb);
+				bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella Lootteria!\nAcquista biglietti per avere più probabilità di essere estratt" + gender_text + ", l'estrazione avverrà ogni sabato e domenica tra le 17 e le 20 e potrà essere seguita su @EstrazioniLootteria!\nPossiedi " + ticketNum + "/30 biglietti", kb);
 			});
 		});
 	});
@@ -42649,7 +42666,7 @@ bot.onText(/bigliett/i, function (message) {
 
 	var ticketNum = parseInt(message.text.substring(0, message.text.indexOf(" ")));
 
-	if ((ticketNum != 1) && (ticketNum != 2) && (ticketNum != 3) && (ticketNum != 4) && (ticketNum != 5) && (ticketNum != 20)) {
+	if ((ticketNum != 1) && (ticketNum != 2) && (ticketNum != 3) && (ticketNum != 4) && (ticketNum != 5) && (ticketNum != 20) && (ticketNum != 30)) {
 		bot.sendMessage(message.chat.id, "Numero biglietti non valido", back);
 		return;
 	}
@@ -42665,7 +42682,7 @@ bot.onText(/bigliett/i, function (message) {
 
 				var date = new Date();
 
-				connection.query('SELECT extracted FROM `event_lottery_prize`, item WHERE item.id = event_lottery_prize.item_id AND day >= ' + date.getDay(), function (err, rows, fields) {
+				connection.query('SELECT extracted FROM `event_lottery_prize`, item WHERE item.id = event_lottery_prize.item_id AND day = ' + date.getDay(), function (err, rows, fields) {
 					if (err) throw err;
 					if (rows[0].extracted == 1) {
 						bot.sendMessage(message.chat.id, "Durante l'estrazione non puoi acquistare biglietti!", back)
@@ -42691,17 +42708,18 @@ bot.onText(/bigliett/i, function (message) {
 							if (err) throw err;
 							var playerTicket = parseInt(rows[0].num);
 
-							if ((playerTicket > 20) || (playerTicket + ticketNum > 20)) {
-								bot.sendMessage(message.chat.id, "Puoi possedere al massimo 20 biglietti per estrazione", back);
+							if ((playerTicket > 30) || (playerTicket + ticketNum > 30)) {
+								bot.sendMessage(message.chat.id, "Puoi possedere al massimo 30 biglietti per estrazione", back);
 								return;
 							}
 
-							var tot = ticketNum * 2500;
-							if (ticketNum == 5) {
-								tot = 10000;
-							} else if (ticketNum == 20) {
+							var tot = ticketNum * 10000;
+							if (ticketNum == 5)
 								tot = 40000;
-							}
+							else if (ticketNum == 20)
+								tot = 160000;
+							else if (ticketNum == 30)
+								tot = 240000;
 
 							if (money - tot <= 0) {
 								bot.sendMessage(message.chat.id, "Non hai abbastanza soldi", back);
@@ -43695,8 +43713,10 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 														if (isMatch == 1) {
 															var enemy_ability = rows[0].ability;
 															var prob = (Math.sqrt(ability)/Math.sqrt(ability_top)) - ((ability-enemy_ability)/ability);
+															/*
 															if (global_end == 1)
 																prob += 50;
+															*/
 															if (prob > Math.random())
 																key += 1;
 														}
@@ -45855,7 +45875,7 @@ bot.onText(/^imprese/i, function (message) {
 					else
 						text += formatNumber(mission_team_count) + " su " + formatNumber(progMissionTeam[end]) + " incarichi completati (" + formatNumber(progMissionTeamRew[end]) + " §)\n";
 
-					var time_end = new Date("2019-04-01 12:00:00");
+					var time_end = new Date("2019-05-01 12:00:00");
 					var now = new Date();
 					var diffD = Math.floor(((time_end - now) / 1000) / 60 / 60 / 24);
 					var diffH = Math.floor(((time_end - now) / 1000) / 60 / 60);
@@ -45881,7 +45901,7 @@ bot.onText(/^imprese/i, function (message) {
 							var cap = global_cap;
 							if (global_hide == 1)
 								cap = "???";
-							text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> incrementi attivati sulla base del livello della postazione.\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
+							text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> ???.\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
 						}
 					}
 
@@ -46362,6 +46382,16 @@ function cleanDragon() {
 		if (err) throw err;
 	});
 	console.log(getNow("it") + " cleanDragon ok.");
+}
+
+function cleanLottery(){
+	connection.query('DELETE FROM event_lottery_coins', function (err, rows, fields) {
+		if (err) throw err;
+	});
+	connection.query('UPDATE event_lottery_prize SET extracted = 0', function (err, rows, fields) {
+		if (err) throw err;
+	});
+	console.log(getNow("it") + " cleanLottery ok.");
 }
 
 function checkDragonSleep() {
@@ -51226,6 +51256,7 @@ function setExp(player_id, exp) {
 		}
 
 		setAchievement(player_id, 57, exp);
+		globalAchievement(player_id, exp);
 	});
 }
 
