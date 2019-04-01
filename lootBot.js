@@ -2607,6 +2607,10 @@ bot.onText(/Scrigno di Consolazione/i, function (message) {
 
 		connection.query('SELECT extracted FROM event_lottery_prize WHERE day = ' + date.getDay() + ' ORDER BY id DESC', function (err, rows, fields) {
 			if (err) throw err;
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Nessuna lotteria disponibile.", back);
+				return;
+			}
 			if (rows[0].extracted == 0) {
 				bot.sendMessage(message.chat.id, "L'estrazione è in corso!", back)
 				return;
@@ -4289,6 +4293,8 @@ function mainMenu(message) {
 														heart = "🖤";
 													else if (life/tot_life*100 < 60)
 														heart = "🧡";
+													else if (life == 0)
+														heart = "☠️";
 
 													msgtext += "\n" + rebSym(reborn) + " <b>" + lev + "</b> " + heart + " " + formatNumber(life) + "/" + formatNumber(tot_life) + "\n💰 " + formatNumber(money) + " §";
 													msgtext += price_drop_msg;
@@ -25386,14 +25392,17 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				magic_type = 2;
 																				magic_power = 50;
 																				magic_enchant = 1;
+																				epic_var++;
 																			} else if (weapon_id == 631) {
 																				magic_type = 3;
 																				magic_power = 50;
 																				magic_enchant = 1;
+																				epic_var++;
 																			} else if (weapon_id == 632) {
 																				magic_type = 1;
 																				magic_power = 50;
 																				magic_enchant = 1;
+																				epic_var++;
 																			}
 																		}
 																		if (magic_rand < 10) {
@@ -27203,6 +27212,9 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								place_text = " (" + paPlace + " per le postazioni rimaste)";
 							}
 							paPnt += acc_bonus;
+							
+							var paUpd = paPnt;
+							var paView = paPnt;
 
 							var reward = "";
 							var boss_molt = (1+boss_num/10);
@@ -27228,6 +27240,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								chest8 = 0;
 								chest9 = 0;
 								capsule = 0;
+								paView = paPnt;
 
 								var ability = connection_sync.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + rows[i].id + ' AND ability_id = 12');
 
@@ -27278,8 +27291,10 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								}
 								*/
 								
-								if (rows[i].global_end == 1)
-									paPnt += 7;
+								if (rows[i].global_end == 1) {
+									paUpd += 7;
+									paView += 7;
+								}
 
 								if (is_boss == 1){
 									randProb = Math.random()*100;
@@ -27297,7 +27312,8 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								}
 
 								// costruzione testo e consegna
-								reward += "> <b>" + paPnt + "</b> 🦋" + place_text + "\n\n";
+								// console.log("paView " + paView);
+								reward += "> <b>" + paView + "</b> 🦋" + place_text + "\n\n";
 								if (exp > 0){
 									reward += "> <b>" + exp + "</b> exp\n";
 									setExp(rows[i].id, exp);
@@ -27360,7 +27376,8 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								setAchievement(rows[i].id, 19, 1);
 							}
 
-							connection.query('UPDATE team SET point = point+' + paPnt + ' WHERE id = ' + team_id, function (err, rows, fields) {
+							console.log("paUpd " + paUpd);
+							connection.query('UPDATE team SET point = point+' + paUpd + ' WHERE id = ' + team_id, function (err, rows, fields) {
 								if (err) throw err;
 							});
 							if (is_boss == 1){
@@ -38640,7 +38657,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 											itemid = 165;
 										}
 									} else if (ability_id == 7) {
-										text3 += toTime(val*60,0) + " " + forlevel;
+										text3 += val + sym + " " + forlevel;
 										if (level < 10){
 											gems = 5 * (level+1);
 											itemqnt = 1;
@@ -43697,6 +43714,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 												if (err) throw err;
 
 												var key = 0;
+												var key_lost = 0;
 												/*
 												if (global_end == 1)
 													key += 5;
@@ -43719,17 +43737,34 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 															*/
 															if (prob > Math.random())
 																key += 1;
+															
+															var keys_query = connection_sync.query('SELECT mkeys FROM player WHERE id = ' + toId);
+															var key_lost = 0;
+															var rand = Math.random()*100;
+															if ((keys_query[0].mkeys > 0) && (rand < 30))
+																key_lost = 1;
 														}
 
 														var extra = "";
 														if (key > 0){
-															extra = " e " + key + "x Chiave Mistica 🗝!";
+															extra = " e " + key + "x Chiave Mistica 🗝";
+															if (key_lost > 0)
+																extra += " (+" + key_lost + " sgraffignata dall'avversario)";
+															extra += "!";
 															setAchievement(player_id, 65, 1);
 														}
+														
+														// console.log(key, key_lost);
 
-														connection.query('UPDATE player SET mkeys = mkeys+' + key + ' WHERE id = ' + player_id, function (err, rows, fields) {
+														connection.query('UPDATE player SET mkeys = mkeys+' + (key+key_lost) + ' WHERE id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 														});
+														
+														if (key_lost > 0){
+															connection.query('UPDATE player SET mkeys = mkeys-' + (key_lost) + ' WHERE id = ' + toId, function (err, rows, fields) {
+																if (err) throw err;
+															});
+														}
 
 														bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è migliore di quella del guardiano (" + combi + ")!\nIn una stanzetta all'interno del rifugio hai trovato un sacchettino contenente " + moneytxt + extra, kbBack);
 													});
@@ -43804,35 +43839,12 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 											});
 										};
 									};
-								} else {
-									connection.query('SELECT mkeys FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+								} else {										
+									connection.query('DELETE FROM heist_progress WHERE from_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
-										
-										var key_lost = 0;
-										var rand = Math.random()*100;
-										if ((isMatch == 1) && (rows[0].mkeys > 0) && (rand < 30))
-											key_lost = 1;
-										
-										var extra = "Il portone del rifugio si blocca ed il tuo gnomo è costretto a tornare indietro";
-										var extra2 = "";
-										if (key_lost == 1) {
-											extra = "Il portone del rifugio si blocca, ma il tuo gnomo tornando indietro lascia cadere dalle tasche una delle tue Chiavi Mistiche 🗝!";
-											extra2 = " e dalle tasche lascia cadere una delle sue Chiavi Mistiche 🗝!";
-											
-											connection.query('UPDATE player SET mkeys = mkeys-1 WHERE id = ' + player_id, function (err, rows, fields) {
-												if (err) throw err;
-											});
-											connection.query('UPDATE player SET mkeys = mkeys+1 WHERE id = ' + toId, function (err, rows, fields) {
-												if (err) throw err;
-											});
-										}
-										
-										connection.query('DELETE FROM heist_progress WHERE from_id = ' + player_id, function (err, rows, fields) {
-											if (err) throw err;
-											bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è peggiore di quella del guardiano (" + combi + ")! " + extra, kbBack);
+										bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è peggiore di quella del guardiano (" + combi + ")! Il portone del rifugio si blocca ed il tuo gnomo è costretto a tornare indietro", kbBack);
 
-											bot.sendMessage(toChat, "<b>" + message.from.username + "</b> non è riuscito a sconfiggere il guardiano del tuo portone, così è stato respinto" + extra2, html);
-										});
+										bot.sendMessage(toChat, "<b>" + message.from.username + "</b> non è riuscito a sconfiggere il guardiano del tuo portone, così è stato respinto", html);
 									});
 
 									if (isMatch == 1) {
@@ -44441,7 +44453,7 @@ bot.onText(/^protezione/i, function (message) {
 			bot.sendMessage(message.chat.id, "Ti serve il Campo di Forza.", back);
 			return;
 		}
-		bot.sendMessage(message.chat.id, "Il Campo di Forza ti fornirà protezione dalle Ispezioni per 24 ore, ma intanto non potrai ispezionare, confermi?", yesno).then(function () {
+		bot.sendMessage(message.chat.id, "Il Campo di Forza ti fornirà protezione dalle Ispezioni per 24 ore, ma intanto non potrai ispezionare, confermi?\nNe possiedi ancora " + getItemCnt(player_id, 237), yesno).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				var conf = answer.text;
 				if (conf == "Si") {
