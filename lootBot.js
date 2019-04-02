@@ -27376,7 +27376,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								setAchievement(rows[i].id, 19, 1);
 							}
 
-							console.log("paUpd " + paUpd);
+							//console.log("paUpd " + paUpd);
 							connection.query('UPDATE team SET point = point+' + paUpd + ' WHERE id = ' + team_id, function (err, rows, fields) {
 								if (err) throw err;
 							});
@@ -40316,7 +40316,7 @@ bot.onText(/^scrigni|torna agli scrigni|vai agli scrigni/i, function (message) {
 				iKeys.push(["Apri tutti"]);
 
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-				iKeys.push(["Apri " + rows[i].name + " (" + rows[i].num + ")"]);
+				iKeys.push(["Apri " + rows[i].name + " (" + formatNumber(rows[i].num) + ")"]);
 
 			iKeys.push(["Vai all'emporio", "Torna al menu"]);
 
@@ -43739,7 +43739,6 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 																key += 1;
 															
 															var keys_query = connection_sync.query('SELECT mkeys FROM player WHERE id = ' + toId);
-															var key_lost = 0;
 															var rand = Math.random()*100;
 															if ((keys_query[0].mkeys > 0) && (rand < 30))
 																key_lost = 1;
