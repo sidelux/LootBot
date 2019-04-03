@@ -43764,7 +43764,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 														if (key > 0){
 															extra = " e " + key + "x Chiave Mistica 🗝";
 															if (key_lost > 0)
-																extra += " (+" + key_lost + " sgraffignata dall'avversario)";
+																extra += " (+" + key_lost + " sgraffignata all'avversario)";
 															extra += "!";
 															setAchievement(player_id, 65, 1);
 														}
