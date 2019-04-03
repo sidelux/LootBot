@@ -1,12 +1,12 @@
 process.env["NTBA_FIX_319"] = 1;
 
 process.on('uncaughtException', function (error) {
-	console.log("\x1b[31m", "Exception: ", error, "\x1b[0m");
+	console.log("\x1b[31mException: ", error, "\x1b[0m");
 });
 
 process.on('unhandledRejection', function (error, p) {
 	if ((error.message.indexOf("Too Many Requests") == -1) && (error.message.indexOf("message is not modified") == -1))
-		console.log("\x1b[31m","Error: ", error.message, "\x1b[0m");
+		console.log("\x1b[31mError: ", error.message, "\x1b[0m");
 });
 
 var config = require('./config.js');
@@ -106,7 +106,7 @@ bot.on('edited_message', function (message) {
 
 bot.on('message', function (message) {
 	if (message.text != undefined) {		
-		if (message.text.startsWith("/"))
+		if (message.text.startsWith("/") && !(message.text.startsWith("//")))
 			console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
 
 		if ((message.from.id != 20471035) && (message.chat.id == -1001097316494)){

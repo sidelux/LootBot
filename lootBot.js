@@ -6,7 +6,7 @@ process.on('uncaughtException', function (error) {
 });
 
 process.on('unhandledRejection', function (error, p) {
-	if (error.message.indexOf("Too Many Requests") == -1)
+	if ((error.message.indexOf("Too Many Requests") == -1) && (error.message.indexOf("message is not modified") == -1))
 		console.log("\x1b[31munhandledRejection: " + error.message + "\x1b[0m");
 });
 
@@ -14209,12 +14209,12 @@ bot.onText(/stato dungeon/i, function (message){
 			var now = new Date();
 			var dungeon_tot = Math.round((rows[0].finish_time - now) / 1000); // In secondi
 			
-			connection.query('SELECT finish_date FROM dungeon_list WHERE id = ' + rows[0].dungeon_id, function (err, rows, fields) {
+			connection.query('SELECT finish_date, name FROM dungeon_list WHERE id = ' + rows[0].dungeon_id, function (err, rows, fields) {
 				if (err) throw err;
 			
 				var instance_tot = Math.round((rows[0].finish_date - now) / 1000); // In secondi
 
-				bot.sendMessage(message.chat.id, "Ti trovi nella stanza numero " + room_id + last_dir_txt + "\nCrollo dungeon tra " + toTime(dungeon_tot, 0) + "\nCrollo istanza tra " + toTime(instance_tot, 0), dBack);
+				bot.sendMessage(message.chat.id, "*" + rows[0].name + "*\nTi trovi nella stanza numero " + room_id + last_dir_txt + "\nCrollo dungeon tra " + toTime(dungeon_tot, 0) + "\nCrollo istanza tra " + toTime(instance_tot, 0), dBack);
 			});
 		});
 	});
@@ -26777,18 +26777,27 @@ bot.onText(/cura completa|^cura$/i, function (message) {
 			var achievement = 0;
 			if (player_life <= player_total_life*0.2)
 				achievement = 1;
+			
+			var pot1bag = getItemCnt(player_id, 92);
+			var pot2bag = getItemCnt(player_id, 93);
+			var pot3bag = getItemCnt(player_id, 94);
+			
+			if (pot1bag+pot2bag+pot3bag == 0){
+				bot.sendMessage(message.chat.id, "Non pozioni per recuperare salute", kbBack);
+				return;
+			}
 
 			var pot1 = 0;
 			var pot2 = 0;
 			var pot3 = 0;
 			while (player_life < player_total_life){
-				if ((player_life+Math.round(player_total_life*perc3) <= player_total_life) && (getItemCnt(player_id, 94)-pot3 > 0)){
+				if ((player_life+Math.round(player_total_life*perc3) <= player_total_life) && (pot3bag-pot3 > 0)){
 					player_life += Math.round(player_total_life*perc3);
 					pot3++;
-				}else if ((player_life+Math.round(player_total_life*perc2) <= player_total_life) && (getItemCnt(player_id, 93)-pot2 > 0)){
+				}else if ((player_life+Math.round(player_total_life*perc2) <= player_total_life) && (pot2bag-pot2 > 0)){
 					player_life += Math.round(player_total_life*perc2);
 					pot2++;
-				}else if (getItemCnt(player_id, 92)-pot1 > 0){
+				}else if (pot1bag-pot1 > 0){
 					player_life += Math.round(player_total_life*perc1);
 					pot1++;
 				}else
@@ -26797,20 +26806,20 @@ bot.onText(/cura completa|^cura$/i, function (message) {
 			
 			if (achievement == 1)
 				setAchievement(player_id, 20, (pot1+pot2+pot3));
+			
+			if (pot1+pot2+pot3 == 0){
+				bot.sendMessage(message.chat.id, "Non hai recuperato salute", kbBack);
+				return;
+			} else
+				setAchievement(player_id, 35, pot1+pot2+pot3);
 
 			var text = "";
-			if (pot1 > 0){
-				setAchievement(player_id, 35, pot1);
+			if (pot1 > 0)
 				text += "\n> *" + pot1 + "*x Pozione Piccola";
-			}
-			if (pot2 > 0){
-				setAchievement(player_id, 35, pot2);
+			if (pot2 > 0)
 				text += "\n> *" + pot2 + "*x Pozione Media";
-			}
-			if (pot3 > 0){
-				setAchievement(player_id, 35, pot3);
+			if (pot3 > 0)
 				text += "\n> *" + pot3 + "*x Pozione Grande";
-			}
 
 			delItem(player_id, 92, pot1);
 			delItem(player_id, 93, pot2);
@@ -35327,17 +35336,24 @@ bot.onText(/zaino completo/i, function (message) {
 				for (var i = 0, len = Object.keys(arr).length; i < len; i++) {
 					text += arr[i] + "\n";
 					if ((Object.keys(text).length + Object.keys(arr[i]).length) >= max) {
+						if (text == "")
+							console.log("Zaino: 1");
 						bot.sendMessage(message.chat.id, text, backpackB);
 						text = "";
 					}
 				}
 				if (text != "") {
 					setTimeout(function () {
+						if (text == "")
+							console.log("Zaino: 2");
 						bot.sendMessage(message.chat.id, text, backpackB);
 					}, 300);
 				}
-			} else
+			} else {
+				if (text == "")
+					console.log("Zaino: 3");
 				bot.sendMessage(message.chat.id, bottext, backpackB);
+			}
 		});
 	});
 });
@@ -45804,13 +45820,14 @@ bot.onText(/^imprese/i, function (message) {
 			if (globalVal == null)
 				globalVal = 0;
 
-			connection.query('SELECT global_eventon, global_eventwait, global_eventhide, global_cap FROM config', function (err, rows, fields) {
+			connection.query('SELECT global_eventon, global_eventwait, global_eventhide, global_cap, global_desc FROM config', function (err, rows, fields) {
 				if (err) throw err;
 
 				var global = rows[0].global_eventon;
 				var global_wait = rows[0].global_eventwait;
 				var global_hide = rows[0].global_eventhide;
 				var global_cap = rows[0].global_cap;
+				var global_desc = rows[0].global_desc;
 
 				connection.query('SELECT L.name, L.det, L.value, L.reward, L.type, S.progress, I.name As itemName, L.multiply, S.completed FROM achievement_daily D INNER JOIN achievement_list L ON D.achievement_id = L.id LEFT JOIN achievement_status S ON S.achievement_id = D.achievement_id AND S.player_id = ' + player_id + ' LEFT JOIN item I ON D.item_id = I.id', function (err, rows, fields) {
 					if (err) throw err;
@@ -45912,7 +45929,7 @@ bot.onText(/^imprese/i, function (message) {
 							var cap = global_cap;
 							if (global_hide == 1)
 								cap = "???";
-							text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> ???.\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
+							text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> " + global_desc + ".\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
 						}
 					}
 

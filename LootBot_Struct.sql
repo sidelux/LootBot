@@ -639,6 +639,7 @@ CREATE TABLE `config` (
   `global_eventon` int(11) NOT NULL DEFAULT '0',
   `global_eventwait` int(11) NOT NULL DEFAULT '0' COMMENT 'Raccogliendo dati',
   `global_eventhide` int(11) NOT NULL DEFAULT '0' COMMENT 'Cap non visibile',
+  `global_desc` varchar(256) NOT NULL,
   `global_cap` bigint(32) NOT NULL DEFAULT '1000',
   `global_item1` int(11) NOT NULL DEFAULT '0' COMMENT 'Più costosa',
   `global_item2` int(11) NOT NULL DEFAULT '0',
@@ -3519,4 +3520,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-04-02  9:00:05
+-- Dump completed on 2019-04-03 12:00:05
