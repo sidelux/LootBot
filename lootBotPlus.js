@@ -9313,7 +9313,7 @@ bot.onText(/^\/ispeziona/, function (message) {
 					return;
 				}
 
-				connection.query('SELECT id, account_id, reborn, holiday FROM player WHERE nickname="' + usr + '"', function (err, rows, fields) {
+				connection.query('SELECT id, account_id, reborn, holiday FROM player WHERE nickname = "' + usr + '"', function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0) {
 						if (isBanned(rows[0].account_id) != null) {
@@ -9502,7 +9502,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, account_
 	});
 }
 
-bot.onText(/^\/spia/, function (message) {
+bot.onText(/^\/spia$/, function (message) {
 
 	if (message.reply_to_message == undefined) {
 		bot.sendMessage(message.chat.id, message.from.username + ", questo comando va utilizzato in <i>risposta</i>", html);
@@ -9514,7 +9514,7 @@ bot.onText(/^\/spia/, function (message) {
 
 	var player = message.reply_to_message.from.username;
 
-	connection.query('SELECT account_id, holiday, spy_count, heist_protection, account_id, id, exp, weapon, house_id, money, spy_description FROM player WHERE nickname="' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, holiday, spy_count, heist_protection, account_id, id, exp, weapon, house_id, money, spy_description FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0)
