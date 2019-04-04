@@ -4147,7 +4147,7 @@ function mainMenu(message) {
 													}
 													if (dungeon_min > -1) {
 														var plur = "i";
-														if (dungeon_min == 1)
+														if (dungeon_min <= 1)
 															plur = "o";
 														var room_txt = room_num + "/" + room_tot_num;
 														if (room_num > room_tot_num)
@@ -4156,7 +4156,6 @@ function mainMenu(message) {
 															dungeon_min = "meno di 1";
 														msgtext = msgtext + "\n🛡 Prossima stanza tra " + dungeon_min + " minut" + plur + " (" + room_txt + ")" + dungeon_diff;
 													}
-
 													if ((room_time == null) && (dungeon_time == null)) {
 														var room_txt = room_num + "/" + room_tot_num;
 														if (room_num > room_tot_num)
@@ -6840,7 +6839,7 @@ bot.onText(/gioca numeri/i, function (message) {
 				connection.query('SELECT money, ability FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 
-					var max = 10000*Math.max(Math.min(Math.floor(rows[0].ability/100), 10), 1);
+					var max = 15000*Math.max(Math.min(Math.floor(rows[0].ability/100), 10), 1);
 
 					bot.sendMessage(message.chat.id, "La tua puntata in caso di vittoria sarà x*" + Math.round(36 / len) + "*, ora indica l'ammontare per la tua puntata, massimo " + formatNumber(max) + " §. Possiedi " + formatNumber(rows[0].money) + " §", kbBack).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
@@ -33123,6 +33122,16 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 												if (rand < 20) {
 													bonus += " (Scaduto)";
 													delItem(player_id, 677, 1);
+													connection.query('UPDATE player SET coupon_record = coupon_count WHERE coupon_count > coupon_record AND id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+														connection.query('UPDATE player SET coupon_count = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+															if (err) throw err;
+														});
+													});
+												} else {
+													connection.query('UPDATE player SET coupon_count = coupon_count+1 WHERE id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+													});
 												}
 											}
 
@@ -36021,7 +36030,7 @@ bot.onText(/^Top|Torna alle top/i, function (message) {
 	var kb = {
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [['Le Mie Classifiche'], ['Creazioni', 'Settimanale', 'Giornaliera'], ['Abilità', 'Rango'], ['Imprese Completate', 'Missioni'], ['Albo Artefatti', 'Classifica Contrabbandiere'], ['Tempo Incarichi'], ['Impresa Globale', 'Globali Contribuite'], ['Potenziamenti Flaridion'], ['Cambia Top', 'Torna al menu']]
+			keyboard: [['Le Mie Classifiche'], ['Creazioni', 'Settimanale', 'Giornaliera'], ['Abilità', 'Rango'], ['Imprese Completate', 'Missioni'], ['Albo Artefatti', 'Classifica Contrabbandiere'], ['Tempo Incarichi', 'Durata Coupon'], ['Impresa Globale', 'Globali Contribuite'], ['Potenziamenti Flaridion'], ['Cambia Top', 'Torna al menu']]
 		}
 	};
 
@@ -36225,16 +36234,31 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 													c = 1;
 													mypnt = 0;
 													mypos = 0;
-
-													var keyrank = {
-														parse_mode: "Markdown",
-														reply_markup: {
-															resize_keyboard: true,
-															keyboard: [['Top'], ['Torna al menu']]
+													
+													connection.query('SELECT nickname, coupon_record As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, coupon_record, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+														if (err) throw err;
+														for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+															if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+																mypos = c;
+																mypnt = rows[i].points;
+															}
+															c++;
 														}
-													};
+														text = text + "\n*Utilizzi Coupon*: " + mypos + "° con " + mypnt;
+														c = 1;
+														mypnt = 0;
+														mypos = 0;
 
-													bot.sendMessage(message.chat.id, text, keyrank);
+														var keyrank = {
+															parse_mode: "Markdown",
+															reply_markup: {
+																resize_keyboard: true,
+																keyboard: [['Top'], ['Torna al menu']]
+															}
+														};
+
+														bot.sendMessage(message.chat.id, text, keyrank);
+													});
 												});
 											});
 										});
@@ -36303,6 +36327,10 @@ bot.onText(/^Tempo Incarichi/i, function (message) {
 	getRankTeam(message, 20);
 });
 
+bot.onText(/^Durata Coupon/i, function (message) {
+	getRank(message, 20, 8);
+});
+
 function getRank(message, size, type) {
 	var t = "craft_count";
 	var tx = "sui punti creazione";
@@ -36328,6 +36356,9 @@ function getRank(message, size, type) {
 	} else if (type == 7) {
 		t = "global_event";
 		tx = "sul contributo alle imprese globali";
+	} else if (type == 8) {
+		t = "coupon_record";
+		tx = "sul record di durata del coupon";
 	}
 
 	var text = "Classifica basata " + tx + ":\n";
@@ -40575,6 +40606,7 @@ bot.onText(/^apri/i, function (message) {
 							var itemsArray = [];
 							var itemsToAdd = [];
 							var chestToDel = [];
+							var currentRarity = [];
 							var special = 0;
 							var opened = 0;
 
@@ -40587,6 +40619,8 @@ bot.onText(/^apri/i, function (message) {
 								chest_rarity = rows[j].rarity_shortname;
 								chest_id = rows[j].chest_id;
 								itemSql = connection_sync.query('SELECT id, name, rarity FROM item WHERE rarity = "' + chest_rarity + '" AND craftable = 0');
+								
+								currentRarity = [];
 
 								for (i = 0; i < quantity; i++) {	// quantity oggetti estratti
 
@@ -40615,7 +40649,8 @@ bot.onText(/^apri/i, function (message) {
 											special = 1;
 										}
 									}
-									itemsArray.push(item_name + " (" + item_rarity + ")");
+									
+									currentRarity.push(item_name + " (" + item_rarity + ")");
 
 									if (special == 0)
 										itemsToAdd.push(item_id);
@@ -40628,6 +40663,9 @@ bot.onText(/^apri/i, function (message) {
 									chestToDel.push(chest_id);
 									opened++;
 								}
+								
+								currentRarity.sort();
+								itemsArray = itemsArray.concat(currentRarity);
 							}
 
 							var itemsGrouped = compressArray(itemsToAdd);
@@ -50493,11 +50531,11 @@ function setFinishedHeistProgress(element, index, array) {
 					connection.query('UPDATE heist_progress SET wait_time = NULL WHERE from_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 						if (id != 0) {
-							text = "Durante il viaggio è stato catturato dai guardiani del rifugio e durante la sua avventurosa fuga è riuscito a sgraffignare un <b>" + name + "</b>!";
+							text = "Durante il viaggio è stato catturato dai guardiani del rifugio e durante la sua avventurosa fuga è riuscito a sgraffignare 1x <b>" + name + "</b>!";
 							bot.sendMessage(chat_id, "Il tuo gnomo ha cambiato le rune richieste, torna al rifugio!\n" + text, rBack);
 							connection.query('SELECT chat_id FROM player WHERE id = ' + to_id, function (err, rows, fields) {
 								if (err) throw err;
-								bot.sendMessage(rows[0].chat_id, "Lo gnomo di " + nick + " è riuscito a sgraffignarti <b>" + name + "</b>!", html);
+								bot.sendMessage(rows[0].chat_id, "Lo gnomo di " + nick + " è riuscito a sgraffignarti 1x <b>" + name + "</b>!", html);
 							});
 						}
 					});

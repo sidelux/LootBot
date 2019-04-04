@@ -488,7 +488,7 @@ CREATE TABLE `auction_list` (
   KEY `item_id` (`item_id`),
   CONSTRAINT `CREATORID_AU` FOREIGN KEY (`creator_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `ITEMID_AU` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2757,6 +2757,8 @@ CREATE TABLE `player` (
   `res_time` timestamp NULL DEFAULT NULL,
   `status` int(11) DEFAULT NULL,
   `status_cnt` int(11) NOT NULL DEFAULT '0',
+  `coupon_count` int(11) NOT NULL DEFAULT '0',
+  `coupon_record` int(11) NOT NULL DEFAULT '0',
   `top_first` tinyint(1) NOT NULL DEFAULT '0',
   `donation` int(11) NOT NULL DEFAULT '0',
   `real_name` varchar(64) DEFAULT NULL,
@@ -3520,4 +3522,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-04-03 15:00:05
+-- Dump completed on 2019-04-04 15:00:06
