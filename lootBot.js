@@ -177,6 +177,8 @@ var j3 = Schedule.scheduleJob('01 00 * * *', function () { //00:01 notte
 	refreshHeists();
 	refreshLife();
 	refreshManaBoost();
+	if (d.getDay() == 1)
+		resetTeamWeekly();
 });
 
 var j4 = Schedule.scheduleJob('05 00 * * *', function () { //00:05 notte
@@ -3648,6 +3650,12 @@ function resetAchievement() {
 
 function resetTeamMission() {
 	connection.query('UPDATE team SET mission_day_count = 0', function (err, rows, fields) {
+		if (err) throw err;
+	});
+}
+
+function resetTeamWeekly() {
+	connection.query('UPDATE team SET mission_week_count = 0, craft_week_count = 0', function (err, rows, fields) {
 		if (err) throw err;
 	});
 }
@@ -21663,7 +21671,7 @@ bot.onText(/team/i, function (message) {
 			price_drop_msg = "*SOLO OGGI* ";
 		}
 
-		connection.query('SELECT team.id As team_id, name, slogan, mission_count, kill_num, boost_id, point, point_spent, craft_count, players, details, max_players, boss_count, level, closed FROM team, team_player WHERE team.id = team_player.team_id AND player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT team.id As team_id, name, slogan, mission_count, kill_num, boost_id, point, point_spent, craft_count, players, details, max_players, boss_count, level, closed, mission_week_count, craft_week_count FROM team, team_player WHERE team.id = team_player.team_id AND player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
@@ -21682,11 +21690,13 @@ bot.onText(/team/i, function (message) {
 				var team_name = rows[0].name;
 				var team_slogan = rows[0].slogan;
 				var team_mission_count = rows[0].mission_count;
+				var team_mission_week_count = rows[0].mission_week_count;
 				var team_kill_num = rows[0].kill_num;
 				var team_boost_id = rows[0].boost_id;
 				var team_point = rows[0].point;
 				var team_point_spent = rows[0].point_spent;
 				var team_craft = rows[0].craft_count;
+				var team_week_craft = rows[0].craft_week_count;
 				var team_players = rows[0].players;
 				var team_details = rows[0].details;
 				var team_max_players = rows[0].max_players;
@@ -21947,10 +21957,10 @@ bot.onText(/team/i, function (message) {
 											text += "📃 <i>" + team_slogan + "</i>\n";
 										text += "👥 " + team_players + "/" + team_max_players + "\n";
 										text += "🐗 " + formatNumber(team_boss_count) + " Boss Sconfitti\n";
-										text += "📦 " + formatNumber(team_craft) + " Punti Creazione\n";
+										text += "📦 " + formatNumber(team_craft) + " Punti Creazione (" + formatNumber(team_week_craft) + " settimanali)\n";
 										text += "📊 " + team_kill_num + " Scalate\n";
 										text += "🐺 " + team_assault_completed + "/" + team_assault_lost + " Assalti\n";
-										text += "📜 " + formatNumber(team_mission_count) + " Incarichi\n";
+										text += "📜 " + formatNumber(team_mission_count) + " Incarichi (" + formatNumber(team_mission_week_count) + " settimanali)\n";
 										text += "🦋 " + formatNumber(team_point) + "/" + formatNumber(team_point_spent) + boost_name + "\n";
 
 										if (isAdmin == 1)
@@ -40018,7 +40028,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 														connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 															if (Object.keys(rows).length > 0) {
-																connection.query('UPDATE team SET craft_count = craft_count+' + craftexp + ' WHERE id = ' + rows[0].team_id, function (err, rows, fields) {
+																connection.query('UPDATE team SET craft_count = craft_count+' + craftexp + ', craft_week_count = craft_week_count+' + craftexp + ' WHERE id = ' + rows[0].team_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 															}
@@ -40548,7 +40558,7 @@ bot.onText(/^apri/i, function (message) {
 				};
 			}
 
-			var alltxt = "Sicuro di voler aprire tutti gli scrigni?";
+			var alltxt = "Sicuro di voler aprire tutti gli scrigni?\nNe possiedi N su un massimo di " + maxChest + " apribili contemporaneamente, procedendo saranno aperti partendo dalla rarità più bassa";
 			if (scrigno != "tutti")
 				alltxt = "Possiedi " + qnt + "x *" + scrigno + "*, quanti ne vuoi aprire?";
 
@@ -48719,7 +48729,7 @@ function setFinishedTeamMission(element, index, array) {
 									for (i = 0; i < Object.keys(rows).length; i++)		// In caso di più admin
 										bot.sendMessage(rows[i].chat_id, "Il Party " + party_id + " ha completato l'incarico assegnato!");
 
-									connection.query('UPDATE team SET mission_count = mission_count+1, point = point+' + paPnt + ', mission_time_count = mission_time_count + ' + mission_time_count + ' WHERE id = ' + team_id, function (err, rows, fields) {
+									connection.query('UPDATE team SET mission_count = mission_count+1, point = point+' + paPnt + ', mission_time_count = mission_time_count + ' + mission_time_count + ', mission_week_count = mission_week_count+1 WHERE id = ' + team_id, function (err, rows, fields) {
 										if (err) throw err;
 									});
 
