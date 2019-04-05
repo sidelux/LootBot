@@ -33132,10 +33132,12 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 												if (rand < 20) {
 													bonus += " (Scaduto)";
 													delItem(player_id, 677, 1);
-													connection.query('UPDATE player SET coupon_record = coupon_count WHERE coupon_count > coupon_record AND id = ' + player_id, function (err, rows, fields) {
-														if (err) throw err;
-														connection.query('UPDATE player SET coupon_count = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+													connection.query('UPDATE player SET coupon_count = coupon_count+1 WHERE id = ' + player_id, function (err, rows, fields) {
+														connection.query('UPDATE player SET coupon_record = coupon_count WHERE coupon_count > coupon_record AND id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
+															connection.query('UPDATE player SET coupon_count = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
 														});
 													});
 												} else {
@@ -36040,7 +36042,7 @@ bot.onText(/^Top|Torna alle top/i, function (message) {
 	var kb = {
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [['Le Mie Classifiche'], ['Creazioni', 'Settimanale', 'Giornaliera'], ['Abilità', 'Rango'], ['Imprese Completate', 'Missioni'], ['Albo Artefatti', 'Classifica Contrabbandiere'], ['Tempo Incarichi', 'Durata Coupon'], ['Impresa Globale', 'Globali Contribuite'], ['Potenziamenti Flaridion'], ['Cambia Top', 'Torna al menu']]
+			keyboard: [['Le Mie Classifiche'], ['Creazioni', 'Settimanale', 'Giornaliera'], ['Abilità', 'Rango'], ['Imprese Completate', 'Missioni'], ['Albo Artefatti', 'Classifica Contrabbandiere'], ['Tempo Incarichi', 'Durata Coupon'], ['Impresa Globale', 'Globali Contribuite'], ['Potenziamenti Flaridion'], ['Triplette Imprese'], ['Cambia Top', 'Torna al menu']]
 		}
 	};
 
@@ -36258,16 +36260,31 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 														c = 1;
 														mypnt = 0;
 														mypos = 0;
-
-														var keyrank = {
-															parse_mode: "Markdown",
-															reply_markup: {
-																resize_keyboard: true,
-																keyboard: [['Top'], ['Torna al menu']]
+														
+														connection.query('SELECT nickname, achievement_count_all As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, achievement_count_all, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+															if (err) throw err;
+															for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+																if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+																	mypos = c;
+																	mypnt = rows[i].points;
+																}
+																c++;
 															}
-														};
+															text = text + "\n*Triplette*: " + mypos + "° con " + mypnt;
+															c = 1;
+															mypnt = 0;
+															mypos = 0;
 
-														bot.sendMessage(message.chat.id, text, keyrank);
+															var keyrank = {
+																parse_mode: "Markdown",
+																reply_markup: {
+																	resize_keyboard: true,
+																	keyboard: [['Top'], ['Torna al menu']]
+																}
+															};
+
+															bot.sendMessage(message.chat.id, text, keyrank);
+														});
 													});
 												});
 											});
@@ -36341,6 +36358,10 @@ bot.onText(/^Durata Coupon/i, function (message) {
 	getRank(message, 20, 8);
 });
 
+bot.onText(/^Triplette Imprese/i, function (message) {
+	getRank(message, 20, 9);
+});
+
 function getRank(message, size, type) {
 	var t = "craft_count";
 	var tx = "sui punti creazione";
@@ -36369,6 +36390,9 @@ function getRank(message, size, type) {
 	} else if (type == 8) {
 		t = "coupon_record";
 		tx = "sul record di durata del coupon";
+	} else if (type == 9) {
+		t = "achievement_count_all";
+		tx = "sulle triplette completate per le imprese";
 	}
 
 	var text = "Classifica basata " + tx + ":\n";
@@ -40558,9 +40582,9 @@ bot.onText(/^apri/i, function (message) {
 				};
 			}
 
-			var alltxt = "Sicuro di voler aprire tutti gli scrigni?\nNe possiedi N su un massimo di " + maxChest + " apribili contemporaneamente, procedendo saranno aperti partendo dalla rarità più bassa";
+			var alltxt = "Sicuro di voler aprire tutti gli scrigni?\nNe possiedi " + formatNumber(qnt) + " su un massimo di " + formatNumber(maxChest) + " apribili contemporaneamente, procedendo saranno aperti partendo dalla rarità più bassa";
 			if (scrigno != "tutti")
-				alltxt = "Possiedi " + qnt + "x *" + scrigno + "*, quanti ne vuoi aprire?";
+				alltxt = "Possiedi " + formatNumber(qnt) + "x *" + scrigno + "*, quanti ne vuoi aprire?";
 
 			bot.sendMessage(message.chat.id, alltxt, chestNum).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
@@ -40568,21 +40592,19 @@ bot.onText(/^apri/i, function (message) {
 					if ((resp == "Torna al menu") || (resp == "Torna agli scrigni"))
 						return;
 					else if ((!isNaN(parseInt(answer.text))) || (answer.text.toLowerCase() == "si")) {
-						resp = parseInt(resp);
+						var quantity = parseInt(resp);
 
-						if ((scrigno != "tutti") && (!isNaN(resp))) {
-							if (resp < 1) {
+						if ((scrigno != "tutti") && (!isNaN(quantity))) {
+							if (quantity < 1) {
 								bot.sendMessage(message.chat.id, "Devi aprire almeno uno scrigno", chestMore);
 								return;
 							}
-							if (resp > qnt) {
+							if (quantity > qnt) {
 								bot.sendMessage(message.chat.id, "Non possiedi così tanti scrigni di questo tipo", chestMore);
 								return;
 							}
 						} else
-							resp = 9999999;
-
-						var quantity = resp;
+							quantity = maxChest;
 
 						var allsql = "";
 						if (scrigno != "tutti")
@@ -40603,10 +40625,12 @@ bot.onText(/^apri/i, function (message) {
 								return;
 							}
 
+							/*
 							if (((scrigno == "tutti") && (itemqnt > maxChest)) || ((scrigno != "tutti") && (quantity > maxChest))){
-								bot.sendMessage(message.chat.id, "Purtroppo non puoi aprire così tanti scrigni insieme, massimo " + maxChest + " alla volta!", chestMore);
+								bot.sendMessage(message.chat.id, "Purtroppo non puoi aprire così tanti scrigni insieme, massimo " + formatNumber(maxChest) + " alla volta!", chestMore);
 								return;
 							}
+							*/
 
 							var chest_rarity = "";
 							var chest_id = 0;
@@ -40621,10 +40645,20 @@ bot.onText(/^apri/i, function (message) {
 							var opened = 0;
 
 							var itemSql = "";
+							
+							var quantity_left = maxChest;
 
 							for (j = 0; j < Object.keys(rows).length; j++) {	// per ogni rarità
 								if (scrigno == "tutti")
 									quantity = rows[j].quantity;
+								
+								if (quantity > quantity_left)
+									quantity = quantity_left;
+								
+								if (quantity_left <= 0)
+									break;
+								
+								quantity_left -= quantity;
 
 								chest_rarity = rows[j].rarity_shortname;
 								chest_id = rows[j].chest_id;
