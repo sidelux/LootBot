@@ -8035,8 +8035,9 @@ bot.onText(/^\/posizione/, function (message, match) {
 					}
 				}
 
-				if (found == 1) {
+				if (found == 1)
 					text = "\nSe dovesse riuscire, <b>verrà considerata</b> nelle tue statistiche!";
+				else {
 					if (global_event >= 5)
 						text += ", considerato il tuo rango dovrai impegnarti piu di un normale Lootiano!";
 				}

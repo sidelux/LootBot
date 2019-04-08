@@ -23276,7 +23276,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 											else
 												text += "🏗 <i>In aggiornamento fino alle " + time + "</i>\n";
 										}
-										if ((rows[i].players == 0) && (rows[i].level > 0))
+										if (((rows[i].players == 0) && (rows[i].level > 0)) || ((rows[i].players > 0) && (rows[i].level == 0)))
 											text += "🚫 <i>Rischio distruzione a fine preparazione</i> 🚫\n";
 										iKeys.push([rows[i].name]);
 										place_id_break = rows[i].place_id;
@@ -48080,6 +48080,26 @@ function setFinishedAssaults(element, index, array) {
 							if (err) throw err;
 						});
 					}
+					connection.query('DELETE FROM assault_place_team WHERE team_id = ' + team_id + ' AND place_id = ' + place[i].place_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
+					connection.query('DELETE FROM assault_place_item WHERE team_id = ' + team_id + ' AND place_id = ' + place[i].place_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
+				}
+				text += "\n";
+			}
+			
+			// pulizia postazioni piene ma non costruite
+			var place = connection_sync.query('SELECT AP.name, APT.level, APT.place_id, (SELECT COUNT(id) FROM assault_place_player_id WHERE place_id = APT.place_id AND team_id = ' + team_id + ') As players FROM assault_place_team APT, assault_place AP WHERE APT.place_id = AP.id AND team_id = ' + team_id + ' AND level = 0 HAVING players > 0');
+
+			if (Object.keys(place).length > 0){
+				text += "Le seguenti postazioni sono state distrutte perchè occupate ma non costruite:\n";
+				for (var i = 0, len = Object.keys(place).length; i < len; i++) {
+					text += "> " + place[i].name + "\n";
+					connection.query('DELETE FROM assault_place_player_id WHERE team_id = ' + team_id + ' AND place_id = ' + place[i].place_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
 					connection.query('DELETE FROM assault_place_team WHERE team_id = ' + team_id + ' AND place_id = ' + place[i].place_id, function (err, rows, fields) {
 						if (err) throw err;
 					});
