@@ -313,7 +313,7 @@ bot.on("inline_query", function (query) {
 			total_price += parseInt(rows[i].price*rows[i].quantity);
 		}
 
-		if (rows[0].massive == 1){
+		if (rows[0].massive != 0){
 			iKeys.push([{
 				text: "💰 Compra tutto - " + formatNumber(total_price) + " §",
 				callback_data: "all:" + code.toString()
@@ -323,11 +323,10 @@ bot.on("inline_query", function (query) {
 		iKeys.push([{
 			text: "♻️ Aggiorna",
 			callback_data: "update:" + code.toString()
-		},
-					{
-						text: "🗑 Elimina",
-						callback_data: "delete:" + code.toString()
-					}]);
+		},{
+			text: "🗑 Elimina",
+			callback_data: "delete:" + code.toString()
+		}]);
 
 		connection.query('SELECT nickname FROM player WHERE id = ' + rows[0].player_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -3477,8 +3476,10 @@ bot.onText(/^\/negozi$/, function (message, match) {
 					isPublic = "Pubblico";
 				if (rows[0].massive == 0)
 					isMassive = ", Massivo Disabilitato";
-				else
+				else if (rows[0].massive == 1)
 					isMassive = ", Massivo Abilitato";
+				else
+					isMassive = ", Massivo Obbligato";
 				if (rows[0].protected == 0)
 					isProtected = ", Non Protetto";
 				else
@@ -3495,8 +3496,10 @@ bot.onText(/^\/negozi$/, function (message, match) {
 							isPublic = "Pubblico";
 						if (rows[i].massive == 0)
 							isMassive = ", Massivo Disabilitato";
-						else
+						else if (rows[i].massive == 1)
 							isMassive = ", Massivo Abilitato";
+						else
+							isMassive = ", Massivo Obbligato";
 						if (rows[i].protected == 0)
 							isProtected = ", Non Protetto";
 						else
@@ -3517,8 +3520,10 @@ bot.onText(/^\/negozi$/, function (message, match) {
 						isPublic = "Pubblico";
 					if (rows[0].massive == 0)
 						isMassive = ", Massivo Disabilitato";
-					else
+					else if (rows[0].massive == 1)
 						isMassive = ", Massivo Abilitato";
+					else
+						isMassive = ", Massivo Obbligato";
 					if (rows[0].protected == 0)
 						isProtected = ", Non Protetto";
 					else
@@ -3539,8 +3544,10 @@ bot.onText(/^\/negozi$/, function (message, match) {
 								isPublic = "Pubblico";
 							if (rows[i].massive == 0)
 								isMassive = ", Massivo Disabilitato";
-							else
+							else if (rows[i].massive == 1)
 								isMassive = ", Massivo Abilitato";
+							else
+								isMassive = ", Massivo Obbligato";
 
 							if (rows[i].protected == 0)
 								isProtected = ", Non Protetto";
@@ -3697,6 +3704,11 @@ bot.onText(/^\/massivo (.+)|^\/massivo/, function (message, match) {
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Tutti i negozi _disabilitati_ all'acquisto massivo!", mark);
 					});
+				} else if (massive == 2) {
+					connection.query('UPDATE public_shop SET massive = 2 WHERE player_id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+						bot.sendMessage(message.chat.id, "Tutti i negozi _obbligati_ all'acquisto massivo!", mark);
+					});
 				}
 			});
 			return;
@@ -3731,6 +3743,11 @@ bot.onText(/^\/massivo (.+)|^\/massivo/, function (message, match) {
 				connection.query('UPDATE public_shop SET massive = 0 WHERE code = ' + code, function (err, rows, fields) {
 					if (err) throw err;
 					bot.sendMessage(message.chat.id, "Il negozio è _disabilitato_ all'acquisto massivo!", mark);
+				});
+			} else if (massive == 2) {
+				connection.query('UPDATE public_shop SET massive = 2 WHERE code = ' + code, function (err, rows, fields) {
+					if (err) throw err;
+					bot.sendMessage(message.chat.id, "Il negozio è _obbligato_ all'acquisto massivo!", mark);
 				});
 			}
 		});
@@ -4026,7 +4043,10 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			privacy = 1;
 			text = text.replace("#", "");
 		}
-		if (text.indexOf("!") != -1) {
+		if (text.indexOf("!!") != -1) {
+			massive = 2;
+			text = text.replace("!!", "");
+		} else if (text.indexOf("!") != -1) {
 			massive = 0;
 			text = text.replace("!", "");
 		}
@@ -4062,7 +4082,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			var code = 0;
 			for (var i = 0; i < arrLen; i++) {
 				code = elements[i];
-				var shopQuery = connection.query('SELECT 1 FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id);
+				var shopQuery = connection_sync.query('SELECT 1 FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id);
 				if (Object.keys(shopQuery).length > 0) {
 					connection.query('UPDATE public_shop SET time_end = "' + long_date + '", notified = 0 WHERE code = ' + code, function (err, rows, fields) {
 						if (err) throw err;
@@ -4336,7 +4356,12 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				else{
 					if (func == "new") {
 						text += "\nPrivacy negozio: " + ((privacy == 1) ? "_Pubblico_" : "_Privato_");
-						text += "\nAcquisto massivo: " + ((massive == 1) ? "_Abilitato_" : "_Disabilitato_");
+						if (massive == 1)
+							text += "\nAcquisto massivo: _Abilitato_";
+						else if (massive == 0)
+							text += "\nAcquisto massivo: _Disabilitato_";
+						else
+							text += "\nAcquisto massivo: _Obbligato_";
 						text += "\nProtezione negozio: " + ((protected == 1) ? "_Abilitata_" : "_Disabilitata_");
 					}
 				}
@@ -5180,7 +5205,7 @@ bot.on('callback_query', function (message) {
 			return;
 		}
 
-		connection.query('SELECT player_id, price, item_id, quantity, code, protected FROM public_shop WHERE id = ' + shop_id, function (err, rows, fields) {
+		connection.query('SELECT player_id, price, item_id, quantity, code, protected, massive FROM public_shop WHERE id = ' + shop_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
@@ -5197,6 +5222,12 @@ bot.on('callback_query', function (message) {
 
 			if (rows[0].protected == 1){
 				bot.answerCallbackQuery(message.id, {text: 'Il negozio è protetto!'});
+				check.splice(index, 1);
+				return;
+			}
+			
+			if (rows[0].massive == 2){
+				bot.answerCallbackQuery(message.id, {text: "Acquisto massivo obbligato per questo negozio"});
 				check.splice(index, 1);
 				return;
 			}
@@ -5278,7 +5309,19 @@ bot.on('callback_query', function (message) {
 								delItem(player_id2, item_id, 1);
 								addItem(player_id, item_id);
 
-								bot.sendMessage(message.from.id, "Hai acquistato " + item_name + " per " + formatNumber(price) + " § dal negozio di " + player2 + "!");
+								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + player_id + ' AND type = 4', function (err, rows, fields) {
+									if (err) throw err;
+									var notify = 0;
+									if (Object.keys(rows).length == 0)
+										notify = 1;
+									else {
+										if (rows[0].deny == 0)
+											notify = 1;
+									}
+									if (notify == 1) {
+										bot.sendMessage(message.from.id, "Hai acquistato " + item_name + " per " + formatNumber(price) + " § dal negozio di " + player2 + "!");
+									};
+								});
 
 								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + player_id2 + ' AND type = 2', function (err, rows, fields) {
 									if (err) throw err;
@@ -5356,7 +5399,7 @@ function updateShop(message, code, isId, customQueryMessage){
 			total_price += parseInt(rows[i].price*pQnt);
 		}
 
-		if (rows[0].massive == 1){
+		if (rows[0].massive != 0){
 			iKeys.push([{
 				text: "💰 Compra tutto - " + formatNumber(total_price) + " §",
 				callback_data: "all:" + code.toString()
@@ -6354,11 +6397,10 @@ bot.onText(/^\/scambia/i, function (message) {
 										iKeys.push([{
 											text: "✅ Accetta",
 											callback_data: "oktrade:" + rows.insertId
-										},
-													{
-														text: "❌ Rifiuta",
-														callback_data: "nottrade:" + rows.insertId
-													}]);
+										},{
+											text: "❌ Rifiuta",
+											callback_data: "nottrade:" + rows.insertId
+										}]);
 
 										delItem(player_id, item1_id, quantity);
 
@@ -7964,13 +8006,14 @@ bot.onText(/^\/abilità/, function (message, match) {
 });
 
 bot.onText(/^\/posizione/, function (message, match) {	
-	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, global_event FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0)
 			return;
 
 		var player_id = rows[0].id;
+		var global_event = rows[0].global_event;
 
 		connection.query('SELECT global_eventwait FROM config', function (err, rows, fields) {
 			if (err) throw err;
@@ -7992,8 +8035,11 @@ bot.onText(/^\/posizione/, function (message, match) {
 					}
 				}
 
-				if (found == 1)
+				if (found == 1) {
 					text = "\nSe dovesse riuscire, <b>verrà considerata</b> nelle tue statistiche!";
+					if (global_event >= 5)
+						text += ", considerato il tuo rango dovrai impegnarti piu di un normale Lootiano!";
+				}
 
 				connection.query('SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
 					if (err) throw err;
@@ -8435,7 +8481,7 @@ bot.onText(/^\/necessari (.+)|^\/necessari/, function (message, match) {
 
 bot.onText(/^\/notifiche (.+)|^\/notifiche/, function (message, match) {
 	if (match[1] == undefined) {
-		bot.sendMessage(message.chat.id, "Usa /notifiche <funzione> per disattivare le notifiche relative a quella funzione. Funzioni possibili:\n- lotterie\n- negozi\n- aste");
+		bot.sendMessage(message.chat.id, "Usa /notifiche <funzione> per disattivare le notifiche relative a quella funzione. Funzioni possibili:\n- Lotterie\n- Negozi\n- Aste\n- Acquisti");
 		return;
 	}
 
@@ -8447,6 +8493,8 @@ bot.onText(/^\/notifiche (.+)|^\/notifiche/, function (message, match) {
 		type = 2;
 	else if (func == "aste")
 		type = 3;
+	else if (func == "acquisti")
+		type = 4;
 	else {
 		bot.sendMessage(message.chat.id, "Funzione non valida, riprova");
 		return;

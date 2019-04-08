@@ -2724,7 +2724,7 @@ function estrazione() {
 			var num = parseInt(rows[0].num) - 1;
 			var rand = Math.round(Math.random() * num);
 
-			connection.query('SELECT player_id, nickname FROM event_lottery_coins, player WHERE player.id = event_lottery_coins.player_id AND player_id != 1 AND player_id != 3 ORDER BY RAND() LIMIT ' + rand + ',' + quantity, function (err, rows, fields) {
+			connection.query('SELECT player_id, nickname, chat_id FROM event_lottery_coins, player WHERE player.id = event_lottery_coins.player_id AND player_id != 1 AND player_id != 3 ORDER BY RAND() LIMIT ' + rand + ',' + quantity, function (err, rows, fields) {
 				if (err) throw err;
 
 				if (Object.keys(rows).length == 0) {
@@ -2746,11 +2746,13 @@ function estrazione() {
 				var playerId = 0;
 				var nickname = "";
 				var nick_extracted = [];
+				var chat_ids = [];
 
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					playerId = rows[i].player_id;
 					nickname = rows[i].nickname;
 					nick_extracted.push(playerId);
+					chat_ids.push(rows[i].chat_id);
 					console.log("Estratto " + nickname);
 
 					if (quantity > 1)
@@ -2794,6 +2796,7 @@ function estrazione() {
 						connection.query('DELETE FROM event_lottery_coins WHERE player_id = ' + playerId, function (err, rows, fields) {
 							if (err) throw err;
 						});
+						bot.sendMessage(chat_ids[i], "Sei stato estratto nell'evento Lootteria ed hai vinto: <b>" + name + "</b>!", html);
 					}
 				});
 			});
@@ -32195,8 +32198,7 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function 
 					if (Object.keys(rows).length == 0) {
 						connection.query('INSERT INTO event_team_story (team_id) VALUES (' + team_id + ')', function (err, rows, fields) {
 							if (err) throw err;
-							bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella gara che tutti i team attendono, il *Canto del Bardo*!\n" +
-											"In questa battaglia di scrittura tu ed il tuo team dovrete utilizzare le vostre migliori doti letterarie per stupire il Bardo, e non sarà un'impresa semplice. In base alla vostra abilità riceverete dei 🦋, anche solo partecipando! Le istruzioni saranno disponibili accedendo all'evento.", eventKb);
+							bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella gara che tutti i team attendono, il *Canto del Bardo*!\nIn questa battaglia di scrittura tu ed il tuo team dovrete utilizzare le vostre migliori doti letterarie per stupire il Bardo, e non sarà un'impresa semplice. In base alla vostra abilità riceverete dei 🦋, anche solo partecipando! Le istruzioni saranno disponibili accedendo all'evento.", eventKb);
 						});
 					} else {
 
@@ -40849,7 +40851,7 @@ bot.onText(/evento della luna/i, function (message) {
 			"> Il bagliore della Luna Nera può far percorrere strade oscure che miglioreranno le vostre *missioni*, ma potrebbe anche far causare brutti avvenimenti traumatici\n" +
 			"> Oscuri sono i percorsi irradiati dalla Luna Nera, possono portare a maggiori *tesori* o a piccoli guadagni\n" +
 			"> L’influenza della Luna Nera può portarvi a grandi ritrovamenti o a vicoli ciechi senza ritorno nelle Cave di *Pietre*\n" +
-			"> La Luna Nera può dare consigli corretti o sbagliati ai viaggiatori di Dungeon che concludono le loro avventure sotto la sua influenza. Vi è possibilità di raddoppiare i loro *Punti Rango* o di Annullarli\n" +
+			"> La Luna Nera può dare consigli corretti o sbagliati ai viaggiatori di Dungeon che concludono le loro avventure sotto la sua influenza. Vi è possibilità di raddoppiare i loro *Punti Rango* al completamento di essi o di Annullarli\n" +
 			"> Il *Contrabbandiere* adora la Luce della Luna Nera e aumenta notevolmente rispetto alla Luna Dorata la probabilità di raddoppiare i soldi dati per un oggetto, ma a volte può essere più guardingo e conclude in fretta le sue transazioni dimezzando il guadagno\n" +
 			"> I mandanti degli Incarichi, spaventati dalla luce della Luna Nera, possono triplicare la ricompensa di Punti Anima oppure rifiutarsi di fornirne\n" +
 			"> Inoltre solo durante il weekend della luna, le Monete Lunari ottenute grazie alle donazioni sono raddoppiate!\n" +
@@ -44197,7 +44199,7 @@ bot.onText(/Ispezioni Passate/i, function (message) {
 	});
 });
 
-bot.onText(/matchmaking/i, function (message) {
+bot.onText(/matchmaking|^mm$/i, function (message) {
 	connection.query('SELECT account_id, holiday, heist_protection, exp, reborn, ability, id, weapon, life, house_id, money, heist_count, last_mm, global_end, boost_id, boost_mission, travel_id, cave_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
