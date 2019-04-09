@@ -23248,7 +23248,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 							var diff = Math.round((now - d) / 1000); //in secondi
 							diff = Math.abs(diff);
 
-							var text = "Il <b>Giorno della Preparazione</b> terminerà tra " + toTime(diff) + "!\n\nOrganizzazione attuale intorno alla magione del team:\n";
+							var text = "Il <b>Giorno della Preparazione " + boss_num + "</b> terminerà tra " + toTime(diff) + "!\n\nOrganizzazione attuale intorno alla magione del team:\n";
 							connection.query('SELECT AP.name, AP.id As place_id, P.id, P.nickname, P.exp, P.reborn, P.class, APT.level, APT.time_end, AP.class_bonus, C.name As class_bonus_name, (SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE place_id = AP.id AND team_id = ' + team_id + ') As players, AP.max_players, AP.max_level FROM assault_place AP LEFT JOIN (SELECT * FROM assault_place_team WHERE team_id = ' + team_id + ') APT ON (APT.place_id = AP.id AND APT.team_id = ' + team_id + ') LEFT JOIN assault_place_player_id APP ON (AP.id = APP.place_id AND APP.team_id = ' + team_id + ') LEFT JOIN player P ON P.id = APP.player_id LEFT JOIN class C ON AP.class_bonus = C.id ORDER BY AP.id', function (err, rows, fields) {
 								if (err) throw err;
 
@@ -35877,7 +35877,7 @@ bot.onText(/^solo (.){1,15}$/i, function (message) {
 		var text = "";
 
 		if (soloRarity.toLowerCase() == "consumabili") {
-			connection.query('SELECT inventory.player_id, item.name, item.craftable, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND cons = 1 AND inventory.quantity > 0 ORDER BY rarity.id, item.name ASC', function (err, rows, fields) {
+			connection.query('SELECT inventory.player_id, item.name, item.craftable, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND cons = 1 AND inventory.quantity > 0 ORDER BY rarity.id DESC, item.name ASC', function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length > 0) {
 					text = "*Oggetti consumabili:*\n\n";
@@ -35888,9 +35888,9 @@ bot.onText(/^solo (.){1,15}$/i, function (message) {
 					}
 				} else
 					text = text + "Nessun oggetto consumabile disponibile\n";
-				if (Object.keys(text).length > 8000) {
+				if (Object.keys(text).length > 8000)
 					bot.sendMessage(message.chat.id, "Questo filtro mostra troppi risultati, riprova", backPack);
-				} else if (Object.keys(text).length > 4000) {
+				else if (Object.keys(text).length > 4000) {
 					var arr = text.split("\n");
 					text = "";
 					for (var i = 0, len = Object.keys(arr).length; i < len; i++) {
@@ -35919,9 +35919,9 @@ bot.onText(/^solo (.){1,15}$/i, function (message) {
 				} else
 					text = text + "Nessun incantesimo disponibile\n";
 
-				if (Object.keys(text).length > 8000) {
+				if (Object.keys(text).length > 8000)
 					bot.sendMessage(message.chat.id, "Questo filtro mostra troppi risultati, riprova", backPack);
-				} else if (Object.keys(text).length > 4000) {
+				else if (Object.keys(text).length > 4000) {
 					var arr = text.split("\n");
 					text = "";
 					for (var i = 0, len = Object.keys(arr).length; i < len; i++) {
@@ -35940,7 +35940,7 @@ bot.onText(/^solo (.){1,15}$/i, function (message) {
 					bot.sendMessage(message.chat.id, text, backPack);
 			});
 		} else if (soloRarity.toLowerCase() == "base") {
-			connection.query('SELECT inventory.player_id, item.name, item.craftable, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND craftable = 0 AND inventory.quantity > 0 ORDER BY rarity.id, item.name ASC', function (err, rows, fields) {
+			connection.query('SELECT inventory.player_id, item.name, item.craftable, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND craftable = 0 AND inventory.quantity > 0 ORDER BY rarity.id DESC, item.name ASC', function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length > 0) {
 					text = "*Oggetti base:*\n\n";
@@ -35951,9 +35951,9 @@ bot.onText(/^solo (.){1,15}$/i, function (message) {
 					}
 				} else
 					text = text + "Nessun oggetto base disponibile\n";
-				if (Object.keys(text).length > 8000) {
+				if (Object.keys(text).length > 8000)
 					bot.sendMessage(message.chat.id, "Questo filtro mostra troppi risultati, riprova", backPack);
-				} else if (Object.keys(text).length > 4000) {
+				else if (Object.keys(text).length > 4000) {
 					var arr = text.split("\n");
 					text = "";
 					for (var i = 0, len = Object.keys(arr).length; i < len; i++) {
@@ -35972,7 +35972,7 @@ bot.onText(/^solo (.){1,15}$/i, function (message) {
 					bot.sendMessage(message.chat.id, text, backPack);
 			});
 		} else if (soloRarity.toLowerCase() == "creati") {
-			connection.query('SELECT inventory.player_id, item.name, item.craftable, rarity.id, rarity.name As rname, inventory.quantity As num FROM `inventory`, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND craftable = 1 AND inventory.quantity > 0 ORDER BY rarity.id, item.name ASC', function (err, rows, fields) {
+			connection.query('SELECT inventory.player_id, item.name, item.craftable, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND craftable = 1 AND inventory.quantity > 0 ORDER BY rarity.id DESC, item.name ASC', function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length > 0) {
 					text = "*Oggetti creati:*\n\n";
@@ -35983,9 +35983,9 @@ bot.onText(/^solo (.){1,15}$/i, function (message) {
 					}
 				} else
 					text = text + "Nessun oggetto creato disponibile\n";
-				if (Object.keys(text).length > 8000) {
+				if (Object.keys(text).length > 8000)
 					bot.sendMessage(message.chat.id, "Questo filtro mostra troppi risultati, riprova", backPack);
-				} else if (Object.keys(text).length > 4000) {
+				else if (Object.keys(text).length > 4000) {
 					var arr = text.split("\n");
 					text = "";
 					for (var i = 0, len = Object.keys(arr).length; i < len; i++) {
@@ -43841,7 +43841,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 															var keys_query = connection_sync.query('SELECT mkeys FROM player WHERE id = ' + toId);
 															var rand = Math.random()*100;
 															if ((keys_query[0].mkeys > 0) && (rand < 30))
-																key_lost = 1;
+																key_lost += 1;
 														}
 
 														var extra = "";
@@ -48034,7 +48034,7 @@ function setDust(element, index, array) {
 };
 
 function checkAssaults() {
-	connection.query('SELECT team_id, phase FROM assault WHERE time_end < NOW() AND time_end IS NOT NULL', function (err, rows, fields) {
+	connection.query('SELECT team_id, phase, boss_num FROM assault WHERE time_end < NOW() AND time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
@@ -48049,6 +48049,7 @@ function checkAssaults() {
 function setFinishedAssaults(element, index, array) {
 	var team_id = element.team_id;
 	var phase = element.phase;
+	var boss_num = element.boss_num;
 
 	connection.query('SELECT player_id, chat_id FROM assault_place_player_id APP, player WHERE APP.player_id = player.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
 		if (err) throw err;
@@ -48135,7 +48136,7 @@ function setFinishedAssaults(element, index, array) {
 				var nickname = player[0].nickname;
 			}
 
-			text += "Il <b>Giorno dell'Assalto</b> ha inizio, entra in combattimento per ottenere la vittoria!\nL'eletto incaricato di guidare la battaglia è <b>" + nickname + "</b> 🗡";
+			text += "Il <b>Giorno dell'Assalto" + boss_num + "</b> ha inizio, entra in combattimento per ottenere la vittoria!\nL'eletto incaricato di guidare la battaglia è <b>" + nickname + "</b> 🗡";
 
 			connection.query('UPDATE assault SET phase = ' + (phase+1) + ', refresh_mob = 1, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY) WHERE team_id = ' + team_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -48174,7 +48175,7 @@ function setFinishedAssaults(element, index, array) {
 				if (err) throw err;
 			});
 
-			text += "Il <b>Giorno dell'Assalto</b> è stato completato con successo!\n\nIl <b>Giorno della Preparazione</b> ha inizio, tutti i compagni sono usciti dall'infermeria, ora organizza le tue strutture per sopravvivere contro un altro boss!";
+			text += "Il <b>Giorno dell'Assalto " + (boss_num-1) + "</b> è stato completato con successo!\n\nIl <b>Giorno della Preparazione</b> ha inizio, tutti i compagni sono usciti dall'infermeria, ora organizza le tue strutture per sopravvivere contro un altro boss!";
 		} else {
 			console.log("Errore phase non valida: " + phase);
 			return;
@@ -51603,9 +51604,8 @@ function toDate(lang, date) {
 		datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " alle " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 	} else if (lang == "en") {
 		datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-	} else {
+	} else
 		datetime = "Error";
-	}
 	return datetime;
 }
 
@@ -51620,9 +51620,8 @@ function getNow(lang, obj) {
 	} else {
 		datetime = "Error";
 	}
-	if (obj == true) {
+	if (obj == true)
 		datetime = new Date(datetime);
-	}
 	return datetime;
 }
 
