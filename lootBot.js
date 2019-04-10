@@ -39802,6 +39802,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 			if (err) throw err;
 			if (Object.keys(rows).length == 0) {
 				bot.sendMessage(message.chat.id, "L'oggetto specificato non esiste", craft_fail);
+				return;
 			} else {
 				var mat = [];
 				var matR = rows[0].material_result;
@@ -46046,9 +46047,8 @@ bot.onText(/^imprese/i, function (message) {
 });
 
 function getRealLevel(reb, lev) {
-	if (reb == 2) {
+	if (reb == 2)
 		lev += 100;
-	}
 	if (reb == 3) {
 		lev += 100;
 		lev += 150;
@@ -48136,7 +48136,7 @@ function setFinishedAssaults(element, index, array) {
 				var nickname = player[0].nickname;
 			}
 
-			text += "Il <b>Giorno dell'Assalto" + boss_num + "</b> ha inizio, entra in combattimento per ottenere la vittoria!\nL'eletto incaricato di guidare la battaglia è <b>" + nickname + "</b> 🗡";
+			text += "Il <b>Giorno dell'Assalto " + boss_num + "</b> ha inizio, entra in combattimento per ottenere la vittoria!\nL'eletto incaricato di guidare la battaglia è <b>" + nickname + "</b> 🗡";
 
 			connection.query('UPDATE assault SET phase = ' + (phase+1) + ', refresh_mob = 1, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY) WHERE team_id = ' + team_id, function (err, rows, fields) {
 				if (err) throw err;
