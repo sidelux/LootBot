@@ -8487,16 +8487,21 @@ bot.onText(/^\/notifiche (.+)|^\/notifiche/, function (message, match) {
 	}
 
 	var func = match[1];
+	var func_txt = "";
 	var type = 0;
-	if (func == "lotterie")
+	if (func == "lotterie") {
 		type = 1;
-	else if (func == "negozi")
+		func_txt = "alle lotterie";
+	} else if (func == "negozi") {
 		type = 2;
-	else if (func == "aste")
+		func_txt = "ai negozi";
+	} else if (func == "aste") {
 		type = 3;
-	else if (func == "acquisti")
+		func_txt = "alle aste";
+	} else if (func == "acquisti") {
 		type = 4;
-	else {
+		func_txt = "agli acquisti";
+	} else {
 		bot.sendMessage(message.chat.id, "Funzione non valida, riprova");
 		return;
 	}
@@ -8517,18 +8522,18 @@ bot.onText(/^\/notifiche (.+)|^\/notifiche/, function (message, match) {
 				if (deny == 0) {
 					connection.query('UPDATE plus_notify SET deny = 1 WHERE player_id = "' + player_id + '" AND type = ' + type, function (err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Le notifiche relative alle " + func.toLowerCase() + " sono state disattivate");
+						bot.sendMessage(message.chat.id, "Le notifiche relative " + func_txt + " sono state disattivate");
 					});
 				} else {
 					connection.query('UPDATE plus_notify SET deny = 0 WHERE player_id = "' + player_id + '" AND type = ' + type, function (err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Le notifiche relative alle " + func.toLowerCase() + " sono state riattivate");
+						bot.sendMessage(message.chat.id, "Le notifiche relative " + func_txt + " sono state riattivate");
 					});
 				}
 			} else {
 				connection.query('INSERT INTO plus_notify (player_id, type, deny) VALUES (' + player_id + ',' + type + ',1)', function (err, rows, fields) {
 					if (err) throw err;
-					bot.sendMessage(message.chat.id, "Le notifiche relative alle " + func.toLowerCase() + " sono state disattivate");
+					bot.sendMessage(message.chat.id, "Le notifiche relative " + func_txt + " sono state disattivate");
 				});
 			}
 		});

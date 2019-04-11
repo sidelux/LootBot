@@ -16254,8 +16254,12 @@ bot.onText(/Termina subito/i, function (message) {
 		bot.sendMessage(message.chat.id, "Sicuro di voler terminare subito la missione? Consumerai una 💎. Ne possiedi " + rows[0].gems, yesno).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text.toLowerCase() == "si") {
-					connection.query('SELECT gems FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+					connection.query('SELECT gems, mission_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
+						if (rows[0].mission_id == 0) {
+							bot.sendMessage(message.chat.id, "Non sei più in missione.", back);
+							return;
+						}
 						if (rows[0].gems < 1) {
 							bot.sendMessage(message.chat.id, "Non hai abbastanza 💎.", kbBack);
 							return;
@@ -16315,21 +16319,30 @@ bot.onText(/Completa immediatamente/i, function (message) {
 			bot.sendMessage(message.chat.id, "Sicuro di voler terminare subito l'ispezione?\nConsumerai due 💎. Ne possiedi " + gems, yesno).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if (answer.text.toLowerCase() == "si") {
-						connection.query('SELECT gems FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+						connection.query('SELECT id, datetime FROM heist WHERE from_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
-							if (rows[0].gems < 2) {
-								bot.sendMessage(message.chat.id, "Non hai abbastanza 💎.", back);
+
+							if (Object.keys(rows).length == 0) {
+								bot.sendMessage(message.chat.id, "Non hai più un ispezione in corso", back);
 								return;
 							}
-
-							var d2 = new Date();
-							var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
-
-							connection.query('UPDATE heist SET datetime = "' + long_date + '" WHERE from_id = ' + player_id, function (err, rows, fields) {
+							
+							connection.query('SELECT gems FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
-								connection.query('UPDATE player SET gems = gems-2 WHERE id = ' + player_id, function (err, rows, fields) {
+								if (rows[0].gems < 2) {
+									bot.sendMessage(message.chat.id, "Non hai abbastanza 💎.", back);
+									return;
+								}
+
+								var d2 = new Date();
+								var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
+
+								connection.query('UPDATE heist SET datetime = "' + long_date + '" WHERE from_id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
-									bot.sendMessage(message.chat.id, "Fatto! Attendi qualche secondo per conoscere il risultato.", back);
+									connection.query('UPDATE player SET gems = gems-2 WHERE id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+										bot.sendMessage(message.chat.id, "Fatto! Attendi qualche secondo per conoscere il risultato.", back);
+									});
 								});
 							});
 						});
@@ -16383,8 +16396,12 @@ bot.onText(/Concludi immediatamente/i, function (message) {
 			bot.sendMessage(message.chat.id, "Sicuro di voler terminare subito l'esplorazione della cava? Ti costerà " + num + " 💎. Ne possiedi " + gems, yesno).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if (answer.text.toLowerCase() == "si") {
-						connection.query('SELECT gems FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+						connection.query('SELECT gems, cave_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
+							if (rows[0].cave_id == 0) {
+								bot.sendMessage(message.chat.id, "Non sei più in cava.", back);
+								return;
+							}
 							if (rows[0].gems < num) {
 								bot.sendMessage(message.chat.id, "Non hai abbastanza 💎.", back);
 								return;
@@ -28394,7 +28411,7 @@ bot.onText(/Gestisci Membri/i, function (message) {
 															});
 
 															var d2 = new Date();
-															d2.setHours(d2.getHours() + 72);
+															d2.setHours(d2.getHours() + 48);
 															var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
 
 															connection.query('UPDATE player SET team_time = "' + long_date + '" WHERE id = ' + playerId, function (err, rows, fields) {
@@ -28981,7 +28998,7 @@ bot.onText(/^Lascia/i, function (message) {
 											});
 
 											var d2 = new Date();
-											d2.setHours(d2.getHours() + 72);
+											d2.setHours(d2.getHours() + 48);
 											var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
 
 											connection.query('UPDATE player SET team_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
@@ -29123,7 +29140,7 @@ bot.onText(/^Sciogli/i, function (message) {
 										});
 									});
 									var d2 = new Date();
-									d2.setHours(d2.getHours() + 72);
+									d2.setHours(d2.getHours() + 48);
 									var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
 
 									connection.query('UPDATE player SET team_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
@@ -29448,7 +29465,7 @@ bot.onText(/Entra in(?! uno esistente)/i, function (message) {
 
 		if (rows[0].team_time != null) {
 			var d = new Date(rows[0].team_time);
-			var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+			var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
 
 			bot.sendMessage(message.chat.id, "Non puoi ancora entrare in un team, ne hai appena lasciato uno. Attendi fino alle " + long_date, back);
 			return;
@@ -33261,7 +33278,7 @@ function calcBaseFunc(estimate) {
 		connection.query('SELECT id, name, estimate, value FROM item WHERE estimate > 0 AND rarity IN ("C","NC","R","UR","L","E","U") AND craftable = 1', function (err, rows, fields) {
 			if (err) throw err;
 			var len = Object.keys(rows).length
-			//console.log("Somma base per " + len  + " oggetti");
+			console.log("Somma base per " + len  + " oggetti");
 			for (var i = 0; i < len; i++) {
 				calcBase(rows[i].id, rows[i].id, estimate);
 
@@ -35117,7 +35134,7 @@ bot.onText(/filtro/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [['Solo Base', 'Solo Creati'], ['Solo C', 'Solo NC', 'Solo R'], ['Solo UR', 'Solo L', 'Solo E'], ['Solo UE', 'Solo U', 'Solo S'], ['Solo I', 'Solo D'], ['Solo Consumabili'], ['Torna allo zaino']]
+			keyboard: [['Solo Base', 'Solo Creati'], ['Solo C', 'Solo NC', 'Solo R'], ['Solo UR', 'Solo L', 'Solo E'], ['Solo UE', 'Solo U', 'Solo S'], ['Solo I', 'Solo D', 'Solo X'], ['Solo Consumabili'], ['Torna allo zaino']]
 		}
 	};
 
@@ -36556,6 +36573,8 @@ function getRankAt(message, size) {
 					}
 					c++;
 				}
+				if (mypnt == 0)
+					myinfo = "Nessun Potenziamento acquistato";
 				text = text + "\nTu:\n" + myinfo;
 
 				bot.sendMessage(message.chat.id, text, keyrank);
@@ -36580,6 +36599,10 @@ function getRankAt(message, size) {
 					total_cnt.push(rows[i].total_cnt);
 					if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase())
 						mypos = i;
+				}
+				if (mypos == 0){
+					bot.sendMessage(message.chat.id, "Non hai ancora utilizzato alcun Potenziamento Flaridion, per visualizzare la classifica completa cambia visualizzazione", keyrank);
+					return;
 				}
 				for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
 					if (nickname[i] != undefined) {
@@ -47593,16 +47616,18 @@ function setEvents(element, index, array) {
 			});
 		});
 	} else if (rand == 34) {
-		var life = Math.round(getRandomArbitrary(level*40, level*60));;
+		var plus_life = Math.round(getRandomArbitrary(level*40, level*60));
+		if (life+plus_life > total_life)
+			return;
 		connection.query('SELECT id, nickname FROM player WHERE exp > 30 ORDER BY RAND()', function (err, rows, fields) {
 			if (err) throw err;
-			text = "Durante la missione incontri " + rows[0].nickname + " e vi salutate. Entrambi recuperate " + formatNumber(life) + " hp (d'altronde è salutare).";
+			text = "Durante la missione incontri " + rows[0].nickname + " e vi salutate. Entrambi recuperate " + formatNumber(plus_life) + " hp (d'altronde è salutare).";
 			bot.sendMessage(chat_id, text);
 
-			connection.query('UPDATE player SET life = life + ' + life + ' WHERE id = ' + rows[0].id, function (err, rows, fields) {
+			connection.query('UPDATE player SET life = life + ' + plus_life + ' WHERE id = ' + rows[0].id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			connection.query('UPDATE player SET life = life + ' + life + ' WHERE id = ' + player_id, function (err, rows, fields) {
+			connection.query('UPDATE player SET life = life + ' + plus_life + ' WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
 		});
