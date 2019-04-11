@@ -7480,7 +7480,7 @@ bot.onText(/$vocazioni|vocazione|torna alle vocazioni/i, function (message) {
 });
 
 bot.onText(/cambia vocazione/i, function (message) {
-	connection.query('SELECT account_id, id, class, reborn, gems, class_change, class_change_date FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, id, class, reborn, gems, class_change, class_change_date, class_change_free FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -7495,6 +7495,7 @@ bot.onText(/cambia vocazione/i, function (message) {
 		var gems = rows[0].gems;
 		var class_change = rows[0].class_change;
 		var class_change_date = rows[0].class_change_date;
+		var class_change_free = rows[0].class_change_free;
 
 		if (reborn == 1) {
 			bot.sendMessage(message.chat.id, "Sblocca le vocazioni prima di poterla cambiare", back);
@@ -7544,18 +7545,26 @@ bot.onText(/cambia vocazione/i, function (message) {
 		}
 
 		var cost = 500+(250*class_change);
-		bot.sendMessage(message.chat.id, "Sei sicuro di voler modificare la Vocazione? Ti costerà " + cost + " 💎 ed il costo aumenterà ogni cambio! (puoi farlo solo una volta durante questa giornata)", cClass).then(function () {
+		bot.sendMessage(message.chat.id, "Sei sicuro di voler modificare la Vocazione? La prima volta è gratis, dopo di che ti costerà " + cost + " 💎 ed il costo aumenterà ogni cambio!\nNota: puoi farlo solo una volta durante questa giornata", cClass).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text.toLowerCase() == "si") {
-					if (gems < cost){
-						bot.sendMessage(message.chat.id, "Non hai abbastanza 💎", bClass);
-						return;
-					}
-					connection.query('UPDATE player SET gems = gems-' + cost + ', class = 1, class_change = class_change+1, class_change_date = NOW() WHERE id = ' + player_id, function (err, rows, fields) {
+					if (class_change_free == 0){
+						connection.query('UPDATE player SET class = 1, class_change_date = NOW(), class_change_free = 1 WHERE id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Hai resettato la vocazione al costo di " + cost + " 💎, ora puoi selezionarne una nuova!", bClass);
-						console.log("Reset vocazione da " + player_class);
-					});
+							bot.sendMessage(message.chat.id, "Hai resettato la vocazione gratuitamente, ora puoi selezionarne una nuova!", bClass);
+						});
+					} else {
+						if (gems < cost){
+							bot.sendMessage(message.chat.id, "Non hai abbastanza 💎", bClass);
+							return;
+						}
+						connection.query('UPDATE player SET gems = gems-' + cost + ', class = 1, class_change = class_change+1, class_change_date = NOW() WHERE id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+							bot.sendMessage(message.chat.id, "Hai resettato la vocazione al costo di " + cost + " 💎, ora puoi selezionarne una nuova!", bClass);
+						});
+					}
+					
+					console.log("Reset vocazione da " + player_class);
 				}
 			}
 		});
