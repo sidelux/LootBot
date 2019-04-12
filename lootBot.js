@@ -28939,7 +28939,7 @@ bot.onText(/^accademia/i, function (message) {
 	});
 });
 
-bot.onText(/^Lascia/i, function (message) {
+bot.onText(/^Lascia$|Lascia ❌/i, function (message) {
 	connection.query('SELECT account_id, holiday, id, money FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -32250,16 +32250,16 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function 
 						var n = new Date().getDay();
 						if (n == 6) {
 							text = "<b>Bentornat" + gender_text + "!</b>\nIl Bardo ti suggerisce le istruzioni per la scrittura di oggi, puoi scegliere una delle tre tracce:\n" +
-								"> <b>Traccia 1</b>: Lo scorrere impetuoso del tempo: cosa faresti con una clessidra che a seconda della direzione fa scorrere il tempo in avanti o indietro?\n" +
-								"> <b>Traccia 2</b>: Vieni trasformato in un Gabbianodonte affamato di pesce senza-branchie, come decidi di vivere la tua giornata?\n" +
-								"> <b>Traccia 3</b>: Incontri uno stregone capace di trasformare l'aria in succo di frutta al lampone, cosa fai?\n" +
+								"> <b>Traccia 1</b>: Ti trovi insieme al tuo team in un'isola apparentemente deserta, tuttavia non siete uomini, ma granchi adulti, cosa fate per trascorrere il tempo tutto il giorno?\n" +
+								"> <b>Traccia 2</b>: Sei il re di un regno che porta il tuo nome, vuoi conquistare i regni adiacenti, a sud si trovano i Branchini Grigi, a nord le Sardine Ine ed a est i Goralla Rampicanti, come pianificate di sconfiggere queste truppe in battaglia?\n" +
+								"> <b>Traccia 3</b>: Il tuo smartphone diventa improvvisamente in grado di creare cloni solo scattando una foto alla persona da clonare, come useresti questa unica peculiarità, considerando che sei l'unico a possederla?\n" +
 								"- Massimo 4.000 caratteri -\n\n" +
 								"Ricorda di inviare la storia prima di mezzanotte, domani cambieranno i temi!";
 						} else if (n == 0) {
 							text = "<b>Bentornat" + gender_text  + "!</b>\nIl Bardo ti suggerisce le istruzioni per la scrittura di oggi, puoi scegliere una delle tre tracce:\n" +
-								"> <b>Traccia 1</b>: Raggiungi un dirupo, dietro di te un gruppo di pollosauri ti fissa minacciosamente, hai solo uno spazzolino, cosa fai?\n" +
-								"> <b>Traccia 2</b>: Sei condannato a morte per l'omicidio di un alberellolello, un sedere di gigante ti schiaccerà tra 60 minuti, come la scampi?\n" +
-								"> <b>Traccia 3</b>: Alcuni banditi si stanno avvicinando al villaggio in groppa a dei rinocerunti, sei uno gnomo appena ripreso da una sbronza, cosa fai?\n" +
+								"> <b>Traccia 1</b>: Sei inviato in una missione di esplorazione verso le terre di Barmbla, famose per i loro violentissimi e velocissimi struzzi con 3 gambe, la direttiva del tuo superiore ti impone di catturarne uno vivo, come organizzi la tua squadra per portare a termine l'incarico?\n" +
+								"> <b>Traccia 2</b>: Una strega vuole leggerti le carte, compaiono queste tre situazioni: un giullare con una spada in bocca, un elefante di marmo ed una bistecca grossa come un paese. Come interpreti queste informazioni? E come agisci di conseguenza?\n" +
+								"> <b>Traccia 3</b>: Incontri un elfo delle colline, inizia il discorso raccontandoti la sua ultima avventura alle prese con i Goralla delle terre dell'est, però la storia inizia dalla fine: l'elfo racconta di essere finito in una ciotola di miele con 3 Goralla che lo osservano famelici, come si è arrivati fino a quel punto?\n" +
 								"- Massimo 4.000 caratteri -\n\n" +
 								"Ricorda di inviare la storia di prima di mezzanotte! Le valutazioni arriveranno il prima possibile";
 						} else {

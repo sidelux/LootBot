@@ -2750,6 +2750,7 @@ CREATE TABLE `player` (
   `bag_min` int(11) NOT NULL DEFAULT '0',
   `class_change` int(11) NOT NULL DEFAULT '0',
   `class_change_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `class_change_free` tinyint(1) NOT NULL DEFAULT '0',
   `top_min` int(11) NOT NULL DEFAULT '0',
   `global_msg` int(11) NOT NULL DEFAULT '1',
   `kill_streak_ok` int(11) NOT NULL DEFAULT '0',
@@ -3524,4 +3525,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-04-11 15:00:06
+-- Dump completed on 2019-04-12  9:00:05
