@@ -40638,6 +40638,9 @@ bot.onText(/^apri/i, function (message) {
 								bot.sendMessage(message.chat.id, "Non possiedi così tanti scrigni di questo tipo", chestMore);
 								return;
 							}
+						} else if ((scrigno != "tutti") && (isNaN(quantity))) {
+							bot.sendMessage(message.chat.id, "Specificare la quantità se non li apri tutti", chestMore);
+							return;
 						} else
 							quantity = maxChest;
 
