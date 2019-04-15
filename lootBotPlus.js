@@ -3959,8 +3959,9 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			return;
 		}
 
-		if (message.chat.id < 0) {
-			bot.sendMessage(message.chat.id, "Non puoi gestire un negozio in un gruppo");
+		if (message.chat.id < 0){
+			if (message.forward_from == undefined)
+				bot.sendMessage(message.chat.id, "Non puoi gestire un negozio in un gruppo");
 			return;
 		}
 
@@ -5971,7 +5972,7 @@ bot.onText(/^\/offri/i, function (message) {
 		bot.sendMessage(message.from.id, "Il parametro acquirente è obbligatorio");
 		return;
 	}
-	if ((isNaN(price) || price > 100000000)) {
+	if (isNaN(price)) {
 		bot.sendMessage(message.from.id, "Il parametro prezzo non è valido");
 		return;
 	}

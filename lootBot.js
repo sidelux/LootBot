@@ -3171,8 +3171,12 @@ bot.onText(/\/ricezione/, function (message, match) {
 	});
 });
 
-bot.onText(/\/link (.+)/, function (message, match) {
+bot.onText(/\/link (.+)|\/link/, function (message, match) {
 	if ((message.from.id == 20471035)){
+		if (match[1] == undefined){
+			bot.sendMessage(message.chat.id, "/link new_player,old_player");
+			return;
+		}
 		var split = match[1].split(",");
 		connection.query('SELECT id FROM player WHERE nickname = "' + split[0] + '"', function (err, rows, fields) {
 			if (err) throw err;
@@ -3191,6 +3195,28 @@ bot.onText(/\/link (.+)/, function (message, match) {
 					if (err) throw err;
 					bot.sendMessage(message.chat.id, "Fatto");
 				});
+			});
+		});
+	}
+});
+
+bot.onText(/\/unlock (.+)|\/unlock/, function (message, match) {
+	if ((message.from.id == 20471035)){
+		if (match[1] == undefined){
+			bot.sendMessage(message.chat.id, "/unlock player");
+			return;
+		}
+		connection.query('SELECT id, chat_id FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
+			if (err) throw err;
+
+			var player_id = rows[0].id;
+
+			var d = new Date();
+			var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+			connection.query('UPDATE player SET account_id = chat_id, market_ban = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				bot.sendMessage(message.chat.id, "Fatto");
 			});
 		});
 	}
@@ -10527,7 +10553,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														}
 													};
 
-													bot.sendMessage(message.chat.id, "Avventuriero, in caso di difficoltà puoi ricorrere all'uso di un *Pass* che ti permette di chiedere aiuto ad un tuo compagno di team e fargli proseguire il dungeon al tuo posto.\nPuoi usare il Pass Bronzo per compagni di Rinascita pari alla tua, Pass Argento per compagni entro 1 rinascita di differenza, il Pass Oro entro 2 rinascite di differenza.\nNota: al completamento del dungeon otterrete entrambi il punto solo se la vostra differenza rango è inferiore a 150.", dPass).then(function () {
+													bot.sendMessage(message.chat.id, "Avventuriero, in caso di difficoltà puoi ricorrere all'uso di un *Pass* che ti permette di chiedere aiuto ad un tuo compagno di team e fargli proseguire il dungeon al tuo posto.\nPuoi usare il Pass Bronzo per compagni di Rinascita pari alla tua, Pass Argento per compagni entro 1 rinascita di differenza, il Pass Oro entro 2 rinascite di differenza.\nNota: al completamento del dungeon otterrete entrambi il punto solo se la vostra differenza rango è inferiore a 150 ed il rango del destinatario è superiore al tuo.", dPass).then(function () {
 														answerCallbacks[message.chat.id] = function (answer) {
 
 															if (answer.text != "Torna al dungeon") {
@@ -19825,7 +19851,7 @@ bot.onText(/^Risorse/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [['Continua a Combattere'], ['Torna alla vetta'], ['Torna al menu']]
+				keyboard: [['Continua a Combattere'], ['Torna alla vetta'], ['Torna al drago'], ['Torna al menu']]
 			}
 		};
 
@@ -19833,7 +19859,7 @@ bot.onText(/^Risorse/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [['Si'], ['Torna alla vetta'], ['Continua a Combattere']]
+				keyboard: [['Si'], ['Continua a Combattere'], ['Torna alla vetta'], ['Torna al drago']]
 			}
 		};
 
@@ -27517,8 +27543,8 @@ function playerKilled(team_id, player_id, place_id, is_boss){
 	if (place_id == 5)
 		prob += 5;
 	if (((is_boss == 0) && (rand <= prob)) || ((is_boss == 1) && (rand <= (prob+30)))){
-		var rows = connection_sync.query("SELECT level FROM assault_place_team WHERE place_id = " + place_id + " AND team_id = " + team_id);
-		if (rows[0].level > 1) {
+		var rows = connection_sync.query("SELECT level, active FROM assault_place_team WHERE place_id = " + place_id + " AND team_id = " + team_id);
+		if ((rows[0].level > 1) && (rows[0].active == 1)) {
 			connection_sync.query("UPDATE assault_place_team SET level = level-1 WHERE level > 1 AND place_id = " + place_id + " AND team_id = " + team_id);
 			var rows = connection_sync.query("SELECT id, name FROM assault_place WHERE id = " + place_id);
 			return "\nLa postazione " + assaultEmojiList[rows[0].id-1] + " <b>" + rows[0].name + "</b> è retrocessa di un livello!";
@@ -28519,7 +28545,7 @@ bot.onText(/Gestisci Membri/i, function (message) {
 																if (err) throw err;
 
 																if (Object.keys(rows).length > 0) {
-																	if (rows[0].phase == 2){
+																	if (rows[0].phase >= 2){
 																		bot.sendMessage(message.chat.id, "Puoi spostare membri solamente durante il Giorno della Preparazione!");
 																		return;
 																	}
@@ -28637,7 +28663,7 @@ bot.onText(/Gestisci Membri/i, function (message) {
 																if (err) throw err;
 
 																if (Object.keys(rows).length > 0) {
-																	if (rows[0].phase != 1){
+																	if (rows[0].phase >= 2){
 																		bot.sendMessage(message.chat.id, "Puoi spostare membri solamente durante il Giorno della Preparazione!");
 																		return;
 																	}
@@ -28989,7 +29015,7 @@ bot.onText(/^Lascia$|Lascia ❌/i, function (message) {
 							return;
 						}
 
-						bot.sendMessage(message.chat.id, "Sei sicuro di voler uscire dal team? Dovrai attendere 72 ore prima di entrare in un altro!", conf).then(function () {
+						bot.sendMessage(message.chat.id, "Sei sicuro di voler uscire dal team? Dovrai attendere 48 ore prima di entrare in un altro!", conf).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
 								var action = answer.text;
 								if (action == "Torna al Team")
@@ -29144,7 +29170,7 @@ bot.onText(/^Sciogli/i, function (message) {
 										if (err) throw err;
 										connection.query('DELETE FROM team WHERE id = ' + team_id, function (err, rows, fields) {
 											if (err) throw err;
-											bot.sendMessage(message.chat.id, "Team eliminato! Non puoi crearlo o accedere ad un altro team prima che siano passate 72 ore!", back);
+											bot.sendMessage(message.chat.id, "Team eliminato! Non puoi crearlo o accedere ad un altro team prima che siano passate 48 ore!", back);
 											return;
 										});
 									});
@@ -32174,11 +32200,6 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function 
 					adminId = player_id;
 				}
 
-				if (isAdmin == 0) {
-					bot.sendMessage(message.chat.id, "Questo evento è gestito dall'amministratore del tuo team, contattalo tramite il gruppo del team per continuare!", back);
-					return;
-				}
-
 				connection.query('SELECT point_1, point_2, story_1, story_2 FROM event_team_story WHERE team_id = ' + team_id, function (err, rows, fields) {
 					if (err) throw err;
 					var eventKb = {
@@ -32189,14 +32210,24 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function 
 						}
 					};
 
-					var kb = {
-						parse_mode: "HTML",
-						reply_markup: {
-							resize_keyboard: true,
-							keyboard: [["Torna al menu"]]
-						}
-					};
-
+					if (isAdmin == 0) {
+						var kb = {
+							parse_mode: "HTML",
+							reply_markup: {
+								resize_keyboard: true,
+								keyboard: [["Torna al menu"]]
+							}
+						};
+					} else {
+						var kb2 = {
+							parse_mode: "HTML",
+							reply_markup: {
+								resize_keyboard: true,
+								keyboard: [["Invia Scrittura"], ["Torna al menu"]]
+							}
+						};
+					}
+					
 					var kb2 = {
 						parse_mode: "HTML",
 						reply_markup: {
@@ -32267,11 +32298,14 @@ bot.onText(/Il Canto del Bardo|Iscrizione dal Bardo|Torna dal Bardo/i, function 
 							return;
 						}
 
-						text += "\n\nQuesto Canto del Bardo assicurerà ai vincitori la possibilità di provare in anticipo la nuova modalità Assalto!";
-
 						bot.sendMessage(message.chat.id, text + win, kb2).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
 								if (answer.text == "Invia Scrittura") {
+									
+									if (isAdmin == 0) {
+										bot.sendMessage(message.chat.id, "Solo l'amministratore o il vice possono inviare la scrittura, contattali tramite il gruppo del team per continuare!", back);
+										return;
+									}
 
 									bot.sendMessage(message.chat.id, "Incolla qua il testo completo e attendi la fine della giornata! Ricordati di non utilizzare bestemmie, insulti, argomenti spiacevoli, ecc. (le solite cose), pena il ban di tutto il team dal bot. Forza!", rSend).then(function () {
 										answerCallbacks[message.chat.id] = function (answer) {
@@ -32991,7 +33025,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 					if ((time_end.getHours() > 22) || (day_cnt >= merchant_limit))
 						bot.sendMessage(message.chat.id, "Al momento il Contrabbandiere non ha offerte per te, torna domani", back);
 					else
-						bot.sendMessage(message.chat.id, "Al momento il Contrabbandiere non ha offerte per te, torna alle " + short_date + ", puoi ancora accettare " + offers + " offerte", back);
+						bot.sendMessage(message.chat.id, "Al momento il Contrabbandiere non ha offerte per te, torna alle *" + short_date + "*, puoi ancora accettare *" + offers + "* offerte", back);
 					return;
 				}
 
