@@ -359,7 +359,7 @@ bot.on("inline_query", function (query) {
 				reply_markup: {
 					inline_keyboard: iKeys
 				}
-			}]);
+			}], {cache_time: 0});
 		});
 	});
 });

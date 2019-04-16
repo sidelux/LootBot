@@ -2992,6 +2992,7 @@ CREATE TABLE `public_shop` (
   `item_id` int(11) NOT NULL,
   `price` int(11) NOT NULL,
   `quantity` int(11) NOT NULL,
+  `time_creation` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `time_end` timestamp NULL DEFAULT NULL,
   `notified` tinyint(1) NOT NULL DEFAULT '0',
   `public` tinyint(1) NOT NULL DEFAULT '0',
@@ -3525,4 +3526,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-04-16 12:00:05
+-- Dump completed on 2019-04-16 15:00:05

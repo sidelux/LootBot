@@ -2132,7 +2132,7 @@ bot.onText(/\/start (.+)|\/start/i, function (message, match) {
 				connection.query('INSERT INTO player (id, exp, account_id, nickname, chat_id, money, gems, invite_code, life, total_life) VALUES (DEFAULT, 10, ' + message.from.id + ', "' + message.from.username + '", ' + message.chat.id + ', ' + money + ', ' + gems + ',"' + rnd_code + '", 10, 10)', function (err, rows, fields) {
 					if (err) throw err;
 
-					bot.sendMessage("-1001098734700", "#Registrazione: " + message.from.username + " (" + message.from.id + ") " + invite);
+					bot.sendMessage("-1001098734700", "#Registrazione: " + message.from.username + " (" + message.from.id + ")" + invite);
 
 					printStart(message);
 				});
