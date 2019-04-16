@@ -289,9 +289,14 @@ bot.on("chosen_inline_result", function (query) {
 
 bot.on("inline_query", function (query) {
 	var code = parseInt(query.query);
-
-	if ((code == "") || (isNaN(code)))
-		return;
+	var last = 0;
+	if ((code == "") || (isNaN(code))) {
+		var lastShop = connection_sync.query('SELECT P.code FROM public_shop P, player PL WHERE PL.id = P.player_id AND PL.nickname = "' + query.from.username + '" ORDER BY time_creation DESC');
+		if (Object.keys(lastShop).length == 0)
+			return;
+		code = lastShop[0].code;
+		last = 1;
+	}
 
 	connection.query('SELECT public_shop.id, quantity, item.name, price, player_id, massive FROM public_shop, item WHERE item.id = item_id AND code = ' + code, function (err, rows, fields) {
 		if (err) throw err;
@@ -301,6 +306,7 @@ bot.on("inline_query", function (query) {
 
 		var iKeys = [];
 		var name = "";
+		var item_list = "";
 		var total_qnt = 0;
 		var total_price = 0;
 		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
@@ -309,9 +315,12 @@ bot.on("inline_query", function (query) {
 				text: name + " (" + rows[i].quantity + ") - " + formatNumber(rows[i].price) + " §",
 				callback_data: rows[i].id.toString()
 			}]);
-			total_qnt += parseInt(rows[i].quantity);
+			total_qnt++;
 			total_price += parseInt(rows[i].price*rows[i].quantity);
+			item_list += name + ", ";
 		}
+		
+		item_list = item_list.slice(0, -2);
 
 		if (rows[0].massive != 0){
 			iKeys.push([{
@@ -335,7 +344,11 @@ bot.on("inline_query", function (query) {
 				return;
 
 			var text = "Negozio di " + rows[0].nickname + "!";
-			var desc = total_qnt + " oggetti in vendita";
+			var desc;
+			if (last == 0)
+				desc = total_qnt + " oggetti in vendita\n" + item_list;
+			else
+				desc = "Negozio più recente\n" + item_list;
 
 			bot.answerInlineQuery(query.id, [{
 				id: '0',
@@ -454,7 +467,7 @@ bot.onText(/^\/comandicommercio/, function (message) {
 					"/scambia - Crea uno scambio riservato verso un altro giocatore\n" +
 					"/accettas - Accetta lo scambio riservato\n" +
 					"/rifiutas - Rifiuta lo scambio riservato\n" +
-					"/paga - Invia monete ad un altro giocatore", mark);
+					"/paga - Invia monete ad un altro giocatore (usa anche 'tutto')", mark);
 });
 
 bot.onText(/^\/comanditeam/, function (message) {
@@ -5769,7 +5782,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 	if (!checkSpam(message))
 		return;
 
-	var syntax = "Sintassi: '/paga prezzo,acquirente,messaggio(facoltativo)' (senza acquirente in caso di risposta)";
+	var syntax = "Sintassi: '/paga prezzo,acquirente,messaggio (facoltativo)' (senza acquirente in caso di risposta)";
 	var text = "";
 
 	if (message.text.indexOf(" ") != -1)
@@ -5789,7 +5802,9 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 		return;
 	}
 
-	var price = parseInt(elements[0].replace(/\D+/gi, '').trim().replaceAll(/\./, ""));
+	var price = elements[0];
+	if (price != "tutto")
+		price = parseInt(price.replace(/\D+/gi, '').trim().replaceAll(/\./, ""));
 	var buyer = elements[1].replace('@', '').trim();
 
 	var custom_message = "";
@@ -5804,13 +5819,16 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 		bot.sendMessage(message.from.id, "Il parametro acquirente è obbligatorio");
 		return;
 	}
-	if (isNaN(price)) {
-		bot.sendMessage(message.from.id, "Il parametro prezzo non è valido");
-		return;
-	}
-	if (price <= 0) {
-		bot.sendMessage(message.from.id, "Il parametro prezzo deve essere maggiore di zero");
-		return;
+	
+	if (price != "tutto"){
+		if (isNaN(price)) {
+			bot.sendMessage(message.from.id, "Il parametro prezzo non è valido");
+			return;
+		}
+		if (price <= 0) {
+			bot.sendMessage(message.from.id, "Il parametro prezzo deve essere maggiore di zero");
+			return;
+		}
 	}
 
 	connection.query('SELECT account_id, id, money, holiday, market_ban, exp, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -5841,6 +5859,9 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 
 		var player_id = rows[0].id;
 		var mymoney = rows[0].money;
+		
+		if (price == "tutto")
+			price = mymoney;
 
 		if (mymoney < price) {
 			bot.sendMessage(message.from.id, "Non hai abbastanza credito a disposizione");

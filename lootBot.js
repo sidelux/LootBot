@@ -7953,7 +7953,7 @@ bot.onText(/^map$|entra nella mappa|torna alla mappa/i, function (message) {
 			if (Object.keys(rows).length == 0) {
 				connection.query('INSERT INTO map_lobby (player_id) VALUES (' + player_id + ')', function (err, rows, fields) {
 					if (err) throw err;
-					bot.sendMessage(message.chat.id, "blabla benvenuto", kbEvent);
+					bot.sendMessage(message.chat.id, "Benvenuto...", kbEvent);
 				});
 			} else {
 				var lobby_id = rows[0].lobby_id;
@@ -7961,7 +7961,7 @@ bot.onText(/^map$|entra nella mappa|torna alla mappa/i, function (message) {
 				if (lobby_id != null) {
 					connection.query('SELECT COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Sei in attesa in lobby... " + rows[0].cnt + "/" + lobby_total_space + " giocatori trovati", kbStop);
+						bot.sendMessage(message.chat.id, "Sei in attesa in lobby... " + rows[0].cnt + "/" + lobby_total_space + " giocatori disponibili", kbStop);
 					});
 				} else {
 					bot.sendMessage(message.chat.id, "Benvenuto!\nPuoi entrare nella mappa accedendo ad una lobby oppure visualizzare i record personali ottenuti fin ora.", kbMain).then(function () {
@@ -10447,13 +10447,14 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															bot.sendMessage(message.chat.id, "Puoi prendere una scorciatoia utilizzando una Chiave Tipo 1, procedi?", dYesNo).then(function () {
 																answerCallbacks[message.chat.id] = function (answer) {
 																	if (answer.text.toLowerCase() == "si") {
-																		if (getItemCnt(player_id, 604) == 0) {
+																		if (getItemCnt(player_id, 604) == 0)
 																			bot.sendMessage(message.chat.id, "Non hai abbastanza Chiavi Tipo 1", dBack);
-																		} else {
+																		else {
 																			delItem(player_id, 604, 1);
 																			connection.query('UPDATE dungeon_status SET room_id = room_id+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																				bot.sendMessage(message.chat.id, "Hai preso una scorciatoia!", dBack);
+																				setAchievement(player_id, 73, 1);
 																			});
 																		}
 																	}
@@ -10463,9 +10464,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															bot.sendMessage(message.chat.id, "Puoi rivelare le stanze utilizzando una Chiave Tipo 2, procedi?", dYesNo).then(function () {
 																answerCallbacks[message.chat.id] = function (answer) {
 																	if (answer.text.toLowerCase() == "si") {
-																		if (getItemCnt(player_id, 605) == 0) {
+																		if (getItemCnt(player_id, 605) == 0)
 																			bot.sendMessage(message.chat.id, "Non hai abbastanza Chiavi Tipo 2", dBack);
-																		} else {
+																		else {
 																			delItem(player_id, 605, 1);
 																			var text = "Scelta stanza successiva:\n";
 																			var i = 0;
@@ -10488,6 +10489,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			}
 
 																			bot.sendMessage(message.chat.id, text, dBack);
+																			setAchievement(player_id, 74, 1);
 																		}
 																	}
 																}
