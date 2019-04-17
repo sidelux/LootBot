@@ -12778,7 +12778,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	text = "qualcosa che ti fa sentire un po' più al fresco...";
 																}
 															} else if (rand < 170) {
-																addItem(player_id, 646, qnt);
+																addItem(player_id, 646, qnt*5);
 																text = "qualcosa che ti provoca un prurito fastidioso...";
 															} else if (rand < 199) {
 																setExp(player_id, 10, qnt);
@@ -13670,7 +13670,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		return;
 																	}
 
-																	bot.sendMessage(message.chat.id, "Accetti l'offerta del Gioielliere e sogghignando si prepara a cambiare la sua offerta per i prossimi passanti, intanto prosegui il dungeon chiudendoti la porta alle spalle...", dNext);
+																	bot.sendMessage(message.chat.id, "Accetti l'offerta del Gioielliere, che sogghignando si prepara a cambiare la sua offerta per i prossimi passanti, intanto prosegui il dungeon chiudendoti la porta alle spalle...", dNext);
 
 																	delItem(player_id, item1, 1);
 
@@ -15889,23 +15889,25 @@ bot.onText(/cassa rinascita|torna alla cassa/i, function (message) {
 				bot.sendMessage(message.chat.id, "Hai già attivato il salvataggio zaino per questa rinascita", back);
 				return;
 			}
+			
+			var cost = 10*(reborn+1);
 
-			bot.sendMessage(message.chat.id, "La Cassa Rinascita manterrà per te tutti gli oggetti nello zaino per sole 5 💎 durante la rinascita, continuare?", kbConf).then(function () {
+			bot.sendMessage(message.chat.id, "La Cassa Rinascita manterrà per te tutti gli oggetti nello zaino per sole " + cost + " 💎 durante la rinascita, continuare?", kbConf).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if (answer.text == "Conferma"){
 
 						connection.query('SELECT gems FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
-							if (rows[0].gems < 5){
-								bot.sendMessage(message.chat.id, "Non hai abbastanza 💎, ne servono 5", back);
+							if (rows[0].gems < cost){
+								bot.sendMessage(message.chat.id, "Non hai abbastanza 💎, ne servono " + cost, back);
 								return;
 							}
 
-							connection.query('UPDATE player SET gems = gems-5 WHERE id = ' + player_id, function (err, rows, fields) {
+							connection.query('UPDATE player SET gems = gems-' + cost + ' WHERE id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
 								connection.query('INSERT INTO reborn_save (player_id) VALUES (' + player_id + ')', function (err, rows, fields) {
 									if (err) throw err;
-									bot.sendMessage(message.chat.id, "Salvataggio completato! Hai speso 5 💎", back);
+									bot.sendMessage(message.chat.id, "Salvataggio completato! Hai speso " + cost + " 💎", back);
 									return;
 								});
 							});
@@ -24356,7 +24358,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 								}
 							};
 
-							bot.sendMessage(message.chat.id, "Il <b>Giorno dell'Assalto</b> è stato completato, attendi ancora " + toTime(diff) + "!", kb);
+							bot.sendMessage(message.chat.id, "Il <b>Giorno dell'Assalto " + boss_num + "</b> è stato completato, attendi ancora " + toTime(diff) + "!", kb);
 						}
 					}
 				});
