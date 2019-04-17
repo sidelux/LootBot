@@ -15891,7 +15891,6 @@ bot.onText(/cassa rinascita|torna alla cassa/i, function (message) {
 			}
 
 			var cost = 10*(reborn+1);
-
 			bot.sendMessage(message.chat.id, "La Cassa Rinascita manterrà per te tutti gli oggetti nello zaino per sole " + cost + " 💎 durante la rinascita, continuare?", kbConf).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if (answer.text == "Conferma"){
@@ -19074,7 +19073,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 			connection.query('SELECT id, top_id, enemy_dragon_id, wait_time, no_match_time, is_dummy FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
-				var finishD = new Date("2019-03-20 12:00:00");
+				var finishD = new Date("2019-04-24 12:00:00");
 				var finish_date = addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes()) + " del " + addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + "/" + finishD.getFullYear();
 
 				if (Object.keys(rows).length == 0) {
