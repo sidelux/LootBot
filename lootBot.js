@@ -45016,7 +45016,7 @@ bot.onText(/migliora rifugio/i, function (message) {
 });
 
 function attack(nickname, message, from_id, weapon_bonus, cost, source, global_end, boost_id, boost_mission) {
-	connection.query('SELECT exp, ability, chat_id, heist_count, heist_limit, heist_protection, house_id, custom_name_h, id, money, global_end, player_custom_nickname FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
+	connection.query('SELECT exp, ability, chat_id, heist_count, heist_limit, heist_protection, house_id, custom_name_h, id, money, global_end, player_custom_nickname, class FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var chat_id_nickname = rows[0].chat_id;
 		var isMatch = source;
@@ -45039,6 +45039,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 		var ability = parseInt(rows[0].ability);
 		var custom_name_h = rows[0].custom_name_h;
 		var player_custom_nickname = (rows[0].player_custom_nickname != null ? " " + rows[0].player_custom_nickname : "");
+		var player_class = rows[0].class;
 
 		// per contare anche quelli in viaggio nelle subite
 		var limitProgress = connection_sync.query("SELECT COUNT(id) As cnt FROM heist WHERE to_id = " + to_id);
@@ -45146,7 +45147,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 						if (custom_name_h != null)
 							house_name = "Rifugio " + custom_name_h;
 
-						var text = "Stai per inviare uno gnomo servitore al rifugio di <b>" + nickname + player_custom_nickname + "</b> (" + team_name + ") con abilità " + ability + ".\nAlloggia in un 🏕 <b>" + house_name + "</b> (" + house_id + ")" + dragon_text + ". Seleziona quale gnomo servitore vuoi inviare.";
+						var text = "Stai per inviare uno gnomo servitore al rifugio di " + classSym(player_class) + " <b>" + nickname + player_custom_nickname + "</b> (" + team_name + ") con abilità " + ability + ".\nAlloggia in un 🏕 <b>" + house_name + "</b> (" + house_id + ")" + dragon_text + ". Seleziona quale gnomo servitore vuoi inviare.";
 
 						if (isWanted == 0) {
 							connection.query('UPDATE player SET money = money-' + cost + ' WHERE id = ' + from_id, function (err, rows, fields) {
