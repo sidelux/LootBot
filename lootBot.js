@@ -1833,7 +1833,9 @@ bot.onText(/^\/scorciatoia/, function (message, match) {
 					"> 'equipaggia (equip) - Porta al menù equipaggiamento\n" +
 					"> rimuovi - Porta al menù rimuovi equipaggiamento\n" +
 					"> cura completa (cura) - Cura il giocatore utilizzando automaticamente le pozioni possedute\n" +
+					"> cura parziale - Cura il giocatore utilizzando automaticamente le pozioni possedute tranne quella per superare la saluta massima\n" +
 					"> dungeon (dg) - Apre il menù del dungeon\n" +
+					"> matchmaking (mm) - Avvia il matchmaking delle ispezioni\n" +
 					"> party - Apre il menù della gestione party\n" +
 					"> '/eliminaX' - Scioglie il party specificato dal numero X\n" +
 					"> albero talenti (albero) - Apre il menù relativo ai Talenti\n" +
@@ -26792,7 +26794,7 @@ bot.onText(/^incrementi effettuati/i, function (message) {
 	});
 });
 
-bot.onText(/cura completa|^cura$/i, function (message) {
+bot.onText(/cura completa|cura parziale|^cura$/i, function (message) {
 
 	var kbBack = {
 		parse_mode: "Markdown",
@@ -26809,6 +26811,10 @@ bot.onText(/cura completa|^cura$/i, function (message) {
 			keyboard: [["Si"],["Torna al menu"]]
 		}
 	};
+	
+	var mode = 0;
+	if (message.text.toLowerCase().indexOf("parziale") != -1)
+		mode = 1;
 
 	connection.query('SELECT id, holiday, account_id, life, total_life FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -26867,6 +26873,8 @@ bot.onText(/cura completa|^cura$/i, function (message) {
 					player_life += Math.round(player_total_life*perc2);
 					pot2++;
 				}else if (pot1bag-pot1 > 0){
+					if ((player_life+Math.round(player_total_life*perc2) >= player_total_life) && (mode == 1))
+						break;
 					player_life += Math.round(player_total_life*perc1);
 					pot1++;
 				}else
@@ -42379,6 +42387,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 				itemKeys.push([rows[i].name + " (" + rows[i].num + ") - " + desc]);
 			}
 			itemKeys.push(["Cura completa"]);
+			itemKeys.push(["Cura parziale"]);
 			if (from == 2)
 				itemKeys.push(["Torna allo Zaino"]);
 			if (from == 4)
@@ -42395,6 +42404,8 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 					else if (oggetto == "Torna al dungeon")
 						return;
 					else if (oggetto == "Cura completa")
+						return;
+					else if (oggetto == "Cura parziale")
 						return;
 
 					var pos = oggetto.indexOf(" (");
