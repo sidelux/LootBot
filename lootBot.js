@@ -9444,8 +9444,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 			return;
 		}
 
-		if (player_reborn == 1) {
-			bot.sendMessage(message.chat.id, "Per accedere ai dungeon devi aver raggiunto almeno la Rinascita 1 (Livello 100), dopo di che potrai esplorare labirinti sempre differenti, combattere creature e risolvere misteriosi enigmi! Ma solo quando avrai abbastanza esperienza per farlo. Forza!", back);
+		if ((player_reborn == 1) && (player_level < 50)) {
+			bot.sendMessage(message.chat.id, "Per accedere ai dungeon devi aver raggiunto almeno il livello 50, dopo di che potrai esplorare labirinti sempre differenti, combattere creature e risolvere misteriosi enigmi! Ma solo quando avrai abbastanza esperienza per farlo. Forza!", back);
 			return;
 		}
 
@@ -9457,7 +9457,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 		}
 
 		if (player_life <= 0) {
-			bot.sendMessage(message.chat.id, "Non puoi entrare nel dungeon da morto", revive);
+			bot.sendMessage(message.chat.id, "Non puoi entrare nel dungeon da esausto", revive);
 			return;
 		}
 		var dungeon_time = rows[0].dungeon_time;
@@ -14577,7 +14577,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 		var boost_cast = rows[0].boost_cast;
 
 		if (player_life <= 0) {
-			bot.sendMessage(message.chat.id, "Non puoi combattere da morto!", revive);
+			bot.sendMessage(message.chat.id, "Non puoi combattere da esausto!", revive);
 			return;
 		}
 
@@ -24315,7 +24315,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 								var diff = Math.round((now - d) / 1000); //in secondi
 								diff = Math.abs(diff);
 
-								var text = "Il <b>Giorno dell'Assalto</b> terminerà tra " + toTime(diff) + "!\n";
+								var text = "Il <b>Giorno dell'Assalto " + (boss_num-1) + "</b> terminerà tra " + toTime(diff) + "!\n";
 
 								var extra = "";
 								if (is_boss == 1)
@@ -24357,7 +24357,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 								}
 							};
 
-							bot.sendMessage(message.chat.id, "Il <b>Giorno dell'Assalto " + boss_num + "</b> è stato completato, attendi ancora " + toTime(diff) + "!", kb);
+							bot.sendMessage(message.chat.id, "Il <b>Giorno dell'Assalto " + (boss_num-1) + "</b> è stato completato, attendi ancora " + toTime(diff) + "!", kb);
 						}
 					}
 				});
@@ -26537,10 +26537,12 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				connection_sync.query('UPDATE player SET refilled = refilled+1, life = ' + refill + ' WHERE id = ' + player[i].id);
 																				connection_sync.query('UPDATE assault_place_player_id SET killed = 0 WHERE player_id = ' + player[i].id);
 
+																				var extra = " (" + (att-(player[i].refilled+1)) + " residui)";
+																				
 																				if (player[i].life == 0)
-																					player_text += "\n> " + player[i].nickname + " torna in salute con l'Intervento Divino";
+																					player_text += "\n> " + player[i].nickname + " torna in salute con l'Intervento Divino" + extra;
 																				else if (player[i].killed == 1)
-																					player_text += "\n> " + player[i].nickname + " esce dall'infermeria grazie all'Intervento Divino";
+																					player_text += "\n> " + player[i].nickname + " esce dall'infermeria grazie all'Intervento Divino" + extra;
 
 																				reviveUsed = 1;
 																				epic_var++;
@@ -32670,7 +32672,7 @@ bot.onText(/Il Tesoro di Arthur|Evento/i, function (message) {
 												connection.query('UPDATE player SET life = total_life*0.1 WHERE id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
 												});
-												text = "Fortunatamente non sei morto, ma torni al tuo rifugio con il 10% dei tuoi hp.";
+												text = "Fortunatamente non sei esausto, ma torni al tuo rifugio con il 10% dei tuoi hp.";
 											}
 										}
 									}
@@ -33695,114 +33697,132 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 				return;
 			}
 		}
-
-		connection.query('SELECT rarity.name, rarity.id As rarity_id, SUM(price) As tot FROM market_pack, rarity WHERE market_pack.pack_id = rarity.id GROUP BY pack_id', function (err, rows, fields) {
+		
+		connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 7', function (err, rows, fields) {
 			if (err) throw err;
 
-			var iKeys = [];
-			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-				iKeys.push(["Pacchetto " + rows[i].name + " (" + formatNumber(rows[i].tot*(11-rows[i].rarity_id)) + " §)"]);
-			iKeys.push(["Torna al menu"]);
+			var abBonus = 0;
+			if (Object.keys(rows).length > 0) {
+				abBonus = rows[0].ability_level * rows[0].val;
 
-			var kb = {
-				parse_mode: "Markdown",
-				reply_markup: {
-					resize_keyboard: true,
-					keyboard: iKeys
-				}
-			};
+				var rand = Math.random() * 100;
+				if (rand < abBonus)
+					abBonus = 1;
+			}
 
-			bot.sendMessage(message.chat.id, price_drop_msg + "Il *Mercante Pazzo* oggi offre alcuni pacchetti dall'aspetto interessante, selezionali per vedere il loro contenuto, ma attenzione, puoi acquistare solamente un pacchetto al giorno!", kb).then(function () {
-				answerCallbacks[message.chat.id] = function (answer) {
-					if (answer.text == "Torna al menu") {
-						return;
+			connection.query('SELECT rarity.name, rarity.id As rarity_id, SUM(price) As tot FROM market_pack, rarity WHERE market_pack.pack_id = rarity.id GROUP BY pack_id', function (err, rows, fields) {
+				if (err) throw err;
+
+				var iKeys = [];
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+					iKeys.push(["Pacchetto " + rows[i].name + " (" + formatNumber(rows[i].tot*(11-rows[i].rarity_id)) + " §)"]);
+				iKeys.push(["Torna al menu"]);
+
+				var kb = {
+					parse_mode: "Markdown",
+					reply_markup: {
+						resize_keyboard: true,
+						keyboard: iKeys
 					}
-					var reg3 = /Pacchetto (.+) \(/i;
-					var rarity = answer.text.match(reg3);
+				};
 
-					if (rarity == null)
-						return;
-					if (rarity[1] == undefined)
-						return;
-					connection.query('SELECT pack_id, SUM(price) As tot, rarity.id As rarity_id FROM market_pack, rarity WHERE market_pack.pack_id = rarity.id AND rarity.name = "' + rarity[1] + '"', function (err, rows, fields) {
-						if (err) throw err;
-
-						if (Object.keys(rows).length == 0) {
-							bot.sendMessage(message.chat.id, "Pacchetto non valido", back);
+				bot.sendMessage(message.chat.id, price_drop_msg + "Il *Mercante Pazzo* oggi offre alcuni pacchetti dall'aspetto interessante, selezionali per vedere il loro contenuto, ma attenzione, puoi acquistare solamente un pacchetto al giorno!", kb).then(function () {
+					answerCallbacks[message.chat.id] = function (answer) {
+						if (answer.text == "Torna al menu") {
 							return;
 						}
-						if (rows[0].tot == null) {
-							bot.sendMessage(message.chat.id, "Pacchetto non valido", back);
+						var reg3 = /Pacchetto (.+) \(/i;
+						var rarity = answer.text.match(reg3);
+
+						if (rarity == null)
 							return;
-						}
-
-						var pack_id = rows[0].pack_id;
-						var qnt = 11-rows[0].rarity_id;
-						var price = rows[0].tot*qnt;
-
-						connection.query('SELECT pack_id, item.name, item.id, price FROM market_pack, item WHERE market_pack.item_id = item.id AND pack_id = ' + pack_id, function (err, rows, fields) {
+						if (rarity[1] == undefined)
+							return;
+						connection.query('SELECT pack_id, SUM(price) As tot, rarity.id As rarity_id FROM market_pack, rarity WHERE market_pack.pack_id = rarity.id AND rarity.name = "' + rarity[1] + '"', function (err, rows, fields) {
 							if (err) throw err;
-							var text = "Oggetti contenuti nel pacchetto:\n";
-							var items = [];
-							var prices = [];
-							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-								rows[i].price = rows[i].price*qnt;
-								text += "> " + qnt + "x " + rows[i].name + "\n";
-								items.push(rows[i].id);
-								if (price_drop == 1)
-									prices.push(Math.round(rows[i].price - (rows[i].price / 100 * sconto)));
-								else
-									prices.push(rows[i].price);
+
+							if (Object.keys(rows).length == 0) {
+								bot.sendMessage(message.chat.id, "Pacchetto non valido", back);
+								return;
 							}
-							if (price_drop == 1)
-								price = Math.round(price - (price / 100 * sconto));
-							text += "\nAl prezzo di: *" + formatNumber(price) + "* §";
+							if (rows[0].tot == null) {
+								bot.sendMessage(message.chat.id, "Pacchetto non valido", back);
+								return;
+							}
 
-							var kb2 = {
-								parse_mode: "Markdown",
-								reply_markup: {
-									resize_keyboard: true,
-									keyboard: [["Accetta"], ["Torna dal Mercante Pazzo"], ["Torna al menu"]]
+							var pack_id = rows[0].pack_id;
+							var qnt = 11-rows[0].rarity_id;
+							var price = rows[0].tot*qnt;
+
+							connection.query('SELECT pack_id, item.name, item.id, price FROM market_pack, item WHERE market_pack.item_id = item.id AND pack_id = ' + pack_id, function (err, rows, fields) {
+								if (err) throw err;
+								var text = "Oggetti contenuti nel pacchetto:\n";
+								var items = [];
+								var prices = [];
+								for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+									rows[i].price = rows[i].price*qnt;
+									text += "> " + qnt + "x " + rows[i].name + "\n";
+									items.push(rows[i].id);
+									if (price_drop == 1)
+										prices.push(Math.round(rows[i].price - (rows[i].price / 100 * sconto)));
+									else
+										prices.push(rows[i].price);
 								}
-							};
+								if (price_drop == 1)
+									price = Math.round(price - (price / 100 * sconto));
+								text += "\nAl prezzo di: *" + formatNumber(price) + "* §";
 
-							var kbBack = {
-								parse_mode: "Markdown",
-								reply_markup: {
-									resize_keyboard: true,
-									keyboard: [["Torna all'emporio"], ["Torna al menu"]]
-								}
-							};
-
-							bot.sendMessage(message.chat.id, text + "\n\nAcquisti il pacchetto?", kb2).then(function () {
-								answerCallbacks[message.chat.id] = function (answer) {
-									if (answer.text == "Accetta") {
-										connection.query('SELECT money FROM player WHERE id = ' + player_id, function (err, rows, fields) {
-											if (err) throw err;
-											if (rows[0].money < price) {
-												bot.sendMessage(message.chat.id, "Non hai abbastanza monete!", back);
-												return;
-											}
-											connection.query('UPDATE player SET market_pack = market_pack+1, money = money - ' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
-												if (err) throw err;
-												var d = new Date();
-												var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-												for (var i = 0, len = Object.keys(items).length; i < len; i++) {
-													addItem(player_id, items[i], qnt);
-													connection.query('INSERT INTO market_direct_history (item_id, price, time, from_id, to_id, type, quantity) VALUES (' + items[i] + ', ' + prices[i] + ', "' + long_date + '", ' + player_id + ', NULL, 4, ' + qnt + ')', function (err, rows, fields) {
-														if (err) throw err;
-													});
-												}
-												bot.sendMessage(message.chat.id, "Acquisto pacchetto *" + rarity[1] + "* completato! Hai speso *" + formatNumber(price) + "* §!", kbBack);
-												setAchievement(player_id, 45, 1);
-											});
-										});
+								var kb2 = {
+									parse_mode: "Markdown",
+									reply_markup: {
+										resize_keyboard: true,
+										keyboard: [["Accetta"], ["Torna dal Mercante Pazzo"], ["Torna al menu"]]
 									}
-								}
+								};
+
+								var kbBack = {
+									parse_mode: "Markdown",
+									reply_markup: {
+										resize_keyboard: true,
+										keyboard: [["Torna all'emporio"], ["Torna al menu"]]
+									}
+								};
+
+								bot.sendMessage(message.chat.id, text + "\n\nAcquisti il pacchetto?", kb2).then(function () {
+									answerCallbacks[message.chat.id] = function (answer) {
+										if (answer.text == "Accetta") {
+											connection.query('SELECT money FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+												if (rows[0].money < price) {
+													bot.sendMessage(message.chat.id, "Non hai abbastanza monete!", back);
+													return;
+												}
+												var bonus_text = "";
+												if (abBonus == 1) {
+													price = Math.round(price / 2);
+													bonus_text = " dimezzati grazie al tuo talento";
+												}
+												connection.query('UPDATE player SET market_pack = market_pack+1, money = money - ' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+													var d = new Date();
+													var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+													for (var i = 0, len = Object.keys(items).length; i < len; i++) {
+														addItem(player_id, items[i], qnt);
+														connection.query('INSERT INTO market_direct_history (item_id, price, time, from_id, to_id, type, quantity) VALUES (' + items[i] + ', ' + prices[i] + ', "' + long_date + '", ' + player_id + ', NULL, 4, ' + qnt + ')', function (err, rows, fields) {
+															if (err) throw err;
+														});
+													}
+													bot.sendMessage(message.chat.id, "Acquisto pacchetto *" + rarity[1] + "* completato! Hai speso *" + formatNumber(price) + "* §" + bonus_text + "!", kbBack);
+													setAchievement(player_id, 45, 1);
+												});
+											});
+										}
+									}
+								});
 							});
 						});
-					});
-				};
+					};
+				});
 			});
 		});
 	});
@@ -38647,7 +38667,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 											itemid = 345;
 										}
 									} else if (ability_id == 3) { // -30 secondi ogni livello
-										text3 += toTime(val,0) + " " + forlevel;
+										text3 += val + sym + " " + forlevel;
 										if (level < 1) {
 											money = 1000000;
 											itemqnt = 4;
@@ -40097,7 +40117,8 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 														}
 
 														iKeys.push(["Contrabbandiere", "Torna a *" + oggetto]);
-														iKeys.push(["Torna all'Assalto", "Torna al menu"]);
+														iKeys.push(["Torna al dungeon", "Torna all'Assalto"]);
+														iKeys.push(["Torna al menu"]);
 
 														var craft = {
 															parse_mode: "Markdown",
@@ -42155,7 +42176,7 @@ bot.onText(/^pozioni|^⚒$/i, function (message) {
 		var total_life = rows[0].total_life;
 
 		if (life <= 0) {
-			bot.sendMessage(message.chat.id, "Sei morto, torna in vita per poter proseguire le tue avventure!", revive);
+			bot.sendMessage(message.chat.id, "Sei esausto, torna in vita per poter proseguire le tue avventure!", revive);
 			return;
 		}
 
@@ -42434,7 +42455,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 							}
 
 							if (player_life <= 0) {
-								bot.sendMessage(message.chat.id, "Sei morto, per tornare in vita ti serve una Piuma di Fenice o la Cenere di Fenice!", revive);
+								bot.sendMessage(message.chat.id, "Sei esausto, per tornare in vita ti serve una Piuma di Fenice o la Cenere di Fenice!", revive);
 								return;
 							}
 
@@ -44311,7 +44332,7 @@ bot.onText(/matchmaking|^mm$/i, function (message) {
 		var cave = rows[0].cave_id;
 
 		if ((life <= 0) && (myexp > 10)) {
-			bot.sendMessage(message.chat.id, "Non puoi iniziare ispezioni da morto.", revive);
+			bot.sendMessage(message.chat.id, "Non puoi iniziare ispezioni da esausto.", revive);
 			return;
 		}
 
@@ -45393,7 +45414,7 @@ bot.onText(/itinerario propizio|itinerari|regioni/i, function (message) {
 											items += "\n> " + rows[i].name + " (" + rows[i].rarity + ")";
 
 										if ((parseInt(life) <= 0) && (parseInt(exp) > 10)) {
-											bot.sendMessage(message.chat.id, "Non puoi affrontare gli itinerari da morto.", revive);
+											bot.sendMessage(message.chat.id, "Non puoi affrontare gli itinerari da esausto.", revive);
 											return;
 										}
 
@@ -45521,10 +45542,10 @@ bot.onText(/missione/i, function (message) {
 
 		if (parseInt(life) <= 0) {
 			if ((exp > 10) && (reborn == 1)) {
-				bot.sendMessage(message.chat.id, "Non puoi affrontare le missioni da morto.", revive);
+				bot.sendMessage(message.chat.id, "Non puoi affrontare le missioni da esausto.", revive);
 				return;
 			} else if (reborn > 1) {
-				bot.sendMessage(message.chat.id, "Non puoi affrontare le missioni da morto.", revive);
+				bot.sendMessage(message.chat.id, "Non puoi affrontare le missioni da esausto.", revive);
 				return;
 			}
 		}
@@ -46292,7 +46313,7 @@ bot.onText(/viaggi/i, function (message) {
 		helpMsg(message.chat.id, player_id, 11);
 
 		if ((life <= 0) && (exp > 10)) {
-			bot.sendMessage(message.chat.id, "Non puoi affrontare i viaggi da morto.", revive);
+			bot.sendMessage(message.chat.id, "Non puoi affrontare i viaggi da esausto.", revive);
 			return;
 		}
 
