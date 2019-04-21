@@ -15892,7 +15892,7 @@ bot.onText(/cassa rinascita|torna alla cassa/i, function (message) {
 				return;
 			}
 
-			var cost = 10*(reborn+1);
+			var cost = 10*reborn;
 			bot.sendMessage(message.chat.id, "La Cassa Rinascita manterrà per te tutti gli oggetti nello zaino per sole " + cost + " 💎 durante la rinascita, continuare?", kbConf).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if (answer.text == "Conferma"){
