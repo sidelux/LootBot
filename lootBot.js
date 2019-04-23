@@ -33202,7 +33202,8 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 												bonus = ", aumentati grazie al Coupon";
 												var rand = Math.random() * 100;
 												if (rand < 20) {
-													bonus += " (Scaduto)";
+													var coupon = connection_sync.query("SELECT coupon_count FROM player WHERE id = " + player_id);
+													bonus += " (Scaduto dopo " + (coupon[0].coupon_count+1) + " utilizzi)";
 													delItem(player_id, 677, 1);
 													connection.query('UPDATE player SET coupon_count = coupon_count+1 WHERE id = ' + player_id, function (err, rows, fields) {
 														connection.query('UPDATE player SET coupon_record = coupon_count WHERE coupon_count > coupon_record AND id = ' + player_id, function (err, rows, fields) {
