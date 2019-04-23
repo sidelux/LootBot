@@ -119,7 +119,12 @@ bot.on('message', function (message) {
 				bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
 					if (result != true)
 						console.log("Errore cancellazione messaggio " + message.chat.id + " " + message.message_id);
-				});
+				})
+			} else if (message.text.startsWith("@lootplusbot")){
+				bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
+					if (result != true)
+						console.log("Errore cancellazione messaggio " + message.chat.id + " " + message.message_id);
+				})
 			} else {
 				connection.query('INSERT INTO plus_history (account_id) VALUES (' + message.from.id + ')', function (err, rows, fields) {
 					if (err) throw err;

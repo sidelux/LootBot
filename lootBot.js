@@ -15921,13 +15921,11 @@ bot.onText(/cassa rinascita|torna alla cassa/i, function (message) {
 });
 
 bot.onText(/rinasci/i, function (message) {
-	if (message.text.toLowerCase() == "cassa rinascita") {
+	if (message.text.toLowerCase() == "cassa rinascita")
 		return;
-	}
 
-	if (message.text.indexOf("Rinascita") != -1) {
+	if (message.text.indexOf("Rinascita") != -1)
 		return;
-	}
 
 	connection.query('SELECT account_id, holiday, id, reborn, exp FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -15993,9 +15991,8 @@ bot.onText(/rinasci/i, function (message) {
 
 		var text = "*Vuoi rinascere?*\nIl tuo personaggio perderà exp e zaino (se non salvato nella Cassa Rinascita)!\nRiceverai il simbolo di rinascita nelle informazioni del tuo account, inoltre un premio in § e una grande quantità di Scrigni per ricominciare a creare oggetti!\nDopo la rinascita il livello massimo sarà " + maxlev + "!";
 
-		if (reborn == 4) {
+		if (reborn == 4)
 			text = "Vuoi rinascere?\nIl tuo personaggio stavolta non perderà nulla, riceverai il simbolo speciale e il massimo livello sarà il 1000. Tuttavia per iniziare la rinascita ti servono almeno due Artefatti!\nProcedi?";
-		}
 
 		bot.sendMessage(message.chat.id, text, kb).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
@@ -17600,7 +17597,7 @@ bot.onText(/^bevande|torna alle bevande/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								keyboard: [["Attiva", "Scarta"], ["Torna al menu"]]
+								keyboard: [["Attiva", "Scarta"], ["Torna al drago"], ["Torna al menu"]]
 							}
 						};
 
@@ -33665,13 +33662,13 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 		if (n2 <= 7)
 			sconto = 20;
 		price_drop = 1;
-		price_drop_msg = "*Oggi il prezzo è ridotto del " + sconto + "%!*\n";
+		price_drop_msg = "*Oggi il prezzo è ridotto del " + sconto + "% per tutti i pacchetti!*\n";
 	}
 
 	if (sconto_evento > 0) {
 		sconto = sconto_evento;
 		price_drop = 1;
-		price_drop_msg = "*Oggi il prezzo è ridotto del " + sconto + "%!*\n";
+		price_drop_msg = "*Oggi il prezzo è ridotto del " + sconto + "% per tutti i pacchetti!*\n";
 	}
 
 	connection.query('SELECT account_id, holiday, market_ban, id, market_pack FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -36938,13 +36935,13 @@ bot.onText(/emporio/i, function (message) {
 		if (n2 <= 7)
 			sconto = 20;
 		price_drop = 1;
-		price_drop_msg = "*Oggi il prezzo è ridotto del " + sconto + "%!*\n";
+		price_drop_msg = "*Oggi il prezzo è ridotto del " + sconto + "% per tutti gli scrigni e le pozioni!*\n";
 	}
 
 	if (sconto_evento > 0) {
 		sconto = sconto_evento;
 		price_drop = 1;
-		price_drop_msg = "*Oggi il prezzo è ridotto del " + sconto + "%!*\n";
+		price_drop_msg = "*Oggi il prezzo è ridotto del " + sconto + "% per tutti gli scrigni e le pozioni!*\n";
 	}
 
 	connection.query('SELECT id, holiday, money, account_id, mission_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -46130,6 +46127,14 @@ bot.onText(/^imprese/i, function (message) {
 							keyboard: [["Informazioni Impresa Globale"], ["Impresa Globale"], ["Torna al menu"]]
 						}
 					};
+					
+					var kb2 = {
+						parse_mode: "HTML",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: [["Impresa Globale"], ["Torna alle imprese"], ["Torna al menu"]]
+						}
+					};
 
 					bot.sendMessage(message.chat.id, text + "\n<b>Imprese giornaliere completate</b>: " + formatNumber(cnt) + " (" + formatNumber(cnt_all) + " triplette)\n\nLe imprese giornaliere con il * in caso di cap raggiunto (livello drago, talenti, ecc.), verranno completate automaticamente accedendo alla relativa sezione\nAlcune imprese giornaliere diventano più complicate ma allo stesso tempo più remunerative procedendo con le rinascite", kb).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
@@ -46141,7 +46146,7 @@ bot.onText(/^imprese/i, function (message) {
 												"> Il malus viene applicato solo se l'impresa è fallita oltrepassando il tempo limite\n" +
 												"> Il bonus viene ottenuto solo dalle persone che hanno superato una certa soglia (variabile in base al tipo di impresa)\n" +
 												"> Il malus viene ottenuto solo dalle persone che non hanno superato una certa soglia (variabile in base al tipo di impresa)\n" +
-												"> Il malus viene ottenuto anche da chi non ha effettivamente partecipato ma poteva farlo (attivo nell'ultimo mese e rinato almeno una volta)", back);
+												"> Il malus viene ottenuto anche da chi non ha effettivamente partecipato ma poteva farlo (attivo nell'ultimo mese e rinato almeno una volta)", kb2);
 							}
 						}
 					});
