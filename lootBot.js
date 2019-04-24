@@ -23722,7 +23722,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																								if (err) throw err;
 																								connection.query('UPDATE assault_place_team SET time_end = NOW() WHERE place_id = ' + selected + ' AND team_id = ' + team_id, function (err, rows, fields) {
 																									if (err) throw err;
-																									bot.sendMessage(message.chat.id, "Hai iniziato l'incremento del livello della postazione *" + selected_name + "* istantaneo! Attendi qualche secondo!", kbBack);
+																									bot.sendMessage(message.chat.id, "Hai avviato l'incremento _istantaneo_ al livello *" + (level+1) + "* della postazione *" + selected_name + "*! Attendi qualche secondo!", kbBack);
 																									setAchievement(player_id, 19, 1);
 																									setAchievement(player_id, 44, 1);
 																								});
@@ -23763,7 +23763,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 
 																					connection.query('UPDATE assault_place_team SET time_end = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE place_id = ' + selected + ' AND team_id = ' + team_id, function (err, rows, fields) {
 																						if (err) throw err;
-																						bot.sendMessage(message.chat.id, "Hai iniziato l'incremento del livello della postazione *" + selected_name + "*! Torna tra 1 ora!", kbBack);
+																						bot.sendMessage(message.chat.id, "Hai avviato l'incremento al livello *" + (level+1) + "* della postazione *" + selected_name + "*! Torna tra 1 ora!", kbBack);
 																						setAchievement(player_id, 19, 1);
 																						setAchievement(player_id, 44, 1);
 																					});
