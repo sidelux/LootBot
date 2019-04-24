@@ -5822,6 +5822,8 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 	}
 
 	var price = elements[0];
+	price = price.replaceAll(/k/gi, '000');
+	
 	if (price != "tutto")
 		price = parseInt(price.replace(/\D+/gi, '').trim().replaceAll(/\./, ""));
 	var buyer = elements[1].replace('@', '').trim();
@@ -5883,7 +5885,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 			price = mymoney;
 
 		if (mymoney < price) {
-			bot.sendMessage(message.from.id, "Non hai abbastanza credito a disposizione");
+			bot.sendMessage(message.from.id, "Non hai abbastanza credito a disposizione, ti mancano " + formatNumber(price-mymoney) + " monete");
 			return;
 		}
 
@@ -8080,7 +8082,7 @@ bot.onText(/^\/posizione/, function (message, match) {
 					text = "\nSe dovesse riuscire, <b>verrà considerata</b> nelle tue statistiche!";
 				else {
 					if (global_event >= 5)
-						text += ", considerato il tuo rango dovrai impegnarti piu di un normale Lootiano!";
+						text += ", considerato il tuo grado dovrai impegnarti piu di un normale Lootiano!";
 				}
 
 				connection.query('SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
