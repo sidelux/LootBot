@@ -5822,7 +5822,9 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 	}
 
 	var price = elements[0];
-	price = price.replaceAll(/k/gi, '000');
+	var reg = /(\d)k/gm;
+	if (reg.test(price))
+		price = price.replaceAll(/k/gi, '000');
 	
 	if (price != "tutto")
 		price = parseInt(price.replace(/\D+/gi, '').trim().replaceAll(/\./, ""));
@@ -7093,10 +7095,8 @@ bot.onText(/^\/dlotteria(?!p) (.+)|^\/dlotteria(?!p)/, function (message, match)
 
 bot.onText(/^\/statolotteria (.+)|^\/statolotteria/, function (message, match) {
 	var nickname = match[1];
-	if ((nickname == undefined) || (nickname == "")) {
-		bot.sendMessage(message.chat.id, "Per ricevere informazioni su una lotteria utilizza la seguente sintassi: /statolotteria @nickname");
-		return;
-	}
+	if ((nickname == undefined) || (nickname == ""))
+		nickname = message.from.username;
 
 	nickname = nickname.replace("@", "");
 
@@ -8437,7 +8437,7 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, function (message, match) {
 							text += "> Mercante Pazzo (" + formatNumber(rows[i].price) + " § - Pacchetto)\n";
 					}
 
-					connection.query('SELECT player.nickname, public_shop.code, public_shop.price FROM public_shop JOIN ( SELECT public_shop.code, MIN(public_shop.price) As minPrice, player.nickname FROM public_shop, player, inventory WHERE inventory.player_id = player.id AND inventory.item_id = ' + itemId + ' AND inventory.quantity > 0 AND public_shop.public = 1 AND public_shop.quantity > 0 AND player.id = public_shop.player_id AND public_shop.item_id = ' + itemId + ' GROUP BY nickname ) As t2, player, inventory WHERE inventory.player_id = player.id AND inventory.item_id = ' + itemId + ' AND inventory.quantity > 0 AND public_shop.public = 1 AND public_shop.quantity > 0 AND player.id = public_shop.player_id AND public_shop.item_id = ' + itemId + ' AND public_shop.price = t2.minPrice AND player.nickname = t2.nickname ORDER BY public_shop.price ASC', function (err, rows, fields) {
+					connection.query('SELECT player.nickname, public_shop.code, public_shop.price FROM public_shop JOIN ( SELECT public_shop.code, MIN(public_shop.price) As minPrice, player.nickname FROM public_shop, player, inventory WHERE inventory.player_id = player.id AND inventory.item_id = ' + itemId + ' AND inventory.quantity > 0 AND public_shop.public = 1 AND public_shop.quantity > 0 AND player.id = public_shop.player_id AND public_shop.item_id = ' + itemId + ' GROUP BY nickname ) As t2, player, inventory WHERE inventory.player_id = player.id AND inventory.item_id = ' + itemId + ' AND inventory.quantity > 0 AND public_shop.public = 1 AND public_shop.quantity > 0 AND player.id = public_shop.player_id AND public_shop.item_id = ' + itemId + ' AND public_shop.price = t2.minPrice AND player.nickname = t2.nickname ORDER BY public_shop.price ASC, time_creation ASC', function (err, rows, fields) {
 						if (err) throw err;
 						if (Object.keys(rows).length > 0) {
 							text += "\n<b>Negozi</b> per " + this.itemName + ":\n";
