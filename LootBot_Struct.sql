@@ -2661,6 +2661,7 @@ CREATE TABLE `player` (
   `dragon_to` int(11) NOT NULL DEFAULT '0',
   `paralyzed` int(11) NOT NULL DEFAULT '0',
   `market_pack` int(11) NOT NULL DEFAULT '0',
+  `market_pack_perc` decimal(6,2) NOT NULL DEFAULT '0.00',
   `refilled` tinyint(1) NOT NULL DEFAULT '0',
   `mission_id` int(3) NOT NULL DEFAULT '0',
   `mission_gem` int(11) NOT NULL DEFAULT '0',
@@ -3526,4 +3527,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-04-30 12:00:05
+-- Dump completed on 2019-04-30 15:00:06

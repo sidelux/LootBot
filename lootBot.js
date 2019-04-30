@@ -33735,16 +33735,18 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 
 		var player_id = rows[0].id;
 		var market_pack_perc = rows[0].market_pack_perc;
-
+		
+		var allowBuy = 1;
+		var allowBuyText = ""
 		if (crazyMode == 0) {
 			if (rows[0].market_pack > 0) {
-				bot.sendMessage(message.chat.id, "Oggi hai già acquistato un pacchetto, torna domani!", back);
-				return;
+				allowBuy = 0;
+				allowBuyText = "\n\n_Oggi hai già acquistato un pacchetto, torna domani!_";
 			}
 		} else {
 			if (rows[0].market_pack > 2) {
-				bot.sendMessage(message.chat.id, "Oggi hai già acquistato tre pacchetti grazie al folle, torna domani!", back);
-				return;
+				allowBuy = 0;
+				allowBuyText = "\n\n_Oggi hai già acquistato tre pacchetti grazie al folle, torna domani!_";
 			}
 		}
 		
@@ -33787,10 +33789,15 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 					}
 				};
 
-				bot.sendMessage(message.chat.id, price_drop_msg + "Il *Mercante Pazzo* oggi offre alcuni pacchetti dall'aspetto interessante, selezionali per vedere il loro contenuto, ma attenzione, puoi acquistare solamente un pacchetto al giorno!\nFiducia del Mercante: " + trust + " " + market_pack_perc + "%\nAumentando la fiducia riduci il costo dei pacchetti (-" + trust_discount + "% attuale) e ricevi un premio quando raggiunge il 100%!", kb).then(function () {
+				bot.sendMessage(message.chat.id, price_drop_msg + "Il *Mercante Pazzo* oggi offre alcuni pacchetti dall'aspetto interessante, selezionali per vedere il loro contenuto, ma attenzione, puoi acquistare solamente un pacchetto al giorno!\nFiducia del Mercante: " + trust + " " + market_pack_perc + "%\nAumentando la fiducia riduci il costo dei pacchetti (-" + trust_discount + "% attuale) ed avrai accesso ad un pacchetto speciale quando raggiungerà il 100%!" + allowBuyText, kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text == "Torna al menu")
 							return;
+						
+						if (allowBuy == 0){
+							bot.sendMessage(message.chat.id, "Non puoi acquistare altri pacchetti oggi!", back);
+							return;
+						}
 						
 						var reg3 = /Pacchetto (.+) \(/i;
 						var rarity = answer.text.match(reg3);
