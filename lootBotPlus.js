@@ -1644,7 +1644,7 @@ bot.onText(/^\/chiedoaiuto/, function (message, match) {
 		var team_id = rows[0].team_id;
 		var player_id = rows[0].player_id;
 
-		connection.query('SELECT name, room_id, rooms, finish_date FROM dungeon_status, dungeon_list WHERE dungeon_status.dungeon_id = dungeon_list.id AND player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT name, room_id, rooms, finish_date, finish_time FROM dungeon_status, dungeon_list WHERE dungeon_status.dungeon_id = dungeon_list.id AND player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0){
@@ -1656,7 +1656,15 @@ bot.onText(/^\/chiedoaiuto/, function (message, match) {
 			var dungeon_room = rows[0].room_id;
 			var dungeon_tot_room = rows[0].rooms;
 			var dungeon_finish_date = new Date(rows[0].finish_date);
-			dungeon_finish_date = toDate("it", dungeon_finish_date);
+			var instance_finish_time = new Date(rows[0].finish_time);
+			var finish_date = new Date();
+			
+			if (dungeon_finish_date.getTime() < instance_finish_time.getTime())
+				finish_date = dungeon_finish_date;
+			else
+				finish_date = instance_finish_time;
+			
+			finish_date = toDate("it", finish_date);
 
 			connection.query('SELECT P.nickname, P.reborn, P.rank FROM team_player T LEFT JOIN dungeon_status D ON T.player_id = D.player_id, player P WHERE T.player_id = P.id AND D.player_id IS NULL AND P.reborn != 1 AND P.id != ' + player_id + ' AND T.team_id = ' + team_id + ' ORDER BY reborn ASC', function (err, rows, fields) {
 				if (err) throw err;
@@ -1671,7 +1679,7 @@ bot.onText(/^\/chiedoaiuto/, function (message, match) {
 				for (i = 0; i < Object.keys(rows).length; i++)
 					nicklist += "> @" + rows[i].nickname + " (R" + (rows[i].reborn-1) + ", Rango " + formatNumber(rows[i].rank) + ")\n";
 
-				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b>, in esplorazione del dungeon " + dungeon_name + " stanza " + dungeon_room + "/" + dungeon_tot_room + " (crollerà alle " + dungeon_finish_date + ") chiede aiuto ai suoi compagni di team:\n" + nicklist, html);
+				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b>, in esplorazione del dungeon " + dungeon_name + " stanza " + dungeon_room + "/" + dungeon_tot_room + " (crollerà alle " + finish_date + ") chiede aiuto ai suoi compagni di team:\n" + nicklist, html);
 			});
 		});
 	});
