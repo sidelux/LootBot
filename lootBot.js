@@ -33197,7 +33197,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 															if (err) throw err;
 
 															refreshMerchant(player_id);
-															bot.sendMessage(message.chat.id, "Hai chiesto una nuova offerta, dovrai attendere fino alle " + short_date + "!", kbBack);
+															bot.sendMessage(message.chat.id, "Hai chiesto una nuova offerta, dovrai attendere fino alle " + short_date + "!", back);
 														});
 													}
 												}
