@@ -3005,7 +3005,7 @@ bot.onText(/^\/iscritto ([\w,\-\s]+)|^\/iscritto/i, function (message, match) {
 		}
 	}
 
-	bot.sendMessage(message.chat.id, text, mark);
+	bot.sendMessage(message.chat.id, text, html);
 });
 
 bot.onText(/^\/cancellalotteria/, function (message) {
@@ -4105,7 +4105,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				d.setDate(d.getDate() - 2);
 				long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-				connection.query('UPDATE public_shop SET time_end = "' + long_date + '", notified = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+				connection.query('UPDATE public_shop SET time_end = "' + long_date + '", notified = 0, time_creation = NOW() WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 					bot.sendMessage(message.chat.id, "Tutti i negozi rinnovati per 2 giorni");
 				});
@@ -4117,7 +4117,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				code = elements[i];
 				var shopQuery = connection_sync.query('SELECT 1 FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id);
 				if (Object.keys(shopQuery).length > 0) {
-					connection.query('UPDATE public_shop SET time_end = "' + long_date + '", notified = 0 WHERE code = ' + code, function (err, rows, fields) {
+					connection.query('UPDATE public_shop SET time_end = "' + long_date + '", notified = 0, time_creation = NOW() WHERE code = ' + code, function (err, rows, fields) {
 						if (err) throw err;
 					});
 					bot.sendMessage(message.chat.id, "Negozio " + code + " rinnovato per 4 giorni");
@@ -4272,7 +4272,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 								quantity = 1;
 							}
 
-							connection.query('UPDATE public_shop SET price = ' + price + ', quantity = ' + quantity + ' WHERE id = ' + shopQuery[0].id, function (err, rows, fields) {
+							connection.query('UPDATE public_shop SET price = ' + price + ', quantity = ' + quantity + ', time_creation = NOW() WHERE id = ' + shopQuery[0].id, function (err, rows, fields) {
 								if (err) throw err;
 							});
 							text += "Oggetto aggiornato: " + quantity + "x " + item_name + " a " + formatNumber(price) + "§\n";
