@@ -52,6 +52,8 @@ var progMissionTeam = [50, 100, 250, 500, 750, 1000, 1500, 2000, 5000];
 var progMissionTeamRew = [25000, 50000, 500000, 1000000, 2000000, 3000000, 4000000, 5000000, 10000000];
 var progOffers = [50, 200, 500, 1000, 2000, 3000, 5000, 10000];
 var progOffersRew = [50000, 100000, 250000, 500000, 1000000, 2500000, 5000000, 10000000];
+var progCave = [25, 50, 100, 250, 500, 1000, 1500, 3000];
+var progCaveRew = [10000, 20000, 50000, 100000, 200000, 500000, 1000000, 3000000];
 var assaultEmojiList = ["⚡️","☄","⚔","🗡","🏰","🐲","🥁","🔋","🐺","✨","☠️","💉"];
 
 var re = new RegExp("^[0-9]*$");
@@ -1423,9 +1425,9 @@ bot.onText(/^\/failglobal/, function (message, match) {
 							connection.query('UPDATE player SET global_end = 0', function (err, rows, fields) {
 								if (err) throw err;
 
-								var minValue = 5000;
-								var minText = "punti creazione ottenuti";
-								var text = "il guadagno in scrigni dall'Assalto sarà dimezzato";
+								var minValue = 1000;
+								var minText = "punti esperienza ottenuti";
+								var text = "le pietre base ottenute dalle cave saranno dimezzate";
 
 								connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.reborn > 1 AND P.account_id NOT IN (SELECT account_id FROM banlist) AND A.value < ' + minValue + ' GROUP BY A.player_id ORDER BY val DESC', function (err, rows, fields) {
 									if (err) throw err;
@@ -3983,12 +3985,18 @@ function mainMenu(message) {
 		}
 
 		if (mission_party > 0) {
-			var rows = connection_sync.query('SELECT p1.mission_time_end, p1.wait, p1.part_id, p0.parts FROM mission_team_list p0, mission_team_party p1, mission_team_party_player p2 WHERE p0.id = p1.assigned_to AND p1.party_id = p2.party_id AND p1.team_id = p2.team_id AND p2.player_id = ' + player_id);
+			var rows = connection_sync.query('SELECT p1.mission_time_end, p1.wait, p1.part_id, p0.parts, p0.duration FROM mission_team_list p0, mission_team_party p1, mission_team_party_player p2 WHERE p0.id = p1.assigned_to AND p1.party_id = p2.party_id AND p1.team_id = p2.team_id AND p2.player_id = ' + player_id);
 			if (Object.keys(rows).length > 0) {
-				if (rows[0].wait == 1)
-					msgtext = msgtext + "\n🏆 Incarico in attesa di votazione (" + rows[0].part_id + "/" + rows[0].parts + ")";
-				else{
-					var wait_time = new Date(rows[0].mission_time_end);
+				var wait_time = new Date(rows[0].mission_time_end);
+				if (rows[0].wait == 1){
+					var now = new Date();
+					var diff = Math.round((now - d) / 1000); //in secondi
+					diff = Math.abs(diff);
+					var alert = "";
+					if (diff <= ((rows[0].duration/rows[0].parts)/3))
+						alert = " ☠";
+					msgtext = msgtext + "\n🏆 Incarico in attesa di votazione (" + rows[0].part_id + "/" + rows[0].parts + ")" + alert;
+				}else{
 					msgtext = msgtext + "\n🏆 Incarico in corso fino alle " + addZero(wait_time.getHours()) + ":" + addZero(wait_time.getMinutes()) + " " + rows[0].part_id + "/" + rows[0].parts;
 				}
 			}
@@ -7610,7 +7618,7 @@ bot.onText(/cambia vocazione/i, function (message) {
 });
 
 bot.onText(/statistiche/i, function (message) {
-	connection.query('SELECT id, mission_count, achievement_count, dungeon_count, global_event, kill_streak_ok, gain_exp, mission_team_count, creation_date FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, mission_count, achievement_count, dungeon_count, cave_count, travel_count, global_event, kill_streak_ok, gain_exp, mission_team_count, creation_date FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
 		var missioni = rows[0].mission_count;
@@ -7620,6 +7628,8 @@ bot.onText(/statistiche/i, function (message) {
 		var kill_streak_ok = rows[0].kill_streak_ok;
 		var gain_exp = rows[0].gain_exp;
 		var mission_team_count = rows[0].mission_team_count;
+		var cave_count = rows[0].cave_count;
+		var travel_count = rows[0].travel_count;
 
 		var registrazione = "";
 		if (rows[0].creation_date != null)
@@ -7734,6 +7744,8 @@ bot.onText(/statistiche/i, function (message) {
 																								"*Missioni*: " + formatNumber(missioni) + "\n" +
 																								"*Imprese giornaliere*: " + formatNumber(imprese) + "\n" +
 																								"*Dungeon*: " + formatNumber(dungeon_tot) + "\n" +
+																								"*Cave*: " + formatNumber(cave_count) + "\n" +
+																								"*Viaggi*: " + formatNumber(travel_count) + "\n" +
 
 																								"\n🎲 *Eventi*:\n" +
 																								"*Scontri Vette vinti*: " + formatNumber(dragon_top_win) + "\n" +
@@ -9886,7 +9898,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								keyboard: [["☠️", "⬆️", "🔑"], ["⬅️", "⚒", "➡️"], ["Commenta", "Scappa", "Torna al menu"]]
+								keyboard: [["☠️", "⬆️", "🔑"], ["⬅️", "🍵", "➡️"], ["Commenta", "Scappa", "Torna al menu"]]
 							}
 						};
 					} else {
@@ -9894,7 +9906,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								keyboard: [["☠️", "⬆️", "🔑"], ["⬅️", "⚒", "➡️"], ["Scappa", "Torna al menu"]]
+								keyboard: [["☠️", "⬆️", "🔑"], ["⬅️", "🍵", "➡️"], ["Scappa", "Torna al menu"]]
 							}
 						};
 					}
@@ -13658,6 +13670,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 
 													var item1 = param;
+													
+													var item1qnt = getItemCnt(player_id, item1);
+													var item_poss = "";
+													if (item1qnt > 0)
+														item_poss = " ✅";
 
 													connection.query('SELECT name FROM item WHERE id = ' + item1, function (err, rows, fields) {
 														if (err) throw err;
@@ -13672,7 +13689,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															}
 														};
 
-														bot.sendMessage(message.chat.id, "Entri in una stanza completamente luccicante, quasi accecante, uno strano tipo barbuto si presenta come il Gioielliere, offre " + qnt + "x 💎 in cambio di un particolare oggetto, in questo caso: *" + item1_name + "*, accetti l'offerta?", dOptions).then(function () {
+														bot.sendMessage(message.chat.id, "Entri in una stanza completamente luccicante, quasi accecante, uno strano tipo barbuto si presenta come il Gioielliere, offre " + qnt + "x 💎 in cambio di un particolare oggetto, in questo caso: *" + item1_name + "*" + item_poss + ", accetti l'offerta?", dOptions).then(function () {
 															answerCallbacks[message.chat.id] = function (answer) {
 																if (answer.text == "Si") {
 
@@ -15477,6 +15494,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																					var moneyText = "";
 																					var rand = Math.random() * 100;
 																					var exp = 1;
+																					
+																					if (cursed == 1)
+																						exp = 0;
 
 																					if (chest_id >= 4)
 																						chest_id = 4;
@@ -15539,11 +15559,20 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																						if (player_weapon_id == 373)
 																							setAchievement(player_id, 52, 1);
+																						
+																						if ((player_weapon_id == 264) && (player_weapon2_id == 266) && (player_weapon2_id == 272))
+																							setAchievement(player_id, 76, 1);
+																						
+																						globalAchievement(player_id, 1);
+																						
+																						var exp_text = "";
+																						if (exp > 0)
+																							exp_text =  " ed ottenuto " + exp + " exp";
 
 																						if (chest > 0)
-																							bot.sendMessage(message.chat.id, "Hai ucciso il mostro, infliggendo " + formatNumber(danno) + " danni e ottenuto " + exp + " exp.\nFrugando tra le sue cose hai ottenuto *" + moneyText + "* e " + chest + "x *" + chestName + "*!", dNext);
+																							bot.sendMessage(message.chat.id, "Hai ucciso il mostro, infliggendo " + formatNumber(danno) + " danni" + exp_text + ".\nFrugando tra le sue cose hai ottenuto *" + moneyText + "* e " + chest + "x *" + chestName + "*!", dNext);
 																						else if (chest == 0)
-																							bot.sendMessage(message.chat.id, "Hai ucciso il mostro, infliggendo " + formatNumber(danno) + " danni e ottenuto " + exp + " exp.\nFrugando tra le sue cose hai ottenuto *" + moneyText + "*!", dNext);
+																							bot.sendMessage(message.chat.id, "Hai ucciso il mostro, infliggendo " + formatNumber(danno) + " danni" + exp_text + ".\nFrugando tra le sue cose hai ottenuto *" + moneyText + "*!", dNext);
 
 																						if ((snowHouse == 1) && (snowHouseEnd == 0)){
 																							var rand = Math.random()*100;
@@ -15614,6 +15643,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																									if (err) throw err;
 
 																									var getrank1 = 0;
+																									var now_rank = rows[0].rank;
 
 																									if (pass_id != 0) {
 																										var getrank2 = 0;
@@ -15644,6 +15674,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																										});
 																										getrank1 = 1;
 																									}
+																									
+																									now_rank += rankPoint;
 
 																									setAchievement(player_id, 26, 1);
 
@@ -15661,9 +15693,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																										};
 
 																										if (getrank1 == 1) {
-																											bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*! Hai ottenuto " + rankPoint + " punt" + plur + " rango!\n" + refill, dBack);
+																											bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*! Hai ottenuto " + rankPoint + " punt" + plur + " rango, ne possiedi " + now_rank + "!\n" + refill, dBack);
 																										} else {
-																											bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*!\n" + refill, dBack);
+																											bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*, ne possiedi " + now_rank + "!\n" + refill, dBack);
 																										}
 																									});
 
@@ -15718,7 +15750,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							if (err) throw err;
 																						});
 
-																						setExp(player_id, exp);
+																						if (exp > 0)
+																							setExp(player_id, exp);
+																						
 																						connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																							if (err) throw err;
 																						});
@@ -24329,7 +24363,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 								var diff = Math.round((now - d) / 1000); //in secondi
 								diff = Math.abs(diff);
 
-								var text = "Il <b>Giorno dell'Assalto " + (boss_num-1) + "</b> terminerà tra " + toTime(diff) + "!\n";
+								var text = "Il <b>Giorno dell'Assalto " + boss_num + "</b> terminerà tra " + toTime(diff) + "!\n";
 
 								var extra = "";
 								if (is_boss == 1)
@@ -27074,7 +27108,6 @@ function assaultIncrement(message, player_id, team_id){
 					if (err) throw err;
 
 					var val = Math.round(rows[0].level*10/rows[0].max_level);
-					//globalAchievement(player_id, val);
 				});
 			});
 		});
@@ -27389,10 +27422,12 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								}
 								*/
 
+								/*
 								if (rows[i].global_end == 1) {
 									paUpd += 7;
 									paView += 7;
 								}
+								*/
 
 								if (is_boss == 1){
 									randProb = Math.random()*100;
@@ -27980,14 +28015,10 @@ function getTeamMembers(answerText){
 	var search2 = Object.keys(rows).length;
 	var res2 = rows;
 
-	if ((search1 == 0) && (search2 == 0)) {
-		bot.sendMessage(message.chat.id, "Il team che hai richiesto non esiste", kbBack);
-		return;
-	}
-	if ((search1 > 1) && (search2 == 0)) {
-		bot.sendMessage(message.chat.id, "Troppi risultati, riprova con termini di ricerca più precisi" + terms, kbBack);
-		return;
-	}
+	if ((search1 == 0) && (search2 == 0))
+		return "Il team che hai richiesto non esiste";
+	if ((search1 > 1) && (search2 == 0))
+		return "Troppi risultati, riprova con termini di ricerca più precisi" + terms;
 
 	if (search1 == 1)
 		rows = res1;
@@ -33769,7 +33800,7 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 			var trust = progressBar(market_pack_perc, 100);
 			var trust_discount = Math.floor(market_pack_perc/5);
 
-			connection.query('SELECT rarity.name, rarity.id As rarity_id, SUM(price) As tot FROM market_pack, rarity WHERE market_pack.pack_id = rarity.id' + query + ' GROUP BY pack_id', function (err, rows, fields) {
+			connection.query('SELECT rarity.name, rarity.id As rarity_id, SUM(price) As tot FROM market_pack, rarity WHERE market_pack.pack_id = rarity.id' + query + ' GROUP BY pack_id ORDER BY pack_id DESC', function (err, rows, fields) {
 				if (err) throw err;
 
 				var iKeys = [];
@@ -33862,7 +33893,7 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 									parse_mode: "Markdown",
 									reply_markup: {
 										resize_keyboard: true,
-										keyboard: [["Torna all'emporio"], ["Torna al menu"]]
+										keyboard: [["Torna dal Mercante Pazzo"], ["Torna alla piazza"], ["Torna al menu"]]
 									}
 								};
 
@@ -35012,7 +35043,7 @@ function cerca(message) {
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
-		var iKeys = [["Cerca Armi"], ["Cerca Armature", "Cerca Scudi"], ["Cerca Talismani", "Cerca Drago"], ["Cerca Consumabili", "Cerca Rifugio"], ["Cerca C", "Cerca NC"], ["Cerca R", "Cerca UR"], ["Cerca L", "Cerca E"], ["Cerca UE", "Cerca S"], ["Cerca U", "Cerca X"], ["Cerca D", "Lista Ricerche"], ["Torna al menu"]];
+		var iKeys = [["Cerca Armi"], ["Cerca Armature", "Cerca Scudi"], ["Cerca Talismani", "Cerca Drago"], ["Cerca Consumabili", "Cerca Rifugio"], ["Cerca C", "Cerca NC"], ["Cerca R", "Cerca UR"], ["Cerca L", "Cerca E"], ["Cerca UE", "Cerca S"], ["Cerca U", "Cerca X"], ["Cerca D", "Cerca IN"], ["Lista Ricerche"], ["Torna al menu"]];
 
 		var kb = {
 			reply_markup: {
@@ -36050,7 +36081,7 @@ bot.onText(/^solo (.){1,15}$|^base per quantità$/i, function (message) {
 				if (Object.keys(rows).length > 0) {
 					text = "*Oggetti base ordinati per quantità:*\n\n";
 					for (i = 0, len = Object.keys(rows).length; i < len; i++)
-						text = text + "> " + rows[i].name + " (" + rows[i].num + ")\n";
+						text = text + "> " + rows[i].name + " (" + rows[i].rname + ", " + rows[i].num + ")\n";
 				} else
 					text = text + "Nessun oggetto base disponibile\n";
 				if (Object.keys(text).length > 8000)
@@ -40334,10 +40365,12 @@ function checkAllProgress(player_id){
 	setAchievementProgress(player_id, 4);
 	setAchievementProgress(player_id, 5);
 	setAchievementProgress(player_id, 6);
+	if (player_id == 1)
+		setAchievementProgress(player_id, 7);
 }
 
 function setAchievementProgress(player_id, type) {
-	connection.query('SELECT id, chat_id, exp, reborn, mission_count, dungeon_count, craft_count, mission_team_count FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+	connection.query('SELECT id, chat_id, exp, reborn, mission_count, dungeon_count, craft_count, mission_team_count, cave_count FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
@@ -40348,6 +40381,7 @@ function setAchievementProgress(player_id, type) {
 		var dung = rows[0].dungeon_count;
 		var craft = rows[0].craft_count;
 		var mission_team_count = rows[0].mission_team_count;
+		var cave_count = rows[0].cave_count;
 		
 		connection.query('SELECT total_cnt FROM merchant_offer WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -40379,12 +40413,17 @@ function setAchievementProgress(player_id, type) {
 			} else if (type == 5) {
 				for (var i = 0, len = Object.keys(progMissionTeam).length; i < len; i++) {
 					if (mission_team_count >= progMissionTeam[i])
-						achievementDetail(player_id, chat_id, type, i, progMissionTeamRew[i], "Hai raggiunto " + formatNumber(progMissionTeam[i]) + " incarichi completati");
+						achievementDetail(player_id, chat_id, type, i, progMissionTeamRew[i], "Hai raggiunto " + formatNumber(progMissionTeam[i]) + " incarichi");
 				}
 			} else if (type == 6) {
 				for (var i = 0, len = Object.keys(progOffers).length; i < len; i++) {
 					if (offers_count >= progOffers[i])
-						achievementDetail(player_id, chat_id, type, i, progOffersRew[i], "Hai raggiunto " + formatNumber(progOffers[i]) + " offerte del contrabbandiere accettate");
+						achievementDetail(player_id, chat_id, type, i, progOffersRew[i], "Hai raggiunto " + formatNumber(progOffers[i]) + " offerte del contrabbandiere");
+				}
+			} else if (type == 7) {
+				for (var i = 0, len = Object.keys(progCave).length; i < len; i++) {
+					if (cave_count >= progCave[i])
+						achievementDetail(player_id, chat_id, type, i, progCaveRew[i], "Hai esplorato " + formatNumber(progCave[i]) + " cave");
 				}
 			}
 		});
@@ -40455,6 +40494,7 @@ function setAchievement(player_id, type, increment, itemId = 0) {
 											if ((rows[0].cnt == 3) && (rows[0].compl == 3)) {
 												connection.query('UPDATE player SET achievement_count_all = achievement_count_all+1 WHERE id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
+													bot.sendMessage(chat_id, "Hai completato una tripletta di imprese giornaliere!", mark);
 												});
 											}
 										}
@@ -40519,6 +40559,7 @@ function setAchievement(player_id, type, increment, itemId = 0) {
 										if ((rows[0].cnt == 3) && (rows[0].compl == 3)) {
 											connection.query('UPDATE player SET achievement_count_all = achievement_count_all+1 WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
+												bot.sendMessage(chat_id, "Hai completato una tripletta di imprese giornaliere!", mark);
 											});
 										}
 									}
@@ -42296,7 +42337,7 @@ bot.onText(/^Incantesimi/i, function (message) {
 	});
 });
 
-bot.onText(/^pozioni|^⚒$|^🍵$/i, function (message) {
+bot.onText(/^pozioni|^🍵$/i, function (message) {
 	connection.query('SELECT id, life, total_life FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -42311,7 +42352,7 @@ bot.onText(/^pozioni|^⚒$|^🍵$/i, function (message) {
 
 		if (message.text.toLowerCase().indexOf("pozioni") != -1)
 			Consumabili(message, player_id, 2, total_life, life, 0);
-		else if ((message.text.indexOf("⚒") != -1) || (message.text.indexOf("🍵") != -1))
+		else if (message.text.indexOf("🍵") != -1)
 			Consumabili(message, player_id, 4, total_life, life, 0);
 	});
 });
@@ -43984,7 +44025,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 								if (final1 >= final2) {
 									var expText = "";
 									if (isMatch == 1) {
-										expText = " ed ottenuto 1 exp";
+										expText = " ed ottenuto 3 exp";
 										setAchievement(player_id, 13, 1);
 										setExp(player_id, 3);
 										connection.query('UPDATE player SET ability = ability+2 WHERE id = ' + player_id, function (err, rows, fields) {
@@ -44106,6 +44147,8 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 														var chestStreak = 4;
 														if (heistRand % 2 == 0)
 															chestStreak = 5;
+														if (heistRand % 15 == 0)
+															chestStreak = 6;
 														connection.query('UPDATE player SET heist_streak = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 															addChest(player_id, chestStreak);
@@ -44158,7 +44201,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 								} else {
 									var expText = "";
 									if (isMatch == 1) {
-										expText = " (otteni 1 exp)";
+										expText = " (ottieni 1 exp)";
 										setExp(player_id, 1);
 										setAchievement(toId, 9, 1);
 										connection.query('UPDATE player SET ability = ability-2 WHERE ability > 0 AND id = ' + player_id, function (err, rows, fields) {
@@ -46095,7 +46138,7 @@ bot.onText(/^imprese/i, function (message) {
 	if (message.text.toLowerCase().indexOf("completate") != -1)
 		return;
 
-	connection.query('SELECT id, account_id, achievement_count, achievement_count_all, dungeon_count, mission_count, craft_count, mission_team_count, exp, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, account_id, achievement_count, achievement_count_all, dungeon_count, mission_count, craft_count, mission_team_count, exp, reborn, cave_count FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -46114,6 +46157,7 @@ bot.onText(/^imprese/i, function (message) {
 		var craft_count = rows[0].craft_count;
 		var mission_team_count = rows[0].mission_team_count;
 		var reb = rows[0].reborn;
+		var cave_count = rows[0].cave_count;
 
 		helpMsg(message.chat.id, player_id, 1);
 		
@@ -46223,8 +46267,18 @@ bot.onText(/^imprese/i, function (message) {
 							text += "Offerte contrabbandiere accettate completate ✅\n";
 						else
 							text += formatNumber(offers_count) + " su " + formatNumber(progOffers[end]) + " offerte contrabbandiere accettate (" + formatNumber(progOffersRew[end]) + " §)\n";
+						
+						end = 0;
+						for (var i = 0, len = Object.keys(progCave).length; i < len; i++) {
+							if (cave_count >= progCave[i])
+								end = (i + 1);
+						}
+						if (progCave[end] == undefined)
+							text += "Cave esplorate completate ✅\n";
+						else
+							text += formatNumber(cave_count) + " su " + formatNumber(progCave[end]) + " cave esplorate (" + formatNumber(progCaveRew[end]) + " §)\n";
 
-						var time_end = new Date("2019-05-01 12:00:00");
+						var time_end = new Date("2019-06-01 12:00:00");
 						var now = new Date();
 						var diffD = Math.floor(((time_end - now) / 1000) / 60 / 60 / 24);
 						var diffH = Math.floor(((time_end - now) / 1000) / 60 / 60);
@@ -50013,7 +50067,7 @@ function deleteSearch() {
 };
 
 function checkCave() {
-	connection.query('SELECT nickname, reborn, boost_id, charm_id, id, cave_id, chat_id, boost_mission, cave_gem FROM player WHERE cave_time_end < NOW() AND cave_time_end IS NOT NULL', function (err, rows, fields) {
+	connection.query('SELECT nickname, reborn, boost_id, charm_id, id, cave_id, chat_id, boost_mission, cave_gem, global_end FROM player WHERE cave_time_end < NOW() AND cave_time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
@@ -51156,7 +51210,7 @@ function setFinishedTravel(element, index, array) {
 					addChest(element.id, chest_id, qnt);
 					setExp(element.id, exp);
 
-					connection.query('UPDATE player SET travel_limit = 0, money = money + ' + money + ' WHERE id = ' + element.id, function (err, rows, fields) {
+					connection.query('UPDATE player SET travel_limit = 0, money = money + ' + money + ', travel_count = travel_count+1 WHERE id = ' + element.id, function (err, rows, fields) {
 						if (err) throw err;
 					});
 				});
@@ -51170,6 +51224,7 @@ function setFinishedCave(element, index, array) {
 	var boost_id = element.boost_id;
 	var boost_mission = element.boost_mission;
 	var cave_gem = element.cave_gem;
+	var global_end = element.global_end;
 
 	if ((boost_mission <= 0) && (boost_id != 0)) {
 		connection.query('UPDATE player SET boost_id = 0, boost_mission = 0 WHERE id = ' + element.id, function (err, rows, fields) {
@@ -51187,6 +51242,10 @@ function setFinishedCave(element, index, array) {
 		var charm_id = element.charm_id;
 
 		var caveid = parseInt(element.cave_id) + 2;
+		
+		if (global_end == 1)
+			caveid = Math.round(caveid/2);
+		
 		if (charm_id == 603)
 			caveid += 2;
 
@@ -51306,7 +51365,7 @@ function setFinishedCave(element, index, array) {
 					addItem(element.id, stone_id);
 				}
 
-				connection.query('UPDATE player SET cave_limit = 0, cave_id = 0, cave_time_end = NULL WHERE id = ' + element.id, function (err, rows, fields) {
+				connection.query('UPDATE player SET cave_limit = 0, cave_id = 0, cave_time_end = NULL, cave_count = cave_count+1 WHERE id = ' + element.id, function (err, rows, fields) {
 					if (err) throw err;
 				});
 
@@ -51636,7 +51695,6 @@ function setExp(player_id, exp) {
 		}
 
 		setAchievement(player_id, 57, exp);
-		globalAchievement(player_id, exp);
 	});
 }
 

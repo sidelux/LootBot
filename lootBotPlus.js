@@ -195,7 +195,7 @@ bot.on('message', function (message) {
 					}
 					if (rows[0].compact == 1) {
 						if ((message.from.is_bot == 0) && (message.text != undefined) && (message.text.indexOf("http") == -1)){
-							if ((message.reply_to_message == undefined) && (!message.text.startsWith("/")) && (message.forward_from == undefined)){
+							if ((message.reply_to_message == undefined) && (!message.text.startsWith("/")) && (message.forward_date == undefined)){
 								if ((mergeMessages[message.chat.id] != undefined) && (mergeMessages[message.chat.id] != "")){
 									if (mergeMessages[message.chat.id].split(";")[0] == message.from.id){
 										bot.deleteMessage(message.chat.id, mergeMessages[message.chat.id].split(";")[1]);
@@ -1665,21 +1665,28 @@ bot.onText(/^\/chiedoaiuto/, function (message, match) {
 				finish_date = instance_finish_time;
 			
 			finish_date = toDate("it", finish_date);
-
-			connection.query('SELECT P.nickname, P.reborn, P.rank FROM team_player T LEFT JOIN dungeon_status D ON T.player_id = D.player_id, player P WHERE T.player_id = P.id AND D.player_id IS NULL AND P.reborn != 1 AND P.id != ' + player_id + ' AND T.team_id = ' + team_id + ' ORDER BY reborn ASC', function (err, rows, fields) {
+			
+			connection.query('SELECT P.nickname, P.reborn, P.rank FROM id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
+				
+				var reborn = rows[0].reborn;
+				var rank = rows[0].rank;
 
-				var nicklist = "";
+				connection.query('SELECT P.nickname, P.reborn, P.rank FROM team_player T LEFT JOIN dungeon_status D ON T.player_id = D.player_id, player P WHERE T.player_id = P.id AND D.player_id IS NULL AND P.reborn != 1 AND P.id != ' + player_id + ' AND T.team_id = ' + team_id + ' ORDER BY reborn ASC', function (err, rows, fields) {
+					if (err) throw err;
 
-				if (Object.keys(rows).length == 0){
-					bot.sendMessage(message.chat.id, "Nessun compagno disponibile!");
-					return;
-				}
+					var nicklist = "";
 
-				for (i = 0; i < Object.keys(rows).length; i++)
-					nicklist += "> @" + rows[i].nickname + " (R" + (rows[i].reborn-1) + ", Rango " + formatNumber(rows[i].rank) + ")\n";
+					if (Object.keys(rows).length == 0){
+						bot.sendMessage(message.chat.id, "Nessun compagno disponibile!");
+						return;
+					}
 
-				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b>, in esplorazione del dungeon " + dungeon_name + " stanza " + dungeon_room + "/" + dungeon_tot_room + " (crollerà alle " + finish_date + ") chiede aiuto ai suoi compagni di team:\n" + nicklist, html);
+					for (i = 0; i < Object.keys(rows).length; i++)
+						nicklist += "> @" + rows[i].nickname + " (R" + (rows[i].reborn-1) + ", Rango " + formatNumber(rows[i].rank) + ")\n";
+
+					bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> (R" + (reborn-1) + ", Rango " + formatNumber(rank) + "), in esplorazione del dungeon " + dungeon_name + " stanza " + dungeon_room + "/" + dungeon_tot_room + " (crollerà alle " + finish_date + ") chiede aiuto ai suoi compagni di team:\n" + nicklist, html);
+				});
 			});
 		});
 	});
@@ -5830,21 +5837,35 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 	}
 
 	var price = elements[0];
+	
 	var reg = /(\d)k/gm;
 	if (reg.test(price))
 		price = price.replaceAll(/k/gi, '000');
 	
 	if (price != "tutto")
 		price = parseInt(price.replace(/\D+/gi, '').trim().replaceAll(/\./, ""));
-	var buyer = elements[1].replace('@', '').trim();
+	
+	var buyer;
+	if (message.reply_to_message != undefined) {
+		if (Object.keys(elements).length == 3)
+			buyer = elements[2].replace('@', '').trim();
+		else
+			buyer = elements[1].replace('@', '').trim();
+	} else
+		buyer = elements[1].replace('@', '').trim();
 
 	var custom_message = "";
 	if (message.reply_to_message != undefined)
-		custom_message = elements[0].replace(/[0-9\.]/gi, '').trim();
+		custom_message = elements[1].trim();
 	else{
 		if (Object.keys(elements).length == 3)
 			custom_message = elements[2];
 	}
+	
+	if (custom_message.indexOf(buyer) != -1)
+		custom_message = "";
+	
+	console.log(price, buyer, custom_message);
 
 	if (buyer == "") {
 		bot.sendMessage(message.from.id, "Il parametro acquirente è obbligatorio");
@@ -5853,11 +5874,11 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 
 	if (price != "tutto"){
 		if (isNaN(price)) {
-			bot.sendMessage(message.from.id, "Il parametro prezzo non è valido");
+			bot.sendMessage(message.from.id, "Il parametro prezzo non è valido (" + price + ")");
 			return;
 		}
 		if (price <= 0) {
-			bot.sendMessage(message.from.id, "Il parametro prezzo deve essere maggiore di zero");
+			bot.sendMessage(message.from.id, "Il parametro prezzo deve essere maggiore di zero (" + price + ")");
 			return;
 		}
 	}
@@ -5903,7 +5924,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
-				bot.sendMessage(message.from.id, "L'acquirente inserito non esiste");
+				bot.sendMessage(message.from.id, "L'acquirente inserito non esiste (" + buyer + ")");
 				return;
 			}
 
@@ -8436,7 +8457,7 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, function (message, match) {
 					}
 				}
 
-				connection.query('SELECT price FROM market_pack WHERE item_id = ' + this.itemId, function (err, rows, fields) {
+				connection.query('SELECT price FROM market_pack WHERE pack_id != 9 AND item_id = ' + this.itemId, function (err, rows, fields) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length > 0) {
