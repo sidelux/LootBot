@@ -1666,7 +1666,7 @@ bot.onText(/^\/chiedoaiuto/, function (message, match) {
 			
 			finish_date = toDate("it", finish_date);
 			
-			connection.query('SELECT P.nickname, P.reborn, P.rank FROM id = ' + player_id, function (err, rows, fields) {
+			connection.query('SELECT nickname, reborn, rank FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				
 				var reborn = rows[0].reborn;
