@@ -15,7 +15,16 @@ var ms = require("ms");
 var mysql = require('mysql');
 var mysql_sync = require('sync-mysql');
 var readline = require('readline');
+
 var math = require('mathjs');
+math.import({
+	'ones':   function () { throw new Error('Questa funzione è stata disabilitata') },
+	'zeros':   function () { throw new Error('Questa funzione è stata disabilitata') },
+	'identity':   function () { throw new Error('Questa funzione è stata disabilitata') },
+	'range':   function () { throw new Error('Questa funzione è stata disabilitata') },
+	'matrix':   function () { throw new Error('Questa funzione è stata disabilitata') }
+}, {override: true});
+
 var express = require('express');
 var http = require('http');
 var https = require('https');
@@ -512,6 +521,11 @@ bot.onText(/^\/calcola (.+)|^\/calcola/, function (message, match) {
 		bot.sendMessage(message.chat.id, "Inserisci un operazione da risolvere. Esempio: /calcola 1+2\nGuida: http://mathjs.org/docs/index.html", no_preview);
 		return;
 	}
+
+	/*
+	bot.sendMessage(message.chat.id, "Funzione momentaneamente non disponibile");
+	return;
+	*/
 
 	if (match[1].indexOf("gruzzolo")){
 		var player = connection_sync.query('SELECT id, money FROM player WHERE nickname = "' + message.from.username + '"');
@@ -9119,11 +9133,11 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																						//Talismani
 
 																						if (charm_id == 62)
-																							weapon += 5;
+																							weapon += 10;
 																						if (charm_id == 184)
-																							weapon += 15;
+																							weapon += 25;
 																						if (charm_id == 188)
-																							weapon += 20;
+																							weapon += 30;
 																						if (charm_id == 404)
 																							weapon_crit += 6;
 																						if (charm_id == 493)
@@ -9140,7 +9154,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																							weapon3_crit += 3;
 																						}
 																						if (charm_id == 698)
-																							weapon += 30;
+																							weapon += 50;
 																						if (abBonus > 0) {
 																							weapon_crit += abBonus;
 																							weapon2_crit += abBonus;
@@ -10125,11 +10139,10 @@ function checkShop() {
 	connection.query('SELECT DISTINCT(code) As code, player_id FROM `public_shop` WHERE time_end < NOW() AND time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 negozio terminato\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " negozi terminati\x1b[0m");
-			}
 			rows.forEach(setFinishedShop);
 		}
 	});
@@ -10210,11 +10223,10 @@ function checkLottery() {
 	connection.query('SELECT creator_id FROM `public_lottery` WHERE time_end < NOW() AND time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 lotteria terminata\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " lotterie terminate\x1b[0m");
-			}
 			rows.forEach(setFinishedLottery);
 		}
 	});
@@ -10315,11 +10327,10 @@ function checkMarket() {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 offerta terminata\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " offerte terminate\x1b[0m");
-			}
 			rows.forEach(setFinishedMarket);
 		}
 	});
@@ -10353,11 +10364,10 @@ function checkMarketDirect() {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
-			if (Object.keys(rows).length == 1) {
+			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 offerta vendita terminata\x1b[0m");
-			} else {
+			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " offerte vendita terminate\x1b[0m");
-			}
 			rows.forEach(setFinishedMarketDirect);
 		}
 	});
