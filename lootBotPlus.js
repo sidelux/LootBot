@@ -1322,6 +1322,7 @@ bot.onText(/^\/gruppi/, function (message) {
 																							"<a href='https://t.me/joinchat/HOnifBab5PT-2Qj2Lq0ZkQ'>Uno Scommesse</a> (" + c21 + ") - Vieni a scommettere o semplicemente giocare al famosissimo gioco Uno insieme a noi!\n" +
 
 																							"\n<b>Canali</b>\n" +
+																							"@lootstatistiche - Statistiche dettagliate di Loot!\n" +
 																							"@Suggerimenti_per_LootBot - Gruppo dove i suggerimenti vengono postati e votati dagli utenti\n" +
 																							"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
 																							"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +

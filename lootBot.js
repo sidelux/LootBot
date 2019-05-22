@@ -19172,13 +19172,22 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				bot.sendMessage(message.chat.id, "E' richiesto almeno il livello 15 del drago per partecipare.", back);
 				return;
 			}
+			
+			var finishD = new Date("2019-06-19 12:00:00");
+			var startD = finishD;
+			
+			var finish_date = addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes()) + " del " + addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + "/" + finishD.getFullYear();
+			var finish_date_f = addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + " alle " + addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes());
+			
+			startD.setDate(startD.getDate() - 7);
+			var start_date_f = addZero(startD.getDate()) + "/" + addZero(startD.getMonth() + 1) + " alle " + addZero(startD.getHours()) + ':' + addZero(startD.getMinutes());
 
-			if (player_id != 1){
+			//if (player_id != 1){
 				if (checkDragonTopOn == 0) {
-					bot.sendMessage(message.chat.id, "\nProssima stagione: 15 maggio 12:00 - 22 maggio 12:00\nSe hai partecipato alla stagione precedente, riceverai i premi a breve!", back_html);
+					bot.sendMessage(message.chat.id, "\nProssima stagione: " + start_date_f + " - " + finish_date_f + "\nSe hai partecipato alla stagione precedente, riceverai i premi a breve!", back_html);
 					return;
 				}
-			}
+			//}
 
 			var kb2 = {
 				parse_mode: "HTML",
@@ -19246,9 +19255,6 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 
 			connection.query('SELECT id, top_id, enemy_dragon_id, wait_time, no_match_time, is_dummy FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
-
-				var finishD = new Date("2019-05-22 12:00:00");
-				var finish_date = addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes()) + " del " + addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + "/" + finishD.getFullYear();
 
 				if (Object.keys(rows).length == 0) {
 					connection.query('INSERT INTO dragon_top_status (player_id, dragon_id) VALUES (' + player_id + ',' + dragon_id + ')', function (err, rows, fields) {
@@ -27055,7 +27061,7 @@ bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^♥️$/i, function (me
 					player_life += Math.round(player_total_life*perc2);
 					pot2++;
 				}else if (pot1bag-pot1 > 0){
-					if ((player_life+Math.round(player_total_life*perc1) >= player_total_life) && (mode == 1))
+					if ((player_life+Math.round(player_total_life*perc1) > player_total_life) && (mode == 1))
 						break;
 					player_life += Math.round(player_total_life*perc1);
 					pot1++;
@@ -33954,6 +33960,7 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 					price -= (price / 100 * trust_discount);
 					iKeys.push(["Pacchetto " + rows[i].name + " (" + formatNumber(Math.round(price)) + " §)"]);
 				}
+				iKeys.push(["Torna alla piazza"]);
 				iKeys.push(["Torna al menu"]);
 
 				var kb = {
