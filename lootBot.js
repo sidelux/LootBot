@@ -17656,8 +17656,8 @@ bot.onText(/^bevande|torna alle bevande/i, function (message) {
 		var player_id = rows[0].id;
 		var class_id = rows[0].class;
 		var reborn = rows[0].reborn;
-		var boost_id = rows[0].boost_id;
-		var boost_mission = rows[0].boost_mission;
+		var active_boost_id = rows[0].boost_id;
+		var active_boost_mission = rows[0].boost_mission;
 
 		if (reborn == 1){
 			bot.sendMessage(message.chat.id, "Devi raggiungere almeno la Rinascita 1 (Livello 100) per utilizzare questa funzione! Dopo di che potrai ottenere ogni tipo di Bevanda magica grazie ai poteri del drago!", back)
@@ -17820,17 +17820,17 @@ bot.onText(/^bevande|torna alle bevande/i, function (message) {
 							delItem(player_id, 73, 1);
 							setAchievement(player_id, 38, 1);
 						} else if (answer.text == "Ripristina") {
-							if (boost_id == 0){
+							if (active_boost_id == 0){
 								bot.sendMessage(message.chat.id, "Devi avere una bevanda attiva per poterla ripristinare!", kb3);
 								return;
 							}
 							
-							if (boost_mission > 2){
+							if (active_boost_mission > 2){
 								bot.sendMessage(message.chat.id, "Per ripristinare la bevanda deve possedere meno di 3 cariche!", kb3);
 								return;
 							}
 							
-							var restore = (3-boost_mission);
+							var restore = (3-active_boost_mission);
 							var dust = 1000*restore;
 							
 							var plur = "he";
@@ -29515,9 +29515,8 @@ bot.onText(/cambia admin/i, function (message) {
 						connection.query('SELECT player.nickname FROM team_player, player WHERE team_player.player_id = player.id AND player_id != ' + player_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
 							if (err) throw err;
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-								if (rows[i].nickname != message.from.username) {
+								if (rows[i].nickname != message.from.username)
 									iKeys.push([rows[i].nickname]);
-								}
 							}
 
 							iKeys.push(["Torna al team"]);
