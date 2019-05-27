@@ -5231,9 +5231,8 @@ bot.onText(/Sesso ⚤/i, function (message) {
 								}
 
 								var gender = "M";
-								if (json.gender == "female"){
+								if (json.gender == "female")
 									gender = "F";
-								}
 
 								if (json.accuracy < 30){
 									bot.sendMessage(message.chat.id, "Non è stato possibile identificare il sesso, contatta l'amministratore", back);
@@ -5627,7 +5626,7 @@ bot.onText(/descrizione rifugio/i, function (message) {
 		if (rows[0].heist_description != null)
 			text = "\nLa descrizione rifugio attuale impostata è: " + rows[0].heist_description;
 
-		bot.sendMessage(message.chat.id, "Inserisci la descrizione che comparirà quando altri giocatori ti ispezionano e falliscono.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti. Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
+		bot.sendMessage(message.chat.id, "Inserisci la descrizione che comparirà quando altri giocatori ti ispezionano e falliscono.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti (solo a-zA-Z0-9àèìòùé.,?!'@ e spazi). Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text != "Torna al menu") {
 					var resp = answer.text;
@@ -5670,7 +5669,7 @@ bot.onText(/descrizione spia/i, function (message) {
 		if (rows[0].spy_description != null)
 			text = "\nLa descrizione spia attuale impostata è: " + rows[0].spy_description;
 
-		bot.sendMessage(message.chat.id, "Inserisci la descrizione che comparirà quando spii altri giocatori.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti. Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
+		bot.sendMessage(message.chat.id, "Inserisci la descrizione che comparirà quando spii altri giocatori.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti (solo a-zA-Z0-9àèìòùé.,?!'@ e spazi). Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text != "Torna al menu") {
 					var resp = answer.text;
@@ -5708,7 +5707,7 @@ bot.onText(/descrizione personale/i, function (message) {
 		if (rows[0].player_description != null)
 			text = "\nLa descrizione personale attuale impostata è: " + rows[0].player_description;
 
-		bot.sendMessage(message.chat.id, "Inserisci la descrizione del tuo personaggio, comparirà quando altri giocatori ti spiano.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti. Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
+		bot.sendMessage(message.chat.id, "Inserisci la descrizione del tuo personaggio, comparirà quando altri giocatori ti spiano.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti (solo a-zA-Z0-9àèìòùé.,?!'@ e spazi). Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text != "Torna al menu") {
 					var resp = answer.text;
@@ -33569,7 +33568,7 @@ function calcBaseFunc(estimate) {
 		connection.query('SELECT id, name, estimate, value FROM item WHERE estimate > 0 AND rarity IN ("C","NC","R","UR","L","E","U") AND craftable = 1', function (err, rows, fields) {
 			if (err) throw err;
 			var len = Object.keys(rows).length
-			console.log("Somma base per " + len  + " oggetti");
+			//console.log("Somma base per " + len  + " oggetti");
 			for (var i = 0; i < len; i++) {
 				calcBase(rows[i].id, rows[i].id, estimate);
 
@@ -33978,6 +33977,8 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					price = rows[i].tot*(11-rows[i].rarity_id);
 					price -= (price / 100 * trust_discount);
+					if (price_drop == 1)
+						price -= (price / 100 * sconto);
 					iKeys.push(["Pacchetto " + rows[i].name + " (" + formatNumber(Math.round(price)) + " §)"]);
 				}
 				iKeys.push(["Torna alla piazza"]);
@@ -36212,8 +36213,7 @@ bot.onText(/^set$|^set 💣$|torna ai set|^Imposta (.+)/i, function (message) {
 
 									var title = rows[0].name;
 
-									connection.query('INSERT INTO set_list (player_id, quantity, name, item_weapon, item_armor, item_shield, item_charm) ' +
-													 'VALUES (' + player_id + ',' + rows[0].quantity + ',"' + rows[0].name + '",' + rows[0].item_weapon + ',' + rows[0].item_armor + ',' + rows[0].item_shield + ',' + rows[0].item_charm + ')',
+									connection.query('INSERT INTO set_list (player_id, quantity, name, item_weapon, item_armor, item_shield, item_charm) VALUES (' + player_id + ',' + rows[0].quantity + ',"' + rows[0].name + '",' + rows[0].item_weapon + ',' + rows[0].item_armor + ',' + rows[0].item_shield + ',' + rows[0].item_charm + ')',
 													 function (err, rows, fields) {
 										if (err) throw err;
 										connection.query('SELECT MAX(id) As maxid FROM set_list WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -36247,12 +36247,18 @@ bot.onText(/^solo (.){1,15}$|^base per quantità$/i, function (message) {
 		var player_id = rows[0].id;
 
 		if (message.text.toLowerCase() == "base per quantità"){
-			connection.query('SELECT inventory.player_id, item.name, item.craftable, rarity.id, rarity.shortname, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND craftable = 0 AND inventory.quantity > 0 ORDER BY inventory.quantity ASC', function (err, rows, fields) {
+			connection.query('SELECT inventory.player_id, item.name, item.craftable, rarity.id, rarity.shortname, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND craftable = 0 AND inventory.quantity > 0 ORDER BY rarity.id ASC, inventory.quantity ASC', function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length > 0) {
+					var raritypre = rows[0].id;
 					text = "*Oggetti base ordinati per quantità:*\n\n";
-					for (i = 0, len = Object.keys(rows).length; i < len; i++)
-						text = text + "> " + rows[i].name + " (" + rows[i].shortname + ", " + rows[i].num + ")\n";
+					text += "*" + rows[0].rname + "*:\n";
+					for (i = 0, len = Object.keys(rows).length; i < len; i++){
+						if (rows[i].id != raritypre)
+							text += "\n*" + rows[i].rname + "*:\n";
+						text += "> " + rows[i].name + " (" + rows[i].shortname + ", " + rows[i].num + ")\n";
+						raritypre = rows[i].id;
+					}
 				} else
 					text = text + "Nessun oggetto base disponibile\n";
 				if (Object.keys(text).length > 8000)
@@ -48712,7 +48718,7 @@ function setFinishedAssaultsMob(element, index, array) {
 
 	var boss = connection_sync.query('SELECT name, total_life FROM boss WHERE id = ' + boss_num);
 	var mob_life = boss[0].total_life*(Math.sqrt(boss_count+1));
-	mob_life = mob_life*team_players*0.4;
+	mob_life = mob_life*0.4;
 
 	var total_mob = 3;
 	if (mob_count < total_mob){	// Mob
@@ -48725,6 +48731,7 @@ function setFinishedAssaultsMob(element, index, array) {
 	}
 
 	mob_life = Math.round(mob_life);
+	console.log("mob_life " + mob_life + " boss_num " + boss_num + " boss_count " + boss_count + " mob_count " + mob_count);
 
 	connection.query('DELETE FROM assault_increment_history WHERE team_id = ' + team_id, function (err, rows, fields) {
 		if (err) throw err;
