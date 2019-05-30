@@ -500,7 +500,8 @@ bot.onText(/^\/comanditeam/, function (message) {
 					"/votaparty - Invia un messaggio taggando solo i membri del proprio party che devono ancora votare anche in privato\n" +
 					"/incremento - Invia un messaggio taggando solo i membri del proprio team che devono ancora attivare l'incremento nell'assalto anche in privato\n" +
 					"/chiedoaiuto - Invia un messaggio taggando solo i membri disponibili ad uno scambio nel dungeon\n" +
-					"/chiamateam - Invia un messaggio taggando tutti i membri del proprio team anche in privato", mark);
+					"/chiamateam - Invia un messaggio taggando tutti i membri del proprio team anche in privato\n" +
+					"/statoincarichi - Mostra un riepilogo di tutti gli incarichi in corso", mark);
 });
 
 bot.onText(/^\/comandigenerali/, function (message) {
@@ -7143,6 +7144,71 @@ bot.onText(/^\/dlotteria(?!p) (.+)|^\/dlotteria(?!p)/, function (message, match)
 	});
 });
 
+bot.onText(/^\/statoincarichi/, function (message, match) {
+	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0)
+			return;
+		
+		var player_id = rows[0].id;
+		
+		connection.query('SELECT team_id FROM team_player WHERE team_id = (SELECT team_id FROM team_player WHERE player_id = ' + player_id + ') ORDER BY id', function (err, rows, fields) {
+			if (err) throw err;
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Entra in un team per utilizzare questa funzione");
+				return;
+			}
+			var team_id = rows[0].team_id;
+			
+			connection.query('SELECT role FROM team_player WHERE team_id = ' + team_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+
+				if (rows[0].role == 0){
+					bot.sendMessage(message.chat.id, "Solo l'amministratore o il vice possono utilizzare questa funzione");
+					return;
+				}
+				
+				connection.query('SELECT T.parts, T.title, T.duration, M.party_id, M.part_id, M.mission_time_end, M.mission_time_limit, M.wait FROM mission_team_list T, mission_team_party M WHERE T.ready = 1 AND T.id = M.assigned_to AND M.team_id = ' + team_id + ' ORDER BY T.progress_num ASC, T.duration ASC', function (err, rows, fields) {
+					if (err) throw err;
+					
+					var text = "*Incarichi in corso:*\n\n";
+					if (Object.keys(rows).length > 0){
+						var time_end;
+						var time_next;
+						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+							time_end = "";
+							if (rows[i].mission_time_end != null){
+								var d = new Date(rows[i].mission_time_end);
+								var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+								var wait_text = "";
+								if (rows[i].wait == 1)
+									wait_text = " ❗️";
+								time_end = "Prossima scelta alle " + long_date + wait_text + "\n";
+							}
+							time_next = "";
+							if (rows[i].mission_time_limit != null){
+								var d = new Date(rows[i].mission_time_limit);
+								var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+								time_next = "Scadenza alle " + long_date + "\n";
+							}
+							text += "> Party " + rows[i].party_id + "\n" + 
+								rows[i].title + " - " + rows[i].part_id + "/" + rows[i].parts + "\n" +
+								time_end +
+								time_next +
+								"\n";
+						}
+					} else
+						text = "Nessun incarico in corso";
+					
+					
+					bot.sendMessage(message.chat.id, text, mark);
+				});
+			});
+		});
+	});
+});
+		   
 bot.onText(/^\/statolotteria (.+)|^\/statolotteria/, function (message, match) {
 	var nickname = match[1];
 	if ((nickname == undefined) || (nickname == ""))
@@ -9976,13 +10042,22 @@ bot.onText(/^\/zainob (.+)|^\/zainoc (.+)|^\/zainob|^\/zainoc/, function (messag
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
 				for (i = 0, len = Object.keys(rows).length; i < len; i++)
-					bottext = bottext + "> " + rows[i].name + " (" + rows[i].rname + ", " + formatNumber(rows[i].num) + ")\n";
+					bottext += "> " + rows[i].name + " (" + rows[i].rname + ", " + formatNumber(rows[i].num) + ")\n";
 			} else
 				bottext = bottext + "Nessun oggetto con questo filtro disponibile\n";
-			if (Object.keys(bottext).length > 4000)
-				bottext = "Purtroppo lo zaino non può essere visualizzato poichè contiene troppi oggetti";
-
-			bot.sendMessage(message.chat.id, bottext, html)
+			if (Object.keys(bottext).length > 4000){
+				connection.query('SELECT rarity.shortname As rname, SUM(inventory.quantity) As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND item.craftable = ' + craftable + ' AND inventory.quantity > 0 GROUP BY rarity.id ORDER BY rarity.id ASC', function (err, rows, fields) {
+					if (err) throw err;
+					
+					var bottext = "<b>" + message.from.username + "</b> possiedi troppi oggetti " + craftTxt.toLowerCase() + ", per poterli visualizzare, ecco un riassunto:\n";
+					
+					for (i = 0, len = Object.keys(rows).length; i < len; i++)
+						bottext += "> " + rows[i].rname + ": " + formatNumber(rows[i].num) + "\n";
+					
+					bot.sendMessage(message.chat.id, bottext, html)
+				});
+			} else
+				bot.sendMessage(message.chat.id, bottext, html)
 		});
 	});
 });

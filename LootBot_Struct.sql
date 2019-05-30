@@ -235,6 +235,7 @@ CREATE TABLE `assault` (
   `boss_num` int(11) NOT NULL DEFAULT '1',
   `epic_var` int(11) NOT NULL DEFAULT '0',
   `epic_var_record` int(11) NOT NULL DEFAULT '0',
+  `expire_notify` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `team_id` (`team_id`),
   CONSTRAINT `assault_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
@@ -3544,4 +3545,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-05-27  9:00:05
+-- Dump completed on 2019-05-30  9:00:05

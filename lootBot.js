@@ -247,6 +247,7 @@ callNTimes(60000, function () { //Ogni 1 minuto
 	checkAssaultsEnd();
 	checkAssaultsMob();
 	checkAssaultsLock();
+	checkAssaultsExpire();
 
 	if (crazyMode == 1)
 		merchant_limit = 8;
@@ -13676,7 +13677,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	item_name = rows[0].name;
 																}
 
-																var rand = Math.random();
+																var rand = Math.random()*100;
 																var text = "";
 																if (rand < 60){
 																	if (item_id != 0){
@@ -27720,7 +27721,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 									}
 								});
 
-								connection.query('UPDATE assault SET completed = completed+1, phase = 0, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1, epic_var = 0, epic_var_record = ' + epic_var_record + ', lock_time_end = NULL, elected_lock_time_end = NULL, weak_unlocked = 0, weak_time_end = NULL WHERE team_id = ' + team_id, function (err, rows, fields) {
+								connection.query('UPDATE assault SET completed = completed+1, phase = 0, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1, epic_var = 0, epic_var_record = ' + epic_var_record + ', lock_time_end = NULL, elected_lock_time_end = NULL, weak_unlocked = 0, weak_time_end = NULL, expire_notify = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
 									if (err) throw err;
 
 									connection.query('SELECT P.id, P.chat_id FROM assault_place_player_id APP, player P WHERE APP.player_id = P.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
@@ -44416,7 +44417,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 										if (err) throw err;
 										bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è peggiore di quella del guardiano (" + combi + ")! Il portone del rifugio si blocca ed il tuo gnomo è costretto a tornare indietro" + expText, kbBack);
 
-										bot.sendMessage(toChat, "<b>" + message.from.username + "</b> non è riuscito a sconfiggere il guardiano del tuo portone, così è stato respinto", html);
+										bot.sendMessage(toChat, "Lo gnomo di <b>" + message.from.username + "</b> non è riuscito a sconfiggere il guardiano del tuo portone, così è stato respinto", html);
 									});
 
 									var d = new Date();
@@ -48641,7 +48642,7 @@ function setFinishedAssaults(element, index, array) {
 
 			text += "Il <b>Giorno dell'Assalto " + boss_num + "</b> ha inizio, entra in combattimento per ottenere la vittoria!\nL'eletto incaricato di guidare la battaglia è <b>" + nickname + "</b> 🗡";
 
-			connection.query('UPDATE assault SET phase = ' + (phase+1) + ', refresh_mob = 1, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY) WHERE team_id = ' + team_id, function (err, rows, fields) {
+			connection.query('UPDATE assault SET phase = ' + (phase+1) + ', refresh_mob = 1, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), expire_notify = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
 
@@ -48942,6 +48943,34 @@ function setFinishedAssaultsItem(element, index, array) {
 			connection.query('UPDATE assault_place_team SET time_end = NULL, level = level+1, life = total_life WHERE team_id = ' + team_id + ' AND place_id = ' + place_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
+		});
+	});
+};
+
+function checkAssaultsExpire() {
+	connection.query('SELECT team_id FROM assault WHERE phase = 2 AND expire_notify = 0 AND DATE_SUB(time_end, INTERVAL 2 HOUR) < NOW() AND time_end IS NOT NULL', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length == 1)
+				console.log(getNow("it") + "\x1b[32m 1 avviso scadenza assalto inviato\x1b[0m");
+			else
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " avvisi scadenza assalto inviati\x1b[0m");
+			rows.forEach(setFinishedAssaultsExpire);
+		}
+	});
+};
+
+function setFinishedAssaultsExpire(element, index, array) {
+	var team_id = element.team_id;
+
+	connection.query('SELECT player_id, chat_id FROM team_player, player WHERE team_player.player_id = player.id AND team_id = ' + team_id + ' ORDER BY team_player.id', function (err, rows, fields) {
+		if (err) throw err;
+
+		for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+			bot.sendMessage(rows[i].chat_id, "Il *Giorno dell'Assalto* si concluderà tra meno di 2 ore, forza!", mark);
+
+		connection.query('UPDATE assault SET expire_notify = 1 WHERE team_id = ' + team_id, function (err, rows, fields) {
+			if (err) throw err;
 		});
 	});
 };
@@ -50597,101 +50626,107 @@ function setFinishedMission(element, index, array) {
 					if ((rand >= 5) && (rand <= rand_c) && (boost_id == 0)) {
 						var rand2 = Math.round(Math.random() * 8);
 
-						connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + element.id + ' AND ability_id = 19', function (err, rows, fields) {
-							if (err) throw err;
+						var ability = connection_sync.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + element.id + ' AND ability_id = 19');
 
-							var abBonusStone = 0;
-							if (Object.keys(rows).length > 0)
-								abBonusStone = parseInt(rows[0].ability_level) * rows[0].val;
+						var abBonusStone = 0;
+						if (Object.keys(rows).length > 0)
+							abBonusStone = parseInt(ability[0].ability_level) * ability[0].val;
 
-							var rand3 = Math.random()*100;
-							var mplus = 0;
-							var m = 0;
-							if (rand3 < abBonusStone)
-								mplus = 1;
+						var rand3 = Math.random()*100;
+						var mplus = 0;
+						var m = 0;
+						if (rand3 < abBonusStone)
+							mplus = 1;
 
-							if (rand2 == 0) {
-								var randBoost = Math.random()*100;
-								if (randBoost < 70){
-									m = 3+mplus;
-									connection.query('UPDATE player SET boost_id = 1, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
-										if (err) throw err;
-										bot.sendMessage(chat_id, "Hai trovato una Bevanda Energetica! Per " + m + " missioni il tempo di attesa è dimezzato.");
-										setAchievement(element.id, 69, 1);
-									});
-								} else {
-									m = 6+mplus;
-									connection.query('UPDATE player SET boost_id = 1, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
-										if (err) throw err;
-										bot.sendMessage(chat_id, "Hai trovato una Bevanda Energetica Plus! Per " + m + " missioni il tempo di attesa è dimezzato.");
-										setAchievement(element.id, 69, 1);
-									});
-								}
-							} else if (rand2 == 1) {
+						if (rand2 == 0) {
+							var randBoost = Math.random()*100;
+							if (randBoost < 70){
 								m = 3+mplus;
-								connection.query('UPDATE player SET boost_id = 2, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
+								connection.query('UPDATE player SET boost_id = 1, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
 									if (err) throw err;
-									bot.sendMessage(chat_id, "Hai trovato una Bevanda Scrigno! Per " + m + " missioni gli scrigni ottenuti a fine missione sono raddoppiati.");
+									bot.sendMessage(chat_id, "Hai trovato una Bevanda Energetica! Per " + m + " missioni il tempo di attesa è dimezzato.");
 									setAchievement(element.id, 69, 1);
 								});
-							} else if (rand2 == 2) {
-								if (level > 20) {
-									m = 3+mplus;
-									connection.query('UPDATE player SET boost_id = 3, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
-										if (err) throw err;
-										bot.sendMessage(chat_id, "Hai trovato una Bevanda Fiamma di Drago! Per " + m + " viaggi in cava le pietre ottenute sono raddoppiate.");
-										setAchievement(element.id, 69, 1);
-									});
-								}
-							} else if (rand2 == 3) {
-								m = 2+mplus;
-								connection.query('UPDATE player SET boost_id = 4, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
+							} else {
+								m = 6+mplus;
+								connection.query('UPDATE player SET boost_id = 1, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
 									if (err) throw err;
-									bot.sendMessage(chat_id, "Hai trovato una Bevanda Livellante! Per " + m + " missioni i punti esperienza ottenuti a fine missione sono aumentati del 50%.");
+									bot.sendMessage(chat_id, "Hai trovato una Bevanda Energetica Plus! Per " + m + " missioni il tempo di attesa è dimezzato.");
 									setAchievement(element.id, 69, 1);
 								});
-							} else if (rand2 == 4) {
-								m = 3+mplus;
-								connection.query('UPDATE player SET boost_id = 5, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
-									if (err) throw err;
-									bot.sendMessage(chat_id, "Hai trovato una Bevanda Quadrifoglio! Per " + m + " utilizzi la fortuna è raddoppiata.");
-									setAchievement(element.id, 69, 1);
-								});
-							} else if (rand2 == 5) {
-								m = 3+mplus;
-								connection.query('UPDATE player SET boost_id = 6, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
-									if (err) throw err;
-									bot.sendMessage(chat_id, "Hai trovato una Bevanda Furia! Per " + m + " attacchi il tuo danno è raddoppiato.");
-									setAchievement(element.id, 69, 1);
-								});
-							} else if (rand2 == 6) {
-								m = 3+mplus;
-								connection.query('UPDATE player SET boost_id = 7, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
-									if (err) throw err;
-									bot.sendMessage(chat_id, "Hai trovato una Bevanda Bottino! Per " + m + " missioni fornisce x3 monete, per altrettante stanze dungeon fornisce x10 monete.");
-									setAchievement(element.id, 69, 1);
-								});
-							} else if (rand2 == 7) {
-								if (reborn > 1){
-									m = 2+mplus;
-									connection.query('UPDATE player SET boost_id = 8, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
-										if (err) throw err;
-										bot.sendMessage(chat_id, "Hai trovato una Bevanda Corsa! Per " + m + " stanze dungeon il tempo di attesa è dimezzato.");
-										setAchievement(element.id, 69, 1);
-									});
-								}
-							} else if (rand2 == 8) {
-								if (level > 15){
-									m = 2+mplus;
-									connection.query('UPDATE player SET boost_id = 9, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
-										if (err) throw err;
-										bot.sendMessage(chat_id, "Hai trovato una Bevanda Idromele! Per " + m + " ispezioni il tempo di attesa è dimezzato.");
-										setAchievement(element.id, 69, 1);
-									});
-								}
 							}
-						});
-						achPnt++;
+							achPnt++;
+						} else if (rand2 == 1) {
+							m = 3+mplus;
+							connection.query('UPDATE player SET boost_id = 2, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
+								if (err) throw err;
+								bot.sendMessage(chat_id, "Hai trovato una Bevanda Scrigno! Per " + m + " missioni gli scrigni ottenuti a fine missione sono raddoppiati.");
+								setAchievement(element.id, 69, 1);
+							});
+							achPnt++;
+						} else if (rand2 == 2) {
+							if (level > 20) {
+								m = 3+mplus;
+								connection.query('UPDATE player SET boost_id = 3, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
+									if (err) throw err;
+									bot.sendMessage(chat_id, "Hai trovato una Bevanda Fiamma di Drago! Per " + m + " viaggi in cava le pietre ottenute sono raddoppiate.");
+									setAchievement(element.id, 69, 1);
+								});
+								achPnt++;
+							}
+						} else if (rand2 == 3) {
+							m = 2+mplus;
+							connection.query('UPDATE player SET boost_id = 4, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
+								if (err) throw err;
+								bot.sendMessage(chat_id, "Hai trovato una Bevanda Livellante! Per " + m + " missioni i punti esperienza ottenuti a fine missione sono aumentati del 50%.");
+								setAchievement(element.id, 69, 1);
+							});
+							achPnt++;
+						} else if (rand2 == 4) {
+							m = 3+mplus;
+							connection.query('UPDATE player SET boost_id = 5, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
+								if (err) throw err;
+								bot.sendMessage(chat_id, "Hai trovato una Bevanda Quadrifoglio! Per " + m + " utilizzi la fortuna è raddoppiata.");
+								setAchievement(element.id, 69, 1);
+							});
+							achPnt++;
+						} else if (rand2 == 5) {
+							m = 3+mplus;
+							connection.query('UPDATE player SET boost_id = 6, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
+								if (err) throw err;
+								bot.sendMessage(chat_id, "Hai trovato una Bevanda Furia! Per " + m + " attacchi il tuo danno è raddoppiato.");
+								setAchievement(element.id, 69, 1);
+							});
+							achPnt++;
+						} else if (rand2 == 6) {
+							m = 3+mplus;
+							connection.query('UPDATE player SET boost_id = 7, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
+								if (err) throw err;
+								bot.sendMessage(chat_id, "Hai trovato una Bevanda Bottino! Per " + m + " missioni fornisce x3 monete, per altrettante stanze dungeon fornisce x10 monete.");
+								setAchievement(element.id, 69, 1);
+							});
+							achPnt++;
+						} else if (rand2 == 7) {
+							if (reborn > 1){
+								m = 2+mplus;
+								connection.query('UPDATE player SET boost_id = 8, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
+									if (err) throw err;
+									bot.sendMessage(chat_id, "Hai trovato una Bevanda Corsa! Per " + m + " stanze dungeon il tempo di attesa è dimezzato.");
+									setAchievement(element.id, 69, 1);
+								});
+								achPnt++;
+							}
+						} else if (rand2 == 8) {
+							if (level > 15){
+								m = 2+mplus;
+								connection.query('UPDATE player SET boost_id = 9, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
+									if (err) throw err;
+									bot.sendMessage(chat_id, "Hai trovato una Bevanda Idromele! Per " + m + " ispezioni il tempo di attesa è dimezzato.");
+									setAchievement(element.id, 69, 1);
+								});
+								achPnt++;
+							}
+						}
 					}
 
 					var chest8 = 0;
@@ -50707,8 +50742,8 @@ function setFinishedMission(element, index, array) {
 						if (getChestCnt(element.id, 8) == 0){
 							addChest(element.id, 8);
 							bot.sendMessage(chat_id, "Hai trovato uno Scrigno Mistico! Che fortuna!");
+							achPnt++;
 						}
-						achPnt++;
 					}
 
 					var gem = 0;
