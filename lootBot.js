@@ -14362,20 +14362,35 @@ bot.onText(/stato dungeon/i, function (message){
 			var dungeon_tot = Math.round((rows[0].finish_time - now) / 1000); // In secondi
 			
 			var dungeon_id = rows[0].dungeon_id;
-			
-			connection.query('SELECT COUNT(id) As player_num FROM dungeon_status WHERE dungeon_id = ' + dungeon_id, function (err, rows, fields) {
+		
+			connection.query('SELECT finish_date, name, cursed, rooms FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 				if (err) throw err;
 				
-				var player_num = rows[0].player_num;
-
-				connection.query('SELECT finish_date, name, cursed FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
+				var dungeon_name = rows[0].name;
+				var finish_date = rows[0].finish_date;
+				var cursed = rows[0].cursed;
+				var rooms = rows[0].rooms;
+			
+				connection.query('SELECT nickname, room_id FROM dungeon_status, player WHERE dungeon_status.player_id = player.id AND dungeon_id = ' + dungeon_id, function (err, rows, fields) {
 					if (err) throw err;
 
-					var instance_tot = Math.round((rows[0].finish_date - now) / 1000); // In secondi
+					var players = "";
+					var player_num = 0;
+					if (Object.keys(rows).length > 0) {
+						players = "\nEsploratori al suo interno:\n";
+						player_num = Object.keys(rows).length;
+						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+							if (rows[i].room_id > rooms)
+								rows[i].room_id = "finale";
+							players += "> " + rows[i].nickname + " (Stanza " + rows[i].room_id + ")\n";
+						}
+					}
+
+					var instance_tot = Math.round((finish_date - now) / 1000); // In secondi
 					var cursed_text = "";
-					if (rows[0].cursed == 1)
+					if (cursed == 1)
 						cursed_text = " 🧨";
-					bot.sendMessage(message.chat.id, "*" + rows[0].name + "*" + cursed_text + "\nCi sono " + player_num + " esploratori al suo interno\nTi trovi nella stanza numero " + room_id + last_dir_txt + "\nCrollo dungeon tra " + toTime(dungeon_tot, 0) + "\nCrollo istanza tra " + toTime(instance_tot, 0), dBack);
+					bot.sendMessage(message.chat.id, "*" + dungeon_name + "*" + cursed_text + "\nCi sono " + player_num + " esploratori al suo interno\nTi trovi nella stanza numero " + room_id + last_dir_txt + "\nCrollo dungeon tra " + toTime(dungeon_tot, 0) + "\nCrollo istanza tra " + toTime(instance_tot, 0) + players, dBack);
 				});
 			});
 		});
@@ -15468,7 +15483,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							if ((player_weapon2_id == 688) || (automagic2 == 3)) {
 																								var r2 = Math.random() * 100;
 																								if (r2 < 50) {
-																									var restore = Math.round(getRandomArbitrary(100, 300));
+																									var restore = Math.round(getRandomArbitrary(50, 150));
 																									restored = " Hai assorbito " + restore + " Mana Rosso dall'incantesimo!";
 																									connection.query('UPDATE event_mana_status SET mana_3 = mana_3 + ' + restore + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																										if (err) throw err;
@@ -15501,7 +15516,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							if ((player_weapon2_id == 689) || (automagic2 == 1)) {
 																								var r2 = Math.random() * 100;
 																								if (r2 < 50) {
-																									var restore = Math.round(getRandomArbitrary(100, 300));
+																									var restore = Math.round(getRandomArbitrary(50, 150));
 																									restored = " Hai assorbito " + restore + " Mana Blu dall'incantesimo!";
 																									connection.query('UPDATE event_mana_status SET mana_1 = mana_1 + ' + restore + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																										if (err) throw err;
@@ -15525,7 +15540,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							if ((player_weapon2_id == 690) || (automagic2 == 2)) {
 																								var r2 = Math.random() * 100;
 																								if (r2 < 50) {
-																									var restore = Math.round(getRandomArbitrary(100, 300));
+																									var restore = Math.round(getRandomArbitrary(50, 150));
 																									restored = " Hai assorbito " + restore + " Mana Giallo dall'incantesimo!";
 																									connection.query('UPDATE event_mana_status SET mana_2 = mana_2 + ' + restore + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																										if (err) throw err;
@@ -22627,21 +22642,21 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 																				for (var j = 0; j < partyLen; j++) {
 																					if (rows[j].mission_id != 0){
 																						var d = new Date(rows[j].mission_time_end);
-																						inMiss += "> " + rows[j].nickname + " fino alle " + toDate("it", d) + "\n";
+																						inMiss += "> " + rows[j].nickname + " fino al " + toDate("it", d) + "\n";
 																					}
 																				}
 																				var inTravel = "";
 																				for (var j = 0; j < partyLen; j++) {
 																					if (rows[j].travel_id != 0){
 																						var d = new Date(rows[j].travel_time_end);
-																						inTravel += "> " + rows[j].nickname + " fino alle " + toDate("it", d) + "\n";
+																						inTravel += "> " + rows[j].nickname + " fino al " + toDate("it", d) + "\n";
 																					}
 																				}
 																				var inCave = "";
 																				for (var j = 0; j < partyLen; j++) {
 																					if (rows[j].cave_id != 0){
 																						var d = new Date(rows[j].cave_time_end);
-																						inCave += "> " + rows[j].nickname + " fino alle " + toDate("it", d) + "\n";
+																						inCave += "> " + rows[j].nickname + " fino al " + toDate("it", d) + "\n";
 																					}
 																				}
 																				var inHoliday = "";
@@ -22653,7 +22668,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 																				for (var j = 0; j < partyLen; j++) {
 																					if (rows[j].team_mission_time != null){
 																						var d = new Date(rows[j].team_mission_time);
-																						inCooldown += "> " + rows[j].nickname + " fino alle " + toDate("it", d) + "\n";
+																						inCooldown += "> " + rows[j].nickname + " fino al " + toDate("it", d) + "\n";
 																					}
 																				}
 
@@ -24993,6 +25008,9 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 															// ricontrollo eletto
 															var check = connection_sync.query('SELECT role FROM assault_place_player_id WHERE team_id = ' + team_id + ' AND player_id = ' + player_id);
+															
+															if (Object.keys(check).length == 0)
+																return;
 
 															elected = 0;
 															if (check[0].role == 1)
@@ -26153,7 +26171,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																					if ((weapon2_id == 689) || (weapon2_enchant == 1)) {
 																						var rand = Math.random()*100;
 																						if (rand < 50) {
-																							var restore = Math.round(getRandomArbitrary(100, 300));
+																							var restore = Math.round(getRandomArbitrary(50, 150));
 																							player_text += " (+" + restore + " Mana Blu)";
 																							connection.query('UPDATE event_mana_status SET mana_1 = mana_1 + ' + restore + ' WHERE player_id = ' + playerid, function (err, rows, fields) {
 																								if (err) throw err;
@@ -26180,7 +26198,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																					if ((weapon2_id == 690) || (weapon2_enchant == 2)) {
 																						var rand = Math.random()*100;
 																						if (rand < 50) {
-																							var restore = Math.round(getRandomArbitrary(100, 300));
+																							var restore = Math.round(getRandomArbitrary(50, 150));
 																							player_text += " (+" + restore + " Mana Giallo)";
 																							connection.query('UPDATE event_mana_status SET mana_2 = mana_2 + ' + restore + ' WHERE player_id = ' + playerid, function (err, rows, fields) {
 																								if (err) throw err;
@@ -26203,7 +26221,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																					if ((weapon2_id == 688) || (weapon2_enchant == 3)) {
 																						var rand = Math.random()*100;
 																						if (rand < 50) {
-																							var restore = Math.round(getRandomArbitrary(100, 300));
+																							var restore = Math.round(getRandomArbitrary(50, 150));
 																							player_text += " (+" + restore + " Mana Rosso)";
 																							connection.query('UPDATE event_mana_status SET mana_3 = mana_3 + ' + restore + ' WHERE player_id = ' + playerid, function (err, rows, fields) {
 																								if (err) throw err;
@@ -27771,8 +27789,6 @@ function playerKilled(team_id, player_id, place_id, is_boss){
 	connection_sync.query("UPDATE assault_place_player_id SET killed = 1 WHERE player_id = " + player_id);
 	var rand = Math.random()*100;
 	var prob = 20;
-	if (place_id == 5)
-		prob += 5;
 	if (((is_boss == 0) && (rand <= prob)) || ((is_boss == 1) && (rand <= (prob+30)))){
 		var rows = connection_sync.query("SELECT level, active FROM assault_place_team WHERE place_id = " + place_id + " AND team_id = " + team_id);
 		if ((rows[0].level > 1) && (rows[0].active == 1)) {
@@ -44442,10 +44458,10 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 											if (isMatch == 1)
 												setAchievement(toId, 9, 1);
 
-											connection.query('UPDATE `player` SET ability = ability-1 WHERE id = ' + player_id, function (err, rows, fields) {
+											connection.query('UPDATE player SET ability = ability-1 WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 											});
-											connection.query('UPDATE `player` SET ability = ability+1 WHERE id = ' + toId, function (err, rows, fields) {
+											connection.query('UPDATE player SET ability = ability+1 WHERE id = ' + toId, function (err, rows, fields) {
 												if (err) throw err;
 											});
 
@@ -48719,7 +48735,7 @@ function setFinishedAssaultsMob(element, index, array) {
 
 	var boss = connection_sync.query('SELECT name, total_life FROM boss WHERE id = ' + boss_num);
 	var mob_life = boss[0].total_life*(Math.sqrt(boss_count+1));
-	mob_life = mob_life*0.4;
+	mob_life = mob_life*0.8;
 
 	var total_mob = 3;
 	if (mob_count < total_mob){	// Mob

@@ -496,8 +496,9 @@ bot.onText(/^\/comandicommercio/, function (message) {
 bot.onText(/^\/comanditeam/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per i team*\n" +
 					"/chiamaparty - Invia un messaggio taggando tutti i membri del proprio party (escluso il chiamante) anche in privato\n" +
-					"/chiamaparty<numero> - Invia un messaggio taggando tutti i membri del party <numero> (solo per amministratori) anche in privato\n" +
+					"/chiamaparty<numero> - Invia un messaggio taggando tutti i membri del party <numero> anche in privato (solo per amministratori)\n" +
 					"/votaparty - Invia un messaggio taggando solo i membri del proprio party che devono ancora votare anche in privato\n" +
+					"/votaparty<numero> - Invia un messaggio taggando tutti i membri del party <numero> che devono ancora votare anche in privato (solo per amministratori)\n" +
 					"/incremento - Invia un messaggio taggando solo i membri del proprio team che devono ancora attivare l'incremento nell'assalto anche in privato\n" +
 					"/chiedoaiuto - Invia un messaggio taggando solo i membri disponibili ad uno scambio nel dungeon\n" +
 					"/chiamateam - Invia un messaggio taggando tutti i membri del proprio team anche in privato\n" +
@@ -1574,6 +1575,74 @@ bot.onText(/^\/votaparty$/, function (message, match) {
 				}
 
 				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> incita i suoi compagni del Party " + party_id + " a votare!\n" + nicklist, html);
+			});
+		});
+	});
+});
+
+bot.onText(/^\/votaparty([0-9])( .+)?/, function (message, match) {
+
+	if (!checkSpam(message))
+		return;
+
+	if (message.chat.id > 0){
+		bot.sendMessage(message.from.id, "Questo comando può essere usato solo nei gruppi");
+		return;
+	}
+	
+	var party_id = parseInt(match[1]);
+
+	if ((isNaN(party_id)) || (party_id < 1)){
+		bot.sendMessage(message.from.id, "Numero party non valido");
+		return;
+	}
+
+	connection.query('SELECT player_id, team_id, role FROM team_player WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0){
+			bot.sendMessage(message.from.id, "Non sei in team");
+			return;
+		}
+
+		var role = rows[0].role;
+		var team_id = rows[0].team_id;
+		var sym = "";
+
+		if (rows[0].role == 0){
+			bot.sendMessage(message.from.id, "Solo l'amministratore o il vice possono utilizzare questa funzione");
+			return;
+		}
+
+		connection.query('SELECT 1 FROM mission_team_party WHERE party_id = ' + party_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0){
+				console.log("Il numero del party inserito non esiste");
+				return;	
+			}
+
+			if ((rows[0].part_id == 0) && (rows[0].wait == 0)){
+				bot.sendMessage(message.chat.id, "Puoi usare questo comando solo se il party non è in attesa!");
+				return;
+			}
+
+			connection.query('SELECT P.nickname, P.chat_id FROM mission_team_party_player T, player P WHERE T.player_id = P.id AND T.party_id = ' + party_id + ' AND T.team_id = ' + team_id + ' AND answ_id = 0', function (err, rows, fields) {
+				if (err) throw err;
+
+				var nicklist = "";
+
+				if (Object.keys(rows).length == 0){
+					bot.sendMessage(message.chat.id, "Non manca nessun compagno!");
+					return;
+				}
+
+				for (i = 0; i < Object.keys(rows).length; i++){
+					nicklist += "@" + rows[i].nickname + " ";
+					bot.sendMessage(rows[i].chat_id, "<b>" + message.from.username + "</b> ti incita a votare per l'incarico!", html);
+				}
+
+				bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> incita il Party " + party_id + " a votare!\n" + nicklist, html);
 			});
 		});
 	});
@@ -7180,11 +7249,15 @@ bot.onText(/^\/statoincarichi/, function (message, match) {
 							time_end = "";
 							if (rows[i].mission_time_end != null){
 								var d = new Date(rows[i].mission_time_end);
+								var now = new Date();
 								var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-								var wait_text = "";
+								var wait_text = "Prossima scelta alle";
+								if (d.getTime() < now.getTime())
+									wait_text = "Scelta in attesa dalle";
+								var wait_icon = "";
 								if (rows[i].wait == 1)
-									wait_text = " ❗️";
-								time_end = "Prossima scelta alle " + long_date + wait_text + "\n";
+									wait_icon = " ❗️";
+								time_end = wait_text + " " + long_date + wait_icon + "\n";
 							}
 							time_next = "";
 							if (rows[i].mission_time_limit != null){
