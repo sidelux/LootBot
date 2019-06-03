@@ -1614,7 +1614,7 @@ bot.onText(/^\/votaparty([0-9])( .+)?/, function (message, match) {
 			return;
 		}
 
-		connection.query('SELECT 1 FROM mission_team_party WHERE party_id = ' + party_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
+		connection.query('SELECT part_id, wait, assigned_to FROM mission_team_party WHERE party_id = ' + party_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0){
@@ -5512,7 +5512,7 @@ function updateShop(message, code, isId, customQueryMessage){
 		}
 		code = shopCode[0].code;
 	}
-	connection.query('SELECT public_shop.id, player.id As player_id, player.nickname, quantity, item.name, price, massive, protected, public_shop.description, item_id FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code + ' ORDER BY item.name', function (err, rows, fields) {
+	connection.query('SELECT public_shop.id, player.id As player_id, player.nickname, quantity, item.name, price, massive, protected, public_shop.description, item_id, time_end FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code + ' ORDER BY item.name', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0) {
@@ -5526,6 +5526,7 @@ function updateShop(message, code, isId, customQueryMessage){
 		var name = "";
 		var total_price = 0;
 		var pQnt = 0;
+		var qntTot = 0;
 		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 			name = cutTextW(rows[i].name);
 			iKeys.push([{
@@ -5536,6 +5537,7 @@ function updateShop(message, code, isId, customQueryMessage){
 			if (pQnt > rows[i].quantity)
 				pQnt = rows[i].quantity;
 			total_price += parseInt(rows[i].price*pQnt);
+			qntTot += pQnt;
 		}
 
 		if (rows[0].massive != 0){
@@ -5555,6 +5557,9 @@ function updateShop(message, code, isId, customQueryMessage){
 
 		var d = new Date();
 		var short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
+		
+		var d = new Date(rows[0].time_end);
+		var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
 
 		var protected = "";
 		if (rows[0].protected == 1)
@@ -5563,7 +5568,7 @@ function updateShop(message, code, isId, customQueryMessage){
 		if (rows[0].description != null)
 			description = "\n<i>" + rows[0].description + "</i>";
 
-		var text = "Negozio di " + rows[0].nickname + " aggiornato alle " + short_date + "!" + protected + description;
+		var text = "<b>Negozio di " + rows[0].nickname + "</b>\nAggiornato alle " + short_date + "\nScadrà alle " + long_date + "\nContiene " + formatNumber(qntTot) + " oggetti" + protected + description;
 
 		bot.editMessageText(text, {
 			inline_message_id: message.inline_message_id,
@@ -10050,11 +10055,14 @@ bot.onText(/^\/zaino (.+)|^\/zaino$/, function (message, match) {
 
 				var bottext = "<b>" + message.from.username + "</b> possiedi (" + rows[0].shortname + "):\n";
 
-				connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.shortname As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND rarity.shortname = "' + rows[0].shortname + '" AND inventory.quantity > 0 ' + orderBy, function (err, rows, fields) {
+				connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.shortname As rname, inventory.quantity As num, craftable FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND rarity.shortname = "' + rows[0].shortname + '" AND inventory.quantity > 0 ' + orderBy, function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0) {
-						for (i = 0, len = Object.keys(rows).length; i < len; i++)
+						for (i = 0, len = Object.keys(rows).length; i < len; i++) {
+							if (rows[i].craftable == 0)
+								rows[i].name = "<b>" + rows[i].name + "</b>"
 							bottext = bottext + "> " + rows[i].name + " (" + rows[i].rname + ", " + formatNumber(rows[i].num) + ")\n";
+						}
 					} else
 						bottext = bottext + "Nessun oggetto di questa rarità disponibile\n";
 					if (Object.keys(bottext).length > 4000)

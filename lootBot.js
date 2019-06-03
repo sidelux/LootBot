@@ -1455,8 +1455,8 @@ bot.onText(/^\/failglobal/, function (message, match) {
 								if (err) throw err;
 
 								var minValue = 1000;
-								var minText = "punti esperienza ottenuti";
-								var text = "le pietre base ottenute dalle cave saranno dimezzate";
+								var minText = "mob uccisi in dungeon";
+								var text = "il costo per il craft è aumentato del 50%!";
 
 								connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.reborn > 1 AND P.account_id NOT IN (SELECT account_id FROM banlist) AND A.value < ' + minValue + ' GROUP BY A.player_id ORDER BY val DESC', function (err, rows, fields) {
 									if (err) throw err;
@@ -14323,7 +14323,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 bot.onText(/stato dungeon/i, function (message){
 	var dBack = {
-		parse_mode: "Markdown",
+		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
 			keyboard: [["Torna al dungeon"], ["Torna al menu"]]
@@ -14377,7 +14377,7 @@ bot.onText(/stato dungeon/i, function (message){
 					var players = "";
 					var player_num = 0;
 					if (Object.keys(rows).length > 0) {
-						players = "\nEsploratori al suo interno:\n";
+						players = "\n\nEsploratori al suo interno:\n";
 						player_num = Object.keys(rows).length;
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 							if (rows[i].room_id > rooms)
@@ -14390,7 +14390,7 @@ bot.onText(/stato dungeon/i, function (message){
 					var cursed_text = "";
 					if (cursed == 1)
 						cursed_text = " 🧨";
-					bot.sendMessage(message.chat.id, "*" + dungeon_name + "*" + cursed_text + "\nCi sono " + player_num + " esploratori al suo interno\nTi trovi nella stanza numero " + room_id + last_dir_txt + "\nCrollo dungeon tra " + toTime(dungeon_tot, 0) + "\nCrollo istanza tra " + toTime(instance_tot, 0) + players, dBack);
+					bot.sendMessage(message.chat.id, "<b>" + dungeon_name + "</b>" + cursed_text + "\nCi sono " + player_num + " esploratori al suo interno\nTi trovi nella stanza numero " + room_id + last_dir_txt + "\nCrollo dungeon tra " + toTime(dungeon_tot, 0) + "\nCrollo istanza tra " + toTime(instance_tot, 0) + players, dBack);
 				});
 			});
 		});
@@ -15665,8 +15665,6 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																						if ((player_weapon_id == 264) || (player_weapon2_id == 266) || (player_weapon3_id == 272))
 																							setAchievement(player_id, 76, 1);
-
-																						globalAchievement(player_id, 1);
 
 																						var exp_text = "";
 																						if (exp > 0)
@@ -33239,10 +33237,18 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 		var player_id = rows[0].id;
 		var gems = rows[0].gems;
 		var global_end = rows[0].global_end;
+		
+		var kbBack = {
+			parse_mode: "HTML",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Torna alla piazza"], ["Torna al menu"]]
+			}
+		};
 
 		var d = new Date();
 		if ((d.getHours() < 9) || (d.getHours() > 22)) { //9-23
-			bot.sendMessage(message.chat.id, "Il Contrabbandiere non è in piazza a quest'ora...", back);
+			bot.sendMessage(message.chat.id, "Il Contrabbandiere non è in piazza a quest'ora...", kbBack);
 			return;
 		}
 
@@ -40317,6 +40323,13 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 						}
 
 						cost = cost * quantity;
+						var cost_text = "";
+						if (global_end == 1){
+							cost += cost*0.5;
+							cost = Math.round(cost);
+							cost_text = " (aumentati per malus globale)";
+						}
+						
 						craftexp = craftexp * quantity;
 
 						/*
@@ -40381,7 +40394,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 						else
 							matRcnt_txt = "\nNon possiedi questo oggetto";
 
-						bot.sendMessage(message.chat.id, "Spenderai *" + formatNumber(cost) + "* § e consumerai *" + quantity + "* " + copy + " dei seguenti oggetti:\n> " + n1 + " (" + r1 + ", " + q1 + ")" + s1 + "\n> " + n2 + " (" + r2 + ", " + q2 + ")" + s2 + "\n> " + n3 + " (" + r3 + ", " + q3 + ")" + s3 + matRcnt_txt, kb).then(function () {
+						bot.sendMessage(message.chat.id, "Spenderai *" + formatNumber(cost) + "* §" + cost_text + " e consumerai *" + quantity + "* " + copy + " dei seguenti oggetti:\n> " + n1 + " (" + r1 + ", " + q1 + ")" + s1 + "\n> " + n2 + " (" + r2 + ", " + q2 + ")" + s2 + "\n> " + n3 + " (" + r3 + ", " + q3 + ")" + s3 + matRcnt_txt, kb).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
 
 								var res = answer.text.toLowerCase();
@@ -40394,11 +40407,12 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 										if (err) throw err;
 
 										money = rows[0].money;
+										
 										connection.query('SELECT name FROM item WHERE id = ' + mat[0], function (err, rows, fields) {
 											if (err) throw err;
+											
 											var cnt = getItemCnt(player_id, mat[0]);
 											if (cnt < quantity) {
-
 												craft_fail = {
 													parse_mode: "Markdown",
 													reply_markup: {
@@ -40412,9 +40426,9 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 											}
 											connection.query('SELECT name FROM item WHERE id = ' + mat[1], function (err, rows, fields) {
 												if (err) throw err;
+												
 												var cnt2 = getItemCnt(player_id, mat[1]);
 												if (cnt2 < quantity) {
-
 													craft_fail = {
 														parse_mode: "Markdown",
 														reply_markup: {
@@ -40428,9 +40442,9 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 												}
 												connection.query('SELECT name FROM item WHERE id = ' + mat[2], function (err, rows, fields) {
 													if (err) throw err;
+													
 													var cnt3 = getItemCnt(player_id, mat[2]);
 													if (cnt3 < quantity) {
-
 														craft_fail = {
 															parse_mode: "Markdown",
 															reply_markup: {
@@ -41314,7 +41328,7 @@ bot.onText(/evento della luna/i, function (message) {
 			"> Avverti i consigli della Luna Dorata e ti sovvengono in sogno mete con *tesori* piu grandi\n" +
 			"> L’influenza della Luna Dorata ha aumentato la possibilità di trovare piu *pietre*\n" +
 			"> La luce della Luna Dorata dona ai viaggiatori di *Dungeon* la possibilità di raddoppiare il loro Rango\n" +
-			"> Il *Contrabbandiere* non ama molto la Luce della Luna Dorata e questo evento raro, in vista dell’aumento degli avventurieri, lo porta a valutare, in alcuni momenti, le sue offerte al doppio del prezzo\n" +
+			"> Il *Contrabbandiere* ama molto la Luce della Luna Dorata e questo evento raro, in vista dell’aumento degli avventurieri, lo porta a valutare, in alcuni momenti, le sue offerte al doppio del prezzo\n" +
 			"> I mandanti degli Incarichi, se si sentono ispirati dalla Luna Dorata, possono raddoppiare la ricompensa di Punti Anima al suo completamento\n" +
 			"> Inoltre solo durante il weekend della luna, le Monete Lunari ottenute grazie alle donazioni sono raddoppiate!\n" +
 			"> *Ruota* della Luna Dorata\n" +
@@ -46497,7 +46511,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 						else
 							text += formatNumber(cave_count) + " su " + formatNumber(progCave[end]) + " cave esplorate (" + formatNumber(progCaveRew[end]) + " §)\n";
 
-						var time_end = new Date("2019-06-01 12:00:00");
+						var time_end = new Date("2019-07-01 12:00:00");
 						var now = new Date();
 						var diffD = Math.floor(((time_end - now) / 1000) / 60 / 60 / 24);
 						var diffH = Math.floor(((time_end - now) / 1000) / 60 / 60);
@@ -48757,7 +48771,7 @@ function setFinishedAssaultsMob(element, index, array) {
 	connection.query('UPDATE assault SET refresh_mob = 0, mob_name = "' + mob_name + '", mob_life = ' + mob_life + ', mob_total_life = ' + mob_life + ', mob_paralyzed = 0, mob_critic = 0, is_boss = ' + is_boss + ' WHERE team_id = ' + team_id, function (err, rows, fields) {
 		if (err) throw err;
 
-		connection.query('SELECT player_id, chat_id FROM team_player, player WHERE team_player.player_id = player.id AND team_id = ' + team_id + ' ORDER BY team_player.id', function (err, rows, fields) {
+		connection.query('SELECT player_id, chat_id FROM team_player, player WHERE team_player.player_id = player.id AND holiday = 0 AND team_id = ' + team_id + ' ORDER BY team_player.id', function (err, rows, fields) {
 			if (err) throw err;
 
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
@@ -51497,8 +51511,10 @@ function setFinishedCave(element, index, array) {
 
 		var caveid = parseInt(element.cave_id) + 2;
 
+		/*
 		if (global_end == 1)
 			caveid = Math.round(caveid/2);
+		*/
 
 		if (charm_id == 603)
 			caveid += 2;
@@ -51669,6 +51685,9 @@ function setFinishedCave(element, index, array) {
 					bot.sendMessage(chat_id, "Hai ottenuto un Respiro di Morte! Che fortuna!");
 				}
 				setAchievement(element.id, 11, 1);
+				
+				if (cave_gem == 0)
+					globalAchievement(element.id, totPnt);
 			});
 		});
 	});
