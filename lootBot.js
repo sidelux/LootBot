@@ -13482,6 +13482,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															if (err) throw err;
 
 															var item1_name = rows[0].name;
+															
+															var item1qnt = getItemCnt(player_id, item1);
+															var item_poss = "";
+															if (item1qnt > 0)
+																item_poss = " ✅";
 
 															connection.query('SELECT name FROM item WHERE id = ' + item2, function (err, rows, fields) {
 																if (err) throw err;
@@ -13496,7 +13501,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	}
 																};
 
-																bot.sendMessage(message.chat.id, "Non fai che un passo, una voce mite ma ferma ti paralizza:\n«Gli uomini» dice «sono artefici del proprio destino: possono commettere sempre gli stessi errori, possono fuggire costantemente da ciò che desiderano, e che magari la vita gli offre in modo generoso; oppure possono abbandonarsi e lottare per i propri sogni accettando il fatto che si presentano spesso nel momento giusto...\nL'uomo prosegue: «Io sono l'Alchimista dell'Ovest e ti chiedo, giovane " + gender_text_g + ": scambieresti il tuo *" + item1_name + "* per *" + item2_name + "*?»", dOptions).then(function () {
+																bot.sendMessage(message.chat.id, "Non fai che un passo, una voce mite ma ferma ti paralizza:\n«Io sono l'Alchimista dell'Ovest e ti chiedo, giovane " + gender_text_g + ": scambieresti il tuo *" + item1_name + "*" + item_poss + " per *" + item2_name + "*?»", dOptions).then(function () {
 																	answerCallbacks[message.chat.id] = function (answer) {
 																		if (answer.text == "Si") {
 
@@ -14094,7 +14099,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															var text = "_Scricchiolando_ la leva emette un rumore inquietante...\n";
 
 															if ((day == 1) || (day == 2)) {				// lunedì-martedì
-																var exist = connection_sync.query("SELECT 1 FROM event_dust_status WHERE player_id = " + player_id);
+																var exist = connection_sync.query("SELECT 1 FROM event_dust_status WHERE extracting = 1 AND player_id = " + player_id);
 																if (Object.keys(exist).length > 0){
 																	connection.query('UPDATE event_dust_status SET `generated` = 0, notified = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
@@ -37429,8 +37434,8 @@ bot.onText(/ricicla/i, function (message) {
 				return;
 			}
 
-			if ((qnt < 5) || (qnt > 50)){
-				bot.sendMessage(message.chat.id, "Quantità non valida: minimo 5, massimo 50.", back);
+			if ((qnt < 5) || (qnt > 500)){
+				bot.sendMessage(message.chat.id, "Quantità non valida: minimo 5, massimo 500.", back);
 				return;
 			}
 
@@ -44848,6 +44853,14 @@ bot.onText(/inserisci il nickname|ispeziona: /i, function (message) {
 				return;
 			}
 		}
+		
+		var kbBack = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Torna al rifugio"], ["Torna al menu"]]
+			}
+		};
 
 		var myexp = rows[0].exp;
 		var lev = Math.floor(myexp / 10);
@@ -44962,7 +44975,7 @@ bot.onText(/inserisci il nickname|ispeziona: /i, function (message) {
 						return;
 					}
 
-					bot.sendMessage(message.chat.id, "Inserisci il nickname del giocatore da sfidare.\n*OPPURE* puoi ispezionare un giocatore scrivendo *Ispeziona: Nomeutente*", back).then(function () {
+					bot.sendMessage(message.chat.id, "Inserisci il nickname del giocatore da sfidare.\n*OPPURE* puoi ispezionare un giocatore scrivendo *Ispeziona: Nomeutente*", kbBack).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							if (answer.text.indexOf(":") != -1)
 								return;
@@ -51639,9 +51652,9 @@ function setFinishedCave(element, index, array) {
 					if (err) throw err;
 				});
 
-				if (caveid == 0){
+				if (caveid == 0)
 					bot.sendMessage(chat_id, "Hai completato l'esplorazione della cava ma non hai ottenuto alcuna pietra!");
-				} else {
+				else {
 					if ((stone1+stone1e) > 0){
 						msg += "\n> " + (stone1+stone1e) + "x Pietra Anima di Legno";
 						if (stone1e > 0)
