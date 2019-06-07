@@ -478,6 +478,7 @@ bot.onText(/^\/comandinegozio/, function (message) {
 					"/negozior - Permette di rimuovere oggetti dal negozio\n" +
 					"/negoziom - Permette di modificare oggetti inseriti nel negozio\n" +
 					"/negoziou - Permette di prolungare la scadenza del negozio\n" +
+					"/negozioref - Permette di aggiornare le quantità di tutti gli oggetti di un negozio (usa anche +/-)\n" +
 					"/negozi - Mostra tutti i propri negozi disponibili\n" +
 					"/cancellanegozio - Elimina il negozio", mark);
 });
@@ -4072,7 +4073,7 @@ bot.onText(/^\/negoziodesc (.+),(.+)|^\/negoziodesc/, function (message, match) 
 	});
 });
 
-bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|^\/negozioa ([^\s]+) (.+)|^\/negozior ([^\s]+) (.+)|^\/negoziom$|^\/negoziom ([^\s]+) (.+)|^\/negoziou (.+)/, function (message, match) {
+bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|^\/negozioa ([^\s]+) (.+)|^\/negozior ([^\s]+) (.+)|^\/negoziom$|^\/negoziom ([^\s]+) (.+)|^\/negoziou (.+)|^\/negozioref ([^\s]+) (.+)/, function (message, match) {
 
 	if (!checkSpam(message))
 		return;
@@ -4119,7 +4120,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				bot.sendMessage(message.chat.id, "Sintassi: /negozioa codice oggetto:prezzo:quantità,oggetto:prezzo:quantità,oggetto:prezzo:quantità.");
 				return;
 			}
-		} else if (message.text.indexOf("negozior") != -1) {
+		} else if ((message.text.indexOf("negozior") != -1) && (message.text.indexOf("negozioref") == -1)){
 			var code = parseInt(match[4]);
 			var text = match[5];
 
@@ -4153,6 +4154,16 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 
 			if ((text == undefined) || (text == "")) {
 				bot.sendMessage(message.chat.id, "Sintassi: /negoziou codice,codice,codice.");
+				return;
+			}
+		} else if (message.text.indexOf("negozioref") != -1) {
+			var code = parseInt(match[9]);
+			var text = match[10];
+
+			func = "refill";
+
+			if ((text == undefined) || (text == "") || (isNaN(code))) {
+				bot.sendMessage(message.chat.id, "Sintassi: /negozioref codice (+/-)quantità.");
 				return;
 			}
 		} else {
@@ -4231,6 +4242,42 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 					bot.sendMessage(message.chat.id, "Non hai il permesso per rinnovare il negozio oppure non esiste (" + code + ")");
 			}
 			return;
+		}
+		
+		if (func == "refill") {
+			var query = text;
+			var qnt = text;
+			if (text.indexOf("+") != -1){
+				query = "quantity + " + text;
+				qnt = text.replace("+", "");
+			} else if (text.indexOf("-") != -1){
+				query = "quantity - " + text;
+				qnt = text.replace("-", "");
+			}
+			
+			qnt = parseInt(qnt);
+			if (isNaN(qnt)){
+				bot.sendMessage(message.chat.id, "Valore non valido, riprova");
+				return;
+			}
+			
+			if ((qnt > 1000) || (qnt < 1)){
+				bot.sendMessage(message.chat.id, "Valore non valido, minimo 1 massimo 1000");
+				return;
+			}
+				
+			var shopQuery = connection_sync.query('SELECT 1 FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id);
+			if (Object.keys(shopQuery).length > 0) {
+				connection.query('UPDATE public_shop SET quantity = ' + query + ' WHERE code = ' + code, function (err, rows, fields) {
+					if (err) throw err;
+					connection.query('UPDATE public_shop SET quantity = 0 WHERE quantity < 0 AND code = ' + code, function (err, rows, fields) {
+						if (err) throw err;
+					});
+				});
+				bot.sendMessage(message.chat.id, "Quantità presenti nel negozio " + code + " impostate a " + qnt);
+			} else
+				bot.sendMessage(message.chat.id, "Non hai il permesso per gestire questo negozio oppure non esiste (" + code + ")");
+			return
 		}
 
 		connection.query('SELECT * FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id, function (err, rows, fields) {
