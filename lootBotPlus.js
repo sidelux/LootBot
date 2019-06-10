@@ -120,10 +120,10 @@ bot.on('message', function (message) {
 
 		if ((message.from.id != 20471035) && (message.chat.id == -1001097316494)){
 			if (!message.text.startsWith("Negozio di")) {
-				var time = Math.round((Date.now()+ms("7 days"))/1000);
+				var time = Math.round((Date.now()+ms("3 days"))/1000);
 				bot.kickChatMember(message.chat.id, message.from.id, {until_date: time}).then(function (result) {
-					bot.sendMessage(message.chat.id, message.from.username + ", non puoi scrivere in questo gruppo, sei stato bannato per 7 giorni.");
-					bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo Loot Negozi per 7 giorni perchè non hai postato un negozio");
+					bot.sendMessage(message.chat.id, message.from.username + ", non puoi scrivere in questo gruppo, sei stato bannato per 3 giorni.");
+					bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo Loot Negozi per 3 giorni perchè non hai postato un negozio");
 				});
 				bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
 					if (result != true)
@@ -501,7 +501,8 @@ bot.onText(/^\/comanditeam/, function (message) {
 					"/votaparty - Invia un messaggio taggando solo i membri del proprio party che devono ancora votare anche in privato\n" +
 					"/votaparty<numero> - Invia un messaggio taggando tutti i membri del party <numero> che devono ancora votare anche in privato (solo per amministratori)\n" +
 					"/incremento - Invia un messaggio taggando solo i membri del proprio team che devono ancora attivare l'incremento nell'assalto anche in privato\n" +
-					"/chiedoaiuto - Invia un messaggio taggando solo i membri disponibili ad uno scambio nel dungeon\n" +
+					"/chiedoaiuto - Invia un messaggio taggando solo i membri non in dungeon disponibili ad uno scambio nel dungeon\n" +
+					"/serveaiuto - Invia un messaggio taggando solo i membri in dungeon disponibili ad uno scambio nel dungeon\n" +
 					"/chiamateam - Invia un messaggio taggando tutti i membri del proprio team anche in privato\n" +
 					"/statoincarichi - Mostra un riepilogo di tutti gli incarichi in corso", mark);
 });
@@ -1778,6 +1779,75 @@ bot.onText(/^\/chiedoaiuto/, function (message, match) {
 						nicklist += "> @" + rows[i].nickname + " (R" + (rows[i].reborn-1) + ", Rango " + formatNumber(rows[i].rank) + ")\n";
 
 					bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> (R" + (reborn-1) + ", Rango " + formatNumber(rank) + "), in esplorazione del dungeon " + dungeon_name + " stanza " + dungeon_room + "/" + dungeon_tot_room + " (crollerà alle " + finish_date + ") chiede aiuto ai suoi compagni di team:\n" + nicklist, html);
+				});
+			});
+		});
+	});
+});
+
+bot.onText(/^\/serveaiuto/, function (message, match) {
+
+	if (!checkSpam(message))
+		return;
+
+	if (message.chat.id > 0){
+		bot.sendMessage(message.from.id, "Questo comando può essere usato solo nei gruppi");
+		return;
+	}
+
+	connection.query('SELECT player_id, team_id FROM team_player WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0){
+			bot.sendMessage(message.from.id, "Puoi usare questo comando solo se sei all'interno di un team!");
+			return;
+		}
+
+		var team_id = rows[0].team_id;
+		var player_id = rows[0].player_id;
+
+		connection.query('SELECT name, room_id, rooms, finish_date, finish_time FROM dungeon_status, dungeon_list WHERE dungeon_status.dungeon_id = dungeon_list.id AND player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0){
+				bot.sendMessage(message.from.id, "Puoi usare questo comando solo se sei all'interno di un dungeon!");
+				return;
+			}
+
+			var dungeon_name = rows[0].name;
+			var dungeon_room = rows[0].room_id;
+			var dungeon_tot_room = rows[0].rooms;
+			var dungeon_finish_date = new Date(rows[0].finish_date);
+			var instance_finish_time = new Date(rows[0].finish_time);
+			var finish_date = new Date();
+			
+			if (dungeon_finish_date.getTime() < instance_finish_time.getTime())
+				finish_date = dungeon_finish_date;
+			else
+				finish_date = instance_finish_time;
+			
+			finish_date = toDate("it", finish_date);
+			
+			connection.query('SELECT nickname, reborn, rank FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				
+				var reborn = rows[0].reborn;
+				var rank = rows[0].rank;
+
+				connection.query('SELECT P.nickname, P.reborn, P.rank FROM team_player T LEFT JOIN dungeon_status D ON T.player_id = D.player_id, player P WHERE T.player_id = P.id AND D.player_id IS NOT NULL AND P.reborn != 1 AND P.id != ' + player_id + ' AND T.team_id = ' + team_id + ' ORDER BY reborn ASC', function (err, rows, fields) {
+					if (err) throw err;
+
+					var nicklist = "";
+
+					if (Object.keys(rows).length == 0){
+						bot.sendMessage(message.chat.id, "Nessun compagno disponibile!");
+						return;
+					}
+
+					for (i = 0; i < Object.keys(rows).length; i++)
+						nicklist += "> @" + rows[i].nickname + " (R" + (rows[i].reborn-1) + ", Rango " + formatNumber(rows[i].rank) + ")\n";
+
+					bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> (R" + (reborn-1) + ", Rango " + formatNumber(rank) + "), in esplorazione del dungeon " + dungeon_name + " stanza " + dungeon_room + "/" + dungeon_tot_room + " (crollerà alle " + finish_date + ") offre aiuto ai suoi compagni di team:\n" + nicklist, html);
 				});
 			});
 		});
@@ -6007,8 +6077,6 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 	
 	if (custom_message.indexOf(buyer) != -1)
 		custom_message = "";
-	
-	console.log(price, buyer, custom_message);
 
 	if (buyer == "") {
 		bot.sendMessage(message.from.id, "Il parametro acquirente è obbligatorio");
@@ -8323,7 +8391,7 @@ bot.onText(/^\/posizione/, function (message, match) {
 					text = "\nSe dovesse riuscire, <b>verrà considerata</b> nelle tue statistiche!";
 				else {
 					if (global_event >= 5)
-						text += ", considerato il tuo grado dovrai impegnarti piu di un normale Lootiano!";
+						text += ", considerato il tuo status dovrai impegnarti piu di un normale Lootiano!";
 				}
 
 				connection.query('SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {

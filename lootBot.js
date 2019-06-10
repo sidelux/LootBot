@@ -4072,7 +4072,7 @@ function mainMenu(message) {
 				}
 			}
 
-			connection.query('SELECT S.room_time, S.room_id, L.rooms, TIMESTAMPDIFF(HOUR, NOW(), finish_date) As diff FROM dungeon_status S, dungeon_list L WHERE S.dungeon_id = L.id AND S.player_id = ' + player_id, function (err, rows, fields) {
+			connection.query('SELECT S.room_time, S.room_id, L.rooms, TIMESTAMPDIFF(HOUR, NOW(), finish_date) As diff, finish_time FROM dungeon_status S, dungeon_list L WHERE S.dungeon_id = L.id AND S.player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				var min = 0;
@@ -4081,16 +4081,17 @@ function mainMenu(message) {
 				var room_tot_num = 0;
 				var dungeon_min = -1;
 				var dungeon_diff = "";
+				var dungeon_finish_time;
 				if (Object.keys(rows).length > 0) {
 					room_time = rows[0].room_time;
-					if (rows[0].room_time != null) {
-						var now = new Date();
+					var now = new Date();
+					if (rows[0].room_time != null)
 						dungeon_min = Math.round(((new Date(room_time) - now) / 1000) / 60);
-					}
 					if (rows[0].diff <= 5)
 						dungeon_diff = " 🕐";
 					room_num = rows[0].room_id;
 					room_tot_num = rows[0].rooms;
+					dungeon_finish_time = Math.round(((new Date(rows[0].finish_time) - now) / 1000) / 60 / 60);
 				}
 
 				if (crazyMode == 0) {
@@ -4242,7 +4243,7 @@ function mainMenu(message) {
 															room_txt = "Stanza finale";
 														if (dungeon_min == 0)
 															dungeon_min = "meno di 1";
-														msgtext = msgtext + "\n🛡 Prossima stanza tra " + dungeon_min + " minut" + plur + " (" + room_txt + ")" + dungeon_diff;
+														msgtext = msgtext + "\n🛡 Prossima stanza tra " + dungeon_min + " minut" + plur + " (" + room_txt + ")" + dungeon_diff + " 💥 " + dungeon_finish_time + " ore";
 													}
 													if ((room_time == null) && (dungeon_time == null)) {
 														var room_txt = room_num + "/" + room_tot_num;
@@ -14444,7 +14445,7 @@ bot.onText(/usa varco/i, function (message){
 		var d = new Date(dungeon_time);
 		var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
 
-		bot.sendMessage(message.chat.id, "Puoi tornare nei dungeon alle " + short_date + "\nVuoi utilizzare un Varco Temporale per annullare l'attesa?\nNe possiedi " + getItemCnt(player_id, 645) + ", puoi utilizzarlo ancora " + (3-rows[0].dungeon_skip) + " volte prima che si surriscaldi", dVarco).then(function () {
+		bot.sendMessage(message.chat.id, "Puoi tornare nei dungeon alle " + short_date + "\nVuoi utilizzare un Varco Temporale per annullare l'attesa?\nNe possiedi " + getItemCnt(player_id, 645) + ", puoi utilizzarli ancora " + (3-rows[0].dungeon_skip) + " volte prima che la struttura spazio-temporale si laceri", dVarco).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text.toLowerCase() == "si") {
 
@@ -14608,6 +14609,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 		var player_charm_id = rows[0].charm_id;
 		var global_end = rows[0].global_end;
 		var now_rank = rows[0].rank;
+		var refilled = rows[0].refilled;
 
 		var critical = parseInt(rows[0].weapon_crit);
 		var critical_armor = parseInt(rows[0].weapon2_crit);
@@ -15901,44 +15903,64 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																			var mylifesum = player_life - damage;
 																			if (mylifesum <= 0) {
-																				connection.query('UPDATE player SET life = life-' + damage + ', paralyzed = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+																				connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 6', function (err, rows, fields) {
 																					if (err) throw err;
-																					connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
-																						if (err) throw err;
 
-																						if (extra != "")
-																							bot.sendMessage(message.chat.id, "Il mostro " + extra + " e ti ha ucciso, vieni riportato all'entrata del dungeon.\nIl tuo rango viene ridotto.", back);
-																						else
-																							bot.sendMessage(message.chat.id, "Sei stato ucciso dal mostro, vieni riportato all'entrata del dungeon.\nIl tuo rango viene ridotto.", back);
-
-																						var d = new Date();
-																						d.setHours(d.getHours() + wait_dungeon_long);
-																						var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-
-																						connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
-																							if (err) throw err;
-																						});
-																						connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
-																							if (err) throw err;
-																						});
-
-																						if (cursed == 1){
-																							if (rank == 1) {
-																								connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																					if (Object.keys(rows).length > 0) {
+																						if (rows[0].ability_level > 0){
+																							var att = Math.ceil(rows[0].ability_level / 2);
+																							if ((class_id == 5) && (reborn == 5))
+																								att += 5;
+																							if (refilled < att) {
+																								var refill = Math.floor(player_total_life * (rows[0].ability_level / 10)); // Cura = livello*10%
+																								connection.query('UPDATE player SET refilled = refilled+1, life = ' + refill + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
+																									bot.sendMessage(message.chat.id, "Il mostro ti colpisce mortalmente ma grazie all'Intervento Divino torni in battaglia con " + formatNumber(refill) + "/" + formatNumber(player_total_life) + " hp! (" + (att-(refilled+1)) + " residui)", dBattle);
 																								});
-																							} else if (rank > 1) {
-																								connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
-																									if (err) throw err;
-																								});
-																							}
-																						} else {
-																							if (rank > 0) {
-																								connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
-																									if (err) throw err;
-																								});
+																								return;
 																							}
 																						}
+																					}
+																				
+																					connection.query('UPDATE player SET life = life-' + damage + ', paralyzed = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+																						if (err) throw err;
+																						connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+																							if (err) throw err;
+
+																							if (extra != "")
+																								bot.sendMessage(message.chat.id, "Il mostro " + extra + " e ti ha ucciso, vieni riportato all'entrata del dungeon.\nIl tuo rango viene ridotto.", back);
+																							else
+																								bot.sendMessage(message.chat.id, "Sei stato ucciso dal mostro, vieni riportato all'entrata del dungeon.\nIl tuo rango viene ridotto.", back);
+
+																							var d = new Date();
+																							d.setHours(d.getHours() + wait_dungeon_long);
+																							var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+																							connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
+																								if (err) throw err;
+																							});
+																							connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																								if (err) throw err;
+																							});
+
+																							if (cursed == 1){
+																								if (rank == 1) {
+																									connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																										if (err) throw err;
+																									});
+																								} else if (rank > 1) {
+																									connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																										if (err) throw err;
+																									});
+																								}
+																							} else {
+																								if (rank > 0) {
+																									connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																										if (err) throw err;
+																									});
+																								}
+																							}
+																						});
 																					});
 																				});
 																				return;
@@ -45354,11 +45376,11 @@ bot.onText(/migliora rifugio/i, function (message) {
 			level = [147, 145, 148];
 			level_money = 3000;
 		} else if ((house_id + 1) == 4) {
-			level_text = "> Progetto di Costruzione\n> Titanio\n> Marmo";
+			level_text = "> Progetto di Costruzione\n> Titanite\n> Marmo";
 			level = [147, 149, 148];
 			level_money = 4500;
 		} else if ((house_id + 1) == 5) {
-			level_text = "> Progetto di Costruzione\n> Titanio\n> Oro Nero";
+			level_text = "> Progetto di Costruzione\n> Titanite\n> Oro Nero";
 			level = [147, 149, 105];
 			level_money = 7000;
 		} else if ((house_id + 1) == 6) {
@@ -45385,9 +45407,9 @@ bot.onText(/migliora rifugio/i, function (message) {
 		else if ((house_id + 1) == 3)
 			level_text = "> Progetto di Costruzione " + check1 + "\n> Materiale da Costruzione " + check2 + "\n> Marmo " + check3;
 		else if ((house_id + 1) == 4)
-			level_text = "> Progetto di Costruzione " + check1 + "\n> Titanio " + check2 + "\n> Marmo " + check3;
+			level_text = "> Progetto di Costruzione " + check1 + "\n> Titanite " + check2 + "\n> Marmo " + check3;
 		else if ((house_id + 1) == 5)
-			level_text = "> Progetto di Costruzione " + check1 + "\n> Titanio " + check2 + "\n> Oro Nero " + check3;
+			level_text = "> Progetto di Costruzione " + check1 + "\n> Titanite " + check2 + "\n> Oro Nero " + check3;
 		else if ((house_id + 1) == 6)
 			level_text = "> Progetto Definitivo " + check1 + "\n> Congegno Parallelo " + check2 + "\n> Cella Blindata " + check3;
 
