@@ -16538,8 +16538,17 @@ bot.onText(/Completa immediatamente/i, function (message) {
 
 							connection.query('SELECT gems FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
+								
+								var kbBack = {
+									parse_mode: "Markdown",
+									reply_markup: {
+										resize_keyboard: true,
+										keyboard: [["Emporio"], ["Torna al menu"]]
+									}
+								};
+								
 								if (rows[0].gems < 2) {
-									bot.sendMessage(message.chat.id, "Non hai abbastanza 💎.", back);
+									bot.sendMessage(message.chat.id, "Non hai abbastanza 💎.", kbBack);
 									return;
 								}
 
@@ -16611,8 +16620,17 @@ bot.onText(/Concludi immediatamente/i, function (message) {
 								bot.sendMessage(message.chat.id, "Non sei più in cava.", back);
 								return;
 							}
+							
+							var kbBack = {
+								parse_mode: "Markdown",
+								reply_markup: {
+									resize_keyboard: true,
+									keyboard: [["Emporio"], ["Torna al menu"]]
+								}
+							};
+							
 							if (rows[0].gems < num) {
-								bot.sendMessage(message.chat.id, "Non hai abbastanza 💎.", back);
+								bot.sendMessage(message.chat.id, "Non hai abbastanza 💎.", kbBack);
 								return;
 							}
 
@@ -37559,7 +37577,16 @@ bot.onText(/ricicla/i, function (message) {
 										 (rows[0].id == 700) || (rows[0].id == 701) || (rows[0].id == 702)))
 										setAchievement(player_id, 72, calc_qnt);
 								};
-								bot.sendMessage(message.chat.id, text, kb2);
+								
+								var kb3 = {
+									parse_mode: "Markdown",
+									reply_markup: {
+										resize_keyboard: true,
+										keyboard: [["/ricicla " + oggetto + "," + qnt], ["Ricicla Ancora"], ["Torna al menu"]]
+									}
+								};
+								
+								bot.sendMessage(message.chat.id, text, kb3);
 							});
 						});
 					};
