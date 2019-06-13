@@ -1272,69 +1272,63 @@ bot.onText(/^\/gruppi/, function (message) {
 
 														bot.getChatMembersCount(-1001167682606).then(function (data) {
 															var c17 = data; //music
-															console.log("Next Aste");
+															console.log("Next Nabbi");
 
-															bot.getChatMembersCount(-1001179385319).then(function (data) {
-																var c18 = data; //aste
-																console.log("Next Nabbi");
+															bot.getChatMembersCount(-1001332170267).then(function (data) {
+																var c19 = data; //nabbi
+																console.log("Next Lootgames");
 
-																bot.getChatMembersCount(-1001332170267).then(function (data) {
-																	var c19 = data; //nabbi
-																	console.log("Next Lootgames");
+																bot.getChatMembersCount(-1001487835665).then(function (data) {
+																	var c20 = data; //lootgames
 
-																	bot.getChatMembersCount(-1001487835665).then(function (data) {
-																		var c20 = data; //lootgames
-																		
-																		bot.getChatMembersCount(-1001482029556).then(function (data) {
-																			var c21 = data; //uno scommesse
+																	bot.getChatMembersCount(-1001482029556).then(function (data) {
+																		var c21 = data; //uno scommesse
 
-																			if (message.chat.id < 0)
-																				bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
+																		if (message.chat.id < 0)
+																			bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
 
-																			bot.sendMessage(message.from.id, "<b>Ufficiali</b>\n" +
-																							"Canale principale per aggiornamenti: @LootBotAvvisi\n" +
+																		bot.sendMessage(message.from.id, "<b>Ufficiali</b>\n" +
+																						"Canale principale per aggiornamenti: @LootBotAvvisi\n" +
 
-																							"\n<b>Bot</b>\n" +
-																							"Liste oggetti e alberi automatici: @craftlootbot\n" +
-																							"Qualcuno sempre a disposizione: @OracoloLootBot\n" +
-																							"Calcolo Loot Combat Rating: @lootcrbot\n" +
-																							"Tool per mercato e cronologie: @ToolsForLootBot\n" +
-																							"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
-																							"Tastiera per inviare facilmente i comandi del plus: @LootPlusKeyboardBot\n" +
+																						"\n<b>Bot</b>\n" +
+																						"Liste oggetti e alberi automatici: @craftlootbot\n" +
+																						"Qualcuno sempre a disposizione: @OracoloLootBot\n" +
+																						"Calcolo Loot Combat Rating: @lootcrbot\n" +
+																						"Tool per mercato e cronologie: @ToolsForLootBot\n" +
+																						"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
+																						"Tastiera per inviare facilmente i comandi del plus: @LootPlusKeyboardBot\n" +
 
-																							"\n<b>Altro</b>\n" +
-																							"<a href='https://telegra.ph/Guida-alle-LootBot-API-04-06'>LootBot Api v2</a>\n" +
+																						"\n<b>Altro</b>\n" +
+																						"<a href='https://telegra.ph/Guida-alle-LootBot-API-04-06'>LootBot Api v2</a>\n" +
 
-																							"\n<b>Gruppi</b>\n" +
-																							"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
-																							"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
-																							"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
-																							"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
-																							"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
-																							"<a href='https://t.me/joinchat/AVqFykBMfmvrULAUQv-MmQ'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
-																							"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
-																							"<a href='https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
-																							"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
-																							"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
-																							"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
-																							"<a href='https://t.me/joinchat/CXTRTE60M2WLQR2fvG_q7A'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
-																							"@Adesmappers (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
-																							"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ") - La musica ed il diverimento di Lootia!\n" +
-																							"@LootAste (" + c18 + ") - Gruppo dedicato alle aste\n" +
-																							"<a href='https://t.me/joinchat/B8_tHk9nThsWfDL-k-Fazw'>Loot Nabbi</a> (" + c19 + ") - Dedicato ai nabbi di Lootia!\n" +
-																							"<a href='https://t.me/joinchat/ByIyqhPdW14SZX4y7PiRbw'>Loot Gheims</a> (" + c20 + ") - Gruppo OT con giochi per tutti i gusti, specie giochi di ruolo\n" +
-																							"<a href='https://t.me/joinchat/HOnifBab5PT-2Qj2Lq0ZkQ'>Uno Scommesse</a> (" + c21 + ") - Vieni a scommettere o semplicemente giocare al famosissimo gioco Uno insieme a noi!\n" +
+																						"\n<b>Gruppi</b>\n" +
+																						"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
+																						"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
+																						"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
+																						"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
+																						"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
+																						"<a href='https://t.me/joinchat/AVqFykBMfmvrULAUQv-MmQ'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
+																						"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
+																						"<a href='https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
+																						"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
+																						"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
+																						"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
+																						"<a href='https://t.me/joinchat/CXTRTE60M2WLQR2fvG_q7A'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
+																						"@Adesmappers (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
+																						"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ") - La musica ed il diverimento di Lootia!\n" +
+																						"<a href='https://t.me/joinchat/B8_tHk9nThsWfDL-k-Fazw'>Loot Nabbi</a> (" + c19 + ") - Dedicato ai nabbi di Lootia!\n" +
+																						"<a href='https://t.me/joinchat/ByIyqhPdW14SZX4y7PiRbw'>Loot Gheims</a> (" + c20 + ") - Gruppo OT con giochi per tutti i gusti, specie giochi di ruolo\n" +
+																						"<a href='https://t.me/joinchat/HOnifBab5PT-2Qj2Lq0ZkQ'>Uno Scommesse</a> (" + c21 + ") - Vieni a scommettere o semplicemente giocare al famosissimo gioco Uno insieme a noi!\n" +
 
-																							"\n<b>Canali</b>\n" +
-																							"@lootstatistiche - Statistiche dettagliate di Loot!\n" +
-																							"@Suggerimenti_per_LootBot - Gruppo dove i suggerimenti vengono postati e votati dagli utenti\n" +
-																							"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
-																							"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
-																							"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
-																							"@yellowlootshop - Join for eventi free!\n" +
+																						"\n<b>Canali</b>\n" +
+																						"@lootstatistiche - Statistiche dettagliate di Loot!\n" +
+																						"@Suggerimenti_per_LootBot - Gruppo dove i suggerimenti vengono postati e votati dagli utenti\n" +
+																						"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
+																						"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
+																						"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
+																						"@yellowlootshop - Join for eventi free!\n" +
 
-																							"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
-																		});
+																						"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
 																	});
 																});
 															});
@@ -1591,7 +1585,7 @@ bot.onText(/^\/votaparty([0-9])( .+)?/, function (message, match) {
 		bot.sendMessage(message.from.id, "Questo comando può essere usato solo nei gruppi");
 		return;
 	}
-	
+
 	var party_id = parseInt(match[1]);
 
 	if ((isNaN(party_id)) || (party_id < 1)){
@@ -1751,17 +1745,17 @@ bot.onText(/^\/chiedoaiuto/, function (message, match) {
 			var dungeon_finish_date = new Date(rows[0].finish_date);
 			var instance_finish_time = new Date(rows[0].finish_time);
 			var finish_date = new Date();
-			
+
 			if (dungeon_finish_date.getTime() < instance_finish_time.getTime())
 				finish_date = dungeon_finish_date;
 			else
 				finish_date = instance_finish_time;
-			
+
 			finish_date = toDate("it", finish_date);
-			
+
 			connection.query('SELECT nickname, reborn, rank FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
-				
+
 				var reborn = rows[0].reborn;
 				var rank = rows[0].rank;
 
@@ -1820,17 +1814,17 @@ bot.onText(/^\/serveaiuto/, function (message, match) {
 			var dungeon_finish_date = new Date(rows[0].finish_date);
 			var instance_finish_time = new Date(rows[0].finish_time);
 			var finish_date = new Date();
-			
+
 			if (dungeon_finish_date.getTime() < instance_finish_time.getTime())
 				finish_date = dungeon_finish_date;
 			else
 				finish_date = instance_finish_time;
-			
+
 			finish_date = toDate("it", finish_date);
-			
+
 			connection.query('SELECT nickname, reborn, rank FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
-				
+
 				var reborn = rows[0].reborn;
 				var rank = rows[0].rank;
 
@@ -4313,7 +4307,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			}
 			return;
 		}
-		
+
 		if (func == "refill") {
 			var query = text;
 			var qnt = text;
@@ -4324,18 +4318,18 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				query = "quantity - " + text;
 				qnt = text.replace("-", "");
 			}
-			
+
 			qnt = parseInt(qnt);
 			if (isNaN(qnt)){
 				bot.sendMessage(message.chat.id, "Valore non valido, riprova");
 				return;
 			}
-			
+
 			if ((qnt > 1000) || (qnt < 1)){
 				bot.sendMessage(message.chat.id, "Valore non valido, minimo 1 massimo 1000");
 				return;
 			}
-				
+
 			var shopQuery = connection_sync.query('SELECT 1 FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id);
 			if (Object.keys(shopQuery).length > 0) {
 				connection.query('UPDATE public_shop SET quantity = ' + query + ' WHERE code = ' + code, function (err, rows, fields) {
@@ -5674,7 +5668,7 @@ function updateShop(message, code, isId, customQueryMessage){
 
 		var d = new Date();
 		var short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
-		
+
 		var d = new Date(rows[0].time_end);
 		var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
 
@@ -6050,14 +6044,19 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 	}
 
 	var price = elements[0];
-	
+
 	var reg = /(\d)k/gm;
 	if (reg.test(price))
 		price = price.replaceAll(/k/gi, '000');
-	
+
 	if (price != "tutto")
 		price = parseInt(price.replace(/\D+/gi, '').trim().replaceAll(/\./, ""));
 	
+	if (price >= 1000000000){
+		bot.sendMessage(message.from.id, "Puoi inviare al massimo 1.000.000.000 monete!");
+		return;
+	}
+
 	var buyer;
 	if (message.reply_to_message != undefined) {
 		if (Object.keys(elements).length == 3)
@@ -6074,7 +6073,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 		if (Object.keys(elements).length == 3)
 			custom_message = elements[2];
 	}
-	
+
 	if (custom_message.indexOf(buyer) != -1)
 		custom_message = "";
 
@@ -7339,9 +7338,9 @@ bot.onText(/^\/statoincarichi/, function (message, match) {
 
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var player_id = rows[0].id;
-		
+
 		connection.query('SELECT team_id FROM team_player WHERE team_id = (SELECT team_id FROM team_player WHERE player_id = ' + player_id + ') ORDER BY id', function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length == 0) {
@@ -7349,7 +7348,7 @@ bot.onText(/^\/statoincarichi/, function (message, match) {
 				return;
 			}
 			var team_id = rows[0].team_id;
-			
+
 			connection.query('SELECT role FROM team_player WHERE team_id = ' + team_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
@@ -7357,10 +7356,10 @@ bot.onText(/^\/statoincarichi/, function (message, match) {
 					bot.sendMessage(message.chat.id, "Solo l'amministratore o il vice possono utilizzare questa funzione");
 					return;
 				}
-				
+
 				connection.query('SELECT T.parts, T.title, T.duration, M.party_id, M.part_id, M.mission_time_end, M.mission_time_limit, M.wait FROM mission_team_list T, mission_team_party M WHERE T.ready = 1 AND T.id = M.assigned_to AND M.team_id = ' + team_id + ' ORDER BY T.progress_num ASC, T.duration ASC', function (err, rows, fields) {
 					if (err) throw err;
-					
+
 					var text = "*Incarichi in corso:*\n\n";
 					if (Object.keys(rows).length > 0){
 						var time_end;
@@ -7393,15 +7392,15 @@ bot.onText(/^\/statoincarichi/, function (message, match) {
 						}
 					} else
 						text = "Nessun incarico in corso";
-					
-					
+
+
 					bot.sendMessage(message.chat.id, text, mark);
 				});
 			});
 		});
 	});
 });
-		   
+
 bot.onText(/^\/statolotteria (.+)|^\/statolotteria/, function (message, match) {
 	var nickname = match[1];
 	if ((nickname == undefined) || (nickname == ""))
@@ -10244,12 +10243,12 @@ bot.onText(/^\/zainob (.+)|^\/zainoc (.+)|^\/zainob|^\/zainoc/, function (messag
 			if (Object.keys(bottext).length > 4000){
 				connection.query('SELECT rarity.shortname As rname, SUM(inventory.quantity) As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND item.craftable = ' + craftable + ' AND inventory.quantity > 0 GROUP BY rarity.id ORDER BY rarity.id ASC', function (err, rows, fields) {
 					if (err) throw err;
-					
+
 					var bottext = "<b>" + message.from.username + "</b> possiedi troppi oggetti " + craftTxt.toLowerCase() + ", per poterli visualizzare, ecco un riassunto:\n";
-					
+
 					for (i = 0, len = Object.keys(rows).length; i < len; i++)
 						bottext += "> " + rows[i].rname + ": " + formatNumber(rows[i].num) + "\n";
-					
+
 					bot.sendMessage(message.chat.id, bottext, html)
 				});
 			} else

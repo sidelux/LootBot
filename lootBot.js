@@ -4092,6 +4092,8 @@ function mainMenu(message) {
 					room_num = rows[0].room_id;
 					room_tot_num = rows[0].rooms;
 					dungeon_finish_time = Math.round(((new Date(rows[0].finish_time) - now) / 1000) / 60 / 60);
+					if (rows[0].diff < dungeon_finish_time)
+						dungeon_finish_time = rows[0].diff;
 				}
 
 				if (crazyMode == 0) {
@@ -19236,7 +19238,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 			}
 			
 			var finishD = new Date("2019-06-19 12:00:00");
-			var startD = finishD;
+			var startD = new Date(finishD);
 			
 			var finish_date = addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes()) + " del " + addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + "/" + finishD.getFullYear();
 			var finish_date_f = addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + " alle " + addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes());
@@ -19531,7 +19533,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																		if (answer.text.toLowerCase() == "si") {
 
 																			var now = new Date();
-
+																			
 																			if (finishD < now) {
 																				bot.sendMessage(message.chat.id, "La stagione è terminata! A breve riceverai il premio finale ma nel frattempo non puoi cercare altre battaglie", kbBack);
 																				return;
@@ -37575,7 +37577,7 @@ bot.onText(/ricicla/i, function (message) {
 									if ((nRarity == "D") && (item_id >= 68) && (item_id <= 73) && 
 										((rows[0].id == 705) || (rows[0].id == 703) || (rows[0].id == 704) ||
 										 (rows[0].id == 700) || (rows[0].id == 701) || (rows[0].id == 702)))
-										setAchievement(player_id, 72, calc_qnt);
+										setAchievement(player_id, 72, 1);
 								};
 								
 								var kb3 = {
@@ -43083,7 +43085,7 @@ bot.onText(/spia rifugio|spia:/i, function (message) {
 
 		var spy_description = "";
 		if (rows[0].spy_description != null)
-			spy_description = "\nPortano con sè un messaggio su una pergamena: <i>" + rows[0].spy_description + "</i>";
+			spy_description = "\nPortando con sè un messaggio su una pergamena: <i>" + rows[0].spy_description + "</i>";
 
 		if (rows[0].money < 500) {
 			bot.sendMessage(message.chat.id, "Non hai abbastanza soldi.", back);
@@ -46493,7 +46495,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 									rows[i].value = rows[i].value*reb;
 								}
 								if (rows[i].completed == 1)
-									text += "> <b>" + rows[i].name + "</b>: " + formatNumber(rows[i].value) + " " + rows[i].det + " (" + formatNumber(rows[i].reward) + " §) ✅\n";
+									text += "> ✅ <b>" + rows[i].name + "</b>: " + formatNumber(rows[i].value) + " " + rows[i].det + " (" + formatNumber(rows[i].reward) + " §)\n";
 								else {
 									text += "> <b>" + rows[i].name + "</b>: " + formatNumber(rows[i].progress) + "/" + formatNumber(rows[i].value) + " " + rows[i].det + " (" + formatNumber(rows[i].reward) + " §)\n";
 								}
