@@ -14367,7 +14367,7 @@ bot.onText(/stato dungeon/i, function (message){
 			if (last_dir != null)
 				last_dir_txt = " (" + dungeonToDesc(last_dir) + ")";
 			var now = new Date();
-			var dungeon_tot = Math.round((rows[0].finish_time - now) / 1000); // In secondi
+			var dungeon_finish = Math.round((rows[0].finish_time - now) / 1000); // In secondi
 			
 			var dungeon_id = rows[0].dungeon_id;
 		
@@ -14398,7 +14398,7 @@ bot.onText(/stato dungeon/i, function (message){
 					var cursed_text = "";
 					if (cursed == 1)
 						cursed_text = " 🧨";
-					bot.sendMessage(message.chat.id, "<b>" + dungeon_name + "</b>" + cursed_text + "\nCi sono " + player_num + " esploratori al suo interno\nTi trovi nella stanza numero " + room_id + last_dir_txt + "\nCrollo dungeon tra " + toTime(dungeon_tot, 0) + "\nCrollo istanza tra " + toTime(instance_tot, 0) + players, dBack);
+					bot.sendMessage(message.chat.id, "<b>" + dungeon_name + "</b>" + cursed_text + "\nCi sono " + player_num + " esploratori al suo interno\nTi trovi nella stanza numero " + room_id + last_dir_txt + "\nCrollo dungeon tra " + toTime(dungeon_finish, 0) + "\nCrollo istanza tra " + toTime(instance_tot, 0) + players, dBack);
 				});
 			});
 		});
@@ -16399,7 +16399,7 @@ bot.onText(/Ritorna/i, function (message) {
 							if (err) throw err;
 							connection.query('UPDATE player SET travel_id = 0, travel_time_end = NULL, exp = exp-5, travel_limit = travel_limit+1 WHERE id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
-								bot.sendMessage(message.chat.id, "Sei rientrato dal viaggio senza averlo completato.", kbBack);
+								bot.sendMessage(message.chat.id, "Hai sacrificato 5 exp e sei rientrato dal viaggio senza averlo completato.", kbBack);
 							});
 						});
 					} else if (cave_id != 0) {
@@ -16414,7 +16414,7 @@ bot.onText(/Ritorna/i, function (message) {
 							if (err) throw err;
 							connection.query('UPDATE player SET cave_id = 0, cave_time_end = NULL, exp = exp-5, cave_limit = cave_limit+1 WHERE id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
-								bot.sendMessage(message.chat.id, "Sei rientrato dalla cava senza averla completata.", kbBack);
+								bot.sendMessage(message.chat.id, "Hai sacrificato 5 exp e sei rientrato dalla cava senza averla completata.", kbBack);
 							});
 						});
 					}
@@ -16483,7 +16483,7 @@ bot.onText(/Termina subito/i, function (message) {
 
 						connection.query('UPDATE player SET gems = gems-1, mission_time_end = "' + long_date + '", mission_gem = 1, event = 1 WHERE id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
-							bot.sendMessage(message.chat.id, "Fatto! Attendi qualche secondo per ricevere il premio.", back);
+							bot.sendMessage(message.chat.id, "Missione terminata! Attendi qualche secondo per ricevere il premio...", back);
 						});
 					});
 				}
@@ -19679,7 +19679,6 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																							var extra = "";
 																							if (chest == 1) {
 																								extra = " uno Scrigno Scaglia!";
-
 																								addChest(player_id2, 9);
 																							} else if (chest > 1) {
 																								extra = " " + chest + " Scrigni Scaglia!";
@@ -32752,7 +32751,7 @@ bot.onText(/ricercato/i, function (message) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length == 0) {
-						connection.query('SELECT nickname, from_id, COUNT(from_id) FROM heist_history, player, event_wanted_status WHERE account_id NOT IN (SELECT account_id FROM banlist) AND fail = 0 AND event_wanted_status.player_id = player.id AND player.id = heist_history.from_id AND player.id != ' + player_id + ' AND time between DATE_SUB(now(),INTERVAL 2 MONTH) AND NOW() GROUP BY from_id ORDER BY COUNT(from_id) DESC LIMIT 200', function (err, rows, fields) {
+						connection.query('SELECT nickname, from_id, COUNT(from_id) FROM heist_history, player, event_wanted_status WHERE account_id NOT IN (SELECT account_id FROM banlist) AND fail = 0 AND event_wanted_status.player_id = player.id AND player.id = heist_history.from_id AND player.id != ' + player_id + ' AND time BETWEEN DATE_SUB(now(),INTERVAL 2 MONTH) AND NOW() GROUP BY from_id ORDER BY COUNT(from_id) DESC LIMIT 200', function (err, rows, fields) {
 							if (err) throw err;
 
 							var len = Object.keys(rows).length;
@@ -37566,7 +37565,8 @@ bot.onText(/ricicla/i, function (message) {
 								setAchievement(player_id, 15, calc_qnt);
 
 								var text = "Hai riciclato " + qnt + "x " + oggetto + " ed hai ottenuto:\n";
-
+								var achQnt = 0;
+								
 								for (var i = 0; i < calc_qnt; i++) {
 									var rows = connection_sync.query('SELECT id, name FROM item WHERE rarity = "' + nRarity + '" AND name != "' + oggetto + '" AND craftable = 0 ORDER BY RAND()');
 
@@ -37577,8 +37577,11 @@ bot.onText(/ricicla/i, function (message) {
 									if ((nRarity == "D") && (item_id >= 68) && (item_id <= 73) && 
 										((rows[0].id == 705) || (rows[0].id == 703) || (rows[0].id == 704) ||
 										 (rows[0].id == 700) || (rows[0].id == 701) || (rows[0].id == 702)))
-										setAchievement(player_id, 72, 1);
+										achQnt++;
 								};
+								
+								if (achQnt > 0)
+									setAchievement(player_id, 72, achQnt);
 								
 								var kb3 = {
 									parse_mode: "Markdown",
@@ -46983,10 +46986,12 @@ bot.onText(/viaggi/i, function (message) {
 
 																var short_date = addZero(now.getDate()) + "/" + addZero(now.getMonth() + 1) + "/" + now.getFullYear() + " alle " + addZero(now.getHours()) + ":" + addZero(now.getMinutes());
 																var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
+																
+																var exp = 1;
 
-																bot.sendMessage(message.chat.id, "<b>" + rows[0].name + "</b>\n" + message.from.username + ", ti aspetta un'esplorazione nella " + viaggio + " che terminerà il " + short_date + time, abort_travel_2);
+																bot.sendMessage(message.chat.id, "<b>" + rows[0].name + "</b>\n" + message.from.username + ", ti aspetta un'esplorazione nella " + viaggio + " che terminerà il " + short_date + time + " (+" + exp + " exp)", abort_travel_2);
 
-																connection.query('UPDATE player SET exp = exp+1, cave_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', cave_time_end = "' + long_date + '", cave_gem = 0 WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+																connection.query('UPDATE player SET exp = exp+' + exp + ', cave_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', cave_time_end = "' + long_date + '", cave_gem = 0 WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 																	if (err) throw err;
 																});
 															}
@@ -47012,10 +47017,12 @@ bot.onText(/viaggi/i, function (message) {
 
 																var short_date = addZero(now.getDate()) + "/" + addZero(now.getMonth() + 1) + "/" + now.getFullYear() + " alle " + addZero(now.getHours()) + ":" + addZero(now.getMinutes());
 																var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
+																
+																var exp = 1;
 
-																bot.sendMessage(message.chat.id, "<b>" + rows[0].name + "</b>\n" + message.from.username + ", ti aspetta un incredibile viaggio, " + rows[0].description + " " + short_date + time, abort_travel);
+																bot.sendMessage(message.chat.id, "<b>" + rows[0].name + "</b>\n" + message.from.username + ", ti aspetta un incredibile viaggio, " + rows[0].description + " " + short_date + time + " (+" + exp + " exp)", abort_travel);
 
-																connection.query('UPDATE `player` SET exp = exp+1, travel_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', travel_time_end = "' + long_date + '" WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+																connection.query('UPDATE player SET exp = exp+' + exp + ', travel_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', travel_time_end = "' + long_date + '" WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 																	if (err) throw err;
 																});
 															}

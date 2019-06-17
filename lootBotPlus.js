@@ -478,7 +478,7 @@ bot.onText(/^\/comandinegozio/, function (message) {
 					"/negozior - Permette di rimuovere oggetti dal negozio\n" +
 					"/negoziom - Permette di modificare oggetti inseriti nel negozio\n" +
 					"/negoziou - Permette di prolungare la scadenza del negozio\n" +
-					"/negozioref - Permette di aggiornare le quantità di tutti gli oggetti di un negozio (usa anche +/-)\n" +
+					"/negozioref - Permette di aggiornare le quantità di tutti gli oggetti di un negozio (usa anche +/-, tutti/privati/pubblici)\n" +
 					"/negozi - Mostra tutti i propri negozi disponibili\n" +
 					"/cancellanegozio - Elimina il negozio", mark);
 });
@@ -4221,12 +4221,19 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				return;
 			}
 		} else if (message.text.indexOf("negozioref") != -1) {
-			var code = parseInt(match[9]);
+			var code = match[9];
+			if ((code != "tutti") && (code != "pubblici") && (code != "privati")){
+				code = parseInt(code);
+				if (isNaN(code)){
+					bot.sendMessage(message.chat.id, "Quantità non valida, puoi usare anche tutti/pubblici/privati.");
+					return;
+				}
+			}
 			var text = match[10];
 
 			func = "refill";
 
-			if ((text == undefined) || (text == "") || (isNaN(code))) {
+			if ((text == undefined) || (text == "")) {
 				bot.sendMessage(message.chat.id, "Sintassi: /negozioref codice (+/-)quantità.");
 				return;
 			}
@@ -4311,12 +4318,15 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 		if (func == "refill") {
 			var query = text;
 			var qnt = text;
+			var sym = "";
 			if (text.indexOf("+") != -1){
-				query = "quantity + " + text;
 				qnt = text.replace("+", "");
+				query = "quantity + " + qnt;
+				sym = "+";
 			} else if (text.indexOf("-") != -1){
-				query = "quantity - " + text;
 				qnt = text.replace("-", "");
+				query = "quantity - " + qnt;
+				sym = "-";
 			}
 
 			qnt = parseInt(qnt);
@@ -4325,22 +4335,49 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				return;
 			}
 
-			if ((qnt > 1000) || (qnt < 1)){
-				bot.sendMessage(message.chat.id, "Valore non valido, minimo 1 massimo 1000");
+			if ((qnt > 1000) || (qnt < -1000)){
+				bot.sendMessage(message.chat.id, "Valore non valido, minimo -1000 massimo 1000");
 				return;
 			}
-
-			var shopQuery = connection_sync.query('SELECT 1 FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id);
-			if (Object.keys(shopQuery).length > 0) {
-				connection.query('UPDATE public_shop SET quantity = ' + query + ' WHERE code = ' + code, function (err, rows, fields) {
+			
+			if (code == "tutti"){
+				connection.query('UPDATE public_shop SET quantity = ' + query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
-					connection.query('UPDATE public_shop SET quantity = 0 WHERE quantity < 0 AND code = ' + code, function (err, rows, fields) {
+					connection.query('UPDATE public_shop SET quantity = 0 WHERE quantity < 0 AND player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 					});
 				});
-				bot.sendMessage(message.chat.id, "Quantità presenti nel negozio " + code + " impostate a " + qnt);
-			} else
-				bot.sendMessage(message.chat.id, "Non hai il permesso per gestire questo negozio oppure non esiste (" + code + ")");
+				bot.sendMessage(message.chat.id, "Quantità presenti in tutti i negozi impostate a " + sym + qnt);
+			} else if (code == "privati") {
+				connection.query('UPDATE public_shop SET quantity = ' + query + ' WHERE public = 0 AND player_id = ' + player_id, function (err, rows, fields) {
+					if (err) throw err;
+					connection.query('UPDATE public_shop SET quantity = 0 WHERE public = 0 AND quantity < 0 AND player_id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
+				});
+				bot.sendMessage(message.chat.id, "Quantità presenti in tutti i negozi privati impostate a " + sym + qnt);
+			} else if (code == "pubblici") {
+				connection.query('UPDATE public_shop SET quantity = ' + query + ' WHERE public = 1 AND player_id = ' + player_id, function (err, rows, fields) {
+					if (err) throw err;
+					connection.query('UPDATE public_shop SET quantity = 0 WHERE public = 1 AND quantity < 0 AND player_id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
+				});
+				bot.sendMessage(message.chat.id, "Quantità presenti in tutti i negozi pubblici impostate a " + sym + qnt);
+			} else {
+				var shopQuery = connection_sync.query('SELECT 1 FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id);
+				if (Object.keys(shopQuery).length > 0) {
+					connection.query('UPDATE public_shop SET quantity = ' + query + ' WHERE code = ' + code, function (err, rows, fields) {
+						if (err) throw err;
+						connection.query('UPDATE public_shop SET quantity = 0 WHERE quantity < 0 AND code = ' + code, function (err, rows, fields) {
+							if (err) throw err;
+						});
+					});
+					bot.sendMessage(message.chat.id, "Quantità presenti nel negozio " + code + " impostate a " + sym + qnt);
+				} else
+					bot.sendMessage(message.chat.id, "Non hai il permesso per gestire questo negozio oppure non esiste (" + code + ")");
+			}
+			
 			return
 		}
 
