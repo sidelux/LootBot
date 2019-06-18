@@ -410,7 +410,7 @@ callNTimes(60000, function () {
 	checkMarketDirect();
 });
 
-bot.onText(/^\/start/, function (message) {
+bot.onText(/^\/start$|^\/start@lootplusbot$/, function (message) {
 	bot.sendMessage(message.chat.id, "Questo è un bot di supporto a @lootgamebot, è utile nei gruppi. Scrivi / per visualizzare tutti i comandi disponibili!");
 });
 
@@ -4341,7 +4341,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			}
 			
 			if (code == "tutti"){
-				connection.query('UPDATE public_shop SET quantity = ' + query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+				connection.query('UPDATE public_shop SET quantity = ' + query + ', time_end = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 					connection.query('UPDATE public_shop SET quantity = 0 WHERE quantity < 0 AND player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
@@ -4349,7 +4349,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				});
 				bot.sendMessage(message.chat.id, "Quantità presenti in tutti i negozi impostate a " + sym + qnt);
 			} else if (code == "privati") {
-				connection.query('UPDATE public_shop SET quantity = ' + query + ' WHERE public = 0 AND player_id = ' + player_id, function (err, rows, fields) {
+				connection.query('UPDATE public_shop SET quantity = ' + query + ', time_end = "' + long_date + '" WHERE public = 0 AND player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 					connection.query('UPDATE public_shop SET quantity = 0 WHERE public = 0 AND quantity < 0 AND player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
@@ -4357,7 +4357,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				});
 				bot.sendMessage(message.chat.id, "Quantità presenti in tutti i negozi privati impostate a " + sym + qnt);
 			} else if (code == "pubblici") {
-				connection.query('UPDATE public_shop SET quantity = ' + query + ' WHERE public = 1 AND player_id = ' + player_id, function (err, rows, fields) {
+				connection.query('UPDATE public_shop SET quantity = ' + query + ', time_end = "' + long_date + '" WHERE public = 1 AND player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 					connection.query('UPDATE public_shop SET quantity = 0 WHERE public = 1 AND quantity < 0 AND player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
@@ -4367,7 +4367,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			} else {
 				var shopQuery = connection_sync.query('SELECT 1 FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id);
 				if (Object.keys(shopQuery).length > 0) {
-					connection.query('UPDATE public_shop SET quantity = ' + query + ' WHERE code = ' + code, function (err, rows, fields) {
+					connection.query('UPDATE public_shop SET quantity = ' + query + ', time_end = "' + long_date + '" WHERE code = ' + code, function (err, rows, fields) {
 						if (err) throw err;
 						connection.query('UPDATE public_shop SET quantity = 0 WHERE quantity < 0 AND code = ' + code, function (err, rows, fields) {
 							if (err) throw err;
