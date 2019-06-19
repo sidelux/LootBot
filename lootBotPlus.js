@@ -417,7 +417,7 @@ bot.onText(/^\/start$|^\/start@lootplusbot$/, function (message) {
 bot.onText(/^\/comandigiocatore/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per il giocatore*\n" +
 					"/giocatore o /giocatrice - Mostra la scheda giocatore\n" +
-					"/zaino - Mostra gli oggetti contenuti nello zaino (specifica anche rairità o 'consumabili')\n" +
+					"/zaino - Mostra gli oggetti contenuti nello zaino (specifica anche rarità separate da virgola o 'consumabili')\n" +
 					"/zainoc/b - Mostra gli oggetti creati/base contenuti nello zaino (specifica anche la rarità)\n" +
 					"/zainor - Mostra gli oggetti speciali posseduti (polvere, monete lunari, ecc.)\n" +
 					"/oggetto - Mostra i dettagli di un oggetto posseduto\n" +
@@ -8584,6 +8584,8 @@ bot.onText(/^\/oggetto (.+)|^\/oggetto/, function (message, match) {
 			var power_a = rows[0].power_armor;
 			var rarity = rows[0].rarity;
 			var critical = rows[0].critical;
+			var spread = rows[0].spread;
+			var spread_tot = rows[0].spread_tot;
 
 			connection.query('SELECT inventory.quantity As num FROM inventory, item WHERE item.id = inventory.item_id AND item.name = "' + oggetto + '" AND inventory.player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '") AND quantity > 0', function (err, rows, fields) {
 				if (err) throw err;
@@ -8592,27 +8594,21 @@ bot.onText(/^\/oggetto (.+)|^\/oggetto/, function (message, match) {
 				if (Object.keys(rows).length > 0)
 					posseduti = rows[0].num;
 
-				connection.query('SELECT SUM(quantity) As num, (SELECT SUM(quantity) FROM inventory) As tot FROM inventory WHERE item_id = ' + id, function (err, rows, fields) {
-					if (err) throw err;
+				var pow = "";
+				if (power != 0)
+					pow = "\n*Giocatore:* " + power + ", " + critical + "%";
+				else if (power_a != 0)
+					pow = "\n*Giocatore:* " + power_a + ", " + critical + "%";
+				else if (power_s != 0)
+					pow = "\n*Giocatore:* " + power_s + ", " + critical + "%";
 
-					var diff = Math.round((rows[0].num / rows[0].tot) * 100 * 1000) / 1000 + "%";
-
-					var pow = "";
-					if (power != 0)
-						pow = "\n*Giocatore:* " + power + ", " + critical + "%";
-					else if (power_a != 0)
-						pow = "\n*Giocatore:* " + power_a + ", " + critical + "%";
-					else if (power_s != 0)
-						pow = "\n*Giocatore:* " + power_s + ", " + critical + "%";
-
-					bot.sendMessage(message.chat.id, "*Nome oggetto:* " + name + "\n" +
-									"*Rarità:* " + rarity + pow + "\n" +
-									"*Prezzo base:* " + formatNumber(value) + " §\n" +
-									"*Prezzo massimo:* " + formatNumber(max_value) + " §\n" +
-									(est != 0 ? "*Valore:* " + formatNumber(est) + " §\n" : "") +
-									"*Posseduti:* " + formatNumber(posseduti) + "\n" +
-									"*Diffusione:* " + diff, mark);
-				});
+				bot.sendMessage(message.chat.id, "*Nome oggetto:* " + name + "\n" +
+								"*Rarità:* " + rarity + pow + "\n" +
+								"*Prezzo base:* " + formatNumber(value) + " §\n" +
+								"*Prezzo massimo:* " + formatNumber(max_value) + " §\n" +
+								(est != 0 ? "*Valore:* " + formatNumber(est) + " §\n" : "") +
+								"*Posseduti:* " + formatNumber(posseduti) + "\n" +
+								"*Diffusione:* " + spread + "% (" + spread_tot + "%)", mark);
 			});
 		} else {
 			bot.sendMessage(message.chat.id, "Non ho trovato l'oggetto specificato");
@@ -10192,7 +10188,15 @@ bot.onText(/^\/zaino (.+)|^\/zaino$/, function (message, match) {
 				});
 			});
 		} else {
-			connection.query('SELECT shortname FROM rarity WHERE shortname = "' + match[1] + '"', function (err, rows, fields) {
+			var query = "= '" + match[1] + "'";
+			var rarity_text = match[1].toUpperCase();
+			if (match[1].indexOf(",") != -1){
+				rarity_text = match[1].split(",").join(", ");
+				var rarities = match[1].split(",").join("','");
+				query = "IN ('" + rarities + "')";
+			}
+			
+			connection.query('SELECT shortname FROM rarity WHERE shortname ' + query, function (err, rows, fields) {
 				if (err) throw err;
 
 				if (Object.keys(rows).length == 0) {
@@ -10204,9 +10208,9 @@ bot.onText(/^\/zaino (.+)|^\/zaino$/, function (message, match) {
 				if (rows[0].shortname == "D")
 					orderBy = "ORDER BY item.id ASC";
 
-				var bottext = "<b>" + message.from.username + "</b> possiedi (" + rows[0].shortname + "):\n";
+				var bottext = "<b>" + message.from.username + "</b> possiedi (" + rarity_text + "):\n";
 
-				connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.shortname As rname, inventory.quantity As num, craftable FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND rarity.shortname = "' + rows[0].shortname + '" AND inventory.quantity > 0 ' + orderBy, function (err, rows, fields) {
+				connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.shortname As rname, inventory.quantity As num, craftable FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND rarity.shortname ' + query + ' AND inventory.quantity > 0 ' + orderBy, function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0) {
 						for (i = 0, len = Object.keys(rows).length; i < len; i++) {

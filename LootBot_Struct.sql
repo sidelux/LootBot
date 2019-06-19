@@ -1844,6 +1844,8 @@ CREATE TABLE `item` (
   `value` int(8) NOT NULL,
   `max_value` int(8) NOT NULL DEFAULT '0',
   `estimate` int(11) NOT NULL DEFAULT '0',
+  `spread` int(11) NOT NULL DEFAULT '0',
+  `spread_tot` decimal(5,3) NOT NULL DEFAULT '0.000',
   `reload_est` int(11) NOT NULL DEFAULT '0',
   `base_sum` int(11) NOT NULL DEFAULT '0',
   `price_sum` int(11) NOT NULL DEFAULT '0',
@@ -3545,4 +3547,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-06-18 12:00:05
+-- Dump completed on 2019-06-19 15:00:06
