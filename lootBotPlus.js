@@ -16,7 +16,8 @@ var mysql = require('mysql');
 var mysql_sync = require('sync-mysql');
 var readline = require('readline');
 
-var math = require('mathjs');
+var { create, all } = require('mathjs');
+var math = create(all);
 math.import({
 	'ones':   function () { throw new Error('Questa funzione è stata disabilitata') },
 	'zeros':   function () { throw new Error('Questa funzione è stata disabilitata') },
@@ -563,7 +564,7 @@ bot.onText(/^\/calcola (.+)|^\/calcola/, function (message, match) {
 	}
 
 	try {
-		var result = math.eval(evalValue);
+		var result = math.evaluate(evalValue);
 		bot.sendMessage(message.chat.id, "Risultato: <code>" + result + "</code>", html);
 	} catch(error) {
 		bot.sendMessage(message.chat.id, "Errore: " + error.message);
