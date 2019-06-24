@@ -1901,8 +1901,8 @@ bot.onText(/^\/scorciatoia/, function (message, match) {
 					"> 'incremento (abbrev. inc) - Attiva l'incremento in assalto per il turno corrente\n" +
 					"> 'equipaggia (equip) - Porta al menù equipaggiamento\n" +
 					"> rimuovi - Porta al menù rimuovi equipaggiamento\n" +
-					"> cura completa (cura) - Cura il giocatore utilizzando automaticamente le pozioni possedute\n" +
-					"> cura parziale - Cura il giocatore utilizzando automaticamente le pozioni possedute tranne quella per superare la saluta massima\n" +
+					"> cura completa (cura, cc) - Cura il giocatore utilizzando automaticamente le pozioni possedute\n" +
+					"> cura parziale (cp) - Cura il giocatore utilizzando automaticamente le pozioni possedute tranne quella per superare la saluta massima\n" +
 					"> dungeon (dg) - Apre il menù del dungeon\n" +
 					"> matchmaking (mm) - Avvia il matchmaking delle ispezioni\n" +
 					"> party - Apre il menù della gestione party\n" +
@@ -12762,6 +12762,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																	bot.sendMessage(message.chat.id, "Hai espresso il tuo desiderio... Ed è stato ascoltato! Hai ottenuto " + formatNumber(money) + " §!", dNext);
+																	setAchievement(player_id, 83, money);
 																});
 															} else {
 																connection.query('SELECT money FROM player WHERE id = ' + player_id, function (err, rows, fields) {
@@ -15743,6 +15744,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																						if ((player_weapon_id == 264) || (player_weapon2_id == 266) || (player_weapon3_id == 272))
 																							setAchievement(player_id, 76, 1);
+																						
+																						if (danno >= monster_total_life)
+																							setAchievement(player_id, 84, 1);
 
 																						var exp_text = "";
 																						if (exp > 0)
@@ -27137,7 +27141,7 @@ bot.onText(/^incrementi effettuati/i, function (message) {
 	});
 });
 
-bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^♥️$/i, function (message) {
+bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^♥️$|^cc$|^cp$/i, function (message) {
 
 	var kbBack = {
 		parse_mode: "Markdown",
@@ -27156,7 +27160,7 @@ bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^♥️$/i, function (me
 	};
 
 	var mode = 0;
-	if ((message.text.toLowerCase().indexOf("parziale") != -1) || (message.text == "❣️"))
+	if ((message.text.toLowerCase().indexOf("parziale") != -1) || (message.text == "❣️") || (message.text == "cp"))
 		mode = 1;
 
 	connection.query('SELECT id, holiday, account_id, life, total_life FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -28504,6 +28508,8 @@ bot.onText(/Entra in uno esistente|^Pagina (.+)/i, function (message, match) {
 
 				if (Object.keys(rows).length >= 50)
 					iKeys.push(["Pagina " + (thisPage + 1)]);
+				if (thisPage > 1)
+					iKeys.push(["Pagina " + (thisPage - 1)]);
 				iKeys.push(["Torna al menu"]);
 
 				var kb = {
@@ -44966,8 +44972,8 @@ bot.onText(/matchmaking|^mm$/i, function (message) {
 								var rows = connection_sync.query("SELECT nickname, exp, team_player.team_id FROM player, team_player WHERE player.heist_limit+(SELECT COUNT(id) FROM heist WHERE to_id = player.id) < " + heist_limit + " AND player.account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) AND team_player.player_id = player.id AND team_player.team_id NOT IN (" + team_id + ") AND heist_protection IS NULL AND ability BETWEEN " + (myab - offset) + " AND " + (myab + offset2) + " AND player.id != " + from_id + " AND money > 0 AND exp > " + minexp + " AND holiday = 0 AND player.id != " + last_mm + " ORDER BY ability DESC, heist_limit ASC, RAND() LIMIT " + limit);
 
 								if (Object.keys(rows).length < 10) {
-									offset += i*10;
-									offset2 += i*10;
+									offset += i*20;
+									offset2 += i*20;
 								} else {
 									rand = Math.floor(Math.random() * Object.keys(rows).length);
 									attack(rows[rand].nickname, message, from_id, weapon_bonus, 2000, 1, global_end, boost_id, boost_mission);

@@ -312,6 +312,111 @@ bot.on("chosen_inline_result", function (query) {
 */
 
 bot.on("inline_query", function (query) {
+	
+	if (query.query.indexOf("asta") != -1){
+		var nick = "";
+		if (query.query.indexOf(":") != -1){
+			var split = query.query.split(":");
+			if ((split[1] != undefined) && (split[1] != ""))
+				nick = split[1];
+		} else
+			nick = query.from.username;
+
+		connection.query('SELECT id, account_id, market_ban, holiday FROM player WHERE nickname = "' + query.from.username + '"', function (err, rows, fields) {
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0)
+				return;
+
+			var player_id = rows[0].id;
+
+			var banReason = isBanned(rows[0].account_id);
+			if (banReason != null)
+				return;
+
+			if (rows[0].market_ban == 1)
+				return;
+
+			if (rows[0].holiday == 1)
+				return;
+
+			connection.query('SELECT auction_list.id, last_price, holiday, creator_id, last_player, item_id, time_end, nickname, market_ban FROM auction_list, player WHERE player.id = auction_list.creator_id AND auction_list.creator_id = (SELECT id FROM player WHERE nickname = "' + nick + '")', function (err, rows, fields) {
+				if (err) throw err;
+
+				if (Object.keys(rows).length == 0)
+					return;
+
+				var creator_nickname = "";
+				var last_player = 0;
+				var last_player_nickname = "";
+				var last_price = 0;
+				var itemName = "";
+
+				var d = new Date();
+				var long_date = "";
+				var short_date = "";
+
+				var id = 0;
+				
+				if (rows[0].market_ban == 1) {
+					if (nickname != "tutte") {
+						bot.sendMessage(message.chat.id, "L'utente è bannato dal mercato", mark);
+						return;
+					}
+				}
+
+				creator_nickname = rows[0].nickname;
+				last_player = rows[0].last_player;
+				last_player_nickname = "";
+				last_price = rows[0].last_price;
+				itemName = "";
+
+				d = new Date(rows[0].time_end);
+				long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+				short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
+
+				var id = rows[0].id;
+
+				item = connection_sync.query('SELECT name FROM item WHERE id = ' + rows[0].item_id);
+				itemName = item[0].name;
+				player = connection_sync.query('SELECT nickname FROM player WHERE id = ' + last_player);
+				if (Object.keys(player).length == 0)
+					last_player_nickname = "-";
+				else
+					last_player_nickname = player[0].nickname;
+
+				var iKeys = [];
+				iKeys.push([{
+					text: "+10",
+					callback_data: "asta:" + id + ":" + "100"
+				}]);
+				iKeys.push([{
+					text: "+1k",
+					callback_data: "asta:" + id + ":" + "1000"
+				}]);
+				iKeys.push([{
+					text: "+10k",
+					callback_data: "asta:" + id + ":" + "10000"
+				}]);
+
+				var text = "<b>Asta per " + itemName + "</b>\n\n<b>Creatore</b>: " + creator_nickname + "\n<b>Offerta</b>: " + formatNumber(last_price) + " §\n<b>Offerente:</b> " + last_player_nickname + "\n<b>Scade alle:</b> " + short_date;
+
+				bot.answerInlineQuery(query.id, [{
+					id: '0',
+					type: 'article',
+					title: 'Pubblica Asta di ' + nick,
+					description: "",
+					message_text: text,
+					parse_mode: "HTML",
+					reply_markup: {
+						inline_keyboard: iKeys
+					}
+				}], {cache_time: 0});
+			});
+		});
+		return;
+	}
+	
 	var code = parseInt(query.query);
 	var last = 0;
 	if ((code == "") || (isNaN(code))) {
@@ -322,7 +427,7 @@ bot.on("inline_query", function (query) {
 		last = 1;
 	}
 
-	connection.query('SELECT public_shop.id, quantity, item.name, price, player_id, massive FROM public_shop, item WHERE item.id = item_id AND code = ' + code, function (err, rows, fields) {
+	connection.query('SELECT public_shop.id, quantity, item.name, price, player_id, massive, time_end, item_id FROM public_shop, item WHERE item.id = item_id AND code = ' + code, function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0)
@@ -333,6 +438,8 @@ bot.on("inline_query", function (query) {
 		var item_list = "";
 		var total_qnt = 0;
 		var total_price = 0;
+		var pQnt = 0;
+		var qntTot = 0;
 		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 			name = cutTextW(rows[i].name);
 			iKeys.push([{
@@ -340,7 +447,11 @@ bot.on("inline_query", function (query) {
 				callback_data: rows[i].id.toString()
 			}]);
 			total_qnt++;
-			total_price += parseInt(rows[i].price*rows[i].quantity);
+			pQnt = getItemCnt(rows[i].player_id, rows[i].item_id);
+			if (pQnt > rows[i].quantity)
+				pQnt = rows[i].quantity;
+			total_price += parseInt(rows[i].price*pQnt);
+			qntTot += pQnt;
 			item_list += name + ", ";
 		}
 
@@ -360,14 +471,31 @@ bot.on("inline_query", function (query) {
 			text: "🗑 Elimina",
 			callback_data: "delete:" + code.toString()
 		}]);
+		
+		var d = new Date();
+		var short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
+
+		var d = new Date(rows[0].time_end);
+		var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+
+		var protected = "";
+		if (rows[0].protected == 1)
+			protected = " 🚫";
+		var description = "";
+		if (rows[0].description != null)
+			description = "\n<i>" + rows[0].description + "</i>";
 
 		connection.query('SELECT nickname FROM player WHERE id = ' + rows[0].player_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0)
 				return;
+			
+			var plur = "i";
+			if (qntTot == 1)
+				plur = "o";
 
-			var text = "Negozio di " + rows[0].nickname + "!";
+			var text = "<b>Negozio di " + rows[0].nickname + "</b>\nAggiornato alle " + short_date + "\nScadrà alle " + long_date + "\nContiene " + formatNumber(qntTot) + " oggett" + plur + protected + description;
 			var desc;
 			if (last == 0)
 				desc = total_qnt + " oggetti in vendita\n" + item_list;
@@ -380,6 +508,7 @@ bot.on("inline_query", function (query) {
 				title: 'Pubblica Negozio',
 				description: desc,
 				message_text: text,
+				parse_mode: "HTML",
 				reply_markup: {
 					inline_keyboard: iKeys
 				}
@@ -1356,8 +1485,7 @@ bot.onText(/^\/mercatini/, function (message) {
 	bot.sendMessage(message.from.id, "<b>Valutazione Mercatini</b>\n@lootadvisor\n\n" +
 					"<b>Mercatini</b>\n" +
 					"@BeardedStore - Il primo negozio Barbuto di Lootia.\n" +
-					"@lootamazon - Qui si vende un po' di tutto a prezzo basso ed eventi vari (affiliato a @starkstore).\n" +
-					"@starkstore - Craftati a prezzo scrigno+craft, più lotterie gratuite per i clienti più accaniti!\n" +
+					"@lootamazon - Qui si vende un po' di tutto a prezzo basso ed eventi vari.\n" +
 					"@Craftia - Il primo canale full-craftati di Loot.\n" +
 					"@emporiodelgargoyle - Canale specializzato in craftati da rarità R a UE a prezzo scrigno, lotterie ed eventi.\n" +
 					"@LEMPORIOdiLootbot - Il primo negozio di Loot!\n" +
@@ -1804,24 +1932,10 @@ bot.onText(/^\/serveaiuto/, function (message, match) {
 		connection.query('SELECT name, room_id, rooms, finish_date, finish_time FROM dungeon_status, dungeon_list WHERE dungeon_status.dungeon_id = dungeon_list.id AND player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
-			if (Object.keys(rows).length == 0){
-				bot.sendMessage(message.from.id, "Puoi usare questo comando solo se sei all'interno di un dungeon!");
+			if (Object.keys(rows).length > 0){
+				bot.sendMessage(message.from.id, "Puoi usare questo comando solo se non sei all'interno di un dungeon!");
 				return;
 			}
-
-			var dungeon_name = rows[0].name;
-			var dungeon_room = rows[0].room_id;
-			var dungeon_tot_room = rows[0].rooms;
-			var dungeon_finish_date = new Date(rows[0].finish_date);
-			var instance_finish_time = new Date(rows[0].finish_time);
-			var finish_date = new Date();
-
-			if (dungeon_finish_date.getTime() < instance_finish_time.getTime())
-				finish_date = dungeon_finish_date;
-			else
-				finish_date = instance_finish_time;
-
-			finish_date = toDate("it", finish_date);
 
 			connection.query('SELECT nickname, reborn, rank FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -1842,7 +1956,7 @@ bot.onText(/^\/serveaiuto/, function (message, match) {
 					for (i = 0; i < Object.keys(rows).length; i++)
 						nicklist += "> @" + rows[i].nickname + " (R" + (rows[i].reborn-1) + ", Rango " + formatNumber(rows[i].rank) + ")\n";
 
-					bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> (R" + (reborn-1) + ", Rango " + formatNumber(rank) + "), in esplorazione del dungeon " + dungeon_name + " stanza " + dungeon_room + "/" + dungeon_tot_room + " (crollerà alle " + finish_date + ") offre aiuto ai suoi compagni di team:\n" + nicklist, html);
+					bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> (R" + (reborn-1) + ", Rango " + formatNumber(rank) + ") offre aiuto ai suoi compagni di team:\n" + nicklist, html);
 				});
 			});
 		});
@@ -3252,7 +3366,7 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+),(.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p
 	var oggetto = match[2];
 	if (match[3] == undefined){
 		if ((oggetto == undefined) || (oggetto == "") || (prezzo == undefined) || (prezzo == 0) || (isNaN(prezzo))) {
-			bot.sendMessage(message.chat.id, "Per inserire un'asta utilizza la seguente sintassi: /creaasta PrezzoBase, NomeOggetto, l'oggetto viene rimosso dall'inventario appena creata l'asta");
+			bot.sendMessage(message.chat.id, "Per inserire un'asta utilizza la seguente sintassi: /creaasta prezzo, oggetto\nL'oggetto viene rimosso dall'inventario appena creata l'asta");
 			return;
 		}
 		prezzo = prezzo.toString().replaceAll(/\./, "");
@@ -4209,7 +4323,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			func = "update";
 
 			if ((text == undefined) || (text == "") || (isNaN(code))) {
-				bot.sendMessage(message.chat.id, "Sintassi: /negoziom codice oggetto:nuovoprezzo:nuovaquantità,oggetto:nuovoprezzo:nuovaquantità.");
+				bot.sendMessage(message.chat.id, "Sintassi: /negoziom codicenegozio oggetto:nuovoprezzo:nuovaquantità,oggetto:nuovoprezzo:nuovaquantità.");
 				return;
 			}
 		} else if (message.text.indexOf("negoziou") != -1) {
@@ -4218,7 +4332,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			func = "refresh";
 
 			if ((text == undefined) || (text == "")) {
-				bot.sendMessage(message.chat.id, "Sintassi: /negoziou codice,codice,codice.");
+				bot.sendMessage(message.chat.id, "Sintassi: /negoziou codicenegozio1,codicenegozio2,codicenegozio3.");
 				return;
 			}
 		} else if (message.text.indexOf("negozioref") != -1) {
@@ -4235,7 +4349,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			func = "refill";
 
 			if ((text == undefined) || (text == "")) {
-				bot.sendMessage(message.chat.id, "Sintassi: /negozioref codice (+/-)quantità.");
+				bot.sendMessage(message.chat.id, "Sintassi: /negozioref codicenegozio (+/-)quantità.");
 				return;
 			}
 		} else {
@@ -5635,7 +5749,7 @@ bot.on('callback_query', function (message) {
 									if (err) throw err;
 								});
 
-								console.log(getNow("it") + " - Acquisto da parte di " + message.from.username + " (" + shop_id + ", " + item_name + ", " + price + " §)");
+								console.log(getNow("it") + " - Acquisto da parte di " + message.from.username + " (" + shop_id + ", " + item_name + ", " + formatNumber(price) + " §)");
 
 								updateShop(message, code, undefined, 'Acquisto di ' + item_name + ' per ' + formatNumber(price) + ' §!');
 
@@ -5716,8 +5830,12 @@ function updateShop(message, code, isId, customQueryMessage){
 		var description = "";
 		if (rows[0].description != null)
 			description = "\n<i>" + rows[0].description + "</i>";
+		
+		var plur = "i";
+		if (qntTot == 1)
+			plur = "o";
 
-		var text = "<b>Negozio di " + rows[0].nickname + "</b>\nAggiornato alle " + short_date + "\nScadrà alle " + long_date + "\nContiene " + formatNumber(qntTot) + " oggetti" + protected + description;
+		var text = "<b>Negozio di " + rows[0].nickname + "</b>\nAggiornato alle " + short_date + "\nScadrà alle " + long_date + "\nContiene " + formatNumber(qntTot) + " oggett" + plur + protected + description;
 
 		bot.editMessageText(text, {
 			inline_message_id: message.inline_message_id,
