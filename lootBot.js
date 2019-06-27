@@ -1533,6 +1533,12 @@ bot.onText(/^\/endtop$/, function (message, match) {
 											moon_qnt = 4-Math.floor(j/2);
 										else
 											moon_qnt = 0;
+										
+										if ((j == 0) && (test == 0)){
+											connection.query('UPDATE player SET top_win = top_win+1 WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
+													if (err) throw err;
+											});
+										}
 
 										console.log(rows[j].player_id, mana, chest, dust, moon_qnt);
 
@@ -1904,6 +1910,7 @@ bot.onText(/^\/scorciatoia/, function (message, match) {
 					"> cura completa (cura, cc) - Cura il giocatore utilizzando automaticamente le pozioni possedute\n" +
 					"> cura parziale (cp) - Cura il giocatore utilizzando automaticamente le pozioni possedute tranne quella per superare la saluta massima\n" +
 					"> dungeon (dg) - Apre il menù del dungeon\n" +
+					"> statodg - Visualizza lo stato del dungeon\n" +
 					"> matchmaking (mm) - Avvia il matchmaking delle ispezioni\n" +
 					"> party - Apre il menù della gestione party\n" +
 					"> '/eliminaX' - Scioglie il party specificato dal numero X\n" +
@@ -4667,6 +4674,11 @@ function getInfo(message, player, myhouse_id) {
 			var class_id = rows[0].class;
 			var boost_id = rows[0].boost_id;
 			var creation_date = rows[0].creation_date;
+			var top_win = rows[0].top_win;
+			
+			var top_win_text = "";
+			if (top_win > 0)
+				top_win_text = "Vittorie Vette: " + top_win + "\n";
 
 			if (mission_team_count > 0)
 				mission_team_count = "Incarichi: " + formatNumber(mission_team_count) + "\n";
@@ -5200,6 +5212,7 @@ function getInfo(message, player, myhouse_id) {
 																										artifacts +
 																										rank +
 																										mission_team_count +
+																										top_win_text +
 																										(player_description != null ? "\n<i>" + player_description + "</i>" : ""), kb);
 																					});
 																				});
@@ -14399,7 +14412,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 	});
 });
 
-bot.onText(/stato dungeon/i, function (message){
+bot.onText(/stato dungeon|statodg/i, function (message){
 	var dBack = {
 		parse_mode: "HTML",
 		reply_markup: {
@@ -17562,47 +17575,44 @@ bot.onText(/fai nascere il drago|accudisci drago|nutri ancora|^drago$|^drago �
 								var sAbissale = 0;
 								var sVette = 0;
 
-								if ((dragon_saddle_id == 213) || (dragon_saddle_id == 718) || (dragon_saddle_id == 719) || (dragon_saddle_id == 720)) { //Infernale
+								if ((dragon_saddle_id == 213) || (dragon_saddle_id == 718) || (dragon_saddle_id == 719) || (dragon_saddle_id == 720)) //Infernale
 									sInfernale++;
-								} else if ((dragon_saddle_id == 214) || (dragon_saddle_id == 724) || (dragon_saddle_id == 725) || (dragon_saddle_id == 726)) { //Glaciale
+								else if ((dragon_saddle_id == 214) || (dragon_saddle_id == 724) || (dragon_saddle_id == 725) || (dragon_saddle_id == 726)) //Glaciale
 									sGlaciale++;
-								} else if ((dragon_saddle_id == 215) || (dragon_saddle_id == 730) || (dragon_saddle_id == 731) || (dragon_saddle_id == 732)) { //Oscuro
+								else if ((dragon_saddle_id == 215) || (dragon_saddle_id == 730) || (dragon_saddle_id == 731) || (dragon_saddle_id == 732)) //Oscuro
 									sOscuro++;
-								} else if ((dragon_saddle_id == 216) || (dragon_saddle_id == 736) || (dragon_saddle_id == 737) || (dragon_saddle_id == 738)) { //Celeste
+								else if ((dragon_saddle_id == 216) || (dragon_saddle_id == 736) || (dragon_saddle_id == 737) || (dragon_saddle_id == 738)) //Celeste
 									sCeleste++;
-								} else if ((dragon_saddle_id == 217) || (dragon_saddle_id == 742) || (dragon_saddle_id == 743) || (dragon_saddle_id == 744)) { //Abissale
+								else if ((dragon_saddle_id == 217) || (dragon_saddle_id == 742) || (dragon_saddle_id == 743) || (dragon_saddle_id == 744)) //Abissale
 									sAbissale++;
-								} else if ((dragon_saddle_id == 218) || (dragon_saddle_id == 748) || (dragon_saddle_id == 749) || (dragon_saddle_id == 750)) { //Vette
+								else if ((dragon_saddle_id == 218) || (dragon_saddle_id == 748) || (dragon_saddle_id == 749) || (dragon_saddle_id == 750)) //Vette
 									sVette++;
-								}
 
-								if ((dragon_claws_id == 207) || (dragon_claws_id == 715) || (dragon_claws_id == 716) || (dragon_claws_id == 717)) { //Infernale
+								if ((dragon_claws_id == 207) || (dragon_claws_id == 715) || (dragon_claws_id == 716) || (dragon_claws_id == 717)) //Infernale
 									sInfernale++;
-								} else if ((dragon_claws_id == 208) || (dragon_claws_id == 721) || (dragon_claws_id == 722) || (dragon_claws_id == 723)) { //Glaciale
+								else if ((dragon_claws_id == 208) || (dragon_claws_id == 721) || (dragon_claws_id == 722) || (dragon_claws_id == 723))//Glaciale
 									sGlaciale++;
-								} else if ((dragon_claws_id == 209) || (dragon_claws_id == 727) || (dragon_claws_id == 728) || (dragon_claws_id == 729)) { //Oscuro
+								else if ((dragon_claws_id == 209) || (dragon_claws_id == 727) || (dragon_claws_id == 728) || (dragon_claws_id == 729)) //Oscuro
 									sOscuro++;
-								} else if ((dragon_claws_id == 210) || (dragon_claws_id == 733) || (dragon_claws_id == 734) || (dragon_claws_id == 735)) { //Celeste
+								else if ((dragon_claws_id == 210) || (dragon_claws_id == 733) || (dragon_claws_id == 734) || (dragon_claws_id == 735)) //Celeste
 									sCeleste++;
-								} else if ((dragon_claws_id == 211) || (dragon_claws_id == 739) || (dragon_claws_id == 740) || (dragon_claws_id == 741)) { //Abissale
+								else if ((dragon_claws_id == 211) || (dragon_claws_id == 739) || (dragon_claws_id == 740) || (dragon_claws_id == 741)) //Abissale
 									sAbissale++;
-								} else if ((dragon_claws_id == 212) || (dragon_claws_id == 745) || (dragon_claws_id == 746) || (dragon_claws_id == 747)) { //Vette
+								else if ((dragon_claws_id == 212) || (dragon_claws_id == 745) || (dragon_claws_id == 746) || (dragon_claws_id == 747)) //Vette
 									sVette++;
-								}
 
-								if (sInfernale == 2) {
+								if (sInfernale == 2)
 									bonustext = "\nSet Infernale equipaggiato!";
-								} else if (sGlaciale == 2) {
+								else if (sGlaciale == 2)
 									bonustext = "\nSet Glaciale equipaggiato!";
-								} else if (sOscuro == 2) {
+								else if (sOscuro == 2)
 									bonustext = "\nSet Oscuro equipaggiato!";
-								} else if (sCeleste == 2) {
+								else if (sCeleste == 2)
 									bonustext = "\nSet Celeste equipaggiato!";
-								} else if (sAbissale == 2) {
+								else if (sAbissale == 2)
 									bonustext = "\nSet Abissale equipaggiato!";
-								} else if (sVette == 2) {
+								else if (sVette == 2)
 									bonustext = "\nSet delle Vette equipaggiato!";
-								}
 
 								var remain_exp = (70 * (dragon_lev+1)) - dragon_exp;
 								var remain_text = "";
@@ -18536,9 +18546,24 @@ bot.onText(/dai pietra/i, function (message) {
 									var plur = "e";
 									if (qnt == 1)
 										plur = "a";
+									
+									connection.query('SELECT level, exp, evolved FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+									
+										var remain_exp = (70 * (rows[0].level+1)) - rows[0].exp;
+										var remain_text = "";
 
-									bot.sendMessage(message.chat.id, "Hai nutrito il drago con " + qnt + " pietr" + plur + " (" + val + " punti pietra)!", foodmore);
-									checkDragon(player_id);
+										if (remain_exp == 0)
+											remain_exp = 70;
+
+										if (((rows[0].level < 300) && (rows[0].evolved == 2)) || 
+											((rows[0].level < 200) && (rows[0].evolved == 1)) || 
+											((rows[0].level < 100) && (rows[0].evolved == 0)))
+											remain_text = ", " + remain_exp + " per il prossimo livello";
+
+										bot.sendMessage(message.chat.id, "Hai nutrito il drago con " + qnt + " pietr" + plur + " (" + val + " punti pietra" + remain_text + ")!", foodmore);
+										checkDragon(player_id);
+									});
 								});
 
 								setAchievement(player_id, 4, val);
@@ -39815,7 +39840,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 	});
 });
 
-bot.onText(/equipaggia|^equip$/i, function (message) {
+bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 
 	if (message.text.indexOf("Equipaggia Drago") != -1)
 		return;
@@ -44599,7 +44624,6 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 									if (isMatch == 1) {
 										expText = " (ottieni 1 exp)";
 										setExp(player_id, 1);
-										setAchievement(toId, 9, 1);
 										connection.query('UPDATE player SET ability = ability-2 WHERE ability > 0 AND id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 										});
@@ -44633,9 +44657,6 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 												bot.sendMessage(message.chat.id, "Hai deciso di rinunciare all'ispezione", back);
 												bot.sendMessage(toChat, "<b>" + message.from.username + "</b> ha rinunciato all'ispezione nel tuo rifugio", html);
 											});
-
-											if (isMatch == 1)
-												setAchievement(toId, 9, 1);
 
 											connection.query('UPDATE player SET ability = ability-1 WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
@@ -51576,19 +51597,19 @@ function setFinishedHeist(element, index, array) {
 										heist_description = "\nLeggi malinconicamente un cartello affisso su un albero con su scritto: <i>" + rows[0].heist_description + "</i>";
 									bot.sendMessage(fromChat, "Il tuo gnomo non è riuscito a raggiungere il rifugio nemico, dannazione!", kb2);
 									bot.sendMessage(rows[0].chat_id, "Lo gnomo di <b>" + fromNick + "</b> è stato respinto dal tuo guardiano del cancello!", html);
-									if (isMatch == 1)
-										setAchievement(toId, 9, 1);
 								});
 
 								var d = new Date();
 								var history_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-								connection.query('INSERT INTO heist_history (from_id, to_id, rate1, fail, time) VALUES ' +
-												 '(' + fromId + ', ' + toId + ', 0, 1, "' + history_date + '")',
-												 function (err, rows, fields) {
+								connection.query('INSERT INTO heist_history (from_id, to_id, rate1, fail, time) VALUES (' + fromId + ', ' + toId + ', 0, 1, "' + history_date + '")', function (err, rows, fields) {
 									if (err) throw err;
 								});
 							} else {
+							
+								if (isMatch == 1)
+									setAchievement(fromId, 9, 1);
+								
 								var d = new Date();
 								d.setHours(d.getHours() + 12);
 								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());

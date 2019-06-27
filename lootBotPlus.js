@@ -387,8 +387,8 @@ bot.on("inline_query", function (query) {
 
 				var iKeys = [];
 				iKeys.push([{
-					text: "+10",
-					callback_data: "asta:" + id + ":" + "100"
+					text: "♻️ Aggiorna",
+					callback_data: "asta:" + id + ":" + "update"
 				}]);
 				iKeys.push([{
 					text: "+1k",
@@ -397,6 +397,10 @@ bot.on("inline_query", function (query) {
 				iKeys.push([{
 					text: "+10k",
 					callback_data: "asta:" + id + ":" + "10000"
+				}]);
+				iKeys.push([{
+					text: "+100k",
+					callback_data: "asta:" + id + ":" + "100000"
 				}]);
 
 				var text = "<b>Asta per " + itemName + "</b>\n\n<b>Creatore</b>: " + creator_nickname + "\n<b>Offerta</b>: " + formatNumber(last_price) + " §\n<b>Offerente:</b> " + last_player_nickname + "\n<b>Scade alle:</b> " + short_date;
@@ -608,7 +612,7 @@ bot.onText(/^\/comandinegozio/, function (message) {
 					"/negozior - Permette di rimuovere oggetti dal negozio\n" +
 					"/negoziom - Permette di modificare oggetti inseriti nel negozio\n" +
 					"/negoziou - Permette di prolungare la scadenza del negozio\n" +
-					"/negozioref - Permette di aggiornare le quantità di tutti gli oggetti di un negozio (usa anche +/-, tutti/privati/pubblici)\n" +
+					"/negozioref - Permette di aggiornare le quantità di tutti gli oggetti di un negozio (usa anche +/-/max, tutti/privati/pubblici)\n" +
 					"/negozi - Mostra tutti i propri negozi disponibili\n" +
 					"/cancellanegozio - Elimina il negozio", mark);
 });
@@ -3456,8 +3460,8 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+),(.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p
 							var id = rows[0].id;
 							var iKeys = [];
 							iKeys.push([{
-								text: "+100",
-								callback_data: "asta:" + id + ":" + "100"
+								text: "♻️ Aggiorna",
+								callback_data: "asta:" + id + ":" + "update"
 							}]);
 							iKeys.push([{
 								text: "+1k",
@@ -3466,6 +3470,10 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+),(.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p
 							iKeys.push([{
 								text: "+10k",
 								callback_data: "asta:" + id + ":" + "10000"
+							}]);
+							iKeys.push([{
+								text: "+100k",
+								callback_data: "asta:" + id + ":" + "100000"
 							}]);
 
 							bot.sendMessage(message.chat.id, "<b>Asta per " + oggetto + "</b>\n\n<b>Offerta</b>: " + formatNumber(prezzo) + " §\n\nAppena pubblicata, scade tra 1 ore, ogni offerta consente 2 ore per rilanciare.", {
@@ -3574,8 +3582,8 @@ bot.onText(/^\/pubblicaasta (.+)|^\/pubblicaasta/, function (message, match) {
 
 				var iKeys = [];
 				iKeys.push([{
-					text: "+10",
-					callback_data: "asta:" + id + ":" + "100"
+					text: "♻️ Aggiorna",
+					callback_data: "asta:" + id + ":" + "update"
 				}]);
 				iKeys.push([{
 					text: "+1k",
@@ -3584,6 +3592,10 @@ bot.onText(/^\/pubblicaasta (.+)|^\/pubblicaasta/, function (message, match) {
 				iKeys.push([{
 					text: "+10k",
 					callback_data: "asta:" + id + ":" + "10000"
+				}]);
+				iKeys.push([{
+					text: "+100k",
+					callback_data: "asta:" + id + ":" + "100000"
 				}]);
 
 				var text = "<b>Asta per " + itemName + "</b>\n\n<b>Creatore</b>: " + creator_nickname + "\n<b>Offerta</b>: " + formatNumber(last_price) + " §\n<b>Offerente:</b> " + last_player_nickname + "\n<b>Scade alle:</b> " + short_date;
@@ -3662,6 +3674,11 @@ bot.onText(/^\/asta(?!p) ([^\s]+) (.+)|^\/asta(?!p)/, function (message, match) 
 
 	prezzo = prezzo.toString().replaceAll(/\./, "");
 	nickname = nickname.replace("@", "");
+	
+	if (isNaN(prezzo)){
+		bot.sendMessage(message.chat.id, "Il prezzo inserito non è valido, riprova");
+		return;
+	}
 
 	connection.query('SELECT id, money, account_id, market_ban FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -3739,7 +3756,7 @@ bot.onText(/^\/asta(?!p) ([^\s]+) (.+)|^\/asta(?!p)/, function (message, match) 
 											notify = 1;
 									}
 									if (notify == 1) {
-										bot.sendMessage(account_id, "Sei stato superato nell'asta di " + nickname + " per " + itemName + ", dove *" + message.from.username + "* ha offerto *" + prezzo + "* §", mark);
+										bot.sendMessage(account_id, "Sei stato superato nell'asta di " + nickname + " per " + itemName + ", dove *" + message.from.username + "* ha offerto *" + formatNumber(last_price) + "* §", mark);
 									};
 								});
 							});
@@ -4442,6 +4459,9 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				qnt = text.replace("-", "");
 				query = "quantity - " + qnt;
 				sym = "-";
+			} else if (text.indexOf("max") != -1){
+				query = "(SELECT IV.quantity FROM inventory IV WHERE IV.item_id = public_shop.item_id AND IV.player_id = public_shop.player_id LIMIT 1)";
+				sym = "";
 			}
 
 			qnt = parseInt(qnt);
@@ -5277,18 +5297,25 @@ bot.on('callback_query', function (message) {
 		if (message.data.indexOf("asta") != -1) {
 			var split = message.data.split(":");
 			var auction_id = parseInt(split[1]);
-			var offer = parseInt(split[2]);
+			var offer = split[2];
 
 			if (rows[0].market_ban == 1)
 				return;
 
 			if (rows[0].holiday == 1)
 				return;
+			
+			var update = 0;
+			if (offer == "update"){
+				update = 1;
+				offer = 0;
+			} else
+				offer = parseInt(offer);
 
 			var money = rows[0].money;
 			var player_id = rows[0].id;
 
-			connection.query('SELECT auction_list.id, last_price, creator_id, last_player, item_id, time_end, nickname FROM auction_list, player WHERE player.id = auction_list.creator_id AND auction_list.id = ' + auction_id, function (err, rows, fields) {
+			connection.query('SELECT auction_list.id, last_price, creator_id, last_player, item_id, time_end, nickname, time_end FROM auction_list, player WHERE player.id = auction_list.creator_id AND auction_list.id = ' + auction_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				if (Object.keys(rows).length == 0) {
@@ -5303,75 +5330,108 @@ bot.on('callback_query', function (message) {
 				var creator_nickname = rows[0].nickname;
 				var creator_id = rows[0].creator_id;
 				var price = last_price + offer;
+				var original_time_end = rows[0].time_end;
 
-				if (money < price) {
-					bot.answerCallbackQuery(message.id, {text: 'Non hai abbastanza credito, ti servono ' + formatNumber(price) + ' §'});
-					return;
-				}
+				if (update == 0){
+					if (money < price) {
+						bot.answerCallbackQuery(message.id, {text: 'Non hai abbastanza credito, ti servono ' + formatNumber(price) + ' §'});
+						return;
+					}
 
-				if (player_id == creator_id) {
-					bot.answerCallbackQuery(message.id, {text: 'Non puoi rialzare la tua asta'});
-					return;
-				}
+					if (player_id == creator_id) {
+						bot.answerCallbackQuery(message.id, {text: 'Non puoi rialzare la tua asta'});
+						return;
+					}
 
-				if (player_id == last_player) {
-					bot.answerCallbackQuery(message.id, {text: 'Non puoi rialzare la tua offerta'});
-					return;
+					if (player_id == last_player) {
+						bot.answerCallbackQuery(message.id, {text: 'Non puoi rialzare la tua offerta'});
+						return;
+					}
 				}
 
 				connection.query('SELECT name FROM item WHERE id = ' + itemId, function (err, rows, fields) {
 					if (err) throw err;
 					var itemName = rows[0].name;
 
-					connection.query('SELECT account_id FROM player WHERE id = ' + last_player, function (err, rows, fields) {
-						if (err) throw err;
-						if (Object.keys(rows).length > 0) {
-							var account_id = rows[0].account_id;
-							connection.query('UPDATE player SET money = money + ' + last_price + ' WHERE id = ' + last_player, function (err, rows, fields) {
-								if (err) throw err;
-								bot.sendMessage(account_id, "Sei stato superato nell'asta di " + creator_nickname + " per " + itemName + ", dove *" + message.from.username + "* ha offerto *" + formatNumber(price) + "* §", mark);
-							});
-						}
-					});
+					if (update == 0){
+						connection.query('SELECT account_id FROM player WHERE id = ' + last_player, function (err, rows, fields) {
+							if (err) throw err;
+							if (Object.keys(rows).length > 0) {
+								var account_id = rows[0].account_id;
+								connection.query('UPDATE player SET money = money + ' + last_price + ' WHERE id = ' + last_player, function (err, rows, fields) {
+									if (err) throw err;
+									bot.sendMessage(account_id, "Sei stato superato nell'asta di " + creator_nickname + " per " + itemName + ", dove *" + message.from.username + "* ha offerto *" + formatNumber(price) + "* §", mark);
+								});
+							}
+						});
+					}
 
 					var d = new Date();
 					d.setMinutes(d.getMinutes() + 60);
 					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 					var short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
 
-					connection.query('UPDATE auction_list SET time_end = "' + long_date + '", last_price = ' + price + ', last_player = ' + player_id + ' WHERE id = ' + auction_id, function (err, rows, fields) {
-						if (err) throw err;
-						connection.query('UPDATE player SET money = money - ' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
+					if (update == 0){
+						connection.query('UPDATE auction_list SET time_end = "' + long_date + '", last_price = ' + price + ', last_player = ' + player_id + ' WHERE id = ' + auction_id, function (err, rows, fields) {
 							if (err) throw err;
+							connection.query('UPDATE player SET money = money - ' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
 
-							bot.answerCallbackQuery(message.id, {text: 'Hai offerto ' + formatNumber(price) + ' § per ' + itemName});
-
-							var iKeys = [];
-							iKeys.push([{
-								text: "+100",
-								callback_data: "asta:" + auction_id + ":" + "100"
-							}]);
-							iKeys.push([{
-								text: "+1k",
-								callback_data: "asta:" + auction_id + ":" + "1000"
-							}]);
-							iKeys.push([{
-								text: "+10k",
-								callback_data: "asta:" + auction_id + ":" + "10000"
-							}]);
-
-							var text = "<b>Asta per " + itemName + "</b>\n\n<b>Creatore</b>: " + creator_nickname + "\n<b>Offerta</b>: " + formatNumber(price) + " §\n<b>Offerente:</b> " + message.from.username + "\n<b>Scade alle:</b> " + short_date;
-
-							bot.editMessageText(text, {
-								chat_id: message.message.chat.id,
-								message_id: message.message.message_id,
-								parse_mode: 'HTML',
-								reply_markup: {
-									inline_keyboard: iKeys
-								}
+								bot.answerCallbackQuery(message.id, {text: 'Hai offerto ' + formatNumber(price) + ' § per ' + itemName});
 							});
 						});
-					});
+					}
+
+					var iKeys = [];
+					iKeys.push([{
+						text: "♻️ Aggiorna",
+						callback_data: "asta:" + auction_id + ":" + "update"
+					}]);
+					iKeys.push([{
+						text: "+1k",
+						callback_data: "asta:" + auction_id + ":" + "1000"
+					}]);
+					iKeys.push([{
+						text: "+10k",
+						callback_data: "asta:" + auction_id + ":" + "10000"
+					}]);
+					iKeys.push([{
+						text: "+100k",
+						callback_data: "asta:" + auction_id + ":" + "100000"
+					}]);
+
+					var last = message.from.username;
+					if (update == 1){
+						var tmp = connection_sync.query("SELECT nickname FROM player WHERE id = " + last_player);
+						last = tmp[0].nickname;
+						price = last_price;
+						
+						d = new Date(original_time_end);
+						short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
+						
+						bot.answerCallbackQuery(message.id, {text: 'Asta aggiornata!'});
+					} 
+					
+					var text = "<b>Asta per " + itemName + "</b>\n\n<b>Creatore</b>: " + creator_nickname + "\n<b>Offerta</b>: " + formatNumber(price) + " §\n<b>Offerente:</b> " + last + "\n<b>Scade alle:</b> " + short_date;
+
+					if (message.inline_message_id != undefined){
+						bot.editMessageText(text, {
+							inline_message_id: message.inline_message_id,
+							parse_mode: 'HTML',
+							reply_markup: {
+								inline_keyboard: iKeys
+							}
+						});
+					} else {
+						bot.editMessageText(text, {
+							chat_id: message.chat.id,
+							message_id: message.message.message_id,
+							parse_mode: 'HTML',
+							reply_markup: {
+								inline_keyboard: iKeys
+							}
+						});
+					}
 				});
 			});
 			return;
@@ -7107,10 +7167,10 @@ bot.onText(/^\/aste/, function (message) {
 				time_end = new Date(rows[i].time_end);
 				min = Math.round(((time_end - now) / 1000) / 60);
 
-				text += "> " + rows[i].nickname + " - " + rows[i].name + " (offerta: " + rows[i].last_price + " §, scade tra " + min + " minuti)" + "\n";
+				text += "> <code>" + rows[i].nickname + "</code> - " + rows[i].name + " (offerta: " + rows[i].last_price + " §, scade tra " + min + " minuti)" + "\n";
 			}
 		}
-		bot.sendMessage(message.chat.id, text);
+		bot.sendMessage(message.chat.id, text, html);
 	});
 });
 
@@ -9254,6 +9314,11 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 			var class_id = rows[0].class;
 			var boost_id = rows[0].boost_id;
 			var creation_date = rows[0].creation_date;
+			var top_win = rows[0].top_win;
+			
+			var top_win_text = "";
+			if (top_win > 0)
+				top_win_text = "Vittorie Vette: " + top_win + "\n";
 
 			if (mission_team_count > 0)
 				mission_team_count = "Incarichi: " + formatNumber(mission_team_count) + "\n";
@@ -9759,6 +9824,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																										artifacts +
 																										rank +
 																										mission_team_count +
+																										top_win_text +
 																										(player_description != null ? "\n<i>" + player_description + "</i>" : ""), html);
 																					});
 																				});
