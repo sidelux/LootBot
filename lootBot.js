@@ -38488,7 +38488,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if (answer.text == "Artefatto Fiammeggiante") {
 						bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
-										"> Aver raggiungo almeno il rango dungeon 85\n" +
+										"> Aver raggiunto almeno il rango dungeon 85\n" +
 										"> Possedere almeno 5.000.000 § (verranno consumati)", get).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
 								if (answer.text == "Ottieni Artefatto") {

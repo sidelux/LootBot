@@ -312,7 +312,7 @@ bot.on("chosen_inline_result", function (query) {
 */
 
 bot.on("inline_query", function (query) {
-	
+
 	if (query.query.indexOf("asta") != -1){
 		var nick = "";
 		if (query.query.indexOf(":") != -1){
@@ -357,7 +357,7 @@ bot.on("inline_query", function (query) {
 				var short_date = "";
 
 				var id = 0;
-				
+
 				if (rows[0].market_ban == 1) {
 					if (nickname != "tutte") {
 						bot.sendMessage(message.chat.id, "L'utente è bannato dal mercato", mark);
@@ -420,7 +420,7 @@ bot.on("inline_query", function (query) {
 		});
 		return;
 	}
-	
+
 	var code = parseInt(query.query);
 	var last = 0;
 	if ((code == "") || (isNaN(code))) {
@@ -475,7 +475,7 @@ bot.on("inline_query", function (query) {
 			text: "🗑 Elimina",
 			callback_data: "delete:" + code.toString()
 		}]);
-		
+
 		var d = new Date();
 		var short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
 
@@ -494,7 +494,7 @@ bot.on("inline_query", function (query) {
 
 			if (Object.keys(rows).length == 0)
 				return;
-			
+
 			var plur = "i";
 			if (qntTot == 1)
 				plur = "o";
@@ -1302,7 +1302,96 @@ bot.onText(/^\/pinfo (.+)/, function (message, match) {
 			var d = new Date(rows[0].birth_date);
 			datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
 		}
-		bot.sendMessage(message.from.id, "<b>ID Account:</b> " + rows[0].account_id + "\n<b>Nome utente:</b> " + rows[0].nickname + "\n<b>Ultimo comando:</b> " + toDate("it", rows[0].last_update) + "\n<b>Nome:</b> " + rows[0].real_name + "\n<b>Sesso:</b> " + rows[0].gender + "\n<b>Data di nascita:</b> " + datetime, html);
+
+		// calcolo creazione account
+		// https://github.com/wjclub/telegram-bot-getids/blob/master/ages.json
+		// 4 feb 19
+		
+		var ages = {
+			"2768409"   : 1383264000000,
+			"7679610"   : 1388448000000,
+			"11538514"  : 1391212000000,
+			"15835244"  : 1392940000000,
+			"23646077"  : 1393459000000,
+			"38015510"  : 1393632000000,
+			"44634663"  : 1399334000000,
+			"46145305"  : 1400198000000,
+			"54845238"  : 1411257000000,
+			"63263518"  : 1414454000000,
+			"101260938" : 1425600000000,
+			"101323197" : 1426204000000,
+			"111220210" : 1429574000000,
+			"103258382" : 1432771000000,
+			"103151531" : 1433376000000,
+			"116812045" : 1437696000000,
+			"122600695" : 1437782000000,
+			"109393468" : 1439078000000,
+			"112594714" : 1439683000000,
+			"124872445" : 1439856000000,
+			"130029930" : 1441324000000,
+			"125828524" : 1444003000000,
+			"133909606" : 1444176000000,
+			"157242073" : 1446768000000,
+			"143445125" : 1448928000000,
+			"148670295" : 1452211000000,
+			"152079341" : 1453420000000,
+			"171295414" : 1457481000000,
+			"181783990" : 1460246000000,
+			"222021233" : 1465344000000,
+			"225034354" : 1466208000000,
+			"278941742" : 1473465000000,
+			"285253072" : 1476835000000,
+			"294851037" : 1479600000000,
+			"297621225" : 1481846000000,
+			"328594461" : 1482969000000,
+			"337808429" : 1487707000000,
+			"341546272" : 1487782000000,
+			"352940995" : 1487894000000,
+			"369669043" : 1490918000000,
+			"400169472" : 1501459000000
+		};
+		
+		const ids = Object.keys(ages)
+		const nids = ids.map(e => parseInt(e))
+
+		const minId = nids[0]
+		const maxId = nids[nids.length - 1]
+
+		const getDate = (id) => {
+			if (id < minId)
+				return [-1, new Date(ages[ids[0]])]
+			else if (id > maxId)
+				return [1, new Date(ages[ids[ids.length - 1]])]
+			else {
+				let lid = nids[0]
+				for (let i = 0; i < ids.length; i++) {
+					if (id <= nids[i]) {
+						const uid = nids[i]
+						const lage = ages[lid]
+						const uage = ages[uid]
+
+						const idratio = ((id - lid) / (uid - lid))
+						const midDate = Math.floor((idratio * (uage - lage)) + lage)
+						return [0, new Date(midDate)]
+					} else
+						lid = nids[i]
+				}
+			}
+		}
+
+		const getAge = (id) => {
+			const d = getDate(id)
+			return [
+				d[0] < 0 ? 'older_than' : d[0] > 0 ? 'newer_than' : 'aprox',
+				`${(d[1].getUTCMonth() + 1)}/${d[1].getUTCFullYear()}`
+			]
+		}
+		
+		var res = getAge(rows[0].account_id);
+		
+		// fine calcolo creazione account
+
+		bot.sendMessage(message.from.id, "<b>ID Account:</b> " + rows[0].account_id + "\n<b>Nome utente:</b> " + rows[0].nickname + "\n<b>Ultimo comando:</b> " + toDate("it", rows[0].last_update) + "\n<b>Nome:</b> " + rows[0].real_name + "\n<b>Sesso:</b> " + rows[0].gender + "\n<b>Data di nascita:</b> " + datetime + "\n<b>Creazione account:</b> " + res[0] + " " + res[1], html);
 	});
 });
 
@@ -3674,7 +3763,7 @@ bot.onText(/^\/asta(?!p) ([^\s]+) (.+)|^\/asta(?!p)/, function (message, match) 
 
 	prezzo = prezzo.toString().replaceAll(/\./, "");
 	nickname = nickname.replace("@", "");
-	
+
 	if (isNaN(prezzo)){
 		bot.sendMessage(message.chat.id, "Il prezzo inserito non è valido, riprova");
 		return;
@@ -4474,7 +4563,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				bot.sendMessage(message.chat.id, "Valore non valido, minimo -1000 massimo 1000");
 				return;
 			}
-			
+
 			if (code == "tutti"){
 				connection.query('UPDATE public_shop SET quantity = ' + query + ', time_end = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
@@ -4512,7 +4601,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				} else
 					bot.sendMessage(message.chat.id, "Non hai il permesso per gestire questo negozio oppure non esiste (" + code + ")");
 			}
-			
+
 			return
 		}
 
@@ -5304,7 +5393,7 @@ bot.on('callback_query', function (message) {
 
 			if (rows[0].holiday == 1)
 				return;
-			
+
 			var update = 0;
 			if (offer == "update"){
 				update = 1;
@@ -5405,13 +5494,13 @@ bot.on('callback_query', function (message) {
 						var tmp = connection_sync.query("SELECT nickname FROM player WHERE id = " + last_player);
 						last = tmp[0].nickname;
 						price = last_price;
-						
+
 						d = new Date(original_time_end);
 						short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
-						
+
 						bot.answerCallbackQuery(message.id, {text: 'Asta aggiornata!'});
 					} 
-					
+
 					var text = "<b>Asta per " + itemName + "</b>\n\n<b>Creatore</b>: " + creator_nickname + "\n<b>Offerta</b>: " + formatNumber(price) + " §\n<b>Offerente:</b> " + last + "\n<b>Scade alle:</b> " + short_date;
 
 					if (message.inline_message_id != undefined){
@@ -5890,7 +5979,7 @@ function updateShop(message, code, isId, customQueryMessage){
 		var description = "";
 		if (rows[0].description != null)
 			description = "\n<i>" + rows[0].description + "</i>";
-		
+
 		var plur = "i";
 		if (qntTot == 1)
 			plur = "o";
@@ -6267,7 +6356,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, function (message, match) {
 
 	if (price != "tutto")
 		price = parseInt(price.replace(/\D+/gi, '').trim().replaceAll(/\./, ""));
-	
+
 	if (price >= 1000000000){
 		bot.sendMessage(message.from.id, "Puoi inviare al massimo 1.000.000.000 monete!");
 		return;
@@ -9315,7 +9404,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 			var boost_id = rows[0].boost_id;
 			var creation_date = rows[0].creation_date;
 			var top_win = rows[0].top_win;
-			
+
 			var top_win_text = "";
 			if (top_win > 0)
 				top_win_text = "Vittorie Vette: " + top_win + "\n";
@@ -10380,7 +10469,7 @@ bot.onText(/^\/zaino (.+)|^\/zaino$/, function (message, match) {
 				var rarities = match[1].split(",").join("','");
 				query = "IN ('" + rarities + "')";
 			}
-			
+
 			connection.query('SELECT shortname FROM rarity WHERE shortname ' + query, function (err, rows, fields) {
 				if (err) throw err;
 
