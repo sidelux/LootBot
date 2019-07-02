@@ -9207,7 +9207,7 @@ bot.onText(/^\/prezzo (.+)|^\/prezzo/, function (message, match) {
 		if (Object.keys(rows).length > 0) {
 			var text = "Ultimi prezzi trovati per " + oggetto + ":";
 
-			var len = 10;
+			var len = 25;
 			if (Object.keys(rows).length < len)
 				len = Object.keys(rows).length;
 
