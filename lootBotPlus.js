@@ -587,6 +587,7 @@ bot.onText(/^\/comandilotteria/, function (message) {
 					"/dlotteria - Disiscrive dalla lotteria con iscrizione gratuita (usa anche 'tutte')\n" +
 					"/dlotteriap - Disiscrive dalla lotteria con iscrizione a pagamento (usa anche 'tutte')\n" +
 					"/lotterie - Mostra tutte le lotterie disponibili\n" +
+					"/iscritti - Mostra gli iscritti alla propria lotteria\n" +
 					"/estrazione - Forza l'estrazione di una lotteria\n" +
 					"/cancellalotteria - Elimina una lotteria in corso", mark);
 });
@@ -6319,6 +6320,40 @@ bot.onText(/^\/lotterie/, function (message) {
 				text += "\nPer iscriverti ad una lotteria usa /lotteria o /lotteriap";
 				bot.sendMessage(message.chat.id, text, html);
 			}
+		});
+	});
+});
+
+bot.onText(/^\/iscritti/, function (message) {
+	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0)
+			return;
+
+		var player_id = rows[0].id;
+
+		connection.query('SELECT id FROM public_lottery WHERE creator_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+			if (Object.keys(rows).length > 0) {
+				bot.sendMessage(message.chat.id, "Al momento non hai creato una lotteria");
+				return;
+			}
+			
+			var lottery_id = rows[0].id;
+			
+			connection.query('SELECT nickname FROM public_lottery_players L, player P WHERE L.player_id = P.id AND lottery_id = ' + lottery_id, function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length > 0) {
+					bot.sendMessage(message.chat.id, "Nessun iscritto alla tua lotteria");
+					return;
+				}
+				var text = "Iscritti alla tua lotteria:";
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+					text += "\n> " + rows[i].nickname;
+				
+				bot.sendMessage(message.chat.id, text);
+			});
 		});
 	});
 });

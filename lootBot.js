@@ -47,8 +47,8 @@ var progMis = [10, 25, 50, 75, 100, 250, 500, 1000, 2000, 5000, 10000, 25000, 50
 var progMisRew = [5000, 12500, 25000, 50000, 75000, 100000, 250000, 350000, 500000, 1000000, 2000000, 3000000, 5000000];
 var progDung = [1, 5, 10, 25, 50, 75, 100, 250, 500, 1000, 1500, 2500, 3000];
 var progDungRew = [10000, 50000, 75000, 100000, 250000, 500000, 750000, 1000000, 2000000, 3000000, 4500000, 6000000];
-var progCraft = [100, 500, 1000, 2500, 5000, 10000, 20000, 50000, 75000, 100000, 200000, 300000];
-var progCraftRew = [10000, 50000, 75000, 150000, 250000, 500000, 1000000, 2000000, 4000000, 6000000, 8000000, 10000000];
+var progCraft = [100, 500, 1000, 2500, 5000, 10000, 20000, 50000, 75000, 100000, 200000, 300000, 500000, 1000000];
+var progCraftRew = [10000, 50000, 75000, 150000, 250000, 500000, 1000000, 2000000, 4000000, 6000000, 8000000, 10000000, 20000000, 25000000];
 var progMissionTeam = [50, 100, 250, 500, 750, 1000, 1500, 2000, 5000];
 var progMissionTeamRew = [25000, 50000, 500000, 1000000, 2000000, 3000000, 4000000, 5000000, 10000000];
 var progOffers = [50, 200, 500, 1000, 2000, 3000, 5000, 10000];
@@ -881,13 +881,6 @@ function deactivateEvent(){
 		}
 
 		if (event == "checkDragonTopOn"){
-			/*
-			ALTER TABLE dragon_dummy AUTO_INCREMENT = 100000;
-			DELETE FROM dragon_dummy;
-			DELETE FROM dragon_top_dummy;
-			DELETE FROM dragon_top_rank;
-			DELETE FROM dragon_top_status;
-			*/
 			connection.query('ALTER TABLE dragon_dummy AUTO_INCREMENT = 100000', function (err, rows, fields) {
 				if (err) throw err;
 			});
@@ -916,188 +909,6 @@ function deactivateEvent(){
 		});
 	});
 }
-
-/*
-bot.onText(/^\/eventon (.+)|^\/eventon|^\/eventoff (.+)|^\/eventoff/, function (message, match) {
-	if (message.from.id == 20471035) {
-		var event = "";
-		if ((match[1] == undefined) && (match[2] == undefined)) {
-			bot.sendMessage(message.chat.id, "crazy, lucky, arena, lottery, villa, wanted, teamstory, festival, specialmission, top, gnomorra");
-			return;
-		}
-		if (message.text.indexOf("eventon") != -1)
-			event = match[1];
-		else if (message.text.indexOf("eventoff") != -1)
-			event = match[2];
-
-		var onoff = 1;
-		if (message.text.indexOf("eventoff") != -1)
-			onoff = 0;
-
-		if (onoff == 1){	// eventon
-			if (event == "crazy"){
-				updateValue("crazyMode", 1);
-				crazyMode = onoff;
-			}
-			if (event == "lucky") {
-				connection.query('DELETE FROM contest', function (err, rows, fields) {
-					if (err) throw err;
-					luckyMode = onoff;
-					updateValue("luckyMode", 1);
-				});
-			}
-			if (event == "arena") {
-				connection.query('DELETE FROM event_arena_status', function (err, rows, fields) {
-					if (err) throw err;
-					connection.query('DELETE FROM event_arena_dragon', function (err, rows, fields) {
-						if (err) throw err;
-						arena = onoff;
-						updateValue("arena", 1);
-					});
-				});
-			}
-			if (event == "lottery") {
-				connection.query('DELETE FROM event_lottery_coins', function (err, rows, fields) {
-					if (err) throw err;
-					connection.query('UPDATE event_lottery_prize SET extracted = 0', function (err, rows, fields) {
-						if (err) throw err;
-						lootteria = onoff;
-						updateValue("lootteria", 1);
-					});
-				});
-			}
-			if (event == "villa") {
-				connection.query('DELETE FROM event_villa_gift', function (err, rows, fields) {
-					if (err) throw err;
-				});
-				connection.query('UPDATE event_villa_status SET points = 10', function (err, rows, fields) {
-					if (err) throw err;
-					villa = onoff;
-					updateValue("villa", 1);
-				});
-			}
-			if (event == "wanted") {
-				connection.query('DELETE FROM event_wanted_status', function (err, rows, fields) {
-					if (err) throw err;
-					wanted = onoff;
-					updateValue("wanted", 1);
-				});
-			}
-			if (event == "teamstory") {
-				connection.query('DELETE FROM event_team_story', function (err, rows, fields) {
-					if (err) throw err;
-					eventTeamStory = onoff;
-					updateValue("eventTeamStory", 1);
-				});
-			}
-			if (event == "festival") {
-				connection.query('UPDATE event_crafting_status SET total_cnt = 0', function (err, rows, fields) {
-					if (err) throw err;
-					// svuota anche event_crafting_item?
-					eventFestival = onoff;
-					reloadFestival(1);
-					updateValue("eventFestival", 1);
-				});
-			}
-			if (event == "specialmission"){
-				specialMission = onoff;
-				updateValue("specialmission", 1);
-			}
-			if (event == "top"){
-				checkDragonTopOn = onoff;
-				connection.query('UPDATE config SET global_msg = "Le <b>Vette dei Draghi</b> sono aperte!\nPartecipa agli incontri tra draghi più popolari delle terre di Lootia e vinci sostanziosi <b>premi</b>!\nBuon divertimento!", global_msg_on = 1', function (err, rows, fields) {
-					if (err) throw err;
-					bot.sendMessage(message.chat.id, "Lancia /sendmsg per inviare l'avviso di apertura vette");
-					updateValue("checkDragonTopOn", 1);
-				});
-			}
-			if (event == "gnomorra") {
-				connection.query('DELETE FROM event_gnomorra', function (err, rows, fields) {
-					if (err) throw err;
-					gnomorra = onoff;
-					updateValue("gnomorra", 1);
-				});
-			}
-		} else {	// eventoff
-			if (event == "crazy"){
-				crazyMode = onoff;
-				updateValue("crazyMode", 0);
-			}
-
-			if (event == "lucky"){
-				luckyMode = onoff;
-				updateValue("luckyMode", 0);
-			}
-
-			if (event == "arena"){
-				arena = onoff;
-				updateValue("arena", 0);
-			}
-
-			if (event == "lottery"){
-				lootteria = onoff;
-				updateValue("lootteria", 0);
-			}
-
-			if (event == "villa"){
-				villa = onoff;
-				updateValue("villa", 0);
-			}
-
-			if (event == "wanted"){
-				connection.query('UPDATE event_wanted_status SET wanted_id = 0', function (err, rows, fields) {
-					if (err) throw err;
-				});
-				wanted = onoff;
-				updateValue("wanted", 0);
-			}
-
-			if (event == "teamstory"){
-				eventTeamStory = onoff;
-				updateValue("eventTeamStory", 0);
-			}
-
-			if (event == "festival"){
-				eventFestival = onoff;
-				updateValue("eventFestival", 0);
-			}
-
-			if (event == "specialmission"){
-				specialMission = onoff;
-				updateValue("specialmission", 0);
-			}
-
-			if (event == "top"){
-				connection.query('ALTER TABLE dragon_dummy AUTO_INCREMENT = 100000', function (err, rows, fields) {
-					if (err) throw err;
-				});
-				connection.query('DELETE FROM dragon_dummy', function (err, rows, fields) {
-					if (err) throw err;
-				});
-				connection.query('DELETE FROM dragon_top_dummy', function (err, rows, fields) {
-					if (err) throw err;
-				});
-				connection.query('DELETE FROM dragon_top_rank', function (err, rows, fields) {
-					if (err) throw err;
-				});
-				connection.query('DELETE FROM dragon_top_status', function (err, rows, fields) {
-					if (err) throw err;
-				});
-				checkDragonTopOn = onoff;
-				updateValue("checkDragonTopOn", 0);
-			}
-
-			if (event == "gnomorra"){
-				gnomorra = onoff;
-				updateValue("gnomorra", 0);
-			}
-		}
-
-		checkKeyboard();
-		bot.sendMessage(message.chat.id, "Evento " + event + " impostato a " + onoff);
-	}
-});
-*/
 
 var dMana = new Date();
 if ((dMana.getDay() == 4) || (dMana.getDay() == 5))
@@ -1481,6 +1292,45 @@ bot.onText(/^\/failglobal/, function (message, match) {
 			});
 		});
 	};
+});
+
+bot.onText(/^\/msgtop$/, function (message, match) {
+	if (message.from.id == 20471035) {
+		connection.query('UPDATE config SET global_msg = "Le <b>Vette dei Draghi</b> sono aperte!\nPartecipa agli incontri tra draghi più popolari delle terre di Lootia e vinci sostanziosi <b>premi</b>!\nBuon divertimento!", global_msg_on = 1', function (err, rows, fields) {
+			if (err) throw err;
+			bot.sendMessage(message.chat.id, "Ora lancia /sendmsg per inviare i messaggi globali.");
+		});
+	}
+});
+
+bot.onText(/^\/cleantop$/, function (message, match) {
+	if (message.from.id == 20471035) {
+		connection.query('ALTER TABLE dragon_dummy AUTO_INCREMENT = 100000;', function (err, rows, fields) {
+			if (err) throw err;
+		});
+		connection.query('DELETE FROM dragon_dummy;', function (err, rows, fields) {
+			if (err) throw err;
+		});
+		connection.query('DELETE FROM dragon_top_dummy;', function (err, rows, fields) {
+			if (err) throw err;
+		});
+		connection.query('DELETE FROM dragon_top_rank;', function (err, rows, fields) {
+			if (err) throw err;
+		});
+		connection.query('DELETE FROM dragon_top_status;', function (err, rows, fields) {
+			if (err) throw err;
+		});
+		
+		bot.sendMessage(message.chat.id, "Fatto!");
+	}
+});
+
+bot.onText(/^\/topon$/, function (message, match) {
+	if (message.from.id == 20471035) {
+		updateValue("checkDragonTopOn", 1);
+		reloadEvents();
+		bot.sendMessage(message.chat.id, "Fatto!");
+	}
 });
 
 bot.onText(/^\/endtop$/, function (message, match) {
@@ -5828,7 +5678,7 @@ bot.onText(/soprannome/i, function (message) {
 });
 
 bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, match) {
-	connection.query('SELECT id, exp, weapon_id, weapon2_id, weapon3_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, exp, weapon_id, weapon2_id, weapon3_id, weapon_enchant, weapon2_enchant, weapon3_enchant FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
 		var level = Math.floor(rows[0].exp / 10);
@@ -5836,6 +5686,10 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 		var weapon1_id = rows[0].weapon_id;
 		var weapon2_id = rows[0].weapon2_id;
 		var weapon3_id = rows[0].weapon3_id;
+		
+		var weapon_enchant = rows[0].weapon_enchant;
+		var weapon2_enchant = rows[0].weapon2_enchant;
+		var weapon3_enchant = rows[0].weapon3_enchant;
 
 		connection.query('SELECT 1 FROM necro_change WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -6057,29 +5911,50 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 
 				var weapon1_status = "Non equipaggiata";
 				if (weapon1_id == 639)
-					weapon1_status = " 🔥";
+					weapon1_status = "🔥";
 				else if (weapon1_id == 638)
-					weapon1_status = " ⚡️";
+					weapon1_status = "⚡️";
 				else if (weapon1_id == 640)
-					weapon1_status = " 🌊";
+					weapon1_status = "🌊";
 				else if (weapon1_id == 754)
-					weapon1_status = " ✨";
+					weapon1_status = "✨";
+				
+				if (weapon_enchant == 1)
+					weapon1_status += " (🔥)";
+				else if (weapon_enchant == 2)
+					weapon1_status += " (⚡️)";
+				else if (weapon_enchant == 3)
+					weapon1_status += " (🌊)";
 
 				var weapon2_status = "Non equipaggiata";
 				if (weapon2_id == 688)
-					weapon2_status = " 🔥";
+					weapon2_status = "🔥";
 				else if (weapon2_id == 690)
-					weapon2_status = " ⚡️";
+					weapon2_status = "⚡️";
 				else if (weapon2_id == 689)
-					weapon2_status = " 🌊";
+					weapon2_status = "🌊";
+				
+				if (weapon2_enchant == 1)
+					weapon2_status += " (🔥)";
+				else if (weapon2_enchant == 2)
+					weapon2_status += " (⚡️)";
+				else if (weapon2_enchant == 3)
+					weapon2_status += " (🌊)";
 
 				var weapon3_status = "Non equipaggiato";
 				if (weapon3_id == 672)
-					weapon3_status = " 🔥";
+					weapon3_status = "🔥";
 				else if (weapon3_id == 671)
-					weapon3_status = " ⚡️";
+					weapon3_status = "⚡️";
 				else if (weapon3_id == 673)
-					weapon3_status = " 🌊";
+					weapon3_status = "🌊";
+				
+				if (weapon3_enchant == 1)
+					weapon3_status += " (🔥)";
+				else if (weapon3_enchant == 2)
+					weapon3_status += " (⚡️)";
+				else if (weapon3_enchant == 3)
+					weapon3_status += " (🌊)";
 
 				var text = 	"Stato attuale:\n" +
 					"Arma: " + weapon1_status + "\n" +
@@ -15957,9 +15832,12 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																				return;
 																			} else {
 																				if (meParalyzed == 0) {
-																					if (danno == 0)
-																						bot.sendMessage(message.chat.id, "Il mostro ha evitato il tuo colpo!");
-																					else
+																					if (danno == 0) {
+																						if (paralyzed > 0)
+																							bot.sendMessage(message.chat.id, "Non hai inflitto danno al mostro!");
+																						else
+																							bot.sendMessage(message.chat.id, "Il mostro ha evitato il tuo colpo!");
+																					} else
 																						bot.sendMessage(message.chat.id, "Hai colpito il mostro e hai inferto *" + formatNumber(danno) + "* danni" + crit_txt + magic_txt + crit_en2 + "!", mark);
 																				} else if (meParalyzed == 1) {
 																					if ((player_paralyzed - 1) != 0)
