@@ -551,7 +551,7 @@ bot.onText(/^\/start$|^\/start@lootplusbot$/, function (message) {
 bot.onText(/^\/comandigiocatore/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per il giocatore*\n" +
 					"/giocatore o /giocatrice - Mostra la scheda giocatore\n" +
-					"/zaino - Mostra gli oggetti contenuti nello zaino (specifica anche rarità separate da virgola o 'consumabili')\n" +
+					"/zaino - Mostra gli oggetti contenuti nello zaino (specifica anche rarità separate da virgola o 'consumabili' o 'completo')\n" +
 					"/zainoc/b - Mostra gli oggetti creati/base contenuti nello zaino (specifica anche la rarità)\n" +
 					"/zainor - Mostra gli oggetti speciali posseduti (polvere, monete lunari, ecc.)\n" +
 					"/oggetto - Mostra i dettagli di un oggetto posseduto\n" +
@@ -3566,7 +3566,7 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+),(.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p
 								callback_data: "asta:" + id + ":" + "100000"
 							}]);
 
-							bot.sendMessage(message.chat.id, "<b>Asta per " + oggetto + "</b>\n\n<b>Offerta</b>: " + formatNumber(prezzo) + " §\n\nAppena pubblicata, scade tra 1 ore, ogni offerta consente 2 ore per rilanciare.", {
+							bot.sendMessage(message.chat.id, "<b>Asta per " + oggetto + "</b>\n\n<b>Offerta</b>: " + formatNumber(prezzo) + " §\n\nAppena pubblicata, scade tra 1 ora, ogni offerta consente 15 min per rilanciare.", {
 								parse_mode: 'HTML',
 								reply_markup: {
 									inline_keyboard: iKeys
@@ -3854,7 +3854,7 @@ bot.onText(/^\/asta(?!p) ([^\s]+) (.+)|^\/asta(?!p)/, function (message, match) 
 					});
 
 					var d = new Date();
-					d.setMinutes(d.getMinutes() + 60);
+					d.setMinutes(d.getMinutes() + 15);
 					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
 					connection.query('UPDATE auction_list SET time_end = "' + long_date + '", last_price = ' + prezzo + ', last_player = ' + player_id + ' WHERE id = ' + auction_id, function (err, rows, fields) {
@@ -5457,7 +5457,7 @@ bot.on('callback_query', function (message) {
 					}
 
 					var d = new Date();
-					d.setMinutes(d.getMinutes() + 60);
+					d.setMinutes(d.getMinutes() + 15);
 					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 					var short_date = addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds());
 
@@ -10428,11 +10428,6 @@ bot.onText(/^\/zaino (.+)|^\/zaino$/, function (message, match) {
 		return;
 	}
 
-	if (match[1] == undefined) {
-		bot.sendMessage(message.chat.id, "La sintassi è la seguente: /zaino rarità (esempio: /zaino E o 'consumabili')");
-		return;
-	}
-
 	var options = {parse_mode: 'HTML'};
 	if (message.reply_to_message != undefined)
 		options = {parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id};
@@ -10452,7 +10447,40 @@ bot.onText(/^\/zaino (.+)|^\/zaino$/, function (message, match) {
 
 		var player_id = rows[0].id;
 
-		if (match[1].toLowerCase() == "consumabili") {
+		if (match[1] == undefined) {
+			connection.query('SELECT rarity.shortname As rname, SUM(inventory.quantity) As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND inventory.quantity > 0 GROUP BY rarity.id ORDER BY rarity.id ASC', function (err, rows, fields) {
+				if (err) throw err;
+
+				var bottext = "<b>" + message.from.username + "</b> possiedi troppi oggetti per poterli visualizzare, ecco un riassunto:\n";
+
+				for (i = 0, len = Object.keys(rows).length; i < len; i++)
+					bottext += "> " + rows[i].rname + ": " + formatNumber(rows[i].num) + "\n";
+
+				bot.sendMessage(message.chat.id, bottext, html)
+			});
+			return;
+		}
+
+		if (match[1].toLowerCase() == "completo") {
+			connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.shortname As rname, inventory.quantity As num, craftable FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND inventory.quantity > 0 ORDER BY rarity.id DESC, item.name ASC', function (err, rows, fields) {
+				if (err) throw err;
+				var bottext = "";
+				if (Object.keys(rows).length > 0) {
+					var rarityPre = rows[0].rname;
+					for (i = 0, len = Object.keys(rows).length; i < len; i++) {
+						if (rarityPre != rows[i].rname) {
+							bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> possiedi (" + rarityPre + "):\n" + bottext, options);
+							rarityPre = rows[i].rname;
+							bottext = "";
+						}
+						if (rows[i].craftable == 0)
+							rows[i].name = "<b>" + rows[i].name + "</b>"
+						bottext += "> " + rows[i].name + " (" + rows[i].rname + ", " + formatNumber(rows[i].num) + ")\n";
+					}
+					bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> possiedi (" + rarityPre + "):\n" + bottext, options);
+				}
+			});
+		} else if (match[1].toLowerCase() == "consumabili") {
 			var orderBy = "ORDER BY rarity.id DESC, item.name ASC";
 
 			var bottext = "<b>" + message.from.username + "</b> possiedi (Consumabili):\n";
@@ -10594,7 +10622,7 @@ bot.onText(/^\/zainob (.+)|^\/zainoc (.+)|^\/zainob|^\/zainoc/, function (messag
 				connection.query('SELECT rarity.shortname As rname, SUM(inventory.quantity) As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND item.craftable = ' + craftable + ' AND inventory.quantity > 0 GROUP BY rarity.id ORDER BY rarity.id ASC', function (err, rows, fields) {
 					if (err) throw err;
 
-					var bottext = "<b>" + message.from.username + "</b> possiedi troppi oggetti " + craftTxt.toLowerCase() + ", per poterli visualizzare, ecco un riassunto:\n";
+					var bottext = "<b>" + message.from.username + "</b> possiedi troppi oggetti " + craftTxt.toLowerCase() + " per poterli visualizzare, ecco un riassunto:\n";
 
 					for (i = 0, len = Object.keys(rows).length; i < len; i++)
 						bottext += "> " + rows[i].rname + ": " + formatNumber(rows[i].num) + "\n";

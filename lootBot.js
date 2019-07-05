@@ -9960,7 +9960,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							keyboard: [["1", "2", "3"], ["4", "5", "6"], ["Pozioni", "Scappa"], ["Torna al menu"]]
+							keyboard: [["1", "2", "3"], ["4", "5", "6"], ["❣️", "❤️"], ["Scappa"], ["Torna al menu"]]
 						}
 					};
 
@@ -11492,7 +11492,6 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															var rand = Math.random() * 200;
 
 															if (parseInt(answer.text) != parseInt(param.split(",")[0])) {
-
 																var damage = Math.round(Math.random() * (player_total_life / 15) + (player_total_life / 15));
 																damage = Math.round(damage / 2);
 
@@ -21271,7 +21270,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																	});
 																}
 																var enemy_conf_dmg = 0;
-																if ((enemy_confusion > 0) && (enemySkip == 0)) {
+																if ((enemy_confusion > 0) && (enemy_ice == 0) && (enemySkip == 0)) {
 																	enemy_conf_dmg = damage * 0.5;
 																	damage += enemy_conf_dmg;
 																	connection.query('UPDATE ' + target_table_status + ' SET confusion = confusion-1 WHERE dragon_id = ' + enemy_dragon_id, function (err, rows, fields) {
@@ -21314,7 +21313,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																	});
 																}
 																var conf_dmg = 0;
-																if ((confusion > 0) && (skip == 0)) {
+																if ((confusion > 0) && (ice == 0) && (skip == 0)) {
 																	conf_dmg = enemy_damage * 0.5;
 																	enemy_damage += conf_dmg;
 																	connection.query('UPDATE dragon_top_status SET confusion = confusion-1 WHERE dragon_id = ' + dragon_id, function (err, rows, fields) {
@@ -22942,13 +22941,21 @@ function idToClass(classId) {
 	return rows[0].name;
 }
 
-bot.onText(/^il mio party/i, function (message) {
+bot.onText(/^il mio party|Esci dal party/i, function (message) {
 
 	var kbBack = {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
 			keyboard: [["Torna agli incarichi"], ["Torna al menu"]]
+		}
+	};
+	
+	var kbBack2 = {
+		parse_mode: "HTML",
+		reply_markup: {
+			resize_keyboard: true,
+			keyboard: [["Esci dal party"], ["Torna agli incarichi"], ["Torna al menu"]]
 		}
 	};
 
@@ -22974,9 +22981,36 @@ bot.onText(/^il mio party/i, function (message) {
 					bot.sendMessage(message.chat.id, "Non sei in un party, contatta l'amministratore del team per essere aggiunto", kbBack);
 					return;
 				}
+				
 				var party_id = rows[0].party_id;
-				connection.query('SELECT P.nickname, M.answ_id, M2.assigned_to, M2.wait FROM mission_team_party_player M, mission_team_party M2, player P WHERE M.player_id = P.id AND M2.party_id = M.party_id AND M2.team_id = M.team_id AND M.team_id = ' + team_id + ' AND M.party_id = ' + party_id, function (err, rows, fields) {
+				
+				connection.query('SELECT P.id, P.nickname, M.answ_id, M2.assigned_to, M2.wait FROM mission_team_party_player M, mission_team_party M2, player P WHERE M.player_id = P.id AND M2.party_id = M.party_id AND M2.team_id = M.team_id AND M.team_id = ' + team_id + ' AND M.party_id = ' + party_id, function (err, rows, fields) {
 					if (err) throw err;
+					
+					if (message.text.toLowerCase() == "esci dal party"){
+						if (Object.keys(rows).length < 2){
+							bot.sendMessage(message.chat.id, "Puoi uscire dal party solo se c'è almeno ancora un altro membro", kbBack);
+							return;
+						}
+						
+						if (rows[0].assigned_to != null){
+							bot.sendMessage(message.chat.id, "Puoi uscire dal party solo se non è in corso un incarico", kbBack);
+							return;
+						}
+						
+						connection.query('DELETE FROM mission_team_party_player WHERE player_id = ' + player_id, function (err, rows, fields) {
+							if (err) throw err;
+							bot.sendMessage(message.chat.id, "Sei uscito dal party!", kbBack);
+						});
+						
+						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+							if (rows[i].id != player_id)
+								bot.sendMessage(message.chat.id, message.from.username + " ha lasciato il tuo party!");
+						}
+						
+						return;
+					}
+					
 					var text = "Il tuo Party " + party_id + " è formato da " + Object.keys(rows).length + " membri:\n\n";
 					var voted = "";
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
@@ -22990,7 +23024,7 @@ bot.onText(/^il mio party/i, function (message) {
 						}
 						text += "> " + rows[i].nickname + voted + "\n";
 					}
-					bot.sendMessage(message.chat.id, text, kbBack);
+					bot.sendMessage(message.chat.id, text, kbBack2);
 				});	
 			});
 		});
@@ -37561,25 +37595,26 @@ bot.onText(/ricicla/i, function (message) {
 
 								delItem(player_id, item_id, qnt);
 
-								if ((nRarity == "D") && (item_id < 100)){
-									var stone_item_id = item_id-67;	// 1-6
-									var prob = 100-(stone_item_id*15);
-									var rand = Math.random()*100;
-
-									if (prob >= rand){
-										bot.sendMessage(message.chat.id, "La macchina di riciclo si è inceppata e non è stato possibile produrre alcun oggetto!", kb2);
-										return;
-									}
-								}
-
 								setAchievement(player_id, 15, calc_qnt);
 
 								var text = "Hai riciclato " + qnt + "x " + oggetto + " ed hai ottenuto:\n";
 								var achQnt = 0;
 								
 								var itemsArray = [];
+								var broken = 0;
 								
 								for (var i = 0; i < calc_qnt; i++) {
+									if ((nRarity == "D") && (item_id < 100)){
+										var stone_item_id = item_id-67;	// 1-6
+										var prob = 100-(stone_item_id*15);
+										var rand = Math.random()*100;
+
+										if (prob >= rand){
+											broken++;
+											continue;
+										}
+									}
+									
 									var rows = connection_sync.query('SELECT id, name FROM item WHERE rarity = "' + nRarity + '" AND name != "' + oggetto + '" AND craftable = 0 ORDER BY RAND()');
 
 									addItem(player_id, rows[0].id);
@@ -37608,6 +37643,9 @@ bot.onText(/ricicla/i, function (message) {
 								var itemsGrouped = compressArray(itemsArray);
 								for (i = 0; i < Object.keys(itemsGrouped).length; i++)
 									text += "> " + itemsGrouped[i].count + "x " + itemsGrouped[i].value + "\n";
+								
+								if (broken > 0)
+									text += "\nTuttavia si è inceppata durante il riciclo di " + broken + " oggetti!";
 								
 								bot.sendMessage(message.chat.id, text, kb3);
 							});
