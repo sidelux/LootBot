@@ -382,6 +382,20 @@ function checkSpam(message) {
 }
 
 bot.on('message', function (message) {
+	
+	// per recupero mana perso
+	/*
+	if (message.forward_from != undefined) {
+		if (message.forward_from.username == "lootgamebot") {
+			if (message.forward_date >= 1562364060) {
+				if (message.text.indexOf("Le miniere sono state chiuse") != -1){
+					console.log(message);
+				}
+			}
+		}
+	}
+	*/
+	
 	if (message.text != undefined) {
 		if ((message.text != "") && (message.text.indexOf("/start") == -1)) {
 			//console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
@@ -3677,7 +3691,7 @@ bot.onText(/automana/i, function (message) {
 });
 
 function autoMana() {
-	connection.query('SELECT mana.name, class, reborn, chat_id, nickname, player_id, rate, type, ROUND(TIMESTAMPDIFF(MINUTE,time_start,NOW())/60*rate,0) As quantity FROM event_mana_status, event_mana_zone, player, mana WHERE mana.id = event_mana_zone.type AND player.id = player_id AND event_mana_status.time_start IS NOT NULL AND event_mana_status.zone_id = event_mana_zone.id', function (err, rows, fields) {
+	connection.query('SELECT mana.name, class, reborn, chat_id, nickname, player_id, rate, type, ROUND(TIMESTAMPDIFF(MINUTE,time_start,NOW())/60*rate,0) As quantity, global_end FROM event_mana_status, event_mana_zone, player, mana WHERE mana.id = event_mana_zone.type AND player.id = player_id AND event_mana_status.time_start IS NOT NULL AND event_mana_status.zone_id = event_mana_zone.id', function (err, rows, fields) {
 		if (err) throw err;
 
 		var mana_type = "";
@@ -3700,12 +3714,19 @@ function autoMana() {
 					rows[i].quantity -= rows[i].quantity * 0.1;
 				if ((rows[i].class == 6) && (rows[i].reborn > 1))
 					rows[i].quantity -= rows[i].quantity * 0.1;
+				
+				var extra_mana = "";
+				if (rows[i].global_end == 1){
+					rows[i].quantity = rows[i].quantity*2;
+					extra_mana = " (aumentato grazie al bonus globale)";
+				}
+				
 				rows[i].quantity = Math.floor(rows[i].quantity);
 
 				connection.query('UPDATE event_mana_status SET ' + mana_type + ' = ' + mana_type + ' + ' + rows[i].quantity + ', zone_id = 0, time_start = NULL WHERE player_id = ' + rows[i].player_id, function (err, rows, fields) {
 					if (err) throw err;
 				});
-				bot.sendMessage(rows[i].chat_id, "Le miniere sono state chiuse, hai ricevuto " + formatNumber(rows[i].quantity) + " Mana " + rows[i].name + "!");
+				bot.sendMessage(rows[i].chat_id, "Le miniere sono state chiuse, hai ricevuto " + formatNumber(rows[i].quantity) + " Mana " + rows[i].name + "!" + extra_mana);
 			}
 		} else
 			console.log("Nessuna miniera da terminare");
