@@ -2147,7 +2147,7 @@ bot.onText(/Donazioni|Lunari/i, function (message) {
 		disable_web_page_preview: true,
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [["Fai una Donazione!"], ["Lista Donatori"], ["Torna al menu"]]
+			keyboard: [["Fai una Donazione!"], ["Donatori complessivi"], ["Donatori ultimi 3 mesi"], ["Torna al menu"]]
 		}
 	};
 
@@ -2484,9 +2484,18 @@ bot.on('callback_query', function (message) {
 	});
 });
 
-bot.onText(/Donatori/i, function (message) {
+bot.onText(/donatori ultimi 3 mesi|donatori complessivi/i, function (message) {
 	var top = "";
-	connection.query('SELECT nickname, SUM(amount) As donation FROM donation_history, player WHERE donation_history.player_id = player.id AND DATEDIFF(CURDATE(), CAST(time As date)) < 90 GROUP BY player_id ORDER BY donation DESC', function (err, rows, fields) {
+	var query = "";
+	var period = "";
+	if (message.text.toLowerCase().indexOf("complessivi") != -1){
+		query = "SELECT nickname, SUM(amount) As donation FROM donation_history, player WHERE player.account_id NOT IN (SELECT account_id FROM banlist) AND donation_history.player_id = player.id GROUP BY player_id ORDER BY donation DESC";
+		period = "complessiva";
+	} else {
+		query = "SELECT nickname, SUM(amount) As donation FROM donation_history, player WHERE player.account_id NOT IN (SELECT account_id FROM banlist) AND donation_history.player_id = player.id AND DATEDIFF(CURDATE(), CAST(time As date)) < 90 GROUP BY player_id ORDER BY donation DESC";
+		period = "degli ultimi 3 mesi";
+	}
+	connection.query(query, function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
@@ -2499,7 +2508,7 @@ bot.onText(/Donatori/i, function (message) {
 			top += c + "° " + rows[Object.keys(rows).length - 1].nickname + " (" + rows[Object.keys(rows).length - 1].donation + " €)\n";
 		} else
 			top = "Nessuna donazione :(\n";
-		bot.sendMessage(message.chat.id, "<b>Top degli ultimi 3 mesi:</b>\n" + top, back_html);
+		bot.sendMessage(message.chat.id, "<b>Top " + period + ":</b>\n" + top, back_html);
 	});
 });
 
@@ -34151,7 +34160,7 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 								return;
 							}
 
-							connection.query('SELECT pack_id, item.name, item.id, price FROM market_pack, item WHERE market_pack.item_id = item.id AND pack_id = ' + pack_id, function (err, rows, fields) {
+							connection.query('SELECT pack_id, item.name, item.id, price FROM market_pack, item WHERE market_pack.item_id = item.id AND pack_id = ' + pack_id + ' ORDER BY item.name', function (err, rows, fields) {
 								if (err) throw err;
 								var text = "Oggetti contenuti nel pacchetto:\n";
 								var items = [];

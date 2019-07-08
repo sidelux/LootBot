@@ -210,7 +210,7 @@ bot.on('message', function (message) {
 									if (mergeMessages[message.chat.id].split(";")[0] == message.from.id){
 										bot.deleteMessage(message.chat.id, mergeMessages[message.chat.id].split(";")[1]);
 										bot.deleteMessage(message.chat.id, message.message_id);
-										var newText = mergeMessages[message.chat.id].split(";")[2] + "\n" + message.text;
+										var newText = mergeMessages[message.chat.id].split(";")[2] + "\n~\n" + message.text;
 										bot.sendMessage(message.chat.id, "@" + message.from.username + " <i>scrive</i>:\n" + newText, html).then(function (data) {
 											mergeMessages[message.chat.id] = message.from.id + ";" + data.message_id + ";" + newText;
 										});
@@ -6335,7 +6335,7 @@ bot.onText(/^\/iscritti/, function (message) {
 
 		connection.query('SELECT id FROM public_lottery WHERE creator_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
-			if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length == 0) {
 				bot.sendMessage(message.chat.id, "Al momento non hai creato una lotteria");
 				return;
 			}
@@ -6344,7 +6344,7 @@ bot.onText(/^\/iscritti/, function (message) {
 			
 			connection.query('SELECT nickname FROM public_lottery_players L, player P WHERE L.player_id = P.id AND lottery_id = ' + lottery_id, function (err, rows, fields) {
 				if (err) throw err;
-				if (Object.keys(rows).length > 0) {
+				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, "Nessun iscritto alla tua lotteria");
 					return;
 				}
