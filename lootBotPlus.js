@@ -1307,7 +1307,7 @@ bot.onText(/^\/pinfo (.+)/, function (message, match) {
 		// calcolo creazione account
 		// https://github.com/wjclub/telegram-bot-getids/blob/master/ages.json
 		// 4 feb 19
-		
+
 		var ages = {
 			"2768409"   : 1383264000000,
 			"7679610"   : 1388448000000,
@@ -1351,7 +1351,7 @@ bot.onText(/^\/pinfo (.+)/, function (message, match) {
 			"369669043" : 1490918000000,
 			"400169472" : 1501459000000
 		};
-		
+
 		const ids = Object.keys(ages)
 		const nids = ids.map(e => parseInt(e))
 
@@ -1387,9 +1387,9 @@ bot.onText(/^\/pinfo (.+)/, function (message, match) {
 				`${(d[1].getUTCMonth() + 1)}/${d[1].getUTCFullYear()}`
 			]
 		}
-		
+
 		var res = getAge(rows[0].account_id);
-		
+
 		// fine calcolo creazione account
 
 		bot.sendMessage(message.from.id, "<b>ID Account:</b> " + rows[0].account_id + "\n<b>Nome utente:</b> " + rows[0].nickname + "\n<b>Ultimo comando:</b> " + toDate("it", rows[0].last_update) + "\n<b>Nome:</b> " + rows[0].real_name + "\n<b>Sesso:</b> " + rows[0].gender + "\n<b>Data di nascita:</b> " + datetime + "\n<b>Creazione account:</b> " + res[0] + " " + res[1], html);
@@ -6339,9 +6339,9 @@ bot.onText(/^\/iscritti/, function (message) {
 				bot.sendMessage(message.chat.id, "Al momento non hai creato una lotteria");
 				return;
 			}
-			
+
 			var lottery_id = rows[0].id;
-			
+
 			connection.query('SELECT nickname FROM public_lottery_players L, player P WHERE L.player_id = P.id AND lottery_id = ' + lottery_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
@@ -6351,7 +6351,7 @@ bot.onText(/^\/iscritti/, function (message) {
 				var text = "Iscritti alla tua lotteria:";
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 					text += "\n> " + rows[i].nickname;
-				
+
 				bot.sendMessage(message.chat.id, text);
 			});
 		});
@@ -6584,7 +6584,7 @@ bot.onText(/^\/offri/i, function (message) {
 	}
 
 	item = elements[0].trim();
-	price = parseInt(elements[1].replace(/[^\w\s]/gi, '').trim().replaceAll(/\./, ""));
+	price = parseInt(elements[1].replace(/[^\w\s]/gi, '').trim().replaceAll(/\./, "").replaceAll(/\k/, "000"));
 	buyer = elements[2].replace('@', '').trim();
 
 	if (item == "") {
@@ -8393,109 +8393,118 @@ bot.onText(/^\/statistiche/, function (message) {
 													connection.query('SELECT COUNT(*) As active FROM last_command WHERE DATEDIFF(NOW(), time) < 30', function (err, rows, fields) {
 														if (err) throw err;
 														var act_monthly = rows[0].active;
-														connection.query('SELECT SUM(quantity) As cnt FROM inventory WHERE item_id = 646', function (err, rows, fields) {
+														connection.query('SELECT COUNT(*) As active FROM last_command WHERE DATEDIFF(NOW(), time) < 7', function (err, rows, fields) {
 															if (err) throw err;
-															var dust = rows[0].cnt;
-															connection.query('SELECT `AUTO_INCREMENT` As lottery FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "public_lottery"', function (err, rows, fields) {
+															var act_weekly = rows[0].active;
+															connection.query('SELECT SUM(quantity) As cnt FROM inventory WHERE item_id = 646', function (err, rows, fields) {
 																if (err) throw err;
-																var lottery = rows[0].lottery;
-																connection.query('SELECT `AUTO_INCREMENT` As shop FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "public_shop"', function (err, rows, fields) {
+																var dust = rows[0].cnt;
+																connection.query('SELECT `AUTO_INCREMENT` As lottery FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "public_lottery"', function (err, rows, fields) {
 																	if (err) throw err;
-																	var shop = rows[0].shop;
-																	connection.query('SELECT `AUTO_INCREMENT` As daily FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "daily_chest"', function (err, rows, fields) {
+																	var lottery = rows[0].lottery;
+																	connection.query('SELECT `AUTO_INCREMENT` As shop FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "public_shop"', function (err, rows, fields) {
 																		if (err) throw err;
-																		var daily = rows[0].daily;
-																		connection.query('SELECT `AUTO_INCREMENT` As dungeon FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dungeon_list"', function (err, rows, fields) {
+																		var shop = rows[0].shop;
+																		connection.query('SELECT `AUTO_INCREMENT` As daily FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "daily_chest"', function (err, rows, fields) {
 																			if (err) throw err;
-																			var dungeon = rows[0].dungeon;
-																			connection.query('SELECT `AUTO_INCREMENT` As room FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dungeon_rooms"', function (err, rows, fields) {
+																			var daily = rows[0].daily;
+																			connection.query('SELECT `AUTO_INCREMENT` As dungeon FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dungeon_list"', function (err, rows, fields) {
 																				if (err) throw err;
-																				var room = rows[0].room;
-																				connection.query('SELECT SUM(ability_level) As ablevel FROM `ability`', function (err, rows, fields) {
+																				var dungeon = rows[0].dungeon;
+																				connection.query('SELECT `AUTO_INCREMENT` As room FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dungeon_rooms"', function (err, rows, fields) {
 																					if (err) throw err;
-																					var ablevel = rows[0].ablevel;
-																					connection.query('SELECT `AUTO_INCREMENT` As invite FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "referral_list"', function (err, rows, fields) {
+																					var room = rows[0].room;
+																					connection.query('SELECT SUM(ability_level) As ablevel FROM `ability`', function (err, rows, fields) {
 																						if (err) throw err;
-																						var invite = rows[0].invite;
-																						connection.query('SELECT TRUNCATE(SUM(CASE WHEN fail = 0 THEN 1 ELSE 0 END)/COUNT(*)*100,0) As perc FROM heist_history', function (err, rows, fields) {
+																						var ablevel = rows[0].ablevel;
+																						connection.query('SELECT `AUTO_INCREMENT` As invite FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "referral_list"', function (err, rows, fields) {
 																							if (err) throw err;
-																							var perc = rows[0].perc;
-																							connection.query('SELECT COUNT(*) As groups, SUM(members) As members FROM plus_groups WHERE last_update < NOW() - INTERVAL 1 WEEK', function (err, rows, fields) {
+																							var invite = rows[0].invite;
+																							connection.query('SELECT TRUNCATE(SUM(CASE WHEN fail = 0 THEN 1 ELSE 0 END)/COUNT(*)*100,0) As perc FROM heist_history', function (err, rows, fields) {
 																								if (err) throw err;
-																								var groups = rows[0].groups;
-																								var members = rows[0].members;
-																								connection.query('SELECT SUM(mana_1+mana_2+mana_3) As mana FROM event_mana_status', function (err, rows, fields) {
+																								var perc = rows[0].perc;
+																								connection.query('SELECT COUNT(*) As groups, SUM(members) As members FROM plus_groups WHERE last_update < NOW() - INTERVAL 1 WEEK', function (err, rows, fields) {
 																									if (err) throw err;
-																									var mana = rows[0].mana;
-																									connection.query('SELECT SUM(quantity) As mag FROM magic', function (err, rows, fields) {
+																									var groups = rows[0].groups;
+																									var members = rows[0].members;
+																									connection.query('SELECT SUM(mana_1+mana_2+mana_3) As mana FROM event_mana_status', function (err, rows, fields) {
 																										if (err) throw err;
-																										var magic = rows[0].mag;
-																										connection.query('SELECT `AUTO_INCREMENT` As search FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "search_history"', function (err, rows, fields) {
+																										var mana = rows[0].mana;
+																										connection.query('SELECT SUM(quantity) As mag FROM magic', function (err, rows, fields) {
 																											if (err) throw err;
-																											var search = rows[0].search;
-																											connection.query('SELECT `AUTO_INCREMENT` As top_log FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dragon_top_log"', function (err, rows, fields) {
+																											var magic = rows[0].mag;
+																											connection.query('SELECT `AUTO_INCREMENT` As search FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "search_history"', function (err, rows, fields) {
 																												if (err) throw err;
-																												var top_log = rows[0].top_log;
-																												connection.query('SELECT SUM(quantity) As shop_tot FROM market_direct_history WHERE type = 2', function (err, rows, fields) {
+																												var search = rows[0].search;
+																												connection.query('SELECT `AUTO_INCREMENT` As top_log FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dragon_top_log"', function (err, rows, fields) {
 																													if (err) throw err;
-																													var shop_tot = rows[0].shop_tot;
-																													connection.query('SELECT SUM(pay) As cnt FROM game_house_stats', function (err, rows, fields) {
+																													var top_log = rows[0].top_log;
+																													connection.query('SELECT SUM(quantity) As shop_tot FROM market_direct_history WHERE type = 2', function (err, rows, fields) {
 																														if (err) throw err;
-																														var house_tot = rows[0].cnt;
-																														connection.query('SELECT SUM(mission_count) As cnt FROM team', function (err, rows, fields) {
+																														var shop_tot = rows[0].shop_tot;
+																														connection.query('SELECT SUM(pay) As cnt FROM game_house_stats', function (err, rows, fields) {
 																															if (err) throw err;
-																															var mission_team = rows[0].cnt;
-																															connection.query('SELECT COUNT(id) As cnt FROM artifacts', function (err, rows, fields) {
+																															var house_tot = rows[0].cnt;
+																															connection.query('SELECT COUNT(1) As cnt FROM mission_team_party WHERE assigned_to IS NOT NULL', function (err, rows, fields) {
 																																if (err) throw err;
-																																var artifacts = rows[0].cnt;
-																																connection.query('SELECT COUNT(id) As cnt FROM assault WHERE time_end IS NOT NULL', function (err, rows, fields) {
+																																var mission_team_current = rows[0].cnt;
+																																connection.query('SELECT SUM(mission_count) As cnt FROM team', function (err, rows, fields) {
 																																	if (err) throw err;
-																																	var assaults = rows[0].cnt;
-																																	connection.query('SELECT SUM(completed) As compl, SUM(lost) As persi FROM assault', function (err, rows, fields) {
+																																	var mission_team = rows[0].cnt;
+																																	connection.query('SELECT COUNT(id) As cnt FROM artifacts', function (err, rows, fields) {
 																																		if (err) throw err;
-																																		var assaults_win = rows[0].compl;
-																																		var assaults_lost = rows[0].persi;
+																																		var artifacts = rows[0].cnt;
+																																		connection.query('SELECT COUNT(id) As cnt FROM assault WHERE time_end IS NOT NULL', function (err, rows, fields) {
+																																			if (err) throw err;
+																																			var assaults = rows[0].cnt;
+																																			connection.query('SELECT SUM(completed) As compl, SUM(lost) As persi FROM assault', function (err, rows, fields) {
+																																				if (err) throw err;
+																																				var assaults_win = rows[0].compl;
+																																				var assaults_lost = rows[0].persi;
 
-																																		bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
-																																						"*Giocatori registrati:* " + formatNumber(tot) + "\n" +
-																																						"*Missioni in corso*: " + miss + "\n" +
-																																						"*Missioni completate*: " + formatNumber(miss2) + "\n" +
-																																						"*Viaggi in corso*: " + travel + "\n" +
-																																						"*Utenti attivi (1):* " + formatNumber(act) + "\n" +
-																																						"_Dei quali " + formatNumber(act_male) + " esploratori e " + formatNumber(act_female) + " esploratrici_\n" +
-																																						"_Età media: " + avg_age + " anni_\n" +
-																																						"*Utenti attivi mensili (2):* " + formatNumber(act_monthly) + "\n" +
-																																						"*Monete attuali*: " + formatNumber(money) + " §\n" +
-																																						"*Oggetti*: " + formatNumber(inv) + "\n" +
-																																						"*Scrigni attuali*: " + formatNumber(chest) + "\n" +
-																																						"*Creazioni*: " + formatNumber(craft) + "\n" +
-																																						"*Draghi*: " + formatNumber(dragon) + "\n" +
-																																						"*Team:* " + formatNumber(teamn) + "\n" +
-																																						"*Ispezioni/in corso/rapporto:* " + formatNumber(heist) + "/" + heistn + "/" + perc + "%\n" +
-																																						"*Lotterie:* " + formatNumber(lottery) + "\n" +
-																																						"*Oggetti nei negozi:* " + formatNumber(shop) + "\n" +
-																																						"*Oggetti acquistati:* " + formatNumber(shop_tot) + "\n" +
-																																						"*Scrigni giornalieri consegnati:* " + formatNumber(daily) + "\n" +
-																																						"*Dungeon completati:* " + formatNumber(dungeon_tot) + "\n" +
-																																						"*Dungeon creati:* " + formatNumber(dungeon) + "\n" +
-																																						"*Stanze create:* " + formatNumber(room) + "\n" +
-																																						"*Livelli skill:* " + formatNumber(ablevel) + "\n" +
-																																						"*Utenti invitati:* " + formatNumber(invite) + "\n" +
-																																						"*Mana grezzo:* " + formatNumber(mana) + "\n" +
-																																						"*Polvere:* " + formatNumber(dust) + "\n" +
-																																						"*Incantesimi:* " + formatNumber(magic) + "\n" +
-																																						"*Oggetti cercati:* " + formatNumber(search) + "\n" +
-																																						"*Imprese completate:* " + formatNumber(achievement) + "\n" +
-																																						"*Spese Casa dei Giochi:* " + formatNumber(house_tot) + " §\n" +
-																																						"*Battaglie nella Vetta:* " + formatNumber(top_log) + "\n" +
-																																						"*Incarichi completati:* " + formatNumber(mission_team) + "\n" +
-																																						"*Artefatti ottenuti:* " + formatNumber(artifacts) + "\n" +
-																																						"*Assalti in corso/completati/falliti:* " + formatNumber(assaults) + "/" + formatNumber(assaults_win) + "/" + formatNumber(assaults_lost) + "\n" +
-																																						birthday + 
-																																						"\n*Gruppi attivi (3):* " + formatNumber(groups) + "\n" +
-																																						"*Membri nei gruppi attivi (3):* " + formatNumber(members) + "\n" +
+																																				bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
+																																								"*Giocatori registrati:* " + formatNumber(tot) + "\n" +
+																																								"*Missioni in corso*: " + miss + "\n" +
+																																								"*Missioni completate*: " + formatNumber(miss2) + "\n" +
+																																								"*Viaggi in corso*: " + travel + "\n" +
+																																								"*Utenti attivi (1):* " + formatNumber(act) + "\n" +
+																																								"_Dei quali " + formatNumber(act_male) + " esploratori e " + formatNumber(act_female) + " esploratrici_\n" +
+																																								"_Età media: " + avg_age + " anni_\n" +
+																																								"*Utenti attivi mensili (2):* " + formatNumber(act_monthly) + "\n" +
+																																								"*Utenti attivi settimanali (3):* " + formatNumber(act_weekly) + "\n" +
+																																								"*Monete attuali*: " + formatNumber(money) + " §\n" +
+																																								"*Oggetti*: " + formatNumber(inv) + "\n" +
+																																								"*Scrigni attuali*: " + formatNumber(chest) + "\n" +
+																																								"*Creazioni*: " + formatNumber(craft) + "\n" +
+																																								"*Draghi*: " + formatNumber(dragon) + "\n" +
+																																								"*Team:* " + formatNumber(teamn) + "\n" +
+																																								"*Ispezioni/in corso/rapporto:* " + formatNumber(heist) + "/" + heistn + "/" + perc + "%\n" +
+																																								"*Lotterie:* " + formatNumber(lottery) + "\n" +
+																																								"*Oggetti nei negozi:* " + formatNumber(shop) + "\n" +
+																																								"*Oggetti acquistati:* " + formatNumber(shop_tot) + "\n" +
+																																								"*Scrigni giornalieri consegnati:* " + formatNumber(daily) + "\n" +
+																																								"*Dungeon completati:* " + formatNumber(dungeon_tot) + "\n" +
+																																								"*Dungeon creati:* " + formatNumber(dungeon) + "\n" +
+																																								"*Stanze create:* " + formatNumber(room) + "\n" +
+																																								"*Livelli skill:* " + formatNumber(ablevel) + "\n" +
+																																								"*Utenti invitati:* " + formatNumber(invite) + "\n" +
+																																								"*Mana grezzo:* " + formatNumber(mana) + "\n" +
+																																								"*Polvere:* " + formatNumber(dust) + "\n" +
+																																								"*Incantesimi:* " + formatNumber(magic) + "\n" +
+																																								"*Oggetti cercati:* " + formatNumber(search) + "\n" +
+																																								"*Imprese completate:* " + formatNumber(achievement) + "\n" +
+																																								"*Spese Casa dei Giochi:* " + formatNumber(house_tot) + " §\n" +
+																																								"*Battaglie nella Vetta:* " + formatNumber(top_log) + "\n" +
+																																								"*Incarichi in corso/completati:* " + formatNumber(mission_team_current) + "/" + formatNumber(mission_team) + "\n" +
+																																								"*Artefatti ottenuti:* " + formatNumber(artifacts) + "\n" +
+																																								"*Assalti in corso/completati/falliti:* " + formatNumber(assaults) + "/" + formatNumber(assaults_win) + "/" + formatNumber(assaults_lost) + "\n" +
+																																								birthday + 
+																																								"\n*Gruppi attivi (4):* " + formatNumber(groups) + "\n" +
+																																								"*Membri nei gruppi attivi (4):* " + formatNumber(members) + "\n" +
 
-																																						"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti che hanno inviato un comando negli ultimi 30 giorni\n(3) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark);
+																																								"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti che hanno inviato un comando negli ultimi 30 giorni\n(3) Utenti che hanno inviato un comando negli ultimi 7 giorni\n(4) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark);
+																																			});
+																																		});
 																																	});
 																																});
 																															});
