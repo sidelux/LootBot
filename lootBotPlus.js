@@ -1954,7 +1954,7 @@ bot.onText(/^\/chiedoaiuto/, function (message, match) {
 		var team_id = rows[0].team_id;
 		var player_id = rows[0].player_id;
 
-		connection.query('SELECT name, room_id, rooms, finish_date, finish_time FROM dungeon_status, dungeon_list WHERE dungeon_status.dungeon_id = dungeon_list.id AND player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT name, room_id, rooms, finish_date, finish_time, pass FROM dungeon_status, dungeon_list WHERE dungeon_status.dungeon_id = dungeon_list.id AND player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0){
@@ -1968,6 +1968,11 @@ bot.onText(/^\/chiedoaiuto/, function (message, match) {
 			var dungeon_finish_date = new Date(rows[0].finish_date);
 			var instance_finish_time = new Date(rows[0].finish_time);
 			var finish_date = new Date();
+			
+			if (rows[0].pass != 0) {
+				bot.sendMessage(message.from.id, "Puoi usare questo comando solo se il dungeon non è già stato passato!");
+				return;
+			}
 
 			if (dungeon_finish_date.getTime() < instance_finish_time.getTime())
 				finish_date = dungeon_finish_date;

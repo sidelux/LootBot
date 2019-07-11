@@ -317,7 +317,7 @@ callNTimes(300000, function () { //Ogni 5 minuti
 	var d = new Date();
 	if ((d.getHours() > 9) && (d.getHours() < 22)) {
 		checkMana();
-		// checkExtraDust();
+		checkExtraDust();
 	}
 });
 
@@ -588,12 +588,12 @@ var mainKeys = [];
 var mainKeysR = [];
 var mainKeysR2 = [];
 
-var topOpen = "Chiuse";
+var topOpen = "🚫";
 if (checkDragonTopOn == 1)
-	topOpen = "Aperte";
+	topOpen = "🔥";
 
 mainKeys = [['⚔ Missione ⚔'],
-			['Dungeon 🛡', 'Vette 🐲 (' + topOpen + ')'],
+			['Dungeon 🛡', 'Vette 🐲 ' + topOpen],
 			['Alchimia ⚗️', 'Rifugio 🔦'],
 			['Zaino 🎒', 'Piazza 💰', 'Scrigni 🔑'],
 			['Giocatore 👤', 'Team ⚜️'],
@@ -19253,7 +19253,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				return;
 			}
 			
-			var finishD = new Date("2019-07-10 12:00:00");
+			var finishD = new Date("2019-08-08 12:00:00");
 			var startD = new Date(finishD);
 			
 			var finish_date = addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes()) + " del " + addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + "/" + finishD.getFullYear();
@@ -31579,7 +31579,7 @@ bot.onText(/spolvera!/i, function (message) {
 
 		var player_id = rows[0].id;
 
-		connection.query('SELECT extracting, boost_time FROM event_dust_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT extracting, boost_time, `generated` FROM event_dust_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0){
@@ -31882,9 +31882,11 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 });
 
 bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
-	if (eventDust == 0) {
-		bot.sendMessage(message.chat.id, "L'evento non è disponibile oggi!", back);
-		return;
+	if (message.from.id != 20471035) {
+		if (eventDust == 0) {
+			bot.sendMessage(message.chat.id, "L'evento non è disponibile oggi!", back);
+			return;
+		}
 	}
 
 	connection.query('SELECT id, class, reborn, holiday, account_id, travel_id, cave_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -32020,7 +32022,7 @@ bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
 
 							var unit = getItemCnt(player_id, 646);
 
-							bot.sendMessage(message.chat.id, "*Gestione Generatore*\n\nProdurrai " + qnt + "x Polvere/ora e il deposito ti consente massimo " + max_qnt + " unità\nPossiedi " + unit + " unità nello zaino", eventKb2).then(function () {
+							bot.sendMessage(message.chat.id, "*Gestione Generatore*\n\nProdurrai " + qnt + "x Polvere/ora e il deposito ti consente massimo *" + max_qnt + " unità*\nPossiedi *" + unit + " unità* nello zaino", eventKb2).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text == "Torna al menu")
 										return;
@@ -32029,28 +32031,30 @@ bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
 										var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 										connection.query('UPDATE event_dust_status SET extracting = 1, last_update = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
-											bot.sendMessage(message.chat.id, "Generatore azionato! Torna tra un po' di tempo per ritirare la polvere prodotta!", gBack);
+											bot.sendMessage(message.chat.id, "Generatore *azionato*! Torna tra un po' di tempo per ritirare la polvere prodotta!", gBack);
 										});
 									} else if (answer.text == "Aumenta Deposito") {
-										if (max_qnt >= 54) {
-											bot.sendMessage(message.chat.id, "Il deposito del generatore è già potenziato al massimo", gBack);
+										if (max_qnt >= 64) {
+											bot.sendMessage(message.chat.id, "Il deposito del generatore è già potenziato al massimo!", gBack);
 											return;
 										}
+										
+										var price = max_qnt*50000;
 
-										bot.sendMessage(message.chat.id, "Aggiungere 2 unità al tuo deposito ti costerà 50.000 §, procedi?", gYesNo).then(function () {
+										bot.sendMessage(message.chat.id, "Aggiungere *2 unità* al tuo deposito ti costerà *" + formatNumber(price) + "* §, procedi?", gYesNo).then(function () {
 											answerCallbacks[message.chat.id] = function (answer) {
 												if (answer.text.toLowerCase() == "si") {
 													connection.query('SELECT money FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 														if (err) throw err;
-														if (rows[0].money < 50000) {
-															bot.sendMessage(message.chat.id, "Non hai abbastanza monete", gBack);
+														if (rows[0].money < price) {
+															bot.sendMessage(message.chat.id, "Non hai abbastanza monete, ne possiedi " + formatNumber(rows[0].money) + " su " + formatNumber(price), gBack);
 															return;
 														}
-														connection.query('UPDATE player SET money = money-50000 WHERE id = ' + player_id, function (err, rows, fields) {
+														connection.query('UPDATE player SET money = money-' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 															connection.query('UPDATE event_dust_status SET max_qnt = max_qnt + 2 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
-																bot.sendMessage(message.chat.id, "Hai potenziato il deposito e hai raggiunto " + (max_qnt + 2) + " unità di spazio disponibile!", gBack);
+																bot.sendMessage(message.chat.id, "Hai potenziato il deposito e hai raggiunto *" + (max_qnt + 2) + " unità* di spazio disponibile!", gBack);
 															});
 														});
 													});
@@ -41788,14 +41792,14 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 											bot.sendMessage(message.chat.id, "Hai ricevuto +500 Mana per tipo!", kbBack);
 										});
 										setAchievement(player_id, 21, 1);
-										setAchievement(player_id, 81, 500);
+										setAchievement(player_id, 81, 1500);
 									} else if (rand == 10) {
 										connection.query('UPDATE event_mana_status SET mana_1 = mana_1+1000, mana_2 = mana_2+1000, mana_3 = mana_3+1000 WHERE player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 											bot.sendMessage(message.chat.id, "Hai ricevuto +1.000 Mana per tipo!", kbBack);
 										});
 										setAchievement(player_id, 21, 1);
-										setAchievement(player_id, 81, 1000);
+										setAchievement(player_id, 81, 3000);
 									} else if (rand == 11) {
 										var money = 1000000*reborn;
 										connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + player_id, function (err, rows, fields) {
@@ -48381,7 +48385,7 @@ function setEvents(element, index, array) {
 				var chestName = rows[0].name;
 				var chestId = rows[0].id;
 				addChest(player_id, chestId);
-				text = "Durante la missione decidi di intraprendere un'altra missione. Impiegherai un ora in più per tornare, ma ricevi " + chestName;
+				text = "Durante la missione decidi di intraprendere un'altra missione. Impiegherai un'ora in più per tornare, ma ricevi " + chestName;
 				bot.sendMessage(chat_id, text);
 			});
 		});
@@ -48788,7 +48792,7 @@ function setMana(element, index, array) {
 }
 
 function checkExtraDust() {
-	connection.query('SELECT player_id, chat_id FROM event_dust_status E, player P WHERE E.player_id = P.id AND extracting = 1 AND boost_time IS NULL AND boost_cnt < 3', function (err, rows, fields) {
+	connection.query('SELECT player_id, chat_id FROM event_dust_status E, player P WHERE E.player_id = P.id AND extracting = 1 AND `generated` < max_qnt-10 AND boost_time IS NULL AND boost_cnt < 3', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
@@ -48802,7 +48806,7 @@ function checkExtraDust() {
 
 function setExtraDust(element, index, array) {
 	var rand = Math.random()*100;
-	if (rand > 5)
+	if (rand > 10)
 		return;
 	var player_id = element.player_id;
 	var chat_id = element.chat_id;

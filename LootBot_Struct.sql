@@ -1312,6 +1312,8 @@ CREATE TABLE `event_dust_status` (
   `max_qnt` int(11) NOT NULL DEFAULT '5',
   `qnt` int(11) NOT NULL DEFAULT '1',
   `last_update` timestamp NULL DEFAULT NULL,
+  `boost_time` timestamp NULL DEFAULT NULL,
+  `boost_cnt` int(11) NOT NULL DEFAULT '0',
   `notified` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `player_id` (`player_id`),
@@ -3564,4 +3566,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-09 15:00:06
+-- Dump completed on 2019-07-11  9:00:05
