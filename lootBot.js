@@ -31524,20 +31524,26 @@ bot.onText(/scava!/i, function (message) {
 
 			var zone_id = rows[0].zone_id;
 			var qnt = Math.round(getRandomArbitrary(20, 50));
+			
+			bot.sendMessage(message.chat.id, "Raccogliere il bonus delle Miniere di Mana?", yesno).then(function () {
+				answerCallbacks[message.chat.id] = function (answer) {
+					if (answer.text.toLowerCase() == "si") {
+						connection.query('UPDATE event_mana_status SET boost_time = NULL, mana_' + zone_id + ' = mana_' + zone_id + '+' + qnt + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+							if (err) throw err;
 
-			connection.query('UPDATE event_mana_status SET boost_time = NULL, mana_' + zone_id + ' = mana_' + zone_id + '+' + qnt + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
-				if (err) throw err;
+							var color = "";
+							if (zone_id == 1)
+								color = "Blu";
+							else if (zone_id == 2)
+								color = "Giallo";
+							else if (zone_id == 3)
+								color = "Rosso";
 
-				var color = "";
-				if (zone_id == 1)
-					color = "Blu";
-				else if (zone_id == 2)
-					color = "Giallo";
-				else if (zone_id == 3)
-					color = "Rosso";
-
-				bot.sendMessage(message.chat.id, "Hai sfruttato il bonus della vena ricca ed ottenuto *" + qnt + "* Mana " + color + "!", back);
-			})
+							bot.sendMessage(message.chat.id, "Hai sfruttato il bonus della vena ricca ed ottenuto *" + qnt + "* Mana " + color + "!", back);
+						});
+					}
+				}
+			});
 		});
 	});
 });
@@ -31608,12 +31614,18 @@ bot.onText(/spolvera!/i, function (message) {
 			}
 
 			var qnt = Math.round(getRandomArbitrary(1, 5));
+			
+			bot.sendMessage(message.chat.id, "Raccogliere il bonus del Generatore di Polvere?", yesno).then(function () {
+				answerCallbacks[message.chat.id] = function (answer) {
+					if (answer.text.toLowerCase() == "si") {
+						connection.query('UPDATE event_dust_status SET boost_time = NULL, `generated` = `generated`+' + qnt + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+							if (err) throw err;
 
-			connection.query('UPDATE event_dust_status SET boost_time = NULL, `generated` = `generated`+' + qnt + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
-				if (err) throw err;
-
-				bot.sendMessage(message.chat.id, "Hai sfruttato il bonus della spolverata ed ottenuto *" + qnt + "* Polvere!", back);
-			})
+							bot.sendMessage(message.chat.id, "Hai sfruttato il bonus della spolverata ed ottenuto *" + qnt + "* Polvere!", back);
+						})
+					}
+				}
+			});
 		});
 	});
 });
@@ -32172,7 +32184,6 @@ bot.onText(/^\/sintesi (.+),(.+),(.+)|^\/sintesi/i, function (message, match) {
 
 						bot.sendMessage(message.chat.id, "Iniziare la sintesi utilizzando le unità selezionate?", yesno).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
-
 								if (answer.text.toLowerCase() == "si") {
 									connection.query('SELECT mana_1, mana_2, mana_3 FROM event_mana_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
