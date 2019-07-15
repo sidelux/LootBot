@@ -229,7 +229,7 @@ CurrentLexiconLists =  {
 			"striata",
 			"trasparente",
 			"volante",
-			"violento"
+			"violenta"
 		],
 		"Adjectives_beforeNoun_gender3": [],
 		"Adjectives_afterNoun_gender3": [],

@@ -11484,7 +11484,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												bot.sendMessage(message.chat.id, "Appena aperta la porta della stanza, un freddo polare ti avvolge, appare una pulsantiera congelata, probabilmente uno di quei bottoni potrebbe aprire la porta successiva.\n\nSalute: " + formatNumber(player_life) + " hp", dButtons).then(function () {
 													answerCallbacks[message.chat.id] = function (answer) {
 
-														if (answer.text == "Torna al menu")
+														if ((answer.text == "Torna al menu") || (answer.text == "❣️") || (answer.text == "❤️"))
 															return;
 
 														if (answer.text == "Scappa") {
@@ -12768,21 +12768,23 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	combat = rows[0].combat;
 
 																var rand = Math.random()*100;
-																connection.query('SELECT level, life, sleep_h FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
+																connection.query('SELECT name, type, level, life, sleep_h FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 
 																	if ((Object.keys(rows).length == 0) || (combat == 1)) {
 																		addItem(player_id, 70);
 																		bot.sendMessage(message.chat.id, "Colpendo il drago scopri che si tratta in realtà di un peluche, ma comunque ottieni una Pietra Anima Preziosa!", dNext);
 																	} else {
+																		var dragon_name = rows[0].name + " " + rows[0].type;
 																		if ((rows[0].life > 0) || ((rows[0].life == 0) && (rows[0].sleep_h > 0))) {
-																			if (rows[0].level > rand) {
+																			if (rows[0].level/4 > rand) {
 																				addItem(player_id, 72);
-																				bot.sendMessage(message.chat.id, "Il tuo drago riesce a sconfiggere il grande Drago Darkrai, passi accanto al cadavere e prendi velocemente una Pietra Cuore Leggendario dal suo nascondiglio!", dNext);
+																				bot.sendMessage(message.chat.id, dragon_name + " riesce a sconfiggere il grande Drago Darkrai, lasciandolo a terra esausto! Passando per la sua dimora sgraffigni velocemente una Pietra Cuore Leggendario!", dNext);
 																			} else {
-																				connection.query('UPDATE dragon SET exp = exp-5 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																				connection.query('UPDATE dragon SET exp = exp-10 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
-																					bot.sendMessage(message.chat.id, "Il tuo drago viene spazzato via dal grande Drago Darkrai, e così perde 5 punti esperienza!", dNext);
+																					bot.sendMessage(message.chat.id, dragon_name + " viene spazzato via dal grande Drago Darkrai, così perde 10 punti esperienza!", dNext);
+																					checkDragon(player_id);
 																				});
 																			}
 																		} else {
@@ -15781,7 +15783,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																										getrank1 = 1;
 																									}
 
-																									now_rank += rankPoint;
+																									if (getrank1 == 1)
+																										now_rank += rankPoint;
 
 																									setAchievement(player_id, 26, 1);
 
@@ -15801,7 +15804,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																										if (getrank1 == 1) {
 																											bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*! Hai ottenuto " + rankPoint + " punt" + plur + " rango, ne possiedi " + now_rank + "!\n" + refill, dBack);
 																										} else {
-																											bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*, ne possiedi " + now_rank + "!\n" + refill, dBack);
+																											bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*, possiedi " + now_rank + " rango!\n" + refill, dBack);
 																										}
 																									});
 
@@ -22036,7 +22039,7 @@ bot.onText(/team/i, function (message) {
 					}
 				};
 
-				bot.sendMessage(message.chat.id, "I Team sono dei gruppi di battaglia utili negli per affrontare i temibili Assalti e gli Incarichi, puoi crearlo (" + price_drop_msg + "ti costerà " + new_price + " §) oppure entrare in uno già esistente!", kb);
+				bot.sendMessage(message.chat.id, "I Team sono dei gruppi di battaglia utili per affrontare i temibili Assalti e gli Incarichi, puoi crearlo (" + price_drop_msg + "ti costerà " + formatNumber(new_price) + " §) oppure entrare in uno già esistente!", kb);
 			} else {
 				var team_id = rows[0].team_id;
 				var team_name = rows[0].name;
@@ -27127,7 +27130,7 @@ bot.onText(/^incrementi effettuati/i, function (message) {
 	});
 });
 
-bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^♥️$|^cc$|^cp$/i, function (message) {
+bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^❤️$|^cc$|^cp$/i, function (message) {
 
 	var kbBack = {
 		parse_mode: "Markdown",
@@ -31457,7 +31460,7 @@ function calcBar(parz, tot) {
 	return perc_life;
 }
 
-bot.onText(/scava!/i, function (message) {
+bot.onText(/^scava!|^scava$/i, function (message) {
 
 	if (message.from.id != 20471035){
 		if (eventMana == 0) {
@@ -31548,7 +31551,7 @@ bot.onText(/scava!/i, function (message) {
 	});
 });
 
-bot.onText(/spolvera!/i, function (message) {
+bot.onText(/^spolvera!/i, function (message) {
 
 	if (message.from.id != 20471035){
 		if (eventDust == 0) {
@@ -31571,15 +31574,6 @@ bot.onText(/spolvera!/i, function (message) {
 		}
 		if (rows[0].holiday == 1) {
 			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back);
-			return;
-		}
-
-		if (rows[0].cave_id != 0) {
-			bot.sendMessage(message.chat.id, "Non puoi raccogliere polvere mentre sei in cava", back);
-			return;
-		}
-		if (rows[0].travel_id != 0) {
-			bot.sendMessage(message.chat.id, "Non puoi raccogliere polvere mentre sei in viaggio", back);
 			return;
 		}
 
@@ -32034,7 +32028,7 @@ bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
 
 							var unit = getItemCnt(player_id, 646);
 
-							bot.sendMessage(message.chat.id, "*Gestione Generatore*\n\nProdurrai " + qnt + "x Polvere/ora e il deposito ti consente massimo *" + max_qnt + " unità*\nPossiedi *" + unit + " unità* nello zaino", eventKb2).then(function () {
+							bot.sendMessage(message.chat.id, "*Gestione Generatore*\n\nProdurrai " + qnt + "x Polvere/ora e il deposito ti consente massimo *" + max_qnt + " unità*\nPossiedi *" + formatNumber(unit) + " unità* nello zaino", eventKb2).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text == "Torna al menu")
 										return;
@@ -32046,7 +32040,7 @@ bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
 											bot.sendMessage(message.chat.id, "Generatore *azionato*! Torna tra un po' di tempo per ritirare la polvere prodotta!", gBack);
 										});
 									} else if (answer.text == "Aumenta Deposito") {
-										if (max_qnt >= 64) {
+										if (max_qnt >= 66) {
 											bot.sendMessage(message.chat.id, "Il deposito del generatore è già potenziato al massimo!", gBack);
 											return;
 										}
@@ -49078,7 +49072,7 @@ function setFinishedAssaultsMob(element, index, array) {
 	}
 
 	mob_life = Math.round(mob_life);
-	console.log("mob_life " + mob_life + " boss_num " + boss_num + " boss_count " + boss_count + " mob_count " + mob_count);
+	// console.log("mob_life " + mob_life + " boss_num " + boss_num + " boss_count " + boss_count + " mob_count " + mob_count);
 
 	connection.query('DELETE FROM assault_increment_history WHERE team_id = ' + team_id, function (err, rows, fields) {
 		if (err) throw err;
