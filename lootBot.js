@@ -1936,7 +1936,6 @@ bot.onText(/^\/ban ([^\s]+) (.+)|^\/ban/, function (message, match) {
 	};
 });
 
-
 bot.onText(/^\/unban (.+)|^\/unban/, function (message, match) {
 	if (message.from.id == 20471035) {
 
@@ -7107,7 +7106,6 @@ bot.onText(/gira rotelle/i, function (message) {
 			var sym8 = symArray[Math.floor(Math.random() * symLen)];
 			var sym9 = symArray[Math.floor(Math.random() * symLen)];
 
-
 			bot.sendMessage(message.chat.id, "Le rotelle cominciano a roteare...");
 			setTimeout(function () {
 				bot.sendMessage(message.chat.id, "Lentamente rallentano...");
@@ -11429,7 +11427,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													answerCallbacks[message.chat.id] = function (answer) {
 														if (answer.text == "Segui la Vecchia") {
 															var rand = Math.random() * 100;
-
+															setAchievement(player_id, 78, 1);
 															if (rand < 50) {
 																var qnt = 1;
 																if (cursed == 1)
@@ -12069,6 +12067,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
+																
+																setAchievement(player_id, 77, 1);
 															});
 														} else if (answer.text == "Sfonda il Muro") {
 															bot.sendMessage(message.chat.id, "Sicuro di voler sfondare il muro?", yesno).then(function () {
@@ -13328,7 +13328,6 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												});
 											} else if (dir == -13) {
-
 												var dOptions = {
 													parse_mode: "Markdown",
 													reply_markup: {
@@ -13369,6 +13368,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
+																
+																setAchievement(player_id, 79, 1);
 															});
 														}
 													}
@@ -13706,6 +13707,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
+																
+																setAchievement(player_id, 80, 1);
 															});
 														}else if (answer.text == "Ignora"){
 
@@ -15076,7 +15079,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																	parse_mode: "Markdown",
 																	reply_markup: {
 																		resize_keyboard: true,
-																		keyboard: [["Attacca " + monster_name], ["❣️", "🍵", "♥️"], ["Incantesimi ✨"], ["Scappa", "Torna al menu"]]
+																		keyboard: [["Attacca " + monster_name], ["❣️", "🍵", "❤️"], ["Incantesimi ✨"], ["Scappa", "Torna al menu"]]
 																	}
 																};
 
@@ -18472,6 +18475,9 @@ bot.onText(/dai pietra/i, function (message) {
 
 										if (remain_exp == 0)
 											remain_exp = 70;
+										
+										if (remain_exp < 0)
+											remain_exp = (70+remain_exp) % 70;
 
 										if (((rows[0].level < 300) && (rows[0].evolved == 2)) || 
 											((rows[0].level < 200) && (rows[0].evolved == 1)) || 
@@ -31154,7 +31160,6 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 													return;
 												}
 
-
 												if (snowball < 1){
 													bot.sendMessage(message.chat.id, "Non hai abbastanza Palle di Neve!", kbBack);
 													return;
@@ -32040,7 +32045,7 @@ bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
 											bot.sendMessage(message.chat.id, "Generatore *azionato*! Torna tra un po' di tempo per ritirare la polvere prodotta!", gBack);
 										});
 									} else if (answer.text == "Aumenta Deposito") {
-										if (max_qnt >= 66) {
+										if (max_qnt >= 77) {
 											bot.sendMessage(message.chat.id, "Il deposito del generatore è già potenziato al massimo!", gBack);
 											return;
 										}
@@ -33911,7 +33916,6 @@ bot.onText(/^\/refreshPrice/i, function (message, match) {
 	});
 });
 
-
 function calcPnt(base_id, item_id) {
 	connection.query('SELECT I1.id As i1, I1.name As n1, I1.rarity As r1, I1.craftable As c1, I2.id As i2, I2.name As n2, I2.craftable As c2, I2.rarity As r2, I3.id As i3, I3.name As n3, I3.rarity As r3, I3.craftable As c3 FROM craft C INNER JOIN item I1 ON C.material_1 = I1.id INNER JOIN item I2 ON C.material_2 = I2.id INNER JOIN item I3 ON C.material_3 = I3.id WHERE C.material_result = ' + item_id, function (err, rows, fields) {
 		if (err) throw err;
@@ -35623,7 +35627,6 @@ bot.onText(/utilizza polvere/i, function (message) {
 			}
 		};
 
-
 		var dust = getItemCnt(player_id, 646);
 
 		bot.sendMessage(message.chat.id, "Cosa vuoi fare con la polvere? Ne possiedi *" + formatNumber(dust) + "* unità", kb).then(function () {
@@ -36136,7 +36139,6 @@ bot.onText(/^set$|^set 💣$|torna ai set|^Imposta (.+)/i, function (message) {
 									return;
 								}
 
-
 								if ((getItemCnt(player_id, aId) == 0) && (aName != null)) {
 									bot.sendMessage(message.chat.id, "Non possiedi " + aName, setBack);
 									return;
@@ -36162,7 +36164,6 @@ bot.onText(/^set$|^set 💣$|torna ai set|^Imposta (.+)/i, function (message) {
 									return;
 								}
 
-
 								if ((getItemCnt(player_id, sId) == 0) && (sName != null)) {
 									bot.sendMessage(message.chat.id, "Non possiedi " + sName, setBack);
 									return;
@@ -36187,7 +36188,6 @@ bot.onText(/^set$|^set 💣$|torna ai set|^Imposta (.+)/i, function (message) {
 									bot.sendMessage(message.chat.id, "Non hai il livello rinascita necessario per equipaggiare " + sName + ".", setBack);
 									return;
 								}
-
 
 								if ((getItemCnt(player_id, cId) == 0) && (cName != null)) {
 									bot.sendMessage(message.chat.id, "Non possiedi " + cName, setBack);
@@ -39005,7 +39005,6 @@ bot.onText(/^Edificio/i, function (message) {
 			}
 		};
 
-
 		var page = rows[0].lore_page;
 		var player_id = rows[0].id;
 
@@ -40421,7 +40420,6 @@ bot.onText(/^rimuovi$|rimuovi 🚫|rimuovi tutto|rimuovi arma|rimuovi armatura|r
 		});
 	});
 });
-
 
 bot.onText(/^crea (.+)/i, function (message, match) {
 	connection.query('SELECT id, holiday, money, reborn, account_id, global_end FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -43017,7 +43015,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 			var desc = "";
 			var perc = 0;
 
-			itemKeys.push(["❣️", "♥️"]);
+			itemKeys.push(["❣️", "❤️"]);
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 				if (rows[i].category == 1){
 					perc = Math.round((player_total_life / 100) * rows[i].cons_val);
@@ -43038,7 +43036,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 			bot.sendMessage(message.chat.id, "Quale oggetto vuoi usare?\nPossiedi " + formatNumber(player_life) + "/" + formatNumber(player_total_life) + " hp", kb).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					var oggetto = answer.text;
-					if ((oggetto == "Torna al menu") || (oggetto == "Torna allo Zaino") || (oggetto == "Torna al dungeon") || (oggetto == "❣️") || (oggetto == "♥️"))
+					if ((oggetto == "Torna al menu") || (oggetto == "Torna allo Zaino") || (oggetto == "Torna al dungeon") || (oggetto == "❣️") || (oggetto == "❤️"))
 						return;
 
 					var pos = oggetto.indexOf(" (");
@@ -47247,7 +47245,6 @@ bot.onText(/viaggi/i, function (message) {
 	});
 });
 
-
 //FUNZIONI
 
 function refreshLife() {
@@ -50809,7 +50806,6 @@ function setFinishedEventMission(element, index, array) {
 		});
 	});
 }
-
 
 function setFinishedMission(element, index, array) {
 	var chat_id = element.chat_id;

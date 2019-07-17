@@ -1426,12 +1426,13 @@ bot.onText(/^\/info$/, function (message) {
 });
 
 function toDate(lang, d) {
+	var datetime;
 	if (lang == "it") {
-		var datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+		datetime = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 	} else if (lang == "en") {
-		var datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+		datetime = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 	} else
-		var datetime = "Lingua non specificata";
+		datetime = "Lingua non specificata";
 	return datetime;
 }
 
@@ -2000,7 +2001,7 @@ bot.onText(/^\/chiedoaiuto/, function (message, match) {
 					for (i = 0; i < Object.keys(rows).length; i++)
 						nicklist += "> @" + rows[i].nickname + " (R" + (rows[i].reborn-1) + ", Rango " + formatNumber(rows[i].rank) + ")\n";
 
-					bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> (R" + (reborn-1) + ", Rango " + formatNumber(rank) + "), in esplorazione del dungeon " + dungeon_name + " stanza " + dungeon_room + "/" + dungeon_tot_room + " (crollerà alle " + finish_date + ") chiede aiuto ai suoi compagni di team:\n" + nicklist, html);
+					bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> (R" + (reborn-1) + ", Rango " + formatNumber(rank) + "), in esplorazione del dungeon " + dungeon_name + " stanza " + dungeon_room + "/" + dungeon_tot_room + " (crollerà il " + finish_date + ") chiede aiuto ai suoi compagni di team:\n" + nicklist, html);
 				});
 			});
 		});
