@@ -16259,12 +16259,15 @@ bot.onText(/^\/pagateam (.+)|^\/pagateam/i, function (message, match) {
 
 	var elements = text.split(",");
 
-	if (Object.keys(elements).length != 1) {
-		bot.sendMessage(message.from.id, "Numero parametri errato: " + Object.keys(elements).length + " su 1\n" + syntax);
+	if ((Object.keys(elements).length != 1) && (Object.keys(elements).length != 2)) {
+		bot.sendMessage(message.from.id, "Numero parametri errato: " + Object.keys(elements).length + " su 1/2\n" + syntax);
 		return;
 	}
 
 	var price = parseInt(elements[0].replace(/[^\w\s]/gi, '').trim());
+	var msg = "";
+	if (Object.keys(elements).length == 2)
+		msg = elements[1].trim();
 
 	if (isNaN(price)) {
 		bot.sendMessage(message.from.id, "Il parametro prezzo non è valido");
@@ -16314,7 +16317,12 @@ bot.onText(/^\/pagateam (.+)|^\/pagateam/i, function (message, match) {
 					connection.query('UPDATE player SET money = money+' + price + ' WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
 						if (err) throw err;
 					});
-					bot.sendMessage(rows[i].chat_id, "Hai ricevuto <b>" + price + " §</b> da " + message.from.username + " del tuo team!", html);
+					
+					var extra = "";
+					if (msg != "")
+						extra = "\nCon scritto: <i>" + msg + "</i>";
+					
+					bot.sendMessage(rows[i].chat_id, "Hai ricevuto <b>" + price + " §</b> da " + message.from.username + " del tuo team!" + extra, html);
 
 					connection.query('INSERT INTO pay_history (from_id, to_id, price, hist_time) VALUES (' + player_id + ',' + rows[i].player_id + ',' + price + ',"' + long_date + '")', function (err, rows, fields) {
 						if (err) throw err;
@@ -31192,7 +31200,7 @@ bot.onText(/^set$|^set 💣$|torna ai set|^Imposta (.+)/i, function (message) {
 	});
 });
 
-bot.onText(/^solo (.) {1,15}$|^base per quantità$/i, function (message) {
+bot.onText(/^solo (.){1,15}$|^base per quantità$/i, function (message) {
 
 	var backPack = {
 		parse_mode: "Markdown",
@@ -32968,7 +32976,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 								return;
 							}
 							bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
-											"> Portare al livello 10 almeno 10 Talenti\n" +
+											"> Portare al livello 10 almeno 14 Talenti\n" +
 											"> Possedere almeno 50 💎 (verranno consumate)\n" +
 											"> Aver raggiunto almeno 200 Imprese giornaliere completate", get).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
@@ -32984,7 +32992,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 											connection.query('SELECT COUNT(id) As num FROM ability WHERE player_id = ' + player_id + ' AND ability_level = 10', function (err, rows, fields) {
 												if (err) throw err;
 
-												if (rows[0].num < 10) {
+												if (rows[0].num < 14) {
 													bot.sendMessage(message.chat.id, "I Talenti non sono ancora ad un livello sufficiente", back);
 													return;
 												}
@@ -42276,17 +42284,17 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 
 										var query = "";
 										var method = 0;
-										if (answer.text == "Invia Piedelesto")
+										if (answer.text == "Invia Piedelesto") {
 											method = 1;
-										else if (answer.text == "Invia Occhiofurbo")
-											method = 3;
-										else if (answer.text == "Invia Testacalda")
-											method = 2;
-										else
-											return;
-
-										if (method == 1)
 											setAchievement(from_id, 58, 1);
+										} else if (answer.text == "Invia Occhiofurbo") {
+											method = 3;
+											setAchievement(from_id, 85, 1);
+										} else if (answer.text == "Invia Testacalda") {
+											method = 2;
+											setAchievement(from_id, 86, 1);
+										} else
+											return;
 
 										//Secondi (massimo 6*600 + 100)
 										var totTime = (grade * 900);
