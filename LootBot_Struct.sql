@@ -560,6 +560,41 @@ CREATE TABLE `boss` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `card_inventory`
+--
+
+DROP TABLE IF EXISTS `card_inventory`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `card_inventory` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `player_id` int(11) NOT NULL,
+  `card_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `card_inventory_player_id` (`player_id`),
+  KEY `card_inventory_card_id` (`card_id`),
+  CONSTRAINT `card_inventory_card_id` FOREIGN KEY (`card_id`) REFERENCES `card_list` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `card_inventory_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `card_list`
+--
+
+DROP TABLE IF EXISTS `card_list`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `card_list` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) NOT NULL,
+  `rarity` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `cave`
 --
 
@@ -3566,4 +3601,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-19 12:00:05
+-- Dump completed on 2019-07-30  6:00:06

@@ -526,7 +526,7 @@ bot.onText(/^\/comandioggetto/, function (message) {
 					"/necessari - Mostra gli oggetti necessari alla creazione di un creabile\n" +
 					"/prezzo - Mostra gli ultimi prezzi di vendita di un oggetto\n" +
 					"/totale - Mostra gli ultimi prezzi utilizzando i prezzi degli oggetti utilizzati per crearlo\n" +
-					"/ricerca - Cerca l'oggetto nei canali di vendita", mark);
+					"/ricerca - Cerca l'oggetto nei canali di vendita, puoi cercare fino a 3 oggetti separati da virgola", mark);
 });
 
 bot.onText(/^\/comandilotteria/, function (message) {
@@ -1470,7 +1470,6 @@ bot.onText(/^\/gruppi/, function (message) {
 																						"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
 																						"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
 																						"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
-																						"@yellowlootshop - Join for eventi free!\n" +
 
 																						"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
 																	});
@@ -8634,7 +8633,7 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, function (message, match) {
 
 	var oggetto = match[1];
 	if (oggetto == undefined) {
-		bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto (es. /ricerca Spada Antimateria) per cercare in tutte le vendite e scambi");
+		bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto (es. /ricerca Spada Antimateria) per cercare in tutte le vendite e scambi, puoi specificarne fino a 3 separati da virgola");
 		return;
 	}
 
