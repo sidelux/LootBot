@@ -515,7 +515,7 @@ bot.onText(/^\/comandigiocatore/, function (message) {
 					"/gruzzolo - Mostra le monete possedute\n" +
 					"/creazioni - Mostra i punti creazione ottenuti\n" +
 					"/spia - Spia un giocatore mostrando la scheda giocatore\n" +
-					"/ispeziona - Ispeziona un giocatore\n" +
+					"/ispeziona - Ispeziona un giocatore, puoi anche specificare il nome dello gnomo da inviare\n" +
 					"/rango - Visualizza informazioni sul rango del giocatore\n" +
 					"/abilità - Visualizza informazioni sull'abilità del giocatore\n" +
 					"/posizione - Indica la posizione in classifica globale e se si otterrà il relativo punto partecipazione", mark);
@@ -8957,7 +8957,7 @@ bot.onText(/^\/giocatore|^\/giocatrice/, function (message) {
 	getInfo(message, player, 6, 0, account_id);
 });
 
-bot.onText(/^\/ispeziona/, function (message) {
+bot.onText(/^\/ispeziona (.+)|^\/ispeziona/, function (message, match) {
 
 	if (message.reply_to_message == undefined) {
 		bot.sendMessage(message.chat.id, message.from.username + ", questo comando va utilizzato in <i>risposta</i>", html);
@@ -8972,6 +8972,16 @@ bot.onText(/^\/ispeziona/, function (message) {
 	if (usr == message.from.username){
 		bot.sendMessage(message.from.id, "Non puoi ispezionare te stesso");
 		return;
+	}
+	
+	var method = 1;
+	if (match[1] != undefined) {
+		if (match[1].toLowerCase() == "piedelesto")
+			method = 1;
+		else if (match[1].toLowerCase() == "testacalda")
+			method = 2;
+		else if (match[1].toLowerCase() == "occhiofurbo")
+			method = 3;
 	}
 
 	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -9076,7 +9086,7 @@ bot.onText(/^\/ispeziona/, function (message) {
 							return;
 						}
 
-						attack(usr, message, from_id, weapon_bonus, 3000, 0, account_id, global_end, boost_id, boost_mission);
+						attack(usr, message, from_id, weapon_bonus, 3000, 0, account_id, global_end, boost_id, boost_mission, method);
 					}
 				});
 			});
@@ -9523,7 +9533,7 @@ function getRankName(rank) {
 	return text;
 };
 
-function attack(nickname, message, from_id, weapon_bonus, cost, source, account_id, global_end, boost_id, boost_mission) {
+function attack(nickname, message, from_id, weapon_bonus, cost, source, account_id, global_end, boost_id, boost_mission, method) {
 	connection.query('SELECT exp, ability, chat_id, heist_count, heist_limit, heist_protection, house_id, custom_name_h, id, money FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var chat_id_nickname = rows[0].chat_id;
@@ -9611,7 +9621,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, account_
 						if (err) throw err;
 					});
 
-					var method = 1;	//piedelesto default
+					// var method = 1;	//piedelesto default
 					var query = "";
 					//Secondi (massimo 6*600 + 100)
 					var totTime = (grade * 900);
