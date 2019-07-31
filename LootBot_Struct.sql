@@ -595,6 +595,24 @@ CREATE TABLE `card_list` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `card_trade`
+--
+
+DROP TABLE IF EXISTS `card_trade`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `card_trade` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `card_id1` int(11) NOT NULL,
+  `card_id2` int(11) NOT NULL,
+  `player_id1` int(11) NOT NULL,
+  `player_id2` int(11) NOT NULL,
+  `time_end` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `cave`
 --
 
@@ -854,6 +872,7 @@ CREATE TABLE `dragon` (
   `type` varchar(32) DEFAULT NULL,
   `boost_time` timestamp NULL DEFAULT NULL,
   `boost_id` int(11) NOT NULL DEFAULT '0',
+  `boost_notification` tinyint(1) NOT NULL DEFAULT '0',
   `evolved` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `PLAYERID` (`player_id`),
@@ -3601,4 +3620,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-30  9:00:06
+-- Dump completed on 2019-07-31  6:00:05

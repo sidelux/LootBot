@@ -9626,13 +9626,16 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, account_
 					//Secondi (massimo 6*600 + 100)
 					var totTime = (grade * 900);
 					var rate = 50;
+					var gnome = "Testacalda"
 
 					if (method == 1) {
 						totTime = Math.round(totTime * 0.6);
 						rate = 40;
+						gnome = "Piedelesto";
 					} else if (method == 3) {
 						totTime = Math.round(totTime * 1.2);
 						rate = 60;
+						gnome = "Occhiofurbo";
 					}
 
 					/*
@@ -9664,7 +9667,8 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, account_
 									 'VALUES (' + from_id + ',' + to_id + ',"' + long_date + '",' + rate + ',' + grade + ',' + isMatch + ')',
 									 function (err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(message.chat.id, message.from.username + ", hai inviato Piedelesto all'ispezione del rifugio di " + nickname + ", tornerà alle " + short_date + "!");
+						
+						bot.sendMessage(message.chat.id, message.from.username + ", hai inviato " + gnome + " all'ispezione del rifugio di " + nickname + ", tornerà alle " + short_date + "!");
 					});
 					connection.query('UPDATE player SET heist_count = heist_count+1 WHERE id = ' + from_id, function (err, rows, fields) {
 						if (err) throw err;

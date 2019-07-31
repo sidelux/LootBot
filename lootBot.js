@@ -20614,6 +20614,14 @@ bot.onText(/^escludi: (.+)/i, function (message, match) {
 			}
 		};
 		
+		var kbBack = {
+			parse_mode: "HTML",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Torna al gestisci party"]]
+			}
+		};
+		
 		bot.sendMessage(message.chat.id, "Sei sicuro di voler escludere il giocatore dal party?", kbYesNo).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text.toLowerCase() != "si")
