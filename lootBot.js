@@ -941,8 +941,8 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 									connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY val DESC', function (err, rows, fields) {
 										if (err) throw err;
 
-										var minValue = 2000;
-										var bonusText = "+100% Mana ottenuto dalle Miniere di Mana";
+										var minValue = 1000;
+										var bonusText = "+100% Scrigni ottenuti dagli Assalti";
 
 										var text = "";
 
@@ -27817,10 +27817,12 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 							quantity -= quantity * 0.1;
 						
 						var extra_mana = "";
+						/*
 						if (global_end == 1) {
 							quantity = quantity*2;
 							extra_mana = " (aumentata grazie al bonus globale)";
 						}
+						*/
 
 						quantity = Math.floor(quantity);
 
@@ -30781,7 +30783,13 @@ bot.onText(/cambia visualizzazione/i, function (message) {
 	});
 });
 
-bot.onText(/figurine/i, function (message) {
+bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
+	
+	if ((message.from.id != 20471035) && (message.from.id != 200492030)){
+		bot.sendMessage(message.chat.id, "Work in progress...", back);
+		return;
+	}
+	
 	connection.query('SELECT id, account_id, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		
@@ -30798,13 +30806,9 @@ bot.onText(/figurine/i, function (message) {
 
 		var player_id = rows[0].id;
 		
-		var kb = {
-			parse_mode: "Markdown",
-			reply_markup: {
-				resize_keyboard: true,
-				keyboard: [["Scambia 🔀"], ["Torna al menu"]]
-			}
-		};
+		var page = 1;
+		if (match[1] != undefined)
+			page = parseInt(match[1]);
 		
 		var kbBack = {
 			parse_mode: "HTML",
@@ -30822,171 +30826,277 @@ bot.onText(/figurine/i, function (message) {
 			}
 		};
 		
-		connection.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT COUNT(id) As cnt FROM card_list', function (err, rows, fields) {
 			if (err) throw err;
-			var have = rows[0].cnt;
-			
-			connection.query('SELECT name, player_id, rarity FROM card_list LEFT JOIN card_inventory ON card_list.id = card_inventory.card_id AND player_id = ' + player_id + ' ORDER BY name', function (err, rows, fields) {
+			var tot = rows[0].cnt;
+		
+			connection.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
+				var have = rows[0].cnt;
 
-				var text = "Attualmente sono disponibili " + Object.keys(rows).length + " figurine, ne possiedi " + have + ".\nTra parentesi è mostrata la rarità, più il valore è alto più è difficile ottenerla negli Assalti.\n\n";	
-
-				var btnLimit = 0;
-				var iKeys = [];
+				var cardLimit = 50;
+				var limitTo = (page-1)*cardLimit;
 				
-				for (i = 0, len = Object.keys(rows).length; i < len; i++) {
-					var poss = "";
-					if (rows[i].player_id != null) {
-						poss = " ✅";
-						if (btnLimit < 20) {
-							iKeys.push([rows[i].name]);
-							btnLimit++;
+				connection.query('SELECT name FROM card_list, card_inventory WHERE card_list.id = card_inventory.card_id AND player_id = ' + player_id + ' ORDER BY card_inventory.id DESC LIMIT 20', function (err, rows, fields) {
+					if (err) throw err;
+					
+					var iKeys = [];
+					for (i = 0, len = Object.keys(rows).length; i < len; i++)
+						iKeys.push([rows[i].name]);
+					iKeys.push(["Torna alle figurine"]);
+
+					var kbCards = {
+						parse_mode: "HTML",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: iKeys
 						}
-					}
-					text += "> " + rows[i].name + " (" + rows[i].rarity + ")" + poss + "\n";
-				}
-				
-				iKeys.push(["Torna alle figurine"]);
-				
-				var kbCards= {
-					parse_mode: "HTML",
-					reply_markup: {
-						resize_keyboard: true,
-						keyboard: iKeys
-					}
-				};
+					};
 
-				bot.sendMessage(message.chat.id, text + "\nPuoi ampliare la tua collezione scambiandole con gli altri giocatori.", kb).then(function () {
-					answerCallbacks[message.chat.id] = function (answer) {
-						if (answer.text == "Torna al menu")
-							return;
-						
-						connection.query('SELECT 1 FROM card_trade WHERE player_id1 = ' + player_id + ' OR player_id2 = ' + player_id, function (err, rows, fields) {
-							if (err) throw err;
-							
-							if (Object.keys(rows).length > 0) {
-								bot.sendMessage(message.chat.id, "Hai già uno scambio in corso!", kbBack);
-								return;
+					connection.query('SELECT name, player_id, rarity FROM card_list LEFT JOIN card_inventory ON card_list.id = card_inventory.card_id AND player_id = ' + player_id + ' ORDER BY name LIMIT ' + cardLimit + ' OFFSET ' + limitTo, function (err, rows, fields) {
+						if (err) throw err;
+
+						var text = "Attualmente sono disponibili " + tot + " figurine, ne possiedi " + have + ".\nTra parentesi è mostrata la rarità, più il valore è alto più è difficile ottenerla negli Assalti.\n\n_Pagina " + page + "_\n\n";	
+
+						for (i = 0, len = Object.keys(rows).length; i < len; i++) {
+							var poss = "";
+							if (rows[i].player_id != null)
+								poss = " ✅";
+							text += "> " + rows[i].name + " (" + rows[i].rarity + ")" + poss + "\n";
+						}
+
+						var iKeys = [];
+						iKeys.push(["Scambia 🔀", "Brucia 🔥"]);
+
+						if (Object.keys(rows).length == cardLimit)
+							iKeys.push(["Sfoglia pagina " + (page+1)]);
+						if (page > 1)
+							iKeys.push(["Sfoglia pagina " + (page-1)]);
+
+						iKeys.push(["Torna al menu"]);
+
+						var kb = {
+							parse_mode: "Markdown",
+							reply_markup: {
+								resize_keyboard: true,
+								keyboard: iKeys
 							}
-						
-							bot.sendMessage(message.chat.id, "Inserisci il nome della figurina da inviare", kbCards).then(function () {
-								answerCallbacks[message.chat.id] = function (answer) {
-									if (answer.text == "Torna alle figurine")
-										return;
+						};
 
-									connection.query('SELECT id, rarity, name FROM card_list WHERE name = "' + answer.text + '"', function (err, rows, fields) {
+						bot.sendMessage(message.chat.id, text + "\nPuoi ampliare la tua collezione scambiandole con gli altri giocatori.", kb).then(function () {
+							answerCallbacks[message.chat.id] = function (answer) {
+								if (answer.text == "Torna al menu")
+									return;
+
+								if (answer.text.toLowerCase().indexOf("brucia") != -1) {
+									bot.sendMessage(message.chat.id, "Inserisci il nome della figurina che vuoi bruciare, otterrai in cambio un premio in base alla rarità utilizzata", kbCards).then(function () {
+										answerCallbacks[message.chat.id] = function (answer) {
+											if (answer.text == "Torna alle figurine")
+												return;
+
+											connection.query('SELECT id, rarity, name FROM card_list WHERE name = "' + answer.text + '"', function (err, rows, fields) {
+												if (err) throw err;
+
+												if (Object.keys(rows).length == 0) {
+													bot.sendMessage(message.chat.id, "La figurina inserita non esiste", kbBack);
+													return;
+												}
+
+												var card_id = rows[0].id;
+												var card_name = rows[0].name;
+												var rarity = rows[0].rarity;
+
+												connection.query('SELECT 1 FROM card_inventory WHERE card_id = ' + card_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+
+													if (Object.keys(rows).length == 0) {
+														bot.sendMessage(message.chat.id, "Non possiedi la figurina inserita", kbBack);
+														return;
+													}
+													
+													connection.query('DELETE FROM card_inventory WHERE card_id = ' + card_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+														
+														var rand = Math.random()*100;
+														var name = "";
+														
+														if (rand < 50) {
+															if (rarity < 5) {
+																var money = 20000*rarity;
+																connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+																name = money + "x Monete";
+															} else if (rarity < 9){
+																rand = Math.random()*100;
+																if (rand < 80) {
+																	addChest(player_id, 5, 10);
+																	name = "10x Scrigni Leggendari";
+																} else {
+																	addChest(player_id, 6, 5);
+																	name = "5x Scrigni Epici";
+																}
+															} else {
+																rand = Math.random()*100;
+																if (rand < 60) {
+																	connection.query('UPDATE player SET moon_coin+1 WHERE id = ' + player_id, function (err, rows, fields) {
+																		if (err) throw err;
+																	});
+																	name = "1x Moneta Lunare 🌕";
+																} else if (rand < 80) {
+																	addChest(player_id, 9, 1);
+																	name = "1x Scrigno Scaglia";
+																} else {
+																	addChest(player_id, 7, 1);
+																	name = "1x Scrigno Capsula";
+																}
+															}
+														} else {
+															var new_card = connection_sync.query('SELECT id, name, rarity FROM card_list WHERE rarity BETWEEN ' + (rarity-1) + ' AND ' + (rarity+1) + ' AND id != ' + card_id + ' ORDER BY RAND()');
+															
+															connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + new_card[0].id + ')', function (err, rows, fields) {
+																if (err) throw err;
+															});
+															
+															name = "1x Figurina " + new_card[0].name + " (" + new_card[0].rarity + ")";
+														}
+
+														bot.sendMessage(message.chat.id, "Getti la figurina nel fuoco... Appare una luce verdognola e dopo poco tempo, ottieni <b>" + name + "</b>!", kbBack);
+													});
+												});
+											});
+										}
+									});
+								} else if (answer.text.toLowerCase().indexOf("scambia") != -1) {
+									connection.query('SELECT 1 FROM card_trade WHERE player_id1 = ' + player_id + ' OR player_id2 = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 
-										if (Object.keys(rows).length == 0) {
-											bot.sendMessage(message.chat.id, "La figurina inserita non esiste", kbBack);
+										if (Object.keys(rows).length > 0) {
+											bot.sendMessage(message.chat.id, "Hai già uno scambio in corso!", kbBack);
 											return;
 										}
 
-										var card_name1 = rows[0].name;
-										var card_id1 = rows[0].id;
-										var rarity1 = rows[0].rarity;
-										
-										connection.query('SELECT 1 FROM card_inventory WHERE card_id = ' + card_id1 + ' AND player_id = ' + player_id, function (err, rows, fields) {
-											if (err) throw err;
+										bot.sendMessage(message.chat.id, "Inserisci il nome della figurina da inviare", kbCards).then(function () {
+											answerCallbacks[message.chat.id] = function (answer) {
+												if (answer.text == "Torna alle figurine")
+													return;
 
-											if (Object.keys(rows).length == 0) {
-												bot.sendMessage(message.chat.id, "Non possiedi la figurina inserita", kbBack);
-												return;
-											}
+												connection.query('SELECT id, rarity, name FROM card_list WHERE name = "' + answer.text + '"', function (err, rows, fields) {
+													if (err) throw err;
 
-											bot.sendMessage(message.chat.id, "Inserisci il nome della figurina da ricevere", kbBack).then(function () {
-												answerCallbacks[message.chat.id] = function (answer) {
-													if (answer.text == "Torna alle figurine")
+													if (Object.keys(rows).length == 0) {
+														bot.sendMessage(message.chat.id, "La figurina inserita non esiste", kbBack);
 														return;
+													}
 
-													connection.query('SELECT id, rarity, name FROM card_list WHERE name = "' + answer.text + '"', function (err, rows, fields) {
+													var card_name1 = rows[0].name;
+													var card_id1 = rows[0].id;
+													var rarity1 = rows[0].rarity;
+
+													connection.query('SELECT 1 FROM card_inventory WHERE card_id = ' + card_id1 + ' AND player_id = ' + player_id, function (err, rows, fields) {
 														if (err) throw err;
 
 														if (Object.keys(rows).length == 0) {
-															bot.sendMessage(message.chat.id, "La figurina inserita non esiste", kbBack);
+															bot.sendMessage(message.chat.id, "Non possiedi la figurina inserita", kbBack);
 															return;
 														}
 
-														var card_name2 = rows[0].name;
-														var card_id2 = rows[0].id;
-														var rarity2 = rows[0].rarity;
-														
-														if (card_id1 == card_id2) {
-															bot.sendMessage(message.chat.id, "Inserisci due figurine diverse!", kbBack);
-															return;
-														}
-														
-														if (rarity1 != rarity2) {
-															bot.sendMessage(message.chat.id, "Le due figurine devono essere della stessa rarità!", kbBack);
-															return;
-														}
-														
-														connection.query('SELECT 1 FROM card_inventory WHERE card_id = ' + card_id2 + ' AND player_id = ' + player_id, function (err, rows, fields) {
-															if (err) throw err;
+														bot.sendMessage(message.chat.id, "Inserisci il nome della figurina da ricevere", kbBack).then(function () {
+															answerCallbacks[message.chat.id] = function (answer) {
+																if (answer.text == "Torna alle figurine")
+																	return;
 
-															if (Object.keys(rows).length == 1) {
-																bot.sendMessage(message.chat.id, "Possiedi già la figurina richiesta", kbBack);
-																return;
-															}
-														
-															bot.sendMessage(message.chat.id, "Inserisci il nome del giocatore con cui effettuare lo scambio", kbBack).then(function () {
-																answerCallbacks[message.chat.id] = function (answer) {
-																	if (answer.text == "Torna alle figurine")
+																connection.query('SELECT id, rarity, name FROM card_list WHERE name = "' + answer.text + '"', function (err, rows, fields) {
+																	if (err) throw err;
+
+																	if (Object.keys(rows).length == 0) {
+																		bot.sendMessage(message.chat.id, "La figurina inserita non esiste", kbBack);
 																		return;
+																	}
 
-																	connection.query('SELECT id, chat_id FROM player WHERE nickname = "' + answer.text + '"', function (err, rows, fields) {
+																	var card_name2 = rows[0].name;
+																	var card_id2 = rows[0].id;
+																	var rarity2 = rows[0].rarity;
+
+																	if (card_id1 == card_id2) {
+																		bot.sendMessage(message.chat.id, "Inserisci due figurine diverse!", kbBack);
+																		return;
+																	}
+
+																	if (rarity1 != rarity2) {
+																		bot.sendMessage(message.chat.id, "Le due figurine devono essere della stessa rarità!", kbBack);
+																		return;
+																	}
+
+																	connection.query('SELECT 1 FROM card_inventory WHERE card_id = ' + card_id2 + ' AND player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 
-																		if (Object.keys(rows).length == 0) {
-																			bot.sendMessage(message.chat.id, "Il giocatore inserito non esiste", kbBack);
+																		if (Object.keys(rows).length == 1) {
+																			bot.sendMessage(message.chat.id, "Possiedi già la figurina richiesta", kbBack);
 																			return;
 																		}
 
-																		var player_id2 = rows[0].id;
-																		var player_chat_id2 = rows[0].chat_id;
-																		
-																		connection.query('SELECT 1 FROM card_inventory WHERE card_id = ' + card_id2 + ' AND player_id = ' + player_id2, function (err, rows, fields) {
-																			if (err) throw err;
-
-																			if (Object.keys(rows).length == 0) {
-																				bot.sendMessage(message.chat.id, "Il giocatore non possiede la figurina richiesta", kbBack);
-																				return;
-																			}
-
-																			connection.query('SELECT 1 FROM card_trade WHERE player_id1 = ' + player_id2 + ' OR player_id2 = ' + player_id2, function (err, rows, fields) {
-																				if (err) throw err;
-
-																				if (Object.keys(rows).length > 0) {
-																					bot.sendMessage(message.chat.id, "Il giocatore ha già uno scambio in corso!", kbBack);
+																		bot.sendMessage(message.chat.id, "Inserisci il nome del giocatore con cui effettuare lo scambio", kbBack).then(function () {
+																			answerCallbacks[message.chat.id] = function (answer) {
+																				if (answer.text == "Torna alle figurine")
 																					return;
-																				}
-																					
-																				var now = new Date();
-																				now.setMinutes(now.getMinutes() + 30);
-																				var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
-																				var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
 
-																				connection.query('INSERT INTO card_trade (card_id1, card_id2, player_id1, player_id2, time_end) VALUES (' + card_id1 + ', ' + card_id2 + ', ' + player_id + ', ' + player_id2 + ', "' + long_date + '")', function (err, rows, fields) {
+																				connection.query('SELECT id, chat_id FROM player WHERE nickname = "' + answer.text + '"', function (err, rows, fields) {
 																					if (err) throw err;
-																					bot.sendMessage(message.chat.id, "Scambio inserito correttamente! Scadrà alle " + short_date, kbBack);
-																					
-																					bot.sendMessage(player_chat_id2, message.from.username + " ti propone uno scambio di figurine, cederai <b>" + card_name2 + " (" + rarity2 + ")</b> in cambio di <b>" + card_name1 + " (" + rarity1 + ")</b>. Scadrà alle " + short_date, kbAccept);
+
+																					if (Object.keys(rows).length == 0) {
+																						bot.sendMessage(message.chat.id, "Il giocatore inserito non esiste", kbBack);
+																						return;
+																					}
+
+																					var player_id2 = rows[0].id;
+																					var player_chat_id2 = rows[0].chat_id;
+
+																					connection.query('SELECT 1 FROM card_inventory WHERE card_id = ' + card_id2 + ' AND player_id = ' + player_id2, function (err, rows, fields) {
+																						if (err) throw err;
+
+																						if (Object.keys(rows).length == 0) {
+																							bot.sendMessage(message.chat.id, "Il giocatore non possiede la figurina richiesta", kbBack);
+																							return;
+																						}
+
+																						connection.query('SELECT 1 FROM card_trade WHERE player_id1 = ' + player_id2 + ' OR player_id2 = ' + player_id2, function (err, rows, fields) {
+																							if (err) throw err;
+
+																							if (Object.keys(rows).length > 0) {
+																								bot.sendMessage(message.chat.id, "Il giocatore ha già uno scambio in corso!", kbBack);
+																								return;
+																							}
+
+																							var now = new Date();
+																							now.setMinutes(now.getMinutes() + 30);
+																							var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
+																							var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
+
+																							connection.query('INSERT INTO card_trade (card_id1, card_id2, player_id1, player_id2, time_end) VALUES (' + card_id1 + ', ' + card_id2 + ', ' + player_id + ', ' + player_id2 + ', "' + long_date + '")', function (err, rows, fields) {
+																								if (err) throw err;
+																								bot.sendMessage(message.chat.id, "Scambio inserito correttamente! Scadrà alle " + short_date, kbBack);
+
+																								bot.sendMessage(player_chat_id2, message.from.username + " ti propone uno scambio di figurine, cederai <b>" + card_name2 + " (" + rarity2 + ")</b> in cambio di <b>" + card_name1 + " (" + rarity1 + ")</b>. Scadrà alle " + short_date, kbAccept);
+																							});
+																						});
+																					});
 																				});
-																			});
+																			}
 																		});
 																	});
-																}
-															});
+																});
+															}
 														});
 													});
-												}
-											});
+												});
+											}
 										});
 									});
-								}
-							});
+								};
+							}
 						});
-					}
+					});
 				});
 			});
 		});
@@ -31019,7 +31129,7 @@ bot.onText(/accetta figurina/i, function (message) {
 			var card_id1 = rows[0].card_id1;
 			var card_id2 = rows[0].card_id2;
 			
-			connection.query('SELECT 1 FROM card_inventory WHERE card_id = ' + card_id1 + ' AND player_id = ' + player_id, function (err, rows, fields) {
+			connection.query('SELECT 1 FROM card_inventory WHERE card_id = ' + card_id2 + ' AND player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				if (Object.keys(rows).length == 0) {
@@ -31027,7 +31137,7 @@ bot.onText(/accetta figurina/i, function (message) {
 					return;
 				}
 				
-				connection.query('SELECT 1 FROM card_inventory WHERE card_id = ' + card_id2 + ' AND player_id = ' + player_id, function (err, rows, fields) {
+				connection.query('SELECT 1 FROM card_inventory WHERE card_id = ' + card_id1 + ' AND player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length > 0) {
@@ -31035,10 +31145,10 @@ bot.onText(/accetta figurina/i, function (message) {
 						return;
 					}
 					
-					connection.query('UPDATE card_inventory SET player_id = ' + player_id1 + ' WHERE player_id = ' + player_id + ' AND card_id = ' + card_id1, function (err, rows, fields) {
+					connection.query('UPDATE card_inventory SET player_id = ' + player_id1 + ' WHERE player_id = ' + player_id + ' AND card_id = ' + card_id2, function (err, rows, fields) {
 						if (err) throw err;
 					});
-					connection.query('UPDATE card_inventory SET player_id = ' + player_id + ' WHERE player_id = ' + player_id1 + ' AND card_id = ' + card_id2, function (err, rows, fields) {
+					connection.query('UPDATE card_inventory SET player_id = ' + player_id + ' WHERE player_id = ' + player_id1 + ' AND card_id = ' + card_id1, function (err, rows, fields) {
 						if (err) throw err;
 					});
 					
@@ -31061,8 +31171,8 @@ bot.onText(/accetta figurina/i, function (message) {
 									if (err) throw err;
 								});
 								
-								bot.sendMessage(message.chat.id, "Scambio figurine con " + rows[0].nickname + " completato!\nHai ottenuto <b>" + card_name2 + " (" + card_rarity2 + ")</b> in cambio di <b>" + card_name1 + " (" + card_rarity1 + ")</b>!", kbBack);
-								bot.sendMessage(rows[0].chat_id, "Scambio figurine con " + message.from.username + " completato!\nHai ottenuto <b>" + card_name1 + " (" + card_rarity1 + ")</b> in cambio di <b>" + card_name2 + " (" + card_rarity2 + ")</b>!", kbBack);
+								bot.sendMessage(message.chat.id, "Scambio figurine con " + rows[0].nickname + " completato!\nHai ottenuto <b>" + card_name1 + " (" + card_rarity1 + ")</b> in cambio di <b>" + card_name2 + " (" + card_rarity2 + ")</b>!", kbBack);
+								bot.sendMessage(rows[0].chat_id, "Scambio figurine con " + message.from.username + " completato!\nHai ottenuto <b>" + card_name2 + " (" + card_rarity2 + ")</b> in cambio di <b>" + card_name1 + " (" + card_rarity1 + ")</b>!", kbBack);
 							});
 						});
 					});
@@ -31097,9 +31207,12 @@ bot.onText(/rifiuta figurina/i, function (message) {
 			connection.query('DELETE FROM card_trade WHERE player_id2 = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-
-			bot.sendMessage(message.chat.id, "Scambio figurine con " + rows[0].nickname + " rifiutato!", kbBack);
-			bot.sendMessage(rows[0].chat_id, "Scambio figurine con " + message.from.username + " rifiutato!", kbBack);
+			
+			connection.query('SELECT chat_id, nickname FROM player WHERE id = ' + rows[0].player_id1, function (err, rows, fields) {
+				if (err) throw err;
+				bot.sendMessage(message.chat.id, "Scambio figurine con " + rows[0].nickname + " rifiutato!", kbBack);
+				bot.sendMessage(rows[0].chat_id, "Scambio figurine con " + message.from.username + " rifiutato!", kbBack);
+			});
 		});
 	});
 });
@@ -39879,6 +39992,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 
 						text += "\n<b>Impresa globale</b>\n";
 
+						/*
 						if ((global == 1) && (diffM < 0) && (globalVal < global_cap))
 							text += "Impresa fallita! 🚫\nSe non hai partecipato attivamente, riceverai un malus il primo giorno del mese!\n";
 						else if (globalVal >= global_cap)
@@ -39893,6 +40007,11 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 								text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> " + global_desc + ".\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
 							}
 						}
+						*/
+						
+						var d = new Date();
+						if ((d.getMonth()+1 == 8) || ((d.getMonth()+1 == 7) && (d.getDate() == 31)))
+							text += "Questo mese nessuna globale! Goditi le vacanze 🏖\n";
 
 						var kb = {
 							parse_mode: "HTML",
@@ -40461,454 +40580,462 @@ function getInfo(message, player, myhouse_id) {
 									var team_desc = "";
 									if (Object.keys(rows).length > 0)
 										team_desc = "⚜️ " + rows[0].name.trim() + "\n";
-
-									connection.query('SELECT name FROM house WHERE id = ' + house_id, function (err, rows, fields) {
+									
+									connection.query('SELECT COUNT(id) As cnt, (SELECT COUNT(id) FROM card_list) As tot FROM card_inventory WHERE player_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
-										var house_name = rows[0].name;
+										var cards_txt = "";
+										if (rows[0].cnt > 0)
+											cards_txt = "Figurine: " + rows[0].cnt + "/" + rows[0].tot + "\n";
 
-										connection.query('SELECT name FROM item WHERE id = ' + weapon2_id, function (err, rows, fields) {
+										connection.query('SELECT name FROM house WHERE id = ' + house_id, function (err, rows, fields) {
 											if (err) throw err;
-											var weapon2_name = "-";
-											if (Object.keys(rows).length > 0) {
-												if ((weapon2_id == 688) || (weapon2_id == 689) || (weapon2_id == 690)) {
-													if (custom_name2 != null)
-														weapon2_name = rows[0].name.replace("Necro", custom_name2);
-													else
-														weapon2_name = rows[0].name;
-													if (weapon2_id == 688)
-														weapon2_name += " 🔥";
-													else if (weapon2_id == 689)
-														weapon2_name += " 🌊";
-													else if (weapon2_id == 690)
-														weapon2_name += " ⚡️";
-												} else
-													weapon2_name = rows[0].name;
-											}
+											var house_name = rows[0].name;
 
-											connection.query('SELECT name FROM item WHERE id = ' + weapon3_id, function (err, rows, fields) {
+											connection.query('SELECT name FROM item WHERE id = ' + weapon2_id, function (err, rows, fields) {
 												if (err) throw err;
-												var weapon3_name = "-";
+												var weapon2_name = "-";
 												if (Object.keys(rows).length > 0) {
-													if ((weapon3_id == 671) || (weapon3_id == 672) || (weapon3_id == 673)) {
-														if (custom_name3 != null)
-															weapon3_name = rows[0].name.replace("Necro", custom_name3);
+													if ((weapon2_id == 688) || (weapon2_id == 689) || (weapon2_id == 690)) {
+														if (custom_name2 != null)
+															weapon2_name = rows[0].name.replace("Necro", custom_name2);
 														else
-															weapon3_name = rows[0].name;
-														if (weapon3_id == 671)
-															weapon3_name += " ⚡️";
-														else if (weapon3_id == 672)
-															weapon3_name += " 🔥";
-														else if (weapon3_id == 673)
-															weapon3_name += " 🌊";
+															weapon2_name = rows[0].name;
+														if (weapon2_id == 688)
+															weapon2_name += " 🔥";
+														else if (weapon2_id == 689)
+															weapon2_name += " 🌊";
+														else if (weapon2_id == 690)
+															weapon2_name += " ⚡️";
 													} else
-														weapon3_name = rows[0].name;
+														weapon2_name = rows[0].name;
 												}
 
-												connection.query('SELECT dragon.* FROM player, dragon WHERE player.id = dragon.player_id AND player.id = ' + player_id, function (err, rows, fields) {
+												connection.query('SELECT name FROM item WHERE id = ' + weapon3_id, function (err, rows, fields) {
 													if (err) throw err;
-													var dragon_name = "-";
-													var dragon_level = "-";
-													var dragon_damage = "-";
-													var dragon_defence = "-";
-													var dragon_critical = "-";
-													var dragon_clawsid = 0;
-													var dragon_saddleid = 0;
-													var dragon_armsid = 0;
-													var dragon_claws = 0;
-													var dragon = 0;
-													var dragon_status = "In salute";
-
+													var weapon3_name = "-";
 													if (Object.keys(rows).length > 0) {
-														dragon = 1;
-
-														if (charm_id == 602) {
-															rows[0].damage += 25;
-															rows[0].critical += 10;
-														}
-														if (charm_id == 695) {
-															rows[0].damage += 30;
-															rows[0].critical += 15;
-														}
-
-														if ((class_id == 7) && (reborn > 1) && (reborn == 5))
-															rows[0].claws += rows[0].claws * 1;
-														else if ((class_id == 7) && (reborn > 1))
-															rows[0].claws += rows[0].claws * 0.5;
-														if ((class_id == 7) && (reborn > 1) && (reborn == 5))
-															rows[0].saddle += rows[0].saddle * 1;
-														else if ((class_id == 7) && (reborn > 1))
-															rows[0].saddle += rows[0].saddle * 0.5;
-														if ((class_id == 7) && (reborn == 3))
-															rows[0].critical += 5;
-														if ((class_id == 7) && (reborn >= 4))
-															rows[0].critical += 7;
-
-														dragon_name = rows[0].name.trim() + " " + rows[0].type;
-														dragon_level = rows[0].level;
-														dragon_damage = "+" + Math.round(rows[0].damage + rows[0].claws);
-														dragon_defence = "-" + Math.round(rows[0].defence + rows[0].saddle);
-														dragon_critical = Math.round(rows[0].critical);
-
-														dragon_claws = parseInt(rows[0].claws);
-
-														dragon_clawsid = rows[0].claws_id;
-														dragon_saddleid = rows[0].saddle_id;
-														dragon_armsid = rows[0].arms_id;
-
-														if (rows[0].life <= 0)
-															dragon_status = "Esausto";
-														if (rows[0].sleep_h > 0)
-															dragon_status = "Dorme";
+														if ((weapon3_id == 671) || (weapon3_id == 672) || (weapon3_id == 673)) {
+															if (custom_name3 != null)
+																weapon3_name = rows[0].name.replace("Necro", custom_name3);
+															else
+																weapon3_name = rows[0].name;
+															if (weapon3_id == 671)
+																weapon3_name += " ⚡️";
+															else if (weapon3_id == 672)
+																weapon3_name += " 🔥";
+															else if (weapon3_id == 673)
+																weapon3_name += " 🌊";
+														} else
+															weapon3_name = rows[0].name;
 													}
 
-													connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_clawsid, function (err, rows, fields) {
+													connection.query('SELECT dragon.* FROM player, dragon WHERE player.id = dragon.player_id AND player.id = ' + player_id, function (err, rows, fields) {
 														if (err) throw err;
+														var dragon_name = "-";
+														var dragon_level = "-";
+														var dragon_damage = "-";
+														var dragon_defence = "-";
+														var dragon_critical = "-";
+														var dragon_clawsid = 0;
+														var dragon_saddleid = 0;
+														var dragon_armsid = 0;
+														var dragon_claws = 0;
+														var dragon = 0;
+														var dragon_status = "In salute";
 
-														var dragon_claws_n = "-";
-														if (rows[0].num > 0)
-															dragon_claws_n = rows[0].name;
+														if (Object.keys(rows).length > 0) {
+															dragon = 1;
 
-														connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_saddleid, function (err, rows, fields) {
+															if (charm_id == 602) {
+																rows[0].damage += 25;
+																rows[0].critical += 10;
+															}
+															if (charm_id == 695) {
+																rows[0].damage += 30;
+																rows[0].critical += 15;
+															}
+
+															if ((class_id == 7) && (reborn > 1) && (reborn == 5))
+																rows[0].claws += rows[0].claws * 1;
+															else if ((class_id == 7) && (reborn > 1))
+																rows[0].claws += rows[0].claws * 0.5;
+															if ((class_id == 7) && (reborn > 1) && (reborn == 5))
+																rows[0].saddle += rows[0].saddle * 1;
+															else if ((class_id == 7) && (reborn > 1))
+																rows[0].saddle += rows[0].saddle * 0.5;
+															if ((class_id == 7) && (reborn == 3))
+																rows[0].critical += 5;
+															if ((class_id == 7) && (reborn >= 4))
+																rows[0].critical += 7;
+
+															dragon_name = rows[0].name.trim() + " " + rows[0].type;
+															dragon_level = rows[0].level;
+															dragon_damage = "+" + Math.round(rows[0].damage + rows[0].claws);
+															dragon_defence = "-" + Math.round(rows[0].defence + rows[0].saddle);
+															dragon_critical = Math.round(rows[0].critical);
+
+															dragon_claws = parseInt(rows[0].claws);
+
+															dragon_clawsid = rows[0].claws_id;
+															dragon_saddleid = rows[0].saddle_id;
+															dragon_armsid = rows[0].arms_id;
+
+															if (rows[0].life <= 0)
+																dragon_status = "Esausto";
+															if (rows[0].sleep_h > 0)
+																dragon_status = "Dorme";
+														}
+
+														connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_clawsid, function (err, rows, fields) {
 															if (err) throw err;
 
-															var dragon_saddle_n = "-";
+															var dragon_claws_n = "-";
 															if (rows[0].num > 0)
-																dragon_saddle_n = rows[0].name;
+																dragon_claws_n = rows[0].name;
 
-															connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_armsid, function (err, rows, fields) {
+															connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_saddleid, function (err, rows, fields) {
 																if (err) throw err;
 
-																var dragon_arms_n = "-";
+																var dragon_saddle_n = "-";
 																if (rows[0].num > 0)
-																	dragon_arms_n = rows[0].name;
+																	dragon_saddle_n = rows[0].name;
 
-																connection.query('SELECT player_nick As player, new_player_nick As new, time FROM referral_list WHERE new_player = ' + player_id, function (err, rows, fields) {
+																connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_armsid, function (err, rows, fields) {
 																	if (err) throw err;
 
-																	var referral = "";
-																	if (Object.keys(rows).length > 0) {
-																		var d = new Date(rows[0].time);
-																		var short_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-																		referral = "Invitato da: " + rows[0].player + " (" + short_date + ")\n";
-																	} else if (creation_date != null) {
-																		var d = new Date(creation_date);
-																		var short_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-																		referral = "Registrato il " + short_date + "\n";
-																	}
+																	var dragon_arms_n = "-";
+																	if (rows[0].num > 0)
+																		dragon_arms_n = rows[0].name;
 
-																	var relation = "\n<b>Relazioni commerciali</b> 💰\n";
-
-																	connection.query('SELECT COUNT(id) As cnt FROM market_history WHERE (from_id = ' + my_player_id + ' AND to_id = ' + player_id + ') OR (from_id = ' + player_id + ' AND to_id = ' + my_player_id + ')', function (err, rows, fields) {
+																	connection.query('SELECT player_nick As player, new_player_nick As new, time FROM referral_list WHERE new_player = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 
-																		var history_cnt = rows[0].cnt;
-																		if (history_cnt > 0)
-																			relation += "Scambi: " + formatNumber(history_cnt) + "\n";
+																		var referral = "";
+																		if (Object.keys(rows).length > 0) {
+																			var d = new Date(rows[0].time);
+																			var short_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+																			referral = "Invitato da: " + rows[0].player + " (" + short_date + ")\n";
+																		} else if (creation_date != null) {
+																			var d = new Date(creation_date);
+																			var short_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+																			referral = "Registrato il " + short_date + "\n";
+																		}
 
-																		connection.query('SELECT COUNT(id) As cnt FROM market_direct_history WHERE (from_id = ' + my_player_id + ' AND to_id = ' + player_id + ') OR (from_id = ' + player_id + ' AND to_id = ' + my_player_id + ') AND type = 2', function (err, rows, fields) {
+																		var relation = "\n<b>Relazioni commerciali</b> 💰\n";
+
+																		connection.query('SELECT COUNT(id) As cnt FROM market_history WHERE (from_id = ' + my_player_id + ' AND to_id = ' + player_id + ') OR (from_id = ' + player_id + ' AND to_id = ' + my_player_id + ')', function (err, rows, fields) {
 																			if (err) throw err;
 
-																			var history_direct_cnt = rows[0].cnt;
-																			if (history_direct_cnt > 0)
-																				relation += "Vendite: " + formatNumber(history_direct_cnt) + "\n";
+																			var history_cnt = rows[0].cnt;
+																			if (history_cnt > 0)
+																				relation += "Scambi: " + formatNumber(history_cnt) + "\n";
 
-																			connection.query('SELECT SUM(price) As cnt FROM pay_history WHERE (from_id = ' + my_player_id + ' AND to_id = ' + player_id + ') OR (from_id = ' + player_id + ' AND to_id = ' + my_player_id + ')', function (err, rows, fields) {
+																			connection.query('SELECT COUNT(id) As cnt FROM market_direct_history WHERE (from_id = ' + my_player_id + ' AND to_id = ' + player_id + ') OR (from_id = ' + player_id + ' AND to_id = ' + my_player_id + ') AND type = 2', function (err, rows, fields) {
 																				if (err) throw err;
 
-																				var history_pay_cnt = rows[0].cnt;
-																				if (history_pay_cnt != null)
-																					relation += "Pagamenti: " + formatNumber(history_pay_cnt) + "§\n";
+																				var history_direct_cnt = rows[0].cnt;
+																				if (history_direct_cnt > 0)
+																					relation += "Vendite: " + formatNumber(history_direct_cnt) + "\n";
 
-																				if ((history_cnt == 0) && (history_direct_cnt == 0) && (history_pay_cnt == null))
-																					relation = "";
-
-																				if (my_player_id == player_id)
-																					relation = "";
-
-																				connection.query('SELECT COUNT(inventory.item_id) As cnt FROM inventory, item WHERE inventory.item_id = item.id AND player_id = ' + player_id + ' AND rarity = "IN" AND inventory.quantity > 0', function (err, rows, fields) {
+																				connection.query('SELECT SUM(price) As cnt FROM pay_history WHERE (from_id = ' + my_player_id + ' AND to_id = ' + player_id + ') OR (from_id = ' + player_id + ' AND to_id = ' + my_player_id + ')', function (err, rows, fields) {
 																					if (err) throw err;
 
-																					var inest = rows[0].cnt;
+																					var history_pay_cnt = rows[0].cnt;
+																					if (history_pay_cnt != null)
+																						relation += "Pagamenti: " + formatNumber(history_pay_cnt) + "§\n";
 
-																					connection.query('SELECT name FROM class WHERE id = ' + class_id, function (err, rows, fields) {
+																					if ((history_cnt == 0) && (history_direct_cnt == 0) && (history_pay_cnt == null))
+																						relation = "";
+
+																					if (my_player_id == player_id)
+																						relation = "";
+
+																					connection.query('SELECT COUNT(inventory.item_id) As cnt FROM inventory, item WHERE inventory.item_id = item.id AND player_id = ' + player_id + ' AND rarity = "IN" AND inventory.quantity > 0', function (err, rows, fields) {
 																						if (err) throw err;
 
-																						var class_name = "-";
-																						if (Object.keys(rows).length > 0)
-																							class_name = rows[0].name;
-																						var class_sym = classSym(class_name);
+																						var inest = rows[0].cnt;
 
-																						var stars = rebSym(reborn);
-																						if (player_id == 1)
-																							stars = "👑";
+																						connection.query('SELECT name FROM class WHERE id = ' + class_id, function (err, rows, fields) {
+																							if (err) throw err;
 
-																						var enchant1 = "";
-																						if (weapon_enchant_bonus == 1)
-																							enchant1 = " 🌊";
-																						else if (weapon_enchant_bonus == 2)
-																							enchant1 = " ⚡️";
-																						else if (weapon_enchant_bonus == 3)
-																							enchant1 = " 🔥";
+																							var class_name = "-";
+																							if (Object.keys(rows).length > 0)
+																								class_name = rows[0].name;
+																							var class_sym = classSym(class_name);
 
-																						var enchant2 = "";
-																						if (weapon2_enchant_bonus == 1)
-																							enchant2 = " 🌊";
-																						else if (weapon2_enchant_bonus == 2)
-																							enchant2 = " ⚡️";
-																						else if (weapon2_enchant_bonus == 3)
-																							enchant2 = " 🔥";
+																							var stars = rebSym(reborn);
+																							if (player_id == 1)
+																								stars = "👑";
 
-																						var enchant3 = "";
-																						if (weapon3_enchant_bonus == 1)
-																							enchant3 = " 🌊";
-																						else if (weapon3_enchant_bonus == 2)
-																							enchant3 = " ⚡️";
-																						else if (weapon3_enchant_bonus == 3)
-																							enchant3 = " 🔥";
+																							var enchant1 = "";
+																							if (weapon_enchant_bonus == 1)
+																								enchant1 = " 🌊";
+																							else if (weapon_enchant_bonus == 2)
+																								enchant1 = " ⚡️";
+																							else if (weapon_enchant_bonus == 3)
+																								enchant1 = " 🔥";
 
-																						//Talismani
+																							var enchant2 = "";
+																							if (weapon2_enchant_bonus == 1)
+																								enchant2 = " 🌊";
+																							else if (weapon2_enchant_bonus == 2)
+																								enchant2 = " ⚡️";
+																							else if (weapon2_enchant_bonus == 3)
+																								enchant2 = " 🔥";
 
-																						if (charm_id == 62)
-																							weapon += 10;
-																						if (charm_id == 184)
-																							weapon += 25;
-																						if (charm_id == 188)
-																							weapon += 30;
-																						if (charm_id == 404)
-																							weapon_crit += 6;
-																						if (charm_id == 493)
-																							weapon_crit += 2;
-																						if (charm_id == 494)
-																							weapon_crit += 4;
-																						if (charm_id == 495)
-																							weapon2_crit += 3;
-																						if (charm_id == 496)
-																							weapon3_crit += 3;
-																						if (charm_id == 696) {
-																							weapon_crit += 5;
-																							weapon2_crit += 5;
-																							weapon3_crit += 3;
-																						}
-																						if (charm_id == 698)
-																							weapon += 50;
-																						if (abBonus > 0) {
-																							weapon_crit += abBonus;
-																							weapon2_crit += abBonus;
-																							weapon3_crit += abBonus;
-																						}
+																							var enchant3 = "";
+																							if (weapon3_enchant_bonus == 1)
+																								enchant3 = " 🌊";
+																							else if (weapon3_enchant_bonus == 2)
+																								enchant3 = " ⚡️";
+																							else if (weapon3_enchant_bonus == 3)
+																								enchant3 = " 🔥";
 
-																						//Vocazioni
+																							//Talismani
 
-																						if ((class_id == 2) && (reborn == 3))
-																							weapon2_crit += 5;
-																						if ((class_id == 2) && (reborn >= 4)) {
-																							weapon2_crit += 7;
-																							weapon3_crit += 7;
-																						}
-																						if ((class_id == 4) && (reborn == 3)) {
-																							weapon_crit += 2;
-																							weapon2_crit += 2;
-																							weapon3_crit += 2;
-																						}
-																						if ((class_id == 4) && (reborn >= 4)) {
-																							weapon_crit += 7;
-																							weapon2_crit += 7;
-																							weapon3_crit += 7;
-																						}
-																						if ((class_id == 5) && (reborn == 3))
-																							weapon3_crit += 4;
-																						if ((class_id == 5) && (reborn >= 4))
-																							weapon3_crit += 8;
-																						if ((class_id == 6) && (reborn == 3))
-																							weapon2_crit += 2;
-																						if ((class_id == 6) && (reborn == 3))
-																							weapon3_crit += 2;
-																						if ((class_id == 6) && (reborn >= 4))
-																							weapon2_crit += 7;
-																						if ((class_id == 6) && (reborn >= 4))
-																							weapon3_crit += 7;
-																						if ((class_id == 6) && (reborn == 5))
-																							weapon2_crit += 7;
-																						if ((class_id == 6) && (reborn == 5))
-																							weapon3_crit += 7;
-																						if ((class_id == 8) && (reborn == 3))
-																							weapon3_crit += 5;
-																						if ((class_id == 8) && (reborn >= 4))
-																							weapon3_crit += 7;
-																						if ((class_id == 8) && (reborn == 5))
-																							weapon_crit += 10;
-																						if ((class_id == 9) && (reborn == 3)) {
-																							weapon_crit += 2;
-																							weapon3_crit += 2;
-																						}
-																						if ((class_id == 9) && (reborn >= 4)) {
-																							weapon_crit += 7;
-																							weapon3_crit += 7;
-																						}
-
-																						if ((class_id == 7) && (reborn == 5))
-																							weapon_crit += Math.round(dragon_critical / 2);
-
-																						if ((class_id == 8) && (reborn == 2))
-																							weapon += weapon * 0.10;
-																						else if ((class_id == 8) && (reborn == 3))
-																							weapon += weapon * 0.15;
-																						else if ((class_id == 8) && (reborn == 4))
-																							weapon += weapon * 0.17;
-																						else if ((class_id == 8) && (reborn == 5))
-																							weapon += weapon * 0.30;
-
-																						//Descrizioni
-
-																						var weapon_desc = "";
-																						if (weapon_name != "-") {
-																							weapon += power_dmg;
-																							weapon_crit += power_weapon;
-																							weapon_desc = " (+" + Math.round(weapon) + ", " + weapon_crit + "%, " + weapon_enchant + enchant1 + ")";
-																						}
-																						var weapon2_desc = "";
-																						if (weapon2_name != "-") {
-																							weapon2 -= power_def;
-																							weapon2_crit += power_armor;
-																							weapon2_desc = " (" + Math.round(weapon2) + ", " + weapon2_crit + "%, " + weapon2_enchant + enchant2 + ")";
-																						}
-																						var weapon3_desc = "";
-																						if (weapon3_name != "-") {
-																							weapon3_crit += power_shield;
-																							weapon3_desc = " (" + Math.round(weapon3) + ", " + weapon3_crit + "%, " + weapon3_enchant + enchant3 + ")";
-																						}
-
-																						var Keys = [];
-
-																						if (player == message.from.username) {
-																							Keys.push(["Vocazione 🏹", "Albero Talenti 🌳"]);
-																							Keys.push(["Link Invito 🗣", "Statistiche 📊", "Artefatti 🔱"]);
-																							if (((weapon_id == 638) || 
-																								 (weapon_id == 639) || 
-																								 (weapon_id == 640) || 
-																								 (weapon_id == 754) ||
-																								 (weapon2_id == 688) || 
-																								 (weapon2_id == 689) || 
-																								 (weapon2_id == 690) ||
-																								 (weapon3_id == 671) || 
-																								 (weapon3_id == 672) || 
-																								 (weapon3_id == 673)) || 
-																								(house_id >= 5)) {
-																								Keys.push(["Nomina Equip/Rifugio 🏷"]);
+																							if (charm_id == 62)
+																								weapon += 10;
+																							if (charm_id == 184)
+																								weapon += 25;
+																							if (charm_id == 188)
+																								weapon += 30;
+																							if (charm_id == 404)
+																								weapon_crit += 6;
+																							if (charm_id == 493)
+																								weapon_crit += 2;
+																							if (charm_id == 494)
+																								weapon_crit += 4;
+																							if (charm_id == 495)
+																								weapon2_crit += 3;
+																							if (charm_id == 496)
+																								weapon3_crit += 3;
+																							if (charm_id == 696) {
+																								weapon_crit += 5;
+																								weapon2_crit += 5;
+																								weapon3_crit += 3;
 																							}
-																							if (boost_id != 0)
-																								Keys.push(["Annulla Bevanda Attiva 🚫"]);
-																							Keys.push(["Descrizioni 💬"]);
-																							Keys.push(["Vacanza ⛱ "], ["Sesso ⚤", "Nascita ✨"]);
-																						} else {
-																							if (myhouse_id == 1) {
-																								life = "?";
-																								total_life = "?";
-																								heist_count = "?";
-																								spy_count = "?";
-																								money = "?";
-																								exp = "?";
-																								lev = "?";
-																								weapon_name = "?";
-																								weapon_desc = "";
-																								weapon2_name = "?";
-																								weapon2_desc = "";
-																								weapon3_name = "?";
-																								weapon3_desc = "";
-																								talismano = "?";
-																								talismano_desc = "";
-																								dragon_name = "?";
-																								dragon_level = "?";
-																								dragon_claws_n = "?";
-																								dragon_damage = "?";
-																								dragon_saddle_n = "?";
-																								dragon_defence = "?";
-																								dragon_critical = "?";
-																								dragon_status = "?";
-																							} else if (myhouse_id == 2) {
-																								heist_count = "?";
-																								spy_count = "?";
-																								money = "?";
-																								weapon_name = "?";
-																								weapon_desc = "";
-																								weapon2_name = "?";
-																								weapon2_desc = "";
-																								weapon3_name = "?";
-																								weapon3_desc = "";
-																								talismano = "?";
-																								talismano_desc = "";
-																								dragon_name = "?";
-																								dragon_level = "?";
-																								dragon_claws_n = "?";
-																								dragon_damage = "?";
-																								dragon_saddle_n = "?";
-																								dragon_arms_n = "?";
-																								dragon_defence = "?";
-																								dragon_critical = "?";
-																							} else if (myhouse_id == 3) {
-																								heist_count = "?";
-																								spy_count = "?";
-																								money = "?";
-																								talismano = "?";
-																								talismano_desc = "";
-																								dragon_name = "?";
-																								dragon_level = "?";
-																								dragon_claws_n = "?";
-																								dragon_damage = "?";
-																								dragon_saddle_n = "?";
-																								dragon_defence = "?";
-																								dragon_critical = "?";
-																							} else if (myhouse_id == 4) {
-																								heist_count = "?";
-																								spy_count = "?";
-																								money = "?";
-																							} else if (myhouse_id == 5)
-																								money = "?";
-																						}
-
-																						Keys.push(["Torna al menu"]);
-
-																						var kb = {
-																							parse_mode: "HTML",
-																							reply_markup: {
-																								resize_keyboard: true,
-																								keyboard: Keys
+																							if (charm_id == 698)
+																								weapon += 50;
+																							if (abBonus > 0) {
+																								weapon_crit += abBonus;
+																								weapon2_crit += abBonus;
+																								weapon3_crit += abBonus;
 																							}
-																						};
 
-																						bot.sendMessage(message.chat.id, "<b>" + gender_text + "</b> " + class_sym + "\n" +
-																										gender_sym + " " + nickname + (player_custom_nickname != null ? " <i>" + player_custom_nickname + "</i>": "") + "\n" +
-																										team_desc + 
-																										stars + " " + formatNumber(lev) + " (" + formatNumber(exp) + " xp)\n\n" +
-																										"🏹 " + class_name + "\n" +
-																										"💎 " + gems + " 🏆 " + inest + "\n" +
-																										"💰 " + formatNumber(money) + " §\n" +
-																										"❤️ " + formatNumber(life) + " / " + formatNumber(total_life) + " hp\n" +
-																										"📦 " + formatNumber(craft_count) + " (" + formatNumber(craft_week) + ")\n" +
-																										"🏕 " + rifugio + "\n" +
-																										"\n<b>Equipaggiamento</b> ⚔️\n" +
-																										"🗡 " + weapon_name + weapon_desc + "\n" +
-																										"🥋 " + weapon2_name + weapon2_desc + "\n" +
-																										"🛡 " + weapon3_name + weapon3_desc + "\n" +
-																										"📿 " + talismano + "\n" +
+																							//Vocazioni
 
-																										(dragon ? "\n<b>" + dragon_name + " (L" + dragon_level + ")</b> 🐉\n" : "") +
-																										(dragon ? "Stato: " + dragon_status + "\n" : "") +
-																										(dragon ? dragon_claws_n + " (" + dragon_damage + ")\n" : "") +
-																										(dragon ? dragon_saddle_n + " (" + dragon_defence + ")\n" : "") +
-																										(dragon ? dragon_arms_n + "\n" : "") +
-																										(dragon ? "Critico (" + dragon_critical + "%)\n" : "") +
+																							if ((class_id == 2) && (reborn == 3))
+																								weapon2_crit += 5;
+																							if ((class_id == 2) && (reborn >= 4)) {
+																								weapon2_crit += 7;
+																								weapon3_crit += 7;
+																							}
+																							if ((class_id == 4) && (reborn == 3)) {
+																								weapon_crit += 2;
+																								weapon2_crit += 2;
+																								weapon3_crit += 2;
+																							}
+																							if ((class_id == 4) && (reborn >= 4)) {
+																								weapon_crit += 7;
+																								weapon2_crit += 7;
+																								weapon3_crit += 7;
+																							}
+																							if ((class_id == 5) && (reborn == 3))
+																								weapon3_crit += 4;
+																							if ((class_id == 5) && (reborn >= 4))
+																								weapon3_crit += 8;
+																							if ((class_id == 6) && (reborn == 3))
+																								weapon2_crit += 2;
+																							if ((class_id == 6) && (reborn == 3))
+																								weapon3_crit += 2;
+																							if ((class_id == 6) && (reborn >= 4))
+																								weapon2_crit += 7;
+																							if ((class_id == 6) && (reborn >= 4))
+																								weapon3_crit += 7;
+																							if ((class_id == 6) && (reborn == 5))
+																								weapon2_crit += 7;
+																							if ((class_id == 6) && (reborn == 5))
+																								weapon3_crit += 7;
+																							if ((class_id == 8) && (reborn == 3))
+																								weapon3_crit += 5;
+																							if ((class_id == 8) && (reborn >= 4))
+																								weapon3_crit += 7;
+																							if ((class_id == 8) && (reborn == 5))
+																								weapon_crit += 10;
+																							if ((class_id == 9) && (reborn == 3)) {
+																								weapon_crit += 2;
+																								weapon3_crit += 2;
+																							}
+																							if ((class_id == 9) && (reborn >= 4)) {
+																								weapon_crit += 7;
+																								weapon3_crit += 7;
+																							}
 
-																										relation +
+																							if ((class_id == 7) && (reborn == 5))
+																								weapon_crit += Math.round(dragon_critical / 2);
 
-																										"\n<b>Altro</b> 💱\n" +
-																										"Abilità: " + formatNumber(ability) + "\n" +
-																										referral +
-																										artifacts +
-																										rank +
-																										mission_team_count +
-																										top_win_text +
-																										(player_description != null ? "\n<i>" + player_description + "</i>" : ""), kb);
+																							if ((class_id == 8) && (reborn == 2))
+																								weapon += weapon * 0.10;
+																							else if ((class_id == 8) && (reborn == 3))
+																								weapon += weapon * 0.15;
+																							else if ((class_id == 8) && (reborn == 4))
+																								weapon += weapon * 0.17;
+																							else if ((class_id == 8) && (reborn == 5))
+																								weapon += weapon * 0.30;
+
+																							//Descrizioni
+
+																							var weapon_desc = "";
+																							if (weapon_name != "-") {
+																								weapon += power_dmg;
+																								weapon_crit += power_weapon;
+																								weapon_desc = " (+" + Math.round(weapon) + ", " + weapon_crit + "%, " + weapon_enchant + enchant1 + ")";
+																							}
+																							var weapon2_desc = "";
+																							if (weapon2_name != "-") {
+																								weapon2 -= power_def;
+																								weapon2_crit += power_armor;
+																								weapon2_desc = " (" + Math.round(weapon2) + ", " + weapon2_crit + "%, " + weapon2_enchant + enchant2 + ")";
+																							}
+																							var weapon3_desc = "";
+																							if (weapon3_name != "-") {
+																								weapon3_crit += power_shield;
+																								weapon3_desc = " (" + Math.round(weapon3) + ", " + weapon3_crit + "%, " + weapon3_enchant + enchant3 + ")";
+																							}
+
+																							var Keys = [];
+
+																							if (player == message.from.username) {
+																								Keys.push(["Vocazione 🏹", "Albero Talenti 🌳"]);
+																								Keys.push(["Link Invito 🗣", "Statistiche 📊", "Artefatti 🔱"]);
+																								if (((weapon_id == 638) || 
+																									 (weapon_id == 639) || 
+																									 (weapon_id == 640) || 
+																									 (weapon_id == 754) ||
+																									 (weapon2_id == 688) || 
+																									 (weapon2_id == 689) || 
+																									 (weapon2_id == 690) ||
+																									 (weapon3_id == 671) || 
+																									 (weapon3_id == 672) || 
+																									 (weapon3_id == 673)) || 
+																									(house_id >= 5)) {
+																									Keys.push(["Nomina Equip/Rifugio 🏷"]);
+																								}
+																								if (boost_id != 0)
+																									Keys.push(["Annulla Bevanda Attiva 🚫"]);
+																								Keys.push(["Descrizioni 💬"]);
+																								Keys.push(["Vacanza ⛱ "], ["Sesso ⚤", "Nascita ✨"]);
+																							} else {
+																								if (myhouse_id == 1) {
+																									life = "?";
+																									total_life = "?";
+																									heist_count = "?";
+																									spy_count = "?";
+																									money = "?";
+																									exp = "?";
+																									lev = "?";
+																									weapon_name = "?";
+																									weapon_desc = "";
+																									weapon2_name = "?";
+																									weapon2_desc = "";
+																									weapon3_name = "?";
+																									weapon3_desc = "";
+																									talismano = "?";
+																									talismano_desc = "";
+																									dragon_name = "?";
+																									dragon_level = "?";
+																									dragon_claws_n = "?";
+																									dragon_damage = "?";
+																									dragon_saddle_n = "?";
+																									dragon_defence = "?";
+																									dragon_critical = "?";
+																									dragon_status = "?";
+																								} else if (myhouse_id == 2) {
+																									heist_count = "?";
+																									spy_count = "?";
+																									money = "?";
+																									weapon_name = "?";
+																									weapon_desc = "";
+																									weapon2_name = "?";
+																									weapon2_desc = "";
+																									weapon3_name = "?";
+																									weapon3_desc = "";
+																									talismano = "?";
+																									talismano_desc = "";
+																									dragon_name = "?";
+																									dragon_level = "?";
+																									dragon_claws_n = "?";
+																									dragon_damage = "?";
+																									dragon_saddle_n = "?";
+																									dragon_arms_n = "?";
+																									dragon_defence = "?";
+																									dragon_critical = "?";
+																								} else if (myhouse_id == 3) {
+																									heist_count = "?";
+																									spy_count = "?";
+																									money = "?";
+																									talismano = "?";
+																									talismano_desc = "";
+																									dragon_name = "?";
+																									dragon_level = "?";
+																									dragon_claws_n = "?";
+																									dragon_damage = "?";
+																									dragon_saddle_n = "?";
+																									dragon_defence = "?";
+																									dragon_critical = "?";
+																								} else if (myhouse_id == 4) {
+																									heist_count = "?";
+																									spy_count = "?";
+																									money = "?";
+																								} else if (myhouse_id == 5)
+																									money = "?";
+																							}
+
+																							Keys.push(["Torna al menu"]);
+
+																							var kb = {
+																								parse_mode: "HTML",
+																								reply_markup: {
+																									resize_keyboard: true,
+																									keyboard: Keys
+																								}
+																							};
+
+																							bot.sendMessage(message.chat.id, "<b>" + gender_text + "</b> " + class_sym + "\n" +
+																											gender_sym + " " + nickname + (player_custom_nickname != null ? " <i>" + player_custom_nickname + "</i>": "") + "\n" +
+																											team_desc + 
+																											stars + " " + formatNumber(lev) + " (" + formatNumber(exp) + " xp)\n\n" +
+																											"🏹 " + class_name + "\n" +
+																											"💎 " + gems + " 🏆 " + inest + "\n" +
+																											"💰 " + formatNumber(money) + " §\n" +
+																											"❤️ " + formatNumber(life) + " / " + formatNumber(total_life) + " hp\n" +
+																											"📦 " + formatNumber(craft_count) + " (" + formatNumber(craft_week) + ")\n" +
+																											"🏕 " + rifugio + "\n" +
+																											"\n<b>Equipaggiamento</b> ⚔️\n" +
+																											"🗡 " + weapon_name + weapon_desc + "\n" +
+																											"🥋 " + weapon2_name + weapon2_desc + "\n" +
+																											"🛡 " + weapon3_name + weapon3_desc + "\n" +
+																											"📿 " + talismano + "\n" +
+
+																											(dragon ? "\n<b>" + dragon_name + " (L" + dragon_level + ")</b> 🐉\n" : "") +
+																											(dragon ? "Stato: " + dragon_status + "\n" : "") +
+																											(dragon ? dragon_claws_n + " (" + dragon_damage + ")\n" : "") +
+																											(dragon ? dragon_saddle_n + " (" + dragon_defence + ")\n" : "") +
+																											(dragon ? dragon_arms_n + "\n" : "") +
+																											(dragon ? "Critico (" + dragon_critical + "%)\n" : "") +
+
+																											relation +
+
+																											"\n<b>Altro</b> 💱\n" +
+																											"Abilità: " + formatNumber(ability) + "\n" +
+																											referral +
+																											artifacts +
+																											cards_txt +
+																											rank +
+																											mission_team_count +
+																											top_win_text +
+																											(player_description != null ? "\n<i>" + player_description + "</i>" : ""), kb);
+																						});
 																					});
 																				});
 																			});
@@ -44109,7 +44236,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 														if (((today.getDay() == 6) || (today.getDay() == 0)) && (eventFestival == 1))
 															checkFestival(message.chat.id, player_id, matR);
 														
-														globalAchievement(player_id, craftexp);
+														// globalAchievement(player_id, craftexp);
 													});
 												});
 											});
@@ -45887,16 +46014,14 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								chest5 = Math.round(chest5);
 								chest6 = Math.round(chest6);
 
-								/*
 								if (rows[i].global_end == 1) {
-									chest1 = Math.round(chest1/2);
-									chest2 = Math.round(chest2/2);
-									chest3 = Math.round(chest3/2);
-									chest4 = Math.round(chest4/2);
-									chest5 = Math.round(chest5/2);
-									chest6 = Math.round(chest6/2);
+									chest1 = chest1*2;
+									chest2 = chest2*2;
+									chest3 = chest3*2;
+									chest4 = chest4*2;
+									chest5 = chest5*2;
+									chest6 = chest6*2;
 								}
-								*/
 
 								/*
 								if (rows[i].global_end == 1) {
@@ -46001,16 +46126,14 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 										connection_sync.query('INSERT INTO card_list (name, rarity) VALUES ("' + mob_name + '", ' + Math.round(getRandomArbitrary(1, 10)) + ')');
 										console.log("Nuova figurina creata: " + mob_name);
 									} else {
-										var have_tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE player_id = ' + rows[i].id);
-										if (have_tot % 10 == 0) {
-											// scrigno capsula? moneta lunare?
-										}
 										var have = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE player_id = ' + rows[i].id + ' AND card_id = ' + card[0].id);
 										if (have[0].cnt == 0) {
 											var prob = (10-card[0].rarity)+1;
 											if (prob > Math.random()*100) {
 												connection_sync.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + rows[i].id + ', ' + card[0].id + ')');
-												console.log("Figurina trovata: " + card[0].id);
+												console.log("Figurina ottenuta: " + mob_name);
+												
+												// bot.sendMessage(rows[i].chat_id, "Hai trovato la figurina *" + mob_name + " (" + card[0].rarity + ")*!", mark);
 											}
 										}
 									}
@@ -47355,10 +47478,12 @@ function autoMana() {
 					rows[i].quantity -= rows[i].quantity * 0.1;
 				
 				var extra_mana = "";
+				/*
 				if (rows[i].global_end == 1) {
 					rows[i].quantity = rows[i].quantity*2;
 					extra_mana = " (aumentato grazie al bonus globale)";
 				}
+				*/
 				
 				rows[i].quantity = Math.floor(rows[i].quantity);
 
