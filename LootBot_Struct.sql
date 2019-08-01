@@ -603,13 +603,35 @@ DROP TABLE IF EXISTS `card_trade`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `card_trade` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `card_id1` int(11) NOT NULL,
-  `card_id2` int(11) NOT NULL,
-  `player_id1` int(11) NOT NULL,
-  `player_id2` int(11) NOT NULL,
+  `player_from` int(11) NOT NULL,
+  `player_to` int(11) NOT NULL,
   `time_end` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`id`),
+  KEY `card_trade_p1` (`player_from`),
+  KEY `card_trade_p2` (`player_to`),
+  CONSTRAINT `card_trade_p1` FOREIGN KEY (`player_from`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `card_trade_p2` FOREIGN KEY (`player_to`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `card_trade_detail`
+--
+
+DROP TABLE IF EXISTS `card_trade_detail`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `card_trade_detail` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `trade_id` int(11) NOT NULL,
+  `player` tinyint(1) NOT NULL COMMENT '1 o 2',
+  `card_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `card_trade` (`trade_id`),
+  KEY `card_trade_id` (`card_id`),
+  CONSTRAINT `card_trade` FOREIGN KEY (`trade_id`) REFERENCES `card_trade` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `card_trade_id` FOREIGN KEY (`card_id`) REFERENCES `card_list` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3620,4 +3642,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-31  9:09:41
+-- Dump completed on 2019-08-01  9:00:06

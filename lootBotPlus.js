@@ -5629,8 +5629,20 @@ bot.on('callback_query', function (message) {
 bot.onText(/^\/crealotteria(?!p) (.+)|^\/crealotteria(?!p)$/, function (message, match) {
 	var oggetto = match[1];
 	if ((oggetto == undefined) || (oggetto == "")) {
-		bot.sendMessage(message.chat.id, "Per inserire una lotteria utilizza la seguente sintassi: /crealotteria NomeOggetto, l'oggetto viene rimosso dall'inventario appena creata la lotteria e il numero di partecipanti minimo è 5");
+		bot.sendMessage(message.chat.id, "Per inserire una lotteria utilizza la seguente sintassi: '/crealotteria Prezzo NomeOggetto (numero massimo partecipanti)', l'oggetto viene rimosso dall'inventario appena creata la lotteria e il numero di partecipanti minimo è 5");
 		return;
+	}
+	
+	var max_players = -1;
+	var max_text = "";
+	var match = oggetto.match(/\d+/g);
+	if (match != null) {
+		max_players = parseInt(match[0]);
+		max_text = ", massimi: " + max_players;
+		if (isNaN(max_players) || (max_players < 5)){
+			bot.sendMessage(message.chat.id, "Numero massimo di partecipanti non valido, minimo 5");
+			return;
+		}
 	}
 
 	connection.query('SELECT id, account_id, market_ban, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -5692,9 +5704,9 @@ bot.onText(/^\/crealotteria(?!p) (.+)|^\/crealotteria(?!p)$/, function (message,
 					d.setHours(d.getHours() + 48);
 					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-					connection.query('INSERT INTO public_lottery (chat_id, creator_id, item_id, time_end) VALUES (' + message.chat.id + ',' + player_id + ',' + item_id + ',"' + long_date + '")', function (err, rows, fields) {
+					connection.query('INSERT INTO public_lottery (chat_id, creator_id, item_id, time_end, max_players) VALUES (' + message.chat.id + ',' + player_id + ',' + item_id + ',"' + long_date + '", ' + max_players + ')', function (err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Lotteria creata! Usa `/lotteria @" + message.from.username + "` per iscriverti e /estrazione per estrarre il vincitore. Partecipanti minimi: 5.\nScadrà tra 48 ore.", mark);
+						bot.sendMessage(message.chat.id, "Lotteria creata! Usa `/lotteria @" + message.from.username + "` per iscriverti e /estrazione per estrarre il vincitore. Partecipanti minimi: 5" + max_text + ".\nScadrà tra 48 ore.", mark);
 					});
 				});
 			});
@@ -5711,8 +5723,20 @@ bot.onText(/^\/crealotteriap ([^\s]+) (.+)|^\/crealotteriap$/, function (message
 	var prezzo = parseInt(match[1]);
 	var oggetto = match[2];
 	if ((oggetto == undefined) || (oggetto == "") || (isNaN(prezzo)) || (prezzo == 0)) {
-		bot.sendMessage(message.chat.id, "Per inserire una lotteria a pagamento utilizza la seguente sintassi: /crealotteriap Prezzo NomeOggetto, l'oggetto viene rimosso dall'inventario appena creata la lotteria e il numero di partecipanti minimo è 5. Se la lotteria viene annullata le monete vengono restituite.", mark);
+		bot.sendMessage(message.chat.id, "Per inserire una lotteria a pagamento utilizza la seguente sintassi: '/crealotteriap Prezzo NomeOggetto (numero massimo partecipanti)', l'oggetto viene rimosso dall'inventario appena creata la lotteria e il numero di partecipanti minimo è 5. Se la lotteria viene annullata le monete vengono restituite.", mark);
 		return;
+	}
+	
+	var max_players = -1;
+	var max_text = "";
+	var match = oggetto.match(/\d+/g);
+	if (match != null) {
+		max_players = parseInt(match[0]);
+		max_text = ", massimi: " + max_players;
+		if (isNaN(max_players) || (max_players < 5)){
+			bot.sendMessage(message.chat.id, "Numero massimo di partecipanti non valido, minimo 5");
+			return;
+		}
 	}
 
 	prezzo = prezzo.toString().replaceAll(/\./, "");
@@ -5781,9 +5805,9 @@ bot.onText(/^\/crealotteriap ([^\s]+) (.+)|^\/crealotteriap$/, function (message
 
 					delItem(player_id, item_id, 1);
 
-					connection.query('INSERT INTO public_lottery (chat_id, creator_id, item_id, price, time_end) VALUES (' + message.chat.id + ',' + player_id + ',' + item_id + ',' + prezzo + ',"' + long_date + '")', function (err, rows, fields) {
+					connection.query('INSERT INTO public_lottery (chat_id, creator_id, item_id, price, time_end, max_players) VALUES (' + message.chat.id + ',' + player_id + ',' + item_id + ',' + prezzo + ',"' + long_date + '", ' + max_players + ')', function (err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Lotteria creata! Usa `/lotteriap @" + message.from.username + "` per iscriverti e /estrazione per estrarre il vincitore. Partecipanti minimi: 5\nPrezzo partecipazione: " + formatNumber(prezzo) + " §.\nScadrà tra 48 ore.", mark);
+						bot.sendMessage(message.chat.id, "Lotteria creata! Usa `/lotteriap @" + message.from.username + "` per iscriverti e /estrazione per estrarre il vincitore. Partecipanti minimi: 5" + max_text + "\nPrezzo partecipazione: " + formatNumber(prezzo) + " §.\nScadrà tra 48 ore.", mark);
 					});
 				});
 			});
@@ -6985,10 +7009,21 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 							one = 1;
 							connection.query('INSERT INTO public_lottery_players (lottery_id, player_id) VALUES (' + this.lottery_id + ',' + this.player_id + ')', function (err, rows, fields) {
 								if (err) throw err;
+								
+								if (this.max_players > -1) {
+									connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + this.lottery_id, function (err, rows, fields) {
+										if (err) throw err;
+										if (rows[0].cnt >= this.max_players)
+											endLottery(this.creator_id, 2);
+									}.bind({
+										creator_id: this.creator_id,
+										max_players: this.max_players
+									}));
+								}
 
 								count++;
 
-								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + creator_id + ' AND type = 1', function (err, rows, fields) {
+								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + this.creator_id + ' AND type = 1', function (err, rows, fields) {
 									if (err) throw err;
 									notify = 0;
 									if (Object.keys(rows).length == 0)
@@ -7008,7 +7043,9 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 							}.bind({
 								i: this.i,
 								len: this.len,
-								creator_chat: this.creator_chat
+								creator_chat: this.creator_chat,
+								creator_id: this.creator_id,
+								max_players: this.max_players
 							}));
 						}
 						if ((this.i + 1 == this.len) && (one == 0))
@@ -7018,7 +7055,9 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 						lottery_id: lottery_id,
 						i: i,
 						len: len,
-						creator_chat: creator_chat
+						creator_chat: creator_chat,
+						creator_id: creator_id,
+						max_players: max_players
 					}));
 				}
 			});
@@ -7055,10 +7094,21 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 							one = 1;
 							connection.query('INSERT INTO public_lottery_players (lottery_id, player_id) VALUES (' + this.lottery_id + ',' + this.player_id + ')', function (err, rows, fields) {
 								if (err) throw err;
+								
+								if (this.max_players > -1) {
+									connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + this.lottery_id, function (err, rows, fields) {
+										if (err) throw err;
+										if (rows[0].cnt >= this.max_players)
+											endLottery(this.creator_id, 2);
+									}.bind({
+										creator_id: this.creator_id,
+										max_players: this.max_players
+									}));
+								}
 
 								count++;
 
-								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + creator_id + ' AND type = 1', function (err, rows, fields) {
+								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + this.creator_id + ' AND type = 1', function (err, rows, fields) {
 									if (err) throw err;
 									notify = 0;
 									if (Object.keys(rows).length == 0)
@@ -7078,7 +7128,9 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 							}.bind({
 								i: this.i,
 								len: this.len,
-								creator_chat: this.creator_chat
+								creator_chat: this.creator_chat,
+								creator_id: this.creator_id,
+								max_players: this.max_players
 							}));
 						}
 						if ((this.i + 1 == this.len) && (one == 0))
@@ -7088,7 +7140,9 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 						lottery_id: lottery_id,
 						i: i,
 						len: len,
-						creator_chat: creator_chat
+						creator_chat: creator_chat,
+						creator_id: creator_id,
+						max_players: max_players
 					}));
 				}
 			});
@@ -7103,7 +7157,7 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 			}
 			var creator_id = rows[0].id;
 
-			connection.query('SELECT id, price FROM public_lottery WHERE creator_id = ' + creator_id, function (err, rows, fields) {
+			connection.query('SELECT id, price, max_players FROM public_lottery WHERE creator_id = ' + creator_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, "Il nickname che hai inserito non è associato a nessuna lotteria, riprova");
@@ -7112,6 +7166,7 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 
 				var price = rows[0].price;
 				var lottery_id = rows[0].id;
+				var max_players = rows[0].max_players;
 
 				if (price > 0) {
 					bot.sendMessage(message.chat.id, "Questa è una lotteria a pagamento, usa /lotteriap per iscriverti");
@@ -7135,6 +7190,14 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 					connection.query('INSERT INTO public_lottery_players (lottery_id, player_id) VALUES (' + lottery_id + ',' + player_id + ')', function (err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Ti sei registrato correttamente alla lotteria!\nPer rimuovere la registrazione usa /dlotteria");
+						
+						if (max_players > -1) {
+							connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + lottery_id, function (err, rows, fields) {
+								if (err) throw err;
+								if (rows[0].cnt >= max_players)
+									endLottery(creator_id, 2);
+							});
+						}
 
 						connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + creator_id + ' AND type = 1', function (err, rows, fields) {
 							if (err) throw err;
@@ -7528,7 +7591,7 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 		}
 
 		if (nickname == "tutte") {
-			connection.query('SELECT L.creator_id, player.chat_id, L.id, L.price, (SELECT COUNT(id) FROM public_lottery_players P WHERE P.lottery_id = L.id AND P.player_id = ' + player_id + ') As sub FROM public_lottery L, player WHERE player.id = L.creator_id AND L.price > 0 AND L.creator_id != ' + player_id + ' HAVING sub = 0', function (err, rows, fields) {
+			connection.query('SELECT L.creator_id, player.chat_id, L.id, L.price, (SELECT COUNT(id) FROM public_lottery_players P WHERE P.lottery_id = L.id AND P.player_id = ' + player_id + ') As sub, L.max_players FROM public_lottery L, player WHERE player.id = L.creator_id AND L.price > 0 AND L.creator_id != ' + player_id + ' HAVING sub = 0', function (err, rows, fields) {
 				if (err) throw err;
 
 				if ((Object.keys(rows).length == 0) || (rows[0].tot == 0)) {
@@ -7555,12 +7618,14 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 				var creator_chat = 0;
 				var creator_id = 0;
 				var notify = 0;
+				var max_players = 0;
 
 				for (var i = 0; i < len; i++) {
 					lottery_id = rows[i].id;
 					price = rows[i].price;
 					creator_chat = rows[i].chat_id;
 					creator_id = rows[i].creator_id;
+					max_players = rows[i].max_players;
 
 					connection.query('SELECT * FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = ' + lottery_id, function (err, rows, fields) {
 						if (err) throw err;
@@ -7574,8 +7639,19 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 								connection.query('UPDATE public_lottery SET money = money+' + this.price + ' WHERE id = ' + this.lottery_id, function (err, rows, fields) {
 									if (err) throw err;
 								});
+								
+								if (this.max_players > -1) {
+									connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + this.lottery_id, function (err, rows, fields) {
+										if (err) throw err;
+										if (rows[0].cnt >= this.max_players)
+											endLottery(this.creator_id, 2);
+									}.bind({
+										creator_id: this.creator_id,
+										max_players: this.max_players
+									}));
+								}
 
-								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + creator_id + ' AND type = 1', function (err, rows, fields) {
+								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + this.creator_id + ' AND type = 1', function (err, rows, fields) {
 									if (err) throw err;
 									notify = 0;
 									if (Object.keys(rows).length == 0)
@@ -7601,7 +7677,9 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 								len: this.len,
 								price: this.price,
 								lottery_id: this.lottery_id,
-								creator_chat: this.creator_chat
+								creator_chat: this.creator_chat,
+								creator_id: this.creator_id,
+								max_players: this.max_players
 							}));
 						}
 						if ((this.i + 1 == this.len) && (one == 0))
@@ -7612,7 +7690,9 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 						i: i,
 						len: len,
 						price: price,
-						creator_chat: creator_chat
+						creator_chat: creator_chat,
+						creator_id: creator_id,
+						max_players: max_players
 					}));
 				}
 			});
@@ -7621,7 +7701,7 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 
 		if (nickname.indexOf("+") != -1) {
 			var item_name = nickname.replace("+", "");
-			connection.query('SELECT L.creator_id, player.chat_id, L.id, L.price, (SELECT COUNT(id) FROM public_lottery_players P WHERE P.lottery_id = L.id AND P.player_id = ' + player_id + ') As sub FROM public_lottery L, player, item I WHERE L.item_id = I.id AND player.id = L.creator_id AND L.price > 0 AND L.creator_id != ' + player_id + ' AND I.name = "' + item_name + '" HAVING sub = 0', function (err, rows, fields) {
+			connection.query('SELECT L.creator_id, player.chat_id, L.id, L.price, (SELECT COUNT(id) FROM public_lottery_players P WHERE P.lottery_id = L.id AND P.player_id = ' + player_id + ') As sub, L.max_players FROM public_lottery L, player, item I WHERE L.item_id = I.id AND player.id = L.creator_id AND L.price > 0 AND L.creator_id != ' + player_id + ' AND I.name = "' + item_name + '" HAVING sub = 0', function (err, rows, fields) {
 				if (err) throw err;
 
 				if ((Object.keys(rows).length == 0) || (rows[0].tot == 0)) {
@@ -7648,12 +7728,14 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 				var creator_chat = 0;
 				var creator_id = 0;
 				var notify = 0;
+				var max_players = 0;
 
 				for (var i = 0; i < len; i++) {
 					lottery_id = rows[i].id;
 					price = rows[i].price;
 					creator_chat = rows[i].chat_id;
 					creator_id = rows[i].creator_id;
+					max_players = rows[i].max_players;
 
 					connection.query('SELECT * FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = ' + lottery_id, function (err, rows, fields) {
 						if (err) throw err;
@@ -7667,8 +7749,19 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 								connection.query('UPDATE public_lottery SET money = money+' + this.price + ' WHERE id = ' + this.lottery_id, function (err, rows, fields) {
 									if (err) throw err;
 								});
+								
+								if (this.max_players > -1) {
+									connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + this.lottery_id, function (err, rows, fields) {
+										if (err) throw err;
+										if (rows[0].cnt >= this.max_players)
+											endLottery(this.creator_id, 2);
+									}.bind({
+										creator_id: this.creator_id,
+										max_players: this.max_players
+									}));
+								}
 
-								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + creator_id + ' AND type = 1', function (err, rows, fields) {
+								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + this.creator_id + ' AND type = 1', function (err, rows, fields) {
 									if (err) throw err;
 									notify = 0;
 									if (Object.keys(rows).length == 0)
@@ -7694,7 +7787,9 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 								len: this.len,
 								price: this.price,
 								lottery_id: this.lottery_id,
-								creator_chat: this.creator_chat
+								creator_chat: this.creator_chat,
+								creator_id: this.creator_id,
+								max_players: this.max_players
 							}));
 						}
 						if ((this.i + 1 == this.len) && (one == 0))
@@ -7705,7 +7800,9 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 						i: i,
 						len: len,
 						price: price,
-						creator_chat: creator_chat
+						creator_chat: creator_chat,
+						creator_id: creator_id,
+						max_players: max_players
 					}));
 				}
 			});
@@ -7720,7 +7817,7 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 			}
 			var creator_id = rows[0].id;
 
-			connection.query('SELECT id, price FROM public_lottery WHERE creator_id = ' + creator_id, function (err, rows, fields) {
+			connection.query('SELECT id, price, max_players FROM public_lottery WHERE creator_id = ' + creator_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, "Il nickname che hai inserito non è associato a nessuna lotteria, riprova");
@@ -7729,6 +7826,7 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 
 				var price = rows[0].price;
 				var lottery_id = rows[0].id;
+				var max_players = rows[0].max_players;
 
 				if (player_id == creator_id) {
 					connection.query('SELECT 1 FROM public_lottery_players WHERE lottery_id = ' + lottery_id, function (err, rows, fields) {
@@ -7763,6 +7861,15 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 							connection.query('UPDATE public_lottery SET money = money+' + price + ' WHERE id = ' + lottery_id, function (err, rows, fields) {
 								if (err) throw err;
 							});
+							
+							if (max_players > -1) {
+								connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + lottery_id, function (err, rows, fields) {
+									if (err) throw err;
+									if (rows[0].cnt >= max_players)
+										endLottery(creator_id, 2);
+								});
+							}
+							
 							bot.sendMessage(message.chat.id, "Ti sei registrato alla lotteria al prezzo di " + formatNumber(price) + " §!\nPer rimuovere la registrazione usa /dlotteriap");
 
 							connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + creator_id + ' AND type = 1', function (err, rows, fields) {
@@ -10926,7 +11033,11 @@ function checkLottery() {
 };
 
 function setFinishedLottery(element, index, array) {
-	connection.query('SELECT id, price, chat_id, item_id, money FROM public_lottery WHERE creator_id = ' + element.creator_id, function (err, rows, fields) {
+	endLottery(element.creator_id, 1);
+};
+
+function endLottery(creator_id, mode) {
+	connection.query('SELECT id, price, chat_id, item_id, money FROM public_lottery WHERE creator_id = ' + creator_id, function (err, rows, fields) {
 		if (err) throw err;
 
 		var lottery_id = rows[0].id;
@@ -10977,11 +11088,16 @@ function setFinishedLottery(element, index, array) {
 					if (money > 0) {
 						extra = " ed un ammontare pari a " + formatNumber(money) + " §";
 					}
-					bot.sendMessage(chat_id, "Estrazione automatica per " + itemName + " con " + members_num + " partecipanti" + extra + "!\n\nIl vincitore è: @" + nickname + "!");
+					
+					var mode_text = "automatica (scaduta)";
+					if (mode == 2)
+						mode_text = "automatica (raggiunto limite partecipanti)";
+					
+					bot.sendMessage(chat_id, "Estrazione " + mode_text + " per " + itemName + " con " + members_num + " partecipanti" + extra + "!\n\nIl vincitore è: @" + nickname + "!");
 
 					//bot.sendMessage(chat_id, "Estrazione automatica per " + itemName + "!\n\nIl vincitore è: @" + nickname + "!");
 
-					connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + element.creator_id, function (err, rows, fields) {
+					connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + creator_id, function (err, rows, fields) {
 						if (err) throw err;
 						//console.log("Consegnati " + money + " § al creatore");
 					});
@@ -10990,9 +11106,9 @@ function setFinishedLottery(element, index, array) {
 						if (err) throw err;
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 							if (rows[i].nickname != nickname)
-								bot.sendMessage(rows[i].chat_id, "Estrazione automatica per " + itemName + " terminata, purtroppo hai perso!");
+								bot.sendMessage(rows[i].chat_id, "Estrazione " + mode_text + " per " + itemName + " terminata, purtroppo hai perso!");
 							else
-								bot.sendMessage(rows[i].chat_id, "Estrazione automatica per " + itemName + " terminata, HAI VINTO!");
+								bot.sendMessage(rows[i].chat_id, "Estrazione " + mode_text + " per " + itemName + " terminata, HAI VINTO!");
 						}
 						connection.query('DELETE FROM public_lottery_players WHERE lottery_id = ' + lottery_id, function (err, rows, fields) {
 							if (err) throw err;
@@ -11006,14 +11122,14 @@ function setFinishedLottery(element, index, array) {
 					var d = new Date();
 					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-					connection.query('INSERT INTO public_lottery_history (creator_id, player_id, item_id, money, time) VALUES (' + element.creator_id + ',' + extracted + ',' + item_id + ',' + money + ',"' + long_date + '")', function (err, rows, fields) {
+					connection.query('INSERT INTO public_lottery_history (creator_id, player_id, item_id, money, time) VALUES (' + creator_id + ',' + extracted + ',' + item_id + ',' + money + ',"' + long_date + '")', function (err, rows, fields) {
 						if (err) throw err;
 					});
 				});
 			});
 		});
 	});
-};
+}
 
 function checkMarket() {
 	connection.query('SELECT id, player_id, item_1_id, quantity FROM market WHERE time_end < NOW()', function (err, rows, fields) {
