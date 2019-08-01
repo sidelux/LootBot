@@ -3027,6 +3027,7 @@ CREATE TABLE `public_lottery` (
   `price` int(11) NOT NULL DEFAULT '0',
   `money` int(11) NOT NULL DEFAULT '0',
   `time_end` timestamp NULL DEFAULT NULL,
+  `max_players` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `creator_id` (`creator_id`),
   KEY `item_id` (`item_id`),
@@ -3642,4 +3643,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-08-01  9:00:06
+-- Dump completed on 2019-08-01 15:00:06

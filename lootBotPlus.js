@@ -1887,7 +1887,7 @@ bot.onText(/^\/chiedoaiuto/, function (message, match) {
 			var dungeon_finish_date = new Date(rows[0].finish_date);
 			var instance_finish_time = new Date(rows[0].finish_time);
 			var finish_date = new Date();
-			
+
 			if (rows[0].pass != 0) {
 				bot.sendMessage(message.from.id, "Puoi usare questo comando solo se il dungeon non è già stato passato!");
 				return;
@@ -5438,7 +5438,7 @@ bot.on('callback_query', function (message) {
 										}
 										text += "\nPer un totale di " + formatNumber(total_price) + " §\n";
 
-										console.log(getNow("it") + " - Acquisto di tutto il negozio da parte di " + message.from.username + " (" + shop_id + ", " + total_price + " §)");
+										console.log(getNow("it") + " - Acquisto di tutto il negozio da parte di " + message.from.username + " (" + shop_id + ", " + formatNumber(total_price) + " §)");
 
 										bot.sendMessage(message.from.id, text);
 
@@ -5629,14 +5629,15 @@ bot.on('callback_query', function (message) {
 bot.onText(/^\/crealotteria(?!p) (.+)|^\/crealotteria(?!p)$/, function (message, match) {
 	var oggetto = match[1];
 	if ((oggetto == undefined) || (oggetto == "")) {
-		bot.sendMessage(message.chat.id, "Per inserire una lotteria utilizza la seguente sintassi: '/crealotteria Prezzo NomeOggetto (numero massimo partecipanti)', l'oggetto viene rimosso dall'inventario appena creata la lotteria e il numero di partecipanti minimo è 5");
+		bot.sendMessage(message.chat.id, "Per inserire una lotteria utilizza la seguente sintassi: '/crealotteria Prezzo NomeOggetto numeroMassimoPartecipanti', l'oggetto viene rimosso dall'inventario appena creata la lotteria e il numero di partecipanti minimo è 5");
 		return;
 	}
-	
+
 	var max_players = -1;
 	var max_text = "";
 	var match = oggetto.match(/\d+/g);
 	if (match != null) {
+		oggetto = oggetto.replace(/\d+/g, '');
 		max_players = parseInt(match[0]);
 		max_text = ", massimi: " + max_players;
 		if (isNaN(max_players) || (max_players < 5)){
@@ -5723,14 +5724,15 @@ bot.onText(/^\/crealotteriap ([^\s]+) (.+)|^\/crealotteriap$/, function (message
 	var prezzo = parseInt(match[1]);
 	var oggetto = match[2];
 	if ((oggetto == undefined) || (oggetto == "") || (isNaN(prezzo)) || (prezzo == 0)) {
-		bot.sendMessage(message.chat.id, "Per inserire una lotteria a pagamento utilizza la seguente sintassi: '/crealotteriap Prezzo NomeOggetto (numero massimo partecipanti)', l'oggetto viene rimosso dall'inventario appena creata la lotteria e il numero di partecipanti minimo è 5. Se la lotteria viene annullata le monete vengono restituite.", mark);
+		bot.sendMessage(message.chat.id, "Per inserire una lotteria a pagamento utilizza la seguente sintassi: '/crealotteriap Prezzo NomeOggetto numeroMassimoPartecipanti', l'oggetto viene rimosso dall'inventario appena creata la lotteria e il numero di partecipanti minimo è 5. Se la lotteria viene annullata le monete vengono restituite.", mark);
 		return;
 	}
-	
+
 	var max_players = -1;
 	var max_text = "";
 	var match = oggetto.match(/\d+/g);
 	if (match != null) {
+		oggetto = oggetto.replace(/\d+/g, '');
 		max_players = parseInt(match[0]);
 		max_text = ", massimi: " + max_players;
 		if (isNaN(max_players) || (max_players < 5)){
@@ -6981,7 +6983,7 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 		}
 
 		if (nickname == "tutte") {
-			connection.query('SELECT L.creator_id, L.id, L.price, P.chat_id, P.nickname FROM public_lottery L, player P WHERE P.id = L.creator_id AND L.price = 0 AND L.creator_id != ' + player_id, function (err, rows, fields) {
+			connection.query('SELECT L.creator_id, L.id, L.price, P.chat_id, P.nickname, L.max_players FROM public_lottery L, player P WHERE P.id = L.creator_id AND L.price = 0 AND L.creator_id != ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				var len = Object.keys(rows).length;
@@ -6997,11 +6999,13 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 				var creator_chat = 0;
 				var creator_id = 0;
 				var notify = 0;
+				var max_players = 0;
 
 				for (var i = 0; i < len; i++) {
 					lottery_id = rows[i].id;
 					creator_chat = rows[i].chat_id;
 					creator_id = rows[i].creator_id;
+					max_players = rows[i].max_players;
 
 					connection.query('SELECT * FROM public_lottery_players WHERE player_id = ' + player_id + ' AND lottery_id = ' + lottery_id, function (err, rows, fields) {
 						if (err) throw err;
@@ -7009,7 +7013,7 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 							one = 1;
 							connection.query('INSERT INTO public_lottery_players (lottery_id, player_id) VALUES (' + this.lottery_id + ',' + this.player_id + ')', function (err, rows, fields) {
 								if (err) throw err;
-								
+
 								if (this.max_players > -1) {
 									connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + this.lottery_id, function (err, rows, fields) {
 										if (err) throw err;
@@ -7094,7 +7098,7 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 							one = 1;
 							connection.query('INSERT INTO public_lottery_players (lottery_id, player_id) VALUES (' + this.lottery_id + ',' + this.player_id + ')', function (err, rows, fields) {
 								if (err) throw err;
-								
+
 								if (this.max_players > -1) {
 									connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + this.lottery_id, function (err, rows, fields) {
 										if (err) throw err;
@@ -7190,7 +7194,7 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 					connection.query('INSERT INTO public_lottery_players (lottery_id, player_id) VALUES (' + lottery_id + ',' + player_id + ')', function (err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Ti sei registrato correttamente alla lotteria!\nPer rimuovere la registrazione usa /dlotteria");
-						
+
 						if (max_players > -1) {
 							connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + lottery_id, function (err, rows, fields) {
 								if (err) throw err;
@@ -7639,7 +7643,7 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 								connection.query('UPDATE public_lottery SET money = money+' + this.price + ' WHERE id = ' + this.lottery_id, function (err, rows, fields) {
 									if (err) throw err;
 								});
-								
+
 								if (this.max_players > -1) {
 									connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + this.lottery_id, function (err, rows, fields) {
 										if (err) throw err;
@@ -7749,7 +7753,7 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 								connection.query('UPDATE public_lottery SET money = money+' + this.price + ' WHERE id = ' + this.lottery_id, function (err, rows, fields) {
 									if (err) throw err;
 								});
-								
+
 								if (this.max_players > -1) {
 									connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + this.lottery_id, function (err, rows, fields) {
 										if (err) throw err;
@@ -7861,7 +7865,7 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 							connection.query('UPDATE public_lottery SET money = money+' + price + ' WHERE id = ' + lottery_id, function (err, rows, fields) {
 								if (err) throw err;
 							});
-							
+
 							if (max_players > -1) {
 								connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + lottery_id, function (err, rows, fields) {
 									if (err) throw err;
@@ -7869,7 +7873,7 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 										endLottery(creator_id, 2);
 								});
 							}
-							
+
 							bot.sendMessage(message.chat.id, "Ti sei registrato alla lotteria al prezzo di " + formatNumber(price) + " §!\nPer rimuovere la registrazione usa /dlotteriap");
 
 							connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + creator_id + ' AND type = 1', function (err, rows, fields) {
@@ -8079,116 +8083,119 @@ bot.onText(/^\/statistiche/, function (message) {
 								connection.query('SELECT MAX(id) As teamn FROM team', function (err, rows, fields) {
 									if (err) throw err;
 									var teamn = rows[0].teamn;
-									connection.query('SELECT SUM(IV.quantity) As u FROM item I, inventory IV WHERE I.id = IV.item_id AND I.rarity = "U"', function (err, rows, fields) {
+									connection.query('SELECT COUNT(id) As cnt FROM card_inventory', function (err, rows, fields) {
 										if (err) throw err;
-										var u = rows[0].u;
-										var d = new Date();
-										var today = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate());
-										connection.query('SELECT COUNT(L.id) As active, COUNT(IF(P.gender = "M" AND P.real_name IS NOT NULL, 1, NULL)) As male, COUNT(IF(P.gender = "F" AND P.real_name IS NOT NULL, 1, NULL)) As female FROM last_command L, player P WHERE L.account_id = P.account_id AND time LIKE "' + today + '%"', function (err, rows, fields) {
+										var cards = rows[0].cnt;
+										connection.query('SELECT SUM(IV.quantity) As u FROM item I, inventory IV WHERE I.id = IV.item_id AND I.rarity = "U"', function (err, rows, fields) {
 											if (err) throw err;
-											var act = rows[0].active;
-											var act_male = rows[0].male;
-											var act_female = rows[0].female;
-											var today_birth = addZero(d.getMonth() + 1) + "-" + addZero(d.getDate());
-											connection.query('SELECT COUNT(*) As birthday FROM player WHERE birth_date LIKE "%' + today_birth + '"', function (err, rows, fields) {
+											var u = rows[0].u;
+											var d = new Date();
+											var today = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate());
+											connection.query('SELECT COUNT(L.id) As active, COUNT(IF(P.gender = "M" AND P.real_name IS NOT NULL, 1, NULL)) As male, COUNT(IF(P.gender = "F" AND P.real_name IS NOT NULL, 1, NULL)) As female FROM last_command L, player P WHERE L.account_id = P.account_id AND time LIKE "' + today + '%"', function (err, rows, fields) {
 												if (err) throw err;
-												var birthday = "";
-												if (rows[0].birthday > 0){
-													var plur = "e";
-													if (rows[0].birthday > 1)
-														plur = "i";
-													birthday = "Oggi compiono gli anni *" + rows[0].birthday + "* giocator" + plur + "! 🎉\n";
-												}
-
-												connection.query('SELECT birth_date FROM player WHERE birth_date IS NOT NUlL', function (err, rows, fields) {
+												var act = rows[0].active;
+												var act_male = rows[0].male;
+												var act_female = rows[0].female;
+												var today_birth = addZero(d.getMonth() + 1) + "-" + addZero(d.getDate());
+												connection.query('SELECT COUNT(*) As birthday FROM player WHERE birth_date LIKE "%' + today_birth + '"', function (err, rows, fields) {
 													if (err) throw err;
-
-													var avg_age = 0;
-													var age = 0;
-													var count = 0;
-													for (var i = 0, len = Object.keys(rows).length; i < len; i++){
-														age = parseInt(calculateAge(new Date(rows[i].birth_date)));
-														if (age < 90){
-															avg_age += age;
-															count++;
-														}
+													var birthday = "";
+													if (rows[0].birthday > 0){
+														var plur = "e";
+														if (rows[0].birthday > 1)
+															plur = "i";
+														birthday = "Oggi compiono gli anni *" + rows[0].birthday + "* giocator" + plur + "! 🎉\n";
 													}
 
-													avg_age = Math.round(avg_age/count);
-
-													connection.query('SELECT COUNT(*) As active FROM last_command WHERE DATEDIFF(NOW(), time) < 30', function (err, rows, fields) {
+													connection.query('SELECT birth_date FROM player WHERE birth_date IS NOT NUlL', function (err, rows, fields) {
 														if (err) throw err;
-														var act_monthly = rows[0].active;
-														connection.query('SELECT COUNT(*) As active FROM last_command WHERE DATEDIFF(NOW(), time) < 7', function (err, rows, fields) {
-															if (err) throw err;
-															var act_weekly = rows[0].active;
-															connection.query('SELECT SUM(quantity) As cnt FROM inventory WHERE item_id = 646', function (err, rows, fields) {
-																if (err) throw err;
-																var dust = rows[0].cnt;
-																connection.query('SELECT `AUTO_INCREMENT` As lottery FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "public_lottery"', function (err, rows, fields) {
-																	if (err) throw err;
-																	var lottery = rows[0].lottery;
-																	connection.query('SELECT `AUTO_INCREMENT` As shop FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "public_shop"', function (err, rows, fields) {
-																		if (err) throw err;
-																		var shop = rows[0].shop;
-																		connection.query('SELECT `AUTO_INCREMENT` As daily FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "daily_chest"', function (err, rows, fields) {
-																			if (err) throw err;
-																			var daily = rows[0].daily;
-																			connection.query('SELECT `AUTO_INCREMENT` As dungeon FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dungeon_list"', function (err, rows, fields) {
-																				if (err) throw err;
-																				var dungeon = rows[0].dungeon;
-																				connection.query('SELECT `AUTO_INCREMENT` As room FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dungeon_rooms"', function (err, rows, fields) {
-																					if (err) throw err;
-																					var room = rows[0].room;
-																					connection.query('SELECT SUM(ability_level) As ablevel FROM `ability`', function (err, rows, fields) {
-																						if (err) throw err;
-																						var ablevel = rows[0].ablevel;
-																						connection.query('SELECT `AUTO_INCREMENT` As invite FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "referral_list"', function (err, rows, fields) {
-																							if (err) throw err;
-																							var invite = rows[0].invite;
-																							connection.query('SELECT TRUNCATE(SUM(CASE WHEN fail = 0 THEN 1 ELSE 0 END)/COUNT(*)*100,0) As perc FROM heist_history', function (err, rows, fields) {
-																								if (err) throw err;
-																								var perc = rows[0].perc;
-																								connection.query('SELECT COUNT(*) As groups, SUM(members) As members FROM plus_groups WHERE last_update < NOW() - INTERVAL 1 WEEK', function (err, rows, fields) {
-																									if (err) throw err;
-																									var groups = rows[0].groups;
-																									var members = rows[0].members;
-																									connection.query('SELECT SUM(mana_1+mana_2+mana_3) As mana FROM event_mana_status', function (err, rows, fields) {
-																										if (err) throw err;
-																										var mana = rows[0].mana;
-																										connection.query('SELECT SUM(quantity) As mag FROM magic', function (err, rows, fields) {
-																											if (err) throw err;
-																											var magic = rows[0].mag;
-																											connection.query('SELECT `AUTO_INCREMENT` As search FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "search_history"', function (err, rows, fields) {
-																												if (err) throw err;
-																												var search = rows[0].search;
-																												connection.query('SELECT `AUTO_INCREMENT` As top_log FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dragon_top_log"', function (err, rows, fields) {
-																													if (err) throw err;
-																													var top_log = rows[0].top_log;
-																													connection.query('SELECT SUM(quantity) As shop_tot FROM market_direct_history WHERE type = 2', function (err, rows, fields) {
-																														if (err) throw err;
-																														var shop_tot = rows[0].shop_tot;
-																														connection.query('SELECT SUM(pay) As cnt FROM game_house_stats', function (err, rows, fields) {
-																															if (err) throw err;
-																															var house_tot = rows[0].cnt;
-																															connection.query('SELECT COUNT(1) As cnt FROM mission_team_party WHERE assigned_to IS NOT NULL', function (err, rows, fields) {
-																																if (err) throw err;
-																																var mission_team_current = rows[0].cnt;
-																																connection.query('SELECT SUM(mission_count) As cnt FROM team', function (err, rows, fields) {
-																																	if (err) throw err;
-																																	var mission_team = rows[0].cnt;
-																																	connection.query('SELECT COUNT(id) As cnt FROM artifacts', function (err, rows, fields) {
-																																		if (err) throw err;
-																																		var artifacts = rows[0].cnt;
-																																		connection.query('SELECT COUNT(id) As cnt FROM assault WHERE time_end IS NOT NULL', function (err, rows, fields) {
-																																			if (err) throw err;
-																																			var assaults = rows[0].cnt;
-																																			connection.query('SELECT SUM(completed) As compl, SUM(lost) As persi FROM assault', function (err, rows, fields) {
-																																				if (err) throw err;
-																																				var assaults_win = rows[0].compl;
-																																				var assaults_lost = rows[0].persi;
 
-																																				bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
+														var avg_age = 0;
+														var age = 0;
+														var count = 0;
+														for (var i = 0, len = Object.keys(rows).length; i < len; i++){
+															age = parseInt(calculateAge(new Date(rows[i].birth_date)));
+															if (age < 90){
+																avg_age += age;
+																count++;
+															}
+														}
+
+														avg_age = Math.round(avg_age/count);
+
+														connection.query('SELECT COUNT(*) As active FROM last_command WHERE DATEDIFF(NOW(), time) < 30', function (err, rows, fields) {
+															if (err) throw err;
+															var act_monthly = rows[0].active;
+															connection.query('SELECT COUNT(*) As active FROM last_command WHERE DATEDIFF(NOW(), time) < 7', function (err, rows, fields) {
+																if (err) throw err;
+																var act_weekly = rows[0].active;
+																connection.query('SELECT SUM(quantity) As cnt FROM inventory WHERE item_id = 646', function (err, rows, fields) {
+																	if (err) throw err;
+																	var dust = rows[0].cnt;
+																	connection.query('SELECT `AUTO_INCREMENT` As lottery FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "public_lottery"', function (err, rows, fields) {
+																		if (err) throw err;
+																		var lottery = rows[0].lottery;
+																		connection.query('SELECT `AUTO_INCREMENT` As shop FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "public_shop"', function (err, rows, fields) {
+																			if (err) throw err;
+																			var shop = rows[0].shop;
+																			connection.query('SELECT `AUTO_INCREMENT` As daily FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "daily_chest"', function (err, rows, fields) {
+																				if (err) throw err;
+																				var daily = rows[0].daily;
+																				connection.query('SELECT `AUTO_INCREMENT` As dungeon FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dungeon_list"', function (err, rows, fields) {
+																					if (err) throw err;
+																					var dungeon = rows[0].dungeon;
+																					connection.query('SELECT `AUTO_INCREMENT` As room FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dungeon_rooms"', function (err, rows, fields) {
+																						if (err) throw err;
+																						var room = rows[0].room;
+																						connection.query('SELECT SUM(ability_level) As ablevel FROM `ability`', function (err, rows, fields) {
+																							if (err) throw err;
+																							var ablevel = rows[0].ablevel;
+																							connection.query('SELECT `AUTO_INCREMENT` As invite FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "referral_list"', function (err, rows, fields) {
+																								if (err) throw err;
+																								var invite = rows[0].invite;
+																								connection.query('SELECT TRUNCATE(SUM(CASE WHEN fail = 0 THEN 1 ELSE 0 END)/COUNT(*)*100,0) As perc FROM heist_history', function (err, rows, fields) {
+																									if (err) throw err;
+																									var perc = rows[0].perc;
+																									connection.query('SELECT COUNT(*) As groups, SUM(members) As members FROM plus_groups WHERE last_update < NOW() - INTERVAL 1 WEEK', function (err, rows, fields) {
+																										if (err) throw err;
+																										var groups = rows[0].groups;
+																										var members = rows[0].members;
+																										connection.query('SELECT SUM(mana_1+mana_2+mana_3) As mana FROM event_mana_status', function (err, rows, fields) {
+																											if (err) throw err;
+																											var mana = rows[0].mana;
+																											connection.query('SELECT SUM(quantity) As mag FROM magic', function (err, rows, fields) {
+																												if (err) throw err;
+																												var magic = rows[0].mag;
+																												connection.query('SELECT `AUTO_INCREMENT` As search FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "search_history"', function (err, rows, fields) {
+																													if (err) throw err;
+																													var search = rows[0].search;
+																													connection.query('SELECT `AUTO_INCREMENT` As top_log FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = "LootBot" AND TABLE_NAME = "dragon_top_log"', function (err, rows, fields) {
+																														if (err) throw err;
+																														var top_log = rows[0].top_log;
+																														connection.query('SELECT SUM(quantity) As shop_tot FROM market_direct_history WHERE type = 2', function (err, rows, fields) {
+																															if (err) throw err;
+																															var shop_tot = rows[0].shop_tot;
+																															connection.query('SELECT SUM(pay) As cnt FROM game_house_stats', function (err, rows, fields) {
+																																if (err) throw err;
+																																var house_tot = rows[0].cnt;
+																																connection.query('SELECT COUNT(1) As cnt FROM mission_team_party WHERE assigned_to IS NOT NULL', function (err, rows, fields) {
+																																	if (err) throw err;
+																																	var mission_team_current = rows[0].cnt;
+																																	connection.query('SELECT SUM(mission_count) As cnt FROM team', function (err, rows, fields) {
+																																		if (err) throw err;
+																																		var mission_team = rows[0].cnt;
+																																		connection.query('SELECT COUNT(id) As cnt FROM artifacts', function (err, rows, fields) {
+																																			if (err) throw err;
+																																			var artifacts = rows[0].cnt;
+																																			connection.query('SELECT COUNT(id) As cnt FROM assault WHERE time_end IS NOT NULL', function (err, rows, fields) {
+																																				if (err) throw err;
+																																				var assaults = rows[0].cnt;
+																																				connection.query('SELECT SUM(completed) As compl, SUM(lost) As persi FROM assault', function (err, rows, fields) {
+																																					if (err) throw err;
+																																					var assaults_win = rows[0].compl;
+																																					var assaults_lost = rows[0].persi;
+
+																																					bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
 																																								"*Giocatori registrati:* " + formatNumber(tot) + "\n" +
 																																								"*Missioni in corso*: " + miss + "\n" +
 																																								"*Missioni completate*: " + formatNumber(miss2) + "\n" +
@@ -8225,10 +8232,12 @@ bot.onText(/^\/statistiche/, function (message) {
 																																								"*Artefatti ottenuti:* " + formatNumber(artifacts) + "\n" +
 																																								"*Assalti in corso/completati/falliti:* " + formatNumber(assaults) + "/" + formatNumber(assaults_win) + "/" + formatNumber(assaults_lost) + "\n" +
 																																								birthday + 
+																																								"*Figurine:* " + formatNumber(cards) + "\n" +
 																																								"\n*Gruppi attivi (4):* " + formatNumber(groups) + "\n" +
 																																								"*Membri nei gruppi attivi (4):* " + formatNumber(members) + "\n" +
 
 																																								"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti che hanno inviato un comando negli ultimi 30 giorni\n(3) Utenti che hanno inviato un comando negli ultimi 7 giorni\n(4) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark);
+																																				});
 																																			});
 																																		});
 																																	});
@@ -9080,7 +9089,7 @@ bot.onText(/^\/ispeziona (.+)|^\/ispeziona/, function (message, match) {
 		bot.sendMessage(message.from.id, "Non puoi ispezionare te stesso");
 		return;
 	}
-	
+
 	var method = 1;
 	if (match[1] != undefined) {
 		if (match[1].toLowerCase() == "piedelesto")
@@ -9236,7 +9245,7 @@ bot.onText(/^\/spia$/, function (message) {
 		}
 
 		if (rows[0].heist_protection != null) {
-			bot.sendMessage(account_id, "A causa del campo di forza non puoi spiare gli altri utenti", back);
+			bot.sendMessage(account_id, "A causa del campo di forza non puoi spiare gli altri utenti");
 			return;
 		}
 
@@ -9774,7 +9783,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, account_
 									 'VALUES (' + from_id + ',' + to_id + ',"' + long_date + '",' + rate + ',' + grade + ',' + isMatch + ')',
 									 function (err, rows, fields) {
 						if (err) throw err;
-						
+
 						bot.sendMessage(message.chat.id, message.from.username + ", hai inviato " + gnome + " all'ispezione del rifugio di " + nickname + ", tornerà alle " + short_date + "!");
 					});
 					connection.query('UPDATE player SET heist_count = heist_count+1 WHERE id = ' + from_id, function (err, rows, fields) {
@@ -9984,7 +9993,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 									var team_desc = "";
 									if (Object.keys(rows).length > 0)
 										team_desc = "⚜️ " + rows[0].name.trim() + "\n";
-									
+
 									connection.query('SELECT COUNT(id) As cnt, (SELECT COUNT(id) FROM card_list) As tot FROM card_inventory WHERE player_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 										var cards_txt = "";
@@ -11088,11 +11097,11 @@ function endLottery(creator_id, mode) {
 					if (money > 0) {
 						extra = " ed un ammontare pari a " + formatNumber(money) + " §";
 					}
-					
+
 					var mode_text = "automatica (scaduta)";
 					if (mode == 2)
 						mode_text = "automatica (raggiunto limite partecipanti)";
-					
+
 					bot.sendMessage(chat_id, "Estrazione " + mode_text + " per " + itemName + " con " + members_num + " partecipanti" + extra + "!\n\nIl vincitore è: @" + nickname + "!");
 
 					//bot.sendMessage(chat_id, "Estrazione automatica per " + itemName + "!\n\nIl vincitore è: @" + nickname + "!");
