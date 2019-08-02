@@ -16405,11 +16405,6 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
 				dragon_status = "Dorme fino alle " + short_date;
 			}
-
-			if (dragon_level < 15) {
-				bot.sendMessage(message.chat.id, "E' richiesto almeno il livello 15 del drago per partecipare.", back);
-				return;
-			}
 			
 			var finishD = new Date("2019-08-08 12:00:00");
 			var startD = new Date(finishD);
@@ -16508,6 +16503,11 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length == 0) {
+						if (dragon_level < 30) {
+							bot.sendMessage(message.chat.id, "E' richiesto almeno il livello 30 del drago per partecipare.", back);
+							return;
+						}
+						
 						connection.query('INSERT INTO dragon_top_status (player_id, dragon_id) VALUES (' + player_id + ',' + dragon_id + ')', function (err, rows, fields) {
 							if (err) throw err;
 							bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nelle <b>Vette dei Draghi</b> 🐲!\nIn questo luoghi dovrai sottoporre il tuo <i>" + dragon_name + "</i> all'ardua sfida di raggiungere le cime dei monti più alti di Lootia! Durante questa sfida incontrerai altri draghi, dovrai sfidarli ed essere un bravo domatore per salire fino alla vetta. Le battaglie si svolgono in diversi Monti, tutti iniziano dal primo e man mano che si ottengono vittorie si passa al successivo!\nRicorda che quando il drago combatte, non ti potrà aiutare nelle battaglie al di fuori della vetta.\n\n<b>Funzionamento</b>:\n\n- Il drago da sfidare verrà scelto casualmente in base al Monte in cui si viene inseriti\n- Una volta sconfitto si ottiene 1 Ð o più, se si viene sconfitti lo si perde\n- Al termine della giornata per avanzare di Monte è necessario raggiungere almeno 12 Ð, mentre se ne possiedi 2 o meno tornerai al precedente, inoltre spostandoti di monte le Ð si resettano\n- Ogni mossa consuma un certo numero di Scaglie ⚜️ e ne ottieni una alla fine di ogni turno, per un massimo di 5, puoi ottenerne una anche solo Saltando il turno\n- Riceverai un premio in base al posizionamento ottenuto alla fine della stagione.\n- Al primo accesso otterrai Ð in base al livello del tuo drago\n\nLa stagione attuale scadrà alle " + finish_date, kb2);
@@ -30890,16 +30890,18 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 								}
 							};
 
-							bot.sendMessage(message.chat.id, text + "\nPuoi ampliare la tua collezione scambiandole con gli altri giocatori.", kb).then(function () {
+							bot.sendMessage(message.chat.id, text + "\nPuoi ampliare la tua collezione scambiandole con gli altri giocatori ed ottenerle anche con la _Ruota della Luna_!", kb).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text == "Torna al menu")
 										return;
 
 									if (answer.text.toLowerCase().indexOf("brucia") != -1) {
+										/*
 										if (player_id != 1) {
 											bot.sendMessage(message.chat.id, "Questa funzione sarà disponibile a breve!", kbBack);
 											return;
 										}
+										*/
 										if (have == 0) {
 											bot.sendMessage(message.chat.id, "Non possiedi figurine da poter bruciare, partecipa agli Assalti per ottenerne altre!", kbBack);
 											return;
@@ -30937,7 +30939,7 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 
 															if (rand < 50) {
 																if (rarity < 5) {
-																	var money = 20000*rarity;
+																	var money = 50000*rarity;
 																	connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
@@ -30973,8 +30975,10 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 																	if (err) throw err;
 																});
 
-																name = "1x Figurina " + new_card[0].name + " (" + new_card[0].rarity + ")";
+																name = "1x 🃏 " + new_card[0].name + " (" + new_card[0].rarity + ")";
 															}
+															
+															console.log("Figurina bruciata: " + name);
 
 															bot.sendMessage(message.chat.id, "Getti la figurina nel fuoco... Appare una luce verdognola e dopo poco tempo, ottieni <b>" + name + "</b>!", kbBack);
 														});
@@ -36245,7 +36249,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 				evolved = rows[0].evolved;
 			}
 
-			bot.sendMessage(message.chat.id, "Un raggio della *Luna " + moon + "* colpisce il luogo dove risiedi ed una ruota magica appare dinnanzi a te.\n\nNell'insenatura vi è lo spazio per un qualcosa grande come una moneta e le iscrizioni su essa recitano le seguenti parole:\n_'Tu che sei baciato dalla Luna Dorata inserisci 2 🌕; in essa e potrai ricevere Piu Forza (+1 Livello giocatore/drago), La mia Luce (💎), Più Potere Arcano dalle molteplici sfaccettature (Mana di ogni tipo), Mappe del Tesoro (Molte Monete), Oggetti Unici (Scrigno Capsula), La mia luce nella tua arma, nel tuo scudo o nella tua armatura per una settimana (Incantamento su Arma,Scudo o Armatura per 7 Giorni), una grande quantità di Polvere, il potere dell’anima per il tuo Team (🦋) oppure uno spirito utile nel tuo cammino (💠).'_\n\nSe ti trovi già al livello massimo, quella ricompensa non potrà essere ottenuta. Procedi?", kbYesNo).then(function () {
+			bot.sendMessage(message.chat.id, "Un raggio della *Luna " + moon + "* colpisce il luogo dove risiedi ed una ruota magica appare dinnanzi a te.\n\nNell'insenatura vi è lo spazio per un qualcosa grande come una moneta e le iscrizioni su essa recitano le seguenti parole:\n_'Tu che sei baciato dalla Luna Dorata inserisci 2 🌕; in essa e potrai ricevere Piu Forza (+1 Livello giocatore/drago), La mia Luce (💎), Più Potere Arcano dalle molteplici sfaccettature (Mana di ogni tipo), Mappe del Tesoro (Molte Monete), Oggetti Unici (Scrigno Capsula), La mia luce nella tua arma, nel tuo scudo o nella tua armatura per una settimana (Incantamento su Arma,Scudo o Armatura per 7 Giorni), una grande quantità di Polvere, il potere dell’anima per il tuo Team (🦋), uno spirito utile nel tuo cammino (💠) od un particolare prezioso cartoncino (🃏).'_\n\nSe ti trovi già al livello massimo, quella ricompensa non potrà essere ottenuta. Procedi?", kbYesNo).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if (answer.text.toLowerCase() == "si") {
 						connection.query('SELECT id, moon_coin FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -36256,7 +36260,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 								return;
 							}
 
-							var rand = Math.round(Math.random() * 18);
+							var rand = Math.round(Math.random() * 19);
 							var player_id = rows[0].id;
 
 							var skip1 = 0;
@@ -36407,6 +36411,24 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 											}
 										});
 										setAchievement(player_id, 21, 1);
+									} else if (rand == 18) {
+										connection.query('SELECT id, name, rarity FROM card_list WHERE rarity BETWEEN id NOT IN (SELECT id FROM card_inventory WHERE player_id = ' + player_id + ') ORDER BY RAND()', function (err, rows, fields) {
+											if (err) throw err;
+											
+											if (Object.keys(rows).length == 0) {
+												connection.query('UPDATE player SET moon_coin = moon_coin+2 WHERE id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+												});
+												bot.sendMessage(message.chat.id, "Avresti ottenuto una figurina, ma le possiedi già tutte, ritira!", kbBack);
+												return;
+											}
+											
+											bot.sendMessage(message.chat.id, "Hai ricevuto la figurina 🃏 " + rows[0].name + " (" + rows[0].rarity + ")!", kbBack);
+
+											connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + rows[0].id + ')', function (err, rows, fields) {
+												if (err) throw err;
+											});
+										});
 									} else {
 										connection.query('UPDATE player SET necro_pnt = necro_pnt+1 WHERE id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
@@ -46180,15 +46202,6 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								chest5 = Math.round(chest5);
 								chest6 = Math.round(chest6);
 
-								if (rows[i].global_end == 1) {
-									chest1 = chest1*2;
-									chest2 = chest2*2;
-									chest3 = chest3*2;
-									chest4 = chest4*2;
-									chest5 = chest5*2;
-									chest6 = chest6*2;
-								}
-
 								/*
 								if (rows[i].global_end == 1) {
 									paUpd += 7;
@@ -46209,6 +46222,18 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 										chest7 = Math.round(Math.random()+1);
 									if (boss_num == 31)
 										chest7 += 3;
+								}
+
+								if (rows[i].global_end == 1) {
+									chest1 = chest1*2;
+									chest2 = chest2*2;
+									chest3 = chest3*2;
+									chest4 = chest4*2;
+									chest5 = chest5*2;
+									chest6 = chest6*2;
+									chest7 = chest7*2;
+									chest8 = chest8*2;
+									chest9 = chest9*2;
 								}
 
 								// costruzione testo e consegna
@@ -46293,7 +46318,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 										connection_sync.query('INSERT INTO card_list (name, rarity) VALUES ("' + mob_name + '", ' + card_rarity + ')');
 										console.log("Figurina creata: " + mob_name);
 										
-										bot.sendMessage(rows[i].chat_id, "Hai creato la figurina *" + mob_name + " (" + card_rarity + ")*! Ora cerca di ottenerla insieme ai tuoi compagni di team!", mark);
+										bot.sendMessage(rows[i].chat_id, "Hai creato la figurina 🃏 *" + mob_name + " (" + card_rarity + ")*! Ora cerca di ottenerla insieme ai tuoi compagni di team!", mark);
 									} else {
 										var tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_list');
 										var have_tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE player_id = ' + rows[i].id);
@@ -46305,7 +46330,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 												connection_sync.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + rows[i].id + ', ' + card[0].id + ')');
 												console.log("Figurina ottenuta: " + mob_name);
 												
-												bot.sendMessage(rows[i].chat_id, "Hai trovato la figurina *" + mob_name + " (" + card[0].rarity + ")*! Ne possiedi " + have_tot[0].cnt + "/" + tot[0].cnt, mark);
+												bot.sendMessage(rows[i].chat_id, "Hai trovato la figurina 🃏 *" + mob_name + " (" + card[0].rarity + ")*! Ne possiedi " + (have_tot[0].cnt+1) + "/" + tot[0].cnt, mark);
 											}
 										}
 									}
