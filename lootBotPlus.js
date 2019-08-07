@@ -115,7 +115,7 @@ bot.on('edited_message', function (message) {
 });
 
 bot.on('message', function (message) {
-	if (message.text != undefined) {		
+	if (message.text != undefined) {
 		if (message.text.startsWith("/") && !(message.text.startsWith("//")))
 			console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
 
@@ -5888,9 +5888,8 @@ bot.onText(/^\/estrazione/, function (message) {
 						if (err) throw err;
 						var itemName = rows[0].name;
 						var extra = "";
-						if (money > 0) {
-							extra = " ed un ammontare pari a " + money + " §";
-						}
+						if (money > 0)
+							extra = " ed un ammontare pari a " + formatNumber(money) + " §";
 						bot.sendMessage(message.chat.id, "Estrazione per " + itemName + " con " + num + " partecipanti" + extra + "!\n\nIl vincitore è: @" + nickname + "!");
 
 						connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + player_id, function (err, rows, fields) {
@@ -7015,7 +7014,7 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 								if (err) throw err;
 
 								if (this.max_players > -1) {
-									connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + this.lottery_id, function (err, rows, fields) {
+									connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE lottery_id = ' + this.lottery_id, function (err, rows, fields) {
 										if (err) throw err;
 										if (rows[0].cnt >= this.max_players)
 											endLottery(this.creator_id, 2);
@@ -7100,7 +7099,7 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 								if (err) throw err;
 
 								if (this.max_players > -1) {
-									connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + this.lottery_id, function (err, rows, fields) {
+									connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE lottery_id = ' + this.lottery_id, function (err, rows, fields) {
 										if (err) throw err;
 										if (rows[0].cnt >= this.max_players)
 											endLottery(this.creator_id, 2);
@@ -7196,7 +7195,7 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 						bot.sendMessage(message.chat.id, "Ti sei registrato correttamente alla lotteria!\nPer rimuovere la registrazione usa /dlotteria");
 
 						if (max_players > -1) {
-							connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + lottery_id, function (err, rows, fields) {
+							connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE lottery_id = ' + lottery_id, function (err, rows, fields) {
 								if (err) throw err;
 								if (rows[0].cnt >= max_players)
 									endLottery(creator_id, 2);
@@ -7645,8 +7644,9 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 								});
 
 								if (this.max_players > -1) {
-									connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + this.lottery_id, function (err, rows, fields) {
+									connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE lottery_id = ' + this.lottery_id, function (err, rows, fields) {
 										if (err) throw err;
+										console.log("lotteriap tutte", rows[0].cnt, this.max_players);
 										if (rows[0].cnt >= this.max_players)
 											endLottery(this.creator_id, 2);
 									}.bind({
@@ -7755,8 +7755,9 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 								});
 
 								if (this.max_players > -1) {
-									connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + this.lottery_id, function (err, rows, fields) {
+									connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE lottery_id = ' + this.lottery_id, function (err, rows, fields) {
 										if (err) throw err;
+										console.log("lotteriap +", rows[0].cnt, this.max_players);
 										if (rows[0].cnt >= this.max_players)
 											endLottery(this.creator_id, 2);
 									}.bind({
@@ -7867,8 +7868,9 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 							});
 
 							if (max_players > -1) {
-								connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE id = ' + lottery_id, function (err, rows, fields) {
+								connection.query('SELECT COUNT(id) As cnt FROM public_lottery_players WHERE lottery_id = ' + lottery_id, function (err, rows, fields) {
 									if (err) throw err;
+									console.log("lotteriap", rows[0].cnt, max_players);
 									if (rows[0].cnt >= max_players)
 										endLottery(creator_id, 2);
 								});
@@ -10558,6 +10560,8 @@ function funz(x) {
 }
 
 function checkStatus(message, nickname, accountid, type) {
+	if (nickname == "lootplusbot")
+		return;
 	connection.query('SELECT id, exp, reborn, nickname, market_ban, group_ban, player_custom_nickname FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -10606,6 +10610,7 @@ function checkStatus(message, nickname, accountid, type) {
 					bot.kickChatMember(message.chat.id, accountid).then(function (result) {
 						if (result != false) {
 							bot.sendMessage(message.chat.id, nickname + " non è iscritto, l'ho bannato");
+							console.log("Bannato: " + nickname);
 							bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa del fatto che non sei registrato al gioco");
 						}
 					});

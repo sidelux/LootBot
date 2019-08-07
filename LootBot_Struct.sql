@@ -1087,6 +1087,7 @@ CREATE TABLE `dragon_top_status` (
   `wait_time` timestamp NULL DEFAULT NULL,
   `battle_time` timestamp NULL DEFAULT NULL,
   `no_match_time` timestamp NULL DEFAULT NULL,
+  `reject` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `player_id` (`player_id`),
   UNIQUE KEY `dragon_id` (`dragon_id`),
@@ -1237,8 +1238,9 @@ CREATE TABLE `dungeon_status` (
   `finish_time` timestamp NULL DEFAULT NULL,
   `param` text,
   `timevar` int(11) NOT NULL DEFAULT '0',
-  `notified` int(11) NOT NULL DEFAULT '0',
+  `notified` tinyint(1) NOT NULL DEFAULT '0',
   `pass` int(11) NOT NULL DEFAULT '0',
+  `unlimited` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `PLAYERID` (`player_id`),
   KEY `dungeon_id` (`dungeon_id`),
@@ -3643,4 +3645,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-08-02  9:00:06
+-- Dump completed on 2019-08-07 12:00:06
