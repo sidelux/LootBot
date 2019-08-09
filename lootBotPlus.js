@@ -383,7 +383,7 @@ bot.on("inline_query", function (query) {
 		last = 1;
 	}
 
-	connection.query('SELECT public_shop.id, quantity, item.name, price, player_id, massive, time_end, item_id FROM public_shop, item WHERE item.id = item_id AND code = ' + code, function (err, rows, fields) {
+	connection.query('SELECT public_shop.id, quantity, item.name, price, player_id, massive, time_end, item_id FROM public_shop, item WHERE item.id = item_id AND code = ' + code + ' ORDER BY item.name', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0)
@@ -5796,8 +5796,8 @@ bot.onText(/^\/crealotteriap ([^\s]+) (.+)|^\/crealotteriap$/, function (message
 
 					var item_id = rows[0].id;
 
-					if ((prezzo > parseInt(rows[0].value)) || (prezzo < Math.round(rows[0].value / 100))) {
-						bot.sendMessage(message.chat.id, "Il prezzo inserito non è valido, max: " + parseInt(rows[0].value) + ", min: " + Math.round(rows[0].value / 100));
+					if ((prezzo > parseInt(rows[0].value*2)) || (prezzo < Math.round(rows[0].value / 100))) {
+						bot.sendMessage(message.chat.id, "Il prezzo inserito non è valido, max: " + parseInt(rows[0].value*2) + ", min: " + Math.round(rows[0].value / 100));
 						return;
 					}
 

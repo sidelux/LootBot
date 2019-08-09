@@ -4408,9 +4408,9 @@ bot.onText(/casa dei giochi/i, function (message) {
 
 			var mana_txt = "";
 			if (Object.keys(rows).length > 0)
-				mana_txt += formatNumber(rows[0].mana_1) + " Mana Blu 🌊, " + formatNumber(rows[0].mana_2) + " Mana Giallo ⚡️, " + formatNumber(rows[0].mana_3) + " Mana Rosso 🔥\n";
+				mana_txt += formatNumber(rows[0].mana_1) + " 🌊 Mana Blu, " + formatNumber(rows[0].mana_2) + " ⚡️ Mana Giallo, " + formatNumber(rows[0].mana_3) + " 🔥 Mana Rosso\n";
 			else
-				mana_txt += "0 Mana Blu 🌊, 0 Mana Giallo ⚡️, 0 Mana Rosso 🔥\n";
+				mana_txt += "0 🌊 Mana Blu, 0 ⚡️ Mana Giallo, 0 🔥 Mana Rosso\n";
 
 			setAchievement(player_id, 70, 1);
 
@@ -4528,7 +4528,7 @@ bot.onText(/lancia il dado/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["50 Blu 🌊", "100 Blu 🌊"], ["50 Giallo ⚡️", "100 Giallo ⚡️"], ["50 Rosso 🔥", "100 Rosso 🔥"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["50 🌊 Blu", "100 🌊 Blu"], ["50 ⚡️ Giallo", "100 ⚡️ Giallo"], ["50 🔥 Rosso", "100 🔥 Rosso"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -4568,7 +4568,7 @@ bot.onText(/lancia il dado/i, function (message) {
 				}
 
 				var mana = answer.text.trim().split(" ");
-				var color = mana[1].trim().toLowerCase();
+				var color = mana[2].trim().toLowerCase();
 				var qnt = parseInt(mana[0].trim());
 
 				var mana_num = 0;
@@ -4651,7 +4651,7 @@ bot.onText(/lancia il dado/i, function (message) {
 									connection.query('SELECT mana_1, mana_2, mana_3 FROM event_mana_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 
-										var mana_txt = "\n\nPossiedi " + formatNumber(rows[0].mana_1) + " Mana Blu 🌊, " + formatNumber(rows[0].mana_2) + " Mana Giallo ⚡️ e " + formatNumber(rows[0].mana_3) + " Mana Rosso 🔥, vuoi ritentare?";
+										var mana_txt = "\n\nPossiedi " + formatNumber(rows[0].mana_1) + " 🌊 Mana Blu, " + formatNumber(rows[0].mana_2) + " ⚡️ Mana Giallo e " + formatNumber(rows[0].mana_3) + " 🔥 Mana Rosso, vuoi ritentare?";
 
 										bot.sendMessage(message.chat.id, "Il dado del tuo avversario mostra un *" + enemy_num + "*, il tuo mostra un *" + my_num + "*, " + win_text + mana_txt + "", kbAgain);
 									});
@@ -4666,7 +4666,6 @@ bot.onText(/lancia il dado/i, function (message) {
 });
 
 bot.onText(/gioca numeri/i, function (message) {
-
 	if (!checkSpam(message))
 		return;
 
@@ -4794,9 +4793,8 @@ bot.onText(/gioca numeri/i, function (message) {
 					}
 					checkn = 0;
 					for (var j = 0; j < len; j++) {
-						if (numbers[i] == numbers[j]) {
+						if (numbers[i] == numbers[j])
 							checkn++;
-						}
 						if (checkn >= 2) {
 							bot.sendMessage(message.chat.id, numbers[i] + " non è valido, è già stato inserito", kbNum);
 							return;
@@ -4906,7 +4904,6 @@ bot.onText(/gioca numeri/i, function (message) {
 });
 
 bot.onText(/gira rotelle/i, function (message) {
-
 	if (!checkSpam(message))
 		return;
 
@@ -5103,7 +5100,6 @@ bot.onText(/gira rotelle/i, function (message) {
 });
 
 bot.onText(/vedi la carta/i, function (message) {
-
 	if (!checkSpam(message))
 		return;
 
@@ -12858,7 +12854,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																								var r2 = Math.random() * 100;
 																								if (r2 < 50) {
 																									var restore = Math.round(getRandomArbitrary(50, 150));
-																									restored = " Hai assorbito " + restore + " Mana Rosso 🔥 dall'incantesimo!";
+																									restored = " Hai assorbito " + restore + " 🔥 Mana Rosso dall'incantesimo!";
 																									connection.query('UPDATE event_mana_status SET mana_3 = mana_3 + ' + restore + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																										if (err) throw err;
 																									});
@@ -12892,7 +12888,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																								var r2 = Math.random() * 100;
 																								if (r2 < 50) {
 																									var restore = Math.round(getRandomArbitrary(50, 150));
-																									restored = " Hai assorbito " + restore + " Mana Blu  🌊 dall'incantesimo!";
+																									restored = " Hai assorbito " + restore + " 🌊 Mana Blu dall'incantesimo!";
 																									connection.query('UPDATE event_mana_status SET mana_1 = mana_1 + ' + restore + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																										if (err) throw err;
 																									});
@@ -12916,7 +12912,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																								var r2 = Math.random() * 100;
 																								if (r2 < 50) {
 																									var restore = Math.round(getRandomArbitrary(50, 150));
-																									restored = " Hai assorbito " + restore + " Mana Giallo ⚡️ dall'incantesimo!";
+																									restored = " Hai assorbito " + restore + " ⚡️ Mana Giallo dall'incantesimo!";
 																									connection.query('UPDATE event_mana_status SET mana_2 = mana_2 + ' + restore + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																										if (err) throw err;
 																									});
@@ -14029,7 +14025,7 @@ bot.onText(/Concludi immediatamente/i, function (message) {
 	});
 });
 
-bot.onText(/Scomponi/i, function (message) {
+bot.onText(/scomponi/i, function (message) {
 
 	if (eventFestival == 1) {
 		bot.sendMessage(message.chat.id, "Durante il festival non è possibile utilizzare questa funzione!", back);
@@ -14071,13 +14067,14 @@ bot.onText(/Scomponi/i, function (message) {
 						"NC: 5.000 §\n" +
 						"R: 10.000 § + 2 Punti Creazione\n" +
 						"UR: 25.000 § + 4 Punti Creazione\n" +
+						"S: 1 💎 + 5 Punti Creazione\n" +
 						"L-E: 1 💎 + 6-10 Punti Creazione\n" +
 						"UE-U: 2 💎 + 50-70 Punti Creazione\n\n" +
 						"I punti vengono controllati sulle creazioni settimanali. Scrivi il nome completo dell'oggetto da scomporre.", kb).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
-				if (answer.text == "Niente") {
+				if (answer.text == "Niente")
 					return;
-				} else {
+				else {
 					var ogg = answer.text.trim();
 
 					var kbQnt = {
@@ -14155,6 +14152,10 @@ bot.onText(/Scomponi/i, function (message) {
 										} else if (rows[0].rarity == "U") {
 											gems = 2;
 											craft = 35;
+											craft = craft * 2;
+										} else if (rows[0].rarity == "S") {
+											gems = 1;
+											craft = 5;
 											craft = craft * 2;
 										} else {
 											bot.sendMessage(message.chat.id, "Questa rarità non è scomponibile", back);
@@ -16434,7 +16435,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				dragon_status = "Dorme fino alle " + short_date;
 			}
 			
-			var finishD = new Date("2019-08-08 12:00:00");
+			var finishD = new Date("2019-09-25 12:00:00");
 			var startD = new Date(finishD);
 			
 			var finish_date = addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes()) + " del " + addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + "/" + finishD.getFullYear();
@@ -16953,7 +16954,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																bot.sendMessage(message.chat.id, "Puoi visualizzare info sul drago avversario solo mentre sei in combattimento", kbBack);
 																return;
 															}
-															bot.sendMessage(message.chat.id, "<b>Informazioni sul drago avversario:</b>\nSalute: " + progressBar(enemy_dragon_life, enemy_dragon_total_life) + "\nNome: " + enemy_dragon_name + " " + enemy_dragon_type + " " + dragonSym(enemy_dragon_type) + "\nLivello: " + enemy_dragon_level + "\nVocazione: " + enemy_class, kbBack_html);
+															bot.sendMessage(message.chat.id, "<b>Informazioni sul drago avversario:</b>\nSalute: " + progressBar(enemy_dragon_life, enemy_dragon_total_life) + " " + formatNumber(enemy_dragon_life) + "/" + formatNumber(enemy_dragon_total_life) + "\nNome: " + enemy_dragon_name + " " + enemy_dragon_type + " " + dragonSym(enemy_dragon_type) + "\nLivello: " + enemy_dragon_level + "\nVocazione: " + enemy_class, kbBack_html);
 															return;
 														} else if (answer.text.indexOf("Monti") != -1) {
 															connection.query('SELECT L.name, COUNT(R.top_id) As cnt FROM dragon_top_rank R, dragon_top_list L WHERE L.id = R.top_id GROUP BY R.top_id ORDER BY top_id', function (err, rows, fields) {
@@ -20946,7 +20947,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 							diff = Math.abs(diff);
 
 							var text = "Il <b>Giorno della Preparazione " + boss_num + "</b> terminerà tra " + toTime(diff) + "!\n\nOrganizzazione attuale intorno alla magione del team:\n";
-							connection.query('SELECT AP.name, AP.id As place_id, P.id, P.nickname, P.exp, P.reborn, P.class, APT.level, APT.time_end, AP.class_bonus, C.name As class_bonus_name, (SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE place_id = AP.id AND team_id = ' + team_id + ') As players, AP.max_players, AP.max_level FROM assault_place AP LEFT JOIN (SELECT * FROM assault_place_team WHERE team_id = ' + team_id + ') APT ON (APT.place_id = AP.id AND APT.team_id = ' + team_id + ') LEFT JOIN assault_place_player_id APP ON (AP.id = APP.place_id AND APP.team_id = ' + team_id + ') LEFT JOIN player P ON P.id = APP.player_id LEFT JOIN class C ON AP.class_bonus = C.id AND P.holiday = 0 ORDER BY AP.id', function (err, rows, fields) {
+							connection.query('SELECT AP.name, AP.id As place_id, P.id, P.nickname, P.exp, P.reborn, P.class, APT.level, APT.time_end, AP.class_bonus, C.name As class_bonus_name, (SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE place_id = AP.id AND team_id = ' + team_id + ') As players, AP.max_players, AP.max_level FROM assault_place AP LEFT JOIN (SELECT * FROM assault_place_team WHERE team_id = ' + team_id + ') APT ON (APT.place_id = AP.id AND APT.team_id = ' + team_id + ') LEFT JOIN assault_place_player_id APP ON (AP.id = APP.place_id AND APP.team_id = ' + team_id + ') LEFT JOIN player P ON P.id = APP.player_id LEFT JOIN class C ON AP.class_bonus = C.id WHERE P.holiday = 0 ORDER BY AP.id', function (err, rows, fields) {
 								if (err) throw err;
 
 								var place_id_break = 0;
@@ -23419,7 +23420,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																						var rand = Math.random()*100;
 																						if (rand < 50) {
 																							var restore = Math.round(getRandomArbitrary(50, 150));
-																							player_text += " (+" + restore + " Mana Blu 🌊)";
+																							player_text += " (+" + restore + " 🌊 Mana Blu)";
 																							connection.query('UPDATE event_mana_status SET mana_1 = mana_1 + ' + restore + ' WHERE player_id = ' + playerid, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
@@ -27908,9 +27909,9 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 					return;
 				}
 
-				var text = "Blu 🌊: " + formatNumber(rows[0].mana_1) + "\n" +
-					"Giallo ⚡️: " + formatNumber(rows[0].mana_2) + "\n" +
-					"Rosso 🔥: " + formatNumber(rows[0].mana_3);
+				var text = "🌊 Blu: " + formatNumber(rows[0].mana_1) + "\n" +
+					"⚡️ Giallo: " + formatNumber(rows[0].mana_2) + "\n" +
+					"🔥 Rosso: " + formatNumber(rows[0].mana_3);
 
 				connection.query('SELECT name, type, mana_name, rate FROM event_mana_zone', function (err, rows, fields) {
 					if (err) throw err;
@@ -27941,13 +27942,13 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 
 						quantity = Math.floor(quantity);
 						if (rows[i].mana_name == "Blu")
-							sym = " 🌊"
+							sym = "🌊 "
 						else if (rows[i].mana_name == "Giallo")
-							sym = " ⚡️"
+							sym = "⚡️ "
 						else if (rows[i].mana_name == "Rosso")
-							sym = " 🔥"
+							sym = "🔥 "
 
-						iKeys.push([rows[i].name + " (" + rows[i].mana_name + sym + " " + quantity + "/ora)"]);
+						iKeys.push([rows[i].name + " (" + sym + rows[i].mana_name + " " + quantity + "/ora)"]);
 					}
 
 					iKeys.push(["Sintesi"]);
@@ -28304,15 +28305,15 @@ bot.onText(/^\/sintesi (.+),(.+),(.+)|^\/sintesi/i, function (message, match) {
 										if (err) throw err;
 
 										if (m1 > rows[0].mana_1) {
-											bot.sendMessage(message.chat.id, "Non hai abbastanza Mana Blu 🌊", back);
+											bot.sendMessage(message.chat.id, "Non hai abbastanza 🌊 Mana Blu", back);
 											return;
 										}
 										if (m2 > rows[0].mana_2) {
-											bot.sendMessage(message.chat.id, "Non hai abbastanza Mana Giallo ⚡️", back);
+											bot.sendMessage(message.chat.id, "Non hai abbastanza ⚡️ Mana Giallo", back);
 											return;
 										}
 										if (m3 > rows[0].mana_3) {
-											bot.sendMessage(message.chat.id, "Non hai abbastanza Mana Rosso 🔥", back);
+											bot.sendMessage(message.chat.id, "Non hai abbastanza 🔥 Mana Rosso", back);
 											return;
 										}
 
@@ -28379,7 +28380,7 @@ bot.onText(/^\/sintesi (.+),(.+),(.+)|^\/sintesi/i, function (message, match) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Hai sintetizzato *" + magic_name + " " + power + "* " + magic_sym + "!" + extra, kb);
+												bot.sendMessage(message.chat.id, "Hai sintetizzato " + magic_sym + " *" + magic_name + " " + power + "* " + "!" + extra, kb);
 												setAchievement(player_id, 28, 1);
 											});
 										});
@@ -28550,17 +28551,17 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 																	if (answer.text.toLowerCase() == "si") {
 																		if (type == 1) {
 																			if (mana_1 < qnt) {
-																				bot.sendMessage(message.chat.id, "Non hai abbastanza Mana Blu 🌊", kbBack);
+																				bot.sendMessage(message.chat.id, "Non hai abbastanza 🌊 Mana Blu", kbBack);
 																				return;
 																			}
 																		} else if (type == 2) {
 																			if (mana_2 < qnt) {
-																				bot.sendMessage(message.chat.id, "Non hai abbastanza Mana Giallo ⚡️", kbBack);
+																				bot.sendMessage(message.chat.id, "Non hai abbastanza ⚡️ Mana Giallo", kbBack);
 																				return;
 																			}
 																		} else if (type == 3) {
 																			if (mana_3 < qnt) {
-																				bot.sendMessage(message.chat.id, "Non hai abbastanza Mana Rosso 🔥", kbBack);
+																				bot.sendMessage(message.chat.id, "Non hai abbastanza 🔥 Mana Rosso", kbBack);
 																				return;
 																			}
 																		}
@@ -28583,7 +28584,7 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 										});
 										return;
 									} else if (answer.text == "Inizia Sintesi") {
-										bot.sendMessage(message.chat.id, "Puoi sintetizzare un incantesimo utilizzando qualsiasi quantità di mana per tipo, per un massimo di " + maxUnit + " unità complessive, più è alto il valore, più sarà efficace l'incantesimo\nOgni incantesimo ha una durata pari a 3 utilizzi, indipendentemente dalla sua potenza, puoi possedere solamente 5 incantesimi contemporaneamente\nQuanto Mana Blu 🌊 vuoi utilizzare? Ne possiedi *" + mana_1 + "* unità, puoi anche scrivere il numero manualmente", kb2).then(function () {
+										bot.sendMessage(message.chat.id, "Puoi sintetizzare un incantesimo utilizzando qualsiasi quantità di mana per tipo, per un massimo di " + maxUnit + " unità complessive, più è alto il valore, più sarà efficace l'incantesimo\nOgni incantesimo ha una durata pari a 3 utilizzi, indipendentemente dalla sua potenza, puoi possedere solamente 5 incantesimi contemporaneamente\nQuanto 🌊 Mana Blu vuoi utilizzare? Ne possiedi *" + mana_1 + "* unità, puoi anche scrivere il numero manualmente", kb2).then(function () {
 											answerCallbacks[message.chat.id] = function (answer) {
 												if ((answer.text == "Annulla") || (answer.text == "Torna all'Alchimia"))
 													return;
@@ -28613,7 +28614,7 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 														return;
 													}
 
-													bot.sendMessage(message.chat.id, "Quanto Mana Giallo ⚡️ vuoi utilizzare? Ne possiedi *" + mana_2 + "* unità, puoi anche scrivere il numero manualmente", kb2).then(function () {
+													bot.sendMessage(message.chat.id, "Quanto ⚡️ Mana Giallo vuoi utilizzare? Ne possiedi *" + mana_2 + "* unità, puoi anche scrivere il numero manualmente", kb2).then(function () {
 														answerCallbacks[message.chat.id] = function (answer) {
 															if (answer.text == "Annulla") {
 																return;
@@ -28629,7 +28630,7 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 																return;
 															}
 
-															bot.sendMessage(message.chat.id, "Quanto Mana Rosso 🔥 vuoi utilizzare? Ne possiedi *" + mana_3 + "* unità, puoi anche scrivere il numero manualmente", kb2).then(function () {
+															bot.sendMessage(message.chat.id, "Quanto 🔥 Mana Rosso vuoi utilizzare? Ne possiedi *" + mana_3 + "* unità, puoi anche scrivere il numero manualmente", kb2).then(function () {
 																answerCallbacks[message.chat.id] = function (answer) {
 																	if (answer.text == "Annulla") {
 																		return;
@@ -28653,15 +28654,15 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 																					if (err) throw err;
 
 																					if (m1 > rows[0].mana_1) {
-																						bot.sendMessage(message.chat.id, "Non hai abbastanza Mana Blu 🌊", kbBack);
+																						bot.sendMessage(message.chat.id, "Non hai abbastanza 🌊 Mana Blu", kbBack);
 																						return;
 																					}
 																					if (m2 > rows[0].mana_2) {
-																						bot.sendMessage(message.chat.id, "Non hai abbastanza Mana Giallo ⚡️", kbBack);
+																						bot.sendMessage(message.chat.id, "Non hai abbastanza ⚡️ Mana Giallo", kbBack);
 																						return;
 																					}
 																					if (m3 > rows[0].mana_3) {
-																						bot.sendMessage(message.chat.id, "Non hai abbastanza Mana Rosso 🔥", kbBack);
+																						bot.sendMessage(message.chat.id, "Non hai abbastanza 🔥 Mana Rosso", kbBack);
 																						return;
 																					}
 
@@ -28719,7 +28720,7 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 
 																						connection.query('INSERT INTO magic (player_id, type, power, quantity) VALUES (' + player_id + ',' + type + ',' + power + ',' + quantity + ')', function (err, rows, fields) {
 																							if (err) throw err;
-																							bot.sendMessage(message.chat.id, "Hai sintetizzato *" + magic_name + " " + power + "* " + magic_sym + "!" + extra, kbBack);
+																							bot.sendMessage(message.chat.id, "Hai sintetizzato " + magic_sym + " *" + magic_name + " " + power + "*!" + extra, kbBack);
 																							setAchievement(player_id, 28, 1);
 																						});
 																					});
@@ -39429,7 +39430,15 @@ bot.onText(/migliora rifugio/i, function (message) {
 		}
 
 		if ((house_id + 1) > 6) {
-			bot.sendMessage(message.chat.id, "Hai raggiunto il limite massimo di upgrade del rifugio.", back);
+			var kbBack = {
+				parse_mode: "Markdown",
+				reply_markup: {
+					resize_keyboard: true,
+					keyboard: [["Torna al rifugio"], ["Torna al menu"]]
+				}
+			};
+			
+			bot.sendMessage(message.chat.id, "Hai raggiunto il limite massimo di upgrade del rifugio.", kbBack);
 			return;
 		}
 
@@ -39486,9 +39495,8 @@ bot.onText(/migliora rifugio/i, function (message) {
 		bot.sendMessage(message.chat.id, "Per passare al livello " + (house_id + 1) + " del rifugio devi possedere i seguenti oggetti:\n" + level_text + "\nOltre a " + level_money + " §", yesno).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				var action = answer.text;
-				if (action == "Torna al menu") {
+				if (action == "Torna al menu")
 					return;
-				}
 
 				if (money < level_money) {
 					bot.sendMessage(message.chat.id, "Non hai abbastanza monete!", back);
@@ -46400,23 +46408,28 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								if ((is_boss == 0) && (rows[i].reborn > 2)){
 									var card = connection_sync.query('SELECT id, rarity FROM card_list WHERE name = "' + mob_name + '"');
 									if (Object.keys(card).length == 0) {
-										var card_rarity = Math.round(getRandomArbitrary(1, 10));
-										var max = connection_sync.query('SELECT MAX(id) As mx FROM card_list');
-										var new_id = (max[0].mx+1);
-										connection_sync.query('INSERT INTO card_list (id, name, rarity) VALUES (' + new_id + ', "' + mob_name + '", ' + card_rarity + ')');
-										console.log("Figurina creata: " + mob_name + " [" + new_id + "]");
-										
-										connection_sync.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + rows[i].id + ', ' + new_id + ')');
-										
-										bot.sendMessage(rows[i].chat_id, "Hai creato ed ottenuto la figurina 🃏 *" + mob_name + " (" + card_rarity + ")*! Creane altre per ampliare la collezione!", mark);
+										var randVal = Math.random()*100;
+										if (randVal < 50) {
+											var card_rarity = Math.round(getRandomArbitrary(1, 10));
+											var max = connection_sync.query('SELECT MAX(id) As mx FROM card_list');
+											var new_id = (max[0].mx+1);
+											connection_sync.query('INSERT INTO card_list (id, name, rarity) VALUES (' + new_id + ', "' + mob_name + '", ' + card_rarity + ')');
+											console.log("Figurina creata: " + mob_name + " (" + card_rarity + ") [" + new_id + "] da utente " + rows[i].id);
+
+											connection_sync.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + rows[i].id + ', ' + new_id + ')');
+
+											bot.sendMessage(rows[i].chat_id, "Hai creato ed ottenuto la figurina 🃏 *" + mob_name + " (" + card_rarity + ")*! Creane altre per ampliare la collezione!", mark);
+										}
 									} else {
 										var tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_list');
 										var have_tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE player_id = ' + rows[i].id);
 										var have = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE player_id = ' + rows[i].id + ' AND card_id = ' + card[0].id);
 										if (have[0].cnt == 0) {
 											var randVal = Math.random()*100;
-											var prob = (100-card[0].rarity*10)+10;
-											if (prob > randVal) {
+											var prob = (100-card[0].rarity*10)*0.5;	// 1 => 45, 9 => 5
+											if (prob == 0)
+												prob = 1;
+											if (randVal < prob) {
 												connection_sync.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + rows[i].id + ', ' + card[0].id + ')');
 												console.log("Figurina ottenuta: " + mob_name);
 												
@@ -50563,16 +50576,16 @@ function setFinishedTeamMission(element, index, array) {
 								rewardText += "\n> " + qnt + "x " + item[0].name + " (" + item[0].rarity + ") (a testa)";
 								isItem = 1;
 							} else if (rewardStr[1] == "mana1") {
-								rewardText += "\n> " + qnt + "x Mana Blu 🌊 (a testa)";
+								rewardText += "\n> " + qnt + "x 🌊 Mana Blu (a testa)";
 								rewardQuery = "UPDATE event_mana_status M, player P SET M.mana_1 = M.mana_1+1 WHERE M.player_id = P.id AND P.id = %playerid%";
 							} else if (rewardStr[1] == "mana2") {
-								rewardText += "\n> " + qnt + "x Mana Giallo ⚡️ (a testa)";
+								rewardText += "\n> " + qnt + "x ⚡️ Mana Giallo (a testa)";
 								rewardQuery = "UPDATE event_mana_status M, player P SET M.mana_2 = M.mana_2+1 WHERE M.player_id = P.id AND P.id = %playerid%";
 							} else if (rewardStr[1] == "mana3") {
-								rewardText += "\n> " + qnt + "x Mana Rosso 🔥 (a testa)";
+								rewardText += "\n> " + qnt + "x 🔥 Mana Rosso (a testa)";
 								rewardQuery = "UPDATE event_mana_status M, player P SET M.mana_3 = M.mana_3+1 WHERE M.player_id = P.id AND P.id = %playerid%";
 							} else if (rewardStr[1] == "mana") {
-								rewardText += "\n> " + qnt + "x Mana tutti i tipi (a testa)";
+								rewardText += "\n> " + qnt + "x 🌊⚡️🔥 Mana tutti i tipi (a testa)";
 								rewardQuery = "UPDATE event_mana_status M, player P SET M.mana_1 = M.mana_1+1, M.mana_2 = M.mana_2+1, M.mana_3 = M.mana_3+1 WHERE M.player_id = P.id AND P.id = %playerid%";
 							} else if (rewardStr[1] == "gems") {
 								qnt = Math.floor(qnt/3);
@@ -51605,7 +51618,7 @@ function setFinishedMissionTeamExpire(element, index, array) {
 }
 
 function checkDungeonExpire() {
-	connection.query('SELECT dungeon_status.id As dungeon_status_id, dungeon_status.dungeon_id As dungeon_id, player.id As player_id, player.chat_id FROM dungeon_status, player WHERE dungeon_status.player_id = player.id AND dungeon_status.finish_time < NOW() AND dungeon_status.finish_time IS NOT NULL', function (err, rows, fields) {
+	connection.query('SELECT dungeon_status.id As dungeon_status_id, dungeon_status.dungeon_id As dungeon_id, player.id As player_id, player.chat_id FROM dungeon_status, player WHERE dungeon_status.player_id = player.id AND dungeon_status.finish_time < NOW() AND dungeon_status.finish_time IS NOT NULL AND unlimited = 0', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
