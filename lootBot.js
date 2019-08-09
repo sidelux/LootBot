@@ -15177,7 +15177,7 @@ bot.onText(/^bevande|torna alle bevande/i, function (message) {
 							}
 							
 							var restore = (3-active_boost_mission);
-							var dust = 1000*restore;
+							var dust = 500*restore;
 							
 							var plur = "he";
 							if (restore == 1)

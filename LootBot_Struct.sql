@@ -571,7 +571,7 @@ CREATE TABLE `card_inventory` (
   `player_id` int(11) NOT NULL,
   `card_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `card_inventory_player_id` (`player_id`),
+  UNIQUE KEY `card_no_duplicate` (`player_id`,`card_id`),
   KEY `card_inventory_card_id` (`card_id`),
   CONSTRAINT `card_inventory_card_id` FOREIGN KEY (`card_id`) REFERENCES `card_list` (`id`) ON DELETE CASCADE,
   CONSTRAINT `card_inventory_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
@@ -3645,4 +3645,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-08-09  9:00:06
+-- Dump completed on 2019-08-09 15:00:06
