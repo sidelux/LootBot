@@ -116,8 +116,12 @@ bot.on('edited_message', function (message) {
 
 bot.on('message', function (message) {
 	if (message.text != undefined) {
-		if (message.text.startsWith("/") && !(message.text.startsWith("//")))
-			console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
+		if (message.text.startsWith("/") && !(message.text.startsWith("//"))) {
+			if (message.text.indexOf("@") == -1)
+				console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
+			else if (message.text.toLowerCase().indexOf("@lootplusbot") != -1)
+				console.log(getNow("it") + " -- " + message.from.username + ": " + message.text);
+		}
 
 		if ((message.from.id != 20471035) && (message.chat.id == -1001097316494)){
 			if (!message.text.startsWith("Negozio di")) {
@@ -10560,8 +10564,9 @@ function funz(x) {
 }
 
 function checkStatus(message, nickname, accountid, type) {
-	if (nickname == "lootplusbot")
+	if (message.from.id == 777000)	// Telegram
 		return;
+	
 	connection.query('SELECT id, exp, reborn, nickname, market_ban, group_ban, player_custom_nickname FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -10610,7 +10615,6 @@ function checkStatus(message, nickname, accountid, type) {
 					bot.kickChatMember(message.chat.id, accountid).then(function (result) {
 						if (result != false) {
 							bot.sendMessage(message.chat.id, nickname + " non è iscritto, l'ho bannato");
-							console.log("Bannato: " + nickname);
 							bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa del fatto che non sei registrato al gioco");
 						}
 					});
