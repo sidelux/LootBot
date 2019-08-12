@@ -507,6 +507,7 @@ bot.onText(/^\/start$|^\/start@lootplusbot$/, function (message) {
 bot.onText(/^\/comandigiocatore/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per il giocatore*\n" +
 					"/giocatore o /giocatrice - Mostra la scheda giocatore\n" +
+					"/drago - Mostra la scheda drago\n" +
 					"/zaino - Mostra gli oggetti contenuti nello zaino (specifica anche rarità separate da virgola o 'consumabili' o 'completo')\n" +
 					"/zainoc/b - Mostra gli oggetti creati/base contenuti nello zaino (specifica anche la rarità)\n" +
 					"/zainor - Mostra gli oggetti speciali posseduti (polvere, monete lunari, ecc.)\n" +
@@ -1428,54 +1429,61 @@ bot.onText(/^\/gruppi/, function (message) {
 
 																bot.getChatMembersCount(-1001487835665).then(function (data) {
 																	var c20 = data; //lootgames
+																	console.log("Next Uno Scommesse");
 
 																	bot.getChatMembersCount(-1001482029556).then(function (data) {
 																		var c21 = data; //uno scommesse
+																		console.log("Next Scommesse/Scambi");
+																		
+																		bot.getChatMembersCount(-1001179385319).then(function (data) {
+																			var c22 = data; //scommesse scambi
 
-																		if (message.chat.id < 0)
-																			bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
+																			if (message.chat.id < 0)
+																				bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
 
-																		bot.sendMessage(message.from.id, "<b>Ufficiali</b>\n" +
-																						"Canale principale per aggiornamenti: @LootBotAvvisi\n" +
+																			bot.sendMessage(message.from.id, "<b>Ufficiali</b>\n" +
+																							"Canale principale per aggiornamenti: @LootBotAvvisi\n" +
 
-																						"\n<b>Bot</b>\n" +
-																						"Liste oggetti e alberi automatici: @craftlootbot\n" +
-																						"Qualcuno sempre a disposizione: @OracoloLootBot\n" +
-																						"Calcolo Loot Combat Rating: @lootcrbot\n" +
-																						"Tool per mercato e cronologie: @ToolsForLootBot\n" +
-																						"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
-																						"Tastiera per inviare facilmente i comandi del plus: @LootPlusKeyboardBot\n" +
+																							"\n<b>Bot</b>\n" +
+																							"Liste oggetti e alberi automatici: @craftlootbot\n" +
+																							"Qualcuno sempre a disposizione: @OracoloLootBot\n" +
+																							"Calcolo Loot Combat Rating: @lootcrbot\n" +
+																							"Tool per mercato e cronologie: @ToolsForLootBot\n" +
+																							"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
+																							"Tastiera per inviare facilmente i comandi del plus: @LootPlusKeyboardBot\n" +
 
-																						"\n<b>Altro</b>\n" +
-																						"<a href='https://telegra.ph/Guida-alle-LootBot-API-04-06'>LootBot Api v2</a>\n" +
+																							"\n<b>Altro</b>\n" +
+																							"<a href='https://telegra.ph/Guida-alle-LootBot-API-04-06'>LootBot Api v2</a>\n" +
 
-																						"\n<b>Gruppi</b>\n" +
-																						"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
-																						"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
-																						"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
-																						"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
-																						"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
-																						"<a href='https://t.me/joinchat/AVqFykBMfmvrULAUQv-MmQ'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
-																						"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
-																						"<a href='https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
-																						"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
-																						"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
-																						"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
-																						"<a href='https://t.me/joinchat/CXTRTE60M2WLQR2fvG_q7A'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
-																						"@Adesmappers (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
-																						"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ") - La musica ed il diverimento di Lootia!\n" +
-																						"<a href='https://t.me/joinchat/B8_tHk9nThsWfDL-k-Fazw'>Loot Nabbi</a> (" + c19 + ") - Dedicato ai nabbi di Lootia!\n" +
-																						"<a href='https://t.me/joinchat/ByIyqhPdW14SZX4y7PiRbw'>Loot Gheims</a> (" + c20 + ") - Gruppo OT con giochi per tutti i gusti, specie giochi di ruolo\n" +
-																						"<a href='https://t.me/joinchat/HOnifBab5PT-2Qj2Lq0ZkQ'>Uno Scommesse</a> (" + c21 + ") - Vieni a scommettere o semplicemente giocare al famosissimo gioco Uno insieme a noi!\n" +
+																							"\n<b>Gruppi</b>\n" +
+																							"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
+																							"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
+																							"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
+																							"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
+																							"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
+																							"<a href='https://t.me/joinchat/AVqFykBMfmvrULAUQv-MmQ'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
+																							"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
+																							"<a href='https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
+																							"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
+																							"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
+																							"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
+																							"<a href='https://t.me/joinchat/CXTRTE60M2WLQR2fvG_q7A'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
+																							"@Adesmappers (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
+																							"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ") - La musica ed il diverimento di Lootia!\n" +
+																							"<a href='https://t.me/joinchat/B8_tHk9nThsWfDL-k-Fazw'>Loot Nabbi</a> (" + c19 + ") - Dedicato ai nabbi di Lootia!\n" +
+																							"<a href='https://t.me/joinchat/ByIyqhPdW14SZX4y7PiRbw'>Loot Gheims</a> (" + c20 + ") - Gruppo OT con giochi per tutti i gusti, specie giochi di ruolo\n" +
+																							"<a href='https://t.me/joinchat/HOnifBab5PT-2Qj2Lq0ZkQ'>Uno Scommesse</a> (" + c21 + ") - Vieni a scommettere o semplicemente giocare al famosissimo gioco Uno insieme a noi!\n" +
+																							"<a href='https://t.me/joinchat/G5bsZ0ZL_eeCWEMf_88Qvg'>Scommesse/Scambi</a> - Tornei, giochi, dadi, tiro con arco di tutto e di più\n" +
 
-																						"\n<b>Canali</b>\n" +
-																						"@lootstatistiche - Statistiche dettagliate di Loot!\n" +
-																						"@Suggerimenti_per_LootBot - Gruppo dove i suggerimenti vengono postati e votati dagli utenti\n" +
-																						"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
-																						"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
-																						"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
+																							"\n<b>Canali</b>\n" +
+																							"@lootstatistiche - Statistiche dettagliate di Loot!\n" +
+																							"@Suggerimenti_per_LootBot - Gruppo dove i suggerimenti vengono postati e votati dagli utenti\n" +
+																							"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
+																							"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
+																							"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
 
-																						"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
+																							"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
+																		});
 																	});
 																});
 															});
@@ -4081,7 +4089,7 @@ bot.onText(/^\/negoziodesc (.+),(.+)|^\/negoziodesc/, function (message, match) 
 	});
 });
 
-bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|^\/negozioa ([^\s]+) (.+)|^\/negozior ([^\s]+) (.+)|^\/negoziom$|^\/negoziom ([^\s]+) (.+)|^\/negoziou (.+)|^\/negozioref ([^\s]+) (.+)/, function (message, match) {
+bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|^\/negozioa ([^\s]+) (.+)|^\/negozior ([^\s]+) (.+)|^\/negoziom$|^\/negoziom ([^\s]+) (.+)|^\/negoziou (.+)|^\/negozioref ([^\s]+) (.+)|^\/negozioref/, function (message, match) {
 
 	if (!checkSpam(message))
 		return;
@@ -4169,7 +4177,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			if ((code != "tutti") && (code != "pubblici") && (code != "privati")){
 				code = parseInt(code);
 				if (isNaN(code)){
-					bot.sendMessage(message.chat.id, "Quantità non valida, puoi usare anche tutti/pubblici/privati.");
+					bot.sendMessage(message.chat.id, "Quantità non valida, puoi usare anche tutti/pubblici/privati.\nSintassi: /negozioref codicenegozio (+/-)quantità.");
 					return;
 				}
 			}
@@ -9079,6 +9087,196 @@ bot.onText(/^\/giocatore|^\/giocatrice/, function (message) {
 	getInfo(message, player, 6, 0, account_id);
 });
 
+bot.onText(/^\/drago/, function (message) {
+	connection.query('SELECT id, charm_id, class, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0) {
+			bot.sendMessage(message.chat.id, "Non sei registrato!");
+			return;
+		}
+		
+		var player_id = rows[0].id;
+		var charm_id = rows[0].charm_id;
+		var class_id = rows[0].class;
+		var reborn = rows[0].reborn;
+		
+		connection.query('SELECT dragon.* FROM player, dragon WHERE player.id = dragon.player_id AND player.id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.from.id, "Non possiedi ancora un drago!");
+				return;
+			}
+
+			var dragon_name = "-";
+			var dragon_level = "-";
+			var dragon_damage = "-";
+			var dragon_defence = "-";
+			var dragon_critical = "-";
+			var dragon_clawsid = 0;
+			var dragon_saddleid = 0;
+			var dragon_armsid = 0;
+			var dragon_claws = 0;
+			var dragon = 0;
+			var dragon_status = "In salute";
+
+			if (Object.keys(rows).length > 0) {
+				dragon = 1;
+
+				if (charm_id == 602) {
+					rows[0].damage += 25;
+					rows[0].critical += 10;
+				}
+				if (charm_id == 695) {
+					rows[0].damage += 30;
+					rows[0].critical += 15;
+				}
+
+				if ((class_id == 7) && (reborn > 1) && (reborn == 5))
+					rows[0].claws += rows[0].claws * 1;
+				else if ((class_id == 7) && (reborn > 1))
+					rows[0].claws += rows[0].claws * 0.5;
+				if ((class_id == 7) && (reborn > 1) && (reborn == 5))
+					rows[0].saddle += rows[0].saddle * 1;
+				else if ((class_id == 7) && (reborn > 1))
+					rows[0].saddle += rows[0].saddle * 0.5;
+				if ((class_id == 7) && (reborn == 3))
+					rows[0].critical += 5;
+				if ((class_id == 7) && (reborn >= 4))
+					rows[0].critical += 7;
+
+				dragon_name = rows[0].name.trim() + " " + rows[0].type;
+				dragon_level = rows[0].level;
+				dragon_damage = "+" + Math.round(rows[0].damage + rows[0].claws);
+				dragon_defence = "-" + Math.round(rows[0].defence + rows[0].saddle);
+				dragon_critical = Math.round(rows[0].critical);
+
+				dragon_claws = parseInt(rows[0].claws);
+
+				dragon_clawsid = rows[0].claws_id;
+				dragon_saddleid = rows[0].saddle_id;
+				dragon_armsid = rows[0].arms_id;
+
+				if (rows[0].life <= 0)
+					dragon_status = "Esausto";
+				if (rows[0].sleep_h > 0)
+					dragon_status = "Dorme";
+			}
+
+			connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_clawsid, function (err, rows, fields) {
+				if (err) throw err;
+
+				var dragon_claws_n = "-";
+				if (rows[0].num > 0)
+					dragon_claws_n = rows[0].name;
+
+				connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_saddleid, function (err, rows, fields) {
+					if (err) throw err;
+
+					var dragon_saddle_n = "-";
+					if (rows[0].num > 0)
+						dragon_saddle_n = rows[0].name;
+
+					connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_armsid, function (err, rows, fields) {
+						if (err) throw err;
+
+						var dragon_arms_n = "-";
+						if (rows[0].num > 0)
+							dragon_arms_n = rows[0].name;
+
+						bot.sendMessage(message.chat.id, (dragon ? "\n<b>" + dragon_name + " (L" + dragon_level + ")</b> 🐉\n" : "") +
+										"Proprietario: " + message.from.username + "\n" +
+										(dragon ? "Stato: " + dragon_status + "\n" : "") +
+										(dragon ? dragon_claws_n + " (" + dragon_damage + ")\n" : "") +
+										(dragon ? dragon_saddle_n + " (" + dragon_defence + ")\n" : "") +
+										(dragon ? dragon_arms_n + "\n" : "") +
+										(dragon ? "Critico (" + dragon_critical + "%)\n" : ""), html);
+					});
+				});
+			});
+		});
+	});
+});
+
+bot.onText(/^\/figurine/, function (message) {
+	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0) {
+			bot.sendMessage(message.chat.id, "Non sei registrato!");
+			return;
+		}
+		
+		var player_id = rows[0].id;
+		
+		connection.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+			var have = rows[0].cnt;
+			
+			connection.query('SELECT name, rarity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND player_id = ' + player_id + ' ORDER BY name', function (err, rows, fields) {
+				if (err) throw err;
+				
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, message.from.username + ", non possiedi alcuna figurina!", html);
+					return;
+				}
+				
+				var text = message.from.username + ", possiedi " + have + " figurine:\n";
+				for (i = 0, len = Object.keys(rows).length; i < len; i++)
+					text += "> " + rows[i].name + " (" + rows[i].rarity + ")\n";
+				
+				bot.sendMessage(message.chat.id, text, html);
+			});
+		});
+	});
+});
+
+bot.onText(/^\/figurina (.+)|^\/figurina/, function (message, match) {
+	
+	if (match[1] == undefined) {
+		bot.sendMessage(message.chat.id, "Specifica il nome parziale della figurina dopo il comando!", html);
+		return;
+	}
+	
+	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0) {
+			bot.sendMessage(message.chat.id, "Non sei registrato!");
+			return;
+		}
+		
+		var player_id = rows[0].id;
+		
+		connection.query('SELECT id, name, rarity FROM card_list WHERE name LIKE "%' + match[1] + '%" ORDER BY name', function (err, rows, fields) {
+			if (err) throw err;
+			
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Nessuna figurina trovata con i criteri specificati", html);
+				return;
+			}
+			
+			if (Object.keys(rows).length > 20) {
+				bot.sendMessage(message.chat.id, "Troppi risultati, riprova con un filtro più preciso", html);
+				return;
+			}
+			
+			var text = message.from.username + ", " + Object.keys(rows).length + " risultati per la ricerca:\n";
+			for (i = 0, len = Object.keys(rows).length; i < len; i++) {
+				var card = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE card_id = ' + rows[i].id + ' AND player_id = ' + player_id);
+				var poss = "";
+				if (card[0].cnt == 1)
+					poss = " ✅";
+				
+				var dist = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE card_id = ' + rows[i].id);
+				var tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory');
+				
+				text += "> <b>" + rows[i].name + "</b> (" + rows[i].rarity + ")" + poss + "\n In circolazione: " + formatNumber(dist[0].cnt) + "\n Distribuzione: " + Math.round(dist[0].cnt/tot[0].cnt*100) + "%\n\n";
+			}
+
+			bot.sendMessage(message.chat.id, text, html);
+		});
+	});
+});
+
 bot.onText(/^\/ispeziona (.+)|^\/ispeziona/, function (message, match) {
 
 	if (message.reply_to_message == undefined) {
@@ -9619,7 +9817,7 @@ bot.onText(/^\/zainor/, function (message, match) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length > 0)
-				bottext += "Mana: " + formatNumber(rows[0].mana_1) + " Blu - " + formatNumber(rows[0].mana_2) + " Giallo - " + formatNumber(rows[0].mana_3) + " Rosso\n";
+				bottext += "Mana:\n> " + formatNumber(rows[0].mana_1) + " Blu 🌊\n> " + formatNumber(rows[0].mana_2) + " Giallo ⚡️\n> " + formatNumber(rows[0].mana_3) + " Rosso 🔥\n";
 
 			bot.sendMessage(message.chat.id, bottext, html);
 		});
@@ -10566,7 +10764,7 @@ function funz(x) {
 function checkStatus(message, nickname, accountid, type) {
 	if (message.from.id == 777000)	// Telegram
 		return;
-	
+
 	connection.query('SELECT id, exp, reborn, nickname, market_ban, group_ban, player_custom_nickname FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
 		if (err) throw err;
 
