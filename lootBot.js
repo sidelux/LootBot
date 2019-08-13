@@ -1935,12 +1935,12 @@ bot.on('callback_query', function (message) {
 									last_answer = capitalizeFirstLetter(rows[0].text);
 
 								if ((text_user == null) || (text_user == undefined))
-									question = question.replace("%casuale%", "qualcuno");
+									question = question.replaceAll("%casuale%", "qualcuno");
 								else
-									question = question.replace("%casuale%", text_user);
+									question = question.replaceAll("%casuale%", text_user);
 
 								var team = connection_sync.query('SELECT name FROM team WHERE id = ' + team_id);
-								question = question.replace("%team%", team[0].name);
+								question = question.replaceAll("%team%", team[0].name);
 
 								var newtext = "<b>Incarico in corso</b>\n\n<i>" + last_answer + question + "</i>" + text;
 								var checktext = newtext.replaceAll("<[^>]*>", "").trim();
@@ -10059,7 +10059,10 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	addChest(player_id, 3, param);
 																	bot.sendMessage(message.chat.id, "Per la meditazione prolungata, il saggio della montagna ti premia con " + param + "x Scrigni Preziosi!", dNext);
 																} else {
-																	param = param * 2;
+																	if (param > 5)
+																		param = param * 3;
+																	else
+																		param = param * 2;
 																	addItem(player_id, 646, param);
 																	bot.sendMessage(message.chat.id, "Per la meditazione prolungata, il saggio della montagna ti premia con " + param + "x Polvere!", dNext);
 																}
@@ -15009,8 +15012,6 @@ bot.onText(/^bevande|torna alle bevande/i, function (message) {
 		var player_id = rows[0].id;
 		var class_id = rows[0].class;
 		var reborn = rows[0].reborn;
-		var active_boost_id = rows[0].boost_id;
-		var active_boost_mission = rows[0].boost_mission;
 
 		if (reborn == 1) {
 			bot.sendMessage(message.chat.id, "Devi raggiungere almeno la Rinascita 1 (Livello 100) per utilizzare questa funzione! Dopo di che potrai ottenere ogni tipo di Bevanda magica grazie ai poteri del drago!", back)
@@ -15125,7 +15126,7 @@ bot.onText(/^bevande|torna alle bevande/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					keyboard: [["Inizia Produzione"], ["Ripristina"], ["Torna al menu"]]
+					keyboard: [["Inizia Produzione"], ["Torna al menu"]]
 				}
 			};
 			
@@ -15172,45 +15173,80 @@ bot.onText(/^bevande|torna alle bevande/i, function (message) {
 							});
 							delItem(player_id, 73, 1);
 							setAchievement(player_id, 38, 1);
-						} else if (answer.text == "Ripristina") {
-							if (active_boost_id == 0) {
-								bot.sendMessage(message.chat.id, "Devi avere una bevanda attiva per poterla ripristinare!", kb3);
-								return;
-							}
-							
-							if (active_boost_mission > 2) {
-								bot.sendMessage(message.chat.id, "Per ripristinare la bevanda deve possedere meno di 3 cariche!", kb3);
-								return;
-							}
-							
-							var restore = (3-active_boost_mission);
-							var dust = 500*restore;
-							
-							var plur = "he";
-							if (restore == 1)
-								plur = "a";
-							
-							bot.sendMessage(message.chat.id, "Ripristinare " + restore + " caric" + plur + " di questa bevanda ti costerà " + dust + " unità di Polvere, procedi?", kb4).then(function () {
-								answerCallbacks[message.chat.id] = function (answer) {
-									if (answer.text.toLowerCase() == "si") {
-										if (getItemCnt(player_id, 646) < dust) {
-											bot.sendMessage(message.chat.id, "Non possiedi abbastanza polvere!", kb3);
-											return;
-										}
-
-										delItem(player_id, 646, dust);
-
-										connection.query('UPDATE player SET boost_mission = boost_mission+' + restore + ' WHERE id = ' + player_id, function (err, rows, fields) {
-											if (err) throw err;
-											bot.sendMessage(message.chat.id, "Cariche della bevanda ripristinate!", kb3);
-										});
-									}
-								}
-							});
 						}
 					}
 				});
 			});
+		});
+	});
+});
+
+bot.onText(/ripristina bevanda/i, function (message) {
+	connection.query('SELECT account_id, holiday, id, class, reborn, boost_id, boost_mission FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+		if (rows[0].holiday == 1) {
+			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back)
+			return;
+		}
+
+		var kb3 = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Torna alle bevande"], ["Torna al drago"], ["Torna al menu"]]
+			}
+		};
+
+		var player_id = rows[0].id;
+		var reborn = rows[0].reborn;
+		var active_boost_id = rows[0].boost_id;
+		var active_boost_mission = rows[0].boost_mission;
+
+		if (reborn == 1) {
+			bot.sendMessage(message.chat.id, "Devi raggiungere almeno la Rinascita 1 (Livello 100) per utilizzare questa funzione! Dopo di che potrai ottenere ogni tipo di Bevanda magica grazie ai poteri del drago!", back)
+			return;
+		}
+		
+		if (active_boost_id == 0) {
+			bot.sendMessage(message.chat.id, "Devi avere una bevanda attiva per poterla ripristinare!", kb3);
+			return;
+		}
+
+		if (active_boost_mission > 2) {
+			bot.sendMessage(message.chat.id, "Per ripristinare la bevanda deve possedere meno di 3 cariche!", kb3);
+			return;
+		}
+
+		var restore = (3-active_boost_mission);
+		var dust = 500*restore;
+
+		var plur = "he";
+		if (restore == 1)
+			plur = "a";
+
+		bot.sendMessage(message.chat.id, "Ripristinare " + restore + " caric" + plur + " di questa bevanda ti costerà " + dust + " unità di Polvere, procedi?", kb4).then(function () {
+			answerCallbacks[message.chat.id] = function (answer) {
+				if (answer.text.toLowerCase() == "si") {
+					if (getItemCnt(player_id, 646) < dust) {
+						bot.sendMessage(message.chat.id, "Non possiedi abbastanza polvere!", kb3);
+						return;
+					}
+
+					delItem(player_id, 646, dust);
+
+					connection.query('UPDATE player SET boost_mission = boost_mission+' + restore + ' WHERE id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+						bot.sendMessage(message.chat.id, "Cariche della bevanda ripristinate!", kb3);
+					});
+				}
+			}
 		});
 	});
 });
@@ -28086,7 +28122,7 @@ bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Aziona Generatore"], ["Aumenta Deposito", "Utilizza Polvere"], ["Genera Scaglia Evolutiva"], ["Torna al menu"]]
+				keyboard: [["Aziona Generatore"], ["Aumenta Deposito", "Utilizza Polvere"], ["Ripristina Bevanda"], ["Genera Scaglia Evolutiva"], ["Torna al menu"]]
 			}
 		};
 
@@ -37098,14 +37134,16 @@ bot.onText(/spia (.+)|spia:|^\/spia/i, function (message, match) {
 			return;
 		}
 
-		if ((message.text.indexOf(":") != -1) || (match[1] != undefined) || (message.reply_to_message != undefined)) {
+		if (((message.text.indexOf(":") != -1) || (match[1] != undefined) || (message.reply_to_message != undefined)) && (message.text != "Spia Rifugio 👀")) {
 			var player;
 			if ((match[1] != undefined) && (match[1] != "rifugio"))
 				player = match[1];
 			else if (message.reply_to_message != undefined)
 				player = message.reply_to_message.text.match(/ci hanno avvisato che ([a-zA-Z0-9_]{5,}) ha spiato/)[1];
-			else
+			else if (message.text.indexOf(":") != -1)
 				player = message.text.substring(message.text.indexOf(":") + 1).replace("@", "").trim();
+			else
+				return;
 
 			connection.query('SELECT id, heist_protection, chat_id, account_id, house_id FROM player WHERE nickname = "' + player + '"', function (err, rows, fields) {
 				if (err) throw err;
