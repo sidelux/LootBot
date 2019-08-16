@@ -14141,32 +14141,25 @@ bot.onText(/scomponi/i, function (message) {
 											money = 5000;
 										else if (rows[0].rarity == "R") {
 											money = 10000;
-											craft = 1;
-											craft = craft * 2;
+											craft = 2;
 										} else if (rows[0].rarity == "UR") {
 											money = 25000;
-											craft = 2;
-											craft = craft * 2;
+											craft = 4;
 										} else if (rows[0].rarity == "L") {
 											gems = 1;
-											craft = 3;
-											craft = craft * 2;
+											craft = 6;
 										} else if (rows[0].rarity == "E") {
 											gems = 1;
-											craft = 5;
-											craft = craft * 2;
+											craft = 10;
 										} else if (rows[0].rarity == "UE") {
 											gems = 2;
-											craft = 25;
-											craft = craft * 2;
+											craft = 50;
 										} else if (rows[0].rarity == "U") {
 											gems = 2;
-											craft = 35;
-											craft = craft * 2;
+											craft = 70;
 										} else if (rows[0].rarity == "S") {
 											gems = 1;
 											craft = 5;
-											craft = craft * 2;
 										} else {
 											bot.sendMessage(message.chat.id, "Questa rarità non è scomponibile", back);
 											return;
@@ -14740,6 +14733,7 @@ bot.onText(/fai nascere il drago|accudisci drago|nutri ancora|^drago$|^drago �
 							iKeys.push(["Equipaggia Drago 🐉"]);
 							iKeys.push(["Rinomina Drago 💬", "Cambia Tipo " + dragonSym(dragon_type)]);
 							iKeys.push(["Bevande 🍶", "Riposa 💤", "Risorse 🍵"]);
+							iKeys.push(["Ripristina Bevanda 🍶"]);
 
 							connection.query('SELECT item.name, inventory.quantity As num FROM item, inventory WHERE inventory.player_id = ' + player_id + ' AND item.id = inventory.item_id AND item.name LIKE "Pietra%" AND item.rarity = "D" AND inventory.quantity > 0 ORDER BY item.id', function (err, rows, fields) {
 								if (err) throw err;
@@ -15129,14 +15123,6 @@ bot.onText(/^bevande|torna alle bevande/i, function (message) {
 					keyboard: [["Inizia Produzione"], ["Torna al menu"]]
 				}
 			};
-			
-			var kb4 = {
-				parse_mode: "Markdown",
-				reply_markup: {
-					resize_keyboard: true,
-					keyboard: [["Si"], ["Torna alle bevande"], ["Torna al menu"]]
-				}
-			};
 
 			connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 17', function (err, rows, fields) {
 				if (err) throw err;
@@ -15201,6 +15187,14 @@ bot.onText(/ripristina bevanda/i, function (message) {
 			reply_markup: {
 				resize_keyboard: true,
 				keyboard: [["Torna alle bevande"], ["Torna al drago"], ["Torna al menu"]]
+			}
+		};
+			
+		var kb4 = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Si"], ["Torna alle bevande"], ["Torna al menu"]]
 			}
 		};
 
@@ -28122,7 +28116,7 @@ bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Aziona Generatore"], ["Aumenta Deposito", "Utilizza Polvere"], ["Ripristina Bevanda"], ["Genera Scaglia Evolutiva"], ["Torna al menu"]]
+				keyboard: [["Aziona Generatore"], ["Aumenta Deposito", "Utilizza Polvere"], ["Genera Scaglia Evolutiva"], ["Torna al menu"]]
 			}
 		};
 
@@ -41540,7 +41534,7 @@ function mainMenu(message) {
 				}
 			}
 
-			connection.query('SELECT S.room_time, S.room_id, L.rooms, TIMESTAMPDIFF(HOUR, NOW(), finish_date) As diff, finish_time FROM dungeon_status S, dungeon_list L WHERE S.dungeon_id = L.id AND S.player_id = ' + player_id, function (err, rows, fields) {
+			connection.query('SELECT S.room_time, S.room_id, L.rooms, TIMESTAMPDIFF(HOUR, NOW(), finish_date) As diff, finish_time, unlimited FROM dungeon_status S, dungeon_list L WHERE S.dungeon_id = L.id AND S.player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				var min = 0;
@@ -41559,9 +41553,9 @@ function mainMenu(message) {
 						dungeon_diff = " 🕐";
 					room_num = rows[0].room_id;
 					room_tot_num = rows[0].rooms;
-					dungeon_finish_time = Math.round(((new Date(rows[0].finish_time) - now) / 1000) / 60 / 60);
-					if (rows[0].diff < dungeon_finish_time)
-						dungeon_finish_time = rows[0].diff;
+					dungeon_finish_time = Math.round(((new Date(rows[0].finish_time) - now) / 1000) / 60 / 60);	// dungeon
+					if ((rows[0].diff < dungeon_finish_time) || (rows[0].unlimited == 1))
+						dungeon_finish_time = rows[0].diff;	// istanza
 				}
 
 				if (crazyMode == 0) {
@@ -51439,7 +51433,7 @@ function setFullLobby(element, index, array) {
 };
 
 function checkDungeonNotification() {
-	connection.query('SELECT player_id, id FROM dungeon_status WHERE TIMESTAMPDIFF(MINUTE, NOW(), finish_time) < 60 AND finish_time IS NOT NULL AND notified = 0', function (err, rows, fields) {
+	connection.query('SELECT player_id, id FROM dungeon_status WHERE TIMESTAMPDIFF(MINUTE, NOW(), finish_time) < 60 AND finish_time IS NOT NULL AND notified = 0 AND unlimited = 0', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
