@@ -31572,38 +31572,45 @@ bot.onText(/zaino/i, function (message) {
 		var inventory_val = connection_sync.query('SELECT SUM(I.value*IV.quantity) As val FROM item I, inventory IV WHERE I.id = IV.item_id AND IV.player_id = ' + player_id);
 		bottext += "Valore zaino: " + formatNumber(inventory_val[0].val) + " §\n";
 		bottext += "\n";
-
-		connection.query('SELECT chest.name As name, quantity As num FROM inventory_chest, chest WHERE player_id = ' + player_id + ' AND chest.id = inventory_chest.chest_id AND quantity > 0 ORDER BY chest.id', function (err, rows, fields) {
+		
+		connection.query('SELECT mana_1, mana_2, mana_3 FROM event_mana_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
-			bottext = bottext + "<b>Scrigni:</b>\n";
+			if (Object.keys(rows).length > 0)
+				bottext += "Mana:\n> " + formatNumber(rows[0].mana_1) + " Blu 🌊\n> " + formatNumber(rows[0].mana_2) + " Giallo ⚡️\n> " + formatNumber(rows[0].mana_3) + " Rosso 🔥\n";
 
-			if ((new Date().getDate() == 1) && (new Date().getMonth() == 3))
-				bottext += "Nessuno scrigno disponibile 👀\n";
-			else {
-				if (Object.keys(rows).length > 0) {
-					for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-						bottext += "> " + rows[i].name + " (" + formatNumber(rows[i].num) + ")\n";
-				} else
-					bottext += "Nessuno scrigno disponibile\n";
-			}
-
-			bottext += "\n";
-
-			connection.query('DELETE FROM magic WHERE quantity <= 0 AND player_id = ' + player_id, function (err, rows, fields) {
+			connection.query('SELECT chest.name As name, quantity As num FROM inventory_chest, chest WHERE player_id = ' + player_id + ' AND chest.id = inventory_chest.chest_id AND quantity > 0 ORDER BY chest.id', function (err, rows, fields) {
 				if (err) throw err;
 
-				connection.query('SELECT type, power, quantity FROM magic WHERE player_id = ' + player_id, function (err, rows, fields) {
-					if (err) throw err;
+				bottext = bottext + "<b>Scrigni:</b>\n";
 
-					bottext += "<b>Incantesimi:</b>\n";
+				if ((new Date().getDate() == 1) && (new Date().getMonth() == 3))
+					bottext += "Nessuno scrigno disponibile 👀\n";
+				else {
 					if (Object.keys(rows).length > 0) {
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-							bottext += "> " + magicToName(rows[i].type) + " " + rows[i].power + " (" + rows[i].quantity + ")\n";
-						bottext += "\n";
+							bottext += "> " + rows[i].name + " (" + formatNumber(rows[i].num) + ")\n";
 					} else
-						bottext += "Nessun incantesimo disponibile\n";
-					bot.sendMessage(message.chat.id, bottext, backpack);
+						bottext += "Nessuno scrigno disponibile\n";
+				}
+
+				bottext += "\n";
+
+				connection.query('DELETE FROM magic WHERE quantity <= 0 AND player_id = ' + player_id, function (err, rows, fields) {
+					if (err) throw err;
+
+					connection.query('SELECT type, power, quantity FROM magic WHERE player_id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+
+						bottext += "<b>Incantesimi:</b>\n";
+						if (Object.keys(rows).length > 0) {
+							for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+								bottext += "> " + magicToName(rows[i].type) + " " + rows[i].power + " (" + rows[i].quantity + ")\n";
+							bottext += "\n";
+						} else
+							bottext += "Nessun incantesimo disponibile\n";
+						bot.sendMessage(message.chat.id, bottext, backpack);
+					});
 				});
 			});
 		});

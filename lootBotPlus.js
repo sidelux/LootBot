@@ -507,7 +507,7 @@ bot.onText(/^\/start$|^\/start@lootplusbot$/, function (message) {
 bot.onText(/^\/comandigiocatore/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per il giocatore*\n" +
 					"/giocatore o /giocatrice - Mostra la scheda giocatore\n" +
-					"/drago - Mostra la scheda drago\n" +
+					"/drago - Mostra la scheda drago (specifica il nome completo di un drago per spiarlo)\n" +
 					"/zaino - Mostra gli oggetti contenuti nello zaino (specifica anche rarità separate da virgola o 'consumabili' o 'completo')\n" +
 					"/zainoc/b - Mostra gli oggetti creati/base contenuti nello zaino (specifica anche la rarità)\n" +
 					"/zainor - Mostra gli oggetti speciali posseduti (polvere, monete lunari, ecc.)\n" +
@@ -9087,8 +9087,8 @@ bot.onText(/^\/giocatore|^\/giocatrice/, function (message) {
 	getInfo(message, player, 6, 0, account_id);
 });
 
-bot.onText(/^\/drago/, function (message) {
-	connection.query('SELECT id, charm_id, class, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+bot.onText(/^\/drago (.+)|^\/drago/, function (message, match) {
+	connection.query('SELECT id, charm_id, class, reborn, money FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0) {
 			bot.sendMessage(message.chat.id, "Non sei registrato!");
@@ -9099,8 +9099,52 @@ bot.onText(/^\/drago/, function (message) {
 		var charm_id = rows[0].charm_id;
 		var class_id = rows[0].class;
 		var reborn = rows[0].reborn;
+		var money = rows[0].money;
 		
-		connection.query('SELECT dragon.* FROM player, dragon WHERE player.id = dragon.player_id AND player.id = ' + player_id, function (err, rows, fields) {
+		var isSpy = 0;
+		if (match[1] != undefined) {
+			var name;
+			var type;
+			if (match[1].indexOf("delle Montagne") != -1) {
+				type = "delle Montagne";
+				name = match[1].replace("delle Montagne", "").trim();
+			} else if (match[1].indexOf("dei Cieli") != -1) {
+				type = "dei Cieli";
+				name = match[1].replace("dei Cieli", "").trim();
+			} else if (match[1].indexOf("Infernale") != -1) {
+				type = "Infernale";
+				name = match[1].replace("Infernale", "").trim();
+			} else if (match[1].indexOf("dell'Oscurità") != -1) {
+				type = "dell'Oscurità";
+				name = match[1].replace("dell'Oscurità", "").trim();
+			} else if (match[1].indexOf("dei Mari") != -1) {
+				type = "dei Mari";
+				name = match[1].replace("dei Mari", "").trim();
+			} else if (match[1].indexOf("dei Ghiacci") != -1) {
+				type = "dei Ghiacci";
+				name = match[1].replace("dei Ghiacci", "").trim();
+			} else {
+				bot.sendMessage(message.chat.id, "Tipo del drago non riconosciuto");
+				return;
+			}
+				
+			if (money < 50000) {
+				bot.sendMessage(message.chat.id, "Non hai abbastanza monete, ne servono 50.000!");
+				return;
+			}
+			
+			var dragon = connection_sync.query('SELECT player_id FROM dragon WHERE name = "' + name + '" AND type = "' + type + '"');
+			if (Object.keys(dragon).length == 0) {
+				bot.sendMessage(message.from.id, "Il drago cercato non esiste!");
+				return;
+			}
+			connection.query('UPDATE player SET money = money-50000 WHERE id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+			player_id = dragon[0].player_id;
+		}
+		
+		connection.query('SELECT dragon.*, nickname, class FROM player, dragon WHERE player.id = dragon.player_id AND player.id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
@@ -9119,6 +9163,8 @@ bot.onText(/^\/drago/, function (message) {
 			var dragon_claws = 0;
 			var dragon = 0;
 			var dragon_status = "In salute";
+			var player_name = "";
+			var player_class = 0;
 
 			if (Object.keys(rows).length > 0) {
 				dragon = 1;
@@ -9161,6 +9207,9 @@ bot.onText(/^\/drago/, function (message) {
 					dragon_status = "Esausto";
 				if (rows[0].sleep_h > 0)
 					dragon_status = "Dorme";
+				
+				player_name = rows[0].nickname;
+				player_class = classSym(rows[0].class);
 			}
 
 			connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_clawsid, function (err, rows, fields) {
@@ -9185,7 +9234,7 @@ bot.onText(/^\/drago/, function (message) {
 							dragon_arms_n = rows[0].name;
 
 						bot.sendMessage(message.chat.id, (dragon ? "\n<b>" + dragon_name + " (L" + dragon_level + ")</b> 🐉\n" : "") +
-										"Proprietario: " + message.from.username + "\n" +
+										"Proprietario: " + player_name + " " + player_class + "\n" +
 										(dragon ? "Stato: " + dragon_status + "\n" : "") +
 										(dragon ? dragon_claws_n + " (" + dragon_damage + ")\n" : "") +
 										(dragon ? dragon_saddle_n + " (" + dragon_defence + ")\n" : "") +
@@ -10001,21 +10050,21 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, account_
 
 function classSym(className) {
 	var classSym = "🐓";
-	if (className == "Sciamano Elementalista")
+	if ((className == "Sciamano Elementalista") || (className == 2))
 		classSym = "🦉";
-	else if (className == "Esploratore Druido")
+	else if ((className == "Esploratore Druido") || (className == 3))
 		classSym = "🐅";
-	else if (className == "Incantaspade")
+	else if ((className == "Incantaspade") || (className == 4))
 		classSym = "🦅";
-	else if (className == "Consacratore Divino")
+	else if ((className == "Consacratore Divino") || (className == 5))
 		classSym = "🕊";
-	else if (className == "Spaccateste")
+	else if ((className == "Spaccateste") || (className == 6))
 		classSym = "🦍";
-	else if (className == "Discepolo dei Draghi")
+	else if ((className == "Discepolo dei Draghi") || (className == 7))
 		classSym = "🐲";
-	else if (className == "Barbaro")
+	else if ((className == "Barbaro") || (className == 8))
 		classSym = "🦏";
-	else if (className == "Predone")
+	else if ((className == "Predone") || (className == 9))
 		classSym = "🦊";
 	return classSym;
 }
