@@ -1402,7 +1402,8 @@ bot.onText(/^\/scorciatoia/, function (message, match) {
 					"> incarichi (va al menù incarichi) - Apre il menù incarichi\n" +
 					"> '/invitati' - Mostra i player che si sono registrati usando il link invito\n" +
 					"> '/sintesi 100,200,300' (blu, giallo, rosso) - Apre il menù per procedere alla sintesi incantesimi\n" +
-					"> '/trasmo bianca,gialla,rosso (spada, armatura, scudo)' - Apre il menù per modificare l'equipaggiamento necro");
+					"> '/trasmo bianca,gialla,rosso (spada, armatura, scudo)' - Apre il menù per modificare l'equipaggiamento necro\n" +
+				   	"> ispeziona - Apre il menù rifugio");
 });
 
 bot.onText(/^\/marketban (.+)/, function (message, match) {
@@ -19279,7 +19280,7 @@ bot.onText(/team/i, function (message) {
 											} else if (rows[i].travel_time_end != null) {
 												d = new Date(rows[i].travel_time_end);
 												long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-												act = "🏃 🏽Viaggio (" + long_date + ")";
+												act = "🏃 Viaggio (" + long_date + ")";
 											} else if (rows[i].cave_time_end != null) {
 												d = new Date(rows[i].cave_time_end);
 												long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
@@ -30890,6 +30891,9 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 	}
 	*/
 	
+	if (message.text.toLowerCase() == "figurine collezionate")
+		return;
+	
 	connection.query('SELECT id, account_id, holiday, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		
@@ -32399,7 +32403,7 @@ bot.onText(/^Top|Torna alle top/i, function (message) {
 	var kb = {
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [['Le Mie Classifiche'], ['Creazioni', 'Settimanale', 'Giornaliera'], ['Abilità', 'Rango'], ['Imprese Completate', 'Missioni'], ['Albo Artefatti', 'Classifica Contrabbandiere'], ['Tempo Incarichi', 'Durata Coupon'], ['Impresa Globale', 'Globali Contribuite'], ['Potenziamenti Flaridion'], ['Triplette Imprese'], ['Cambia Top', 'Torna al menu']]
+			keyboard: [['Le Mie Classifiche'], ['Creazioni', 'Settimanale', 'Giornaliera'], ['Abilità', 'Rango'], ['Imprese Completate', 'Missioni'], ['Albo Artefatti', 'Classifica Contrabbandiere'], ['Tempo Incarichi', 'Durata Coupon'], ['Impresa Globale', 'Globali Contribuite'], ['Potenziamenti Flaridion'], ['Triplette Imprese'], ['Figurine Collezionate'], ['Cambia Top', 'Torna al menu']]
 		}
 	};
 
@@ -32631,16 +32635,31 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 															c = 1;
 															mypnt = 0;
 															mypos = 0;
-
-															var keyrank = {
-																parse_mode: "Markdown",
-																reply_markup: {
-																	resize_keyboard: true,
-																	keyboard: [['Top'], ['Torna al menu']]
+															
+															connection.query('SELECT nickname, COUNT(C.id) As points FROM card_inventory C, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND C.player_id = P.id GROUP BY player_id ORDER BY points  DESC', function (err, rows, fields) {
+																if (err) throw err;
+																for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+																	if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+																		mypos = c;
+																		mypnt = rows[i].points;
+																	}
+																	c++;
 																}
-															};
+																text = text + "\n*Figurine Collezionate*: " + mypos + "° con " + mypnt;
+																c = 1;
+																mypnt = 0;
+																mypos = 0;
 
-															bot.sendMessage(message.chat.id, text, keyrank);
+																var keyrank = {
+																	parse_mode: "Markdown",
+																	reply_markup: {
+																		resize_keyboard: true,
+																		keyboard: [['Top'], ['Torna al menu']]
+																	}
+																};
+
+																bot.sendMessage(message.chat.id, text, keyrank);
+															});
 														});
 													});
 												});
@@ -32726,12 +32745,14 @@ bot.onText(/Classifica Contrabbandiere/i, function (message) {
 	var totpnt = 0;
 	var myinfo = 0;
 	var size = 20;
+	
+	var query = 'SELECT nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND player.id NOT IN (1,3) ORDER BY total_cnt DESC';
 
 	connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (rows[0].top_min == 1) {
-			connection.query('SELECT nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND player.id NOT IN (1,3) ORDER BY total_cnt DESC', function (err, rows, fields) {
+			connection.query(query, function (err, rows, fields) {
 				if (err) throw err;
 
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
@@ -32750,7 +32771,70 @@ bot.onText(/Classifica Contrabbandiere/i, function (message) {
 				bot.sendMessage(message.chat.id, text, keyrank);
 			});
 		} else {
-			connection.query('SELECT nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND player.id NOT IN (1,3) ORDER BY total_cnt DESC', function (err, rows, fields) {
+			connection.query(query, function (err, rows, fields) {
+				if (err) throw err;
+
+				var range = 5;
+
+				var nickname = [];
+				var total_cnt = [];
+				var mypos = 0;
+
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+					nickname.push(rows[i].nickname);
+					total_cnt.push(rows[i].total_cnt);
+					if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase())
+						mypos = i;
+				}
+				for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
+					if (nickname[i] != undefined) {
+						if (i == mypos)
+							text += (i + 1) + "° <b>" + nickname[i] + "</b> (" + formatNumber(total_cnt[i]) + ")\n";
+						else
+							text += (i + 1) + "° " + nickname[i] + " (" + formatNumber(total_cnt[i]) + ")\n";
+					}
+				}
+
+				bot.sendMessage(message.chat.id, text, keyrank);
+			});
+		}
+	});
+});
+
+bot.onText(/Figurine Collezionate/i, function (message) {
+	var text = "Classifica figurine collezionate:\n";
+	var c = 1;
+	var mypnt = 0;
+	var totpnt = 0;
+	var myinfo = 0;
+	var size = 20;
+	
+	var query = 'SELECT nickname, COUNT(C.id) As total_cnt FROM card_inventory C, player P WHERE C.player_id = P.id AND account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) GROUP BY player_id ORDER BY total_cnt DESC';
+
+	connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (rows[0].top_min == 1) {
+			connection.query(query, function (err, rows, fields) {
+				if (err) throw err;
+
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+					if (c < 31) {
+						if (c < size + 1)
+							text = text + c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].total_cnt) + ")\n";
+					}
+					if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+						mypnt = rows[i].total_cnt;
+						myinfo = c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].total_cnt) + ")\n";
+					}
+					c++;
+				}
+				text = text + "\nTu:\n" + myinfo;
+
+				bot.sendMessage(message.chat.id, text, keyrank);
+			});
+		} else {
+			connection.query(query, function (err, rows, fields) {
 				if (err) throw err;
 
 				var range = 5;
@@ -38599,7 +38683,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 	});
 });
 
-bot.onText(/^rifugio|Torna al rifugio/i, function (message) {
+bot.onText(/^rifugio|Torna al rifugio|^ispezione$/i, function (message) {
 
 	if (message.text.indexOf("Elettricista") != -1)
 		return;
@@ -52929,13 +53013,16 @@ function setFinishedTravel(element, index, array) {
 					if (err) throw err;
 					var chest_id = mission_chest;
 
-					var qnt = 5;
+					var qnt = (7-element.travel_id)*15;
 					var exp = element.travel_id*10;
 
-					if (double == 1)
-						qnt = 10;
+					var double_text = "";
+					if (double == 1) {
+						qnt = qnt*2;
+						double_text = ", raddoppiati grazie al talento";
+					}
 
-					bot.sendMessage(chat_id, "Viaggio completato, hai ottenuto " + qnt + "x *" + rows[0].name + "* (" + rows[0].rarity_shortname + "), *" + formatNumber(money) + "* § e *" + exp + "* exp!", mark);
+					bot.sendMessage(chat_id, "Viaggio completato, hai ottenuto " + qnt + "x *" + rows[0].name + "* (" + rows[0].rarity_shortname + double_text + "), *" + formatNumber(money) + "* § e *" + exp + "* exp!", mark);
 
 					addChest(element.id, chest_id, qnt);
 					setExp(element.id, exp);
