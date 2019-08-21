@@ -167,6 +167,7 @@ var j4 = Schedule.scheduleJob('05 00 * * *', function () { //00:05 notte
 	resetRefill();
 	deleteSearch();
 	resetDragonReject();
+	deleteHistory();
 });
 
 var j5 = Schedule.scheduleJob('00 15 * * *', function () { //15:00
@@ -4477,7 +4478,7 @@ bot.onText(/casa dei giochi/i, function (message) {
 							};
 						});
 					} else if (answer.text.indexOf("Minatore") != -1) {
-						bot.sendMessage(message.chat.id, "*Minatore*\n\nIn questo gioco puoi tentare la fortuna scommettendo unità di Mana contro il misterioso Minatore. Se il tuo dado si avvicinerà più di quello avversario al numero sul tavolo, vincerai la stessa quantità di Mana giocato. In caso di parità la vittoria è assegnata al Minatore, i dadi sono di 10 facce.\n\nAl momento possiedi " + mana_txt, kbDice);
+						bot.sendMessage(message.chat.id, "*Minatore*\n\nIn questo gioco puoi tentare la fortuna scommettendo unità di Mana contro il misterioso Minatore. Se il tuo dado si avvicinerà più di quello avversario al numero sul tavolo, vincerai la stessa quantità di Mana giocato. In caso di parità riotterrai il Mana giocato, i dadi sono di 10 facce.\n\nAl momento possiedi " + mana_txt, kbDice);
 					}
 				};
 			});
@@ -16320,7 +16321,7 @@ bot.onText(/^\/pagateam (.+)|^\/pagateam/i, function (message, match) {
 	if (!checkSpam(message))
 		return;
 
-	var syntax = "Sintassi: '/pagateam monete' per inviare una certa quantità di monete ad ogni compagno di team, tranne te stesso";
+	var syntax = "Sintassi: '/pagateam monete,messaggio' per inviare una certa quantità di monete ad ogni compagno di team, tranne te stesso";
 	var text = "";
 
 	if (message.text.indexOf(" ") != -1)
@@ -26127,6 +26128,14 @@ bot.onText(/cambia admin/i, function (message) {
 									keyboard: [["Amministratore"], ["Vice-Amministratore"], ["Torna al team"]]
 								}
 							};
+							
+							var kbYesNo = {
+								parse_mode: "Markdown",
+								reply_markup: {
+									resize_keyboard: true,
+									keyboard: [["Si"], ["Torna al cambia admin"]]
+								}
+							};
 
 							bot.sendMessage(message.chat.id, "Quale autorità vuoi gestire?", kb2).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
@@ -26146,21 +26155,29 @@ bot.onText(/cambia admin/i, function (message) {
 														bot.sendMessage(message.chat.id, "Questo giocatore non esiste o non si trova in questo team.", back);
 														return;
 													}
-													connection.query('SELECT id, chat_id FROM player WHERE nickname = "' + player + '"', function (err, rows, fields) {
-														if (err) throw err;
-														var newAdmin = rows[0].id;
-														if (adminId == newAdmin) {
-															bot.sendMessage(message.chat.id, "Sei già amministratore!", back);
-															return;
+													
+													bot.sendMessage(message.chat.id, "Procedere al cambio admin?", kbYesNo).then(function () {
+														answerCallbacks[message.chat.id] = function (answer) {
+															if (answer.text.toLowerCase() != "si")
+																return;
+															
+															connection.query('SELECT id, chat_id FROM player WHERE nickname = "' + player + '"', function (err, rows, fields) {
+																if (err) throw err;
+																var newAdmin = rows[0].id;
+																if (adminId == newAdmin) {
+																	bot.sendMessage(message.chat.id, "Sei già amministratore!", back);
+																	return;
+																}
+																connection.query('UPDATE team_player SET role = 0 WHERE role = 1 AND team_id = ' + team_id, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+																connection.query('UPDATE team_player SET role = 1 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+																bot.sendMessage(message.chat.id, "Cambio admin completato!", back);
+																bot.sendMessage(rows[0].chat_id, "Sei stato nominato Amministratore del Team!", back);
+															});
 														}
-														connection.query('UPDATE team_player SET role = 0 WHERE role = 1 AND team_id = ' + team_id, function (err, rows, fields) {
-															if (err) throw err;
-														});
-														connection.query('UPDATE team_player SET role = 1 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
-															if (err) throw err;
-														});
-														bot.sendMessage(message.chat.id, "Cambio admin completato!", back);
-														bot.sendMessage(rows[0].chat_id, "Sei stato nominato Amministratore del Team!", back);
 													});
 												});
 											}
@@ -26179,30 +26196,38 @@ bot.onText(/cambia admin/i, function (message) {
 														bot.sendMessage(message.chat.id, "Questo giocatore non esiste o non si trova in questo team.", back);
 														return;
 													}
-													connection.query('SELECT id, chat_id FROM player WHERE nickname = "' + player + '"', function (err, rows, fields) {
-														if (err) throw err;
-														var newAdmin = rows[0].id;
-														var newChatId = rows[0].chat_id;
-														connection.query('SELECT COUNT(id) As cnt FROM team_player WHERE team_id = ' + team_id + ' AND role = 2', function (err, rows, fields) {
-															if (err) throw err;
-															var vice_num = rows[0].cnt;
-															if (vice_num >= max_vice) {
-																connection.query('UPDATE team_player SET role = 0 WHERE role = 2 AND team_id = ' + team_id, function (err, rows, fields) {
+													
+													bot.sendMessage(message.chat.id, "Procedere al cambio vice-admin?", kbYesNo).then(function () {
+														answerCallbacks[message.chat.id] = function (answer) {
+															if (answer.text.toLowerCase() != "si")
+																return;
+													
+															connection.query('SELECT id, chat_id FROM player WHERE nickname = "' + player + '"', function (err, rows, fields) {
+																if (err) throw err;
+																var newAdmin = rows[0].id;
+																var newChatId = rows[0].chat_id;
+																connection.query('SELECT COUNT(id) As cnt FROM team_player WHERE team_id = ' + team_id + ' AND role = 2', function (err, rows, fields) {
 																	if (err) throw err;
+																	var vice_num = rows[0].cnt;
+																	if (vice_num >= max_vice) {
+																		connection.query('UPDATE team_player SET role = 0 WHERE role = 2 AND team_id = ' + team_id, function (err, rows, fields) {
+																			if (err) throw err;
+																		});
+																		connection.query('UPDATE team_player SET role = 2 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
+																			if (err) throw err;
+																		});
+																		bot.sendMessage(message.chat.id, "Cambio Vice-Amministratore completato!", back);
+																		bot.sendMessage(newChatId, "Sei stato nominato Vice-Amministratore del Team!", back);
+																	} else {
+																		connection.query('UPDATE team_player SET role = 2 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
+																			if (err) throw err;
+																		});
+																		bot.sendMessage(message.chat.id, "Nuovo Vice-Amministratore impostato!", back);
+																		bot.sendMessage(newChatId, "Sei stato nominato Vice-Amministratore del Team!", back);
+																	}
 																});
-																connection.query('UPDATE team_player SET role = 2 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
-																	if (err) throw err;
-																});
-																bot.sendMessage(message.chat.id, "Cambio Vice-Amministratore completato!", back);
-																bot.sendMessage(newChatId, "Sei stato nominato Vice-Amministratore del Team!", back);
-															} else {
-																connection.query('UPDATE team_player SET role = 2 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
-																	if (err) throw err;
-																});
-																bot.sendMessage(message.chat.id, "Nuovo Vice-Amministratore impostato!", back);
-																bot.sendMessage(newChatId, "Sei stato nominato Vice-Amministratore del Team!", back);
-															}
-														});
+															});
+														}
 													});
 												});
 											}
@@ -42377,13 +42402,16 @@ function cercaTermine(message, param, player_id) {
 						param = param.slice(0, -2);
 					}
 
-					connection.query('SELECT name, rarity FROM item WHERE rarity = "' + param + '"' + extra + ' ORDER BY name', function (err, rows, fields) {
+					connection.query('SELECT name, rarity, craftable FROM item WHERE rarity = "' + param + '"' + extra + ' ORDER BY name', function (err, rows, fields) {
 						if (err) throw err;
 						if (Object.keys(rows).length > 0) {
 							var bottext = "Risultati per rarità '" + param + "'" + extra_txt + ":\n";
 							var iKeys = [];
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-								bottext = bottext + rows[i].name + " (" + rows[0].rarity + ")\n";
+								if (rows[i].craftable == 0)
+									bottext += "*" + rows[i].name + "* (" + rows[0].rarity + ")\n";
+								else
+									bottext += rows[i].name + " (" + rows[0].rarity + ")\n";
 								iKeys.push(["Cerca " + rows[i].name]);
 							}
 
@@ -42512,13 +42540,16 @@ function cercaTermine(message, param, player_id) {
 				return;
 			}
 			if (param.toLowerCase() == "drago") {
-				connection.query('SELECT name, rarity FROM item WHERE dragon_power <> 0 OR item.rarity = "D" OR (rarity = "UE" AND name LIKE "Stemma%") OR name LIKE "Scaglia Evolutiva%" ORDER BY name', function (err, rows, fields) {
+				connection.query('SELECT name, rarity, craftable FROM item WHERE dragon_power <> 0 OR item.rarity = "D" OR (rarity = "UE" AND name LIKE "Stemma%") OR name LIKE "Scaglia Evolutiva%" ORDER BY name', function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0) {
 						var bottext = "Risultati per categoria '" + param + "':\n";
 						var iKeys = [];
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-							bottext = bottext + rows[i].name + " (" + rows[i].rarity + ")\n";
+							if (rows[i].craftable == 0)
+								bottext += "*" + rows[i].name + "* (" + rows[i].rarity + ")\n";
+							else
+								bottext += rows[i].name + " (" + rows[i].rarity + ")\n";
 							iKeys.push(["Cerca " + rows[i].name]);
 						}
 
@@ -42572,13 +42603,16 @@ function cercaTermine(message, param, player_id) {
 			}
 
 			if (param.toLowerCase() == "consumabili") {
-				connection.query('SELECT name, rarity FROM item WHERE category IN (1,4) ORDER BY name', function (err, rows, fields) {
+				connection.query('SELECT name, rarity, craftable FROM item WHERE category IN (1,4) ORDER BY name', function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0) {
 						var bottext = "Risultati per categoria '" + param + "':\n";
 						var iKeys = [];
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-							bottext = bottext + rows[i].name + " (" + rows[i].rarity + ")\n";
+							if (rows[i].craftable == 0)
+								bottext += "*" + rows[i].name + "* (" + rows[i].rarity + ")\n";
+							else
+								bottext += rows[i].name + " (" + rows[i].rarity + ")\n";
 							iKeys.push(["Cerca " + rows[i].name]);
 						}
 
@@ -51874,6 +51908,12 @@ function deleteSearch() {
 		if (err) throw err;
 	});
 };
+
+function deleteHistory() {
+	connection.query('DELETE FROM market_direct_history WHERE TIMESTAMPDIFF(DAY, time, NOW()) > 180', function (err, rows, fields) {
+		if (err) throw err;
+	});
+}
 
 function checkCave() {
 	connection.query('SELECT nickname, reborn, boost_id, charm_id, id, cave_id, chat_id, boost_mission, cave_gem, global_end FROM player WHERE cave_time_end < NOW() AND cave_time_end IS NOT NULL', function (err, rows, fields) {
