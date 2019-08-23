@@ -2866,6 +2866,7 @@ CREATE TABLE `player` (
   `donation` int(11) NOT NULL DEFAULT '0',
   `real_name` varchar(64) DEFAULT NULL,
   `gender` varchar(1) NOT NULL DEFAULT 'M',
+  `show_time` tinyint(1) NOT NULL DEFAULT '0',
   `birth_date` date DEFAULT NULL,
   `creation_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -3645,4 +3646,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-08-21 12:00:04
+-- Dump completed on 2019-08-23  9:00:04
