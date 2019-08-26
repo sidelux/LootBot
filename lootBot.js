@@ -428,9 +428,15 @@ bot.on('message', function (message) {
 					connection.query('UPDATE player SET moon_coin = moon_coin + ' + amount + ' WHERE id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 					});
-					connection.query('INSERT INTO donation_history (player_id, amount, source) VALUES (' + player_id + ', ' + amount + ', "Telegram")', function (err, rows, fields) {
-						if (err) throw err;
-					});
+					if (luckyMode == 1) {
+						connection.query('INSERT INTO donation_history (player_id, amount, source) VALUES (' + player_id + ', ' + Math.round(amount/2) + ', "Telegram")', function (err, rows, fields) {
+							if (err) throw err;
+						});
+					} else {
+						connection.query('INSERT INTO donation_history (player_id, amount, source) VALUES (' + player_id + ', ' + amount + ', "Telegram")', function (err, rows, fields) {
+							if (err) throw err;
+						});
+					}
 				});
 			});
 		}
@@ -9913,10 +9919,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 												var text = "Nella stanza incontri un predone del deserto dall'aria docile, ti propone uno scambio, puoi accettarlo o ignorarlo e procedere.\n";
 
-												connection.query('SELECT I.id As item1id, I.name As item1n, I2.id As item2id, I2.name As item2n ' +
-																 'FROM dungeon_trade DT INNER JOIN item I ON DT.item_1 = I.id INNER JOIN item I2 ON DT.item_2 = I2.id ' +
-																 'WHERE DT.dungeon_id = ' + dungeon_id + ' AND DT.room_id = ' + room_id,
-																 function (err, rows, fields) {
+												connection.query('SELECT I.id As item1id, I.name As item1n, I2.id As item2id, I2.name As item2n FROM dungeon_trade DT INNER JOIN item I ON DT.item_1 = I.id INNER JOIN item I2 ON DT.item_2 = I2.id WHERE DT.dungeon_id = ' + dungeon_id + ' AND DT.room_id = ' + room_id, function (err, rows, fields) {
 													if (err) throw err;
 
 													if (Object.keys(rows).length == 0) {
@@ -9958,7 +9961,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	});
 																});
 																return;
-															} else if (ogg == "Torna al menu")
+															} else if ((ogg == "Torna al menu") || (ogg.indexOf("*") != -1))
 																return;
 															else {
 																bot.sendMessage(message.chat.id, "Sicuro di voler accettare lo scambio?", dYesNo).then(function () {
@@ -12973,6 +12976,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																					setAchievement(player_id, 71, danno);
 																			}
 
+																			if (danno > monster_life)
+																				danno = monster_life;
+																			
 																			var lifesum = monster_life - danno;
 																			if (lifesum <= 0) {
 																				connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0, room_id = room_id+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -24372,7 +24378,7 @@ bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^❤️$|^cc$|^cp$/i, fu
 			var pot3bag = getItemCnt(player_id, 94);
 
 			if (pot1bag+pot2bag+pot3bag == 0) {
-				bot.sendMessage(message.chat.id, "Non pozioni per recuperare salute", kbBack);
+				bot.sendMessage(message.chat.id, "Non disponi di pozioni per recuperare salute", kbBack);
 				return;
 			}
 
@@ -36348,6 +36354,7 @@ bot.onText(/weekend della follia/i, function (message) {
 		"> Puoi vendere più oggetti al Contrabbandiere\n" +
 		"> Gli incantamenti iniziati nel folle durano 1 settimana\n" +
 		"> Possono essere acquistati 3 pacchetti delle Offerte Giornaliere\n" +
+		"> Le ricompense degli incarichi sono aumentate del 50%\n" +
 
 		"\nI bonus possono cambiare di volta in volta!";
 
@@ -50789,6 +50796,9 @@ function setFinishedTeamMission(element, index, array) {
 							var isExp = 0;
 							var isItem = 0;
 							var isChest = 0;
+							
+							if (crazyMode == 1)
+								qnt += qnt*0.5;
 
 							// la query viene eseguita qnt volte
 
@@ -51979,13 +51989,13 @@ function resetDragonReject() {
 };
 
 function deleteSearch() {
-	connection.query('DELETE FROM search_history WHERE TIMESTAMPDIFF(DAY, time, NOW()) > 30', function (err, rows, fields) {
+	connection.query('DELETE FROM search_history WHERE TIMESTAMPDIFF(DAY, time, NOW()) > 60', function (err, rows, fields) {
 		if (err) throw err;
 	});
 };
 
 function deleteHistory() {
-	connection.query('DELETE FROM market_direct_history WHERE TIMESTAMPDIFF(DAY, time, NOW()) > 180', function (err, rows, fields) {
+	connection.query('DELETE FROM market_direct_history WHERE TIMESTAMPDIFF(DAY, time, NOW()) > 360', function (err, rows, fields) {
 		if (err) throw err;
 	});
 }
