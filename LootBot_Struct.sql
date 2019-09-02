@@ -590,6 +590,7 @@ CREATE TABLE `card_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL,
   `rarity` int(11) NOT NULL,
+  `creation_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
@@ -3364,7 +3365,7 @@ CREATE TABLE `team_safe` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
   `player_id` int(11) NOT NULL,
-  `money` int(11) NOT NULL,
+  `money` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `team_safe_team_id` (`team_id`),
   KEY `team_safe_player_id` (`player_id`),
@@ -3735,4 +3736,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-09-02  9:00:04
+-- Dump completed on 2019-09-02 12:00:05

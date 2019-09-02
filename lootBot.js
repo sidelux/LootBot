@@ -16355,7 +16355,7 @@ bot.onText(/cassaforte/i, function (message, match) {
 			/*
 			if ((team_id != 3) && (team_id != 277) && (team_id != 497)) {
 				if (message.from.id != 20471035) {
-					bot.sendMessage(message.chat.id, "Costruzione in corso...");
+					bot.sendMessage(message.chat.id, "Manutenzione");
 					return;
 				}
 			}
@@ -16414,6 +16414,9 @@ bot.onText(/cassaforte/i, function (message, match) {
 						if (answer.text == "Deposita") {
 							bot.sendMessage(message.chat.id, "Quante monete vuoi depositare?\nNe possiedi " + formatNumber(money), kbBack).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
+									if (answer.text == "Torna al menu")
+										return;
+									
 									if (isNaN(parseInt(answer.text))) {
 										bot.sendMessage(message.from.id, "Valore non valido", kbBack);
 										return;
@@ -16605,12 +16608,14 @@ bot.onText(/magazzino/i, function (message, match) {
 			var team_id = rows[0].team_id;
 			var role = rows[0].role;
 			
+			/*
 			if ((team_id != 3) && (team_id != 277) && (team_id != 497)) {
 				if (message.from.id != 20471035) {
-					bot.sendMessage(message.chat.id, "Costruzione in corso...");
+					bot.sendMessage(message.chat.id, "Manutenzione");
 					return;
 				}
 			}
+			*/
 			
 			var kb = {
 				parse_mode: "HTML",

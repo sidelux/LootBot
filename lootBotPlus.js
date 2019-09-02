@@ -9328,7 +9328,7 @@ bot.onText(/^\/figurina (.+)|^\/figurina/, function (message, match) {
 		
 		var player_id = rows[0].id;
 		
-		connection.query('SELECT id, name, rarity FROM card_list WHERE name LIKE "%' + match[1] + '%" ORDER BY name', function (err, rows, fields) {
+		connection.query('SELECT id, name, rarity, creation_date FROM card_list WHERE name LIKE "%' + match[1] + '%" ORDER BY name', function (err, rows, fields) {
 			if (err) throw err;
 			
 			if (Object.keys(rows).length == 0) {
@@ -9354,7 +9354,13 @@ bot.onText(/^\/figurina (.+)|^\/figurina/, function (message, match) {
 				var dist = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE quantity > 0 AND card_id = ' + rows[i].id);
 				var tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE quantity > 0');
 				
-				text += "> <b>" + rows[i].name + "</b> (" + rows[i].rarity + ")" + poss + "\n In circolazione: " + formatNumber(dist[0].cnt) + "\n Distribuzione: " + Math.round(dist[0].cnt/tot[0].cnt*100) + "%\n\n";
+				var creation_date = "Prima del 09/19";
+				if (rows[0].creation_date != null) {
+					var d = new Date(rows[0].creation_date);
+					creation_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+				}
+				
+				text += "> <b>" + rows[i].name + "</b> (" + rows[i].rarity + ")" + poss + "\n Data creazione: " + creation_date + "\n In circolazione: " + formatNumber(dist[0].cnt) + "\n Distribuzione: " + Math.round(dist[0].cnt/tot[0].cnt*100) + "%\n\n";
 			}
 
 			bot.sendMessage(message.chat.id, text, html);
