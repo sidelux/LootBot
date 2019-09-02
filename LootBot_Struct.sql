@@ -570,6 +570,7 @@ CREATE TABLE `card_inventory` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
   `card_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `card_no_duplicate` (`player_id`,`card_id`),
   KEY `card_inventory_card_id` (`card_id`),
@@ -931,7 +932,7 @@ CREATE TABLE `dragon_dummy` (
   `evolved` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `type` (`type`)
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -992,7 +993,7 @@ CREATE TABLE `dragon_top_dummy` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `dragon_id` (`dragon_id`),
   CONSTRAINT `DRAGONID_VETTAD` FOREIGN KEY (`dragon_id`) REFERENCES `dragon_dummy` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1691,7 +1692,7 @@ CREATE TABLE `global_msg` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `chat_id` bigint(16) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3353,6 +3354,94 @@ SET character_set_client = utf8;
 SET character_set_client = @saved_cs_client;
 
 --
+-- Table structure for table `team_safe`
+--
+
+DROP TABLE IF EXISTS `team_safe`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `team_safe` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `team_id` int(11) NOT NULL,
+  `player_id` int(11) NOT NULL,
+  `money` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `team_safe_team_id` (`team_id`),
+  KEY `team_safe_player_id` (`player_id`),
+  CONSTRAINT `team_safe_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `team_safe_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `team_safe_log`
+--
+
+DROP TABLE IF EXISTS `team_safe_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `team_safe_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `team_id` int(11) NOT NULL,
+  `player_id` int(11) NOT NULL,
+  `money` int(11) NOT NULL,
+  `insert_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `team_safe_log_team_id` (`team_id`),
+  KEY `team_safe_log_player_id` (`player_id`),
+  CONSTRAINT `team_safe_log_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `team_safe_log_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `team_store`
+--
+
+DROP TABLE IF EXISTS `team_store`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `team_store` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `team_id` int(11) NOT NULL,
+  `player_id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `team_store_team_id` (`team_id`),
+  KEY `team_store_player_id` (`player_id`),
+  KEY `team_store_item_id` (`item_id`),
+  CONSTRAINT `team_store_item_id` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `team_store_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `team_store_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `team_store_log`
+--
+
+DROP TABLE IF EXISTS `team_store_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `team_store_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `team_id` int(11) NOT NULL,
+  `player_id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `insert_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `team_safe_log_team_id` (`team_id`),
+  KEY `team_safe_log_player_id` (`player_id`),
+  KEY `team_safe_log_item_id` (`item_id`),
+  CONSTRAINT `team_store_log_item_id` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `team_store_log_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `team_store_log_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `tear`
 --
 
@@ -3646,4 +3735,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-08-26  9:00:04
+-- Dump completed on 2019-09-02  9:00:04
