@@ -1530,6 +1530,7 @@ bot.onText(/^\/mercatini/, function (message) {
 					"@argonautashop - Piccole lotterie, pietre a basso prezzo e eventi carini.\n" +
 					"<a href='https://t.me/joinchat/AAAAAFfCIOoiRA2xApWn3A'>Scommesse sulle globali</a> - Scommetti sui risultati delle globali!\n" +
 					"<a href='https://t.me/joinchat/G5bsZ0ZL_eeCWEMf_88Qvg'>Scommesse/Scambi</a> - Tornei, giochi, dadi, tiro con arco di tutto e di più\n" +
+					"@ildracomante - Craftati del Contrabbandiere e divertenti giochi a premi\n" +
 
 					"\nVisita anche /gruppi. Per comparire qua chiedi all'amministratore.", html);
 });

@@ -557,12 +557,12 @@ var mainKeys = [];
 var mainKeysR = [];
 var mainKeysR2 = [];
 
-var topOpen = "🚫";
+var topOpen = "Assalto 🐺";
 if (checkDragonTopOn == 1)
-	topOpen = "🔥";
+	topOpen = "Vette 🐲🔥";
 
 mainKeys = [['⚔ Missione ⚔'],
-			['Dungeon 🛡', 'Vette 🐲 ' + topOpen],
+			['Dungeon 🛡', topOpen],
 			['Alchimia ⚗️', 'Rifugio 🔦'],
 			['Zaino 🎒', 'Piazza 💰', 'Scrigni 🔑'],
 			['Giocatore 👤', 'Team ⚜️'],
@@ -16366,7 +16366,7 @@ bot.onText(/cassaforte/i, function (message, match) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						keyboard: [['Deposita'], ['Torna al menu']]
+						keyboard: [['Deposita'], ['Torna al team']]
 					}
 				};
 			} else {
@@ -16374,7 +16374,7 @@ bot.onText(/cassaforte/i, function (message, match) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						keyboard: [['Deposita', 'Ritira'], ['Log'], ['Torna al menu']]
+						keyboard: [['Deposita', 'Ritira'], ['Log'], ['Torna al team']]
 					}
 				};
 			}
@@ -16409,12 +16409,12 @@ bot.onText(/cassaforte/i, function (message, match) {
 				if (safe_tot > 0)
 					current = "\nContiene in totale " + formatNumber(safe_tot) + " §";
 
-				bot.sendMessage(message.chat.id, "Cosa vuoi fare con la cassaforte?" + current + "\n\n" + text, kb).then(function () {
+				bot.sendMessage(message.chat.id, "La <b>Cassaforte</b> serve ad avere un luogo comune per depositare le proprie monete, così che possano essere poi utilizzate dall'amministrato per vari scopi\nCosa vuoi fare con la cassaforte?" + current + "\n\n" + text, kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text == "Deposita") {
 							bot.sendMessage(message.chat.id, "Quante monete vuoi depositare?\nNe possiedi " + formatNumber(money), kbBack).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
-									if (answer.text == "Torna al menu")
+									if (answer.text == "Torna alla cassaforte")
 										return;
 									
 									if (isNaN(parseInt(answer.text))) {
@@ -16621,7 +16621,7 @@ bot.onText(/magazzino/i, function (message, match) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					keyboard: [['Deposita'], ['Torna al menu']]
+					keyboard: [['Deposita'], ['Torna al team']]
 				}
 			};
 			
@@ -16630,7 +16630,7 @@ bot.onText(/magazzino/i, function (message, match) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						keyboard: [['Deposita'], ['Log'], ['Torna al menu']]
+						keyboard: [['Deposita'], ['Log'], ['Torna al team']]
 					}
 				};
 			}
@@ -16651,18 +16651,20 @@ bot.onText(/magazzino/i, function (message, match) {
 				}
 			};
 			
-			connection.query('SELECT P.nickname, I.name, T.quantity FROM team_store T, player P, item I WHERE T.player_id = P.id AND T.item_id = I.id AND team_id = ' + team_id, function (err, rows, fields) {
+			connection.query('SELECT P.nickname, I.name, T.quantity FROM team_store T, player P, item I WHERE T.player_id = P.id AND T.item_id = I.id AND team_id = ' + team_id + ' ORDER BY I.name', function (err, rows, fields) {
 				if (err) throw err;
 				
 				var text = "";
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 					text += "> " + rows[i].nickname + " - " + rows[i].quantity + "x " + rows[i].name + "\n";
 
-				bot.sendMessage(message.chat.id, "Cosa vuoi fare con il magazzino?\n\n" + text, kb).then(function () {
+				bot.sendMessage(message.chat.id, "Il <b>Magazzino</b> è un deposito in cui tutti i membri del team possono lasciare i propri oggetti per far sì che vengano automaticamente utilizzati solo per migliorare le postazioni nell'Assalto.\nCosa vuoi fare con il magazzino?\n\n" + text, kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text == "Deposita") {
 							bot.sendMessage(message.chat.id, "Quale oggetto vuoi depositare?", kbBack).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
+									if (answer.text == "Torna al magazzino")
+										return;
 									connection.query('SELECT id, name FROM item WHERE ((craftable = 1 AND rarity IN ("NC", "R", "UR", "L", "E")) OR (name LIKE "Pietra%" AND rarity = "D")) AND name = "' + answer.text + '"', function (err, rows, fields) {
 										if (err) throw err;
 										
@@ -19795,7 +19797,10 @@ bot.onText(/team/i, function (message) {
 											// ADMIN
 											var show_type = "Aperto";
 											var show_details = "Non Visibili";
-											iKeys.push(["Assalto 🐺 (Beta)", "Incarichi 📜"]);
+											if (checkDragonTopOn == 0)
+												iKeys.push(["Assalto 🐺", "Incarichi 📜"]);
+											else
+												iKeys.push(["Incarichi 📜"]);
 											iKeys.push(["Dettaglio Membri 👥"]);
 											iKeys.push(["Cassaforte 💰", "Magazzino 📦"]);
 											iKeys.push(["Hall of Fame 🏆", "Liste Membri 🔎"]);
@@ -19817,7 +19822,10 @@ bot.onText(/team/i, function (message) {
 											iKeys.push(["Torna al menu"]);
 										} else {
 											// UTENTE
-											iKeys.push(["Assalto 🐺 (Beta)", "Incarichi 📜"]);
+											if (checkDragonTopOn == 0)
+												iKeys.push(["Assalto 🐺", "Incarichi 📜"]);
+											else
+												iKeys.push(["Incarichi 📜"]);
 											if (team_details == 1)
 												iKeys.push(["Dettaglio Membri 👥"]);
 											iKeys.push(["Cassaforte 💰", "Magazzino 📦"]);
@@ -20000,7 +20008,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 								iKeys.push([rows[i].title]);
 							}
 
-							text += "Gli incarichi vengono aggiornati ogni tanto, considera la versione Beta per segnalare i problemi che riscontri. Durante gli incarichi non puoi svolgere missioni, viaggi o itinerari. La notte dura dalle 23:00 alle 9:00.";
+							text += "La notte dura dalle 23:00 alle 9:00.";
 
 							if (isAdmin == 1)
 								iKeys.push(["Gestisci Party 👥", "Il mio Party 👥"], ["Torna al team", "Torna al menu"])
@@ -21903,9 +21911,11 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																						console.log(storeCntToRemove[i], cntToRemove[i], rows[i].quantity);
 																					}
 																					
+																					/*
 																					console.log(storeCntToRemove);
 																					console.log(cntToRemove);
 																					console.log("Righe: " + Object.keys(rows).length);
+																					*/
 
 																					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 																						console.log(i, storeCntToRemove[i], cntToRemove[i]);
@@ -41062,7 +41072,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 						else
 							text += formatNumber(cave_count) + " su " + formatNumber(progCave[end]) + " cave esplorate (" + formatNumber(progCaveRew[end]) + " §)\n";
 
-						var time_end = new Date("2019-08-01 12:00:00");
+						var time_end = new Date("2019-10-01 12:00:00");
 						var now = new Date();
 						var diffD = Math.floor(((time_end - now) / 1000) / 60 / 60 / 24);
 						var diffH = Math.floor(((time_end - now) / 1000) / 60 / 60);
@@ -41076,7 +41086,6 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 							diff = diffD + " giorni";
 
 						text += "\n<b>Impresa globale</b>\n";
-
 
 						var d = new Date();
 						if ((d.getMonth()+1 == 8) || ((d.getMonth()+1 == 7) && (d.getDate() == 31)))
@@ -42861,9 +42870,9 @@ function checkKeyboard() {
 		mainKeysR2.splice(1, 0, ['🎄 Villaggio Innevato (Evento) 🌨']);
 	}
 	if (gnomorra == 1) {
-		mainKeys.splice(0, 0, ['📄 Gnomorra Lootiana (Beta) (Evento) 🈵']);
-		mainKeysR.splice(1, 0, ['📄 Gnomorra Lootiana (Beta) (Evento) 🈵']);
-		mainKeysR2.splice(1, 0, ['📄 Gnomorra Lootiana (Beta) (Evento) 🈵']);
+		mainKeys.splice(0, 0, ['📄 Gnomorra Lootiana (Evento) 🈵']);
+		mainKeysR.splice(1, 0, ['📄 Gnomorra Lootiana (Evento) 🈵']);
+		mainKeysR2.splice(1, 0, ['📄 Gnomorra Lootiana (Evento) 🈵']);
 	}
 
 	main_html = {
@@ -42975,6 +42984,10 @@ function deactivateEvent() {
 			return;
 
 		var event = rows[0].next_event_name;
+		
+		var d = new Date();
+		if ((event == "villa") && (d.getDay() != 3))	// se non è mercoledì
+			return;
 
 		if (event == "wanted") {
 			connection.query('UPDATE event_wanted_status SET wanted_id = 0', function (err, rows, fields) {
@@ -50171,7 +50184,7 @@ function setEvents(element, index, array) {
 		});
 	} else if (rand == 23) {
 		var damage = Math.round(getRandomArbitrary(level*10, level*50));;
-		connection.query('SELECT life, nickname, chat_id, id FROM player WHERE craft_count > 20 AND holiday = 0 ORDER BY RAND()', function (err, rows, fields) {
+		connection.query('SELECT life, nickname, chat_id, id FROM player WHERE craft_count > 20 AND holiday = 0 AND id != ' + player_id + ' ORDER BY RAND()', function (err, rows, fields) {
 			if (err) throw err;
 			if (rows[0].life - damage <= 0)
 				return;
