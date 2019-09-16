@@ -4594,9 +4594,9 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 									massive = paramQuery[0].massive;
 									protected = paramQuery[0].protected;
 								}
-								connection.query('INSERT INTO public_shop (player_id, code, item_id, price, quantity, time_end, public, massive, protected) VALUES (' + player_id + ',' + code + ',' + item_id + ',' + price + ',' + quantity + ',"' + long_date + '",' + privacy + ',' + massive + ', ' + protected + ')', function (err, rows, fields) {
-									if (err) throw err;
-								});
+								
+								// serve sincrono altrimenti non riesce a controllare l'esistenza dell'oggetto
+								connection_sync.query('INSERT INTO public_shop (player_id, code, item_id, price, quantity, time_end, public, massive, protected) VALUES (' + player_id + ',' + code + ',' + item_id + ',' + price + ',' + quantity + ',"' + long_date + '",' + privacy + ',' + massive + ', ' + protected + ')');
 
 								text += "Oggetto aggiunto: " + quantity + "x " + item_name + " a " + formatNumber(price) + " §\n";
 								cnt++;
@@ -9356,8 +9356,8 @@ bot.onText(/^\/figurina (.+)|^\/figurina/, function (message, match) {
 				var tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE quantity > 0');
 				
 				var creation_date = "Prima del 09/19";
-				if (rows[0].creation_date != null) {
-					var d = new Date(rows[0].creation_date);
+				if (rows[i].creation_date != null) {
+					var d = new Date(rows[i].creation_date);
 					creation_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
 				}
 				
@@ -10002,7 +10002,6 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, account_
 				if (err) throw err;
 
 				var team_name = "-";
-
 				if (Object.keys(rows).length == 0) {
 					if (heist_limit >= 3) {
 						bot.sendMessage(message.from.id, "Il bersaglio non possiede un team e ha raggiunto il limite di ispezioni subite. Riprova domani.");

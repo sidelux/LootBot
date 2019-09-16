@@ -11870,7 +11870,12 @@ bot.onText(/stato dungeon|statodg/i, function (message) {
 					var cursed_text = "";
 					if (cursed == 1)
 						cursed_text = " 🧨";
-					bot.sendMessage(message.chat.id, "<b>" + dungeon_name + "</b>" + cursed_text + "\nCi sono " + player_num + " esploratori al suo interno\nTi trovi nella stanza numero " + room_id + last_dir_txt + "\nCrollo dungeon tra " + toTime(dungeon_finish, 0) + "\nCrollo istanza tra " + toTime(instance_tot, 0) + players, dBack);
+					var istance_time = "";
+					if (instance_tot < 0)
+						istance_time = "<b>imminente</b>";
+					else
+						istance_time = "tra " + toTime(instance_tot, 0);
+					bot.sendMessage(message.chat.id, "<b>" + dungeon_name + "</b>" + cursed_text + "\nCi sono " + player_num + " esploratori al suo interno\nTi trovi nella stanza numero " + room_id + last_dir_txt + "\nCrollo dungeon tra " + toTime(dungeon_finish, 0) + "\nCrollo istanza " + istance_time + players, dBack);
 				});
 			});
 		});
@@ -16409,7 +16414,7 @@ bot.onText(/cassaforte/i, function (message, match) {
 				if (safe_tot > 0)
 					current = "\nContiene in totale " + formatNumber(safe_tot) + " §";
 
-				bot.sendMessage(message.chat.id, "La <b>Cassaforte</b> serve ad avere un luogo comune per depositare le proprie monete, così che possano essere poi utilizzate dall'amministrato per vari scopi\nCosa vuoi fare con la cassaforte?" + current + "\n\n" + text, kb).then(function () {
+				bot.sendMessage(message.chat.id, "La <b>Cassaforte</b> serve ad avere un luogo comune per depositare le proprie monete, così che possano essere poi utilizzate dall'amministratore per vari scopi\nCosa vuoi fare con la cassaforte?" + current + "\n\n" + text, kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text == "Deposita") {
 							bot.sendMessage(message.chat.id, "Quante monete vuoi depositare?\nNe possiedi " + formatNumber(money), kbBack).then(function () {
@@ -39558,18 +39563,18 @@ bot.onText(/Ispezioni Passate/i, function (message) {
 				if (message.from.username == rows[i].from_nick) {
 					if (limitSent < limit) {
 						if (rows[i].fail == 0)
-							fail = "Vinta";
+							fail = "Vinta ✅";
 						else
-							fail = "Persa";
+							fail = "Persa ❌";
 						sent += "> " + fail + " contro <i>" + rows[i].to_nick + "</i> alle " + long_date + "\n";
 						limitSent++;
 					}
 				} else {
 					if (limitReceived < limit) {
 						if (rows[i].fail == 0)
-							fail = "Persa";
+							fail = "Persa ❌";
 						else
-							fail = "Vinta";
+							fail = "Vinta ✅";
 						received += "> " + fail + " contro <i>" + rows[i].from_nick + "</i> alle " + long_date + "\n";
 						limitReceived++;
 					}
@@ -47187,6 +47192,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 										chest7 += 3;
 								}
 
+								/*
 								if (rows[i].global_end == 1) {
 									chest1 = chest1*2;
 									chest2 = chest2*2;
@@ -47198,6 +47204,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 									chest8 = chest8*2;
 									chest9 = chest9*2;
 								}
+								*/
 
 								// costruzione testo e consegna
 								// console.log("paView " + paView);
@@ -47291,7 +47298,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 										}
 									} else {
 										var tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_list');
-										var have_tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE player_id = ' + rows[i].id);
+										var have_tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE quantity > 0 AND player_id = ' + rows[i].id);
 										
 										var randVal = Math.random()*100;
 										var prob = (100-card[0].rarity*10)*0.5;	// 1 => 45, 9 => 5
