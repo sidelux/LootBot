@@ -21913,7 +21913,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																							cntToRemove.push(0);
 																						}
 																						
-																						console.log(storeCntToRemove[i], cntToRemove[i], rows[i].quantity);
+																						// console.log(storeCntToRemove[i], cntToRemove[i], rows[i].quantity);
 																					}
 																					
 																					/*
@@ -21923,9 +21923,9 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																					*/
 
 																					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-																						console.log(i, storeCntToRemove[i], cntToRemove[i]);
+																						// console.log(i, storeCntToRemove[i], cntToRemove[i]);
 																						if (storeCntToRemove[i] > 0) {
-																							console.log("delItemStore " + rows[i].item_id + " " + storeCntToRemove[i]);
+																							// console.log("delItemStore " + rows[i].item_id + " " + storeCntToRemove[i]);
 																							var storeItem = connection_sync.query('SELECT id, quantity FROM team_store WHERE team_id = ' + team_id + ' AND item_id = ' + rows[i].item_id);
 																							quantityReq = storeCntToRemove[i];
 																							
@@ -21935,7 +21935,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																									connection.query('DELETE FROM team_store WHERE id = ' + storeItem[k].id, function (err, rows, fields) {
 																										if (err) throw err;
 																									});
-																									console.log("fatto, break");
+																									// console.log("fatto, break");
 																									break;
 																								} else {
 																									if (quantityReq >= storeItem[k].quantity) {
@@ -21943,14 +21943,14 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																										connection.query('DELETE FROM team_store WHERE id = ' + storeItem[k].id, function (err, rows, fields) {
 																											if (err) throw err;
 																										});
-																										console.log("fatto, continuo");
+																										// console.log("fatto, continuo");
 																										quantityReq -= storeItem[k].quantity;
 																									} else {
 																										console.log("aggiorno quantità magazzino: UPDATE team_store SET quantity = quantity-" + quantityReq + " WHERE id = " + storeItem[k].id);
 																										connection.query('UPDATE team_store SET quantity = quantity-' + quantityReq + ' WHERE id = ' + storeItem[k].id, function (err, rows, fields) {
 																											if (err) throw err;
 																										});
-																										console.log("fatto, break");
+																										// console.log("fatto, break");
 																										break;
 																									}
 																								}
@@ -21958,11 +21958,11 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																						}
 																							
 																						if (cntToRemove[i] > 0) {
-																							console.log("delItem " + rows[i].item_id + " " + cntToRemove[i]);
+																							// console.log("delItem " + rows[i].item_id + " " + cntToRemove[i]);
 																							delItem(player_id, rows[i].item_id, cntToRemove[i]);
 																						}
 																						
-																						console.log("Finito " + i);
+																						// console.log("Finito " + i);
 																					}
 
 																					connection.query('UPDATE assault_place_team SET time_end = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE place_id = ' + selected + ' AND team_id = ' + team_id, function (err, rows, fields) {
@@ -26649,12 +26649,35 @@ bot.onText(/cambia admin/i, function (message) {
 					adminId = player_id;
 				}
 
-				connection.query('SELECT level FROM team WHERE id = ' + team_id, function (err, rows, fields) {
+				connection.query('SELECT level, child_team FROM team WHERE id = ' + team_id, function (err, rows, fields) {
 					if (err) throw err;
 					var level = rows[0].level;
+					var child_team = rows[0].child_team;
+					
 					if (isAdmin == 1) {
-						var iKeys = [];
+						if (child_team != null) {
+							var iKeysChild = [];
+							var childAdmin = "";
+							var child_members = connection_sync.query('SELECT player.nickname, role FROM team_player, player WHERE team_player.player_id = player.id AND team_id = ' + child_team);
+							for (var i = 0, len = Object.keys(child_members).length; i < len; i++) {
+								if (child_members[i].role == 0)
+									iKeysChild.push([child_members[i].nickname]);
+								else if (child_members[i].role == 1)
+									childAdmin = child_members[i].nickname;
+							}
 
+							iKeysChild.push(["Torna al team"]);
+
+							var kbChild = {
+								parse_mode: "Markdown",
+								reply_markup: {
+									resize_keyboard: true,
+									keyboard: iKeysChild
+								}
+							};
+						}
+						
+						var iKeys = [];
 						connection.query('SELECT player.nickname, role FROM team_player, player WHERE team_player.player_id = player.id AND player_id != ' + player_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
 							if (err) throw err;
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
@@ -26672,13 +26695,23 @@ bot.onText(/cambia admin/i, function (message) {
 								}
 							};
 
-							var kb2 = {
-								parse_mode: "Markdown",
-								reply_markup: {
-									resize_keyboard: true,
-									keyboard: [["Amministratore"], ["Vice-Amministratore"], ["Torna al team"]]
-								}
-							};
+							if (child_team == null) {
+								var kb2 = {
+									parse_mode: "Markdown",
+									reply_markup: {
+										resize_keyboard: true,
+										keyboard: [["Amministratore"], ["Vice-Amministratore"], ["Torna al team"]]
+									}
+								};
+							} else {
+								var kb2 = {
+									parse_mode: "Markdown",
+									reply_markup: {
+										resize_keyboard: true,
+										keyboard: [["Amministratore"], ["Amministratore Accademia"], ["Vice-Amministratore"], ["Torna al team"]]
+									}
+								};
+							}
 
 							var kbYesNo = {
 								parse_mode: "Markdown",
@@ -26727,6 +26760,47 @@ bot.onText(/cambia admin/i, function (message) {
 																});
 																bot.sendMessage(message.chat.id, "Cambio admin completato!", back);
 																bot.sendMessage(rows[0].chat_id, "Sei stato nominato Amministratore del Team!", back);
+															});
+														}
+													});
+												});
+											}
+										});
+									} else if (answer.text == "Amministratore Accademia") {
+										if (child_team == null) {
+											bot.sendMessage(message.chat.id, "Non hai ancora collegato un'accademia a questo team.", back);
+											return;
+										}
+										
+										bot.sendMessage(message.chat.id, "Chi vuoi eleggere Amministratore dell'Accademia al posto di " + childAdmin + "?\nOtterrà tutti i poteri di gestione dell'accademia", kbChild).then(function () {
+											answerCallbacks[message.chat.id] = function (answer) {
+												if (answer.text == "Torna al team")
+													return;
+
+												var player = answer.text;
+												connection.query('SELECT player.nickname FROM team_player, player WHERE team_player.player_id = player.id AND team_id = ' + child_team + ' AND nickname = "' + player + '"', function (err, rows, fields) {
+													if (err) throw err;
+													if (Object.keys(rows).length == 0) {
+														bot.sendMessage(message.chat.id, "Questo giocatore non esiste o non si trova nell'accademia.", back);
+														return;
+													}
+
+													bot.sendMessage(message.chat.id, "Procedere al cambio admin dell'accademia?", kbYesNo).then(function () {
+														answerCallbacks[message.chat.id] = function (answer) {
+															if (answer.text.toLowerCase() != "si")
+																return;
+
+															connection.query('SELECT id, chat_id FROM player WHERE nickname = "' + player + '"', function (err, rows, fields) {
+																if (err) throw err;
+																var newAdmin = rows[0].id;
+																connection.query('UPDATE team_player SET role = 0 WHERE role = 1 AND team_id = ' + child_team, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+																connection.query('UPDATE team_player SET role = 1 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+																bot.sendMessage(message.chat.id, "Cambio admin accademia completato!", back);
+																bot.sendMessage(rows[0].chat_id, "Sei stato nominato Amministratore del Team dal Capo del team Madre!", back);
 															});
 														}
 													});
@@ -39245,12 +39319,12 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 
 														var extra = "";
 														var extra2 = "";
-														if (key > 0) {
-															extra = " e " + key + "x Chiave Mistica 🗝";
-															if (key_lost > 0) {
-																extra += " (direttamente sgraffignata all'avversario!)";
+														if (key+key_lost > 0) {
+															extra = " e " + (key+key_lost) + "x Chiave Mistica 🗝";
+															if (key > 0)
 																extra2 = " ed 1x Chiave Mistica 🗝";
-															}
+															if (key_lost > 0)
+																extra += " (1 direttamente sgraffignata all'avversario!)";
 															extra += "!";
 															setAchievement(player_id, 65, 1);
 														}
