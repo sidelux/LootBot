@@ -19802,7 +19802,7 @@ bot.onText(/team/i, function (message) {
 											// ADMIN
 											var show_type = "Aperto";
 											var show_details = "Non Visibili";
-											if (checkDragonTopOn == 0)
+											if (checkDragonTopOn == 1)
 												iKeys.push(["Assalto 🐺", "Incarichi 📜"]);
 											else
 												iKeys.push(["Incarichi 📜"]);
@@ -19827,7 +19827,7 @@ bot.onText(/team/i, function (message) {
 											iKeys.push(["Torna al menu"]);
 										} else {
 											// UTENTE
-											if (checkDragonTopOn == 0)
+											if (checkDragonTopOn == 1)
 												iKeys.push(["Assalto 🐺", "Incarichi 📜"]);
 											else
 												iKeys.push(["Incarichi 📜"]);
