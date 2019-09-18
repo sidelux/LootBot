@@ -45978,7 +45978,7 @@ function getRankAt(message, size) {
 
 				var nickname = [];
 				var total_cnt = [];
-				var mypos = 0;
+				var mypos = -1;
 
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					nickname.push(rows[i].nickname);
@@ -45986,7 +45986,7 @@ function getRankAt(message, size) {
 					if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase())
 						mypos = i;
 				}
-				if (mypos == 0) {
+				if (mypos == -1) {
 					bot.sendMessage(message.chat.id, "Non hai ancora utilizzato alcun Potenziamento Flaridion, per visualizzare la classifica completa cambia visualizzazione", keyrank);
 					return;
 				}
