@@ -25239,7 +25239,7 @@ bot.onText(/potenziamenti anima/i, function (message) {
 																connection.query('SELECT P.chat_id FROM team_player TP, player P WHERE TP.player_id = P.id AND P.id != ' + player_id + ' AND TP.team_id = ' + team_id, function (err, rows, fields) {
 																	if (err) throw err;
 																	for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-																		bot.sendMessage(rows[i].chat_id, message.from.username + " ha attivato il potenziamento temporaneo <b>" + name + "</b>!", kbBackHtml);
+																		bot.sendMessage(rows[i].chat_id, message.from.username + " ha attivato il potenziamento temporaneo <b>" + name + "</b>!", html);
 																});
 															});
 														});
