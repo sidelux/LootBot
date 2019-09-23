@@ -17325,8 +17325,8 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																return;
 															}
 
-															if (reject == 1) {
-																bot.sendMessage(message.chat.id, "Hai già rinunciato ad un incontro oggi", kbBack);
+															if (reject >= 3) {
+																bot.sendMessage(message.chat.id, "Hai già rinunciato a 3 incontri oggi", kbBack);
 																return;
 															}
 
@@ -17349,7 +17349,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																			d.setMinutes(d.getMinutes() + 15);
 																			var long_date2 = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-																			connection.query('UPDATE dragon_top_status SET enemy_dragon_id = NULL, battle_time = NULL, no_match_time = "' + long_date + '", reject = 1 WHERE dragon_id = ' + dragon_id, function (err, rows, fields) {
+																			connection.query('UPDATE dragon_top_status SET enemy_dragon_id = NULL, battle_time = NULL, no_match_time = "' + long_date + '", reject = reject+1 WHERE dragon_id = ' + dragon_id, function (err, rows, fields) {
 																				if (err) throw err;
 																				connection.query('UPDATE dragon_top_status SET enemy_dragon_id = NULL, battle_time = NULL, no_match_time = "' + long_date2 + '" WHERE dragon_id = ' + enemy_dragon_id, function (err, rows, fields) {
 																					if (err) throw err;
@@ -18274,8 +18274,8 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 												}
 
 												if (answer.text.indexOf("Rinuncia") != -1) {
-													if (reject == 1) {
-														bot.sendMessage(message.chat.id, "Hai già rinunciato ad un incontro oggi", kbBack);
+													if (reject >= 3) {
+														bot.sendMessage(message.chat.id, "Hai già rinunciato a 3 incontri oggi", kbBack);
 														return;
 													}
 													bot.sendMessage(message.chat.id, "Sei veramente sicuro di voler abbandonare la battaglia? Verrà conteggiata come persa, inoltre puoi rinunciare solamente ad un combattimento al giorno.", kbYesNo).then(function () {
@@ -18290,7 +18290,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																d.setMinutes(d.getMinutes() + 15);
 																var long_date2 = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-																connection.query('UPDATE dragon_top_status SET enemy_dragon_id = NULL, battle_time = NULL, no_match_time = "' + long_date + '", is_dummy = 0, reject = 1 WHERE dragon_id = ' + dragon_id, function (err, rows, fields) {
+																connection.query('UPDATE dragon_top_status SET enemy_dragon_id = NULL, battle_time = NULL, no_match_time = "' + long_date + '", is_dummy = 0, reject = reject+1 WHERE dragon_id = ' + dragon_id, function (err, rows, fields) {
 																	if (err) throw err;
 																	connection.query('UPDATE ' + target_table_status + ' SET enemy_dragon_id = NULL, battle_time = NULL, no_match_time = "' + long_date2 + '" WHERE dragon_id = ' + enemy_dragon_id, function (err, rows, fields) {
 																		if (err) throw err;

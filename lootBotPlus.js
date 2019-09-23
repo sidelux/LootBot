@@ -9100,17 +9100,14 @@ bot.onText(/^\/giocatore|^\/giocatrice/, function (message) {
 });
 
 bot.onText(/^\/drago (.+)|^\/drago/, function (message, match) {
-	connection.query('SELECT id, charm_id, class, reborn, money FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, money FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0) {
 			bot.sendMessage(message.chat.id, "Non sei registrato!");
 			return;
 		}
 		
-		var player_id = rows[0].id;
-		var charm_id = rows[0].charm_id;
-		var class_id = rows[0].class;
-		var reborn = rows[0].reborn;
+		var player_id = [rows[0].id];
 		var money = rows[0].money;
 		
 		var isSpy = 0;
@@ -9153,16 +9150,24 @@ bot.onText(/^\/drago (.+)|^\/drago/, function (message, match) {
 			connection.query('UPDATE player SET money = money-50000 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			player_id = dragon[0].player_id;
+			
+			player_id = [];
+			for (i = 0, len = Object.keys(dragon).length; i < len; i++)
+				player_id.push(dragon[i].player_id);
 		}
 		
-		connection.query('SELECT dragon.*, nickname, class FROM player, dragon WHERE player.id = dragon.player_id AND player.id = ' + player_id, function (err, rows, fields) {
-			if (err) throw err;
+		var text = "";
+		for (i = 0; i < player_id.length; i++) {
+			var rows = connection_sync.query('SELECT dragon.*, nickname, class, charm_id, reborn FROM player, dragon WHERE player.id = dragon.player_id AND player.id = ' + player_id[i]);
 
 			if (Object.keys(rows).length == 0) {
 				bot.sendMessage(message.from.id, "Non possiedi ancora un drago!");
 				return;
 			}
+
+			var charm_id = rows[0].charm_id;
+			var class_id = rows[0].class;
+			var reborn = rows[0].reborn;
 
 			var dragon_name = "-";
 			var dragon_level = "-";
@@ -9219,43 +9224,39 @@ bot.onText(/^\/drago (.+)|^\/drago/, function (message, match) {
 					dragon_status = "Esausto";
 				if (rows[0].sleep_h > 0)
 					dragon_status = "Dorme";
-				
+
 				player_name = rows[0].nickname;
 				player_class = classSym(rows[0].class);
 			}
 
-			connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_clawsid, function (err, rows, fields) {
-				if (err) throw err;
+			var claws = connection_sync.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_clawsid);
 
-				var dragon_claws_n = "-";
-				if (rows[0].num > 0)
-					dragon_claws_n = rows[0].name;
+			var dragon_claws_n = "-";
+			if (claws[0].num > 0)
+				dragon_claws_n = claws[0].name;
 
-				connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_saddleid, function (err, rows, fields) {
-					if (err) throw err;
+			var saddle = connection_sync.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_saddleid);
 
-					var dragon_saddle_n = "-";
-					if (rows[0].num > 0)
-						dragon_saddle_n = rows[0].name;
+			var dragon_saddle_n = "-";
+			if (saddle[0].num > 0)
+				dragon_saddle_n = saddle[0].name;
 
-					connection.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_armsid, function (err, rows, fields) {
-						if (err) throw err;
+			var arms = connection_sync.query('SELECT name, COUNT(name) As num FROM item WHERE id = ' + dragon_armsid);
 
-						var dragon_arms_n = "-";
-						if (rows[0].num > 0)
-							dragon_arms_n = rows[0].name;
+			var dragon_arms_n = "-";
+			if (arms[0].num > 0)
+				dragon_arms_n = arms[0].name;
 
-						bot.sendMessage(message.chat.id, (dragon ? "\n<b>" + dragon_name + " (L" + dragon_level + ")</b> 🐉\n" : "") +
-										"Proprietario: " + player_name + " " + player_class + "\n" +
-										(dragon ? "Stato: " + dragon_status + "\n" : "") +
-										(dragon ? dragon_claws_n + " (" + dragon_damage + ")\n" : "") +
-										(dragon ? dragon_saddle_n + " (" + dragon_defence + ")\n" : "") +
-										(dragon ? dragon_arms_n + "\n" : "") +
-										(dragon ? "Critico (" + dragon_critical + "%)\n" : ""), html);
-					});
-				});
-			});
-		});
+			text += (dragon ? "\n<b>" + dragon_name + " (L" + dragon_level + ")</b> 🐉\n" : "") +
+							"Proprietario: " + player_name + " " + player_class + "\n" +
+							(dragon ? "Stato: " + dragon_status + "\n" : "") +
+							(dragon ? dragon_claws_n + " (" + dragon_damage + ")\n" : "") +
+							(dragon ? dragon_saddle_n + " (" + dragon_defence + ")\n" : "") +
+							(dragon ? dragon_arms_n + "\n" : "") +
+							(dragon ? "Critico (" + dragon_critical + "%)\n" : "");
+		};
+		
+		bot.sendMessage(message.chat.id, text, html);
 	});
 });
 
