@@ -7203,82 +7203,91 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															if ((answer.text != "Torna al menu") && (answer.text != "Torna al dungeon")) {
 
 																if (answer.text == "Genera Nuova Istanza") {
-																	connection.query('SELECT * FROM dungeon_list WHERE name LIKE "' + name1 + '%" ORDER BY LENGTH(name), name', function (err, rows, fields) {
+																	connection.query('SELECT COUNT(*) As num FROM dungeon_list WHERE name LIKE "' + name1 + '%" AND main = 0 AND duration < ' + max_duration, function (err, rows, fields) {
 																		if (err) throw err;
-
-																		if (Object.keys(rows).length == 0) {
-																			bot.sendMessage(message.chat.id, "Il dungeon che hai selezionato non esiste", dBack);
+																		
+																		if (rows[0].num > 0) {
+																			bot.sendMessage(message.chat.id, "Non è possibile creare un'altra istanza se ne esistono altre non completamente piene!", dBack);
 																			return;
 																		}
-
-																		var newname = "";
-																		var dungeon_rooms = rows[0].rooms;
-																		var dungeon_rank = rows[0].min_rank;
-																		var istance = 0;
-																		var num = rows[Object.keys(rows).length - 1].name.match(/\d+/g);
-																		if (num == null) {
-																			// Caso in cui esiste solo il dungeon base
-																			istance = 1;
-																		} else {
-																			// Caso in cui è presente già una stanza numerata
-
-																			var numArray = rows.map(function (item) {
-																				return item.name.replace(/^\D+/g, '');
-																			});
-
-																			istance = findMissing(numArray);
-																			if (istance == undefined) {
-																				istance = parseInt(rows[Object.keys(rows).length - 1].name.replace(/^\D+/g, '')) + 1;
-																				console.log("Istanza undefined (" + name1 + ")");
-																			}
-																			//console.log(">> NEWISTANCE: " + istance);
-																		}
-
-																		newname = name1 + " " + istance;
-
-																		if (istance == -1) {
-																			console.log("Istanza -1 (" + name1 + ")");
-																			bot.sendMessage(message.chat.id, "Errore creazione istanza, riprova", dBack);
-																			return;
-																		}
-
-																		if (Object.keys(rows).length > max_istance) {
-																			bot.sendMessage(message.chat.id, "Questo dungeon ha raggiunto il limite massimo di istanze, gioca prima a quelle già create", dBack);
-																			return;
-																		}
-
-																		var isCursed = 0;
-																		var cursedText = "";
-																		var days = 7;
-																		var rand = Math.random()*100;
-																		if (rand <= 5) {
-																			isCursed = 1;
-																			days = 4;
-																			cursedText = "\nHai generato un Dungeon Maledetto 🧨 Alcune stanze possiedono caratteristiche diverse, i mostri sono più potenti, riceverai 2 Punti Rango al termine e ne perderai 2 in caso di sconfitta.";
-																		}
-
-																		var d = new Date();
-																		d.setDate(d.getDate() + days);
-																		var long_date2 = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-
-																		connection.query('INSERT INTO dungeon_list (name, rooms, min_rank, finish_date, creator_id, cursed, mob_power_multiplier) VALUES ("' + newname + '",' + dungeon_rooms + ',' + dungeon_rank + ',"' + long_date2 + '",' + player_id + ', ' + isCursed + ', ' + mob_power_multiplier + ')', function (err, rows, fields) {
+																		
+																		connection.query('SELECT * FROM dungeon_list WHERE name LIKE "' + name1 + '%" ORDER BY LENGTH(name), name', function (err, rows, fields) {
 																			if (err) throw err;
-																			connection.query('SELECT id, name, duration FROM dungeon_list WHERE name = "' + newname + '"', function (err, rows, fields) {
-																				var dungeon_id = rows[0].id;
-																				var dungeon_name = rows[0].name;
 
-																				var duration = rows[0].duration;
-																				if (duration >= max_duration) {
-																					bot.sendMessage(message.chat.id, "Questo dungeon è già pieno di esploratori, aspetta che qualcuno esca o genera una nuova istanza.", dBack);
-																					return;
+																			if (Object.keys(rows).length == 0) {
+																				bot.sendMessage(message.chat.id, "Il dungeon che hai selezionato non esiste", dBack);
+																				return;
+																			}
+
+																			var newname = "";
+																			var dungeon_rooms = rows[0].rooms;
+																			var dungeon_rank = rows[0].min_rank;
+																			var istance = 0;
+																			var num = rows[Object.keys(rows).length - 1].name.match(/\d+/g);
+																			if (num == null) {
+																				// Caso in cui esiste solo il dungeon base
+																				istance = 1;
+																			} else {
+																				// Caso in cui è presente già una stanza numerata
+
+																				var numArray = rows.map(function (item) {
+																					return item.name.replace(/^\D+/g, '');
+																				});
+
+																				istance = findMissing(numArray);
+																				if (istance == undefined) {
+																					istance = parseInt(rows[Object.keys(rows).length - 1].name.replace(/^\D+/g, '')) + 1;
+																					console.log("Istanza undefined (" + name1 + ")");
 																				}
+																				//console.log(">> NEWISTANCE: " + istance);
+																			}
 
-																				connection.query('UPDATE dungeon_list SET duration = duration+1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
-																					if (err) throw err;
+																			newname = name1 + " " + istance;
 
-																					connection.query('INSERT INTO dungeon_status (player_id, dungeon_id, room_id, finish_time) VALUES (' + player_id + ',' + dungeon_id + ',1,"' + long_date + '")', function (err, rows, fields) {
+																			if (istance == -1) {
+																				console.log("Istanza -1 (" + name1 + ")");
+																				bot.sendMessage(message.chat.id, "Errore creazione istanza, riprova", dBack);
+																				return;
+																			}
+
+																			if (Object.keys(rows).length > max_istance) {
+																				bot.sendMessage(message.chat.id, "Questo dungeon ha raggiunto il limite massimo di istanze, gioca prima a quelle già create", dBack);
+																				return;
+																			}
+
+																			var isCursed = 0;
+																			var cursedText = "";
+																			var days = 7;
+																			var rand = Math.random()*100;
+																			if (rand <= 5) {
+																				isCursed = 1;
+																				days = 4;
+																				cursedText = "\nHai generato un Dungeon Maledetto 🧨 Alcune stanze possiedono caratteristiche diverse, i mostri sono più potenti, riceverai 2 Punti Rango al termine e ne perderai 2 in caso di sconfitta.";
+																			}
+
+																			var d = new Date();
+																			d.setDate(d.getDate() + days);
+																			var long_date2 = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+																			connection.query('INSERT INTO dungeon_list (name, rooms, min_rank, finish_date, creator_id, cursed, mob_power_multiplier) VALUES ("' + newname + '",' + dungeon_rooms + ',' + dungeon_rank + ',"' + long_date2 + '",' + player_id + ', ' + isCursed + ', ' + mob_power_multiplier + ')', function (err, rows, fields) {
+																				if (err) throw err;
+																				connection.query('SELECT id, name, duration FROM dungeon_list WHERE name = "' + newname + '"', function (err, rows, fields) {
+																					var dungeon_id = rows[0].id;
+																					var dungeon_name = rows[0].name;
+
+																					var duration = rows[0].duration;
+																					if (duration >= max_duration) {
+																						bot.sendMessage(message.chat.id, "Questo dungeon è già pieno di esploratori, aspetta che qualcuno esca o genera una nuova istanza.", dBack);
+																						return;
+																					}
+
+																					connection.query('UPDATE dungeon_list SET duration = duration+1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
 																						if (err) throw err;
-																						bot.sendMessage(message.chat.id, "Sei stato aggiunto alla Lista Avventurieri del dungeon *" + dungeon_name + "*!" + cursedText, dBack);
+
+																						connection.query('INSERT INTO dungeon_status (player_id, dungeon_id, room_id, finish_time) VALUES (' + player_id + ',' + dungeon_id + ',1,"' + long_date + '")', function (err, rows, fields) {
+																							if (err) throw err;
+																							bot.sendMessage(message.chat.id, "Sei stato aggiunto alla Lista Avventurieri del dungeon *" + dungeon_name + "*!" + cursedText, dBack);
+																						});
 																					});
 																				});
 																			});
