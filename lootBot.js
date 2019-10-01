@@ -1121,6 +1121,9 @@ bot.onText(/^\/endtop$/, function (message, match) {
 
 								if (Object.keys(rows).length > 0) {
 									for (var j = 0, len = Object.keys(rows).length; j < len; j++) {
+										connection.query('UPDATE player SET top_rank_count = top_rank_count+' + rows[j].rank + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
+											if (err) throw err;
+										});
 										if ((rows[j].rank < 12) && (this.top_id == 1)) {
 											if (test == 0) {
 												bot.sendMessage(rows[j].chat_id, "Per il tuo posizionamento nelle *Vette dei Draghi*, essendo rimasto al primo Monte e di basso rango, non hai ricevuto alcun premio aggiuntivo! La prossima volta prova ad impegnarti di più :(", mark);
@@ -7133,7 +7136,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 											return;
 										}
 										
-										if (player_rank < rows[0].min_rank) {
+										if (player_rank_b < rows[0].min_rank) {
 											bot.sendMessage(message.chat.id, "Sali di rango per iniziare questo dungeon", dBack);
 											return;
 										}
@@ -7189,7 +7192,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 													var last_rank = 0;
 													for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-														if (player_rank >= rows[i].min_rank)
+														if (player_rank_b >= rows[i].min_rank)
 															last_rank = rows[i].min_rank;
 													}
 
@@ -7312,7 +7315,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			return;
 																		}
 
-																		if (player_rank < rows[0].min_rank) {
+																		if (player_rank_b < rows[0].min_rank) {
 																			bot.sendMessage(message.chat.id, "Sali di rango per iniziare questo dungeon", dBack);
 																			return;
 																		}
@@ -35215,7 +35218,8 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 											"> Aver partecipato attivamente ad almeno 15 imprese globali\n" +
 											"> Possedere almeno 300 Flaridion (verranno consumati)\n" +
 											"> Aver raggiunto almeno il rango dungeon 500\n" +
-											"> Aver raggiunto almeno 1 volta il primo posto nelle Vette\n" +
+											"> Aver raggiunto in totale almeno 500 Ð nelle Vette\n" +
+											"> Possedere almeno 50 Figurine diverse (ne verrà consumata 1 per tipo partendo dalla rarità più bassa)\n" +
 											"L'ottenimento di questo artefatto sbloccherà nuove funzionalità!", get).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text.indexOf("Ottieni Artefatto") != -1) {
@@ -35250,18 +35254,30 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 													return;
 												}
 
-												if (rows[0].top_win < 1) {
-													bot.sendMessage(message.chat.id, "Non hai raggiunto almeno 1 volta il primo posto nelle vette (" + rows[0].rank + "/1)", back);
+												if (rows[0].top_rank_count < 500) {
+													bot.sendMessage(message.chat.id, "Non hai raggiunto almeno le Ð nelle Vette (" + rows[0].top_rank_count + "/500)", back);
 													return;
 												}
-
-												connection.query('INSERT INTO artifacts (player_id, item_id) VALUES (' + player_id + ', 788)', function (err, rows, fields) {
+												
+												connection.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE quantity > 0 AND player_id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
-													connection.query('UPDATE player SET power_pnt = power_pnt - ' + 300 + ' WHERE id = ' + player_id, function (err, rows, fields) {
+													
+													if (rows[0].cnt < 50) {
+														bot.sendMessage(message.chat.id, "Non possiedi abbastanza Figurine diverse (" + rows[0].cnt + "/50)", back);
+														return;
+													}
+
+													connection.query('INSERT INTO artifacts (player_id, item_id) VALUES (' + player_id + ', 788)', function (err, rows, fields) {
 														if (err) throw err;
-														addItem(player_id, 788);
-														bot.sendMessage(message.chat.id, "Hai ottenuto l'*Artefatto Ventoso*!\n\nHai sbloccato la Rinascita 5!", back);
-														console.log(message.from.username + " Artefatto 6");
+														connection.query('UPDATE player SET power_pnt = power_pnt - ' + 300 + ' WHERE id = ' + player_id, function (err, rows, fields) {
+															if (err) throw err;
+															connection.query('UPDATE card_inventory SET quantity = quantity-1 WHERE id IN (SELECT * FROM (SELECT I.id FROM card_inventory I, card_list L WHERE I.card_id = L.id AND quantity > 0 AND player_id = ' + player_id + ' ORDER BY rarity LIMIT 50) As t)', function (err, rows, fields) {
+																if (err) throw err;
+																addItem(player_id, 788);
+																bot.sendMessage(message.chat.id, "Hai ottenuto l'*Artefatto Ventoso*!\n\nHai sbloccato la Rinascita 5!", back);
+																console.log(message.from.username + " Artefatto 6");
+															});
+														});
 													});
 												});
 											});
