@@ -1436,7 +1436,7 @@ bot.onText(/^\/gruppi/, function (message) {
 																	bot.getChatMembersCount(-1001482029556).then(function (data) {
 																		var c21 = data; //uno scommesse
 																		console.log("Next Edicola");
-																		
+
 																		bot.getChatMembersCount(-1001177786583).then(function (data) {
 																			var c22 = data; //edicola
 
@@ -4034,7 +4034,7 @@ bot.onText(/^\/negoziodesc (.+),(.+)|^\/negoziodesc/, function (message, match) 
 			bot.sendMessage(message.chat.id, "Descrizione non valida, riprova");
 			return;
 		}
-		
+
 		text = capitalizeFirstLetter(text.trim());
 
 		if (code == "tutti") {
@@ -4173,7 +4173,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			var text = match[8];
 
 			func = "refresh";
-			
+
 			if (message.reply_to_message != undefined) {
 				var cod = message.reply_to_message.text.match(/[0-9]{7,11}/g);
 				if (cod != undefined)
@@ -4594,7 +4594,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 									massive = paramQuery[0].massive;
 									protected = paramQuery[0].protected;
 								}
-								
+
 								// serve sincrono altrimenti non riesce a controllare l'esistenza dell'oggetto
 								connection_sync.query('INSERT INTO public_shop (player_id, code, item_id, price, quantity, time_end, public, massive, protected) VALUES (' + player_id + ',' + code + ',' + item_id + ',' + price + ',' + quantity + ',"' + long_date + '",' + privacy + ',' + massive + ', ' + protected + ')');
 
@@ -9100,16 +9100,19 @@ bot.onText(/^\/giocatore|^\/giocatrice/, function (message) {
 });
 
 bot.onText(/^\/drago (.+)|^\/drago/, function (message, match) {
-	connection.query('SELECT id, money FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, money, power_dragon_dmg, power_dragon_def, power_dragon_crit FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0) {
 			bot.sendMessage(message.chat.id, "Non sei registrato!");
 			return;
 		}
-		
+
 		var player_id = [rows[0].id];
 		var money = rows[0].money;
-		
+		var power_dragon_dmg = rows[0].power_dragon_dmg;
+		var power_dragon_def = rows[0].power_dragon_def;
+		var power_dragon_crit = rows[0].power_dragon_crit;
+
 		var isSpy = 0;
 		if (match[1] != undefined) {
 			var name;
@@ -9136,12 +9139,12 @@ bot.onText(/^\/drago (.+)|^\/drago/, function (message, match) {
 				bot.sendMessage(message.chat.id, "Tipo del drago non riconosciuto");
 				return;
 			}
-				
+
 			if (money < 50000) {
 				bot.sendMessage(message.chat.id, "Non hai abbastanza monete, ne servono 50.000!");
 				return;
 			}
-			
+
 			var dragon = connection_sync.query('SELECT player_id FROM dragon WHERE name = "' + name + '" AND type = "' + type + '"');
 			if (Object.keys(dragon).length == 0) {
 				bot.sendMessage(message.from.id, "Il drago cercato non esiste!");
@@ -9150,12 +9153,12 @@ bot.onText(/^\/drago (.+)|^\/drago/, function (message, match) {
 			connection.query('UPDATE player SET money = money-50000 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			
+
 			player_id = [];
 			for (i = 0, len = Object.keys(dragon).length; i < len; i++)
 				player_id.push(dragon[i].player_id);
 		}
-		
+
 		var text = "";
 		for (i = 0; i < player_id.length; i++) {
 			var rows = connection_sync.query('SELECT dragon.*, nickname, class, charm_id, reborn FROM player, dragon WHERE player.id = dragon.player_id AND player.id = ' + player_id[i]);
@@ -9210,9 +9213,9 @@ bot.onText(/^\/drago (.+)|^\/drago/, function (message, match) {
 
 				dragon_name = rows[0].name.trim() + " " + rows[0].type;
 				dragon_level = rows[0].level;
-				dragon_damage = "+" + Math.round(rows[0].damage + rows[0].claws);
-				dragon_defence = "-" + Math.round(rows[0].defence + rows[0].saddle);
-				dragon_critical = Math.round(rows[0].critical);
+				dragon_damage = "+" + Math.round(rows[0].damage + rows[0].claws + power_dragon_dmg);
+				dragon_defence = "-" + Math.round(rows[0].defence + rows[0].saddle + power_dragon_def);
+				dragon_critical = Math.round(rows[0].critical + power_dragon_crit);
 
 				dragon_claws = parseInt(rows[0].claws);
 
@@ -9248,14 +9251,14 @@ bot.onText(/^\/drago (.+)|^\/drago/, function (message, match) {
 				dragon_arms_n = arms[0].name;
 
 			text += (dragon ? "\n<b>" + dragon_name + " (L" + dragon_level + ")</b> 🐉\n" : "") +
-							"Proprietario: " + player_name + " " + player_class + "\n" +
-							(dragon ? "Stato: " + dragon_status + "\n" : "") +
-							(dragon ? dragon_claws_n + " (" + dragon_damage + ")\n" : "") +
-							(dragon ? dragon_saddle_n + " (" + dragon_defence + ")\n" : "") +
-							(dragon ? dragon_arms_n + "\n" : "") +
-							(dragon ? "Critico (" + dragon_critical + "%)\n" : "");
+				"Proprietario: " + player_name + " " + player_class + "\n" +
+				(dragon ? "Stato: " + dragon_status + "\n" : "") +
+				(dragon ? dragon_claws_n + " (" + dragon_damage + ")\n" : "") +
+				(dragon ? dragon_saddle_n + " (" + dragon_defence + ")\n" : "") +
+				(dragon ? dragon_arms_n + "\n" : "") +
+				(dragon ? "Critico (" + dragon_critical + "%)\n" : "");
 		};
-		
+
 		bot.sendMessage(message.chat.id, text, html);
 	});
 });
@@ -9282,32 +9285,32 @@ bot.onText(/^\/figurine (.+)|^\/figurine/, function (message, match) {
 			rarityFilter = " AND rarity = " + match[1];
 		}
 	}
-	
+
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0) {
 			bot.sendMessage(message.chat.id, "Non sei registrato!");
 			return;
 		}
-		
+
 		var player_id = rows[0].id;
-		
+
 		connection.query('SELECT COUNT(I.id) As cnt FROM card_inventory I, card_list L WHERE I.card_id = L.id AND quantity > 0' + rarityFilter + nameFilter + quantityFilter + ' AND player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			var have = rows[0].cnt;
-			
+
 			connection.query('SELECT name, rarity, quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND quantity > 0 AND player_id = ' + player_id + rarityFilter + nameFilter + quantityFilter + ' ORDER BY name', function (err, rows, fields) {
 				if (err) throw err;
-				
+
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, message.from.username + ", non possiedi alcuna figurina con i filtri selezionati!", html);
 					return;
 				}
-				
+
 				var text = message.from.username + ", possiedi " + have + " figurine" + filterName + ":\n";
 				for (i = 0, len = Object.keys(rows).length; i < len; i++)
 					text += "> " + rows[i].name + " (" + rows[i].rarity + ", " + rows[i].quantity + ")\n";
-				
+
 				bot.sendMessage(message.chat.id, text, html);
 			});
 		});
@@ -9315,34 +9318,34 @@ bot.onText(/^\/figurine (.+)|^\/figurine/, function (message, match) {
 });
 
 bot.onText(/^\/figurina (.+)|^\/figurina/, function (message, match) {
-	
+
 	if (match[1] == undefined) {
 		bot.sendMessage(message.chat.id, "Specifica il nome parziale della figurina dopo il comando!", html);
 		return;
 	}
-	
+
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0) {
 			bot.sendMessage(message.chat.id, "Non sei registrato!");
 			return;
 		}
-		
+
 		var player_id = rows[0].id;
-		
+
 		connection.query('SELECT id, name, rarity, creation_date FROM card_list WHERE name LIKE "%' + match[1] + '%" ORDER BY name', function (err, rows, fields) {
 			if (err) throw err;
-			
+
 			if (Object.keys(rows).length == 0) {
 				bot.sendMessage(message.chat.id, "Nessuna figurina trovata con i criteri specificati", html);
 				return;
 			}
-			
+
 			if (Object.keys(rows).length > 20) {
 				bot.sendMessage(message.chat.id, "Troppi risultati, riprova con un filtro più preciso", html);
 				return;
 			}
-			
+
 			var text = message.from.username + ", " + Object.keys(rows).length + " risultati per la ricerca:\n";
 			for (i = 0, len = Object.keys(rows).length; i < len; i++) {
 				var card = connection_sync.query('SELECT quantity FROM card_inventory WHERE card_id = ' + rows[i].id + ' AND player_id = ' + player_id);
@@ -9352,16 +9355,16 @@ bot.onText(/^\/figurina (.+)|^\/figurina/, function (message, match) {
 					if (card[0].quantity > 1)
 						poss += " " + card[0].quantity;
 				}
-				
+
 				var dist = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE quantity > 0 AND card_id = ' + rows[i].id);
 				var tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE quantity > 0');
-				
+
 				var creation_date = "Prima del 09/19";
 				if (rows[i].creation_date != null) {
 					var d = new Date(rows[i].creation_date);
 					creation_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
 				}
-				
+
 				text += "> <b>" + rows[i].name + "</b> (" + rows[i].rarity + ")" + poss + "\n Data creazione: " + creation_date + "\n In circolazione: " + formatNumber(dist[0].cnt) + "\n Distribuzione: " + Math.round(dist[0].cnt/tot[0].cnt*100) + "%\n\n";
 			}
 
@@ -10194,6 +10197,9 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 			var power_weapon = rows[0].power_weapon;
 			var power_armor = rows[0].power_armor;
 			var power_shield = rows[0].power_shield;
+			var power_dragon_dmg = rows[0].power_dragon_dmg;
+			var power_dragon_def = rows[0].power_dragon_def;
+			var power_dragon_crit = rows[0].power_dragon_crit;
 			var weapon_crit = rows[0].weapon_crit;
 			var weapon2_crit = rows[0].weapon2_crit;
 			var weapon3_crit = rows[0].weapon3_crit;
@@ -10389,9 +10395,9 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 
 															dragon_name = rows[0].name.trim() + " " + rows[0].type;
 															dragon_level = rows[0].level;
-															dragon_damage = "+" + Math.round(rows[0].damage + rows[0].claws);
-															dragon_defence = "-" + Math.round(rows[0].defence + rows[0].saddle);
-															dragon_critical = Math.round(rows[0].critical);
+															dragon_damage = "+" + Math.round(rows[0].damage + rows[0].claws + power_dragon_dmg);
+															dragon_defence = "-" + Math.round(rows[0].defence + rows[0].saddle + power_dragon_def);
+															dragon_critical = Math.round(rows[0].critical + power_dragon_crit);
 
 															dragon_claws = parseInt(rows[0].claws);
 

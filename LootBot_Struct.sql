@@ -1133,6 +1133,7 @@ CREATE TABLE `dungeon_list` (
   `creator_id` int(11) NOT NULL DEFAULT '0',
   `creator_comment` varchar(1024) DEFAULT NULL,
   `cursed` tinyint(1) NOT NULL DEFAULT '0',
+  `mob_power_multiplier` int(11) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`) USING BTREE,
   KEY `creator_id` (`creator_id`)
@@ -2826,6 +2827,9 @@ CREATE TABLE `player` (
   `power_weapon` int(11) NOT NULL DEFAULT '0',
   `power_armor` int(11) NOT NULL DEFAULT '0',
   `power_shield` int(11) NOT NULL DEFAULT '0',
+  `power_dragon_dmg` int(11) NOT NULL DEFAULT '0',
+  `power_dragon_def` int(11) NOT NULL DEFAULT '0',
+  `power_dragon_crit` int(11) NOT NULL DEFAULT '0',
   `charm_id` int(3) DEFAULT '0',
   `house_id` int(3) NOT NULL DEFAULT '1',
   `heist_count` int(3) NOT NULL DEFAULT '0',
@@ -3736,4 +3740,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-10-01  6:00:05
+-- Dump completed on 2019-10-01 12:00:04
