@@ -42,8 +42,8 @@ var rank_cap = 15;
 var lobby_total_space = 10;
 var dragon_limit_search = 15;
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
-var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750];
-var progLevRew = [50000, 100000, 125000, 150000, 250000, 1000000, 2500000, 5000000];
+var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750, 2500, 3000, 3750];
+var progLevRew = [50000, 100000, 125000, 150000, 250000, 1000000, 2500000, 5000000, 5000000, 10000000, 20000000];
 var progMis = [10, 25, 50, 75, 100, 250, 500, 1000, 2000, 5000, 10000, 25000, 50000];
 var progMisRew = [5000, 12500, 25000, 50000, 75000, 100000, 250000, 350000, 500000, 1000000, 2000000, 3000000, 5000000];
 var progDung = [1, 5, 10, 25, 50, 75, 100, 250, 500, 1000, 1500, 2500, 3000];
@@ -554,8 +554,6 @@ bot.on("pre_checkout_query", function (message) {
 });
 
 var mainKeys = [];
-var mainKeysR = [];
-var mainKeysR2 = [];
 
 var topOpen = "Assalto 🐺";
 if (checkDragonTopOn == 1)
@@ -588,8 +586,6 @@ var html = {
 };
 
 var main_html = {};
-var mainReborn2_html = {};
-var mainReborn_html = {};
 
 var back = {
 	parse_mode: "Markdown",
@@ -3161,10 +3157,10 @@ bot.onText(/^Nascita/i, function (message) {
 });
 
 bot.onText(/Rimodulatore di Flaridion|Torna al rimodulatore|^rimodulatore$/i, function (message) {
-	connection.query('SELECT id FROM artifacts WHERE item_id = 675 AND player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+	connection.query('SELECT COUNT(id) As cnt FROM artifacts WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
 		if (err) throw err;
 
-		if (Object.keys(rows).length == 0) {
+		if (rows[0].cnt < 5) {
 			var kb = {
 				parse_mode: "Markdown",
 				reply_markup: {
@@ -3173,7 +3169,7 @@ bot.onText(/Rimodulatore di Flaridion|Torna al rimodulatore|^rimodulatore$/i, fu
 				}
 			};
 
-			bot.sendMessage(message.chat.id, "Devi possedere tutti gli artefatti per accedere a questa funzione", kb);
+			bot.sendMessage(message.chat.id, "Devi possedere almeno 5 artefatti per accedere a questa funzionalità!", kb);
 			return;
 		}
 
@@ -3192,7 +3188,7 @@ bot.onText(/Rimodulatore di Flaridion|Torna al rimodulatore|^rimodulatore$/i, fu
 			var power_shield = parseInt(rows[0].power_shield);
 			var global_event = rows[0].global_event;
 
-			var arrMolt = [2,1,20,20,35];
+			var arrMolt = [2, 1, 20, 20, 35];
 
 			var gender_text = "o";
 			if (rows[0].gender == "F")
@@ -13547,6 +13543,12 @@ bot.onText(/rinasci/i, function (message) {
 				bot.sendMessage(message.chat.id, "Raggiungi il livello 300 per accedere alla rinascita.", back);
 				return;
 			}
+		} else if (reborn == 5) {
+			maxlev = 2000;
+			if (rows[0].exp < 10000) {
+				bot.sendMessage(message.chat.id, "Raggiungi il livello 1.000 per accedere alla rinascita.", back);
+				return;
+			}
 		} else {
 			bot.sendMessage(message.chat.id, "Hai raggiunto il massimo livello di rinascita.", back);
 			return;
@@ -13568,10 +13570,12 @@ bot.onText(/rinasci/i, function (message) {
 			}
 		};
 
-		var text = "*Vuoi rinascere?*\nIl tuo personaggio perderà exp e zaino (se non salvato nella Cassa Rinascita)!\nRiceverai il simbolo di rinascita nelle informazioni del tuo account, inoltre un premio in § e una grande quantità di Scrigni per ricominciare a creare oggetti!\nDopo la rinascita il livello massimo sarà " + maxlev + "!";
+		var text = "*Desideri rinascere?*\nIl tuo personaggio perderà exp e zaino (se non salvato nella Cassa Rinascita)!\nRiceverai il simbolo di rinascita nelle informazioni del tuo account, inoltre un premio in § e una grande quantità di Scrigni per ricominciare a creare oggetti!\nDopo la rinascita il livello massimo sarà " + maxlev + "!";
 
 		if (reborn == 4)
-			text = "Vuoi rinascere?\nIl tuo personaggio stavolta non perderà nulla, riceverai il simbolo speciale e il massimo livello sarà il 1000. Tuttavia per iniziare la rinascita ti servono almeno due Artefatti!\nProcedi?";
+			text = "Desideri rinascere?\nIl tuo personaggio non perderà alcuna risorsa, riceverai il simbolo speciale e il massimo livello sarà il 1.000. Tuttavia per iniziare la rinascita ti servono almeno due Artefatti!\nProcedi?";
+		else if (reborn == 5)
+			text = "Desideri rinascere?\nIl tuo personaggio non perderà alcuna risorsa, il massimo livello sarà il 2.000. Tuttavia per iniziare la rinascita ti servono almeno sei Artefatti!\nProcedi?";
 
 		bot.sendMessage(message.chat.id, text, kb).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
@@ -13586,7 +13590,7 @@ bot.onText(/rinasci/i, function (message) {
 							rebornSave = 1;
 							save = "\nHai salvato gli oggetti nella Cassa Rinascita, non perderai lo zaino ma solo scrigni, monete ed exp.";
 						}
-						if (reborn == 4) {
+						if (reborn >= 4) {
 							rebornSave = 1;
 							save = "\nNon è necessario salvare gli oggetti, non perderai nulla.";
 						}
@@ -13682,7 +13686,24 @@ bot.onText(/rinasci/i, function (message) {
 
 										connection.query('UPDATE player SET exp = 1, life = 100, total_life = 100, mission_auto_id = 1, reborn = ' + reborn_val + ' WHERE id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
-											bot.sendMessage(message.chat.id, "Hai completato l'ultima rinascita! Ma la strada è ancora lunga!", back);
+											bot.sendMessage(message.chat.id, "Hai completato la quinta rinascita! Ma la strada è ancora lunga!", back);
+										});
+									});
+									return;
+								} else if (reborn == 5) {
+									var reborn_val = 6;
+
+									connection.query('SELECT COUNT(id) As num FROM artifacts WHERE player_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+
+										if (rows[0].num < 6) {
+											bot.sendMessage(message.chat.id, "Devi prima ottenere almeno sei artefatti!", back);
+											return;
+										}
+
+										connection.query('UPDATE player SET exp = 1, life = 100, total_life = 100, mission_auto_id = 1, reborn = ' + reborn_val + ' WHERE id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+											bot.sendMessage(message.chat.id, "Hai completato la sesta rinascita!", back);
 										});
 									});
 									return;
@@ -13694,9 +13715,9 @@ bot.onText(/rinasci/i, function (message) {
 								connection.query('UPDATE player SET exp = 10, life = 100, total_life = 100, money = ' + money + ', mission_auto_id = 1, reborn = ' + reborn_val + ' WHERE id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
 
-									if (rebornSave == 0) {
+									if (rebornSave == 0)
 										delAllInventory(player_id);
-									} else {
+									else {
 										connection.query('DELETE FROM reborn_save WHERE player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 										});
@@ -26192,8 +26213,8 @@ bot.onText(/^limite/i, function (message) {
 						answerCallbacks[message.chat.id] = function (answer) {
 							var num = parseInt(answer.text);
 
-							if ((num > 1750) || (num < 0)) {
-								bot.sendMessage(message.chat.id, "Livello non valido: minimo 0, massimo 1750", team);
+							if ((num > 3750) || (num < 0)) {
+								bot.sendMessage(message.chat.id, "Livello non valido: minimo 0, massimo 3.750", team);
 								return;
 							}
 
@@ -34714,7 +34735,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [["Artefatto Fiammeggiante"], ["Artefatto Elettrico"], ["Artefatto Tempesta"], ["Artefatto Buio"], ["Artefatto Divinatorio"], ["Torna al menu"]]
+			keyboard: [["Artefatto Fiammeggiante 🔥"], ["Artefatto Elettrico ⚡️"], ["Artefatto Tempesta ⛈"], ["Artefatto Buio 🌑"], ["Artefatto Divinatorio 🔮"], ["Artefatto Ventoso 🌪"], ["Torna al menu"]]
 		}
 	};
 
@@ -34722,7 +34743,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [["Ottieni Artefatto"], ["Torna agli artefatti"], ["Torna al menu"]]
+			keyboard: [["Ottieni Artefatto 🔱"], ["Torna agli artefatti"], ["Torna al menu"]]
 		}
 	};
 
@@ -34754,19 +34775,19 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 		connection.query('SELECT COUNT(id) As cnt FROM artifacts WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
-			if (rows[0].cnt == 5) {
+			if (rows[0].cnt == 6) {
 				bot.sendMessage(message.chat.id, "Hai ottenuto tutti gli Artefatti!", back);
 				return;
 			}
 
-			bot.sendMessage(message.chat.id, "Gli Artefatti 🔱\nSono cinque strumenti di incredibile potenza, premio degli avventurieri piu tenaci.\nPer ambire a questi riconoscimenti sarà necessario dimostrare le proprie abilità nel commercio, il proprio coraggio nell'esplorazione delle terre remote, la propria dedizione alle nobili arti del combattimento, della truffa e dell'allevamento di draghi.\nPochi sono i guerrieri che possono vantarsi d'una collezione completa, vuoi aspirare ad ottenerne uno?", artifacts).then(function () {
+			bot.sendMessage(message.chat.id, "Gli Artefatti 🔱\nSono strumenti di incredibile *potenza*, premio degli avventurieri piu tenaci.\nPer ambire a questi riconoscimenti sarà necessario dimostrare le proprie *abilità* nel commercio, il proprio coraggio nell'esplorazione delle terre remote, la propria dedizione alle nobili arti del combattimento, della truffa e dell'allevamento di draghi.\n_Pochi sono i guerrieri che possono vantarsi d'una collezione completa, vuoi aspirare ad ottenerne uno?_", artifacts).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
-					if (answer.text == "Artefatto Fiammeggiante") {
+					if (answer.text.indexOf("Artefatto Fiammeggiante") != -1) {
 						bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
 										"> Aver raggiunto almeno il rango dungeon 85\n" +
 										"> Possedere almeno 5.000.000 § (verranno consumati)", get).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
-								if (answer.text == "Ottieni Artefatto") {
+								if (answer.text.indexOf("Ottieni Artefatto") != -1) {
 									connection.query('SELECT id FROM artifacts WHERE item_id = 614 AND player_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 
@@ -34791,7 +34812,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 												return;
 											}
 
-											connection.query('INSERT INTO artifacts (player_id, item_id) VALUES (' + player_id + ',614)', function (err, rows, fields) {
+											connection.query('INSERT INTO artifacts (player_id, item_id) VALUES (' + player_id + ', 614)', function (err, rows, fields) {
 												if (err) throw err;
 												connection.query('UPDATE player SET money = money - ' + 5000000 + ' WHERE id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
@@ -34804,7 +34825,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 								}
 							}
 						});
-					} else if (answer.text == "Artefatto Elettrico") {
+					} else if (answer.text.indexOf("Artefatto Elettrico") != -1) {
 						connection.query('SELECT id FROM artifacts WHERE item_id = 614 AND player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 
@@ -34818,7 +34839,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 											"> Aver portato il drago almeno al livello 100\n" +
 											"> Possedere almeno 10.000.000 § (verranno consumati)", get).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
-									if (answer.text == "Ottieni Artefatto") {
+									if (answer.text.indexOf("Ottieni Artefatto") != -1) {
 										connection.query('SELECT id FROM artifacts WHERE item_id = 615 AND player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 
@@ -34851,7 +34872,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 														return;
 													}
 
-													connection.query('INSERT INTO artifacts (player_id, item_id) VALUES (' + player_id + ',615)', function (err, rows, fields) {
+													connection.query('INSERT INTO artifacts (player_id, item_id) VALUES (' + player_id + ', 615)', function (err, rows, fields) {
 														if (err) throw err;
 														connection.query('UPDATE player SET money = money - ' + 10000000 + ' WHERE id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
@@ -34866,7 +34887,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 								}
 							});
 						});
-					} else if (answer.text == "Artefatto Tempesta") {
+					} else if (answer.text.indexOf("Artefatto Tempesta") != -1) {
 						connection.query('SELECT id FROM artifacts WHERE item_id = 615 AND player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 							if (Object.keys(rows).length == 0) {
@@ -34878,7 +34899,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 											"> Possedere almeno 50 💎 (verranno consumate)\n" +
 											"> Aver raggiunto almeno 200 Imprese giornaliere completate", get).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
-									if (answer.text == "Ottieni Artefatto") {
+									if (answer.text.indexOf("Ottieni Artefatto") != -1) {
 										connection.query('SELECT id FROM artifacts WHERE item_id = 644 AND player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 
@@ -34908,7 +34929,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 														return;
 													}
 
-													connection.query('INSERT INTO artifacts (player_id, item_id) VALUES (' + player_id + ',644)', function (err, rows, fields) {
+													connection.query('INSERT INTO artifacts (player_id, item_id) VALUES (' + player_id + ', 644)', function (err, rows, fields) {
 														if (err) throw err;
 														connection.query('UPDATE player SET gems = gems - ' + 50 + ' WHERE id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
@@ -34923,7 +34944,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 								}
 							});
 						});
-					} else if (answer.text == "Artefatto Buio") {
+					} else if (answer.text.indexOf("Artefatto Buio") != -1) {
 						connection.query('SELECT id FROM artifacts WHERE item_id = 644 AND player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 							if (Object.keys(rows).length == 0) {
@@ -34935,7 +34956,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 											"> Aver vinto almeno 500 ispezioni (effettuate o respinte)\n" +
 											"> Possedere almeno 2.000 Polvere (S) (verrà consumata)", get).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
-									if (answer.text == "Ottieni Artefatto") {
+									if (answer.text.indexOf("Ottieni Artefatto") != -1) {
 										connection.query('SELECT id FROM artifacts WHERE item_id = 648 AND player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 
@@ -34972,7 +34993,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 															return;
 														}
 
-														connection.query('INSERT INTO artifacts (player_id, item_id) VALUES (' + player_id + ',648)', function (err, rows, fields) {
+														connection.query('INSERT INTO artifacts (player_id, item_id) VALUES (' + player_id + ', 648)', function (err, rows, fields) {
 															if (err) throw err;
 															delItem(player_id, 646, 2000);
 															addItem(player_id, 648);
@@ -34986,7 +35007,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 								}
 							});
 						});
-					} else if (answer.text == "Artefatto Divinatorio") {
+					} else if (answer.text.indexOf("Artefatto Divinatorio") != -1) {
 						connection.query('SELECT id FROM artifacts WHERE item_id = 648 AND player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 							if (Object.keys(rows).length == 0) {
@@ -34998,12 +35019,12 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 											"> Aver raggiunto il livello 1.000\n" +
 											"> Aver raggiunto almeno il rango dungeon 200\n" +
 											"> Aver completato almeno 300 incarichi\n" +
-											"> Aver completato almeno 3 scalate nello stesso team (senza cambiarlo)\n" +
-											"> Aver venduto almeno 1000 oggetti al Contrabbandiere\n" +
+											"> Aver completato almeno 3 assalti nello stesso team (senza cambiarlo)\n" +
+											"> Aver venduto almeno 1.000 oggetti al Contrabbandiere\n" +
 											"> Aver partecipato attivamente ad almeno 5 imprese globali\n\n" +
 											"L'ottenimento di questo artefatto sbloccherà nuove funzionalità!", get).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
-									if (answer.text == "Ottieni Artefatto") {
+									if (answer.text.indexOf("Ottieni Artefatto") != -1) {
 										connection.query('SELECT id FROM artifacts WHERE item_id = 675 AND player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 
@@ -35031,7 +35052,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 												}
 
 												if (rows[0].kill_streak_ok == 0) {
-													bot.sendMessage(message.chat.id, "Non hai completato almeno 3 scalate nello stesso team", back);
+													bot.sendMessage(message.chat.id, "Non hai completato almeno 3 assalti nello stesso team", back);
 													return;
 												}
 
@@ -35048,11 +35069,83 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 														return;
 													}
 
-													connection.query('INSERT INTO artifacts (player_id, item_id) VALUES (' + player_id + ',675)', function (err, rows, fields) {
+													connection.query('INSERT INTO artifacts (player_id, item_id) VALUES (' + player_id + ', 675)', function (err, rows, fields) {
 														if (err) throw err;
 														addItem(player_id, 675);
-														bot.sendMessage(message.chat.id, "Hai ottenuto l'*Artefatto Divinatorio*!\n\nHai ottenuto tutti gli Artefatti, hai sbloccato i Potenziamenti Flaridion!", back);
+														bot.sendMessage(message.chat.id, "Hai ottenuto l'*Artefatto Divinatorio*!\n\nHai sbloccato i Potenziamenti Flaridion!", back);
 														console.log(message.from.username + " Artefatto 5")
+													});
+												});
+											});
+										});
+									}
+								}
+							});
+						});
+					} else if (answer.text.indexOf("Artefatto Ventoso") != -1) {
+						if (player_id != 1) {
+							bot.sendMessage(message.chat.id, "Questo artefatto non è ancora disponibile!", rBack);
+							return;
+						}
+						connection.query('SELECT id FROM artifacts WHERE item_id = 675 AND player_id = ' + player_id, function (err, rows, fields) {
+							if (err) throw err;
+							if (Object.keys(rows).length == 0) {
+								bot.sendMessage(message.chat.id, "Devi prima ottenere l'*Artefatto Divinatorio*!", rBack);
+								return;
+							}
+
+							bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
+											"> Aver completato 100 triplette di imprese giornaliere\n" +
+											"> Aver partecipato attivamente ad almeno 15 imprese globali\n" +
+											"> Possedere almeno 300 Flaridion (verranno consumati)\n" +
+											"> Aver raggiunto almeno il rango dungeon 500\n" +
+											"> Aver raggiunto almeno 1 volta il primo posto nelle Vette\n" +
+											"L'ottenimento di questo artefatto sbloccherà nuove funzionalità!", get).then(function () {
+								answerCallbacks[message.chat.id] = function (answer) {
+									if (answer.text.indexOf("Ottieni Artefatto") != -1) {
+										connection.query('SELECT id FROM artifacts WHERE item_id = 788 AND player_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+
+											if (Object.keys(rows).length > 0) {
+												bot.sendMessage(message.chat.id, "Hai già ottenuto questo artefatto!", back);
+												return;
+											}
+
+											connection.query('SELECT achievement_count_all, global_event, power_pnt, rank, top_win FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+												
+												if (rows[0].achievement_count_all < 100) {
+													bot.sendMessage(message.chat.id, "Non hai raggiunto le triplette necessarie (" + rows[0].achievement_count_all + "/100)", back);
+													return;
+												}
+
+												if (rows[0].global_event < 15) {
+													bot.sendMessage(message.chat.id, "Non hai aiutato a completare abbastanza imprese globali (" + rows[0].global_event + "/15)", back);
+													return;
+												}
+												
+												if (rows[0].power_pnt < 300) {
+													bot.sendMessage(message.chat.id, "Non possiedi abbastanza Flaridion (" + rows[0].power_pnt + "/300)", back);
+													return;
+												}
+												
+												if (rows[0].rank < 500) {
+													bot.sendMessage(message.chat.id, "Non hai raggiunto il rango necessario (" + rows[0].rank + "/500)", back);
+													return;
+												}
+												
+												if (rows[0].top_win < 1) {
+													bot.sendMessage(message.chat.id, "Non hai raggiunto almeno 1 volta il primo posto nelle vette (" + rows[0].rank + "/1)", back);
+													return;
+												}
+
+												connection.query('INSERT INTO artifacts (player_id, item_id) VALUES (' + player_id + ', 788)', function (err, rows, fields) {
+													if (err) throw err;
+													connection.query('UPDATE player SET power_pnt = power_pnt - ' + 300 + ' WHERE id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+														addItem(player_id, 788);
+														bot.sendMessage(message.chat.id, "Hai ottenuto l'*Artefatto Ventoso*!\n\nHai sbloccato la Rinascita 5!", back);
+														console.log(message.from.username + " Artefatto 6");
 													});
 												});
 											});
@@ -41768,6 +41861,8 @@ function getInfo(message, player, myhouse_id) {
 							artifacts += "🌑";
 						if (rows[0].cnt >= 5)
 							artifacts += "🔮";
+						if (rows[0].cnt >= 6)
+							artifacts += "🌪";
 						if (rows[0].cnt > 0)
 							artifacts += "\n";
 
@@ -42124,6 +42219,11 @@ function getInfo(message, player, myhouse_id) {
 																							var Keys = [];
 
 																							if (player == message.from.username) {
+																								if (((exp >= 1000) && (reborn == 1)) || ((exp >= 1500) && (reborn == 2)) || ((exp >= 2000) && (reborn == 3)) || ((exp >= 3000) && (reborn == 4)) || ((exp >= 10000) && (reborn == 5)))
+																									Keys.push(['⭐️ Rinasci ⭐️']);
+																								else if (((exp <= 50) && (reborn == 2)) || ((exp <= 50) && (reborn == 3)) || ((exp <= 50) && (reborn == 4)) || ((exp <= 50) && (reborn == 5)))
+																									Keys.push(['⭐️ Rinasci ⭐️']);
+																								
 																								Keys.push(["Vocazione 🏹", "Albero Talenti 🌳"]);
 																								Keys.push(["Link Invito 🗣", "Statistiche 📊", "Artefatti 🔱"]);
 																								if (((weapon_id == 638) || 
@@ -42786,63 +42886,25 @@ function mainMenu(message) {
 
 													msgtext += "\n" + rebSym(reborn) + " <b>" + lev + "</b> " + heart + " " + formatNumber(life) + "/" + formatNumber(tot_life) + "\n💰 " + formatNumber(money) + " §";
 													msgtext += price_drop_msg;
-
-													if (((exp >= 1000) && (reborn == 1)) || ((exp >= 1500) && (reborn == 2)) || ((exp >= 2000) && (reborn == 3)) || ((exp >= 3000) && (reborn == 4))) {
-														var f = 0;
-														for(i = 0; i < Object.keys(mainKeysR).length; i++) {
-															if (mainKeysR[i][0].indexOf("Giocatore") != -1)
-																mainKeysR[i][0] = mainKeysR[i][0].replace("Giocatore", player_text);
-															else if (mainKeysR[i][0].indexOf("Giocatrice") != -1)
-																mainKeysR[i][0] = mainKeysR[i][0].replace("Giocatrice", player_text);
-														}
-
-														mainReborn_html = {
-															parse_mode: "HTML",
-															disable_web_page_preview: true,
-															reply_markup: {
-																resize_keyboard: true,
-																keyboard: mainKeysR
-															}
-														};
-														bot.sendMessage(message.chat.id, msgtext, mainReborn_html);
-													} else if (((exp <= 50) && (reborn == 2)) || ((exp <= 50) && (reborn == 3)) || ((exp <= 50) && (reborn == 4))) {
-														var f = 0;
-														for(i = 0; i < Object.keys(mainKeysR2).length; i++) {
-															if (mainKeysR2[i][0].indexOf("Giocatore") != -1)
-																mainKeysR2[i][0] = mainKeysR2[i][0].replace("Giocatore", player_text);
-															else if (mainKeysR2[i][0].indexOf("Giocatrice") != -1)
-																mainKeysR2[i][0] = mainKeysR2[i][0].replace("Giocatrice", player_text);
-														}
-
-														mainReborn2_html = {
-															parse_mode: "HTML",
-															disable_web_page_preview: true,
-															reply_markup: {
-																resize_keyboard: true,
-																keyboard: mainKeysR2
-															}
-														};
-														bot.sendMessage(message.chat.id, msgtext, mainReborn2_html);
-													} else {													
-														var f = 0;
-														for(i = 0; i < Object.keys(mainKeys).length; i++) {
-															if (mainKeys[i][0].indexOf("Giocatore") != -1)
-																mainKeys[i][0] = mainKeys[i][0].replace("Giocatore", player_text);
-															else if (mainKeys[i][0].indexOf("Giocatrice") != -1)
-																mainKeys[i][0] = mainKeys[i][0].replace("Giocatrice", player_text);
-														}
-
-														main_html = {
-															parse_mode: "HTML",
-															disable_web_page_preview: true,
-															reply_markup: {
-																resize_keyboard: true,
-																keyboard: mainKeys
-															}
-														};
-
-														bot.sendMessage(message.chat.id, msgtext, main_html);
+									
+													var f = 0;
+													for(i = 0; i < Object.keys(mainKeys).length; i++) {
+														if (mainKeys[i][0].indexOf("Giocatore") != -1)
+															mainKeys[i][0] = mainKeys[i][0].replace("Giocatore", player_text);
+														else if (mainKeys[i][0].indexOf("Giocatrice") != -1)
+															mainKeys[i][0] = mainKeys[i][0].replace("Giocatrice", player_text);
 													}
+
+													main_html = {
+														parse_mode: "HTML",
+														disable_web_page_preview: true,
+														reply_markup: {
+															resize_keyboard: true,
+															keyboard: mainKeys
+														}
+													};
+
+													bot.sendMessage(message.chat.id, msgtext, main_html);
 												});
 											});
 										});
@@ -42894,82 +42956,36 @@ function printStart(message) {
 
 function checkKeyboard() {
 	mainKeys = defaultKeys.slice();
-	mainKeysR = mainKeys.slice();
-	mainKeysR2 = mainKeys.slice();
 
-	mainKeysR.splice(0, 0, ['⭐️ Rinasci ⭐️ ']);
-
-	if (eventMana == 1) {
+	if (eventMana == 1)
 		mainKeys.splice(0, 0, ['⛏ Miniere di Mana (Evento) ⛰ ']);
-		mainKeysR.splice(1, 0, ['⛏ Miniere di Mana (Evento) ⛰ ']);
-		mainKeysR2.splice(1, 0, ['⛏ Miniere di Mana (Evento) ⛰ ']);
-	}
-	if (lootteria == 1) {
+	if (lootteria == 1)
 		mainKeys.splice(0, 0, ['💎 Lootteria (Evento) 💰 ']);
-		mainKeysR.splice(1, 0, ['💎 Lootteria (Evento) 💰 ']);
-		mainKeysR2.splice(1, 0, ['💎 Lootteria (Evento) 💰 ']);
-	}
-	if (crazyMode == 1) {
+	if (crazyMode == 1)
 		mainKeys.splice(0, 0, ['🎉 Weekend della Follia (Evento) 😱']);
-		mainKeysR.splice(1, 0, ['🎉 Weekend della Follia (Evento) 😱']);
-		mainKeysR2.splice(1, 0, ['🎉 Weekend della Follia (Evento) 😱']);
-	}
-	if (luckyMode == 1) {
+	if (luckyMode == 1)
 		mainKeys.splice(0, 0, ['🌒 Evento della Luna (Evento) 🍀']);
-		mainKeysR.splice(1, 0, ['🌒 Evento della Luna (Evento) 🍀']);
-		mainKeysR2.splice(1, 0, ['🌒 Evento della Luna (Evento) 🍀']);
-	}
-	if (arena == 1) {
+	if (arena == 1)
 		mainKeys.splice(0, 0, ['🐲 Arena dei Draghi (Evento) 🔥 ']);
-		mainKeysR.splice(1, 0, ['🐲 Arena dei Draghi (Evento) 🔥']);
-		mainKeysR2.splice(1, 0, ['🐲 Arena dei Draghi (Evento) 🔥']);
-	}
-	if (eventFestival == 1) {
+	if (eventFestival == 1)
 		mainKeys.splice(0, 0, ['🎉Crafting Festival (Evento) 🛠']);
-		mainKeysR.splice(1, 0, ['🎉Crafting Festival (Evento) 🛠']);
-		mainKeysR2.splice(1, 0, ['🎉Crafting Festival (Evento) 🛠']);
-	}
-	if (specialMission == 1) {
+	if (specialMission == 1)
 		mainKeys.splice(0, 0, ['🏹Itinerario Propizio (Evento) 🎯']);
-		mainKeysR.splice(1, 0, ['🏹Itinerario Propizio (Evento) 🎯']);
-		mainKeysR2.splice(1, 0, ['🏹Itinerario Propizio (Evento) 🎯']);
-	}
-	if (wanted == 1) {
+	if (wanted == 1)
 		mainKeys.splice(0, 0, ['💰Il Ricercato (Evento) 👺']);
-		mainKeysR.splice(1, 0, ['💰Il Ricercato (Evento) 👺']);
-		mainKeysR2.splice(1, 0, ['💰Il Ricercato (Evento) 👺']);
-	}
-	if (eventDust == 1) {
+	if (eventDust == 1)
 		mainKeys.splice(0, 0, ['⏲ Generatore di Polvere (Evento) 🔥']);
-		mainKeysR.splice(1, 0, ['⏲ Generatore di Polvere (Evento) 🔥']);
-		mainKeysR2.splice(1, 0, ['⏲ Generatore di Polvere (Evento) 🔥']);
-	}
-	if (villa == 1) {
+	if (villa == 1)
 		mainKeys.splice(0, 0, ['🏰 Villa di LastSoldier95 (Evento) 📦']);
-		mainKeysR.splice(1, 0, ['🏰 Villa di LastSoldier95 (Evento) 📦']);
-		mainKeysR2.splice(1, 0, ['🏰 Villa di LastSoldier95 (Evento) 📦']);
-	}
-	if (eventTeamStory == 1) {
+	if (eventTeamStory == 1)
 		mainKeys.splice(0, 0, ['💬 Il Canto del Bardo (Evento) 📚']);
-		mainKeysR.splice(1, 0, ['💬 Il Canto del Bardo (Evento) 📚']);
-		mainKeysR2.splice(1, 0, ['💬 Il Canto del Bardo (Evento) 📚']);
-	}
 	var d = new Date();
-	if ((d.getDay() == 3) && (d.getHours() > 9) && (d.getHours() < 22)) {
+	if ((d.getDay() == 3) && (d.getHours() > 9) && (d.getHours() < 22))
 		mainKeys.splice(0, 0, ['📃 Casa dei Giochi (Evento) 🎲']);
-		mainKeysR.splice(1, 0, ['📃 Casa dei Giochi (Evento) 🎲']);
-		mainKeysR2.splice(1, 0, ['📃 Casa dei Giochi (Evento) 🎲']);
-	}
-	if (snowHouse == 1) {	
+	if (snowHouse == 1)
 		mainKeys.splice(0, 0, ['🎄 Villaggio Innevato (Evento) 🌨']);
-		mainKeysR.splice(1, 0, ['🎄 Villaggio Innevato (Evento) 🌨']);
-		mainKeysR2.splice(1, 0, ['🎄 Villaggio Innevato (Evento) 🌨']);
-	}
-	if (gnomorra == 1) {
+	if (gnomorra == 1)
 		mainKeys.splice(0, 0, ['📄 Gnomorra Lootiana (Evento) 🈵']);
-		mainKeysR.splice(1, 0, ['📄 Gnomorra Lootiana (Evento) 🈵']);
-		mainKeysR2.splice(1, 0, ['📄 Gnomorra Lootiana (Evento) 🈵']);
-	}
 
 	main_html = {
 		parse_mode: "HTML",
@@ -42977,24 +42993,6 @@ function checkKeyboard() {
 		reply_markup: {
 			resize_keyboard: true,
 			keyboard: mainKeys
-		}
-	};
-
-	mainReborn_html = {
-		parse_mode: "HTML",
-		disable_web_page_preview: true,
-		reply_markup: {
-			resize_keyboard: true,
-			keyboard: mainKeysR
-		}
-	};
-
-	mainReborn2_html = {
-		parse_mode: "HTML",
-		disable_web_page_preview: true,
-		reply_markup: {
-			resize_keyboard: true,
-			keyboard: mainKeysR2
 		}
 	};
 };
@@ -44073,7 +44071,7 @@ function helpMsg(chat_id, player_id, type) {
 				break;
 			case 8:
 				text = "*IL GIOCATORE*\n\n" +
-					"In questa sezione trovi tutte le informazioni sul tuo giocatore, oppure su quelle del giocatore che stai spiando, in base al livello del tuo rifugio ti vengono rivelate più informazioni sul bersaglio. Attraverso i pulsanti di Statistiche puoi visualizzare altre informazioni sulla tua avventura, se non visualizzi ancora il drago, visita l'apposita sezione dal menù principale per ottenere altre informazioni. Ecco una descrizione per ogni voce:\n\nGiocatore 👤\nOgni simbolo sta ad indicare la tua esperienza e la tua RINASCITA\n✨ Rinascita 0 \n🔆 Rinascita 1\n💫 Rinascita 2\n⭐️ Rinascita 3\n🌟 Rinascita 4\n🏹 La tua vocazione, una volta scelta non sarà possibile cambiarla!\n💎 Le Gemme in tuo possesso\n💰 I soldi in tuo possesso\n❤️ La tua vita, attuale e totale\n📦 I punti creazione che hai realizzato fin'ora, tra parentesi quelli settimanali\n\nEquipaggiamento ⚔️\n🗡 La tua fedelissima arma\n🥋 La tua armatura\n🛡 Il tuo scudo\n📿 Il talismano che indossi\n\n🐉 Il migliore amico del giocatore, il tuo draghetto!\n💱 Informazioni sulla tua abilità nelle ispezioni, il tuo rango e una piccola descrizione personale";
+					"In questa sezione trovi tutte le informazioni sul tuo giocatore, oppure su quelle del giocatore che stai spiando, in base al livello del tuo rifugio ti vengono rivelate più informazioni sul bersaglio. Attraverso i pulsanti di Statistiche puoi visualizzare altre informazioni sulla tua avventura, se non visualizzi ancora il drago, visita l'apposita sezione dal menù principale per ottenere altre informazioni. Ecco una descrizione per ogni voce:\n\nGiocatore 👤\nOgni simbolo sta ad indicare la tua esperienza e la tua RINASCITA\n✨ Rinascita 0 \n🔆 Rinascita 1\n💫 Rinascita 2\n⭐️ Rinascita 3\n🌟 Rinascita 4\n💥 Rinascita 5\n🏹 La tua vocazione, una volta scelta non sarà possibile cambiarla!\n💎 Le Gemme in tuo possesso\n💰 I soldi in tuo possesso\n❤️ La tua vita, attuale e totale\n📦 I punti creazione che hai realizzato fin'ora, tra parentesi quelli settimanali\n\nEquipaggiamento ⚔️\n🗡 La tua fedelissima arma\n🥋 La tua armatura\n🛡 Il tuo scudo\n📿 Il talismano che indossi\n\n🐉 Il migliore amico del giocatore, il tuo draghetto!\n💱 Informazioni sulla tua abilità nelle ispezioni, il tuo rango e una piccola descrizione personale";
 				break;
 			case 9:
 				text = "*LA MODALITA' VACANZA*\n\n" +
@@ -48718,6 +48716,8 @@ function rebSym(reborn) {
 		rebSym = "⭐️";
 	else if (reborn == 5)
 		rebSym = "🌟";
+	else if (reborn == 6)
+		rebSym = "💥";
 	return rebSym;
 }
 

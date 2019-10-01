@@ -10128,6 +10128,8 @@ function rebSym(reborn) {
 		rebSym = "⭐️";
 	else if (reborn == 5)
 		rebSym = "🌟";
+	else if (reborn == 6)
+		rebSym = "💥";
 	return rebSym;
 }
 
@@ -10263,6 +10265,8 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 							artifacts += "🌑";
 						if (rows[0].cnt >= 5)
 							artifacts += "🔮";
+						if (rows[0].cnt >= 6)
+							artifacts += "🌪";
 						if (rows[0].cnt > 0)
 							artifacts += "\n";
 
