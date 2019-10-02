@@ -31,11 +31,12 @@ var teamMission = 1;
 var missionDayLimit = 10;
 var sconto = 10;
 var sconto_evento = 0;
-var max_duration = 5;
+var max_duration = 10;
+var max_mob_value = 90;
 var wait_room = 900;
 var wait_dungeon = 2;
 var wait_dungeon_long = 5;
-var max_istance = 120;
+var max_istance = 50;
 var merchant_limit = 5;
 var max_top_id = 6;
 var rank_cap = 15;
@@ -1121,7 +1122,7 @@ bot.onText(/^\/endtop$/, function (message, match) {
 
 								if (Object.keys(rows).length > 0) {
 									for (var j = 0, len = Object.keys(rows).length; j < len; j++) {
-										connection.query('UPDATE player SET top_rank_count = top_rank_count+' + rows[j].rank + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
+										connection.query('UPDATE player SET top_rank_count = top_rank_count+' + ((10*this.top_id)+rows[j].rank) + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
 											if (err) throw err;
 										});
 										if ((rows[j].rank < 12) && (this.top_id == 1)) {
@@ -3197,7 +3198,7 @@ bot.onText(/Rimodulatore di Flaridion|Torna al rimodulatore|^rimodulatore$/i, fu
 
 			var global_event = rows[0].global_event;
 
-			var arrMolt = [2, 1, 20, 20, 35, 1, 1, 1];
+			var arrMolt = [2, 1, 20, 20, 35, 4, 4, 30];
 
 			var gender_text = "o";
 			if (rows[0].gender == "F")
@@ -7647,8 +7648,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 								var p1 = Math.round((rooms * 3) / 100 * 60);
 								var rand = 0;
 								var rooms_mob = rooms;
-								if (rooms_mob > 75)	// cap stanze per mob
-									rooms_mob = 75;
+								if (rooms_mob > max_mob_value-15)	// cap stanze per mob
+									rooms_mob = max_mob_value-15;
 								
 								for (var i = 0; i < (rooms * 3); i++) {
 									if (i < p1) {	// mostro
@@ -7860,6 +7861,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 										bot.sendMessage(message.chat.id, "Sei arrivato alla stanza finale! Per uscire devi sconfiggere la Bestia del Dungeon.");
 
 										var monsterLev = (parseInt(room_num) + 10);
+										
+										if (monsterLev > max_mob_value)
+											monsterLev = max_mob_value;
 
 										if (nightMode == 1)
 											monsterLev += 5;
@@ -9184,8 +9188,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														if ((answer.text == "Più Raro") || (answer.text == "Meno Raro")) {
 
 															var monsterLev = room_num;
-															if (monsterLev > 75)
-																monsterLev = 75;
+															if (monsterLev > max_mob_value)
+																monsterLev = max_mob_value;
 															var rarity = "";
 
 															if (answer.text == "Più Raro") {
@@ -35221,7 +35225,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 											"> Aver partecipato attivamente ad almeno 15 imprese globali\n" +
 											"> Possedere almeno 300 Flaridion (verranno consumati)\n" +
 											"> Aver raggiunto almeno il rango dungeon 500\n" +
-											"> Aver raggiunto in totale almeno 300 Ð nelle Vette\n" +
+											"> Aver raggiunto in totale almeno 500 Ð nelle Vette\n" +
 											"> Possedere almeno 100 Figurine diverse (ne verrà consumata 1 per tipo partendo dalla rarità più bassa)\n" +
 											"L'ottenimento di questo artefatto sbloccherà nuove funzionalità!", get).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
@@ -35257,8 +35261,8 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 													return;
 												}
 
-												if (rows[0].top_rank_count < 300) {
-													bot.sendMessage(message.chat.id, "Non hai raggiunto le Ð necessarie nelle Vette (" + rows[0].top_rank_count + "/300)", back);
+												if (rows[0].top_rank_count < 500) {
+													bot.sendMessage(message.chat.id, "Non hai raggiunto le Ð necessarie nelle Vette (" + rows[0].top_rank_count + "/500)", back);
 													return;
 												}
 												
