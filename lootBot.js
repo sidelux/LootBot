@@ -1027,13 +1027,13 @@ bot.onText(/^\/failglobal/, function (message, match) {
 								var minText = "stanze dungeon completate";
 								var text = "nessuno scrigno U ottenuto in assalto!";
 
-								connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.reborn > 1 AND P.account_id NOT IN (SELECT account_id FROM banlist) AND A.value < ' + minValue + ' GROUP BY A.player_id ORDER BY val DESC', function (err, rows, fields) {
+								connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM player P LEFT JOIN achievement_global A ON A.player_id = P.id WHERE P.reborn > 1 AND P.account_id NOT IN (SELECT account_id FROM banlist) AND (A.value < ' + minValue + ' OR A.value IS NULL) GROUP BY P.id ORDER BY val DESC', function (err, rows, fields) {
 									if (err) throw err;
 									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 										connection.query('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
 											if (err) throw err;
 										});
-										bot.sendMessage(rows[i].chat_id, "Per il fallimento dell'impresa e lo scarso impegno (minimo " + formatNumber(minValue) + " " + minText + "), da questo momento fino al termine della prossima impresa " + text);
+										bot.sendMessage(rows[i].chat_id, "Per il fallimento dell'Impresa Globale (minimo " + formatNumber(minValue) + " " + minText + "), da questo momento fino al termine della prossima impresa " + text);
 										console.log(rows[i].nickname + " - Fallito");
 									}
 								});
@@ -9184,6 +9184,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														if ((answer.text == "Più Raro") || (answer.text == "Meno Raro")) {
 
 															var monsterLev = room_num;
+															if (monsterLev > 75)
+																monsterLev = 75;
 															var rarity = "";
 
 															if (answer.text == "Più Raro") {
@@ -35202,24 +35204,25 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 							});
 						});
 					} else if (answer.text.indexOf("Artefatto Ventoso") != -1) {
-						if (player_id != 1) {
-							bot.sendMessage(message.chat.id, "Questo artefatto non è ancora disponibile!", rBack);
-							return;
-						}
 						connection.query('SELECT id FROM artifacts WHERE item_id = 675 AND player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 							if (Object.keys(rows).length == 0) {
 								bot.sendMessage(message.chat.id, "Devi prima ottenere l'*Artefatto Divinatorio*!", rBack);
 								return;
 							}
+							
+							if (player_id != 1) {
+								bot.sendMessage(message.chat.id, "Questo artefatto non è ancora disponibile!", rBack);
+								return;
+							}
 
 							bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
-											"> Aver completato 100 triplette di imprese giornaliere\n" +
+											"> Aver completato 500 triplette di imprese giornaliere\n" +
 											"> Aver partecipato attivamente ad almeno 15 imprese globali\n" +
 											"> Possedere almeno 300 Flaridion (verranno consumati)\n" +
 											"> Aver raggiunto almeno il rango dungeon 500\n" +
-											"> Aver raggiunto in totale almeno 500 Ð nelle Vette\n" +
-											"> Possedere almeno 50 Figurine diverse (ne verrà consumata 1 per tipo partendo dalla rarità più bassa)\n" +
+											"> Aver raggiunto in totale almeno 300 Ð nelle Vette\n" +
+											"> Possedere almeno 100 Figurine diverse (ne verrà consumata 1 per tipo partendo dalla rarità più bassa)\n" +
 											"L'ottenimento di questo artefatto sbloccherà nuove funzionalità!", get).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text.indexOf("Ottieni Artefatto") != -1) {
@@ -35234,8 +35237,8 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 											connection.query('SELECT achievement_count_all, global_event, power_pnt, rank, top_win FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 
-												if (rows[0].achievement_count_all < 100) {
-													bot.sendMessage(message.chat.id, "Non hai raggiunto le triplette necessarie (" + rows[0].achievement_count_all + "/100)", back);
+												if (rows[0].achievement_count_all < 500) {
+													bot.sendMessage(message.chat.id, "Non hai raggiunto le triplette necessarie (" + rows[0].achievement_count_all + "/500)", back);
 													return;
 												}
 
@@ -35254,16 +35257,16 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 													return;
 												}
 
-												if (rows[0].top_rank_count < 500) {
-													bot.sendMessage(message.chat.id, "Non hai raggiunto almeno le Ð nelle Vette (" + rows[0].top_rank_count + "/500)", back);
+												if (rows[0].top_rank_count < 300) {
+													bot.sendMessage(message.chat.id, "Non hai raggiunto le Ð necessarie nelle Vette (" + rows[0].top_rank_count + "/300)", back);
 													return;
 												}
 												
 												connection.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE quantity > 0 AND player_id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
 													
-													if (rows[0].cnt < 50) {
-														bot.sendMessage(message.chat.id, "Non possiedi abbastanza Figurine diverse (" + rows[0].cnt + "/50)", back);
+													if (rows[0].cnt < 100) {
+														bot.sendMessage(message.chat.id, "Non possiedi abbastanza Figurine diverse (" + rows[0].cnt + "/100)", back);
 														return;
 													}
 
@@ -35271,7 +35274,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 														if (err) throw err;
 														connection.query('UPDATE player SET power_pnt = power_pnt - ' + 300 + ' WHERE id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
-															connection.query('UPDATE card_inventory SET quantity = quantity-1 WHERE id IN (SELECT * FROM (SELECT I.id FROM card_inventory I, card_list L WHERE I.card_id = L.id AND quantity > 0 AND player_id = ' + player_id + ' ORDER BY rarity LIMIT 50) As t)', function (err, rows, fields) {
+															connection.query('UPDATE card_inventory SET quantity = quantity-1 WHERE id IN (SELECT * FROM (SELECT I.id FROM card_inventory I, card_list L WHERE I.card_id = L.id AND quantity > 0 AND player_id = ' + player_id + ' ORDER BY rarity LIMIT 100) As t)', function (err, rows, fields) {
 																if (err) throw err;
 																addItem(player_id, 788);
 																bot.sendMessage(message.chat.id, "Hai ottenuto l'*Artefatto Ventoso*!\n\nHai sbloccato la Rinascita 5!", back);

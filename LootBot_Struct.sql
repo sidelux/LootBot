@@ -2866,6 +2866,7 @@ CREATE TABLE `player` (
   `status` int(11) DEFAULT NULL,
   `status_cnt` int(11) NOT NULL DEFAULT '0',
   `top_win` int(11) NOT NULL DEFAULT '0',
+  `top_rank_count` int(11) NOT NULL DEFAULT '0',
   `coupon_count` int(11) NOT NULL DEFAULT '0',
   `coupon_record` int(11) NOT NULL DEFAULT '0',
   `top_first` tinyint(1) NOT NULL DEFAULT '0',
@@ -3740,4 +3741,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-10-01 15:00:05
+-- Dump completed on 2019-10-02  9:00:04
