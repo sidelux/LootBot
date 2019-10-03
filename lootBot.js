@@ -7154,7 +7154,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 											var this_istance_number = rows[0].cnt;
 
-											connection.query('SELECT name, duration, cursed, IF(creator_id=' + player_id + ', 1, 0) As createdbyme FROM dungeon_list WHERE name LIKE "' + name1 + '%" AND duration < 5 ORDER BY createdbyme DESC, duration DESC', function (err, rows, fields) {
+											connection.query('SELECT name, duration, cursed, IF(creator_id=' + player_id + ', 1, 0) As createdbyme FROM dungeon_list WHERE name LIKE "' + name1 + '%" AND duration < ' + max_duration + ' ORDER BY createdbyme DESC, duration DESC', function (err, rows, fields) {
 												if (err) throw err;
 
 												if (Object.keys(rows).length == 0) {
@@ -7173,7 +7173,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															cursedSym = "";
 															if (rows[i].cursed == 1)
 																cursedSym = " 🧨";
-															iKeys.push([rows[i].name + " (" + (5 - rows[i].duration) + " posti liberi)" + cursedSym]);
+															iKeys.push([rows[i].name + " (" + (max_duration - rows[i].duration) + " posti liberi)" + cursedSym]);
 														}
 													}
 												}
@@ -7210,8 +7210,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	connection.query('SELECT COUNT(*) As num FROM dungeon_list WHERE name LIKE "' + name1 + '%" AND main = 0 AND duration < ' + max_duration, function (err, rows, fields) {
 																		if (err) throw err;
 																		
-																		if (rows[0].num > 0) {
-																			bot.sendMessage(message.chat.id, "Non è possibile creare un'altra istanza se ne esistono altre non completamente piene!", dBack);
+																		if (rows[0].num > 5) {
+																			bot.sendMessage(message.chat.id, "Possono esserci solo massimo 5 istanze non completatemente piene, accedi a quelle già esistenti o attendi la scadenza!", dBack);
 																			return;
 																		}
 																		
@@ -7862,8 +7862,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 										var monsterLev = (parseInt(room_num) + 10);
 										
-										if (monsterLev > max_mob_value)
-											monsterLev = max_mob_value;
+										if (monsterLev > max_mob_value-5)
+											monsterLev = max_mob_value-5;
 
 										if (nightMode == 1)
 											monsterLev += 5;
@@ -9188,8 +9188,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														if ((answer.text == "Più Raro") || (answer.text == "Meno Raro")) {
 
 															var monsterLev = room_num;
-															if (monsterLev > max_mob_value)
-																monsterLev = max_mob_value;
+															if (monsterLev > max_mob_value-5)
+																monsterLev = max_mob_value-5;
 															var rarity = "";
 
 															if (answer.text == "Più Raro") {
@@ -38102,7 +38102,7 @@ bot.onText(/Torna in Vita/i, function (message) {
 
 			var refill_left = (att - refilled);
 			if (refill_left > 0)
-				iKeys.push(["Intervento Divino (" + (att - refilled) + ")"]);
+				iKeys.push(["Intervento Divino (" + refill_left + ")"]);
 
 			iKeys.push(["Torna al menu"]);
 
@@ -51777,7 +51777,7 @@ function setFinishedTeamMission(element, index, array) {
 								var savedQnt = qnt;
 								var extra = "";
 
-								var mission_time_count = Math.floor((duration*(parts+1))/60/60);
+								var mission_time_count = Math.floor((duration*(parts+1))/60/60); // ore
 
 								for (i = 0; i < Object.keys(rows).length; i++) {
 									if (rows[i].suspended == 0) {
