@@ -8340,6 +8340,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 											if (dir > 10) {
 												var monsterLev = dir - 10;
+												
+												
 
 												connection.query('SELECT id, min_rank FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 													if (err) throw err;
@@ -8369,6 +8371,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 														if (nightMode == 1)
 															monsterLev += 5;
+														
+														if (monsterLev > max_mob_value)
+															monsterLev = max_mob_value;
 
 														connection.query('SELECT id, life, name, level FROM dungeon_monsters WHERE level = ' + monsterLev + ' ORDER BY RAND()', function (err, rows, fields) {
 															if (err) throw err;
@@ -8493,6 +8498,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																}
 															} else {
 																var monsterLev = Math.round(Math.random() * Math.round(room_num / 2) + Math.round(room_num / 2));
+												
+																if (monsterLev > max_mob_value)
+																	monsterLev = max_mob_value;
 
 																connection.query('SELECT id, life, name, level FROM dungeon_monsters WHERE level = ' + monsterLev + ' ORDER BY RAND()', function (err, rows, fields) {
 																	if (err) throw err;
@@ -8850,6 +8858,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															var rand = Math.random() * 100;
 															if (rand < 50) {
 																var monsterLev = Math.round(Math.random() * Math.round(room_num / 2) + Math.round(room_num / 2));
+																
+																if (monsterLev > max_mob_value-5)
+																	monsterLev = max_mob_value-5;
 
 																connection.query('SELECT id, life, name, level FROM dungeon_monsters WHERE level = ' + monsterLev + ' ORDER BY RAND()', function (err, rows, fields) {
 																	if (err) throw err;
@@ -9190,6 +9201,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															var monsterLev = room_num;
 															if (monsterLev > max_mob_value-5)
 																monsterLev = max_mob_value-5;
+															
 															var rarity = "";
 
 															if (answer.text == "Più Raro") {
@@ -10954,6 +10966,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															var new_dir = 0;
 															if (Math.round(Math.random()) == 1) {
 																new_dir = Math.round(Math.random() * 10 + (room_num + 1));
+																if (new_dir > max_mob_value)
+																	new_dir = max_mob_value;
 															} else {
 																// esclude 4, -4, -11, -14
 																while ((new_dir == 0) || (new_dir == 4) || (new_dir == -4) || (new_dir == -11) || (new_dir == -14))
@@ -11007,7 +11021,6 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																});
 															}
 														} else if (answer.text == "Ignora") {
-
 															bot.sendMessage(message.chat.id, "Giri curioso attorno al piccolo specchio, e lo osservi incresparsi come una tavola d'acqua col vento...\nEsiti un ultimo istante, prima di proseguire verso la prossima stanza", dNext);
 
 															if (boost_id == 8)
@@ -24797,13 +24810,6 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																					break;
 																			}
 
-																			if (pot1 > 0)
-																				setAchievement(player[i].id, 35, pot1);
-																			if (pot2 > 0)
-																				setAchievement(player[i].id, 35, pot2);
-																			if (pot3 > 0)
-																				setAchievement(player[i].id, 35, pot3);
-
 																			delItem(player[i].id, 92, pot1);
 																			delItem(player[i].id, 93, pot2);
 																			delItem(player[i].id, 94, pot3);
@@ -24817,7 +24823,6 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			if (potSum == 0)
 																				player_text += "\n> " + player[i].nickname + " non recupera salute";
 																			else {
-
 																				setAchievement(player[i].id, 35, potSum);
 
 																				var plur = "i";
@@ -35221,13 +35226,14 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 							}
 
 							bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
-											"> Aver completato 500 triplette di imprese giornaliere\n" +
+											"> Aver completato 300 triplette di imprese giornaliere\n" +
 											"> Aver partecipato attivamente ad almeno 15 imprese globali\n" +
 											"> Possedere almeno 300 Flaridion (verranno consumati)\n" +
 											"> Aver raggiunto almeno il rango dungeon 500\n" +
-											"> Aver raggiunto in totale almeno 500 Ð nelle Vette\n" +
+											"> Aver raggiunto in totale almeno 500 Ð nelle Vette*\n" +
 											"> Possedere almeno 100 Figurine diverse (ne verrà consumata 1 per tipo partendo dalla rarità più bassa)\n" +
-											"L'ottenimento di questo artefatto sbloccherà nuove funzionalità!", get).then(function () {
+											"L'ottenimento di questo artefatto sbloccherà nuove funzionalità!\n\n" +
+											"* Verranno conteggiate di volta in volta le Ð che si hanno alla chiusura delle Vette", get).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text.indexOf("Ottieni Artefatto") != -1) {
 										connection.query('SELECT id FROM artifacts WHERE item_id = 788 AND player_id = ' + player_id, function (err, rows, fields) {
@@ -35241,8 +35247,8 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 											connection.query('SELECT achievement_count_all, global_event, power_pnt, rank, top_win FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 
-												if (rows[0].achievement_count_all < 500) {
-													bot.sendMessage(message.chat.id, "Non hai raggiunto le triplette necessarie (" + rows[0].achievement_count_all + "/500)", back);
+												if (rows[0].achievement_count_all < 300) {
+													bot.sendMessage(message.chat.id, "Non hai raggiunto le triplette necessarie (" + rows[0].achievement_count_all + "/300)", back);
 													return;
 												}
 

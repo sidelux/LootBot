@@ -524,7 +524,7 @@ bot.onText(/^\/comandigiocatore/, function (message) {
 					"/rango - Visualizza informazioni sul rango del giocatore\n" +
 					"/abilità - Visualizza informazioni sull'abilità del giocatore\n" +
 					"/posizione - Indica la posizione in classifica globale e se si otterrà il relativo punto partecipazione\n" +
-					"/figurine - Visualizza le figurine possedute (specifica anche la rarità, il nome parziale o 'doppie')\n" +
+					"/figurine - Visualizza le figurine possedute (specifica anche la rarità, il nome parziale, 'doppie', rarità o raritàinv)\n" +
 					"/figurina - Visualizza i dettagli delle figurine", mark);
 });
 
@@ -8461,7 +8461,7 @@ bot.onText(/^\/abilità/, function (message, match) {
 
 			if (best_id == rows[0].id)
 				text = "sei in vetta alla classifica!";
-			bot.sendMessage(message.chat.id, message.from.username + ", hai raggiunto <b>" + rows[0].ability + "</b> punti abilità, " + text, html);
+			bot.sendMessage(message.chat.id, message.from.username + ", hai raggiunto <b>" + formatNumber(rows[0].ability) + "</b> punti abilità, " + text, html);
 		});
 	});
 });
@@ -9267,11 +9267,18 @@ bot.onText(/^\/figurine (.+)|^\/figurine/, function (message, match) {
 	var rarityFilter = "";
 	var nameFilter = "";
 	var quantityFilter = "";
+	var orderFilter = "ORDER BY name";
 	var filterName = "";
 	if (match[1] != undefined) {
 		if (match[1] == "doppie") {
 			filterName = " doppie";
 			quantityFilter = " AND quantity > 1";
+		} else if (match[1] == "rarità") {
+			filterName = " ordinate per rarità";
+			orderFilter = "ORDER BY rarity ASC";
+		} else if (match[1] == "raritàinv") {
+			filterName = " ordinate per rarità inverse";
+			orderFilter = "ORDER BY rarity DESC";
 		} else if (isNaN(parseInt(match[1]))) {
 			filterName = " con nome parziale";
 			nameFilter = " AND name LIKE '%" + match[1] + "%'";
@@ -9299,7 +9306,7 @@ bot.onText(/^\/figurine (.+)|^\/figurine/, function (message, match) {
 			if (err) throw err;
 			var have = rows[0].cnt;
 
-			connection.query('SELECT name, rarity, quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND quantity > 0 AND player_id = ' + player_id + rarityFilter + nameFilter + quantityFilter + ' ORDER BY name', function (err, rows, fields) {
+			connection.query('SELECT name, rarity, quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND quantity > 0 AND player_id = ' + player_id + rarityFilter + nameFilter + quantityFilter + ' ' + orderFilter, function (err, rows, fields) {
 				if (err) throw err;
 
 				if (Object.keys(rows).length == 0) {
