@@ -1085,6 +1085,7 @@ bot.onText(/^\/topon$/, function (message, match) {
 	if (message.from.id == 20471035) {
 		updateValue("checkDragonTopOn", 1);
 		reloadEvents();
+		checkKeyboard();
 		bot.sendMessage(message.chat.id, "Fatto!");
 	}
 });
@@ -18417,7 +18418,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 										var enemy_dragon_crit = rows[0].critical;
 
 										enemy_dragon_damage += enemy_power_dragon_dmg;
-										enemy_dragon_def += enemy_power_dragon_def;
+										enemy_dragon_defence += enemy_power_dragon_def;
 										enemy_dragon_crit += enemy_power_dragon_crit;
 
 										if ((class_id2 == 7) && (reborn2 > 1) && (reborn2 == 5))
