@@ -7206,8 +7206,15 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														if (err) throw err;
 														
 														var max_creable = rows[0].num;
+														var max_creable_text = "";
+														if (max_creable == 0)
+															max_creable_text = "Al momento non possono essere create altre varianti.";
+														else if (max_creable == 1)
+															max_creable_text = "Al momento può essere ancora creata *1* variante.";
+														else
+															max_creable_text = "Al momento possono essere ancora create *" + max_creable + "* varianti.";
 
-														bot.sendMessage(message.chat.id, "Seleziona una variante di dungeon esistente o creane una nuova, in ogni variante la disposizione delle stanze sarà diversa e scompariranno alla scadenza dell'istanza. Puoi anche inserire solo il numero della variante.\nPossono essere ancora create *" + (Math.abs(max_istance - this_istance_number)) + "* varianti in totale, " + max_creable + " attualmente.", dSelect2).then(function () {
+														bot.sendMessage(message.chat.id, "Seleziona una variante di dungeon esistente o creane una nuova, in ogni variante la disposizione delle stanze sarà diversa e scompariranno alla scadenza dell'istanza. Puoi anche inserire solo il numero della variante.\n" + max_creable_text, dSelect2).then(function () {
 															answerCallbacks[message.chat.id] = function (answer) {
 																if ((answer.text != "Torna al menu") && (answer.text != "Torna al dungeon")) {
 
@@ -25090,7 +25097,7 @@ bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^❤️$|^cc$|^cp$/i, fu
 			}
 
 			if (achievement == 1)
-				setAchievement(player_id, 20, (pot1+pot2+pot3));
+				setAchievement(player_id, 20, 1);
 
 			if (pot1+pot2+pot3 == 0) {
 				bot.sendMessage(message.chat.id, "Non hai recuperato salute", kbBack);
@@ -35078,11 +35085,11 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 
 								connection.query('SELECT achievement_count, gems FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
-
-									if (rows[0].achievement_count >= 200)
+									
+									if (rows[0].gems >= 50)
 										req2 = " ✅";
 
-									if (rows[0].gems >= 50)
+									if (rows[0].achievement_count >= 200)
 										req3 = " ✅";
 							
 									bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
