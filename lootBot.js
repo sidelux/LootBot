@@ -9529,6 +9529,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	});
 																} else {
 																	var monsterLev = Math.round(Math.random() * Math.round(room_num / 2) + Math.round(room_num / 2));
+																	
+																	if (monsterLev > max_mob_value-5)
+																		monsterLev = max_mob_value-5;
 
 																	connection.query('SELECT id, life, name, level FROM dungeon_monsters WHERE level = ' + monsterLev + ' ORDER BY RAND()', function (err, rows, fields) {
 																		if (err) throw err;
