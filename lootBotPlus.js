@@ -1469,7 +1469,7 @@ bot.onText(/^\/gruppi/, function (message) {
 																							"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
 																							"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
 																							"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
-																							"<a href='https://t.me/joinchat/CXTRTE60M2WLQR2fvG_q7A'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
+																							"<a href='https://t.me/joinchat/I-b0dhM-eO3tmxrz9rtMrg'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
 																							"@Adesmappers (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
 																							"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ") - La musica ed il diverimento di Lootia!\n" +
 																							"<a href='https://t.me/joinchat/B8_tHk9nThsWfDL-k-Fazw'>Loot Nabbi</a> (" + c19 + ") - Dedicato ai nabbi di Lootia!\n" +
@@ -10311,7 +10311,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 									if (Object.keys(rows).length > 0)
 										team_desc = "⚜️ " + rows[0].name.trim() + "\n";
 
-									connection.query('SELECT COUNT(id) As cnt, (SELECT COUNT(id) FROM card_list) As tot FROM card_inventory WHERE player_id = ' + player_id, function (err, rows, fields) {
+									connection.query('SELECT COUNT(id) As cnt, (SELECT COUNT(id) FROM card_list) As tot FROM card_inventory WHERE quantity > 0 AND player_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 										var cards_txt = "";
 										if (rows[0].cnt > 0)
