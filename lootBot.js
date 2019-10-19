@@ -444,25 +444,19 @@ bot.on('message', function (message) {
 		}
 
 		if (status != null) {
-			bot.sendMessage(message.chat.id, "Sicuro di voler interrompere la ricerca nelle Vette?", yesno).then(function () {
-				answerCallbacks[message.chat.id] = function (answer) {
-					if (answer.text.toLowerCase() == "si") {
-						connection.query('UPDATE player SET status = NULL, status_cnt = 0 WHERE id = ' + player_id, function (err, rows, fields) {
-							if (err) throw err;
-						});
-
-						if (message.text.toLocaleLowerCase() != "interrompi") {
-							var d = new Date();
-							d.setMinutes(d.getMinutes() + 5);
-							var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-
-							connection.query('UPDATE dragon_top_status SET no_match_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
-								if (err) throw err;
-							});
-						}
-					}
-				}
+			connection.query('UPDATE player SET status = NULL, status_cnt = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
 			});
+
+			if (message.text.toLocaleLowerCase() != "interrompi") {
+				var d = new Date();
+				d.setMinutes(d.getMinutes() + 5);
+				var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+				connection.query('UPDATE dragon_top_status SET no_match_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+					if (err) throw err;
+				});
+			}
 		}
 
 		if (rows[0].account_id != message.from.id) {
@@ -1126,10 +1120,15 @@ bot.onText(/^\/endtop$/, function (message, match) {
 								if (err) throw err;
 
 								if (Object.keys(rows).length > 0) {
+									var acc = 0;
 									for (var j = 0, len = Object.keys(rows).length; j < len; j++) {
-										connection.query('UPDATE player SET top_rank_count = top_rank_count+' + ((10*this.top_id)+rows[j].rank) + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
-											if (err) throw err;
-										});
+										acc = ((10*this.top_id)+rows[j].rank);
+										console.log("Accumulati: " + acc + " per " + rows[j].player_id);
+										if (test == 0) {
+											connection.query('UPDATE player SET top_rank_count = top_rank_count+' + acc + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
+												if (err) throw err;
+											});
+										}
 										if ((rows[j].rank < 12) && (this.top_id == 1)) {
 											if (test == 0) {
 												bot.sendMessage(rows[j].chat_id, "Per il tuo posizionamento nelle *Vette dei Draghi*, essendo rimasto al primo Monte e di basso rango, non hai ricevuto alcun premio aggiuntivo! La prossima volta prova ad impegnarti di più :(", mark);
@@ -7212,9 +7211,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													connection.query('SELECT COUNT(*) As num FROM dungeon_list WHERE name LIKE "' + name1 + '%" AND main = 0 AND duration < ' + max_duration + ' AND TIMESTAMPDIFF(HOUR, NOW(), finish_date) > 48', function (err, rows, fields) {
 														if (err) throw err;
 														
-														var max_creable = rows[0].num;
+														var max_creable = rows[0].num-max_duration;
 														var max_creable_text = "";
-														if (max_creable == 0)
+														if (max_creable <= 0)
 															max_creable_text = "Al momento non possono essere create altre varianti.";
 														else if (max_creable == 1)
 															max_creable_text = "Al momento può essere ancora creata *1* variante.";
@@ -7833,7 +7832,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	var d = new Date();
 																	d.setHours(d.getHours() + (wait_dungeon - 1));
 																	var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																	connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE player SET room_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 																}
@@ -7957,10 +7956,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			var d = new Date();
 																			d.setHours(d.getHours() + (wait_dungeon - 1));
 																			var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																			connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																			connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																			connection.query('UPDATE player SET room_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
 																		}
@@ -8464,7 +8460,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																						var d = new Date();
 																						d.setHours(d.getHours() + (wait_dungeon - 1));
 																						var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																						connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																						connection.query('UPDATE player SET room_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																							if (err) throw err;
 																						});
 																					}
@@ -8588,7 +8584,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																								var d = new Date();
 																								d.setHours(d.getHours() + (wait_dungeon - 1));
 																								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																								connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																								connection.query('UPDATE player SET room_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
 																							}
@@ -8949,10 +8945,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																								var d = new Date();
 																								d.setHours(d.getHours() + (wait_dungeon - 1));
 																								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																								connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
-																									if (err) throw err;
-																								});
-																								connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																								connection.query('UPDATE player SET room_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
 																							}
@@ -9318,7 +9311,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																								var d = new Date();
 																								d.setHours(d.getHours() + (wait_dungeon - 1));
 																								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																								connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																								connection.query('UPDATE player SET room_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
 																							}
@@ -9605,7 +9598,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																									var d = new Date();
 																									d.setHours(d.getHours() + (wait_dungeon - 1));
 																									var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																									connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																									connection.query('UPDATE player SET room_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																										if (err) throw err;
 																									});
 																								}
@@ -12737,7 +12730,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							var d = new Date();
 																							d.setHours(d.getHours() + (wait_dungeon - 1));
 																							var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																							connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																							connection.query('UPDATE player SET room_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
 																						}
@@ -17090,7 +17083,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				dragon_status = "Dorme fino alle " + short_date;
 			}
 
-			var finishD = new Date("2019-10-16 12:00:00");
+			var finishD = new Date("2019-11-20 12:00:00");
 			var startD = new Date(finishD);
 
 			var finish_date = addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes()) + " del " + addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + "/" + finishD.getFullYear();
@@ -17311,7 +17304,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 												}
 											}
 											
-											text += "\nTu: " + mypos + "° " + dragon_name + " " + my_dragon_type + " " + dragonSym(my_dragon_type) + " (" + myrank + " Ð)\n";
+											text += "\nTu: " + (mypos+1) + "° " + dragon_name + " " + my_dragon_type + " " + dragonSym(my_dragon_type) + " (" + myrank + " Ð)\n";
 										}
 
 										connection.query('SELECT name, pnt FROM dragon_top_list WHERE id = ' + top_id, function (err, rows, fields) {
@@ -51946,6 +51939,10 @@ function setFinishedTeamMission(element, index, array) {
 									var item = connection_sync.query("SELECT id, name, rarity FROM item WHERE name LIKE 'Runa%' AND rarity != 'X' ORDER BY RAND()");
 									var itemid = item[0].id;
 									qnt = Math.floor(rewardLevel/4)+1;
+									if (crazyMode == 1) {
+										qnt += qnt*0.5;
+										qnt = Math.ceil(qnt);
+									}
 									rewardText += "\n> " + qnt + "x " + item[0].name + " (" + item[0].rarity + ") (a testa)";
 								}
 								isItem = 1;
@@ -51957,6 +51954,10 @@ function setFinishedTeamMission(element, index, array) {
 								}
 								var val = (i+1);
 								qnt = qnt/val;
+								if (crazyMode == 1) {
+									qnt += qnt*0.5;
+									qnt = Math.ceil(qnt);
+								}
 								var item = connection_sync.query("SELECT id, name, rarity FROM item WHERE id = " + (68+val));
 								var itemid = item[0].id;
 								rewardText += "\n> " + qnt + "x " + item[0].name + " (" + item[0].rarity + ") (a testa)";
