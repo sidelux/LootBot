@@ -1335,9 +1335,10 @@ bot.onText(/^\/pinfo (.+)/, function (message, match) {
 
 bot.onText(/^\/info$/, function (message) {
 	var reply = "";
+	console.log(message);
 
 	if (message.reply_to_message != undefined) {
-		var date2 = new Date(message.reply_to_message.date * 1000);
+		var date = new Date(message.reply_to_message.date * 1000);
 		reply = "\n*REPLY TO*\n" +
 			"Message ID: " + message.reply_to_message.message_id + "\n" +
 			"User ID: " + message.reply_to_message.from.id + "\n" +
@@ -1347,9 +1348,16 @@ bot.onText(/^\/info$/, function (message) {
 			"Chat Name: " + ((message.reply_to_message.chat.first_name == undefined) ? "???" : message.reply_to_message.chat.first_name) + "\n" +
 			"Chat @: " + ((message.reply_to_message.chat.username == undefined) ? "???" : message.reply_to_message.chat.username) + "\n" +
 			"Chat Type: " + message.reply_to_message.chat.type + "\n" +
-			"Date: " + toDate("it", date2);
+			"Date: " + toDate("it", date) + "\n";
+		
+		if (message.reply_to_message.forward_sender_name != undefined)
+			reply += "Forward User: " + message.reply_to_message.forward_sender_name + "\n";
+		if (message.reply_to_message.forward_date != undefined) {
+			var date = new Date(message.reply_to_message.forward_date * 1000);
+			reply += "Forward Date: " + toDate("it", date);
+		}
 	}
-
+	
 	var date = new Date(message.date * 1000);
 	bot.sendMessage(message.chat.id, "Message ID: " + message.message_id + "\n" +
 					"User ID: " + message.from.id + "\n" +
