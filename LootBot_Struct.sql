@@ -1737,6 +1737,7 @@ CREATE TABLE `heist_history` (
   `rate3` int(11) NOT NULL DEFAULT '0',
   `fail` int(11) NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `matchmaking` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `heist_history_from_id` (`from_id`),
   KEY `heist_history_to_id` (`to_id`),
@@ -3741,4 +3742,4 @@ CREATE TABLE `travel` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-10-22  9:00:05
+-- Dump completed on 2019-10-23  9:00:05
