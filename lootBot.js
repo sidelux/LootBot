@@ -8945,7 +8945,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																								var d = new Date();
 																								d.setHours(d.getHours() + (wait_dungeon - 1));
 																								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																								connection.query('UPDATE player SET room_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																								connection.query('UPDATE dungeon_status SET room_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
 																							}
@@ -9311,7 +9311,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																								var d = new Date();
 																								d.setHours(d.getHours() + (wait_dungeon - 1));
 																								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																								connection.query('UPDATE player SET room_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																								connection.query('UPDATE dungeon_status SET room_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
 																							}
@@ -9598,7 +9598,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																									var d = new Date();
 																									d.setHours(d.getHours() + (wait_dungeon - 1));
 																									var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																									connection.query('UPDATE player SET room_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																									connection.query('UPDATE dungeon_status SET room_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																										if (err) throw err;
 																									});
 																								}
