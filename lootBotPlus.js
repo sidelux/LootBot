@@ -9030,7 +9030,7 @@ bot.onText(/^\/prezzo (.+)|^\/prezzo/, function (message, match) {
 					row_cnt++;
 				}
 				
-				if (row_cnt >= 25)
+				if (row_cnt >= len)
 					break;
 			}
 			bot.sendMessage(message.from.id, text + "\nVenduto " + rows[0].cnt + " volte");
