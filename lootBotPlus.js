@@ -9016,10 +9016,22 @@ bot.onText(/^\/prezzo (.+)|^\/prezzo/, function (message, match) {
 
 			var long_date = "";
 			var d = new Date();
-			for (var i = 0; i < len; i++) {
+			var last_row = "";
+			var this_row = "";
+			var row_cnt = 0;
+			var this_qnt = 0;
+			for (var i = 0; i < Object.keys(rows).length; i++) {
 				d = new Date(rows[i].time);
 				long_date = " alle " + addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-				text += "\n> " + rows[i].quantity + "x " + formatNumber(Math.round(rows[i].price)) + " § " + long_date;
+				this_row = "\n> " + formatNumber(Math.round(rows[i].price)) + " § ";
+				if (this_row != last_row) {
+					text += this_row + long_date;
+					last_row = this_row;
+					row_cnt++;
+				}
+				
+				if (row_cnt >= 25)
+					break;
 			}
 			bot.sendMessage(message.from.id, text + "\nVenduto " + rows[0].cnt + " volte");
 		} else {
