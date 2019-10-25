@@ -13829,7 +13829,7 @@ bot.onText(/rinasci/i, function (message) {
 
 										connection.query('UPDATE player SET exp = 1, life = 100, total_life = 100, mission_auto_id = 1, reborn = ' + reborn_val + ' WHERE id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
-											bot.sendMessage(message.chat.id, "Hai completato la quinta rinascita! Ma la strada è ancora lunga!", back);
+											bot.sendMessage(message.chat.id, "Hai completato la quarta rinascita! Ma la strada è ancora lunga!", back);
 										});
 									});
 									return;
@@ -13846,7 +13846,7 @@ bot.onText(/rinasci/i, function (message) {
 
 										connection.query('UPDATE player SET exp = 1, life = 100, total_life = 100, mission_auto_id = 1, reborn = ' + reborn_val + ' WHERE id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
-											bot.sendMessage(message.chat.id, "Hai completato la sesta rinascita!", back);
+											bot.sendMessage(message.chat.id, "Hai completato la quinta rinascita!", back);
 										});
 									});
 									return;
@@ -42839,7 +42839,7 @@ function mainMenu(message) {
 		if (Object.keys(global).length > 0) {
 			var rows = connection_sync.query('SELECT SUM(value) As val FROM achievement_global');
 			if (Object.keys(global).length > 0)
-				msgtext = msgtext + "\n🌍 Impresa globale: " + Math.round(rows[0].val/global[0].global_cap*100) + "%";
+				msgtext = msgtext + "\n🌍 Impresa globale: " + Math.floor(rows[0].val/global[0].global_cap*100) + "%";
 		}
 
 		if (mission_party > 0) {
