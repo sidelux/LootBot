@@ -2075,7 +2075,7 @@ CREATE TABLE `map_history` (
   PRIMARY KEY (`id`),
   KEY `map_history_player_id` (`player_id`),
   CONSTRAINT `map_history_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2134,7 +2134,7 @@ CREATE TABLE `map_lobby_list` (
   PRIMARY KEY (`id`),
   KEY `map_lobby_list_lobby_id` (`lobby_id`),
   CONSTRAINT `map_lobby_list_lobby_id` FOREIGN KEY (`lobby_id`) REFERENCES `map_lobby` (`lobby_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
