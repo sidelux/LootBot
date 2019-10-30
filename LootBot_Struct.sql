@@ -2072,7 +2072,9 @@ CREATE TABLE `map_history` (
   `player_id` int(11) NOT NULL,
   `position` int(11) NOT NULL,
   `kills` int(11) NOT NULL,
+  `insert_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `map_history_no_duplicate` (`map_lobby_id`,`player_id`),
   KEY `map_history_player_id` (`player_id`),
   CONSTRAINT `map_history_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
@@ -2134,7 +2136,7 @@ CREATE TABLE `map_lobby_list` (
   `final_point_x` int(11) NOT NULL,
   `final_point_y` int(11) NOT NULL,
   `turn_number` int(11) NOT NULL,
-  `last_restrict_time` timestamp NULL DEFAULT NULL,
+  `next_restrict_time` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `map_lobby_list_lobby_id` (`lobby_id`),
   CONSTRAINT `map_lobby_list_lobby_id` FOREIGN KEY (`lobby_id`) REFERENCES `map_lobby` (`lobby_id`)
@@ -2890,6 +2892,7 @@ CREATE TABLE `player` (
   `status_cnt` int(11) NOT NULL DEFAULT '0',
   `top_win` int(11) NOT NULL DEFAULT '0',
   `top_rank_count` int(11) NOT NULL DEFAULT '0',
+  `trophies` int(11) NOT NULL DEFAULT '0',
   `coupon_count` int(11) NOT NULL DEFAULT '0',
   `coupon_record` int(11) NOT NULL DEFAULT '0',
   `top_first` tinyint(1) NOT NULL DEFAULT '0',

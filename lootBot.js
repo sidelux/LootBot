@@ -5849,7 +5849,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Accedi alla Lobby 🏹", "Vittorie 🎉"], ["Torna al menu"]]
+				keyboard: [["Accedi alla Lobby 🏹", "Vittorie 🎉"], ["Come funziona? 💬"], ["Torna al menu"]]
 			}
 		};
 
@@ -5859,7 +5859,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 			if (Object.keys(rows).length == 0) {
 				connection.query('INSERT INTO map_lobby (player_id) VALUES (' + player_id + ')', function (err, rows, fields) {
 					if (err) throw err;
-					bot.sendMessage(message.chat.id, "Benvenuto...", kbEvent);
+					bot.sendMessage(message.chat.id, "Benvenuto nelle *Mappe di Lootia*!\nAffronta altri giocatori in mappe generate in modo completamente casuale, ottieni oggetti, monete, sfuggi a trappole e scambia oggetti per potenziare il tuo personaggio.\nOtteni o perdi trofei al termine della partita e vinci interessanti premi al termine della stagione!\nCosa aspetti?", kbEvent);
 				});
 			} else {
 				var lobby_id = rows[0].lobby_id;
@@ -5879,7 +5879,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 						
 						var lobby_players = rows[0].cnt;
 						
-						bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\nCi sono <b>" + lobby_players + "</b> combattenti dentro una lobby, possiedi <b>" + trophies + "</b> 🏆 in questa stagione", kbMain).then(function () {
+						bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\n\n<b>" + lobby_players + "</b> ⚔️ combattenti dentro una lobby\n<b>" + trophies + "</b> 🏆 in questa stagione", kbMain).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
 								if (answer.text == "Torna al menu")
 									return;
@@ -5945,6 +5945,27 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 
 										bot.sendMessage(message.chat.id, text, kbBack);
 									});
+								} else if (answer.text.toLowerCase().indexOf("come funziona") != -1) {
+									bot.sendMessage(message.chat.id, "<b>Legenda simboli sulla mappa</b>\n\n" +
+													"📍 Posizione del giocatore\n" +
+													mapIdToSym(0) + " Vuoto\n" +
+													mapIdToSym(1) + " Scrigno\n" +
+													mapIdToSym(2) + " Scrigno Epico\n" +
+													mapIdToSym(3) + " Trappola\n" +
+													mapIdToSym(4) + " Farmacia\n" +
+													mapIdToSym(5) + " Scambio\n" +
+													mapIdToSym(6) + " Vendita\n" +
+													mapIdToSym(7) + " Impulso\n" +
+													mapIdToSym(8) + " Altro giocatore\n" +
+													mapIdToSym(9) + " Rottame\n" +
+													mapIdToSym(10) + " Mappa bruciata\n" +
+													"\n<b>Istruzioni base</b>" +
+													"\n> Il personaggio inizierà la partita con un equip base e zero monete." +
+													"\n> Ogni " + lobby_restric_min + " minuti (" + (lobby_restric_min*2) + " appena avviata la partita) la mappa si restringe bruciando uno strato esterno fino alla mappa completa." +
+													"\n> Quando un giocatore incontra un altro giocatore, ha inizio una battaglia dove lo sconfitto uscirà dalla partita." +
+													"\n> Se la trappola sconfigge il giocatore, quest'ultimo uscirà dalla partita." + 
+													"\n> Se il giocatore viene bruciato dal restringimento della mappa o ci entra di sua volontà, uscirà dalla partita." +
+													"\n> La partita termine quando tutti i giocatori tranne uno sono stati sconfitti, oppure sono stati tutti bruciati.", kbBack);
 								}
 							}
 						});
@@ -52989,7 +53010,7 @@ function setFullLobby(element, index, array) {
 	var players = element.cnt;
 	var mapMatrix = generateMap(players*2, players*2, players);
 	var finalPoints = generateFinalPoints(mapMatrix);
-	connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, final_point_x, final_point_y, turn_number, next_restrict_time) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", ' + finalPoints[0] + ', ' + finalPoints[1] + ', 0, DATE_ADD(NOW(), INTERVAL ' + lobby_restric_min + ' MINUTE))', function (err, rows, fields) {
+	connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, final_point_x, final_point_y, turn_number, next_restrict_time) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", ' + finalPoints[0] + ', ' + finalPoints[1] + ', 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE))', function (err, rows, fields) {
 		if (err) throw err;
 
 		connection.query('SELECT P.id, P.chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
