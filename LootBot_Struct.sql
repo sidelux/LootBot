@@ -2131,6 +2131,10 @@ CREATE TABLE `map_lobby_list` (
   `lobby_id` int(11) NOT NULL,
   `map_json` text NOT NULL,
   `creation_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `final_point_x` int(11) NOT NULL,
+  `final_point_y` int(11) NOT NULL,
+  `turn_number` int(11) NOT NULL,
+  `last_restrict_time` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `map_lobby_list_lobby_id` (`lobby_id`),
   CONSTRAINT `map_lobby_list_lobby_id` FOREIGN KEY (`lobby_id`) REFERENCES `map_lobby` (`lobby_id`)

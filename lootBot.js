@@ -41,6 +41,7 @@ var merchant_limit = 5;
 var max_top_id = 6;
 var rank_cap = 15;
 var lobby_total_space = 2;
+var lobby_restric_min = 5;
 var dragon_limit_search = 15;
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
 var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750, 2500, 3000, 3750];
@@ -5903,15 +5904,16 @@ bot.onText(/^map$|entra nella mappa|torna alla mappa/i, function (message) {
 										text = "Sei stato aggiunto ad una nuova lobby, attendi che altri giocatori si uniscano o interrompi la ricerca...";
 									} else {
 										lobby_id = rows[0].lobby_id;
+										var members_cnt = rows[0].cnt;
 
 										connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
 											if (err) throw err;
 
 											for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-												bot.sendMessage(rows[i].chat_id, "Un giocatore si è unito alla tua lobby!");
+												bot.sendMessage(rows[i].chat_id, "Un giocatore si è unito alla tua lobby! Ci sono " + (members_cnt+1) + " su " + lobby_total_space + " giocatori in attesa...");
 										});
 
-										var members = "ad altri " + rows[0].cnt + " partecipanti";
+										var members = "ad altri " + members_cnt + " partecipanti";
 										if (rows[0].cnt > 0)
 											members = "ad un altro partecipante";
 										text = "Sei stato aggiunto alla lobby insieme " + members + ", attendi che altri giocatori si uniscano o interrompi la ricerca...";
@@ -6421,7 +6423,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 			var pulsePosY = rows[0].pulsePosY;
 			var enemy_id = rows[0].enemy_id;
 
-			connection.query('SELECT map_json FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+			connection.query('SELECT map_json, next_restrict_time FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				if (Object.keys(rows).length == 0) {
@@ -6434,6 +6436,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 					return;
 				}
 
+				var next_restrict_time = rows[0].next_restrict_time;
 				var mapMatrix = JSON.parse(rows[0].map_json);
 				var map = printMap(mapMatrix, posX, posY, pulsePosX, pulsePosY);
 
@@ -6706,8 +6709,18 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 							plur = "o";
 						if (min < 1)
 							min = "meno di 1";
-						wait_text = "\n🕐 " + min + " minut" + plur + " di attesa";
+						wait_text = "\n🕐 " + min + " minut" + plur;
 					}
+					
+					var now = new Date();
+					var next_restrict = new Date(next_restrict_time);
+					var min = Math.round(((next_restrict - now) / 1000) / 60);
+					var plur = "i";
+					if (min <= 1)
+						plur = "o";
+					if (min < 1)
+						min = "meno di 1";
+					wait_text = "\n☠️ " + min + " minut" + plur;
 
 					bot.sendMessage(message.chat.id, "👥 " + total_players + " su " + lobby_total_space + " sopravvissuti\n❤️ " + formatNumber(life) + wait_text + "\n" + map, kbSel).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
@@ -6730,7 +6743,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 								} else
 									weapon2_desc += "-";
 								if (weapon3_id != null) {
-									var weapon = connection_sync.query("SELECT name, power_shield FROM item WHERE id = " + weapon3_id);
+									var weapon3 = connection_sync.query("SELECT name, power_shield FROM item WHERE id = " + weapon3_id);
 									weapon3_desc += weapon3[0].name + " (" + weapon3[0].power_shield + ")";
 								} else
 									weapon3_desc += "-";
@@ -6939,6 +6952,9 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									scrap_query = ", scrap = scrap+1";
 									text = "Hai trovato uno <b>Strano Congegno</b> con al suo interno un 🔩 <b>Rottame</b>, utile per gli scambi!";
 									toClear = 1;
+								} else if (objId == 10) {		// zona bruciata
+									text = "Decidi di gettarti verso la tua sconfitta nell'area bruciata...";
+									mapPlayerKilled(lobby_id, player_id, 3);
 								}
 
 								// svuota la risorsa
@@ -6999,7 +7015,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 								d.setMinutes(d.getMinutes() + 60);
 								var long_date_battle = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-								connection.query('UPDATE map_lobby SET wait_time = "' + long_date + '", battle_timeout_limit = "' + long_date_battle + '", posX = ' + posX + ', posY = ' + posY + item_query + last_obj_query + scrap_query + enemy_query + ', life = life-' + life_lost + ', money = money+' + money + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+								connection.query('UPDATE map_lobby SET wait_time = "' + long_date + '", battle_timeout_limit = "' + long_date_battle + '", posX = ' + posX + ', posY = ' + posY + item_query + last_obj_query + scrap_query + enemy_query + pulse_query + ', life = life-' + life_lost + ', money = money+' + money + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
 
 									if (isBuild)
@@ -35119,9 +35135,9 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 										req3 = " ✅";
 
 									bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
-													"> Aver ottenuto almeno 20.000 punti creazione" + req1 + "\n" +
-													"> Aver portato il drago almeno al livello 100" + req2 + "\n" +
-													"> Possedere almeno 10.000.000 § (verranno consumati)" + req3, get).then(function () {
+													"> Aver ottenuto almeno 20.000 punti creazione" + req3 + "\n" +
+													"> Aver portato il drago almeno al livello 100" + req1 + "\n" +
+													"> Possedere almeno 10.000.000 § (verranno consumati)" + req2, get).then(function () {
 										answerCallbacks[message.chat.id] = function (answer) {
 											if (answer.text.indexOf("Ottieni Artefatto") != -1) {
 												connection.query('SELECT id FROM artifacts WHERE item_id = 615 AND player_id = ' + player_id, function (err, rows, fields) {
@@ -49018,8 +49034,8 @@ function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX) {
 }
 
 function generateFinalPoints(mapMatrix) {
-	var widthLen = mapMatrix[0].length-1;
-	var heightLen = mapMatrix.length-1;
+	var widthLen = mapMatrix[0].length;
+	var heightLen = mapMatrix.length;
 	var pointX = Math.round(getRandomArbitrary(widthLen/2-widthLen/4, widthLen/2+widthLen/4));
 	var pointY = Math.round(getRandomArbitrary(heightLen/2-heightLen/4, heightLen/2+heightLen/4));
 	console.log("finalPoints: " + pointX + " " + pointY);
@@ -49027,38 +49043,54 @@ function generateFinalPoints(mapMatrix) {
 }
 
 function restrictMap(lobby_id, mapMatrix, finalPointY, finalPointX, turnNumber) {
-	var widthLen = mapMatrix[0].length-1;
-	var heightLen = mapMatrix.length-1;
+	mapMatrix = JSON.parse(mapMatrix);
+	mapArray = JSON.stringify(mapMatrix);
+	
+	var widthLen = mapMatrix[0].length;
+	var heightLen = mapMatrix.length;
 	var posToBurn = [];
+	
+	console.log("widthLen " + widthLen);
+	console.log("heightLen " + heightLen);
+	console.log("turnNumber " + turnNumber);
 	
 	// orizzontali
 	for(i = 0; i < widthLen; i++) {
 		posToBurn.push([i, turnNumber]);
-		posToBurn.push([i, heightLen-turnNumber]);
+		posToBurn.push([i, (heightLen-1)-turnNumber]);
 	}
 	// verticali
 	for(i = 0; i < heightLen; i++) {
 		posToBurn.push([turnNumber, i]);
-		posToBurn.push([widthLen-turnNumber, i]);
+		posToBurn.push([(widthLen-1)-turnNumber, i]);
 	}
 	
-	console.log("restrictMap " + posToBurn);
+	console.log(posToBurn);
 	
 	// applico le modifiche e incremento turno
-	for(i = 0; i < posToBurn.length; i++)
-		mapMatrix = updateMap(mapMatrix, posToBurn[i][1], posToBurn[i][0], 10);
+	var tmp;
+	for(i = 0; i < posToBurn.length; i++) {
+		console.log(posToBurn[i][1], posToBurn[i][0]);
+		tmp = updateMap(mapArray, posToBurn[i][1], posToBurn[i][0], 10);
+		mapArray = tmp;
+		mapMatrix = JSON.parse(tmp);
+	}
 	
-	connection.query('UPDATE map_lobby_list SET map_json = "' + mapMatrix + '", turn_number = turn_number+1 WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+	connection.query('UPDATE map_lobby_list SET map_json = "' + mapArray + '", turn_number = turn_number+1 WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 		if (err) throw err;
 	});
 	
 	// elimino tutti i giocatori nelle zone bruciate
-	connection.query('SELECT P.id, P.posX, P.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+	connection.query('SELECT P.id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 		if (err) throw err;
 		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 			for(k = 0; k < posToBurn.length; k++) {
-				if (rows[i].posX == posToBurn[k][1] && rows[i].posY == posToBurn[k][0])
-					mapPlayerKilled(lobby_id, rows[i].id, 3);
+				if (rows[i].posX == posToBurn[k][1] && rows[i].posY == posToBurn[k][0]) {
+					var parameters = [lobby_id, rows[i].id];
+					setTimeout(function () {
+						mapPlayerKilled(parameters[0], parameters[1], 3);
+					}, 1000, parameters);	// ritardo per evitare duplicazione di uccisioni
+				}
 			}
 		}
 	});
@@ -52890,7 +52922,7 @@ function setFullLobby(element, index, array) {
 	var players = element.cnt;
 	var mapMatrix = generateMap(players*2, players*2, players);
 	var finalPoints = generateFinalPoints(mapMatrix);
-	connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, final_point_x, final_point_y) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", ' + finalPoints[0] + ', ' + finalPoints[1] + ')', function (err, rows, fields) {
+	connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, final_point_x, final_point_y, turn_number, next_restrict_time) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", ' + finalPoints[0] + ', ' + finalPoints[1] + ', 0, DATE_ADD(NOW(), INTERVAL ' + lobby_restric_min + ' MINUTE))', function (err, rows, fields) {
 		if (err) throw err;
 
 		connection.query('SELECT P.id, P.chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
@@ -52929,7 +52961,7 @@ function setFullLobby(element, index, array) {
 };
 
 function checkRestrictMap() {
-	connection.query('SELECT lobby_id, map_json, final_point_x, final_point_y, turn_number FROM map_lobby_list WHERE TIMESTAMPDIFF(MINUTE, NOW(), last_restrict_time) < 30', function (err, rows, fields) {
+	connection.query('SELECT lobby_id, map_json, final_point_x, final_point_y, turn_number FROM map_lobby_list WHERE next_restrict_time < NOW()', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
@@ -52948,7 +52980,15 @@ function setRestrictMap(element, index, array) {
 	var finalPointY = element.final_point_y;
 	var turnNumber = element.turn_number;
 	
+	// debug
+	if (turnNumber > 0)
+		return;
+	
 	restrictMap(lobby_id, mapMatrix, finalPointY, finalPointX, turnNumber);
+	
+	connection.query('UPDATE map_lobby_list SET next_restrict_time = DATE_ADD(next_restrict_time, INTERVAL ' + lobby_restric_min + ' MINUTE) WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+		if (err) throw err;
+	});
 };
 
 function checkDungeonNotification() {
