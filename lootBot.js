@@ -5796,11 +5796,11 @@ bot.onText(/statistiche/i, function (message) {
 	});
 });
 
-bot.onText(/^map$|entra nella mappa|torna alla mappa/i, function (message) {
+bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function (message) {
 	if ((message.from.id != 20471035) && (message.from.id != 200492030))
 		return;
 
-	connection.query('SELECT id, holiday, account_id, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, holiday, account_id, gender, trophies FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -5815,6 +5815,7 @@ bot.onText(/^map$|entra nella mappa|torna alla mappa/i, function (message) {
 		}
 
 		var player_id = rows[0].id;
+		var trophies = rows[0].trophies;
 
 		var gender_text = "a";
 		if (rows[0].gender == "M")
@@ -5848,7 +5849,7 @@ bot.onText(/^map$|entra nella mappa|torna alla mappa/i, function (message) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Accedi alla Lobby", "Vittorie"], ["Torna al menu"]]
+				keyboard: [["Accedi alla Lobby 🏹", "Vittorie 🎉"], ["Torna al menu"]]
 			}
 		};
 
@@ -5862,7 +5863,6 @@ bot.onText(/^map$|entra nella mappa|torna alla mappa/i, function (message) {
 				});
 			} else {
 				var lobby_id = rows[0].lobby_id;
-
 				if (lobby_id != null) {
 					connection.query('SELECT 1 FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 						if (err) throw err;
@@ -5874,61 +5874,80 @@ bot.onText(/^map$|entra nella mappa|torna alla mappa/i, function (message) {
 						}
 					});
 				} else {
-					bot.sendMessage(message.chat.id, "Benvenuto!\nPuoi entrare nella mappa accedendo ad una lobby oppure visualizzare i record personali ottenuti fin ora.", kbMain).then(function () {
-						answerCallbacks[message.chat.id] = function (answer) {
-							if (answer.text == "Torna al menu")
-								return;
-
-							if (answer.text.toLowerCase().indexOf("lobby") != -1) {
-								if (lobby_id != null) {
-									bot.sendMessage(message.chat.id, "Sei già in attesa in una lobby", kbStop);
+					connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL', function (err, rows, fields) {
+						if (err) throw err;
+						
+						var lobby_players = rows[0].cnt;
+						
+						bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\nCi sono <b>" + lobby_players + "</b> combattenti dentro una lobby, possiedi <b>" + trophies + "</b> 🏆 in questa stagione", kbMain).then(function () {
+							answerCallbacks[message.chat.id] = function (answer) {
+								if (answer.text == "Torna al menu")
 									return;
-								}
 
-								connection.query('SELECT lobby_id, COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL GROUP BY lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY id', function (err, rows, fields) {
-									if (err) throw err;
-
-									var lobby_id;
-									var text = "";
-
-									if (Object.keys(rows).length == 0) {
-										// nuova lobby
-
-										var max_lobby = connection_sync.query('SELECT MAX(lobby_id) As mx FROM map_lobby WHERE lobby_id IS NOT NULL');
-
-										if (Object.keys(max_lobby).length == 0)
-											lobby_id = 1;
-										else 
-											lobby_id = max_lobby[0].mx+1;
-
-										text = "Sei stato aggiunto ad una nuova lobby, attendi che altri giocatori si uniscano o interrompi la ricerca...";
-									} else {
-										lobby_id = rows[0].lobby_id;
-										var members_cnt = rows[0].cnt;
-
-										connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
-											if (err) throw err;
-
-											for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-												bot.sendMessage(rows[i].chat_id, "Un giocatore si è unito alla tua lobby! Ci sono " + (members_cnt+1) + " su " + lobby_total_space + " giocatori in attesa...");
-										});
-
-										var members = "ad altri " + members_cnt + " partecipanti";
-										if (rows[0].cnt > 0)
-											members = "ad un altro partecipante";
-										text = "Sei stato aggiunto alla lobby insieme " + members + ", attendi che altri giocatori si uniscano o interrompi la ricerca...";
+								if (answer.text.toLowerCase().indexOf("lobby") != -1) {
+									if (lobby_id != null) {
+										bot.sendMessage(message.chat.id, "Sei già in attesa in una lobby", kbStop);
+										return;
 									}
 
-									connection.query('UPDATE map_lobby SET lobby_id = ' + lobby_id + ', weapon_id = 13, weapon2_id = 56, weapon3_id = 26 WHERE player_id = ' + player_id, function (err, rows, fields) {
+									connection.query('SELECT lobby_id, COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL GROUP BY lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY id', function (err, rows, fields) {
 										if (err) throw err;
-									});
 
-									bot.sendMessage(message.chat.id, text, kbStop);
-								});
-							} else if (answer.text.toLowerCase().indexOf("vittorie") != -1) {
-								bot.sendMessage(message.chat.id, "Questa funzione non è ancora disponibile", kbBack);
+										var lobby_id;
+										var text = "";
+
+										if (Object.keys(rows).length == 0) {
+											// nuova lobby
+
+											var max_lobby = connection_sync.query('SELECT MAX(lobby_id) As mx FROM map_lobby WHERE lobby_id IS NOT NULL');
+
+											if (Object.keys(max_lobby).length == 0)
+												lobby_id = 1;
+											else 
+												lobby_id = max_lobby[0].mx+1;
+
+											text = "Sei stato aggiunto ad una nuova lobby, attendi che altri giocatori si uniscano o interrompi la ricerca...";
+										} else {
+											lobby_id = rows[0].lobby_id;
+											var members_cnt = rows[0].cnt;
+
+											connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
+												if (err) throw err;
+
+												for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+													bot.sendMessage(rows[i].chat_id, "Un giocatore si è unito alla tua lobby! Ci sono " + (members_cnt+1) + " su " + lobby_total_space + " giocatori in attesa...");
+											});
+
+											var members = "ad altri " + members_cnt + " partecipanti";
+											if (rows[0].cnt > 0)
+												members = "ad un altro partecipante";
+											text = "Sei stato aggiunto alla lobby insieme " + members + ", attendi che altri giocatori si uniscano o interrompi la ricerca...";
+										}
+
+										connection.query('UPDATE map_lobby SET lobby_id = ' + lobby_id + ', weapon_id = 13, weapon2_id = 56, weapon3_id = 26 WHERE player_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+										});
+
+										bot.sendMessage(message.chat.id, text, kbStop);
+									});
+								} else if (answer.text.toLowerCase().indexOf("vittorie") != -1) {
+									bot.sendMessage(message.chat.id, "Questa funzione non è ancora disponibile", kbBack);
+									connection.query('SELECT P.nickname, M.kills, M.insert_date FROM map_history M, player P WHERE M.player_id = P.id AND M.position = 1 ORDER BY M.id DESC LIMIT 25', function (err, rows, fields) {
+										if (err) throw err;
+
+										var text = "<b>Ultime 25 vittorie:</b>";
+										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+											var kills = "uccisioni";
+											if (rows[i].kills == 1)
+												kills = "uccisione";
+											text += "\n> " + rows[i].nickname + " con " + rows[i].kills + " " + kills + " il " + toDate("it", rows[i].insert_date);
+										}
+
+										bot.sendMessage(message.chat.id, text, kbBack);
+									});
+								}
 							}
-						}
+						});
 					});
 				};
 			}
@@ -32023,7 +32042,7 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 																} else {
 																	rand = Math.random()*100;
 																	if (rand < 60) {
-																		connection.query('UPDATE player SET moon_coin+1 WHERE id = ' + player_id, function (err, rows, fields) {
+																		connection.query('UPDATE player SET moon_coin = moon_coin+1 WHERE id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
 																		name = "1x Moneta Lunare 🌕";
@@ -48746,17 +48765,32 @@ function mapPlayerKilled(lobby_id, player_id, cause) {
 								connection.query('INSERT INTO map_history (map_lobby_id, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + winner_player_id + ', 1, ' + winner_match_kills + ')', function (err, rows, fields) {
 									if (err) throw err;
 
-									connection.query('SELECT nickname, position, kills FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position', function (err, rows, fields) {
+									connection.query('SELECT P.id, P.nickname, P.trophies, M.position, M.kills FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position', function (err, rows, fields) {
 										if (err) throw err;
 
 										var list = "";
 										var kill_text = "";
+										var trophies_query = "";
+										var mid_low_trophies = Math.floor(lobby_total_space/2);		// trofei negativi
+										var mid_high_trophies = lobby_total_space-mid_low_trophies;	// trofei positivi
 										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 											if (rows[i].kills == 0)
 												kill_text = "nessuna uccisione";
 											else
 												kill_text = rows[i].kills + " uccisioni";
-											list += rows[i].position + "° " + rows[i].nickname + " (" + kill_text + ")\n";
+											if (rows[i].position <= mid_high_trophies)
+												trophies_query = "+" + (mid_high_trophies-rows[i].position);
+											else {
+												var trophies_val = Math.abs(mid_low_trophies-rows[i].position);
+												if (rows[i].trophies-trophies_val < 0)
+													trophies_val = rows[i].trophies;
+												trophies_query = "-" + trophies_val;
+											}
+											list += rows[i].position + "° " + rows[i].nickname + " (" + kill_text + ", " + trophies_query + " 🏆)\n";
+											
+											connection.query('UPDATE player SET trophies = trophies' + trophies_query + ' WHERE id = ' + rows[i].id, function (err, rows, fields) {
+												if (err) throw err;
+											});
 										}
 
 										connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
@@ -48783,6 +48817,39 @@ function mapPlayerKilled(lobby_id, player_id, cause) {
 		});
 	});
 }
+
+bot.onText(/^\/endmap$/, function (message, match) {
+	if (message.from.id == 20471035) {
+		bot.sendMessage(message.chat.id, "Confermi?", yesno).then(function () {
+			answerCallbacks[message.chat.id] = function (answer) {
+				if (answer.text == "Si") {
+					connection.query('SELECT id, chat_id, trophies FROM player WHERE trophies > 0 ORDER BY trophies', function (err, rows, fields) {
+						if (err) throw err;
+						
+						var player_id = 0;
+						var trophies = 0;
+						var text = "";
+
+						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+							text = "";
+							player_id = rows[i].id;
+							trophies = rows[i].trophies;
+							
+							// premi
+							
+							bot.sendMessage(rows[i].chat_id, "Per la quantità di trofei guadagnati combattendo nelle <b>Mappe di Lootia</b>, hai ottenuto:" + text, html);
+							
+							connection.query('UPDATE player SET trophies = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+							});
+						}
+						bot.sendMessage(message.chat.id, "Fatto!", back);
+					});
+				};
+			};
+		});
+	}
+});
 
 function generateMap(width, height, players) {
 	var buildQnt = 3;
