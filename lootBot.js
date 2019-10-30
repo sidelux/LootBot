@@ -5959,6 +5959,9 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 													mapIdToSym(8) + " Altro giocatore\n" +
 													mapIdToSym(9) + " Rottame\n" +
 													mapIdToSym(10) + " Mappa bruciata\n" +
+													"\n<b>Combattimento</b>" +
+													"\n> Il comando Attacco Caricato obbliga a saltare il primo turno successivo all'utilizzo, infligge più danni rispetto all'attacco normale." +
+													"\n> Il comando Difendi obbliga a saltare il primo turno successivo all'utilizzo, può effettuare una parata parziale o totale del colpo subito." +
 													"\n<b>Istruzioni base</b>" +
 													"\n> Il personaggio inizierà la partita con un equip base e zero monete." +
 													"\n> Ogni " + lobby_restric_min + " minuti (" + (lobby_restric_min*2) + " appena avviata la partita) la mappa si restringe bruciando uno strato esterno fino alla mappa completa." +
