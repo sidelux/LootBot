@@ -3833,14 +3833,28 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 					keyboard: [["Rossa", "Gialla"], ["Blu", "Bianca"], ["Torna alla trasmo"]]
 				}
 			};
+			
+			var kbW2 = {
+				parse_mode: "HTML",
+				reply_markup: {
+					resize_keyboard: true,
+					keyboard: [["Rosso", "Giallo"], ["Blu", "Bianco"], ["Torna alla trasmo"]]
+				}
+			};
 
 			connection.query('SELECT step FROM necro_game WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				var step6 = 0;
+				var step7 = 0;
+				var step8 = 0;
 				if (Object.keys(rows).length > 0) {
 					if (rows[0].step == 6)
 						step6 = 1;
+					if (rows[0].step == 7)
+						step7 = 1;
+					if (rows[0].step == 8)
+						step8 = 1;
 				}
 
 				var kbBack = {
@@ -3877,13 +3891,13 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 							return;
 						}
 
-						if ((rows[0].weapon2_id != 688) && (rows[0].weapon2_id != 689) && (rows[0].weapon2_id != 690)) {
-							bot.sendMessage(message.chat.id, "Equipaggia una delle 3 corazze incantate per poterla scambiare");
+						if ((rows[0].weapon2_id != 688) && (rows[0].weapon2_id != 689) && (rows[0].weapon2_id != 690) && (rows[0].weapon2_id != 790)) {
+							bot.sendMessage(message.chat.id, "Equipaggia una delle 4 corazze incantate per poterla scambiare");
 							return;
 						}
 
-						if ((rows[0].weapon3_id != 671) && (rows[0].weapon3_id != 672) && (rows[0].weapon3_id != 673)) {
-							bot.sendMessage(message.chat.id, "Equipaggia uno dei 3 scudi incantati per poterlo scambiare");
+						if ((rows[0].weapon3_id != 671) && (rows[0].weapon3_id != 672) && (rows[0].weapon3_id != 673) && (rows[0].weapon3_id != 791)) {
+							bot.sendMessage(message.chat.id, "Equipaggia uno dei 4 scudi incantati per poterlo scambiare");
 							return;
 						}
 
@@ -3910,7 +3924,13 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 							weapon2 = 690;
 						else if (query[1].toLowerCase() == "blu")
 							weapon2 = 689;
-						else
+						else if (query[1].toLowerCase() == "bianca") {
+							if (step7 == 0) {
+								bot.sendMessage(message.chat.id, "Devi prima sbloccare la trasmogrificazione della Corazza Necro di Phoenix nella Necro del Destino!");
+								return;
+							}
+							weapon2 = 790;
+						} else
 							weapon2 = rows[0].weapon2_id;
 
 						var weapon3 = 0;
@@ -3920,7 +3940,13 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 							weapon3 = 671;
 						else if (query[2].toLowerCase() == "blu")
 							weapon3 = 673;
-						else
+						else if (query[2].toLowerCase() == "bianco") {
+							if (step8 == 0) {
+								bot.sendMessage(message.chat.id, "Devi prima sbloccare la trasmogrificazione dello Scudo Necro di Phoenix nella Necro del Destino!");
+								return;
+							}
+							weapon3 = 791;
+						} else
 							weapon3 = rows[0].weapon3_id;
 
 						connection.query('UPDATE player SET weapon_id = ' + weapon + ', weapon2_id = ' + weapon2 + ', weapon3_id = ' + weapon3 + ' WHERE id = ' + player_id, function (err, rows, fields) {
@@ -3956,6 +3982,8 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 					weapon2_status = "⚡️";
 				else if (weapon2_id == 689)
 					weapon2_status = "🌊";
+				else if (weapon2_id == 790)
+					weapon2_status = "✨";
 
 				if (weapon2_enchant_bonus == 1)
 					weapon2_status += " (🌊)";
@@ -3971,6 +3999,8 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 					weapon3_status = "⚡️";
 				else if (weapon3_id == 673)
 					weapon3_status = "🌊";
+				else if (weapon3_id == 791)
+					weapon3_status = "✨";
 
 				if (weapon3_enchant_bonus == 1)
 					weapon3_status += " (🌊)";
@@ -3990,16 +4020,17 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 							return;
 						else {
 							var set = answer.text;
-							if ((set.toLowerCase() == "necrolama") && (step6 == 1))
+							if (((set.toLowerCase() == "necrolama") && (step6 == 1)) || ((set.toLowerCase() == "corazza necro") && (step7 == 1)))
 								kb = kbW;
-							else if (set.toLowerCase() == "scudo necro")
+							else if ((set.toLowerCase() == "scudo necro") && (step8 == 0))
 								kb = kbM;
+							else if ((set.toLowerCase() == "scudo necro") && (step8 == 1))
+								kb = kbW2;
 
 							bot.sendMessage(message.chat.id, "Con quale tipo di oggetto vuoi scambiarlo?", kb).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
-									if ((answer.text == "Torna al menu") || (answer.text == "Torna alla trasmo")) {
+									if ((answer.text == "Torna al menu") || (answer.text == "Torna alla trasmo"))
 										return;
-									}
 									var type = answer.text;
 									if (set.toLowerCase() == "necrolama") {
 										connection.query('SELECT weapon_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
@@ -4037,8 +4068,8 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 										connection.query('SELECT weapon2_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 
-											if ((rows[0].weapon2_id != 688) && (rows[0].weapon2_id != 689) && (rows[0].weapon2_id != 690)) {
-												bot.sendMessage(message.chat.id, "Equipaggia una delle 3 corazze incantate per poterla scambiare", kbBack);
+											if ((rows[0].weapon2_id != 688) && (rows[0].weapon2_id != 689) && (rows[0].weapon2_id != 690) && (rows[0].weapon2_id != 790)) {
+												bot.sendMessage(message.chat.id, "Equipaggia una delle 4 corazze incantate per poterla scambiare", kbBack);
 												return;
 											}
 
@@ -4049,7 +4080,13 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 												id = 690;
 											else if (type.toLowerCase() == "blu")
 												id = 689;
-											else {
+											else if (type.toLowerCase() == "bianca") {
+												if (step7 == 0) {
+													bot.sendMessage(message.chat.id, "Devi prima sbloccare la trasmogrificazione della Corazza Necro di Phoenix nella Necro del Destino!", kbBack);
+													return;
+												}
+												id = 790;
+											} else {
 												bot.sendMessage(message.chat.id, "Colore non valido", kbBack);
 												return;
 											}
@@ -4063,8 +4100,8 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 										connection.query('SELECT weapon3_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 
-											if ((rows[0].weapon3_id != 671) && (rows[0].weapon3_id != 672) && (rows[0].weapon3_id != 673)) {
-												bot.sendMessage(message.chat.id, "Equipaggia uno dei 3 scudi incantati per poterlo scambiare", kbBack);
+											if ((rows[0].weapon3_id != 671) && (rows[0].weapon3_id != 672) && (rows[0].weapon3_id != 673) && (rows[0].weapon3_id != 791)) {
+												bot.sendMessage(message.chat.id, "Equipaggia uno dei 4 scudi incantati per poterlo scambiare", kbBack);
 												return;
 											}
 
@@ -4077,6 +4114,12 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 												type = "Giallo";
 											} else if (type.toLowerCase() == "blu") {
 												id = 673;
+											} else if (type.toLowerCase() == "bianco") {
+												if (step8 == 0) {
+													bot.sendMessage(message.chat.id, "Devi prima sbloccare la trasmogrificazione dello Scudo Necro di Phoenix nella Necro del Destino!", kbBack);
+													return;
+												}
+												id = 791;
 											} else {
 												bot.sendMessage(message.chat.id, "Colore non valido", kbBack);
 												return;
@@ -4194,7 +4237,7 @@ bot.onText(/nomina corazza necro/i, function (message) {
 			return;
 		}
 
-		if ((weapon2_id != 688) && (weapon2_id != 689) && (weapon2_id != 690)) {
+		if ((weapon2_id != 688) && (weapon2_id != 689) && (weapon2_id != 690) && (weapon2_id != 790)) {
 			bot.sendMessage(message.chat.id, "Equipaggia una delle 3 Corazze Incantate per utilizzare questa funzionalità", kbBack);
 			return;
 		}
@@ -4250,8 +4293,8 @@ bot.onText(/nomina scudo necro/i, function (message) {
 			return;
 		}
 
-		if ((weapon3_id != 671) && (weapon3_id != 672) && (weapon3_id != 673)) {
-			bot.sendMessage(message.chat.id, "Equipaggia uno dei 3 Scudi Incantati per utilizzare questa funzionalità", kbBack);
+		if ((weapon3_id != 671) && (weapon3_id != 672) && (weapon3_id != 673) && (weapon3_id != 791)) {
+			bot.sendMessage(message.chat.id, "Equipaggia uno dei 4 Scudi Incantati per utilizzare questa funzionalità", kbBack);
 			return;
 		}
 
@@ -12720,7 +12763,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 														var en_crit2 = 0;
 														if (Object.keys(rows).length > 0) {
 															weapon2_dmg = rows[0].power_armor;
-															if ((weapon2_id == 577) || (weapon2_id == 688) || (weapon2_id == 689) || (weapon2_id == 690)) {
+															if ((weapon2_id == 577) || (weapon2_id == 688) || (weapon2_id == 689) || (weapon2_id == 690) || (weapon2_id == 790)) {
 																weapon2_dmg = -Math.abs(calcNecro(250, monster_level, 3, 1));
 																extra = ", Probab. /2: " + critic + "%";
 															}
@@ -12739,7 +12782,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 															var en_crit3 = 0;
 															if (Object.keys(rows).length > 0) {
 																weapon3_dmg = rows[0].power_shield;
-																if ((weapon3_id == 600) || (weapon3_id == 671) || (weapon3_id == 672) || (weapon3_id == 673))
+																if ((weapon3_id == 600) || (weapon3_id == 671) || (weapon3_id == 672) || (weapon3_id == 673) || (weapon3_id == 791))
 																	weapon3_dmg = -Math.abs(calcNecro(250, monster_level, 3, 1));
 																weapon3_name = rows[0].name + " (" + weapon3_dmg + ")";
 																en_crit3 = rows[0].critical;
@@ -12903,7 +12946,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																		if (magic != 0) {
 																			var shieldRand = Math.random()*100;
 																			if (shieldRand <= 5) {
-																				if (((magic == 1) && (weapon3_id == 673)) || ((magic == 2) && (weapon3_id == 671)) || ((magic == 3) && (weapon3_id == 672)))
+																				if (((magic == 1) && (weapon3_id == 673)) || ((magic == 2) && (weapon3_id == 671)) || ((magic == 3) && (weapon3_id == 672)) || ((magic == 4) && (weapon3_id == 791)))
 																					magic = 0;
 																			}
 																		}
@@ -23529,19 +23572,39 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	var cnt = 0;
 																	var lap_qnt = 5;
 																	var cons = connection_sync.query("SELECT AP.item_id, I.cons_val, I.name, AP.id, AP.player_id, P.chat_id FROM assault_place_cons AP, item I, player P WHERE AP.player_id = P.id AND AP.item_id = I.id AND AP.team_id = " + team_id + " ORDER BY AP.id");
-																	if (Object.keys(cons).length > 0) {
-																		for (var i = 0; i < Object.keys(cons).length; i++) {
-																			if (cnt >= lap_qnt)
-																				break;
-																			calc_damage = Math.round(mob_total_life*(cons[i].cons_val/150));
-																			calc_damage += calc_damage*(0.02*place2_class_bonus[0].cnt);
-																			damage += calc_damage;
-																			connection.query("DELETE FROM assault_place_cons WHERE id = " + cons[i].id, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																			cons_text += "\n> " + cons[i].name;
-																			cnt++;
-																			epic_var++;
+																	var cons2 = connection_sync.query("SELECT S.item_id, I.cons_val, I.name, S.id, S.player_id, P.chat_id, S.quantity FROM team_store S, item I, player P WHERE S.player_id = P.id AND S.item_id = I.id AND I.cons_val > 0 AND S.quantity >= " + lap_qnt + " AND S.team_id = " + team_id + " ORDER BY S.id");
+																	if (Object.keys(cons).length+Object.keys(cons2).length > 0) {
+																		if (Object.keys(cons).length > 0) {
+																			for (var i = 0; i < Object.keys(cons).length; i++) {
+																				if (cnt >= lap_qnt)
+																					break;
+																				calc_damage = Math.round(mob_total_life*(cons[i].cons_val/150));
+																				calc_damage += calc_damage*(0.02*place2_class_bonus[0].cnt);
+																				damage += calc_damage;
+																				connection.query("DELETE FROM assault_place_cons WHERE id = " + cons[i].id, function (err, rows, fields) {
+																					if (err) throw err;
+																				});
+																				cons_text += "\n> " + cons[i].name;
+																				cnt++;
+																				epic_var++;
+																			}
+																		} else if (Object.keys(cons2).length > 0) {
+																			for (var i = 0; i < Object.keys(cons2).length; i++) {
+																				if (cnt >= lap_qnt)
+																					break;
+																				calc_damage = Math.round(mob_total_life*(cons2[i].cons_val/150));
+																				calc_damage += calc_damage*(0.02*place2_class_bonus[0].cnt);
+																				damage += calc_damage;
+																				connection.query("UPDATE team_store SET quantity = quantity-" + lap_qnt + " WHERE id = " + cons2[i].id, function (err, rows, fields) {
+																					if (err) throw err;
+																				});
+																				cons_text += "\n> " + cons2[i].name + " 📦";
+																				cnt++;
+																				epic_var++;
+																			}
+																		} else {
+																			console.log("Ramo piattaforma di lancio non valido");
+																			return;
 																		}
 
 																		var weak = "";
@@ -36857,7 +36920,7 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 
 										if (itemid == 577)
 											power_a = -Math.abs(calcNecro(250, player_level, player_reborn, 1));
-										else if ((itemid == 688) || (itemid == 689) || (itemid == 690))
+										else if ((itemid == 688) || (itemid == 689) || (itemid == 690) || (itemid == 790))
 											power_a = -Math.abs(calcNecro(250, player_level, player_reborn, 2));
 
 										if (weapon2_id != 0) {
@@ -36880,7 +36943,7 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 
 										if (itemid == 600)
 											power_s = -Math.abs(calcNecro(250, player_level, player_reborn, 1));
-										else if ((itemid == 671) || (itemid == 672) || (itemid == 673))
+										else if ((itemid == 671) || (itemid == 672) || (itemid == 673) || (itemid == 791))
 											power_s = -Math.abs(calcNecro(250, player_level, player_reborn, 2));
 
 										if (weapon3_id != 0) {
@@ -36946,12 +37009,12 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 
 					if (rows[i].id == 577) 
 						rows[i].power_armor = -calcNecro(250, player_level, player_reborn, 1);
-					else if ((rows[i].id == 688) || (rows[i].id == 689) || (rows[i].id == 690))
+					else if ((rows[i].id == 688) || (rows[i].id == 689) || (rows[i].id == 690) || (rows[i].id == 790))
 						rows[i].power_armor = -calcNecro(250, player_level, player_reborn, 2);
 
 					if (rows[i].id == 600)
 						rows[i].power_shield = -calcNecro(250, player_level, player_reborn, 1);
-					else if ((rows[i].id == 671) || (rows[i].id == 672) || (rows[i].id == 673))
+					else if ((rows[i].id == 671) || (rows[i].id == 672) || (rows[i].id == 673) || (rows[i].id == 791))
 						rows[i].power_shield = -calcNecro(250, player_level, player_reborn, 2);
 
 					if (rows[i].power != 0) {
@@ -39034,7 +39097,7 @@ bot.onText(/necro del destino/i, function (message) {
 							parse_mode: "HTML",
 							reply_markup: {
 								resize_keyboard: true,
-								keyboard: [["Ricompensa 1", "Ricompensa 2"], ["Ricompensa 3", "Ricompensa 4"], ["Ricompensa 5", "Ricompensa 6"], ["Torna alla Necro del Destino"]]
+								keyboard: [["Ricompensa 1", "Ricompensa 2"], ["Ricompensa 3", "Ricompensa 4"], ["Ricompensa 5", "Ricompensa 6"], ["Ricompensa 7", "Ricompensa 8"],["Torna alla Necro del Destino"]]
 							}
 						};
 
@@ -39053,6 +39116,8 @@ bot.onText(/necro del destino/i, function (message) {
 										"\n> 1 Frutto del Set Frutta (S) (15)" + (step >= 4 ? " ✅" : "") +
 										"\n> Salmone (S) (25)" + (step >= 5 ? " ✅" : "") +
 										"\n> Trasmogrificazione in Necrolama di Phoenix (50)" + (step >= 6 ? " ✅" : "") +
+										"\n> Trasmogrificazione in Corazza Necro di Phoenix (50)" + (step >= 7 ? " ✅" : "") +
+										"\n> Trasmogrificazione in Scudo Necro di Phoenix (50)" + (step >= 8 ? " ✅" : "") +
 										"\n\nOgni ricompensa può essere riscattata solo una volta ma devono essere riscattate in ordine. La prima può essere riscattata più volte dopo averle ottenute tutte.\n\n" +
 										"Attualmente possiedi <b>" + necro_pnt + "</b> 💠", prizeList).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
@@ -39064,15 +39129,19 @@ bot.onText(/necro del destino/i, function (message) {
 										bot.sendMessage(message.chat.id, "Ricompensa non valida", kbBack);
 										return;
 									}
-									if ((num < 1) || (num > 6)) {
+									if ((num < 1) || (num > 8)) {
 										bot.sendMessage(message.chat.id, "Ricompensa non valida, minimo 1 massimo 6", kbBack);
+										return;
+									}
+									
+									if ((num == 7) || (num == 8)) {
+										bot.sendMessage(message.chat.id, "Non è ancora possibile riscattare questa ricompensa", kbBack);
 										return;
 									}
 
 									var ok = 0;
-									if ((num == 1) && (step == 6)) {
+									if ((num == 1) && (step == 8))
 										ok = 1;
-									}
 
 									if (ok == 0) {
 										if (step < num-1) {
@@ -39096,7 +39165,7 @@ bot.onText(/necro del destino/i, function (message) {
 										cost = 15;
 									else if (num == 5)
 										cost = 25;
-									else if (num == 6)
+									else if ((num == 6) || (num == 7) || (num == 8))
 										cost = 50;
 									else {
 										bot.sendMessage(message.chat.id, "Ricompensa non valida", kbBack);
@@ -39139,11 +39208,14 @@ bot.onText(/necro del destino/i, function (message) {
 														} else if (num == 5) {
 															addItem(player_id, 651);
 															text += "> Salmone (S)";
-														} else if (num == 6) {
+														} else if (num == 6)
 															text += "> Possibilità di Trasmogrificazione in Necrolama di Phoenix (X)";
-														}
+														else if (num == 7)
+															text += "> Possibilità di Trasmogrificazione in Corazza Necro di Phoenix (X)";
+														else if (num == 8)
+															text += "> Possibilità di Trasmogrificazione in Scudo Necro di Phoenix (X)";
 
-														if ((step == 6) && (num == 1)) {
+														if ((step == 8) && (num == 1)) {
 															connection.query('UPDATE necro_game SET step = 6 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -42396,7 +42468,7 @@ function getInfo(message, player, myhouse_id) {
 												if (err) throw err;
 												var weapon2_name = "-";
 												if (Object.keys(rows).length > 0) {
-													if ((weapon2_id == 688) || (weapon2_id == 689) || (weapon2_id == 690)) {
+													if ((weapon2_id == 688) || (weapon2_id == 689) || (weapon2_id == 690) || (weapon2_id == 790)) {
 														if (custom_name2 != null)
 															weapon2_name = rows[0].name.replace("Necro", custom_name2);
 														else
@@ -42407,6 +42479,8 @@ function getInfo(message, player, myhouse_id) {
 															weapon2_name += " 🌊";
 														else if (weapon2_id == 690)
 															weapon2_name += " ⚡️";
+														else if (weapon2_id == 790)
+															weapon2_name += " ✨";
 													} else
 														weapon2_name = rows[0].name;
 												}
@@ -42415,7 +42489,7 @@ function getInfo(message, player, myhouse_id) {
 													if (err) throw err;
 													var weapon3_name = "-";
 													if (Object.keys(rows).length > 0) {
-														if ((weapon3_id == 671) || (weapon3_id == 672) || (weapon3_id == 673)) {
+														if ((weapon3_id == 671) || (weapon3_id == 672) || (weapon3_id == 673) || (weapon3_id == 791)) {
 															if (custom_name3 != null)
 																weapon3_name = rows[0].name.replace("Necro", custom_name3);
 															else
@@ -42426,6 +42500,8 @@ function getInfo(message, player, myhouse_id) {
 																weapon3_name += " 🔥";
 															else if (weapon3_id == 673)
 																weapon3_name += " 🌊";
+															else if (weapon3_id == 791)
+																weapon3_name += " ✨";
 														} else
 															weapon3_name = rows[0].name;
 													}
@@ -42721,9 +42797,11 @@ function getInfo(message, player, myhouse_id) {
 																									 (weapon2_id == 688) || 
 																									 (weapon2_id == 689) || 
 																									 (weapon2_id == 690) ||
+																									 (weapon2_id == 790) ||
 																									 (weapon3_id == 671) || 
 																									 (weapon3_id == 672) || 
-																									 (weapon3_id == 673)) || 
+																									 (weapon3_id == 673) || 
+																									 (weapon3_id == 791)) || 
 																									(house_id >= 5)) {
 																									Keys.push(["Nomina Equip/Rifugio 🏷"]);
 																								}
@@ -43800,7 +43878,7 @@ function cercaTermine(message, param, player_id) {
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 							if (rows[i].id == 577)
 								rows[i].power_armor = -Math.abs(calcNecro(250, lev, reb, 1));
-							else if ((rows[i].id == 688) || (rows[i].id == 689) || (rows[i].id == 690))
+							else if ((rows[i].id == 688) || (rows[i].id == 689) || (rows[i].id == 690) || (rows[i].id == 790))
 								rows[i].power_armor = -Math.abs(calcNecro(250, lev, reb, 2));
 
 							bottext = bottext + rows[i].name + " (" + rows[i].rarity + ")   " + rows[i].power_armor + "\n";
@@ -43834,7 +43912,7 @@ function cercaTermine(message, param, player_id) {
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 							if (rows[i].id == 600)
 								rows[i].power_shield = -Math.abs(calcNecro(250, lev, reb, 1));
-							else if ((rows[i].id == 671) || (rows[i].id == 672) || (rows[i].id == 673))
+							else if ((rows[i].id == 671) || (rows[i].id == 672) || (rows[i].id == 673) || (rows[i].id == 791))
 								rows[i].power_shield = -Math.abs(calcNecro(250, lev, reb, 2));
 
 							bottext = bottext + rows[i].name + " (" + rows[i].rarity + ")   " + rows[i].power_shield + "\n";
@@ -44134,12 +44212,12 @@ function cercaTermine(message, param, player_id) {
 							} else if (name.indexOf("Corazza Necro") != -1) {
 								if (rows[0].id == 577)
 									power = -Math.abs(calcNecro(250, lev, reb, 1));
-								else if ((rows[0].id == 688) || (rows[0].id == 689) || (rows[0].id == 690))
+								else if ((rows[0].id == 688) || (rows[0].id == 689) || (rows[0].id == 690) || (rows[0].id == 790))
 									power = -Math.abs(calcNecro(250, lev, reb, 2));
 							} else if (name.indexOf("Scudo Necro") != -1) {
 								if (rows[0].id == 600)
 									power = -Math.abs(calcNecro(250, lev, reb, 1));
-								else if ((rows[0].id == 671) || (rows[0].id == 672) || (rows[0].id == 673))
+								else if ((rows[0].id == 671) || (rows[0].id == 672) || (rows[0].id == 673) || (rows[0].id == 791))
 									power = -Math.abs(calcNecro(250, lev, reb, 2));
 							}
 							bottext += "\n*Potenza*: " + power;
@@ -55237,7 +55315,8 @@ function calcLife(message) {
 			});
 		} else if ((weapon2_id == 688) || 
 				   (weapon2_id == 689) || 
-				   (weapon2_id == 690)) {
+				   (weapon2_id == 690) ||
+				   (weapon2_id == 790)) {
 			var power = -Math.abs(calcNecro(250, lev, reb, 2));
 			connection.query('UPDATE player SET weapon2 = ' + power + ' WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -55251,7 +55330,8 @@ function calcLife(message) {
 			});
 		} else if ((weapon3_id == 671) || 
 				   (weapon3_id == 672) || 
-				   (weapon3_id == 673)) {
+				   (weapon3_id == 673) ||
+				   (weapon3_id == 791)) {
 			var power = -Math.abs(calcNecro(250, lev, reb, 2));
 			connection.query('UPDATE player SET weapon3 = ' + power + ' WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
