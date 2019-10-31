@@ -952,8 +952,8 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 									connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY val DESC', function (err, rows, fields) {
 										if (err) throw err;
 
-										var minValue = 1000;
-										var bonusText = "+100% Scrigni ottenuti dagli Assalti";
+										var minValue = 100;
+										var bonusText = "-25% tempo missioni";
 
 										var text = "";
 
@@ -999,6 +999,10 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 									});
 
 									connection.query('DELETE FROM global_hourly', function (err, rows, fields) {
+										if (err) throw err;
+									});
+									
+									connection.query('UPDATE config SET global_eventon = 0, global_eventwait = 1, global_eventhide = 1', function (err, rows, fields) {
 										if (err) throw err;
 									});
 
@@ -41473,12 +41477,12 @@ bot.onText(/missione/i, function (message) {
 							name += " (Estesa per malus globale)";
 							duration_extend += 25;
 						}
+						*/
 
 						if (global_end == 1) {
 							name += " (Ridotta per bonus globale)";
 							duration_reduce += 25;
 						}
-						*/
 
 						if (duration_reduce > 0)
 							duration -= (duration / 100 * duration_reduce);
@@ -47449,6 +47453,7 @@ function assaultIncrement(message, player_id, team_id) {
 				if (silent == 0)
 					bot.sendMessage(message.chat.id, "Hai attivato l'incremento per questo turno!", kbBack);
 				setAchievement(player_id, 44, 1);
+				globalAchievement(player_id, 1);
 
 				connection.query('SELECT 1 FROM assault_increment_history WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
@@ -47806,8 +47811,10 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								}
 								*/
 								
+								/*
 								if (rows[i].global_end == 1)
 									chest7 = 0;
+								*/
 
 								// costruzione testo e consegna
 								// console.log("paView " + paView);
@@ -52308,8 +52315,6 @@ function setFinishedTeamMission(element, index, array) {
 										*/
 
 										bot.sendMessage(rows[i].chat_id, "Hai completato l'incarico insieme al tuo party come richiesto da " + mandator + "!\nEcco il rapporto dell'incarico:\n<i>" + endText + "</i>\n\nL'ufficio incarichi vi premia con: " + rewardText + extra, html);
-										
-										globalAchievement(rows[i].id, mission_time_count);
 
 										if (isExp == 1)
 											setExp(rows[i].id, qnt);
