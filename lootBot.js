@@ -3851,10 +3851,14 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 				if (Object.keys(rows).length > 0) {
 					if (rows[0].step == 6)
 						step6 = 1;
-					if (rows[0].step == 7)
+					else if (rows[0].step == 7) {
+						step6 = 1;
 						step7 = 1;
-					if (rows[0].step == 8)
+					} else if (rows[0].step == 8) {
+						step6 = 1;
+						step7 = 1;
 						step8 = 1;
+					}
 				}
 
 				var kbBack = {
@@ -39170,10 +39174,12 @@ bot.onText(/necro del destino/i, function (message) {
 										return;
 									}
 									
+									/*
 									if ((num == 7) || (num == 8)) {
 										bot.sendMessage(message.chat.id, "Non è ancora possibile riscattare questa ricompensa", kbBack);
 										return;
 									}
+									*/
 
 									var ok = 0;
 									if ((num == 1) && (step == 8))

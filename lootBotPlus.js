@@ -10345,7 +10345,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 												if (err) throw err;
 												var weapon2_name = "-";
 												if (Object.keys(rows).length > 0) {
-													if ((weapon2_id == 688) || (weapon2_id == 689) || (weapon2_id == 690)) {
+													if ((weapon2_id == 688) || (weapon2_id == 689) || (weapon2_id == 690) || (weapon2_id == 790)) {
 														if (custom_name2 != null)
 															weapon2_name = rows[0].name.replace("Necro", custom_name2);
 														else
@@ -10356,6 +10356,8 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 															weapon2_name += " 🌊";
 														else if (weapon2_id == 690)
 															weapon2_name += " ⚡️";
+														else if (weapon2_id == 790)
+															weapon2_name += " ✨";
 													} else
 														weapon2_name = rows[0].name;
 												}
@@ -10364,7 +10366,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 													if (err) throw err;
 													var weapon3_name = "-";
 													if (Object.keys(rows).length > 0) {
-														if ((weapon3_id == 671) || (weapon3_id == 672) || (weapon3_id == 673)) {
+														if ((weapon3_id == 671) || (weapon3_id == 672) || (weapon3_id == 673) || (weapon3_id == 791)) {
 															if (custom_name3 != null)
 																weapon3_name = rows[0].name.replace("Necro", custom_name3);
 															else
@@ -10375,6 +10377,8 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																weapon3_name += " 🔥";
 															else if (weapon3_id == 673)
 																weapon3_name += " 🌊";
+															else if (weapon3_id == 791)
+																weapon3_name += " ✨";
 														} else
 															weapon3_name = rows[0].name;
 													}
