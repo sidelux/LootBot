@@ -13211,13 +13211,18 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																						rand = Math.random() * 100;
 																						if ((player_weapon3_id == 672) || (automagic3 == 3))
 																							r = 50;
+																						else if (player_weapon3_id == 791)
+																							r = 75;
 																						if (r >= rand) {
 																							enemy_magic = magicToName(3);
 																							damage = damage * 2;
 																							setAchievement(player_id, 66, 1);
-																							if ((player_weapon2_id == 688) || (automagic2 == 3)) {
+																							if (((player_weapon2_id == 688) || (automagic2 == 3)) || (player_weapon2_id == 790)) {
 																								var r2 = Math.random() * 100;
-																								if (r2 < 50) {
+																								var prob = 50;
+																								if (player_weapon2_id == 790)
+																									prob = 25;
+																								if (r2 < prob) {
 																									var restore = Math.round(getRandomArbitrary(50, 150));
 																									restored = " Hai assorbito " + restore + " 🔥 Mana Rosso dall'incantesimo!";
 																									connection.query('UPDATE event_mana_status SET mana_3 = mana_3 + ' + restore + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -13233,6 +13238,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																						rand = Math.random() * 100;
 																						if ((player_weapon3_id == 673) || (automagic3 == 1))
 																							r = 50;
+																						else if (player_weapon3_id == 791)
+																							r = 75;
 																						if (r >= rand) {
 																							enemy_magic = magicToName(1);
 																							heal_enemy = getRandomArbitrary(monster_total_life * 0.01, monster_total_life * 0.1);
@@ -13249,9 +13256,12 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							});
 																							monster_life += heal_enemy;	// altrimenti non conta bene la riduzione o quando deve essere ucciso
 																							setAchievement(player_id, 66, 1);
-																							if ((player_weapon2_id == 689) || (automagic2 == 1)) {
+																							if (((player_weapon2_id == 689) || (automagic2 == 1)) || (player_weapon2_id == 790)) {
 																								var r2 = Math.random() * 100;
-																								if (r2 < 50) {
+																								var prob = 50;
+																								if (player_weapon2_id == 790)
+																									prob = 25;
+																								if (r2 < prob) {
 																									var restore = Math.round(getRandomArbitrary(50, 150));
 																									restored = " Hai assorbito " + restore + " 🌊 Mana Blu dall'incantesimo!";
 																									connection.query('UPDATE event_mana_status SET mana_1 = mana_1 + ' + restore + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -13267,15 +13277,20 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																						rand = Math.random() * 100;
 																						if ((player_weapon3_id == 671) || (automagic3 == 2))
 																							r = 50;
+																						else if (player_weapon3_id == 791)
+																							r = 75;
 																						if ((r >= rand) && (meParalyzed == 0)) {
 																							enemy_magic = magicToName(2);
 																							connection.query('UPDATE player SET paralyzed = 2 WHERE id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
 																							setAchievement(player_id, 66, 1);
-																							if ((player_weapon2_id == 690) || (automagic2 == 2)) {
+																							if (((player_weapon2_id == 690) || (automagic2 == 2)) || (player_weapon2_id == 790)) {
 																								var r2 = Math.random() * 100;
-																								if (r2 < 50) {
+																								var prob = 50;
+																								if (player_weapon2_id == 790) 
+																									prob = 25;
+																								if (r2 < prob) {
 																									var restore = Math.round(getRandomArbitrary(50, 150));
 																									restored = " Hai assorbito " + restore + " ⚡️ Mana Giallo dall'incantesimo!";
 																									connection.query('UPDATE event_mana_status SET mana_2 = mana_2 + ' + restore + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -24391,6 +24406,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				var rand = Math.random()*100;
 																				if ((weapon3_id == 673) || (weapon3_enchant == 1))
 																					magic_rand -= 50;
+																				else if (weapon3_id == 791)
+																					magic_rand -= 25;
 																				if (magic_rand > rand) {
 																					epic_var++;
 																					var heal = Math.round(mob_total_life*(players_num/400));
@@ -24399,9 +24416,12 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																						mob_life = mob_total_life;
 																					player_text += "\nIl nemico lancia <b>" + magicToName(1) + "</b> e recupera " + formatNumber(heal) + " hp";
 																					setAchievement(playerid, 66, 1);
-																					if ((weapon2_id == 689) || (weapon2_enchant == 1)) {
+																					if (((weapon2_id == 689) || (weapon2_enchant == 1)) || (weapon2_id == 790)) {
 																						var rand = Math.random()*100;
-																						if (rand < 50) {
+																						var prob = 50;
+																						if (weapon2_id == 790)
+																							prob = 25;
+																						if (rand < prob) {
 																							var restore = Math.round(getRandomArbitrary(50, 150));
 																							player_text += " (+" + restore + " 🌊 Mana Blu)";
 																							connection.query('UPDATE event_mana_status SET mana_1 = mana_1 + ' + restore + ' WHERE player_id = ' + playerid, function (err, rows, fields) {
@@ -24417,6 +24437,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				var rand = Math.random()*100;
 																				if ((weapon3_id == 671) || (weapon3_enchant == 2))
 																					magic_rand -= 50;
+																				else if (weapon3_id == 791)
+																					magic_rand -= 25;
 																				if (magic_rand > rand) {
 																					epic_var++;
 																					var turn = Math.round(getRandomArbitrary(3, 6));
@@ -24426,9 +24448,12 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																						ally = "alleato";
 																					player_text += "\nIl nemico lancia <b>" + magicToName(2) + "</b> e paralizza per " + turn + " " + ally;
 																					setAchievement(playerid, 66, 1);
-																					if ((weapon2_id == 690) || (weapon2_enchant == 2)) {
+																					if (((weapon2_id == 690) || (weapon2_enchant == 2)) || (weapon2_id == 790)) {
 																						var rand = Math.random()*100;
-																						if (rand < 50) {
+																						var prob = 50;
+																						if (weapon2_id == 790)
+																							prob = 25;
+																						if (rand < prob) {
 																							var restore = Math.round(getRandomArbitrary(50, 150));
 																							player_text += " (+" + restore + " Mana Giallo ⚡️)";
 																							connection.query('UPDATE event_mana_status SET mana_2 = mana_2 + ' + restore + ' WHERE player_id = ' + playerid, function (err, rows, fields) {
@@ -24444,14 +24469,19 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				var rand = Math.random()*100;
 																				if ((weapon3_id == 672) || (weapon3_enchant == 3))
 																					magic_rand -= 50;
+																				else if (weapon3_id == 791)
+																					magic_rand -= 25;
 																				if (magic_rand > rand) {
 																					epic_var++;
 																					divided_damage_att = divided_damage_att*3;
 																					player_text += "\nIl nemico lancia <b>" + magicToName(3) + "</b> ed incrementa il suo danno";
 																					setAchievement(playerid, 66, 1);
-																					if ((weapon2_id == 688) || (weapon2_enchant == 3)) {
+																					if (((weapon2_id == 688) || (weapon2_enchant == 3)) || (weapon2_id == 790)) {
 																						var rand = Math.random()*100;
-																						if (rand < 50) {
+																						var prob = 50;
+																						if (weapon2_id == 790)
+																							prob = 25;
+																						if (rand < prob) {
 																							var restore = Math.round(getRandomArbitrary(50, 150));
 																							player_text += " (+" + restore + " Mana Rosso 🔥)";
 																							connection.query('UPDATE event_mana_status SET mana_3 = mana_3 + ' + restore + ' WHERE player_id = ' + playerid, function (err, rows, fields) {
@@ -24463,14 +24493,20 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																					}
 																				}
 																			} else if (magic_type == 4) {	// bianco
-																				epic_var++;
-																				var turn = Math.round(getRandomArbitrary(3, 6));
-																				connection_sync.query("UPDATE assault SET mob_critic = " + turn + " WHERE team_id = " + team_id);
-																				var ally = "alleati";
-																				if (turn == 1)
-																					ally = "alleato";
-																				player_text += "\nIl nemico lancia " + magicToName(4) + " e aumenta la probabilità di critico contro " + turn + " " + ally;
-																				setAchievement(playerid, 66, 1);
+																				var magic_rand = Math.random()*100;
+																				var rand = Math.random()*100;
+																				if (weapon3_id == 791)
+																					magic_rand -= 25;
+																				if (magic_rand > rand) {
+																					epic_var++;
+																					var turn = Math.round(getRandomArbitrary(3, 6));
+																					connection_sync.query("UPDATE assault SET mob_critic = " + turn + " WHERE team_id = " + team_id);
+																					var ally = "alleati";
+																					if (turn == 1)
+																						ally = "alleato";
+																					player_text += "\nIl nemico lancia " + magicToName(4) + " e aumenta la probabilità di critico contro " + turn + " " + ally;
+																					setAchievement(playerid, 66, 1);
+																				}
 																			}
 																		}
 
