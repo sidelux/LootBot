@@ -9137,24 +9137,24 @@ bot.onText(/^\/drago (.+)|^\/drago/, function (message, match) {
 		if (match[1] != undefined) {
 			var name;
 			var type;
-			if (match[1].indexOf("delle Montagne") != -1) {
+			if (match[1].indexOf("delle Montagne") >= match[1].length-15) {
 				type = "delle Montagne";
-				name = match[1].replace("delle Montagne", "").trim();
-			} else if (match[1].indexOf("dei Cieli") != -1) {
+				name = match[1].replace(new RegExp("delle Montagne$"), "").trim();
+			} else if (match[1].indexOf("dei Cieli") >= match[1].length-15) {
 				type = "dei Cieli";
-				name = match[1].replace("dei Cieli", "").trim();
-			} else if (match[1].indexOf("Infernale") != -1) {
+				name = match[1].replace(new RegExp("dei Cieli$"), "").trim();
+			} else if (match[1].indexOf("Infernale") >= match[1].length-15) {
 				type = "Infernale";
-				name = match[1].replace("Infernale", "").trim();
-			} else if (match[1].indexOf("dell'Oscurità") != -1) {
+				name = match[1].replace(new RegExp("Infernale$"), "").trim();
+			} else if (match[1].indexOf("dell'Oscurità") >= match[1].length-15) {
 				type = "dell'Oscurità";
-				name = match[1].replace("dell'Oscurità", "").trim();
-			} else if (match[1].indexOf("dei Mari") != -1) {
+				name = match[1].replace(new RegExp("dell'Oscurità$"), "").trim();
+			} else if (match[1].indexOf("dei Mari") >= match[1].length-15) {
 				type = "dei Mari";
-				name = match[1].replace("dei Mari", "").trim();
-			} else if (match[1].indexOf("dei Ghiacci") != -1) {
+				name = match[1].replace(new RegExp("dei Mari$"), "").trim();
+			} else if (match[1].indexOf("dei Ghiacci") >= match[1].length-15) {
 				type = "dei Ghiacci";
-				name = match[1].replace("dei Ghiacci", "").trim();
+				name = match[1].replace(new RegExp("dei Ghiacci$"), "").trim();
 			} else {
 				bot.sendMessage(message.chat.id, "Tipo del drago non riconosciuto");
 				return;

@@ -11638,16 +11638,23 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		qnt = qnt*2;
 																		life = 0.9;
 																	}
-																	if (weapon2_id == 690) {
+																	if (weapon2_id == 690)
 																		mana = 2;
-																		name = "Giallo";
-																	} else if (weapon2_id == 688) {
+																	else if (weapon2_id == 688)
 																		mana = 3;
-																		name = "Rosso"
-																	} else if (weapon2_id == 689) {
+																	else if (weapon2_id == 689)
 																		mana = 1;
-																		name = "Blu";
+																	else if (weapon2_id == 790) {
+																		var randMana = Math.round(getRandomArbitrary(1, 3));
+																		mana = randMana;
 																	}
+																	
+																	if (mana == 1)
+																		name = "Blu";
+																	else if (mana == 2)
+																		name = "Giallo";
+																	else if (mana == 3)
+																		name = "Rosso";
 
 																	if (mana > 0) {
 																		if (rand < 40) {
@@ -37187,17 +37194,34 @@ bot.onText(/^rimuovi$|rimuovi 🚫|rimuovi tutto|rimuovi arma|rimuovi armatura|r
 
 						if ((message.text.indexOf(" ") != -1) && (oggetto != " ") && (oggetto != "") && (oggetto != "🚫")) {
 
-							oggetto = oggetto.toLowerCase();
+							oggetto = oggetto.toLowerCase().trim();
 
 							var desc = " di tutto l'equip";
-							if (oggetto == "arma")
+							if (oggetto == "arma") {
+								if (weapon_name == "") {
+									bot.sendMessage(message.chat.id, "Nessun'arma equipaggiata.", kbEquip);
+									return;
+								}
 								desc = " di " + weapon_name;
-							else if (oggetto == "armatura")
+							} else if (oggetto == "armatura") {
+								if (weapon2_name == "") {
+									bot.sendMessage(message.chat.id, "Nessun'armatura equipaggiata.", kbEquip);
+									return;
+								}
 								desc = " di " + weapon2_name;
-							else if (oggetto == "scudo")
+							} else if (oggetto == "scudo") {
+								if (weapon3_name == "") {
+									bot.sendMessage(message.chat.id, "Nessuno scudo equipaggiato.", kbEquip);
+									return;
+								}
 								desc = " di " + weapon3_name;
-							else if (oggetto == "talismano")
+							} else if (oggetto == "talismano") {
+								if (charm_name == "") {
+									bot.sendMessage(message.chat.id, "Nessun talismano equipaggiato.", kbEquip);
+									return;
+								}
 								desc = " di " + charm_name;
+							}
 
 							bot.sendMessage(message.chat.id, "Confermi la rimozione" + desc + "?", yesno).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
