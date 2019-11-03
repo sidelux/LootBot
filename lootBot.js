@@ -41781,7 +41781,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 				if (globalVal == null)
 					globalVal = 0;
 
-				connection.query('SELECT global_eventon, global_eventwait, global_eventhide, global_cap, global_desc FROM config', function (err, rows, fields) {
+				connection.query('SELECT global_eventon, global_eventwait, global_eventhide, global_cap, global_desc, global_date FROM config', function (err, rows, fields) {
 					if (err) throw err;
 
 					var global = rows[0].global_eventon;
@@ -41789,6 +41789,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 					var global_hide = rows[0].global_eventhide;
 					var global_cap = rows[0].global_cap;
 					var global_desc = rows[0].global_desc;
+					var global_date = rows[0].global_date;
 
 					connection.query('SELECT L.name, L.det, L.value, L.reward, L.type, S.progress, I.name As itemName, L.multiply, S.completed FROM achievement_daily D INNER JOIN achievement_list L ON D.achievement_id = L.id LEFT JOIN achievement_status S ON S.achievement_id = D.achievement_id AND S.player_id = ' + player_id + ' LEFT JOIN item I ON D.item_id = I.id', function (err, rows, fields) {
 						if (err) throw err;
@@ -41884,7 +41885,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 						else
 							text += formatNumber(cave_count) + " su " + formatNumber(progCave[end]) + " cave esplorate (" + formatNumber(progCaveRew[end]) + " §)\n";
 
-						var time_end = new Date("2019-11-01 12:00:00");
+						var time_end = new Date(global_date);
 						var now = new Date();
 						var diffD = Math.floor(((time_end - now) / 1000) / 60 / 60 / 24);
 						var diffH = Math.floor(((time_end - now) / 1000) / 60 / 60);
@@ -45703,7 +45704,7 @@ function setFinishedArena(element, index, array) {
 										var chest = Math.round(Math.random() * 2 + 3);
 
 										addChest(watcher_id, chest);
-										connection.query('SELECT name FROM name WHERE id = ' + chest, function (err, rows, fields) {
+										connection.query('SELECT name FROM chest WHERE id = ' + chest, function (err, rows, fields) {
 											if (err) throw err;
 											bot.sendMessage(chat_id, "Come bonus per le vittorie ottenute hai vinto anche uno " + rows[0].name + "!");
 										});
