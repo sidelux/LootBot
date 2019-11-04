@@ -48069,6 +48069,10 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											var card_rarity = generateCardRarity();
 											var max = connection_sync.query('SELECT MAX(id) As mx FROM card_list');
 											var new_id = (max[0].mx+1);
+											if (max == 5000) {
+												console.log("Limite figurine raggiunto, salto la creazione di nuove");
+												return;
+											}
 											connection_sync.query('INSERT INTO card_list (id, name, rarity) VALUES (' + new_id + ', "' + mob_name + '", ' + card_rarity + ')');
 											console.log("Figurina creata: " + mob_name + " (" + card_rarity + ") [" + new_id + "] da utente " + rows[i].id);
 
