@@ -2118,7 +2118,15 @@ CREATE TABLE `map_lobby` (
   PRIMARY KEY (`id`),
   KEY `map_lobby_player_id` (`player_id`),
   KEY `map_lobby_lobby_id` (`lobby_id`),
-  CONSTRAINT `map_lobby_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
+  KEY `map_lobby_weapon_id` (`weapon_id`),
+  KEY `map_lobby_weapon2_id` (`weapon2_id`),
+  KEY `map_lobby_weapon3_id` (`weapon3_id`),
+  KEY `map_lobby_enemy_id` (`enemy_id`),
+  CONSTRAINT `map_lobby_enemy_id` FOREIGN KEY (`enemy_id`) REFERENCES `player` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `map_lobby_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `map_lobby_weapon2_id` FOREIGN KEY (`weapon2_id`) REFERENCES `item` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `map_lobby_weapon3_id` FOREIGN KEY (`weapon3_id`) REFERENCES `item` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `map_lobby_weapon_id` FOREIGN KEY (`weapon_id`) REFERENCES `item` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

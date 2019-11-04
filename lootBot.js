@@ -13539,10 +13539,10 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																								if (rankPoint > 1)
 																									plur = "i";
 																								
-																								connection.query('SELECT min_rank FROM dungeon_list WHERE main = 1 AND min_rank < ' + dungeon_min_rank + ' ORDER BY min_rank DESC LIMIT 1', function (err, rows, fields) {
+																								connection.query('SELECT min_rank FROM dungeon_list WHERE main = 1 AND min_rank < ' + dungeon_min_rank + ' ORDER BY min_rank ASC LIMIT 1', function (err, rows, fields) {
 																									if (err) throw err;
 																									
-																									var min_rank_prev = 0;
+																									var min_rank_prev = 9999;	// per l'ultimo, da 1000 a 9999
 																									if (Object.keys(rows).length > 0)
 																										min_rank_prev = rows[0].min_rank;
 
@@ -13553,6 +13553,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																										if (pass_id != 0) {
 																											var getrank2 = 0;
+																											console.log("rank: ", dungeon_min_rank, rows[0].rank, min_rank_prev);
 																											if ((dungeon_min_rank > rows[0].rank) && (min_rank_prev < rows[0].rank)) {	// stessa fascia di rango
 																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																													if (err) throw err;
@@ -48089,16 +48090,16 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											var card_rarity = generateCardRarity();
 											var max = connection_sync.query('SELECT MAX(id) As mx FROM card_list');
 											var new_id = (max[0].mx+1);
-											if (max == 4500) {
+											if (max == 4500)
 												console.log("Limite 4500 figurine raggiunto, salto la creazione di nuove");
-												return;
+											else {
+												connection_sync.query('INSERT INTO card_list (id, name, rarity) VALUES (' + new_id + ', "' + mob_name + '", ' + card_rarity + ')');
+												console.log("Figurina creata: " + mob_name + " (" + card_rarity + ") [" + new_id + "] da utente " + rows[i].id);
+
+												connection_sync.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + rows[i].id + ', ' + new_id + ')');
+
+												bot.sendMessage(rows[i].chat_id, "Hai creato ed ottenuto la figurina 🃏 *" + mob_name + " (" + card_rarity + ")*! Creane altre per ampliare la collezione!", mark);
 											}
-											connection_sync.query('INSERT INTO card_list (id, name, rarity) VALUES (' + new_id + ', "' + mob_name + '", ' + card_rarity + ')');
-											console.log("Figurina creata: " + mob_name + " (" + card_rarity + ") [" + new_id + "] da utente " + rows[i].id);
-
-											connection_sync.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + rows[i].id + ', ' + new_id + ')');
-
-											bot.sendMessage(rows[i].chat_id, "Hai creato ed ottenuto la figurina 🃏 *" + mob_name + " (" + card_rarity + ")*! Creane altre per ampliare la collezione!", mark);
 										}
 									} else {
 										var tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_list');
