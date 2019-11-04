@@ -570,7 +570,7 @@ mainKeys = [['⚔ Missione ⚔'],
 			['Alchimia ⚗️', 'Rifugio 🔦'],
 			['Zaino 🎒', 'Piazza 💰', 'Scrigni 🔑'],
 			['Giocatore 👤', 'Team ⚜️'],
-			['Imprese 🏋️', 'Drago 🐉', 'Esplorazioni 🗺'],
+			['Imprese 🏋️', 'Drago 🐉', 'Esplorazioni 🧗‍♀'],
 			['Destino 🔮', 'Eventi 🎯'],
 			['Top 🔝', 'Lunari 🌕', 'Info 📖']]
 
@@ -5777,16 +5777,18 @@ bot.onText(/statistiche/i, function (message) {
 																						var abilita = rows[0].cnt;
 																						connection.query("SELECT SUM(ability_level) As cnt FROM ability WHERE player_id = " + player_id, function (err, rows, fields) {
 																							if (err) throw err;
-																							var talenti = rows[0].cnt
+																							var talenti = rows[0].cnt;
 																							connection.query("SELECT COUNT(id) As cnt FROM map_history WHERE player_id = " + player_id, function (err, rows, fields) {
 																								if (err) throw err;
-																								var map_plays = rows[0].cnt
+																								var map_plays = rows[0].cnt;
 																								connection.query("SELECT COUNT(id) As cnt FROM map_history WHERE position = 1 AND player_id = " + player_id, function (err, rows, fields) {
 																									if (err) throw err;
-																									var map_win = rows[0].cnt
+																									var map_win = rows[0].cnt;
 																									connection.query("SELECT SUM(kills) As cnt FROM map_history WHERE player_id = " + player_id, function (err, rows, fields) {
 																										if (err) throw err;
-																										var map_kills = rows[0].cnt
+																										var map_kills = 0;
+																										if (rows[0].cnt != null)
+																											map_kills = rows[0].cnt;
 
 																										var text = "*Statistiche giocatore*\n" +
 																											"\n👤 *Giocatore*:\n" +

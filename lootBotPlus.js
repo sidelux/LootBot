@@ -8230,10 +8230,14 @@ bot.onText(/^\/statistiche/, function (message) {
 																																					var assaults_lost = rows[0].persi;
 																																					connection.query('SELECT COUNT(id) As cnt FROM map_history GROUP BY map_lobby_id', function (err, rows, fields) {
 																																					if (err) throw err;
-																																						var map_plays = rows[0].cnt;
+																																						var map_plays = 0;
+																																						if (Object.keys(rows).length > 0)
+																																							map_plays = rows[0].cnt;
 																																						connection.query('SELECT SUM(kills) As cnt FROM map_history', function (err, rows, fields) {
 																																						if (err) throw err;
-																																							var map_kills = rows[0].cnt;
+																																							var map_kills = 0;
+																																							if (rows[0].cnt != null)
+																																								map_kills = rows[0].cnt;
 
 																																							bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
 																																										"*Giocatori registrati:* " + formatNumber(tot) + "\n" +
