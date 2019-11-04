@@ -5777,52 +5777,68 @@ bot.onText(/statistiche/i, function (message) {
 																						var abilita = rows[0].cnt;
 																						connection.query("SELECT SUM(ability_level) As cnt FROM ability WHERE player_id = " + player_id, function (err, rows, fields) {
 																							if (err) throw err;
-
 																							var talenti = rows[0].cnt
+																							connection.query("SELECT COUNT(id) As cnt FROM map_history WHERE player_id = " + player_id, function (err, rows, fields) {
+																								if (err) throw err;
+																								var map_plays = rows[0].cnt
+																								connection.query("SELECT COUNT(id) As cnt FROM map_history WHERE position = 1 AND player_id = " + player_id, function (err, rows, fields) {
+																									if (err) throw err;
+																									var map_win = rows[0].cnt
+																									connection.query("SELECT SUM(kills) As cnt FROM map_history WHERE player_id = " + player_id, function (err, rows, fields) {
+																										if (err) throw err;
+																										var map_kills = rows[0].cnt
 
-																							var text = "*Statistiche giocatore*\n" +
-																								"\n👤 *Giocatore*:\n" +
-																								registrazione +
-																								"*Ricerche*: " + ricerche + " (ultimi 30g)\n" +
-																								"*Utenti invitati*: " + invitati + "\n" +
-																								"*Talenti sbloccati*: " + formatNumber(abilita) + "\n" +
-																								"*Assalti personali nel team attuale*: " + formatNumber(scalate) + "\n" +
-																								"*3 assalti completati*: " + scalateOk + "\n" +
-																								"*Oggetti posseduti*: " + formatNumber(oggetti) + "\n" +
-																								"*Imprese globali (partecipando attivamente)*: " + global_event + "\n" +
-																								"*Esperienza accumulata*: " + formatNumber(gain_exp) + "\n" +
-																								"*Offerte contrabbandiere accettate*: " + formatNumber(contrabbandiere) + "\n" +
-																								"*Livelli Talenti raggiunti*: " + talenti + "\n" +
-																								"*Incarichi completati*: " + mission_team_count + "\n" +
-																								"*Ð accumulate*: " + formatNumber(top_rank_count) + "\n" +
+																										var text = "*Statistiche giocatore*\n" +
+																											"\n👤 *Giocatore*:\n" +
+																											registrazione +
+																											"*Ricerche*: " + ricerche + " (ultimi 30g)\n" +
+																											"*Utenti invitati*: " + invitati + "\n" +
+																											"*Talenti sbloccati*: " + formatNumber(abilita) + "\n" +
+																											"*Assalti personali nel team attuale*: " + formatNumber(scalate) + "\n" +
+																											"*3 assalti completati*: " + scalateOk + "\n" +
+																											"*Oggetti posseduti*: " + formatNumber(oggetti) + "\n" +
+																											"*Imprese globali (partecipando attivamente)*: " + global_event + "\n" +
+																											"*Esperienza accumulata*: " + formatNumber(gain_exp) + "\n" +
+																											"*Offerte contrabbandiere accettate*: " + formatNumber(contrabbandiere) + "\n" +
+																											"*Livelli Talenti raggiunti*: " + talenti + "\n" +
+																											"*Incarichi completati*: " + mission_team_count + "\n" +
+																											"*Ð accumulate*: " + formatNumber(top_rank_count) + "\n" +
 
-																								"\n⚔️ *Hai completato*:\n" +
-																								"*Missioni*: " + formatNumber(missioni) + "\n" +
-																								"*Imprese giornaliere*: " + formatNumber(imprese) + "\n" +
-																								"*Dungeon*: " + formatNumber(dungeon_tot) + "\n" +
-																								"*Cave*: " + formatNumber(cave_count) + "\n" +
-																								"*Viaggi*: " + formatNumber(travel_count) + "\n" +
+																											"\n⚔️ *Hai completato*:\n" +
+																											"*Missioni*: " + formatNumber(missioni) + "\n" +
+																											"*Imprese giornaliere*: " + formatNumber(imprese) + "\n" +
+																											"*Dungeon*: " + formatNumber(dungeon_tot) + "\n" +
+																											"*Cave*: " + formatNumber(cave_count) + "\n" +
+																											"*Viaggi*: " + formatNumber(travel_count) + "\n" +
 
-																								"\n🎲 *Eventi*:\n" +
-																								"*Scontri Vette vinti*: " + formatNumber(dragon_top_win) + "\n" +
-																								"*Scontri Vette persi*: " + formatNumber(dragon_top_lose) + "\n" +
+																											"\n🎲 *Eventi*:\n" +
+																											"*Scontri Vette vinti*: " + formatNumber(dragon_top_win) + "\n" +
+																											"*Scontri Vette persi*: " + formatNumber(dragon_top_lose) + "\n" +
 
-																								"\n🔦 *Hai avviato " + formatNumber(ispezioniEffettuateVinte+ispezioniEffettuatePerse) + " ispezioni*:\n" +
-																								"*Vinte*: " + formatNumber(ispezioniEffettuateVinte) + "\n" +
-																								"*Perse*: " + formatNumber(ispezioniEffettuatePerse) + "\n" +
+																											"\n🔦 *Hai avviato " + formatNumber(ispezioniEffettuateVinte+ispezioniEffettuatePerse) + " ispezioni*:\n" +
+																											"*Vinte*: " + formatNumber(ispezioniEffettuateVinte) + "\n" +
+																											"*Perse*: " + formatNumber(ispezioniEffettuatePerse) + "\n" +
 
-																								"\n🔦 *Hai subito " + formatNumber(ispezioniSubite) + " ispezioni*:\n" +
-																								"*Vinte*: " + formatNumber(ispezioniSubiteVinte) + "\n" +
-																								"*Perse*: " + formatNumber(ispezioniSubitePerse) + "\n" +
+																											"\n🔦 *Hai subito " + formatNumber(ispezioniSubite) + " ispezioni*:\n" +
+																											"*Vinte*: " + formatNumber(ispezioniSubiteVinte) + "\n" +
+																											"*Perse*: " + formatNumber(ispezioniSubitePerse) + "\n" +
+																											
+																											"\n🗺 *Mappe di Lootia*:\n" +
+																											"*Partite*: " + formatNumber(map_plays) + "\n" +
+																											"*Vittorie*: " + formatNumber(map_win) + "\n" +
+																											"*Uccisioni*: " + formatNumber(map_kills) + "\n" +
 
-																								"\n💰 *Mercato*:\n" +
-																								"*Acquisti*: " + formatNumber(acquisti) + "\n" +
-																								"*Vendite*: " + formatNumber(vendite) + "\n" +
-																								"*Scambi in uscita*: " + formatNumber(scambiOut) + "\n" +
-																								"*Scambi in entrata*: " + formatNumber(scambiIn) + "\n" +
-																								"*Lotterie*: " + formatNumber(lotterie) + "\n" +
-																								"*Lotterie vinte*: " + formatNumber(lotterieVinte);
-																							bot.sendMessage(message.chat.id, text, back);
+																											"\n💰 *Mercato*:\n" +
+																											"*Acquisti*: " + formatNumber(acquisti) + "\n" +
+																											"*Vendite*: " + formatNumber(vendite) + "\n" +
+																											"*Scambi in uscita*: " + formatNumber(scambiOut) + "\n" +
+																											"*Scambi in entrata*: " + formatNumber(scambiIn) + "\n" +
+																											"*Lotterie*: " + formatNumber(lotterie) + "\n" +
+																											"*Lotterie vinte*: " + formatNumber(lotterieVinte);
+																										bot.sendMessage(message.chat.id, text, back);
+																									});
+																								});
+																							});
 																						});
 																					});
 																				});
@@ -5974,13 +5990,15 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 													bot.sendMessage(rows[i].chat_id, "Un giocatore si è unito alla tua lobby! Ci sono " + (members_cnt+1) + " su " + lobby_total_space + " giocatori in attesa...");
 											});
 
-											var members = "ad altri " + members_cnt + " partecipanti";
+											var members = " insieme ad altri " + members_cnt + " partecipanti";
 											if (rows[0].cnt > 0)
-												members = "ad un altro partecipante";
-											text = "Sei stato aggiunto alla lobby insieme " + members + ", attendi che altri giocatori si uniscano o interrompi la ricerca...";
+												members = " insieme ad un altro partecipante";
+											else if (rows[0].cnt == 0)
+												members = "";
+											text = "Sei stato aggiunto alla lobby" + members + ", attendi che altri giocatori si uniscano o interrompi la ricerca...";
 										}
 
-										connection.query('UPDATE map_lobby SET lobby_id = ' + lobby_id + ', weapon_id = 13, weapon2_id = 56, weapon3_id = 26 WHERE player_id = ' + player_id, function (err, rows, fields) {
+										connection.query('UPDATE map_lobby SET lobby_id = ' + lobby_id + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 										});
 
@@ -6026,7 +6044,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 													"\n> Quando un giocatore incontra un altro giocatore, ha inizio una battaglia dove lo sconfitto uscirà dalla partita." +
 													"\n> Se la trappola sconfigge il giocatore, quest'ultimo uscirà dalla partita." + 
 													"\n> Se il giocatore viene bruciato dal restringimento della mappa o ci entra di sua volontà, uscirà dalla partita." +
-													"\n> La partita termine quando tutti i giocatori tranne uno sono stati sconfitti, oppure sono stati tutti bruciati.", kbBack);
+													"\n> La partita termina quando tutti i giocatori tranne uno sono stati sconfitti, oppure sono stati tutti bruciati.", kbBack);
 								}
 							}
 						});
@@ -53220,7 +53238,7 @@ function setFullLobby(element, index, array) {
 			var life = 10000;
 
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-				connection.query('UPDATE map_lobby SET posX = ' + posArr[i][0] + ', posY = ' + posArr[i][1] + ', life = ' + life + ', total_life = ' + life + ' WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
+				connection.query('UPDATE map_lobby SET weapon_id = 13, weapon2_id = 56, weapon3_id = 26, posX = ' + posArr[i][0] + ', posY = ' + posArr[i][1] + ', life = ' + life + ', total_life = ' + life + ' WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
 					if (err) throw err;
 				});
 
