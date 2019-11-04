@@ -717,6 +717,7 @@ CREATE TABLE `config` (
   `global_eventon` int(11) NOT NULL DEFAULT '0',
   `global_eventwait` int(11) NOT NULL DEFAULT '0' COMMENT 'Raccogliendo dati',
   `global_eventhide` int(11) NOT NULL DEFAULT '0' COMMENT 'Cap non visibile',
+  `global_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `global_desc` varchar(256) NOT NULL,
   `global_cap` bigint(32) NOT NULL DEFAULT '1000',
   `global_item1` int(11) NOT NULL DEFAULT '0' COMMENT 'Più costosa',

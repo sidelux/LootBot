@@ -40,8 +40,8 @@ var max_istance = 50;
 var merchant_limit = 5;
 var max_top_id = 6;
 var rank_cap = 15;
-var lobby_total_space = 2;
-var lobby_restric_min = 5;
+var lobby_total_space = 5;
+var lobby_restric_min = 10;
 var dragon_limit_search = 15;
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
 var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750, 2500, 3000, 3750];
@@ -5848,9 +5848,6 @@ bot.onText(/statistiche/i, function (message) {
 });
 
 bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function (message) {
-	if ((message.from.id != 20471035) && (message.from.id != 200492030))
-		return;
-
 	connection.query('SELECT id, holiday, account_id, gender, trophies FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -5903,6 +5900,14 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 				keyboard: [["Accedi alla Lobby 🏹", "Vittorie 🎉"], ["Come funziona? 💬"], ["Torna al menu"]]
 			}
 		};
+		
+		if (message.from.id != 20471035) {
+			var team = connection_sync.query("SELECT 1 FROM team_player WHERE player_id = " + player_id + " AND team_id = 225");
+			if (Object.keys(team).length == 0) {
+				bot.sendMessage(message.chat.id, "Il tuo team non è abilitato all'accesso di questa funzione!", back)
+				return;
+			}
+		}
 
 		connection.query('SELECT lobby_id FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -5982,17 +5987,19 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 										bot.sendMessage(message.chat.id, text, kbStop);
 									});
 								} else if (answer.text.toLowerCase().indexOf("vittorie") != -1) {
-									bot.sendMessage(message.chat.id, "Questa funzione non è ancora disponibile", kbBack);
 									connection.query('SELECT P.nickname, M.kills, M.insert_date FROM map_history M, player P WHERE M.player_id = P.id AND M.position = 1 ORDER BY M.id DESC LIMIT 25', function (err, rows, fields) {
 										if (err) throw err;
 
-										var text = "<b>Ultime 25 vittorie:</b>";
-										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-											var kills = "uccisioni";
-											if (rows[i].kills == 1)
-												kills = "uccisione";
-											text += "\n> " + rows[i].nickname + " con " + rows[i].kills + " " + kills + " il " + toDate("it", rows[i].insert_date);
-										}
+										if (Object.keys(rows).length > 0) {
+											var text = "<b>Ultime 25 vittorie:</b>";
+											for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+												var kills = "uccisioni";
+												if (rows[i].kills == 1)
+													kills = "uccisione";
+												text += "\n> " + rows[i].nickname + " con " + rows[i].kills + " " + kills + " il " + toDate("it", rows[i].insert_date);
+											}
+										} else
+											text = "Ancora nessuna vittoria ottenuta questa stagione.";
 
 										bot.sendMessage(message.chat.id, text, kbBack);
 									});
@@ -8388,7 +8395,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														}
 													};
 
-													bot.sendMessage(message.chat.id, "Avventuriero, in caso di difficoltà puoi ricorrere all'uso di un *Pass* che ti permette di chiedere aiuto ad un tuo compagno di team e fargli proseguire il dungeon al tuo posto.\nPuoi usare il Pass Bronzo per compagni di Rinascita pari alla tua, Pass Argento per compagni entro 1 rinascita di differenza, il Pass Oro entro 2 rinascite di differenza.\nNota: al completamento del dungeon otterrete entrambi il punto solo se la vostra differenza rango è inferiore a 150 ed il rango del destinatario è superiore al tuo.", dPass).then(function () {
+													bot.sendMessage(message.chat.id, "Avventuriero, in caso di difficoltà puoi ricorrere all'uso di un *Pass* che ti permette di chiedere aiuto ad un tuo compagno di team e fargli proseguire il dungeon al tuo posto.\nPuoi usare il Pass Bronzo per compagni di Rinascita pari alla tua, Pass Argento per compagni entro 1 rinascita di differenza, il Pass Oro entro 2 rinascite di differenza.\nNota: al completamento del dungeon otterrete entrambi il punto solo se la vostra differenza rango è inferiore a 150, siete nella stessa fascia rango dungeon ed il rango del destinatario è superiore al tuo.", dPass).then(function () {
 														answerCallbacks[message.chat.id] = function (answer) {
 
 															if (answer.text != "Torna al dungeon") {
@@ -12735,11 +12742,12 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 										var paralyzed = rows[0].monster_paralyzed;
 										var critic = rows[0].monster_critic;
 
-										connection.query('SELECT cursed, mob_power_multiplier FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
+										connection.query('SELECT cursed, mob_power_multiplier, min_rank FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 											if (err) throw err;
 
 											var cursed = rows[0].cursed;
 											var mob_power_multiplier = rows[0].mob_power_multiplier;
+											var dungeon_min_rank = rows[0].min_rank;
 
 											connection.query('SELECT name, life, level, weapon_id, weapon2_id, weapon3_id, charm_id FROM dungeon_monsters WHERE id = ' + monster_id, function (err, rows, fields) {
 												if (err) throw err;
@@ -13510,83 +13518,98 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																								var plur = "o";
 																								if (rankPoint > 1)
 																									plur = "i";
-
-																								connection.query('SELECT chat_id, rank FROM player WHERE id = ' + pass_id, function (err, rows, fields) {
+																								
+																								connection.query('SELECT min_rank FROM dungeon_list WHERE main = 1 AND min_rank < 800 ORDER BY min_rank DESC', function (err, rows, fields) {
 																									if (err) throw err;
+																									
+																									var min_rank_prev = 0;
+																									if (Object.keys(rows).length > 0)
+																										min_rank_prev = rows[0].min_rank;
 
-																									var getrank1 = 0;
+																									connection.query('SELECT chat_id, rank FROM player WHERE id = ' + pass_id, function (err, rows, fields) {
+																										if (err) throw err;
 
-																									if (pass_id != 0) {
-																										var getrank2 = 0;
-																										if (rank - rows[0].rank >= 150) {
-																											connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + pass_id, function (err, rows, fields) {
-																												if (err) throw err;
-																											});
-																											getrank2 = 1;
+																										var getrank1 = 0;
+
+																										if (pass_id != 0) {
+																											var getrank2 = 0;
+																											if ((dungeon_min_rank > rows[0].rank) && (min_rank_prev < rows[0].rank)) {	// stessa fascia di rango
+																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																													if (err) throw err;
+																												});
+																												getrank1 = 1;
+																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + pass_id, function (err, rows, fields) {
+																													if (err) throw err;
+																												});
+																												getrank2 = 1;
+																											} else if (rank - rows[0].rank >= 150) {
+																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + pass_id, function (err, rows, fields) {
+																													if (err) throw err;
+																												});
+																												getrank2 = 1;
+																											} else {
+																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																													if (err) throw err;
+																												});
+																												getrank1 = 1;
+																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + pass_id, function (err, rows, fields) {
+																													if (err) throw err;
+																												});
+																												getrank2 = 1;
+																											}
+
+																											if (getrank2 == 1)
+																												bot.sendMessage(rows[0].chat_id, "Il tuo compagno " + message.from.username + " ha completato il dungeon ed hai ottenuto " + rankPoint + " punt" + plur + " rango!");
+																											else
+																												bot.sendMessage(rows[0].chat_id, "Il tuo compagno " + message.from.username + " ha completato il dungeon!");
 																										} else {
 																											connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																												if (err) throw err;
 																											});
 																											getrank1 = 1;
-																											connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + pass_id, function (err, rows, fields) {
-																												if (err) throw err;
-																											});
-																											getrank2 = 1;
 																										}
 
-																										if (getrank2 == 1) {
-																											bot.sendMessage(rows[0].chat_id, "Il tuo compagno " + message.from.username + " ha completato il dungeon ed hai ottenuto " + rankPoint + " punt" + plur + " rango!");
-																										} else {
-																											bot.sendMessage(rows[0].chat_id, "Il tuo compagno " + message.from.username + " ha completato il dungeon!");
+																										if (getrank1 == 1)
+																											now_rank += rankPoint;
+
+																										setAchievement(player_id, 26, 1);
+
+																										connection.query('SELECT name FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
+																											if (err) throw err;
+
+																											var dungeon_name = rows[0].name;
+
+																											var dBack = {
+																												parse_mode: "Markdown",
+																												reply_markup: {
+																													resize_keyboard: true,
+																													keyboard: [["Torna al dungeon"], ["Torna al menu"]]
+																												}
+																											};
+
+																											if (getrank1 == 1)
+																												bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*! Hai ottenuto " + rankPoint + " punt" + plur + " rango, ne possiedi " + now_rank + "!\n" + refill, dBack);
+																											else
+																												bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*, possiedi " + now_rank + " rango!\n" + refill, dBack);
+																										});
+
+																										var rand = Math.round(Math.random() * 100);
+																										if ((rand <= 5) && (rank > 20)) {
+																											addItem(player_id, 618);
+																											bot.sendMessage(message.chat.id, "Sul pavimento appena fuori dal dungeon hai trovato una *Capsula Estrazione*! Che fortuna!", mark);
 																										}
-																									} else {
-																										connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + player_id, function (err, rows, fields) {
+
+																										var d = new Date();
+																										d.setHours(d.getHours() + wait_dungeon);
+																										var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+																										connection.query('UPDATE player SET dungeon_count = dungeon_count+1, dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																											if (err) throw err;
 																										});
-																										getrank1 = 1;
-																									}
 
-																									if (getrank1 == 1)
-																										now_rank += rankPoint;
-
-																									setAchievement(player_id, 26, 1);
-
-																									connection.query('SELECT name FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
-																										if (err) throw err;
-
-																										var dungeon_name = rows[0].name;
-
-																										var dBack = {
-																											parse_mode: "Markdown",
-																											reply_markup: {
-																												resize_keyboard: true,
-																												keyboard: [["Torna al dungeon"], ["Torna al menu"]]
-																											}
-																										};
-
-																										if (getrank1 == 1) {
-																											bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*! Hai ottenuto " + rankPoint + " punt" + plur + " rango, ne possiedi " + now_rank + "!\n" + refill, dBack);
-																										} else {
-																											bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*, possiedi " + now_rank + " rango!\n" + refill, dBack);
-																										}
-																									});
-
-																									var rand = Math.round(Math.random() * 100);
-																									if ((rand <= 5) && (rank > 20)) {
-																										addItem(player_id, 618);
-																										bot.sendMessage(message.chat.id, "Sul pavimento appena fuori dal dungeon hai trovato una *Capsula Estrazione*! Che fortuna!", mark);
-																									}
-
-																									var d = new Date();
-																									d.setHours(d.getHours() + wait_dungeon);
-																									var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-
-																									connection.query('UPDATE player SET dungeon_count = dungeon_count+1, dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
-																										if (err) throw err;
-																									});
-
-																									connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
-																										if (err) throw err;
+																										connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
+																											if (err) throw err;
+																										});
 																									});
 																								});
 																							});
@@ -20235,6 +20258,7 @@ bot.onText(/team/i, function (message) {
 												iKeys.push(["Assalto 🐺", "Incarichi 📜"]);
 											else
 												iKeys.push(["Incarichi 📜"]);
+											iKeys.push(["Mappe di Lootia 🗺 (Test)"]);
 											iKeys.push(["Dettaglio Membri 👥"]);
 											iKeys.push(["Cassaforte 💰", "Magazzino 📦"]);
 											iKeys.push(["Hall of Fame 🏆", "Liste Membri 🔎"]);
@@ -20260,6 +20284,7 @@ bot.onText(/team/i, function (message) {
 												iKeys.push(["Assalto 🐺", "Incarichi 📜"]);
 											else
 												iKeys.push(["Incarichi 📜"]);
+											iKeys.push(["Mappe di Lootia 🗺 (Test)"]);
 											if (team_details == 1)
 												iKeys.push(["Dettaglio Membri 👥"]);
 											iKeys.push(["Cassaforte 💰", "Magazzino 📦"]);
@@ -53222,8 +53247,10 @@ function setRestrictMap(element, index, array) {
 	var turnNumber = element.turn_number;
 	
 	// debug
+	/*
 	if (turnNumber > 0)
 		return;
+	*/
 	
 	restrictMap(lobby_id, mapMatrix, finalPointY, finalPointX, turnNumber);
 	
