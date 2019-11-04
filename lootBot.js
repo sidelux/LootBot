@@ -13519,7 +13519,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																								if (rankPoint > 1)
 																									plur = "i";
 																								
-																								connection.query('SELECT min_rank FROM dungeon_list WHERE main = 1 AND min_rank < 800 ORDER BY min_rank DESC', function (err, rows, fields) {
+																								connection.query('SELECT min_rank FROM dungeon_list WHERE main = 1 AND min_rank < ' + dungeon_min_rank + ' ORDER BY min_rank DESC LIMIT 1', function (err, rows, fields) {
 																									if (err) throw err;
 																									
 																									var min_rank_prev = 0;
@@ -48069,8 +48069,8 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											var card_rarity = generateCardRarity();
 											var max = connection_sync.query('SELECT MAX(id) As mx FROM card_list');
 											var new_id = (max[0].mx+1);
-											if (max == 5000) {
-												console.log("Limite figurine raggiunto, salto la creazione di nuove");
+											if (max == 4500) {
+												console.log("Limite 4500 figurine raggiunto, salto la creazione di nuove");
 												return;
 											}
 											connection_sync.query('INSERT INTO card_list (id, name, rarity) VALUES (' + new_id + ', "' + mob_name + '", ' + card_rarity + ')');
