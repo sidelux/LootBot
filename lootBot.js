@@ -5920,7 +5920,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 		};
 		
 		if (message.from.id != 20471035) {
-			var team = connection_sync.query("SELECT 1 FROM team_player WHERE player_id = " + player_id + " AND team_id = 225");
+			var team = connection_sync.query("SELECT 1 FROM team_player WHERE player_id = " + player_id + " AND team_id IN (3, 277, 225)");
 			if (Object.keys(team).length == 0) {
 				bot.sendMessage(message.chat.id, "Il tuo team non è abilitato all'accesso di questa funzione!", back)
 				return;
@@ -5945,7 +5945,8 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 								if (err) throw err;
 								bot.sendMessage(message.chat.id, "Sei in attesa... " + rows[0].cnt + "/" + lobby_total_space + " giocatori nella lobby", kbStop);
 							});
-						}
+						} else if (message.text.toLowerCase() != "torna alla mappa")
+							bot.sendMessage(message.chat.id, "Esplorazione mappa in corso!", kbBack);
 					});
 				} else {
 					connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL', function (err, rows, fields) {
@@ -6389,7 +6390,7 @@ bot.onText(/attacca!/i, function (message) {
 									partialProtected = 1;
 								enemy_query += ", battle_shield = 2";
 							}
-							if (fullProtected == 1) {
+							if (fullProtected == 0) {
 								var randCrit = Math.random()*100;
 								var critText = "";
 								if (full_critical >= randCrit) {
@@ -6561,7 +6562,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 				var mapMatrix = JSON.parse(rows[0].map_json);
 				var map = printMap(mapMatrix, posX, posY, pulsePosX, pulsePosY);
 
-				connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+				connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 					if (err) throw err;
 
 					if (last_obj == 4) {
@@ -6777,7 +6778,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 						return;
 					}
 
-					var total_players = rows[0].cnt;
+					var total_players_alive = rows[0].cnt;
 					var iKeys = [];
 					var btnSx = 0;
 					var btnDx = 0;
@@ -6843,7 +6844,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 						min = "meno di 1";
 					wait_text = "\n☠️ " + min + " minut" + plur;
 
-					bot.sendMessage(message.chat.id, "👥 " + total_players + " su " + lobby_total_space + " sopravvissuti\n❤️ " + formatNumber(life) + wait_text + "\n" + map, kbSel).then(function () {
+					bot.sendMessage(message.chat.id, "👥 " + total_players_alive + " su " + lobby_total_space + " sopravvissuti\n❤️ " + formatNumber(life) + wait_text + "\n" + map, kbSel).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							if ((answer.text == "Torna al menu") || (answer.text.toLowerCase().indexOf("aggiorna") != -1))
 								return;
@@ -6940,7 +6941,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 								var item_id = 0;
 								var money = 0;
 
-								var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + posX + ' AND posY = ' + posY + ' AND killed = 0 AND enemy_id IS NULL AND lobby_id = ' + lobby_id);
+								var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + posX + ' AND posY = ' + posY + ' AND killed = 0 AND enemy_id IS NULL AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
 								if (Object.keys(checkEnemy).length > 0) {
 									objId = 8; // salta gli item dopo
 									isEnemy = 1;
@@ -6950,8 +6951,10 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									enemy_query = ", enemy_id = " + enemy_id + ", my_turn = 1";
 								}
 
-								if ((objId == 0) || (objId == 8)) {				// vuoto o era una posizione di partenza
+								if (objId == 0) {				// vuoto
 									text = "Qui non c'è nulla! Prosegui la tua esplorazione...";
+								} else if ((objId == 8) && (isEnemy == 1)) {
+									// testo già settato sopra
 								} else if (objId == 1) {		// scrigno
 									var rand = Math.random()*100;
 									var item_type = 0;
@@ -13539,12 +13542,12 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																								if (rankPoint > 1)
 																									plur = "i";
 																								
-																								connection.query('SELECT min_rank FROM dungeon_list WHERE main = 1 AND min_rank < ' + dungeon_min_rank + ' ORDER BY min_rank ASC LIMIT 1', function (err, rows, fields) {
+																								connection.query('SELECT min_rank FROM dungeon_list WHERE main = 1 AND min_rank > ' + dungeon_min_rank + ' ORDER BY min_rank ASC LIMIT 1', function (err, rows, fields) {
 																									if (err) throw err;
 																									
-																									var min_rank_prev = 9999;	// per l'ultimo, da 1000 a 9999
+																									var min_rank_succ = 9999;	// per l'ultimo, da 1000 a 9999
 																									if (Object.keys(rows).length > 0)
-																										min_rank_prev = rows[0].min_rank;
+																										min_rank_succ = rows[0].min_rank;
 
 																									connection.query('SELECT chat_id, rank FROM player WHERE id = ' + pass_id, function (err, rows, fields) {
 																										if (err) throw err;
@@ -13553,8 +13556,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																										if (pass_id != 0) {
 																											var getrank2 = 0;
-																											console.log("rank: ", dungeon_min_rank, rows[0].rank, min_rank_prev);
-																											if ((dungeon_min_rank > rows[0].rank) && (min_rank_prev < rows[0].rank)) {	// stessa fascia di rango
+																											console.log("rank: ", dungeon_min_rank, rows[0].rank, min_rank_succ);
+																											if ((dungeon_min_rank <= rows[0].rank) && (min_rank_succ >= rows[0].rank)) {	// stessa fascia di rango
 																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																													if (err) throw err;
 																												});
@@ -39244,12 +39247,13 @@ bot.onText(/necro del destino/i, function (message) {
 										return;
 									}
 									
-									/*
-									if ((num == 7) || (num == 8)) {
-										bot.sendMessage(message.chat.id, "Non è ancora possibile riscattare questa ricompensa", kbBack);
-										return;
+									if ((num == 6) || (num == 7) || (num == 8)) {
+										var necro_lock = connection_sync.query('SELECT 1 FROM necro_change WHERE player_id = ' + player_id);
+										if (Object.keys(necro_lock).length == 0) {
+											bot.sendMessage(message.chat.id, "Puoi riscattare questa ricompensa solo dopo aver sbloccato la Trasmogrificazione", kbBack);
+											return;
+										}
 									}
-									*/
 
 									var ok = 0;
 									if ((num == 1) && (step == 8))
@@ -43183,7 +43187,7 @@ function mainMenu(message) {
 		if (Object.keys(global).length > 0) {
 			var rows = connection_sync.query('SELECT SUM(value) As val FROM achievement_global');
 			if (Object.keys(global).length > 0)
-				msgtext = msgtext + "\n🌍 Impresa globale: " + Math.floor(rows[0].val/global[0].global_cap*100) + "%";
+				msgtext += "\n🌍 Impresa globale: " + Math.floor(rows[0].val/global[0].global_cap*100) + "%";
 		}
 
 		if (mission_party > 0) {
@@ -43197,9 +43201,9 @@ function mainMenu(message) {
 					var alert = "";
 					if (diff <= ((rows[0].duration/rows[0].parts)/2))
 						alert = " ☠";
-					msgtext = msgtext + "\n🏆 Incarico in attesa di votazione (" + rows[0].part_id + "/" + rows[0].parts + ")" + alert;
+					msgtext += "\n🏆 Incarico in attesa di votazione (" + rows[0].part_id + "/" + rows[0].parts + ")" + alert;
 				} else {
-					msgtext = msgtext + "\n🏆 Incarico in corso fino alle " + addZero(wait_time.getHours()) + ":" + addZero(wait_time.getMinutes()) + " " + rows[0].part_id + "/" + rows[0].parts;
+					msgtext += "\n🏆 Incarico in corso fino alle " + addZero(wait_time.getHours()) + ":" + addZero(wait_time.getMinutes()) + " " + rows[0].part_id + "/" + rows[0].parts;
 				}
 			}
 		}
@@ -43255,7 +43259,7 @@ function mainMenu(message) {
 						plur = "o";
 					if (min < 1)
 						min = "meno di 1";
-					msgtext = "\n🗺 Attesa mappa " + min + " minut" + plur;
+					msgtext += "\n🗺 Attesa mappa " + min + " minut" + plur;
 				}
 			}
 
@@ -48937,7 +48941,7 @@ function findMissing(numArray) {
 };
 
 function mapPlayerKilled(lobby_id, player_id, cause) {	
-	connection.query('SELECT chat_id, match_kills, enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+	connection.query('SELECT chat_id, match_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 		if (err) throw err;
 
 		var text = "";
@@ -48953,11 +48957,27 @@ function mapPlayerKilled(lobby_id, player_id, cause) {
 
 		var match_kills = rows[0].match_kills;
 
-		if (rows[0].enemy_id != null) {
-			connection.query('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_shield = 0, battle_heavy = 0 WHERE player_id = ' + rows[0].enemy_id, function (err, rows, fields) {
+		// sgancio dai combattimenti me stesso ed il nemico in entrambi i sensi
+		connection.query('SELECT enemy_id FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+			connection.query('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_shield = 0, battle_heavy = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-		}
+			if (rows[0].enemy_id != null) {
+				connection.query('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_shield = 0, battle_heavy = 0 WHERE player_id = ' + rows[0].enemy_id, function (err, rows, fields) {
+					if (err) throw err;
+				});
+			} else {
+				connection.query('SELECT player_id FROM map_lobby WHERE enemy_id = ' + player_id, function (err, rows, fields) {
+					if (err) throw err;
+					if (Object.keys(rows).length > 0) {
+						connection.query('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_shield = 0, battle_heavy = 0 WHERE player_id = ' + rows[0].player_id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+					}
+				});
+			}
+		});
 
 		// salva in history
 		connection.query('SELECT id FROM map_lobby_list WHERE lobby_id = ' + lobby_id,  function (err, rows, fields) {
@@ -48971,7 +48991,7 @@ function mapPlayerKilled(lobby_id, player_id, cause) {
 				var pos = lobby_total_space-rows[0].cnt;
 
 				connection.query('INSERT INTO map_history (map_lobby_id, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + player_id + ', ' + pos + ', ' + match_kills + ')', function (err, rows, fields) {
-					if (err) throw err;
+					// if (err) throw err; // per errore duplicazione righe
 
 					// concludi
 					connection.query('UPDATE map_lobby SET killed = 1, my_turn = 0, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_timeout = NULL, battle_timeout_limit = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -49347,6 +49367,11 @@ function restrictMap(lobby_id, mapMatrix, finalPointY, finalPointX, turnNumber) 
 	console.log("heightLen " + heightLen);
 	console.log("turnNumber " + turnNumber);
 	
+	if (turnNumber >= widthLen) {
+		console.log("Salto restringimento lobby per turni massimi raggiunti");
+		return;
+	}
+	
 	// orizzontali
 	for(i = 0; i < widthLen; i++) {
 		posToBurn.push([i, turnNumber]);
@@ -49358,7 +49383,7 @@ function restrictMap(lobby_id, mapMatrix, finalPointY, finalPointX, turnNumber) 
 		posToBurn.push([(widthLen-1)-turnNumber, i]);
 	}
 	
-	console.log(posToBurn);
+	// console.log(posToBurn);
 	
 	// applico le modifiche e incremento turno
 	var tmp;
