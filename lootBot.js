@@ -9,6 +9,7 @@ process.on('uncaughtException', function (error) {
 process.on('unhandledRejection', function (error, p) {
 	if ((error.message.indexOf("Too Many Requests") == -1) && (error.message.indexOf("message is not modified") == -1))
 		console.log("\x1b[31munhandledRejection: " + error.message + "\x1b[0m");
+	console.log(error.message);
 });
 
 var max_mission_id = 290;
@@ -6454,7 +6455,7 @@ bot.onText(/attacca!/i, function (message) {
 	});
 });
 
-bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna mappa/i, function (message) {	
+bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna mappa|^mappa$/i, function (message) {	
 	connection.query('SELECT id, holiday, account_id, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -6544,6 +6545,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 			var pulsePosX = rows[0].pulsePosX;
 			var pulsePosY = rows[0].pulsePosY;
 			var enemy_id = rows[0].enemy_id;
+			var killed = rows[0].killed;
 
 			connection.query('SELECT map_json, next_restrict_time FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -6560,7 +6562,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 				var next_restrict_time = rows[0].next_restrict_time;
 				var mapMatrix = JSON.parse(rows[0].map_json);
-				var map = printMap(mapMatrix, posX, posY, pulsePosX, pulsePosY);
+				var map = printMap(mapMatrix, posX, posY, pulsePosX, pulsePosY, killed);
 
 				connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 					if (err) throw err;
@@ -6578,7 +6580,6 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										bot.sendMessage(message.chat.id, "Non hai abbastanza monete nella sacca!", kbBack);
 										return;
 									}
-
 									connection.query('UPDATE map_lobby SET life = total_life, money = money-' + price + ', last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 										bot.sendMessage(message.chat.id, "Hai recuperato tutta la salute!", kbBack);
@@ -6843,6 +6844,11 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 					if (min < 1)
 						min = "meno di 1";
 					wait_text = "\n☠️ " + min + " minut" + plur;
+					
+					if (killed == 1) {
+						bot.sendMessage(message.chat.id, "Sei stato sconfitto.\nCi sono ancora " + total_players_alive + " sopravvissuti\n" + map, kbBack);
+						return;
+					}
 
 					bot.sendMessage(message.chat.id, "👥 " + total_players_alive + " su " + lobby_total_space + " sopravvissuti\n❤️ " + formatNumber(life) + wait_text + "\n" + map, kbSel).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
@@ -6951,11 +6957,9 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									enemy_query = ", enemy_id = " + enemy_id + ", my_turn = 1";
 								}
 
-								if (objId == 0) {				// vuoto
+								if (objId == 0)				// vuoto
 									text = "Qui non c'è nulla! Prosegui la tua esplorazione...";
-								} else if ((objId == 8) && (isEnemy == 1)) {
-									// testo già settato sopra
-								} else if (objId == 1) {		// scrigno
+								else if (objId == 1) {		// scrigno
 									var rand = Math.random()*100;
 									var item_type = 0;
 									var item_power = 0;
@@ -48119,7 +48123,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 												connection_sync.query('INSERT INTO card_inventory (player_id, card_id, quantity) VALUES (' + rows[i].id + ', ' + card[0].id + ', 1)');
 											else
 												connection_sync.query('UPDATE card_inventory SET quantity = quantity+1 WHERE player_id = ' + rows[i].id + ' AND card_id = ' + card[0].id);
-											console.log("Figurina ottenuta: " + mob_name);
+											// console.log("Figurina ottenuta: " + mob_name);
 
 											bot.sendMessage(rows[i].chat_id, "Hai trovato la figurina 🃏 *" + mob_name + " (" + card[0].rarity + ")*! Ne possiedi " + (have_tot[0].cnt+1) + "/" + tot[0].cnt, mark);
 										}
@@ -48960,9 +48964,6 @@ function mapPlayerKilled(lobby_id, player_id, cause) {
 		// sgancio dai combattimenti me stesso ed il nemico in entrambi i sensi
 		connection.query('SELECT enemy_id FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
-			connection.query('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_shield = 0, battle_heavy = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
-				if (err) throw err;
-			});
 			if (rows[0].enemy_id != null) {
 				connection.query('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_shield = 0, battle_heavy = 0 WHERE player_id = ' + rows[0].enemy_id, function (err, rows, fields) {
 					if (err) throw err;
@@ -48997,7 +48998,7 @@ function mapPlayerKilled(lobby_id, player_id, cause) {
 					connection.query('UPDATE map_lobby SET killed = 1, my_turn = 0, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_timeout = NULL, battle_timeout_limit = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 
-						connection.query('SELECT M.player_id, P.chat_id, P.nickname, M.match_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0',  function (err, rows, fields) {
+						connection.query('SELECT M.player_id, P.chat_id, P.nickname, M.match_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND M.lobby_id = ' + lobby_id,  function (err, rows, fields) {
 							if (err) throw err;
 
 							var winner_nickname = rows[0].nickname;
@@ -49005,7 +49006,7 @@ function mapPlayerKilled(lobby_id, player_id, cause) {
 							var winner_match_kills = rows[0].match_kills;
 
 							// fine partita
-							if (Object.keys(rows).length == 1) {
+							if (Object.keys(rows).length <= 1) {
 								
 								// aggiunge il primo in classifica
 								connection.query('INSERT INTO map_history (map_lobby_id, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + winner_player_id + ', 1, ' + winner_match_kills + ')', function (err, rows, fields) {
@@ -49316,15 +49317,18 @@ function checkDistance(matrix, objId, posY, posX, distance) {
 	return 1;
 }
 
-function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX) {
+function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed) {
 	var text = "";
 
 	for(i = 0; i < mapMatrix.length; i++) {
 		text += "\n";
 		for(j = 0; j < mapMatrix[i].length; j++) {
-			if ((i == posX) && (j == posY))
-				text += "📍 ";
-			else {
+			if ((i == posX) && (j == posY)) {
+				if (killed == 0)
+					text += "📍 ";
+				else
+					text += "💀 ";
+			} else {
 				if (mapMatrix[i][j] == 10)	// mappa bruciata
 					text += mapIdToSym(mapMatrix[i][j]) + " ";
 				else if ((pulsePosX != null && pulsePosY != null) && (
@@ -49363,9 +49367,11 @@ function restrictMap(lobby_id, mapMatrix, finalPointY, finalPointX, turnNumber) 
 	var heightLen = mapMatrix.length;
 	var posToBurn = [];
 	
+	/*
 	console.log("widthLen " + widthLen);
 	console.log("heightLen " + heightLen);
 	console.log("turnNumber " + turnNumber);
+	*/
 	
 	if (turnNumber >= widthLen) {
 		console.log("Salto restringimento lobby per turni massimi raggiunti");
@@ -49388,7 +49394,7 @@ function restrictMap(lobby_id, mapMatrix, finalPointY, finalPointX, turnNumber) 
 	// applico le modifiche e incremento turno
 	var tmp;
 	for(i = 0; i < posToBurn.length; i++) {
-		console.log(posToBurn[i][1], posToBurn[i][0]);
+		// console.log(posToBurn[i][1], posToBurn[i][0]);
 		tmp = updateMap(mapArray, posToBurn[i][1], posToBurn[i][0], 10);
 		mapArray = tmp;
 		mapMatrix = JSON.parse(tmp);
@@ -49398,8 +49404,8 @@ function restrictMap(lobby_id, mapMatrix, finalPointY, finalPointX, turnNumber) 
 		if (err) throw err;
 	});
 	
-	// elimino tutti i giocatori nelle zone bruciate
-	connection.query('SELECT P.id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+	// elimino tutti i giocatori vivi nelle zone bruciate
+	connection.query('SELECT P.id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND M.killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 		if (err) throw err;
 		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 			for(k = 0; k < posToBurn.length; k++) {
