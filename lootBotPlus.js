@@ -4397,7 +4397,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				var item_name = "";
 
 				for (var i = 0; i < len; i++) {
-					elements[i] = elements[i].trim;
+					elements[i] = elements[i].trim();
 					var itemQuery = connection_sync.query('SELECT id, name FROM item WHERE name = "' + elements[i] + '"');
 					if (Object.keys(itemQuery).length == 0)
 						text += "Oggetto non trovato: " + elements[i] + "\n";
