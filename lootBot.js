@@ -2352,7 +2352,7 @@ bot.onText(/^\/m (.+)|^\/m$/, function (message, match) {
 								}
 							}
 
-							msg = msg.replace(/[^\w\s]/gi, '');
+							msg = msg.replace(/[^A-Za-z0-9àèìòù\.'!?\-_ ]/gi, '');
 							if (msg.length > 128)
 								msg = msg.slice(0, 128) + "...";
 
@@ -2467,7 +2467,7 @@ bot.onText(/^\/r (.+)|^\/r$/, function (message, match) {
 						}
 					}
 
-					msg = msg.replace(/[^\w\s]/gi, '');
+					msg = msg.replace(/[^A-Za-z0-9àèìòù\.'!?\-_ ]/gi, '');
 					if (msg.length > 128)
 						msg = msg.slice(0, 128) + "...";
 
@@ -49039,21 +49039,12 @@ function mapPlayerKilled(lobby_id, player_id, cause) {
 										var list = "";
 										var kill_text = "";
 										var trophies_query = "";
-										var mid_low_trophies = Math.floor(lobby_total_space/2);		// trofei negativi
-										var mid_high_trophies = lobby_total_space-mid_low_trophies;	// trofei positivi
 										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 											if (rows[i].kills == 0)
 												kill_text = "nessuna uccisione";
 											else
 												kill_text = rows[i].kills + " uccisioni";
-											if (rows[i].position <= mid_high_trophies)
-												trophies_query = "+" + (rows[i].position);
-											else {
-												var trophies_val = Math.abs(lobby_total_space-rows[i].position);
-												if (rows[i].trophies-trophies_val < 0)
-													trophies_val = Math.abs(rows[i].trophies);
-												trophies_query = "-" + trophies_val;
-											}
+											trophies_query = "+" + (lobby_total_space-rows[i].position)+1;
 											list += rows[i].position + "° " + rows[i].nickname + " (" + kill_text + ", " + trophies_query + " 🏆)\n";
 
 											connection.query('UPDATE player SET trophies = trophies' + trophies_query + ' WHERE id = ' + rows[i].id, function (err, rows, fields) {
@@ -53173,7 +53164,7 @@ bot.onText(/^\/firstfestival/, function (message, match) {
 });
 
 function checkLobbyTime() {
-	connection.query('SELECT P.id As player_id, P.chat_id As chat_id, enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND M.wait_time < NOW() AND wait_time IS NOT NULL', function (err, rows, fields) {
+	connection.query('SELECT P.id As player_id, P.chat_id As chat_id, enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND M.killed = 0 AND M.wait_time < NOW() AND wait_time IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
