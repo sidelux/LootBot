@@ -49044,7 +49044,7 @@ function mapPlayerKilled(lobby_id, player_id, cause) {
 												kill_text = "nessuna uccisione";
 											else
 												kill_text = rows[i].kills + " uccisioni";
-											trophies_query = "+" + (lobby_total_space-rows[i].position)+1;
+											trophies_query = "+" + parseInt(lobby_total_space-rows[i].position)+1;
 											list += rows[i].position + "° " + rows[i].nickname + " (" + kill_text + ", " + trophies_query + " 🏆)\n";
 
 											connection.query('UPDATE player SET trophies = trophies' + trophies_query + ' WHERE id = ' + rows[i].id, function (err, rows, fields) {
@@ -49114,11 +49114,11 @@ bot.onText(/^\/endmap$/, function (message, match) {
 function generateMap(width, height, players) {
 	var buildQnt = 3;
 	var build = [4, 5, 6];
-	var chestRate = 10;
-	var chestEpicRate = 2;
-	var trapRate = 10;
-	var pulseRate = 5;
-	var scrapRate = 5;
+	var chestRate = 15;
+	var chestEpicRate = 5;
+	var trapRate = 15;
+	var pulseRate = 10;
+	var scrapRate = 10;
 
 	console.log("Generazione mappa da " + width + "x" + height + " ticks");
 
@@ -49208,7 +49208,8 @@ function generateMap(width, height, players) {
 
 function updateMap(matrix, posY, posX, value) {
 	var mapMatrix = JSON.parse(matrix);
-	mapMatrix[posX][posY] = value;
+	if ((posX > 0) && (posY > 0))	// se sono negativi è per il finalPoint
+		mapMatrix[posX][posY] = value;
 	return JSON.stringify(mapMatrix);
 }
 
@@ -49399,31 +49400,60 @@ function restrictMap(lobby_id, mapMatrix, finalPointY, finalPointX, turnNumber) 
 	console.log("heightLen " + heightLen);
 	*/
 	console.log("turnNumber " + turnNumber);
+	console.log("finalPointX " + finalPointX);
+	console.log("finalPointY " + finalPointY);
 
 	if (turnNumber >= widthLen) {
 		console.log("Salto restringimento lobby per turni massimi raggiunti");
 		return;
 	}
+	
+	// devono uscire interi per forza
+	var middleX = widthLen/2;
+	var middleY = heightLen/2;
+	
+	// quanto spostare la griglia in funzione dei finalPoint
+	var factorVertical = 0;
+	var factorHorizontal = 0;
+	
+	if ((finalPointX < middleX) && (finalPointY > middleY)) {
+		// quadrante alto sinistra
+		factorVertical = +finalPointY;
+		factorHorizontal = -finalPointX;
+	} else if ((finalPointX > middleX) && (finalPointY > middleY)) {
+		// quadrante alto destra
+		factorVertical = +finalPointY;
+		factorHorizontal = +finalPointX;
+	} else if ((finalPointX < middleX) && (finalPointY < middleY)) {
+		// quadrante basso sinistra
+		factorVertical = -finalPointY;
+		factorHorizontal = -finalPointX;
+	} else if ((finalPointX < middleX) && (finalPointY < middleY)) {
+		// quadrante basso destra
+		factorVertical = -finalPointY;
+		factorHorizontal = +finalPointX;
+	}
+	
+	// todo
 
 	// orizzontali
 	for(i = 0; i < widthLen; i++) {
 		posToBurn.push([i, turnNumber]);
-		posToBurn.push([i, (heightLen-1)-turnNumber]);
+		posToBurn.push([i, ((heightLen-1)-turnNumber)]);
 	}
 	// verticali
 	for(i = 0; i < heightLen; i++) {
 		posToBurn.push([turnNumber, i]);
-		posToBurn.push([(widthLen-1)-turnNumber, i]);
+		posToBurn.push([((widthLen-1)-turnNumber), i]);
 	}
 
 	console.log(posToBurn);
-	posToBurn = multiDimensionalUnique(posToBurn);	// rimuove duplicati per evitare duplicazioni
+	posToBurn = multiDimensionalUnique(posToBurn);	// rimuove duplicati per evitare sdoppiamento uccisioni
 	console.log(posToBurn);
 
 	// applico le modifiche e incremento turno
 	var tmp;
 	for(i = 0; i < posToBurn.length; i++) {
-		// console.log(posToBurn[i][1], posToBurn[i][0]);
 		tmp = updateMap(mapArray, posToBurn[i][1], posToBurn[i][0], 10);
 		mapArray = tmp;
 		mapMatrix = JSON.parse(tmp);
@@ -53270,7 +53300,7 @@ function checkFullLobby() {
 function setFullLobby(element, index, array) {
 	var lobby_id = element.lobby_id;
 	var players = element.cnt;
-	var size = Math.round(players*1.5);
+	var size = Math.round(players*1.5); // il size deve essere sempre pari per il restringimento
 	var mapMatrix = generateMap(size, size, players);
 	var finalPoints = generateFinalPoints(mapMatrix);
 	connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, final_point_x, final_point_y, turn_number, next_restrict_time) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", ' + finalPoints[0] + ', ' + finalPoints[1] + ', 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE))', function (err, rows, fields) {
