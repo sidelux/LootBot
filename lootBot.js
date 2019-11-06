@@ -6956,9 +6956,13 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									enemy_chat_id = checkEnemy[0].chat_id;
 									enemy_query = ", enemy_id = " + enemy_id + ", my_turn = 1";
 								}
+								
+								console.log("objId", message.from.username, objId);
 
 								if (objId == 0)				// vuoto
 									text = "Qui non c'è nulla! Prosegui la tua esplorazione...";
+								else if ((objId == 8) && (isEnemy == 0))	// postazione di partenza
+									text = "Qui non c'è nulla! Anche se noti delle impronte segnate nel fango, prosegui la tua esplorazione...";
 								else if (objId == 1) {		// scrigno
 									var rand = Math.random()*100;
 									var item_type = 0;
@@ -13560,7 +13564,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																										if (pass_id != 0) {
 																											var getrank2 = 0;
-																											console.log("rank: ", dungeon_min_rank, rows[0].rank, min_rank_succ);
+																											// console.log("rank: ", dungeon_min_rank, rows[0].rank, min_rank_succ);
 																											if ((dungeon_min_rank <= rows[0].rank) && (min_rank_succ >= rows[0].rank)) {	// stessa fascia di rango
 																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																													if (err) throw err;
@@ -48957,7 +48961,7 @@ function findMissing(numArray) {
 };
 
 function mapPlayerKilled(lobby_id, player_id, cause) {	
-	connection.query('SELECT chat_id, match_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+	connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND player_id != ' + player_id + ' AND killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 		if (err) throw err;
 
 		var text = "";
@@ -48971,11 +48975,10 @@ function mapPlayerKilled(lobby_id, player_id, cause) {
 		for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 			bot.sendMessage(rows[i].chat_id, text);
 
-		var match_kills = rows[0].match_kills;
-
 		// sgancio dai combattimenti me stesso ed il nemico in entrambi i sensi
-		connection.query('SELECT enemy_id FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT enemy_id, match_kills FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
+			var match_kills = rows[0].match_kills;
 			if (rows[0].enemy_id != null) {
 				connection.query('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_shield = 0, battle_heavy = 0 WHERE player_id = ' + rows[0].enemy_id, function (err, rows, fields) {
 					if (err) throw err;
@@ -48990,89 +48993,89 @@ function mapPlayerKilled(lobby_id, player_id, cause) {
 					}
 				});
 			}
-		});
 
-		// salva in history
-		connection.query('SELECT id FROM map_lobby_list WHERE lobby_id = ' + lobby_id,  function (err, rows, fields) {
-			if (err) throw err;
-
-			var map_lobby_id = rows[0].id;
-
-			connection.query('SELECT COUNT(id) As cnt FROM map_history WHERE map_lobby_id = ' + map_lobby_id,  function (err, rows, fields) {
+			// salva in history
+			connection.query('SELECT id FROM map_lobby_list WHERE lobby_id = ' + lobby_id,  function (err, rows, fields) {
 				if (err) throw err;
 
-				var pos = lobby_total_space-rows[0].cnt;
+				var map_lobby_id = rows[0].id;
 
-				connection.query('INSERT INTO map_history (map_lobby_id, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + player_id + ', ' + pos + ', ' + match_kills + ')', function (err, rows, fields) {
-					// if (err) throw err; // per errore duplicazione righe
+				connection.query('SELECT COUNT(id) As cnt FROM map_history WHERE map_lobby_id = ' + map_lobby_id,  function (err, rows, fields) {
+					if (err) throw err;
 
-					// concludi
-					connection.query('UPDATE map_lobby SET killed = 1, my_turn = 0, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_timeout = NULL, battle_timeout_limit = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-						if (err) throw err;
+					var pos = lobby_total_space-rows[0].cnt;
 
-						connection.query('SELECT M.player_id, P.chat_id, P.nickname, M.match_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND M.lobby_id = ' + lobby_id,  function (err, rows, fields) {
+					connection.query('INSERT INTO map_history (map_lobby_id, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + player_id + ', ' + pos + ', ' + match_kills + ')', function (err, rows, fields) {
+						// if (err) throw err; // per errore duplicazione righe
+
+						// concludi
+						connection.query('UPDATE map_lobby SET killed = 1, my_turn = 0, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_timeout = NULL, battle_timeout_limit = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 
-							var winner_nickname = "Nessuno";
-							var winner_player_id = -1;
-							var winner_match_kills = -1;
+							connection.query('SELECT M.player_id, P.chat_id, P.nickname, M.match_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND M.lobby_id = ' + lobby_id,  function (err, rows, fields) {
+								if (err) throw err;
 
-							// fine partita
-							if (Object.keys(rows).length <= 1) {
-								if (Object.keys(rows).length == 1) {
-									winner_nickname = rows[0].nickname;
-									winner_player_id = rows[0].player_id;
-									winner_match_kills = rows[0].match_kills;
+								var winner_nickname = "Nessuno";
+								var winner_player_id = -1;
+								var winner_match_kills = -1;
 
-									// aggiunge il primo in classifica
-									connection_sync.query('INSERT INTO map_history (map_lobby_id, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + winner_player_id + ', 1, ' + winner_match_kills + ')');
-								}
+								// fine partita
+								if (Object.keys(rows).length <= 1) {
+									if (Object.keys(rows).length == 1) {
+										winner_nickname = rows[0].nickname;
+										winner_player_id = rows[0].player_id;
+										winner_match_kills = rows[0].match_kills;
 
-								connection.query('SELECT P.id, P.nickname, P.trophies, M.position, M.kills FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position', function (err, rows, fields) {
-									if (err) throw err;
-
-									var list = "";
-									var kill_text = "";
-									var trophies_query = "";
-									var mid_low_trophies = Math.floor(lobby_total_space/2);		// trofei negativi
-									var mid_high_trophies = lobby_total_space-mid_low_trophies;	// trofei positivi
-									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-										if (rows[i].kills == 0)
-											kill_text = "nessuna uccisione";
-										else
-											kill_text = rows[i].kills + " uccisioni";
-										if (rows[i].position <= mid_high_trophies)
-											trophies_query = "+" + (mid_high_trophies-rows[i].position);
-										else {
-											var trophies_val = Math.abs(mid_low_trophies-rows[i].position);
-											if (rows[i].trophies-trophies_val < 0)
-												trophies_val = rows[i].trophies;
-											trophies_query = "-" + trophies_val;
-										}
-										list += rows[i].position + "° " + rows[i].nickname + " (" + kill_text + ", " + trophies_query + " 🏆)\n";
-
-										connection.query('UPDATE player SET trophies = trophies' + trophies_query + ' WHERE id = ' + rows[i].id, function (err, rows, fields) {
-											if (err) throw err;
-										});
+										// aggiunge il primo in classifica
+										connection_sync.query('INSERT INTO map_history (map_lobby_id, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + winner_player_id + ', 1, ' + winner_match_kills + ')');
 									}
 
-									connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+									connection.query('SELECT P.id, P.nickname, P.trophies, M.position, M.kills FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position', function (err, rows, fields) {
 										if (err) throw err;
 
-										var msg = "La partità è terminata!\n🎉 Il vincitore è <b>" + winner_nickname + "</b>! 🎉\n\n" + list;
-										for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-											bot.sendMessage(rows[i].chat_id, msg, back_html);
+										var list = "";
+										var kill_text = "";
+										var trophies_query = "";
+										var mid_low_trophies = Math.floor(lobby_total_space/2);		// trofei negativi
+										var mid_high_trophies = lobby_total_space-mid_low_trophies;	// trofei positivi
+										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+											if (rows[i].kills == 0)
+												kill_text = "nessuna uccisione";
+											else
+												kill_text = rows[i].kills + " uccisioni";
+											if (rows[i].position <= mid_high_trophies)
+												trophies_query = "+" + (rows[i].position);
+											else {
+												var trophies_val = Math.abs(lobby_total_space-rows[i].position);
+												if (rows[i].trophies-trophies_val < 0)
+													trophies_val = Math.abs(rows[i].trophies);
+												trophies_query = "-" + trophies_val;
+											}
+											list += rows[i].position + "° " + rows[i].nickname + " (" + kill_text + ", " + trophies_query + " 🏆)\n";
 
-										// pulizia
-										connection.query('DELETE FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
-											if (err) throw err;
-											connection.query('UPDATE map_lobby SET lobby_id = NULL, my_turn = 0, match_kills = 0, posX = NULL, posY = NULL, life = NULL, total_life = NULL, killed = 0, wait_time = NULL, weapon_id = NULL, weapon2_id = NULL, weapon3_id = NULL, money = 0, scrap = 0, pulsePosX = NULL, pulsePosY = NULL, last_obj = NULL, last_obj_val = NULL, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_timeout = NULL, battle_timeout_limit = NULL WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+											connection.query('UPDATE player SET trophies = trophies' + trophies_query + ' WHERE id = ' + rows[i].id, function (err, rows, fields) {
 												if (err) throw err;
+											});
+										}
+
+										connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+											if (err) throw err;
+
+											var msg = "La partità è terminata!\n🎉 Il vincitore è <b>" + winner_nickname + "</b>! 🎉\n\n" + list;
+											for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+												bot.sendMessage(rows[i].chat_id, msg, back_html);
+
+											// pulizia
+											connection.query('DELETE FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+												if (err) throw err;
+												connection.query('UPDATE map_lobby SET lobby_id = NULL, my_turn = 0, match_kills = 0, posX = NULL, posY = NULL, life = NULL, total_life = NULL, killed = 0, wait_time = NULL, weapon_id = NULL, weapon2_id = NULL, weapon3_id = NULL, money = 0, scrap = 0, pulsePosX = NULL, pulsePosY = NULL, last_obj = NULL, last_obj_val = NULL, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_timeout = NULL, battle_timeout_limit = NULL WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+													if (err) throw err;
+												});
 											});
 										});
 									});
-								});
-							}
+								}
+							});
 						});
 					});
 				});
@@ -49397,11 +49400,11 @@ function restrictMap(lobby_id, mapMatrix, finalPointY, finalPointX, turnNumber) 
 	var heightLen = mapMatrix.length;
 	var posToBurn = [];
 
+	/*
 	console.log("widthLen " + widthLen);
 	console.log("heightLen " + heightLen);
-	/*
-	console.log("turnNumber " + turnNumber);
 	*/
+	console.log("turnNumber " + turnNumber);
 
 	if (turnNumber >= widthLen) {
 		console.log("Salto restringimento lobby per turni massimi raggiunti");
@@ -49437,13 +49440,14 @@ function restrictMap(lobby_id, mapMatrix, finalPointY, finalPointX, turnNumber) 
 	});
 
 	// elimino tutti i giocatori vivi nelle zone bruciate
-	connection.query('SELECT P.id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND M.killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+	connection.query('SELECT P.id, P.chat_id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND M.killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 		if (err) throw err;
 		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 			for(k = 0; k < posToBurn.length; k++) {
 				if (rows[i].posX == posToBurn[k][1] && rows[i].posY == posToBurn[k][0]) {
 					console.log("killed", rows[i].posX, rows[i].posY, posToBurn[k][1], posToBurn[k][0]);
 					mapPlayerKilled(lobby_id, rows[i].id, 3);
+					bot.sendMessage(rows[i].chat_id, "Sei stato ucciso a causa del restringimento della mappa!");
 				}
 			}
 		}
@@ -53272,7 +53276,8 @@ function checkFullLobby() {
 function setFullLobby(element, index, array) {
 	var lobby_id = element.lobby_id;
 	var players = element.cnt;
-	var mapMatrix = generateMap(players*2, players*2, players);
+	var size = Math.round(players*1.5);
+	var mapMatrix = generateMap(size, size, players);
 	var finalPoints = generateFinalPoints(mapMatrix);
 	connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, final_point_x, final_point_y, turn_number, next_restrict_time) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", ' + finalPoints[0] + ', ' + finalPoints[1] + ', 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE))', function (err, rows, fields) {
 		if (err) throw err;
