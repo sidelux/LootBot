@@ -6562,7 +6562,8 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 				var next_restrict_time = rows[0].next_restrict_time;
 				var mapMatrix = JSON.parse(rows[0].map_json);
-				var map = printMap(mapMatrix, posX, posY, pulsePosX, pulsePosY, killed);
+				var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND enemy_id IS NULL AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
+				var map = printMap(mapMatrix, posX, posY, pulsePosX, pulsePosY, killed, checkEnemy);
 
 				connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 					if (err) throw err;
@@ -16258,9 +16259,9 @@ bot.onText(/dai pietra/i, function (message) {
 										if (remain_exp < 0)
 											remain_exp = (70+remain_exp) % 70;
 
-										if (((rows[0].level < 300) && (rows[0].evolved == 2)) || 
-											((rows[0].level < 200) && (rows[0].evolved == 1)) || 
-											((rows[0].level < 100) && (rows[0].evolved == 0)))
+										if (((rows[0].level+val < 300) && (rows[0].evolved == 2)) || 
+											((rows[0].level+val < 200) && (rows[0].evolved == 1)) || 
+											((rows[0].level+val < 100) && (rows[0].evolved == 0)))
 											remain_text = ", " + remain_exp + " per il prossimo livello";
 
 										bot.sendMessage(message.chat.id, "Hai nutrito il drago con " + qnt + " pietr" + plur + " (" + val + " punti pietra" + remain_text + ")!", foodmore);
@@ -49321,12 +49322,13 @@ function checkDistance(matrix, objId, posY, posX, distance) {
 	return 1;
 }
 
-function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed) {
+function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnemy) {
 	var text = "";
-
+	var isEnemy = 0;
 	for(i = 0; i < mapMatrix.length; i++) {
 		text += "\n";
 		for(j = 0; j < mapMatrix[i].length; j++) {
+			isEnemy = 0;
 			if ((i == posX) && (j == posY)) {
 				if (killed == 0)
 					text += "📍 ";
@@ -49343,9 +49345,22 @@ function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed) {
 					((i == pulsePosX+1) && (j == pulsePosY)) ||
 					((i == pulsePosX-1) && (j == pulsePosY+1)) ||
 					((i == pulsePosX) && (j == pulsePosY+1)) ||
-					((i == pulsePosX+1) && (j == pulsePosY+1))))
-					text += mapIdToSym(mapMatrix[i][j]) + " ";
-				else
+					((i == pulsePosX+1) && (j == pulsePosY+1)))) {
+					
+					for (var k = 0, len = Object.keys(checkEnemy).length; k < len; k++) {
+						if ((checkEnemy[k]["posY"] == posX) && (checkEnemy[k]["posX"] == posY)) {
+							text += mapIdToSym[8] + " ";
+							isEnemy = 1;
+						}
+					}
+					
+					if (isEnemy == 0) {
+						if (mapMatrix[i][j] == 8)	// posizione di partenza
+							text += mapIdToSym[0];
+						else
+							text += mapIdToSym(mapMatrix[i][j]) + " ";
+					}
+				} else
 					text += "◼️ ";
 			}
 		}
