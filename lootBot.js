@@ -5994,11 +5994,14 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 											});
 
 											var members = " insieme ad altri " + members_cnt + " partecipanti";
-											if (rows[0].cnt > 0)
+											var wait = ", attendi che altri giocatori si uniscano o interrompi la ricerca...";
+											if (rows[0].cnt == 1)
 												members = " insieme ad un altro partecipante";
 											else if (rows[0].cnt == 0)
 												members = "";
-											text = "Sei stato aggiunto alla lobby" + members + ", attendi che altri giocatori si uniscano o interrompi la ricerca...";
+											if (rows[0].cnt == lobby_total_space)
+												wait = ", a breve inizierà lo scontro...";
+											text = "Sei stato aggiunto alla lobby" + members + wait;
 										}
 
 										connection.query('UPDATE map_lobby SET lobby_id = ' + lobby_id + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
