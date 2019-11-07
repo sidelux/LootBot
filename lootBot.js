@@ -235,6 +235,7 @@ callNTimes(60000, function () { //Ogni 1 minuto
 	checkFullLobby();
 	checkRestrictMap();
 	checkLobbyEnd();
+	// checkSeasonEnd();
 
 	if (crazyMode == 1)
 		merchant_limit = 8;
@@ -5673,7 +5674,7 @@ bot.onText(/cambia vocazione/i, function (message) {
 });
 
 bot.onText(/statistiche/i, function (message) {
-	connection.query('SELECT id, mission_count, achievement_count, dungeon_count, cave_count, travel_count, global_event, kill_streak_ok, gain_exp, mission_team_count, creation_date, top_rank_count FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, mission_count, achievement_count, dungeon_count, cave_count, travel_count, global_event, kill_streak_ok, gain_exp, mission_team_count, creation_date, top_rank_count, total_trophies FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
 		var missioni = rows[0].mission_count;
@@ -5686,6 +5687,7 @@ bot.onText(/statistiche/i, function (message) {
 		var cave_count = rows[0].cave_count;
 		var travel_count = rows[0].travel_count;
 		var top_rank_count = rows[0].top_rank_count;
+		var total_trophies = rows[0].total_trophies;
 
 		var registrazione = "";
 		if (rows[0].creation_date != null)
@@ -5830,6 +5832,7 @@ bot.onText(/statistiche/i, function (message) {
 																											"*Partite*: " + formatNumber(map_plays) + "\n" +
 																											"*Vittorie*: " + formatNumber(map_win) + "\n" +
 																											"*Uccisioni*: " + formatNumber(map_kills) + "\n" +
+																											"*Trofei*: " + formatNumber(total_trophies) + "\n" +
 
 																											"\n💰 *Mercato*:\n" +
 																											"*Acquisti*: " + formatNumber(acquisti) + "\n" +
@@ -5927,137 +5930,152 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 				return;
 			}
 		}
-
-		connection.query('SELECT lobby_id FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
+		
+		connection.query('SELECT map_season_end FROM config', function (err, rows, fields) {
 			if (err) throw err;
+			
+			var now = new Date();
+			var map_season_end = new Date(rows[0].map_season_end);
+			var diff_m = parseInt(map_season_end-now)/1000/60;	// minuti
+			var diff = diff_m + " minuti";
+			if (diff_m <= 1)
+				diff = "brevissimo";
+			if (diff_m > 60)
+				diff = Math.round(diff_m/60) + " ore";
+			if (diff_m > 60*24)
+				diff = Math.round(diff_m/(60*24)) + " giorni";
 
-			if (Object.keys(rows).length == 0) {
-				connection.query('INSERT INTO map_lobby (player_id) VALUES (' + player_id + ')', function (err, rows, fields) {
-					if (err) throw err;
-					bot.sendMessage(message.chat.id, "Benvenuto nelle *Mappe di Lootia*!\nAffronta altri giocatori in mappe generate in modo completamente casuale, ottieni oggetti, monete, sfuggi a trappole e scambia oggetti per potenziare il tuo personaggio.\nOtteni o perdi trofei al termine della partita e vinci interessanti premi al termine della stagione!\nCosa aspetti?", kbEvent);
-				});
-			} else {
-				var lobby_id = rows[0].lobby_id;
-				if (lobby_id != null) {
-					connection.query('SELECT 1 FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+			connection.query('SELECT lobby_id FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+
+				if (Object.keys(rows).length == 0) {
+					connection.query('INSERT INTO map_lobby (player_id) VALUES (' + player_id + ')', function (err, rows, fields) {
 						if (err) throw err;
-						if (Object.keys(rows).length == 0) {
-							connection.query('SELECT COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
-								if (err) throw err;
-								bot.sendMessage(message.chat.id, "Lobby in attesa... " + rows[0].cnt + "/" + lobby_total_space + " giocatori", kbStop);
-							});
-						} else if (message.text.toLowerCase() != "torna alla mappa")
-							bot.sendMessage(message.chat.id, "Esplorazione mappa in corso!", kbBack);
+						bot.sendMessage(message.chat.id, "Benvenuto nelle *Mappe di Lootia*!\nAffronta altri giocatori in mappe generate in modo completamente casuale, ottieni oggetti, monete, sfuggi a trappole e scambia oggetti per potenziare il tuo personaggio.\nOtteni o perdi trofei al termine della partita e vinci interessanti premi al termine della stagione!\nCosa aspetti?", kbEvent);
 					});
 				} else {
-					connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL', function (err, rows, fields) {
-						if (err) throw err;
+					var lobby_id = rows[0].lobby_id;
+					if (lobby_id != null) {
+						connection.query('SELECT 1 FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+							if (err) throw err;
+							if (Object.keys(rows).length == 0) {
+								connection.query('SELECT COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+									if (err) throw err;
+									bot.sendMessage(message.chat.id, "Lobby in attesa... " + rows[0].cnt + "/" + lobby_total_space + " giocatori", kbStop);
+								});
+							} else if (message.text.toLowerCase() != "torna alla mappa")
+								bot.sendMessage(message.chat.id, "Esplorazione mappa in corso!", kbBack);
+						});
+					} else {
+						connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL', function (err, rows, fields) {
+							if (err) throw err;
 
-						var lobby_players = rows[0].cnt;
+							var lobby_players = rows[0].cnt;
 
-						bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\n\n<b>" + lobby_players + "</b> ⚔️ combattenti dentro una lobby\n<b>" + trophies + "</b> 🏆 in questa stagione", kbMain).then(function () {
-							answerCallbacks[message.chat.id] = function (answer) {
-								if (answer.text == "Torna al menu")
-									return;
-
-								if (answer.text.toLowerCase().indexOf("lobby") != -1) {
-									if (lobby_id != null) {
-										bot.sendMessage(message.chat.id, "Sei già in attesa in una lobby", kbStop);
+							bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\n\n<b>" + lobby_players + "</b> ⚔️ combattenti dentro una lobby\n<b>" + trophies + "</b> 🏆 in questa stagione (terminerà tra " + diff + ")", kbMain).then(function () {
+								answerCallbacks[message.chat.id] = function (answer) {
+									if (answer.text == "Torna al menu")
 										return;
-									}
 
-									connection.query('SELECT lobby_id, COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL GROUP BY lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY id', function (err, rows, fields) {
-										if (err) throw err;
-
-										var lobby_id;
-										var text = "";
-
-										if (Object.keys(rows).length == 0) {
-											// nuova lobby
-
-											var max_lobby = connection_sync.query('SELECT MAX(lobby_id) As mx FROM map_lobby WHERE lobby_id IS NOT NULL');
-
-											if (Object.keys(max_lobby).length == 0)
-												lobby_id = 1;
-											else 
-												lobby_id = max_lobby[0].mx+1;
-
-											text = "Sei stato aggiunto ad una nuova lobby, attendi che altri giocatori si uniscano o interrompi la ricerca...";
-										} else {
-											lobby_id = rows[0].lobby_id;
-											var members_cnt = rows[0].cnt;
-
-											connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
-												if (err) throw err;
-
-												for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-													bot.sendMessage(rows[i].chat_id, "Un giocatore si è unito alla tua lobby! Ci sono " + (members_cnt+1) + " su " + lobby_total_space + " giocatori in attesa...");
-											});
-
-											var members = " insieme ad altri " + members_cnt + " partecipanti";
-											var wait = ", attendi che altri giocatori si uniscano o interrompi la ricerca...";
-											if (rows[0].cnt == 1)
-												members = " insieme ad un altro partecipante";
-											else if (rows[0].cnt == 0)
-												members = "";
-											if (rows[0].cnt == lobby_total_space)
-												wait = ", a breve inizierà lo scontro...";
-											text = "Sei stato aggiunto alla lobby" + members + wait;
+									if (answer.text.toLowerCase().indexOf("lobby") != -1) {
+										if (lobby_id != null) {
+											bot.sendMessage(message.chat.id, "Sei già in attesa in una lobby", kbStop);
+											return;
 										}
 
-										connection.query('UPDATE map_lobby SET lobby_id = ' + lobby_id + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+										connection.query('SELECT lobby_id, COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL GROUP BY lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY id', function (err, rows, fields) {
 											if (err) throw err;
-										});
 
-										bot.sendMessage(message.chat.id, text, kbStop);
-									});
-								} else if (answer.text.toLowerCase().indexOf("vittorie") != -1) {
-									connection.query('SELECT P.nickname, M.kills, M.insert_date FROM map_history M, player P WHERE M.player_id = P.id AND M.position = 1 ORDER BY M.id DESC LIMIT 25', function (err, rows, fields) {
-										if (err) throw err;
+											var lobby_id;
+											var text = "";
 
-										if (Object.keys(rows).length > 0) {
-											var text = "<b>Ultime 25 vittorie:</b>";
-											for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-												var kills = "uccisioni";
-												if (rows[i].kills == 1)
-													kills = "uccisione";
-												text += "\n> " + rows[i].nickname + " con " + rows[i].kills + " " + kills + " il " + toDate("it", rows[i].insert_date);
+											if (Object.keys(rows).length == 0) {
+												// nuova lobby
+
+												var max_lobby = connection_sync.query('SELECT MAX(lobby_id) As mx FROM map_lobby WHERE lobby_id IS NOT NULL');
+
+												if (Object.keys(max_lobby).length == 0)
+													lobby_id = 1;
+												else 
+													lobby_id = max_lobby[0].mx+1;
+
+												text = "Sei stato aggiunto ad una nuova lobby, attendi che altri giocatori si uniscano o interrompi la ricerca...";
+											} else {
+												lobby_id = rows[0].lobby_id;
+												var members_cnt = rows[0].cnt;
+
+												connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
+													if (err) throw err;
+
+													for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+														bot.sendMessage(rows[i].chat_id, "Un giocatore si è unito alla tua lobby! Ci sono " + (members_cnt+1) + " su " + lobby_total_space + " giocatori in attesa...");
+												});
+
+												var members = " insieme ad altri " + members_cnt + " partecipanti";
+												var wait = ", attendi che altri giocatori si uniscano o interrompi la ricerca...";
+												if (rows[0].cnt == 1)
+													members = " insieme ad un altro partecipante";
+												else if (rows[0].cnt == 0)
+													members = "";
+												if (rows[0].cnt == lobby_total_space)
+													wait = ", a breve inizierà lo scontro...";
+												text = "Sei stato aggiunto alla lobby" + members + wait;
 											}
-										} else
-											text = "Ancora nessuna vittoria ottenuta questa stagione.";
 
-										bot.sendMessage(message.chat.id, text, kbBack);
-									});
-								} else if (answer.text.toLowerCase().indexOf("come funziona") != -1) {
-									bot.sendMessage(message.chat.id, "<b>Legenda simboli sulla mappa</b>\n\n" +
-													"📍 Posizione del giocatore\n" +
-													mapIdToSym(0) + " Vuoto\n" +
-													mapIdToSym(1) + " Scrigno\n" +
-													mapIdToSym(2) + " Scrigno Epico\n" +
-													mapIdToSym(3) + " Trappola\n" +
-													mapIdToSym(4) + " Farmacia\n" +
-													mapIdToSym(5) + " Scambio\n" +
-													mapIdToSym(6) + " Vendita\n" +
-													mapIdToSym(7) + " Impulso\n" +
-													mapIdToSym(8) + " Altro giocatore\n" +
-													mapIdToSym(9) + " Rottame\n" +
-													mapIdToSym(10) + " Mappa bruciata\n" +
-													"\n<b>Combattimento</b>" +
-													"\n> Il comando Attacco Caricato obbliga a saltare il primo turno successivo all'utilizzo, infligge più danni rispetto all'attacco normale." +
-													"\n> Il comando Difendi obbliga a saltare il primo turno successivo all'utilizzo, può effettuare una parata parziale o totale del colpo subito." +
-													"\n<b>Istruzioni base</b>" +
-													"\n> Il personaggio inizierà la partita con un equip base e zero monete." +
-													"\n> Ogni " + lobby_restric_min + " minuti (" + (lobby_restric_min*2) + " appena avviata la partita) la mappa si restringe bruciando uno strato esterno fino alla mappa completa." +
-													"\n> Quando un giocatore incontra un altro giocatore, ha inizio una battaglia dove lo sconfitto uscirà dalla partita." +
-													"\n> Se la trappola sconfigge il giocatore, quest'ultimo uscirà dalla partita." + 
-													"\n> Se il giocatore viene bruciato dal restringimento della mappa o ci entra di sua volontà, uscirà dalla partita." +
-													"\n> La partita termina quando tutti i giocatori tranne uno sono stati sconfitti, oppure sono stati tutti bruciati.", kbBack);
+											connection.query('UPDATE map_lobby SET lobby_id = ' + lobby_id + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+											});
+
+											bot.sendMessage(message.chat.id, text, kbStop);
+										});
+									} else if (answer.text.toLowerCase().indexOf("vittorie") != -1) {
+										connection.query('SELECT P.nickname, M.kills, M.insert_date FROM map_history M, player P WHERE M.player_id = P.id AND M.position = 1 ORDER BY M.id DESC LIMIT 25', function (err, rows, fields) {
+											if (err) throw err;
+
+											if (Object.keys(rows).length > 0) {
+												var text = "<b>Ultime 25 vittorie:</b>";
+												for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+													var kills = "uccisioni";
+													if (rows[i].kills == 1)
+														kills = "uccisione";
+													text += "\n> " + rows[i].nickname + " con " + rows[i].kills + " " + kills + " il " + toDate("it", rows[i].insert_date);
+												}
+											} else
+												text = "Ancora nessuna vittoria ottenuta questa stagione.";
+
+											bot.sendMessage(message.chat.id, text, kbBack);
+										});
+									} else if (answer.text.toLowerCase().indexOf("come funziona") != -1) {
+										bot.sendMessage(message.chat.id, "<b>Legenda simboli sulla mappa</b>\n\n" +
+														"📍 Posizione del giocatore\n" +
+														mapIdToSym(0) + " Vuoto\n" +
+														mapIdToSym(1) + " Scrigno\n" +
+														mapIdToSym(2) + " Scrigno Epico\n" +
+														mapIdToSym(3) + " Trappola\n" +
+														mapIdToSym(4) + " Farmacia\n" +
+														mapIdToSym(5) + " Scambio\n" +
+														mapIdToSym(6) + " Vendita\n" +
+														mapIdToSym(7) + " Impulso\n" +
+														mapIdToSym(8) + " Altro giocatore\n" +
+														mapIdToSym(9) + " Rottame\n" +
+														mapIdToSym(10) + " Mappa bruciata\n" +
+														"\n<b>Combattimento</b>" +
+														"\n> Il comando Attacco Caricato obbliga a saltare il primo turno successivo all'utilizzo, infligge più danni rispetto all'attacco normale." +
+														"\n> Il comando Difendi obbliga a saltare il primo turno successivo all'utilizzo, può effettuare una parata parziale o totale del colpo subito." +
+														"\n<b>Istruzioni base</b>" +
+														"\n> Il personaggio inizierà la partita con un equip base e zero monete." +
+														"\n> Ogni " + lobby_restric_min + " minuti (" + (lobby_restric_min*2) + " appena avviata la partita) la mappa si restringe bruciando uno strato esterno fino alla mappa completa." +
+														"\n> Quando un giocatore incontra un altro giocatore, ha inizio una battaglia dove lo sconfitto uscirà dalla partita." +
+														"\n> Se la trappola sconfigge il giocatore, quest'ultimo uscirà dalla partita." + 
+														"\n> Se il giocatore viene bruciato dal restringimento della mappa o ci entra di sua volontà, uscirà dalla partita." +
+														"\n> La partita termina quando tutti i giocatori tranne uno sono stati sconfitti, oppure sono stati tutti bruciati.", kbBack);
+									}
 								}
-							}
+							});
 						});
-					});
-				};
-			}
+					};
+				}
+			});
 		});
 	});
 });
@@ -49035,39 +49053,6 @@ function mapPlayerKilled(lobby_id, player_id, cause) {
 	});
 }
 
-bot.onText(/^\/endmap$/, function (message, match) {
-	if (message.from.id == 20471035) {
-		bot.sendMessage(message.chat.id, "Confermi?", yesno).then(function () {
-			answerCallbacks[message.chat.id] = function (answer) {
-				if (answer.text == "Si") {
-					connection.query('SELECT id, chat_id, trophies FROM player WHERE trophies > 0 ORDER BY trophies', function (err, rows, fields) {
-						if (err) throw err;
-
-						var player_id = 0;
-						var trophies = 0;
-						var text = "";
-
-						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-							text = "";
-							player_id = rows[i].id;
-							trophies = rows[i].trophies;
-
-							// premi
-
-							bot.sendMessage(rows[i].chat_id, "Per la quantità di trofei guadagnati combattendo nelle <b>Mappe di Lootia</b>, hai ottenuto:" + text, html);
-
-							connection.query('UPDATE player SET trophies = 0 WHERE id = ' + player_id, function (err, rows, fields) {
-								if (err) throw err;
-							});
-						}
-						bot.sendMessage(message.chat.id, "Fatto!", back);
-					});
-				};
-			};
-		});
-	}
-});
-
 function generateMap(width, height, players) {
 	var buildQnt = 3;
 	var build = [4, 5, 6];
@@ -53380,6 +53365,43 @@ function setFinishedLobbyEnd(element, index, array) {
 	});
 }
 
+function checkSeasonEnd() {
+	connection.query('SELECT 1 FROM config WHERE NOW() >= map_season_end', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 1) {
+			connection.query('UPDATE config SET map_season_end = DATE_ADD(map_season_end, INTERVAL 30 DAY)', function (err, rows, fields) {
+				if (err) throw err;
+			});
+			connection.query('SELECT id, chat_id, trophies FROM player WHERE trophies > 0', function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length > 0) {
+					if (Object.keys(rows).length == 1)
+						console.log(getNow("it") + "\x1b[32m 1 premio stagione concluso\x1b[0m");
+					else
+						console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " premi stagione conclusi\x1b[0m");
+					rows.forEach(setSeasonEnd);
+				}
+			});
+		}
+	});
+}
+
+function setSeasonEnd(element, index, array) {
+	var player_id = element.id;
+	var chat_id = element.chat_id;
+	var trophies = element.trophies;
+	
+	var text = "";
+	
+	// todo
+	
+	bot.sendMessage(chat_id, "Per i <b>" + trophies + "</b> 🏆 guadagnati combattendo nelle <b>Mappe di Lootia</b>, hai ottenuto:" + text, html);
+
+	connection.query('UPDATE player SET trophies = 0, total_trophies = total_trophies+' + trophies + ' WHERE id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+	});
+}
+
 function checkRestrictMap() {
 	connection.query('SELECT lobby_id, map_json, final_point_x, final_point_y, turn_number FROM map_lobby_list WHERE next_restrict_time < NOW()', function (err, rows, fields) {
 		if (err) throw err;
@@ -53399,12 +53421,6 @@ function setRestrictMap(element, index, array) {
 	var finalPointX = element.final_point_x;
 	var finalPointY = element.final_point_y;
 	var turnNumber = element.turn_number;
-
-	// debug
-	/*
-	if (turnNumber > 0)
-		return;
-	*/
 
 	restrictMap(lobby_id, mapMatrix, finalPointY, finalPointX, turnNumber);
 
