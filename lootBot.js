@@ -49155,9 +49155,7 @@ function generateMap(width, height, players) {
 
 function updateMap(matrix, posY, posX, value) {
 	var mapMatrix = JSON.parse(matrix);
-	var widthLen = matrix[0].length;
-	var heightLen = matrix.length;
-	if ((posX >= 0) && (posY >= 0) && (posY <= heightLen) && (posX <= widthLen))	// se sono negativi è per il finalPoint
+	if ((posX >= 0) && (posY >= 0))
 		mapMatrix[posX][posY] = value;
 	return JSON.stringify(mapMatrix);
 }

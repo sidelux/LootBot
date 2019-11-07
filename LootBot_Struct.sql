@@ -713,6 +713,7 @@ DROP TABLE IF EXISTS `config`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `config` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `map_season_end` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `next_event_name` varchar(32) DEFAULT NULL,
   `global_eventon` int(11) NOT NULL DEFAULT '0',
   `global_eventwait` int(11) NOT NULL DEFAULT '0' COMMENT 'Raccogliendo dati',
@@ -2902,6 +2903,7 @@ CREATE TABLE `player` (
   `top_win` int(11) NOT NULL DEFAULT '0',
   `top_rank_count` int(11) NOT NULL DEFAULT '0',
   `trophies` int(11) NOT NULL DEFAULT '0',
+  `total_trophies` int(11) NOT NULL DEFAULT '0',
   `coupon_count` int(11) NOT NULL DEFAULT '0',
   `coupon_record` int(11) NOT NULL DEFAULT '0',
   `top_first` tinyint(1) NOT NULL DEFAULT '0',
