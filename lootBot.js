@@ -6744,7 +6744,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										return;
 
 									if (answer.text.toLowerCase().indexOf("si") != -1) {
-										if (scrap < price) {
+										if (money < price) {
 											bot.sendMessage(message.chat.id, "Non hai abbastanza monete nella sacca!", kbBack);
 											return;
 										}
@@ -49155,7 +49155,9 @@ function generateMap(width, height, players) {
 
 function updateMap(matrix, posY, posX, value) {
 	var mapMatrix = JSON.parse(matrix);
-	if ((posX >= 0) && (posY >= 0))	// se sono negativi è per il finalPoint
+	var widthLen = matrix[0].length;
+	var heightLen = matrix.length;
+	if ((posX >= 0) && (posY >= 0) && (posY <= heightLen) && (posX <= widthLen))	// se sono negativi è per il finalPoint
 		mapMatrix[posX][posY] = value;
 	return JSON.stringify(mapMatrix);
 }
@@ -49363,27 +49365,33 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber) 
 	var factorVertical = 0;
 	var factorHorizontal = 0;
 	
-	if ((finalPointX < middleX) && (finalPointY > middleY)) {
+	if ((finalPointX == middleX) && (finalPointY == middleY)) {
+		// centro
+		factorVertical = 0;
+		factorHorizontal = 0;
+	} else if ((finalPointX <= middleX) && (finalPointY >= middleY)) {
 		// quadrante alto sinistra
 		factorVertical = +finalPointY;
 		factorHorizontal = -finalPointX;
-	} else if ((finalPointX > middleX) && (finalPointY > middleY)) {
+	} else if ((finalPointX >= middleX) && (finalPointY >= middleY)) {
 		// quadrante alto destra
 		factorVertical = +finalPointY;
 		factorHorizontal = +finalPointX;
-	} else if ((finalPointX > middleX) && (finalPointY < middleY)) {
+	} else if ((finalPointX >= middleX) && (finalPointY <= middleY)) {
 		// quadrante basso sinistra
 		factorVertical = -finalPointY;
 		factorHorizontal = +finalPointX;
-	} else if ((finalPointX < middleX) && (finalPointY < middleY)) {
+	} else if ((finalPointX <= middleX) && (finalPointY <= middleY)) {
 		// quadrante basso destra
 		factorVertical = -finalPointY;
 		factorHorizontal = -finalPointX;
-	}
+	} else
+		console.log("Errore, restrimento nessuna condizione");
 	
 	console.log("factorVertical " + factorVertical);
 	console.log("factorHorizontal " + factorHorizontal);
 
+	/*
 	// orizzontali
 	for(i = 0; i < widthLen; i++) {
 		posToBurn.push([i+factorHorizontal, turnNumber+factorVertical]);
@@ -49393,6 +49401,18 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber) 
 	for(i = 0; i < heightLen; i++) {
 		posToBurn.push([turnNumber+factorHorizontal, i+factorVertical]);
 		posToBurn.push([((widthLen-1)-turnNumber)+factorHorizontal, i+factorVertical]);
+	}
+	*/
+	
+	// orizzontali
+	for(i = 0; i < widthLen; i++) {
+		posToBurn.push([i, turnNumber]);
+		posToBurn.push([i, ((heightLen-1)-turnNumber)]);
+	}
+	// verticali
+	for(i = 0; i < heightLen; i++) {
+		posToBurn.push([turnNumber, i]);
+		posToBurn.push([((widthLen-1)-turnNumber), i]);
 	}
 
 	posToBurn = multiDimensionalUnique(posToBurn);	// rimuove duplicati per evitare sdoppiamento uccisioni
@@ -53191,6 +53211,10 @@ function setBattleTime(element, index, array) {
 
 		bot.sendMessage(chat_id, "Il tempo per il turno è scaduto!\nDal nulla arriva una freccia a gran velocità e decreta il tuo avversario come vincitore dello scontro!");
 		bot.sendMessage(rows[0].chat_id, "Il tempo per il turno da parte dell'avversario è scaduto!\nHai vinto lo scontro!");
+		
+		connection.query('UPDATE map_lobby SET match_kills = match_kills+1, global_kills = global_kills+1 WHERE id = ' + enemy_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
 
 		connection.query('UPDATE map_lobby SET battle_timeout = NULL WHERE player_id IN (' + player_id + ', ' + enemy_id + ')', function (err, rows, fields) {
 			if (err) throw err;
@@ -53225,6 +53249,10 @@ function setBattleTimeLimit(element, index, array) {
 
 		bot.sendMessage(chat_id, "Il tempo per il combattimento è scaduto!\nDal nulla arriva una freccia a gran velocità e decreta il tuo avversario come vincitore dello scontro!");
 		bot.sendMessage(rows[0].chat_id, "Il tempo per il combattimento da parte dell'avversario è scaduto!\nHai vinto lo scontro!");
+		
+		connection.query('UPDATE map_lobby SET match_kills = match_kills+1, global_kills = global_kills+1 WHERE id = ' + enemy_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
 
 		connection.query('UPDATE map_lobby SET battle_timeout_limit = NULL WHERE player_id IN (' + player_id + ', ' + enemy_id + ')', function (err, rows, fields) {
 			if (err) throw err;
