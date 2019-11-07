@@ -5978,6 +5978,11 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 										return;
 
 									if (answer.text.toLowerCase().indexOf("lobby") != -1) {
+										var d = new Date();
+										if ((d.getHours() < 9) || (d.getHours() > 22)) {
+											bot.sendMessage(message.chat.id, "Puoi accedere ad una lobby solamente di giorno", kbBack2);
+											return;
+										}
 										if (lobby_id != null) {
 											bot.sendMessage(message.chat.id, "Sei già in attesa in una lobby", kbStop);
 											return;
