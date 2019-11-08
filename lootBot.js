@@ -6791,6 +6791,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 										// modifica anche sotto
 										var item_query = "";
+										var scrap_query = "";
 										if (item_id != 0) {
 											if (item_type == 1) { 
 												if (weapon_id != null) {
@@ -6798,6 +6799,9 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 													if (item_power > weapon[0].power) {
 														text += "\nArma sotituita!";
 														item_query = ", weapon_id = '" + item_id + "'";
+													} else {
+														text += "\nConvertita in un 🔩 Rottame!";
+														scrap_query = ", scrap = scrap+1";
 													}
 												} else {
 													text += "\nArma equipaggiata!";
@@ -6809,6 +6813,9 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 													if (item_power < weapon2[0].power_armor) {
 														text += "\nArmatura sotituita!";
 														item_query = ", weapon2_id = '" + item_id + "'";
+													} else {
+														text += "\nConvertita in un 🔩 Rottame!";
+														scrap_query = ", scrap = scrap+1";
 													}
 												} else {
 													text += "\nArmatura equipaggiata!";
@@ -6820,6 +6827,9 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 													if (item_power < weapon3[0].power_shield) {
 														text += "\nScudo sotituito!";
 														item_query = ", weapon3_id = '" + item_id + "'";
+													} else {
+														text += "\nConvertito in un 🔩 Rottame!";
+														scrap_query = ", scrap = scrap+1";
 													}
 												} else {
 													text += "\nScudo equipaggiato!";
@@ -6828,7 +6838,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											}
 										}
 
-										connection.query('UPDATE map_lobby SET money = money-' + price + ', last_obj = NULL, last_obj_val = NULL' + item_query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+										connection.query('UPDATE map_lobby SET money = money-' + price + ', last_obj = NULL, last_obj_val = NULL' + item_query + scrap_query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 											bot.sendMessage(message.chat.id, "Hai completato l'acquisto!" + text, kbBack);
 										});
@@ -7013,6 +7023,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 								var enemy_chat_id = 0;
 
 								var life_lost = 0;
+								var life_gain = 0;
 								var item_id = 0;
 								var money = 0;
 
@@ -7028,11 +7039,13 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 								
 								console.log("objId", message.from.username, objId);
 
-								if (objId == 0)				// vuoto
-									text = "Qui non c'è nulla! Prosegui la tua esplorazione...";
-								else if ((objId == 8) && (isEnemy == 0))	// postazione di partenza
-									text = "Qui non c'è nulla! Anche se noti delle impronte segnate nel fango, prosegui la tua esplorazione...";
-								else if (objId == 1) {		// scrigno
+								if (objId == 0)	{			// vuoto
+									life_gain = total_life*0.05;
+									text = "Qui non c'è nulla! Prosegui la tua esplorazione... (+" + life_gain + " hp)";
+								} else if ((objId == 8) && (isEnemy == 0)) {	// postazione di partenza
+									life_gain = total_life*0.05;
+									text = "Qui non c'è nulla! Anche se noti delle impronte segnate nel fango, prosegui la tua esplorazione... (+" + life_gain + " hp)";
+								} else if (objId == 1) {		// scrigno
 									var rand = Math.random()*100;
 									var item_type = 0;
 									var item_power = 0;
@@ -7178,6 +7191,9 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											if (item_power > weapon[0].power) {
 												text += "\nArma sotituita!";
 												item_query = ", weapon_id = '" + item_id + "'";
+											} else {
+												text += "\nConvertita in un 🔩 Rottame!";
+												scrap_query = ", scrap = scrap+1";
 											}
 										} else {
 											text += "\nArma equipaggiata!";
@@ -7189,6 +7205,9 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											if (item_power < weapon2[0].power_armor) {
 												text += "\nArmatura sotituita!";
 												item_query = ", weapon2_id = '" + item_id + "'";
+											} else {
+												text += "\nConvertita in un 🔩 Rottame!";
+												scrap_query = ", scrap = scrap+1";
 											}
 										} else {
 											text += "\nArmatura equipaggiata!";
@@ -7200,6 +7219,9 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											if (item_power < weapon3[0].power_shield) {
 												text += "\nScudo sotituito!";
 												item_query = ", weapon3_id = '" + item_id + "'";
+											} else {
+												text += "\nConvertito in un 🔩 Rottame!";
+												scrap_query = ", scrap = scrap+1";
 											}
 										} else {
 											text += "\nScudo equipaggiato!";
@@ -7216,7 +7238,13 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 								d.setMinutes(d.getMinutes() + 60);
 								var long_date_battle = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-								connection.query('UPDATE map_lobby SET wait_time = "' + long_date + '", battle_timeout_limit = "' + long_date_battle + '", posX = ' + posX + ', posY = ' + posY + item_query + last_obj_query + scrap_query + enemy_query + pulse_query + ', life = life-' + life_lost + ', money = money+' + money + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+								var life_query = "";
+								if (life_lost > 0)
+									life_query = ', life = life-' + life_lost;
+								else if (life_gain > 0)
+									life_query = ', life = life+' + life_gain;
+								
+								connection.query('UPDATE map_lobby SET wait_time = "' + long_date + '", battle_timeout_limit = "' + long_date_battle + '", posX = ' + posX + ', posY = ' + posY + item_query + last_obj_query + scrap_query + enemy_query + pulse_query + life_query + ', money = money+' + money + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
 
 									if (isBuild)
@@ -7224,7 +7252,6 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									else if (isEnemy) {
 										connection.query('UPDATE map_lobby SET enemy_id = ' + player_id + ' WHERE player_id = ' + enemy_id, function (err, rows, fields) {
 											if (err) throw err;
-
 											bot.sendMessage(message.chat.id, text, kbBackEnemy);
 											bot.sendMessage(enemy_chat_id, "Sei stato sfidato a duello da un altro giocatore!\nOsservi <b>" + message.from.username + "</b> ricambiando lo sguardo di sfida!", html);
 										});
@@ -49481,9 +49508,9 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber) 
 	});
 	
 	var time = lobby_restric_min;
-	if (turnNumber == middleX) {
+	if (turnNumber == middleX-1) {
 		time = lobby_restric_min*2;
-		console.log("Ultimo turno: ", turnNumber, middleX);
+		console.log("Ultimo turno: ", turnNumber, middleX-1);
 	}
 
 	connection.query('UPDATE map_lobby_list SET next_restrict_time = DATE_ADD(next_restrict_time, INTERVAL ' + lobby_restric_min + ' MINUTE) WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
@@ -53411,7 +53438,7 @@ function setFinishedLobbyEnd(element, index, array) {
 							kill_text = "nessuna uccisione";
 						else
 							kill_text = rows[i].kills + " uccisioni";
-						trophies_query = "+" + (lobby_total_space-parseInt(rows[i].position)+1);
+						trophies_query = "+" + ((lobby_total_space-parseInt(rows[i].position)+1)+parseInt(rows[i].kills));
 						list += rows[i].position + "° " + rows[i].nickname + " (" + kill_text + ", " + trophies_query + " 🏆)\n";
 
 						connection.query('UPDATE player SET trophies = trophies' + trophies_query + ', map_count = map_count+1 WHERE id = ' + rows[i].id, function (err, rows, fields) {
