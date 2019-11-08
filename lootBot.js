@@ -7036,8 +7036,6 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									enemy_chat_id = checkEnemy[0].chat_id;
 									enemy_query = ", enemy_id = " + enemy_id + ", my_turn = 1";
 								}
-								
-								console.log("objId", message.from.username, objId);
 
 								if (objId == 0)	{			// vuoto
 									life_gain = total_life*0.05;
@@ -49410,10 +49408,10 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber) 
 	/*
 	console.log("widthLen " + widthLen);
 	console.log("heightLen " + heightLen);
-	*/
 	console.log("turnNumber " + turnNumber);
 	console.log("finalPointX " + finalPointX);
 	console.log("finalPointY " + finalPointY);
+	*/
 
 	if (turnNumber >= widthLen) {
 		console.log("Salto restringimento lobby per turni massimi raggiunti");
@@ -49424,6 +49422,7 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber) 
 	var middleX = widthLen/2;
 	var middleY = heightLen/2;
 	
+	/*
 	// quanto spostare la griglia in funzione dei finalPoint
 	var factorVertical = 0;
 	var factorHorizontal = 0;
@@ -49454,7 +49453,6 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber) 
 	console.log("factorVertical " + factorVertical);
 	console.log("factorHorizontal " + factorHorizontal);
 
-	/*
 	// orizzontali
 	for(i = 0; i < widthLen; i++) {
 		posToBurn.push([i+factorHorizontal, turnNumber+factorVertical]);
@@ -49479,7 +49477,7 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber) 
 	}
 
 	posToBurn = multiDimensionalUnique(posToBurn);	// rimuove duplicati per evitare sdoppiamento uccisioni
-	console.log(posToBurn);
+	// console.log(posToBurn);
 	
 	// applico le modifiche e incremento turno
 	var tmp;
