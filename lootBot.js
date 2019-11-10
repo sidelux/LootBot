@@ -5808,7 +5808,6 @@ bot.onText(/statistiche/i, function (message) {
 																											"*Esperienza accumulata*: " + formatNumber(gain_exp) + "\n" +
 																											"*Offerte contrabbandiere accettate*: " + formatNumber(contrabbandiere) + "\n" +
 																											"*Livelli Talenti raggiunti*: " + talenti + "\n" +
-																											"*Incarichi completati*: " + mission_team_count + "\n" +
 																											"*Ð accumulate*: " + formatNumber(top_rank_count) + "\n" +
 
 																											"\n⚔️ *Hai completato*:\n" +
@@ -5817,6 +5816,7 @@ bot.onText(/statistiche/i, function (message) {
 																											"*Dungeon*: " + formatNumber(dungeon_tot) + "\n" +
 																											"*Cave*: " + formatNumber(cave_count) + "\n" +
 																											"*Viaggi*: " + formatNumber(travel_count) + "\n" +
+																											"*Incarichi*: " + mission_team_count + "\n" +
 
 																											"\n🎲 *Eventi*:\n" +
 																											"*Scontri Vette vinti*: " + formatNumber(dragon_top_win) + "\n" +
@@ -6634,29 +6634,30 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									});
 								}
 							})
-						}
-						bot.sendMessage(message.chat.id, "Puoi recuperare tutta la salute al costo di <b>" + formatNumber(price) + "</b> §, al momento possiedi " + formatNumber(money) + " §, procedi?", kbYesNo).then(function () {
-							answerCallbacks[message.chat.id] = function (answer) {
-								if (answer.text == "Torna al menu")
-									return;
-
-								if (answer.text.toLowerCase().indexOf("si") != -1) {
-									if (money < price) {
-										bot.sendMessage(message.chat.id, "Non hai abbastanza monete nella sacca!", kbBack);
+						} else {
+							bot.sendMessage(message.chat.id, "Puoi recuperare tutta la salute al costo di <b>" + formatNumber(price) + "</b> §, al momento possiedi " + formatNumber(money) + " §, procedi?", kbYesNo).then(function () {
+								answerCallbacks[message.chat.id] = function (answer) {
+									if (answer.text == "Torna al menu")
 										return;
+
+									if (answer.text.toLowerCase().indexOf("si") != -1) {
+										if (money < price) {
+											bot.sendMessage(message.chat.id, "Non hai abbastanza monete nella sacca!", kbBack);
+											return;
+										}
+										connection.query('UPDATE map_lobby SET life = total_life, money = money-' + price + ', last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+											bot.sendMessage(message.chat.id, "Hai recuperato tutta la salute!", kbBack);
+										});
+									} else {
+										connection.query('UPDATE map_lobby SET last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+											bot.sendMessage(message.chat.id, "Hai rinunciato a recuperare la salute", kbBack);
+										});
 									}
-									connection.query('UPDATE map_lobby SET life = total_life, money = money-' + price + ', last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-										if (err) throw err;
-										bot.sendMessage(message.chat.id, "Hai recuperato tutta la salute!", kbBack);
-									});
-								} else {
-									connection.query('UPDATE map_lobby SET last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-										if (err) throw err;
-										bot.sendMessage(message.chat.id, "Hai rinunciato a recuperare la salute", kbBack);
-									});
-								}
-							};
-						});
+								};
+							});
+						}
 						return;
 					} else if (last_obj == 5) {
 						var split = last_obj_val.split(":");
@@ -6726,7 +6727,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												if (weapon3_id != null) {
 													var weapon3 = connection_sync.query("SELECT power_shield FROM item WHERE id = " + weapon3_id);
 													if (item_power < weapon3[0].power_shield) {
-														text += "\nScudo sotituito!";
+														text += "\nScudo sostituito!";
 														item_query = ", weapon3_id = '" + item_id + "'";
 													}
 												} else {
@@ -6825,7 +6826,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												if (weapon3_id != null) {
 													var weapon3 = connection_sync.query("SELECT power_shield FROM item WHERE id = " + weapon3_id);
 													if (item_power < weapon3[0].power_shield) {
-														text += "\nScudo sotituito!";
+														text += "\nScudo sostituito!";
 														item_query = ", weapon3_id = '" + item_id + "'";
 													} else {
 														text += "\nConvertito in un 🔩 Rottame!";
@@ -7038,11 +7039,21 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 								}
 
 								if (objId == 0)	{			// vuoto
+									var life_gain_text = "";
 									life_gain = total_life*0.05;
-									text = "Qui non c'è nulla! Prosegui la tua esplorazione... (+" + life_gain + " hp)";
+									if (life+life_gain > total_life)
+										life_gain = total_life-life;
+									if (life_gain > 0)
+										life_gain_text = " (+" + life_gain + " hp)";
+									text = "Qui non c'è nulla! Prosegui la tua esplorazione..." + life_gain_text;
 								} else if ((objId == 8) && (isEnemy == 0)) {	// postazione di partenza
+									var life_gain_text = "";
 									life_gain = total_life*0.05;
-									text = "Qui non c'è nulla! Anche se noti delle impronte segnate nel fango, prosegui la tua esplorazione... (+" + life_gain + " hp)";
+									if (life+life_gain > total_life)
+										life_gain = total_life-life;
+									if (life_gain > 0)
+										life_gain_text = " (+" + life_gain + " hp)";
+									text = "Qui non c'è nulla! Anche se noti delle impronte segnate nel fango, prosegui la tua esplorazione..." + life_gain_text;
 								} else if (objId == 1) {		// scrigno
 									var rand = Math.random()*100;
 									var item_type = 0;
@@ -35758,7 +35769,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 															if (err) throw err;
 
 															if (rows[0].total_cnt < 1000) {
-																bot.sendMessage(message.chat.id, "Non hai completato raggiunto le offerte contrabbandiere necessarie (" + rows[0].total_cnt + "/1000)", back);
+																bot.sendMessage(message.chat.id, "Non hai raggiunto le offerte contrabbandiere necessarie (" + rows[0].total_cnt + "/1000)", back);
 																return;
 															}
 
@@ -49127,7 +49138,7 @@ function generateMap(width, height, players) {
 	var chestRate = 30;
 	var chestEpicRate = 15;
 	var trapRate = 15;
-	var pulseRate = 10;
+	var pulseRate = 5;
 	var scrapRate = 20;
 
 	console.log("Generazione mappa da " + width + "x" + height + " ticks con il " + (chestRate+chestEpicRate+trapRate+pulseRate+scrapRate) + "% di oggetti e " + buildQnt + " costruzioni");
@@ -53249,10 +53260,19 @@ function setLobbyTime(element, index, array) {
 	var player_id = element.player_id;
 	var chat_id = element.chat_id;
 	var enemy_id = element.enemy_id;
+	
+	var kbBack = {
+		parse_mode: "HTML",
+		reply_markup: {
+			resize_keyboard: true,
+			keyboard: [["Torna alla mappa"], ["Torna al menu"]]
+		}
+	};
+	
 	connection.query('UPDATE map_lobby SET wait_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 		if (err) throw err;
 		if (enemy_id == null)
-			bot.sendMessage(chat_id, "Puoi procedere all'esplorazione della mappa!");
+			bot.sendMessage(chat_id, "Puoi procedere all'esplorazione della mappa!", kbBack);
 	});
 }
 
@@ -53453,7 +53473,7 @@ function setFinishedLobbyEnd(element, index, array) {
 						msg += "\n\n" + list;
 
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-							bot.sendMessage(rows[i].chat_id, msg, back_html);
+							bot.sendMessage(rows[i].chat_id, msg, html);
 
 						// pulizia
 						connection.query('DELETE FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
