@@ -7028,14 +7028,18 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 								var item_id = 0;
 								var money = 0;
 
-								var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + posX + ' AND posY = ' + posY + ' AND killed = 0 AND enemy_id IS NULL AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
+								var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id, enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + posX + ' AND posY = ' + posY + ' AND killed = 0 AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
 								if (Object.keys(checkEnemy).length > 0) {
-									objId = 8; // salta gli item dopo
-									isEnemy = 1;
-									text += "Hai incontrato un altro giocatore!\nScambi uno sguardo di sfida a <b>" + checkEnemy[0].nickname + "</b> e ti prepari al duello!";
-									enemy_id = checkEnemy[0].player_id;
-									enemy_chat_id = checkEnemy[0].chat_id;
-									enemy_query = ", enemy_id = " + enemy_id + ", my_turn = 1";
+									if (enemy_id != null)
+										text += "Vedi in lontananza due giocatori che stanno combattendo all'ultimo sangue, decidi però di non immischiarti nei loro affari...\n";
+									else {
+										objId = 8; // salta gli item dopo
+										isEnemy = 1;
+										text += "Hai incontrato un altro giocatore!\nScambi uno sguardo di sfida a <b>" + checkEnemy[0].nickname + "</b> e ti prepari al duello!";
+										enemy_id = checkEnemy[0].player_id;
+										enemy_chat_id = checkEnemy[0].chat_id;
+										enemy_query = ", enemy_id = " + enemy_id + ", my_turn = 1";
+									}
 								}
 
 								if (objId == 0)	{			// vuoto
@@ -7045,7 +7049,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										life_gain = total_life-life;
 									if (life_gain > 0)
 										life_gain_text = " (+" + life_gain + " hp)";
-									text = "Qui non c'è nulla! Prosegui la tua esplorazione..." + life_gain_text;
+									text += "Qui non c'è nulla! Prosegui la tua esplorazione..." + life_gain_text;
 								} else if ((objId == 8) && (isEnemy == 0)) {	// postazione di partenza
 									var life_gain_text = "";
 									life_gain = total_life*0.05;
@@ -7053,12 +7057,12 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										life_gain = total_life-life;
 									if (life_gain > 0)
 										life_gain_text = " (+" + life_gain + " hp)";
-									text = "Qui non c'è nulla! Anche se noti delle impronte segnate nel fango, prosegui la tua esplorazione..." + life_gain_text;
+									text += "Qui non c'è nulla! Anche se noti delle impronte segnate nel fango, prosegui la tua esplorazione..." + life_gain_text;
 								} else if (objId == 1) {		// scrigno
 									var rand = Math.random()*100;
 									var item_type = 0;
 									var item_power = 0;
-									text = "Hai trovato uno 💰 <b>Scrigno</b> con al suo interno:\n";
+									text += "Hai trovato uno 💰 <b>Scrigno</b> con al suo interno:\n";
 									if (rand < 70) {
 										money = Math.round(getRandomArbitrary(1000, 2000));
 										text += "> " + formatNumber(money) + " §";
@@ -7090,7 +7094,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									toClear = 1;
 								} else if (objId == 2) {		// scrigno epico
 									var rand = Math.random()*100;
-									text = "Hai trovato uno 💰 <b>Scrigno Epico</b> con al suo interno:\n";
+									text += "Hai trovato uno 💰 <b>Scrigno Epico</b> con al suo interno:\n";
 									if (rand < 70) {
 										money = Math.round(getRandomArbitrary(2000, 3000));
 										text += "> " + formatNumber(money) + " §";
@@ -7122,13 +7126,13 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 									if (life <= life_lost) {
 										mapPlayerKilled(lobby_id, player_id, 1);
-										text = "Cadi in una ⚡️ Trappola e perdi <b>" + life_lost + "</b> hp, vieni ucciso e perdi la partita!\n";
+										text += "Cadi in una ⚡️ Trappola e perdi <b>" + life_lost + "</b> hp, vieni ucciso e perdi la partita!\n";
 									} else
-										text = "Cadi in una ⚡️ Trappola e perdi <b>" + life_lost + "</b> hp!\n";
+										text += "Cadi in una ⚡️ Trappola e perdi <b>" + life_lost + "</b> hp!\n";
 								} else if (objId == 4) {		// farmacia
 									last_obj_query = ", last_obj = 4";
 									isBuild = 1;
-									text = "Raggiungi una 💊 Farmacia, qui puoi recuperare la salute ad un costo onesto.\n";
+									text += "Raggiungi una 💊 Farmacia, qui puoi recuperare la salute ad un costo onesto.\n";
 								} else if (objId == 5) {		// scambio
 									last_obj_query = ", last_obj = 5";
 									var randRarity = Math.random()*100;
@@ -7147,7 +7151,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									var item = connection_sync.query("SELECT id FROM item WHERE (power > 1 OR power_armor < -1 OR power_shield < -1) AND rarity = '" + rarity + "' ORDER BY RAND()");
 									last_obj_query += ", last_obj_val = '" + item[0].id + ":" + price + "'";
 									isBuild = 1;
-									text = "Raggiungi un 🔁 Centro Scambi, qui puoi scambiare oggetti che ti potranno essere utili.\n";
+									text += "Raggiungi un 🔁 Centro Scambi, qui puoi scambiare oggetti che ti potranno essere utili.\n";
 								} else if (objId == 6) {		// vendita
 									last_obj_query = ", last_obj = 6";
 									var randRarity = Math.random()*100;
@@ -7163,20 +7167,28 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										rarity = "R";
 										price = 1000;
 									}
-									var item = connection_sync.query("SELECT id FROM item WHERE (power > 1 OR power_armor < -1 OR power_shield < -1) AND rarity = '" + rarity + "' ORDER BY RAND()");
+									var bag = connection_sync.query("SELECT I1.power, I2.power_armor, I3.power_shield FROM map_lobby M LEFT JOIN item I1 ON M.weapon_id = I1.id LEFT JOIN item I2 ON M.weapon_id = I2.id LEFT JOIN item I3 ON M.weapon_id = I3.id WHERE player_id = " + player_id);
+									var weapon_power = (bag[0].power == null ? "1" : bag[0].power);
+									var weapon2_power = (bag[0].power_armor == null ? "-1" : bag[0].power_armor);
+									var weapon3_power = (bag[0].power_shield == null ? "-1" : bag[0].power_shield);
+									var item = connection_sync.query("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") AND rarity = '" + rarity + "' ORDER BY RAND()");
+									if (Object.keys(item).length == 0) {
+										// se non trova a causa della rarità, riprova senza il filtro
+										item = connection_sync.query("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") ORDER BY RAND()");
+									}
 									last_obj_query += ", last_obj_val = '" + item[0].id + ":" + price + "'";
 									isBuild = 1;
-									text = "Raggiungi un Emporio, qui puoi acquistare oggetti che ti potranno essere utili.\n";
+									text += "Raggiungi un Emporio, qui puoi acquistare oggetti che ti potranno essere utili.\n";
 								} else if (objId == 7) {		// impulso
 									pulse_query = ", pulsePosX = " + posX + ", pulsePosY = " + posY;
-									text = "Calpesti uno strano pulsante che emana un'onda di energia: un ✨ <b>Impulso</b>! L'area circostante si vede più chiaramente, ma l'effetto può durare per poco tempo.";
+									text += "Calpesti uno strano pulsante che emana un'onda di energia: un ✨ <b>Impulso</b>! L'area circostante si vede più chiaramente, ma l'effetto può durare per poco tempo.";
 									toClear = 1;
 								} else if (objId == 9) {		// rottame
 									scrap_query = ", scrap = scrap+1";
-									text = "Hai trovato uno <b>Strano Congegno</b> con al suo interno un 🔩 <b>Rottame</b>, utile per gli scambi!";
+									text += "Hai trovato uno <b>Strano Congegno</b> con al suo interno un 🔩 <b>Rottame</b>, utile per gli scambi!";
 									toClear = 1;
 								} else if (objId == 10) {		// zona bruciata
-									text = "Decidi di gettarti verso la tua sconfitta nell'area bruciata...";
+									text += "Decidi di gettarti verso la tua sconfitta nell'area bruciata...";
 									mapPlayerKilled(lobby_id, player_id, 3);
 								}
 
