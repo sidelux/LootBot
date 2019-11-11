@@ -6062,26 +6062,32 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 										bot.sendMessage(message.chat.id, "<b>Legenda simboli sulla mappa</b>\n\n" +
 														"📍 Posizione del giocatore\n" +
 														mapIdToSym(0) + " Vuoto\n" +
-														mapIdToSym(1) + " Scrigno\n" +
-														mapIdToSym(2) + " Scrigno Epico\n" +
-														mapIdToSym(3) + " Trappola\n" +
-														mapIdToSym(4) + " Farmacia\n" +
-														mapIdToSym(5) + " Scambio\n" +
-														mapIdToSym(6) + " Vendita\n" +
-														mapIdToSym(7) + " Impulso\n" +
-														mapIdToSym(8) + " Altro giocatore\n" +
-														mapIdToSym(9) + " Rottame\n" +
-														mapIdToSym(10) + " Mappa bruciata\n" +
+														mapIdToSym(1) + " Scrigno - Fornisce un equip base di bassa rarità\n" +
+														mapIdToSym(2) + " Scrigno Epico - Fornisce un equip base di alta rarità\n" +
+														mapIdToSym(3) + " Trappola - Danneggia il giocatore\n" +
+														mapIdToSym(4) + " Farmacia - Consente di recuperare l'intera salute al costo di monete\n" +
+														mapIdToSym(5) + " Scambio - Consente lo scambio di equip per rottami\n" +
+														mapIdToSym(6) + " Vendita - Consente l'acquisto di equip per monete\n" +
+														mapIdToSym(7) + " Impulso - Visualizza le caselle circostanti\n" +
+														mapIdToSym(8) + " Altro giocatore - Ingaggia una battaglia con un altro giocatore\n" +
+														mapIdToSym(9) + " Rottame - Valuta utile per gli scambi, si ottiene anche in caso gli equip trovati non siano più forti di quelli indossati\n" +
+														mapIdToSym(10) + " Mappa bruciata - Se si capita in una casella bruciata, si viene sconfitti\n" +
 														"\n<b>Combattimento</b>" +
+														"\n> Il comando Attacco infligge un danno base al nemico." +
 														"\n> Il comando Attacco Caricato obbliga a saltare il primo turno successivo all'utilizzo, infligge più danni rispetto all'attacco normale." +
-														"\n> Il comando Difendi obbliga a saltare il primo turno successivo all'utilizzo, può effettuare una parata parziale o totale del colpo subito." +
-														"\n<b>Istruzioni base</b>" +
-														"\n> Il personaggio inizierà la partita con un equip base e zero monete." +
+														"\n> Il comando Difendi, nel caso di successo obbliga a saltare il turno successivo del nemico, nel caso di fallimento il turno lo salta l'utilizzatore, può effettuare una parata parziale o totale del colpo subito." +
+														"\n\n<b>Istruzioni base</b>" +
+														"\n> Il personaggio inizierà la partita con un equip base, zero monete e zero rottami." +
 														"\n> Ogni " + lobby_restric_min + " minuti (" + (lobby_restric_min*2) + " appena avviata la partita) la mappa si restringe bruciando uno strato esterno fino alla mappa completa." +
 														"\n> Quando un giocatore incontra un altro giocatore, ha inizio una battaglia dove lo sconfitto uscirà dalla partita." +
 														"\n> Se la trappola sconfigge il giocatore, quest'ultimo uscirà dalla partita." + 
 														"\n> Se il giocatore viene bruciato dal restringimento della mappa o ci entra di sua volontà, uscirà dalla partita." +
-														"\n> La partita termina quando tutti i giocatori tranne uno sono stati sconfitti, oppure sono stati tutti bruciati.", kbBack);
+														"\n> La partita termina quando tutti i giocatori tranne uno sono stati sconfitti, oppure sono stati tutti bruciati." +
+														"\n\n<b>Stagione</b>" +
+														"\n> Le stagioni durano circa un mese, la data precisa è indicata nel messaggio precedente a questo." +
+														"\n> Alla fine di ogni partita vengono forniti dei trofei in base alla posizione conclusiva ed alle uccisioni dei nemici." +
+														"\n> Alla fine della stagione si ottiene un premio in base ai trofei accumulati e questi ultimi vengono resettati." +
+														"\n> Alla fine della stagione viene anche accumulato un totale globale dei trofei accumulati che non viene mai resettato.", kbBack);
 									}
 								}
 							});
@@ -6351,20 +6357,18 @@ bot.onText(/attacca!/i, function (message) {
 						var damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn);
 						var defence = getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def);
 						var crit = getPlayerCritics(player_id, weapon_crit, weapon2_crit, weapon3_crit, charm_id, power_weapon, power_armor, power_shield, class_id, reborn);
-						var dragon = getPlayerDragon(player_id, class_id, reborn, charm_id);
-
-						var full_damage = damage+dragon[0];
-						var full_critical = crit[0]+dragon[2];
-						var full_defence = defence+dragon[1];;
+						
+						var full_damage = damage;
+						var full_critical = crit[0];
+						var full_defence = defence;
 
 						var enemy_damage = getPlayerDamage(enemy_exp, enemy_weapon, enemy_weapon_enchant, enemy_charm_id, enemy_power_dmg, enemy_class_id, enemy_reborn);
 						var enemy_defence = getPlayerDefence(enemy_weapon2, enemy_weapon3, enemy_weapon_enchant, enemy_weapon2_enchant, enemy_weapon3_enchant, enemy_exp, enemy_power_def);
 						var enemy_crit = getPlayerCritics(enemy_player_id, enemy_weapon_crit, enemy_weapon2_crit, enemy_weapon3_crit, enemy_charm_id, enemy_power_weapon, enemy_power_armor, enemy_power_shield, enemy_class_id, enemy_reborn);
-						var enemy_dragon = getPlayerDragon(enemy_player_id, enemy_class_id, enemy_reborn, enemy_charm_id);
-
-						var enemy_full_damage = enemy_damage+enemy_dragon[0];
-						var enemy_full_critical = enemy_crit[0]+enemy_dragon[2];
-						var enemy_full_defence = enemy_defence+enemy_dragon[1];;
+						
+						var enemy_full_damage = enemy_damage;
+						var enemy_full_critical = enemy_crit[0];
+						var enemy_full_defence = enemy_defence;
 
 						full_damage = full_damage-enemy_full_defence;
 						full_damage = Math.round(full_damage);
@@ -33766,7 +33770,7 @@ bot.onText(/^Top|Torna alle top/i, function (message) {
 	var kb = {
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [['Le Mie Classifiche'], ['Creazioni', 'Settimanale', 'Giornaliera'], ['Abilità', 'Rango'], ['Imprese Completate', 'Missioni'], ['Albo Artefatti', 'Classifica Contrabbandiere'], ['Tempo Incarichi', 'Durata Coupon'], ['Impresa Globale', 'Globali Contribuite'], ['Potenziamenti Flaridion'], ['Triplette Imprese'], ['Figurine Collezionate'], ['Cambia Top', 'Torna al menu']]
+			keyboard: [['Le Mie Classifiche'], ['Creazioni', 'Settimanale', 'Giornaliera'], ['Abilità', 'Rango'], ['Imprese Completate', 'Missioni'], ['Albo Artefatti', 'Classifica Contrabbandiere'], ['Tempo Incarichi', 'Durata Coupon'], ['Impresa Globale', 'Globali Contribuite'], ['Potenziamenti Flaridion'], ['Triplette Imprese'], ['Figurine Collezionate'], ['Trofei Mappe'], ['Cambia Top', 'Torna al menu']]
 		}
 	};
 
@@ -34012,16 +34016,31 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 																c = 1;
 																mypnt = 0;
 																mypos = 0;
-
-																var keyrank = {
-																	parse_mode: "Markdown",
-																	reply_markup: {
-																		resize_keyboard: true,
-																		keyboard: [['Top'], ['Torna al menu']]
+																
+																connection.query('SELECT nickname, total_trophies As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, total_trophies, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+																	if (err) throw err;
+																	for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+																		if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+																			mypos = c;
+																			mypnt = rows[i].points;
+																		}
+																		c++;
 																	}
-																};
+																	text = text + "\n*Trofei mappe totali*: " + mypos + "° con " + mypnt;
+																	c = 1;
+																	mypnt = 0;
+																	mypos = 0;
 
-																bot.sendMessage(message.chat.id, text, keyrank);
+																	var keyrank = {
+																		parse_mode: "Markdown",
+																		reply_markup: {
+																			resize_keyboard: true,
+																			keyboard: [['Top'], ['Torna al menu']]
+																		}
+																	};
+
+																	bot.sendMessage(message.chat.id, text, keyrank);
+																});
 															});
 														});
 													});
@@ -34099,6 +34118,10 @@ bot.onText(/^Durata Coupon/i, function (message) {
 
 bot.onText(/^Triplette Imprese/i, function (message) {
 	getRank(message, 20, 9);
+});
+
+bot.onText(/^Trofei Mappe/i, function (message) {
+	getRank(message, 20, 10);
 });
 
 bot.onText(/Classifica Contrabbandiere/i, function (message) {
@@ -46668,6 +46691,9 @@ function getRank(message, size, type) {
 	} else if (type == 9) {
 		t = "achievement_count_all";
 		tx = "sulle triplette completate per le imprese";
+	} else if (type == 10) {
+		t = "total_trophies";
+		tx = "sui trofei totali ottenuti nelle mappe";
 	}
 
 	var text = "Classifica basata " + tx + ":\n";
