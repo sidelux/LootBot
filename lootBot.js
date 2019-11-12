@@ -42,7 +42,7 @@ var max_top_id = 6;
 var rank_cap = 15;
 var lobby_total_space = 5;
 var lobby_restric_min = 10;
-var max_daily_limit = 10;
+var lobby_daily_limit = 5;
 var dragon_limit_search = 15;
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
 var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750, 2500, 3000, 3750];
@@ -5974,7 +5974,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 							if (err) throw err;
 
 							var lobby_players = rows[0].cnt;
-							var map_daily_diff = max_daily_limit-map_count;
+							var map_daily_diff = lobby_daily_limit-map_count;
 							
 							bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\n\n<b>" + lobby_players + "</b> ⚔️ combattenti dentro una lobby\n<b>" + trophies + "</b> 🏆 in questa stagione (terminerà tra " + diff + ")\n<b>" + map_daily_diff + "</b> 💥 partite ancora avviabili oggi", kbMain).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
@@ -49546,7 +49546,7 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber) 
 		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 			for(k = 0; k < posToBurn.length; k++) {
 				if (rows[i].posX == posToBurn[k][1] && rows[i].posY == posToBurn[k][0]) {
-					console.log("killed", rows[i].posX, rows[i].posY, posToBurn[k][1], posToBurn[k][0]);
+					// console.log("killed", rows[i].posX, rows[i].posY, posToBurn[k][1], posToBurn[k][0]);
 					mapPlayerKilled(lobby_id, rows[i].id, 3);
 					bot.sendMessage(rows[i].chat_id, "Sei stato ucciso a causa del restringimento della mappa!");
 				}
@@ -53405,7 +53405,7 @@ function checkFullLobby() {
 function setFullLobby(element, index, array) {
 	var lobby_id = element.lobby_id;
 	var players = element.cnt;
-	var size = Math.round(players*1.5); // il size deve essere sempre pari per il restringimento
+	var size = Math.round(players*2-1);	// sempre dispari
 	var mapMatrix = generateMap(size, size, players);
 	var finalPoints = generateFinalPoints(mapMatrix);
 	connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, final_point_x, final_point_y, turn_number, next_restrict_time) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", ' + finalPoints[0] + ', ' + finalPoints[1] + ', 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE))', function (err, rows, fields) {
@@ -53557,7 +53557,7 @@ function setSeasonEnd(element, index, array) {
 	
 	// todo
 	
-	bot.sendMessage(chat_id, "Per i <b>" + trophies + "</b> 🏆 guadagnati combattendo nelle <b>Mappe di Lootia</b>, hai ottenuto:" + text, html);
+	bot.sendMessage(chat_id, "Per i <b>" + trophies + "</b> 🏆 guadagnati combattendo nelle <b>Mappe di Lootia</b>, hai ottenuto:" + text + "\n\n<i>I premi sono in beta, potrebbero cambiare durante le prossime stagioni</i>", html);
 
 	connection.query('UPDATE player SET trophies = 0, total_trophies = total_trophies+' + trophies + ' WHERE id = ' + player_id, function (err, rows, fields) {
 		if (err) throw err;
