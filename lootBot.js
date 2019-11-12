@@ -6490,7 +6490,7 @@ bot.onText(/attacca!/i, function (message) {
 							enemy_query += ", life = 0, money = money-" + enemy_money;
 							text += "\nIn modo da sconfiggerlo definitivamente con un colpo mortale!\nFrugando nella sua sacca ottieni <b>" + formatNumber(enemy_money) + "</b> §!";
 							enemy_text += "\nVieni sconfitto definitivamente con un colpo mortale!";
-							mapPlayerKilled(lobby_id, enemy_id, 2);
+							mapPlayerKilled(lobby_id, enemy_id, 2, null);
 						} else
 							enemy_query += ", life = life-" + dmg;
 
@@ -6709,7 +6709,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												if (weapon_id != null) {
 													var weapon = connection_sync.query("SELECT power FROM item WHERE id = " + weapon_id);
 													if (item_power > weapon[0].power) {
-														text += "\nArma sotituita!";
+														text += "\nArma sostituita!";
 														item_query = ", weapon_id = '" + item_id + "'";
 													}
 												} else {
@@ -6720,7 +6720,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												if (weapon2_id != null) {
 													var weapon2 = connection_sync.query("SELECT power_armor FROM item WHERE id = " + weapon2_id);
 													if (item_power < weapon2[0].power_armor) {
-														text += "\nArmatura sotituita!";
+														text += "\nArmatura sostituita!";
 														item_query = ", weapon2_id = '" + item_id + "'";
 													}
 												} else {
@@ -6802,7 +6802,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												if (weapon_id != null) {
 													var weapon = connection_sync.query("SELECT power FROM item WHERE id = " + weapon_id);
 													if (item_power > weapon[0].power) {
-														text += "\nArma sotituita!";
+														text += "\nArma sostituita!";
 														item_query = ", weapon_id = '" + item_id + "'";
 													} else {
 														text += "\nConvertita in un 🔩 Rottame!";
@@ -6816,7 +6816,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												if (weapon2_id != null) {
 													var weapon2 = connection_sync.query("SELECT power_armor FROM item WHERE id = " + weapon2_id);
 													if (item_power < weapon2[0].power_armor) {
-														text += "\nArmatura sotituita!";
+														text += "\nArmatura sostituita!";
 														item_query = ", weapon2_id = '" + item_id + "'";
 													} else {
 														text += "\nConvertita in un 🔩 Rottame!";
@@ -7129,7 +7129,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									life_lost = total_life*(perc/100);
 
 									if (life <= life_lost) {
-										mapPlayerKilled(lobby_id, player_id, 1);
+										mapPlayerKilled(lobby_id, player_id, 1, null);
 										text += "Cadi in una ⚡️ Trappola e perdi <b>" + life_lost + "</b> hp, vieni ucciso e perdi la partita!\n";
 									} else
 										text += "Cadi in una ⚡️ Trappola e perdi <b>" + life_lost + "</b> hp!\n";
@@ -7193,7 +7193,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									toClear = 1;
 								} else if (objId == 10) {		// zona bruciata
 									text += "Decidi di gettarti verso la tua sconfitta nell'area bruciata...";
-									mapPlayerKilled(lobby_id, player_id, 3);
+									mapPlayerKilled(lobby_id, player_id, 3, null);
 								}
 
 								// svuota la risorsa
@@ -7214,7 +7214,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										if (weapon_id != null) {
 											var weapon = connection_sync.query("SELECT power FROM item WHERE id = " + weapon_id);
 											if (item_power > weapon[0].power) {
-												text += "\nArma sotituita!";
+												text += "\nArma sostituita!";
 												item_query = ", weapon_id = '" + item_id + "'";
 											} else {
 												text += "\nConvertita in un 🔩 Rottame!";
@@ -7228,7 +7228,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										if (weapon2_id != null) {
 											var weapon2 = connection_sync.query("SELECT power_armor FROM item WHERE id = " + weapon2_id);
 											if (item_power < weapon2[0].power_armor) {
-												text += "\nArmatura sotituita!";
+												text += "\nArmatura sostituita!";
 												item_query = ", weapon2_id = '" + item_id + "'";
 											} else {
 												text += "\nConvertita in un 🔩 Rottame!";
@@ -39335,6 +39335,11 @@ bot.onText(/necro del destino/i, function (message) {
 													connection.query('SELECT item.id, inventory.quantity As cnt FROM inventory, item WHERE inventory.item_id = item.id AND item.rarity = "U" AND inventory.player_id = ' + player_id + ' AND item.name = "' + itemName  + '"', function (err, rows, fields) {
 														if (err) throw err;
 
+														if (Object.keys(rows).length == 0) {
+															bot.sendMessage(message.chat.id, "Non possiedi l'oggetto specificato!", kbBack);
+															return;
+														}
+														
 														if (rows[0].cnt < qnt) {
 															bot.sendMessage(message.chat.id, "Non possiedi abbastanza copie dell'oggetto specificato!", kbBack);
 															return;
@@ -47340,9 +47345,11 @@ function calcBase(base_id, item_id, estimate = 0) {
 				calcVal = rows[0].v1;
 			else
 				calcVal = rows[0].e1;
-			connection.query('UPDATE item SET base_sum = base_sum+' + calcVal + ' WHERE id = ' + base_id, function (err, rows, fields) {
-				if (err) throw err;
-			});
+			if (calcVal > 0) {
+				connection.query('UPDATE item SET base_sum = base_sum+' + calcVal + ' WHERE id = ' + base_id, function (err, rows, fields) {
+					if (err) throw err;
+				});
+			}
 		}
 		if (rows[0].c2 == 1)
 			calcBase(base_id, rows[0].i2);
@@ -47351,9 +47358,11 @@ function calcBase(base_id, item_id, estimate = 0) {
 				calcVal = rows[0].v2;
 			else
 				calcVal = rows[0].e2;
-			connection.query('UPDATE item SET base_sum = base_sum+' + calcVal + ' WHERE id = ' + base_id, function (err, rows, fields) {
-				if (err) throw err;
-			});
+			if (calcVal > 0) {
+				connection.query('UPDATE item SET base_sum = base_sum+' + calcVal + ' WHERE id = ' + base_id, function (err, rows, fields) {
+					if (err) throw err;
+				});
+			}
 		}
 		if (rows[0].c3 == 1)
 			calcBase(base_id, rows[0].i3);
@@ -47362,9 +47371,11 @@ function calcBase(base_id, item_id, estimate = 0) {
 				calcVal = rows[0].v3;
 			else
 				calcVal = rows[0].e3;
-			connection.query('UPDATE item SET base_sum = base_sum+' + calcVal + ' WHERE id = ' + base_id, function (err, rows, fields) {
-				if (err) throw err;
-			});
+			if (calcVal > 0) {
+				connection.query('UPDATE item SET base_sum = base_sum+' + calcVal + ' WHERE id = ' + base_id, function (err, rows, fields) {
+					if (err) throw err;
+				});
+			}
 		}
 	});
 }
@@ -49111,7 +49122,7 @@ function findMissing(numArray) {
 	return miss;
 };
 
-function mapPlayerKilled(lobby_id, player_id, cause) {	
+function mapPlayerKilled(lobby_id, player_id, cause, life) {	
 	connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND player_id != ' + player_id + ' AND killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 		if (err) throw err;
 
@@ -49156,7 +49167,7 @@ function mapPlayerKilled(lobby_id, player_id, cause) {
 
 					var pos = lobby_total_space-rows[0].cnt;
 
-					connection.query('INSERT INTO map_history (map_lobby_id, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + player_id + ', ' + pos + ', ' + match_kills + ')', function (err, rows, fields) {
+					connection.query('INSERT INTO map_history (map_lobby_id, player_id, position, kills, life) VALUES (' + map_lobby_id + ', ' + player_id + ', ' + pos + ', ' + match_kills + ', ' + life + ')', function (err, rows, fields) {
 						// if (err) throw err; // per errore duplicazione righe
 
 						// concludi
@@ -49467,52 +49478,8 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber) 
 		return;
 	}
 	
-	// devono uscire interi per forza
-	var middleX = widthLen/2;
-	var middleY = heightLen/2;
-	
-	/*
-	// quanto spostare la griglia in funzione dei finalPoint
-	var factorVertical = 0;
-	var factorHorizontal = 0;
-	
-	if ((finalPointX == middleX) && (finalPointY == middleY)) {
-		// centro
-		factorVertical = 0;
-		factorHorizontal = 0;
-	} else if ((finalPointX <= middleX) && (finalPointY >= middleY)) {
-		// quadrante alto sinistra
-		factorVertical = +finalPointY;
-		factorHorizontal = -finalPointX;
-	} else if ((finalPointX >= middleX) && (finalPointY >= middleY)) {
-		// quadrante alto destra
-		factorVertical = +finalPointY;
-		factorHorizontal = +finalPointX;
-	} else if ((finalPointX >= middleX) && (finalPointY <= middleY)) {
-		// quadrante basso sinistra
-		factorVertical = -finalPointY;
-		factorHorizontal = +finalPointX;
-	} else if ((finalPointX <= middleX) && (finalPointY <= middleY)) {
-		// quadrante basso destra
-		factorVertical = -finalPointY;
-		factorHorizontal = -finalPointX;
-	} else
-		console.log("Errore, restrimento nessuna condizione");
-	
-	console.log("factorVertical " + factorVertical);
-	console.log("factorHorizontal " + factorHorizontal);
-
-	// orizzontali
-	for(i = 0; i < widthLen; i++) {
-		posToBurn.push([i+factorHorizontal, turnNumber+factorVertical]);
-		posToBurn.push([i+factorHorizontal, ((heightLen-1)-turnNumber)+factorVertical]);
-	}
-	// verticali
-	for(i = 0; i < heightLen; i++) {
-		posToBurn.push([turnNumber+factorHorizontal, i+factorVertical]);
-		posToBurn.push([((widthLen-1)-turnNumber)+factorHorizontal, i+factorVertical]);
-	}
-	*/
+	var middleX = Math.floor(widthLen/2);
+	var middleY = Math.floor(heightLen/2);
 	
 	// orizzontali
 	for(i = 0; i < widthLen; i++) {
@@ -49526,7 +49493,6 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber) 
 	}
 
 	posToBurn = multiDimensionalUnique(posToBurn);	// rimuove duplicati per evitare sdoppiamento uccisioni
-	// console.log(posToBurn);
 	
 	// applico le modifiche e incremento turno
 	var tmp;
@@ -49541,13 +49507,12 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber) 
 	});
 
 	// elimino tutti i giocatori vivi nelle zone bruciate
-	connection.query('SELECT P.id, P.chat_id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND M.killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+	connection.query('SELECT P.id, P.chat_id, M.posX, M.posY, M.life FROM map_lobby M, player P WHERE M.player_id = P.id AND M.killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 		if (err) throw err;
 		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 			for(k = 0; k < posToBurn.length; k++) {
 				if (rows[i].posX == posToBurn[k][1] && rows[i].posY == posToBurn[k][0]) {
-					// console.log("killed", rows[i].posX, rows[i].posY, posToBurn[k][1], posToBurn[k][0]);
-					mapPlayerKilled(lobby_id, rows[i].id, 3);
+					mapPlayerKilled(lobby_id, rows[i].id, 3, rows[i].life);
 					bot.sendMessage(rows[i].chat_id, "Sei stato ucciso a causa del restringimento della mappa!");
 				}
 			}
@@ -49555,6 +49520,8 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber) 
 	});
 	
 	var time = lobby_restric_min;
+	console.log("middleX", middleX);
+	console.log("turnNumber", turnNumber);
 	if (turnNumber == middleX-1) {
 		time = lobby_restric_min*2;
 		console.log("Ultimo turno: ", turnNumber, middleX-1);
@@ -53336,7 +53303,7 @@ function setBattleTime(element, index, array) {
 	connection.query('SELECT chat_id FROM player WHERE id = ' + enemy_id, function (err, rows, fields) {
 		if (err) throw err;
 
-		mapPlayerKilled(lobby_id, player_id, 2);
+		mapPlayerKilled(lobby_id, player_id, 2, null);
 
 		bot.sendMessage(chat_id, "Il tempo per il turno è scaduto!\nDal nulla arriva una freccia a gran velocità e decreta il tuo avversario come vincitore dello scontro!");
 		bot.sendMessage(rows[0].chat_id, "Il tempo per il turno da parte dell'avversario è scaduto!\nHai vinto lo scontro!");
@@ -53374,7 +53341,7 @@ function setBattleTimeLimit(element, index, array) {
 	connection.query('SELECT chat_id FROM player WHERE id = ' + enemy_id, function (err, rows, fields) {
 		if (err) throw err;
 
-		mapPlayerKilled(lobby_id, player_id, 2);
+		mapPlayerKilled(lobby_id, player_id, 2, null);
 
 		bot.sendMessage(chat_id, "Il tempo per il combattimento è scaduto!\nDal nulla arriva una freccia a gran velocità e decreta il tuo avversario come vincitore dello scontro!");
 		bot.sendMessage(rows[0].chat_id, "Il tempo per il combattimento da parte dell'avversario è scaduto!\nHai vinto lo scontro!");
@@ -53483,23 +53450,28 @@ function setFinishedLobbyEnd(element, index, array) {
 					connection_sync.query('INSERT INTO map_history (map_lobby_id, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + winner_player_id + ', 1, ' + winner_match_kills + ')');
 				}
 
-				connection.query('SELECT P.id, P.nickname, P.trophies, M.position, M.kills FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position', function (err, rows, fields) {
+				connection.query('SELECT M.id As mapId, P.id, P.nickname, P.trophies, M.position, M.kills, M.life FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position ASC, kills DESC, life DESC', function (err, rows, fields) {
 					if (err) throw err;
 
 					var list = "";
 					var kill_text = "";
 					var trophies_query = "";
+					var pos = 1;
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-						if (rows[i].kills == 0)
-							kill_text = "nessuna uccisione";
-						else
-							kill_text = rows[i].kills + " uccisioni";
-						trophies_query = "+" + ((lobby_total_space-parseInt(rows[i].position)+1)+parseInt(rows[i].kills));
-						list += rows[i].position + "° " + rows[i].nickname + " (" + kill_text + ", " + trophies_query + " 🏆)\n";
-
+						kill_text = "";
+						if (rows[i].kills > 0)
+							kill_text = rows[i].kills + " uccisioni, ";
+						trophies_query = "+" + ((lobby_total_space-pos+1)+parseInt(rows[i].kills));
+						list += pos + "° " + rows[i].nickname + " (" + kill_text + trophies_query + " 🏆)\n";
+						
+						// aggiorna la history se c'erano due posizioni uguali per combattimento
+						connection.query('UPDATE map_history SET position = ' + pos + ' WHERE id = ' + rows[i].mapId, function (err, rows, fields) {
+							if (err) throw err;
+						});
 						connection.query('UPDATE player SET trophies = trophies' + trophies_query + ', map_count = map_count+1 WHERE id = ' + rows[i].id, function (err, rows, fields) {
 							if (err) throw err;
 						});
+						pos++;
 					}
 
 					connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
