@@ -2075,6 +2075,7 @@ CREATE TABLE `map_history` (
   `position` int(11) NOT NULL,
   `kills` int(11) NOT NULL,
   `insert_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `life` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `map_history_no_duplicate` (`map_lobby_id`,`player_id`),
   KEY `map_history_player_id` (`player_id`),
