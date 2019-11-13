@@ -49166,7 +49166,7 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 			if (err) throw err;
 			var match_kills = rows[0].match_kills;
 			if (rows[0].enemy_id != null) {
-				var enemy = connection_sync.query('SELECT M.player_id, P.chat_id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND enemy_id = ' + rows[0].enemy_id);
+				var enemy = connection_sync.query('SELECT M.player_id, P.chat_id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND player_id = ' + rows[0].enemy_id);
 				connection.query('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0 WHERE player_id = ' + rows[0].enemy_id, function (err, rows, fields) {
 					if (err) throw err;
 				});
