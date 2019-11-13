@@ -49165,26 +49165,18 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 		connection.query('SELECT enemy_id, match_kills FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			var match_kills = rows[0].match_kills;
-			if (rows[0].enemy_id != null) {
-				var enemy = connection_sync.query('SELECT M.player_id, P.chat_id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND player_id = ' + rows[0].enemy_id);
-				connection.query('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0 WHERE player_id = ' + rows[0].enemy_id, function (err, rows, fields) {
-					if (err) throw err;
-				});
+			var enemy;
+			if (rows[0].enemy_id != null)
+				enemy = connection_sync.query('SELECT M.player_id, P.chat_id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND player_id = ' + rows[0].enemy_id);	// sono io il player_id
+			else
+				enemy = connection_sync.query('SELECT M.player_id, P.chat_id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND enemy_id = ' + player_id);	// sono io l'enemy_id
+			if (Object.keys(enemy).length > 0) {
+				// sync perchè sotto viene reinterrogato
+				connection_sync.query('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0 WHERE player_id = ' + enemy[0].player_id);
 				enemy_pos_x = enemy[0].posX;
 				enemy_pos_y = enemy[0].posY;
 				enemy_id = enemy[0].player_id;
 				enemy_chat_id = enemy[0].chat_id;
-			} else {
-				var enemy = connection_sync.query('SELECT M.player_id, P.chat_id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND enemy_id = ' + player_id);
-				if (Object.keys(enemy).length > 0) {
-					connection.query('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0 WHERE player_id = ' + enemy[0].player_id, function (err, rows, fields) {
-						if (err) throw err;
-					});
-					enemy_pos_x = enemy[0].posX;
-					enemy_pos_y = enemy[0].posY;
-					enemy_id = enemy[0].player_id;
-					enemy_chat_id = enemy[0].chat_id;
-				}
 			}
 
 			// salva in history
@@ -49230,7 +49222,7 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 													};
 													
 													bot.sendMessage(rows[0].chat_id, text, kbBackEnemy);
-													bot.sendMessage(enemy_chat_id, "Sei stato sfidato a duello da un altro giocatore!\nOsservi <b>" + rows[0].nickname + "</b> ricambiando lo sguardo di sfida!", html);
+													bot.sendMessage(enemy_chat_id, "Corri verso un giocatore approfittando della sua stanchezza!\nOsservi <b>" + rows[0].nickname + "</b> ricambiando lo sguardo di sfida!", html);
 													
 													connection.query('UPDATE map_lobby SET enemy_id = ' + player_id + ' WHERE player_id = ' + enemy_id, function (err, rows, fields) {
 														if (err) throw err;
