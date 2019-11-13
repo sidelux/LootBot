@@ -7047,7 +7047,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									}
 								}
 
-								if (objId == 0)	{			// vuoto
+								if ((objId == 0) || ((objId == 8) && (isEnemy == 0)))	{			// vuoto o partenze
 									var life_gain_text = "";
 									life_gain = total_life*0.05;
 									if (life+life_gain > total_life)
@@ -7055,14 +7055,6 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									if (life_gain > 0)
 										life_gain_text = " (+" + life_gain + " hp)";
 									text += "Qui non c'è nulla! Prosegui la tua esplorazione..." + life_gain_text;
-								} else if ((objId == 8) && (isEnemy == 0)) {	// postazione di partenza
-									var life_gain_text = "";
-									life_gain = total_life*0.05;
-									if (life+life_gain > total_life)
-										life_gain = total_life-life;
-									if (life_gain > 0)
-										life_gain_text = " (+" + life_gain + " hp)";
-									text += "Qui non c'è nulla! Anche se noti delle impronte segnate nel fango, prosegui la tua esplorazione..." + life_gain_text;
 								} else if (objId == 1) {		// scrigno
 									var rand = Math.random()*100;
 									var item_type = 0;
