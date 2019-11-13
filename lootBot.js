@@ -49198,38 +49198,36 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 							if (err) throw err;
 							
 							if (check_next) {
-								connection.query('SELECT player_id, nickname, enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + enemy_pos_x + ' AND posY = ' + enemy_pos_y + ' AND killed = 0 AND player_id NOT IN (' + player_id + ', ' + enemy_id + ') AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+								connection.query('SELECT player_id, nickname, enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + enemy_pos_x + ' AND posY = ' + enemy_pos_y + ' AND killed = 0 AND player_id NOT IN (' + player_id + ', ' + enemy_id + ') AND enemy_id = null AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 									if (err) throw err;
 									if (Object.keys(rows).length > 0) {
-										if (rows[0].enemy_id == null) {
-											var text = "Appena posi la lama per riprendere fiato vedi un nemico correrti incontro!\nScambi uno sguardo di sfida a <b>" + rows[0].nickname + "</b> e ti prepari al duello!";
+										var text = "Appena posi la lama per riprendere fiato vedi un nemico correrti incontro!\nScambi uno sguardo di sfida a <b>" + rows[0].nickname + "</b> e ti prepari al duello!";
 
-											var d = new Date();
-											d.setMinutes(d.getMinutes() + battle_timeout_limit_min);
-											var long_date_battle = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+										var d = new Date();
+										d.setMinutes(d.getMinutes() + battle_timeout_limit_min);
+										var long_date_battle = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-											connection.query('UPDATE map_lobby SET battle_timeout_limit = "' + long_date_battle + '", enemy_id = ' + rows[0].player_id + ', my_turn = 1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+										connection.query('UPDATE map_lobby SET battle_timeout_limit = "' + long_date_battle + '", enemy_id = ' + rows[0].player_id + ', my_turn = 1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+											connection.query('SELECT nickname, chat_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
-												connection.query('SELECT nickname, chat_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+
+												var kbBackEnemy = {
+													parse_mode: "HTML",
+													reply_markup: {
+														resize_keyboard: true,
+														keyboard: [["Attacca!"], ["Torna al menu"]]
+													}
+												};
+
+												bot.sendMessage(rows[0].chat_id, text, kbBackEnemy);
+												bot.sendMessage(enemy_chat_id, "Corri verso un giocatore approfittando della sua stanchezza!\nOsservi <b>" + rows[0].nickname + "</b> ricambiando lo sguardo di sfida!", html);
+
+												connection.query('UPDATE map_lobby SET enemy_id = ' + player_id + ' WHERE player_id = ' + enemy_id, function (err, rows, fields) {
 													if (err) throw err;
-													
-													var kbBackEnemy = {
-														parse_mode: "HTML",
-														reply_markup: {
-															resize_keyboard: true,
-															keyboard: [["Attacca!"], ["Torna al menu"]]
-														}
-													};
-													
-													bot.sendMessage(rows[0].chat_id, text, kbBackEnemy);
-													bot.sendMessage(enemy_chat_id, "Corri verso un giocatore approfittando della sua stanchezza!\nOsservi <b>" + rows[0].nickname + "</b> ricambiando lo sguardo di sfida!", html);
-													
-													connection.query('UPDATE map_lobby SET enemy_id = ' + player_id + ' WHERE player_id = ' + enemy_id, function (err, rows, fields) {
-														if (err) throw err;
-													});
 												});
 											});
-										}
+										});
 									}
 								});
 							}
@@ -49580,8 +49578,6 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber) 
 	});
 	
 	var time = lobby_restric_min;
-	console.log("middleX", middleX);
-	console.log("turnNumber", turnNumber);
 	if (turnNumber == middleX) {
 		time = lobby_restric_min*2;
 		console.log("Ultimo turno: ", turnNumber, middleX);
@@ -53368,7 +53364,7 @@ function setBattleTime(element, index, array) {
 		bot.sendMessage(chat_id, "Il tempo per il turno è scaduto!\nDal nulla arriva una freccia a gran velocità e decreta il tuo avversario come vincitore dello scontro!");
 		bot.sendMessage(rows[0].chat_id, "Il tempo per il turno da parte dell'avversario è scaduto!\nHai vinto lo scontro!");
 		
-		connection.query('UPDATE map_lobby SET match_kills = match_kills+1, global_kills = global_kills+1 WHERE id = ' + enemy_id, function (err, rows, fields) {
+		connection.query('UPDATE map_lobby SET match_kills = match_kills+1, global_kills = global_kills+1 WHERE player_id = ' + enemy_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
 
@@ -53406,7 +53402,7 @@ function setBattleTimeLimit(element, index, array) {
 		bot.sendMessage(chat_id, "Il tempo per il combattimento è scaduto!\nDal nulla arriva una freccia a gran velocità e decreta il tuo avversario come vincitore dello scontro!");
 		bot.sendMessage(rows[0].chat_id, "Il tempo per il combattimento da parte dell'avversario è scaduto!\nHai vinto lo scontro!");
 		
-		connection.query('UPDATE map_lobby SET match_kills = match_kills+1, global_kills = global_kills+1 WHERE id = ' + enemy_id, function (err, rows, fields) {
+		connection.query('UPDATE map_lobby SET match_kills = match_kills+1, global_kills = global_kills+1 WHERE player_id = ' + enemy_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
 
@@ -53533,23 +53529,35 @@ function setFinishedLobbyEnd(element, index, array) {
 						});
 						pos++;
 					}
-
-					connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+					
+					connection.query('SELECT P.id, P.nickname FROM map_history M, player P WHERE M.player_id = P.id AND M.pos = 1 AND M.map_lobby_id = ' + map_lobby_id, function (err, rows, fields) {
 						if (err) throw err;
+						
+						// prende solo il primo se non ci sono stati pari merito
+						if (winner_player_id == -1) {
+							if (Object.keys(rows).length == 1) {
+								winner_nickname = rows[0].nickname;
+								winner_player_id = rows[0].id;
+							}
+						}
 
-						var msg = "La partità è terminata!";
-						if (winner_player_id != -1)
-							msg += "\n🎉 Il vincitore è <b>" + winner_nickname + "</b>! 🎉";
-						msg += "\n\n" + list;
-
-						for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-							bot.sendMessage(rows[i].chat_id, msg, html);
-
-						// pulizia
-						connection.query('DELETE FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+						connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 							if (err) throw err;
-							connection.query('UPDATE map_lobby SET lobby_id = NULL, my_turn = 0, match_kills = 0, posX = NULL, posY = NULL, life = NULL, total_life = NULL, killed = 0, wait_time = NULL, weapon_id = NULL, weapon2_id = NULL, weapon3_id = NULL, money = 0, scrap = 0, pulsePosX = NULL, pulsePosY = NULL, last_obj = NULL, last_obj_val = NULL, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0, battle_timeout = NULL, battle_timeout_limit = NULL WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+
+							var msg = "La partità è terminata!";
+							if (winner_player_id != -1)
+								msg += "\n🎉 Il vincitore è <b>" + winner_nickname + "</b>! 🎉";
+							msg += "\n\n" + list;
+
+							for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+								bot.sendMessage(rows[i].chat_id, msg, html);
+
+							// pulizia
+							connection.query('DELETE FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 								if (err) throw err;
+								connection.query('UPDATE map_lobby SET lobby_id = NULL, my_turn = 0, match_kills = 0, posX = NULL, posY = NULL, life = NULL, total_life = NULL, killed = 0, wait_time = NULL, weapon_id = NULL, weapon2_id = NULL, weapon3_id = NULL, money = 0, scrap = 0, pulsePosX = NULL, pulsePosY = NULL, last_obj = NULL, last_obj_val = NULL, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0, battle_timeout = NULL, battle_timeout_limit = NULL WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+									if (err) throw err;
+								});
 							});
 						});
 					});
