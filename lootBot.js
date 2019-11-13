@@ -49166,7 +49166,7 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 			if (err) throw err;
 			var match_kills = rows[0].match_kills;
 			if (rows[0].enemy_id != null) {
-				var enemy = connection_sync.query('SELECT player_id, chat_id, posX, posY FROM map_lobby WHERE enemy_id = ' + rows[0].enemy_id);
+				var enemy = connection_sync.query('SELECT M.player_id, P.chat_id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND enemy_id = ' + rows[0].enemy_id);
 				connection.query('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0 WHERE player_id = ' + rows[0].enemy_id, function (err, rows, fields) {
 					if (err) throw err;
 				});
@@ -49175,7 +49175,7 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 				enemy_id = enemy[0].player_id;
 				enemy_chat_id = enemy[0].chat_id;
 			} else {
-				var enemy = connection_sync.query('SELECT player_id, chat_id, posX, posY FROM map_lobby WHERE enemy_id = ' + player_id);
+				var enemy = connection_sync.query('SELECT M.player_id, P.chat_id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND enemy_id = ' + player_id);
 				if (Object.keys(enemy).length > 0) {
 					connection.query('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0 WHERE player_id = ' + enemy[0].player_id, function (err, rows, fields) {
 						if (err) throw err;
@@ -49590,9 +49590,9 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber) 
 	var time = lobby_restric_min;
 	console.log("middleX", middleX);
 	console.log("turnNumber", turnNumber);
-	if (turnNumber == middleX-1) {
+	if (turnNumber == middleX) {
 		time = lobby_restric_min*2;
-		console.log("Ultimo turno: ", turnNumber, middleX-1);
+		console.log("Ultimo turno: ", turnNumber, middleX);
 	}
 
 	connection.query('UPDATE map_lobby_list SET next_restrict_time = DATE_ADD(next_restrict_time, INTERVAL ' + lobby_restric_min + ' MINUTE) WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
