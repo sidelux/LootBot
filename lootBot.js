@@ -6389,7 +6389,7 @@ bot.onText(/attacca!/i, function (message) {
 
 						var text = "";
 						var enemy_text = "";
-						var dmg = 0;
+						var dmg = 0;	// si riempie solo ad attacco andato a segno
 						
 						if (battle_shield == 1)
 							query += ", battle_shield = 0";
@@ -6448,26 +6448,26 @@ bot.onText(/attacca!/i, function (message) {
 								}
 							}
 							if (fullProtected == 0) {
-								var randCrit = Math.random()*100;
-								var critText = "";
-								if (full_critical >= randCrit) {
-									full_damage = full_damage*2;
-									critText = " critici";
-								}
-
 								var randDodge = Math.random()*100;
 								var probDodge = 10;
 								if (probDodge >= randDodge) {
 									text += "L'avversario riesce a schivare il tuo attacco!";
 									enemy_text += "Riesci a schivare l'attacco del tuo avversario!";
 								} else {
-									dmg = full_damage;
+									var randCrit = Math.random()*100;
+									var critText = "";
+									if (full_critical >= randCrit) {
+										full_damage = full_damage*2;
+										critText = " critici";
+									}
+									
 									if (partialProtected == 1) {
-										dmg = Math.round(dmg/2);
+										full_damage = Math.round(full_damage/2);
 										shieldText = " ridotto grazie allo scudo";
 									}
 									text += "Attacchi l'avversario e gli infliggi <b>" + formatNumber(full_damage) + "</b> danni" + critText + heavyText + shieldText + "!";
 									enemy_text += "Vieni colpito dall'avversario subendo <b>" + formatNumber(full_damage) + "</b> danni" + critText + heavyText + shieldText + "!";
+									dmg = full_damage;
 								}
 							}
 						} else if (answer.text.toLowerCase().indexOf("difendi") != -1) {
@@ -6916,6 +6916,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 						wait_text = "\n🕐 " + min + " minut" + plur;
 					}
 
+					var restrict_text = "";
 					var now = new Date();
 					var next_restrict = new Date(next_restrict_time);
 					var min = Math.round(((next_restrict - now) / 1000) / 60);
@@ -6924,14 +6925,14 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 						plur = "o";
 					if (min < 1)
 						min = "meno di 1";
-					wait_text = "\n☠️ " + min + " minut" + plur;
+					restrict_text = "\n☠️ " + min + " minut" + plur;
 
 					if (killed == 1) {
 						bot.sendMessage(message.chat.id, "Sei stato sconfitto.\nCi sono ancora " + total_players_alive + " sopravvissuti\n" + map, kbBack);
 						return;
 					}
 
-					bot.sendMessage(message.chat.id, "👥 " + total_players_alive + " su " + lobby_total_space + " sopravvissuti\n❤️ " + formatNumber(life) + wait_text + "\n" + map, kbSel).then(function () {
+					bot.sendMessage(message.chat.id, "👥 " + total_players_alive + " su " + lobby_total_space + " sopravvissuti\n❤️ " + formatNumber(life) + wait_text + restrict_text + "\n" + map, kbSel).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							if ((answer.text == "Torna al menu") || (answer.text.toLowerCase().indexOf("aggiorna") != -1))
 								return;
@@ -49159,7 +49160,7 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 								// enemy_id è il vincitore
 								// encounter_id è lo sfidante trovato
 								
-								connection.query('SELECT player_id, nickname, enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + enemy_pos_x + ' AND posY = ' + enemy_pos_y + ' AND killed = 0 AND player_id NOT IN (' + player_id + ', ' + enemy_id + ') AND enemy_id = null AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+								connection.query('SELECT player_id, nickname, enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + enemy_pos_x + ' AND posY = ' + enemy_pos_y + ' AND killed = 0 AND player_id != ' + enemy_id + ' AND enemy_id = null AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 									if (err) throw err;
 									console.log("check_next2", Object.keys(rows).length);
 									if (Object.keys(rows).length > 0) {
@@ -53275,7 +53276,7 @@ function checkLobbyTime() {
 			if (Object.keys(rows).length == 1)
 				console.log(getNow("it") + "\x1b[32m 1 tempo attesa lobby\x1b[0m");
 			else
-				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + "  tempo attesa lobby\x1b[0m");
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " tempo attesa lobby\x1b[0m");
 			rows.forEach(setLobbyTime);
 		}
 	});
