@@ -49160,9 +49160,8 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 								// enemy_id è il vincitore
 								// encounter_id è lo sfidante trovato
 								
-								connection.query('SELECT player_id, nickname, enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + enemy_pos_x + ' AND posY = ' + enemy_pos_y + ' AND killed = 0 AND player_id != ' + enemy_id + ' AND enemy_id = null AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+								connection.query('SELECT player_id, nickname, enemy_id, chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + enemy_pos_x + ' AND posY = ' + enemy_pos_y + ' AND killed = 0 AND player_id != ' + enemy_id + ' AND enemy_id IS NULL AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 									if (err) throw err;
-									console.log("check_next2", Object.keys(rows).length);
 									if (Object.keys(rows).length > 0) {
 										var text = "Appena posi la lama per riprendere fiato vedi un nemico correrti incontro!\nScambi uno sguardo di sfida a <b>" + rows[0].nickname + "</b> e ti prepari al duello!";
 
@@ -49171,7 +49170,8 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 										var long_date_battle = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
 										var encounter_id = rows[0].player_id;
-										
+										var encounter_chat_id = rows[0].chat_id;
+
 										connection.query('UPDATE map_lobby SET battle_timeout_limit = "' + long_date_battle + '", enemy_id = ' + encounter_id + ', my_turn = 1 WHERE player_id = ' + enemy_id, function (err, rows, fields) {
 											if (err) throw err;
 											connection.query('SELECT nickname, chat_id FROM player WHERE id = ' + enemy_id, function (err, rows, fields) {
@@ -49186,7 +49186,7 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 												};
 
 												bot.sendMessage(rows[0].chat_id, text, kbBackEnemy);
-												bot.sendMessage(enemy_chat_id, "Corri verso un giocatore approfittando della sua stanchezza!\nOsservi <b>" + rows[0].nickname + "</b> ricambiando lo sguardo di sfida!", html);
+												bot.sendMessage(encounter_chat_id, "Corri verso un giocatore approfittando della sua stanchezza!\nOsservi <b>" + rows[0].nickname + "</b> ricambiando lo sguardo di sfida!", html);
 
 												connection.query('UPDATE map_lobby SET enemy_id = ' + enemy_id + ' WHERE player_id = ' + encounter_id, function (err, rows, fields) {
 													if (err) throw err;
