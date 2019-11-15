@@ -2149,6 +2149,7 @@ CREATE TABLE `map_lobby_list` (
   `final_point_y` int(11) NOT NULL,
   `turn_number` int(11) NOT NULL,
   `next_restrict_time` timestamp NULL DEFAULT NULL,
+  `conditions` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `map_lobby_list_lobby_id` (`lobby_id`),
   CONSTRAINT `map_lobby_list_lobby_id` FOREIGN KEY (`lobby_id`) REFERENCES `map_lobby` (`lobby_id`)
