@@ -11744,7 +11744,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															}
 														};
 
-														bot.sendMessage(message.chat.id, "Entri in una stanza completamente luccicante, quasi accecante, uno strano tipo barbuto si presenta come il Gioielliere, offre " + qnt + "x 💎 in cambio di un particolare oggetto, in questo caso: *" + item1_name + "*" + item_poss + ", accetti l'offerta?", dOptions).then(function () {
+														bot.sendMessage(message.chat.id, "Entri in una stanza completamente luccicante, quasi accecante, un curioso tipo barbuto si presenta come il Gioielliere, offre " + qnt + "x 💎 in cambio di un particolare oggetto, in questo caso: *" + item1_name + "*" + item_poss + ", accetti l'offerta?", dOptions).then(function () {
 															answerCallbacks[message.chat.id] = function (answer) {
 																if (answer.text == "Si") {
 
@@ -53512,7 +53512,7 @@ function setFinishedLobbyEnd(element, index, array) {
 					connection_sync.query('INSERT INTO map_history (map_lobby_id, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + winner_player_id + ', 1, ' + winner_match_kills + ')');
 				}
 
-				connection.query('SELECT M.id As mapId, P.id, P.nickname, P.trophies, M.position, M.kills, M.life FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position ASC, kills DESC, life DESC', function (err, rows, fields) {
+				connection.query('SELECT M.id As mapId, P.id, P.nickname, P.trophies, M.position, M.kills, M.life FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position ASC, kills DESC, life DESC, insert_date DESC', function (err, rows, fields) {
 					if (err) throw err;
 
 					var list = "";
