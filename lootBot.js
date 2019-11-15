@@ -7153,6 +7153,8 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									
 									if (conditions == 2)
 										life_lost = life_lost*2;
+									
+									life_lost = Math.round(life_lost);
 
 									if (life <= life_lost) {
 										mapPlayerKilled(lobby_id, player_id, 1, null, 0);
@@ -49242,8 +49244,8 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 }
 
 function generateMap(width, height, players) {
-	var buildQnt = 3;
 	var build = [4, 5, 6];
+	var buildQnt = [2, 2, 2];
 	var chestRate = 30;
 	var chestEpicRate = 15;
 	var trapRate = 15;
@@ -49279,13 +49281,12 @@ function generateMap(width, height, players) {
 
 	// genera costruzioni
 
-	console.log("Generazione " + buildQnt + " costruzioni...");
+	console.log("Generazione " + buildQnt.reduce((a, b) => a + b, 0) + " costruzioni...");
 	var index = 0;
-	for(i = 0; i < buildQnt; i++) {
-		index = i;
-		if (build[index] == undefined)
-			index -= build.length*Math.floor(i/build.length);	// serve per ricominciare i loop
-		matrix = insertRandomPos(matrix, build[index], 2);
+	for(i = 0; i < build.length; i++) {
+		for(k = 0; k < buildQnt[i]; k++) {
+			matrix = insertRandomPos(matrix, build[i], 2);
+		}
 	}
 
 	var totTicks = height*width;
@@ -49580,10 +49581,8 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber, 
 	});
 	
 	var time = lobby_restric_min;
-	if (turnNumber == middleX) {
+	if (turnNumber == middleX)
 		time = lobby_restric_min*2;
-		console.log("Ultimo turno: ", turnNumber, middleX);
-	}
 	
 	if (conditions == 1)
 		time = Math.round(time/2);
