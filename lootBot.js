@@ -6579,6 +6579,14 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 				keyboard: [["Si"], ["No"], ["Torna al menu"]]
 			}
 		};
+		
+		var kbYes = {
+			parse_mode: "HTML",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Si"], ["Torna al menu"]]
+			}
+		};
 
 		var kbBackEnemy = {
 			parse_mode: "HTML",
@@ -6653,7 +6661,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 						var perc = (total_life-life) / total_life*100;
 						var price = perc*1000;
 						if (perc == 0) {
-							bot.sendMessage(message.chat.id, "Non necessiti di cure, procedi?", kbYesNo).then(function () {
+							bot.sendMessage(message.chat.id, "Non necessiti di cure, procedi?", kbYes).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text == "Torna al menu")
 										return;
@@ -49581,15 +49589,21 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber, 
 	});
 	
 	var time = lobby_restric_min;
-	if (turnNumber == middleX)
-		time = lobby_restric_min*2;
 	
 	if (conditions == 1)
 		time = Math.round(time/2);
-
-	connection.query('UPDATE map_lobby_list SET next_restrict_time = DATE_ADD(next_restrict_time, INTERVAL ' + lobby_restric_min + ' MINUTE) WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
-		if (err) throw err;
-	});
+	
+	if (turnNumber == middleX) {
+		// se raggiunge l'1x1, non restringe più
+		console.log("Restrict end", turnNumber, middleX);
+		connection.query('UPDATE map_lobby_list SET next_restrict_time = NULL WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
+	} else {
+		connection.query('UPDATE map_lobby_list SET next_restrict_time = DATE_ADD(next_restrict_time, INTERVAL ' + lobby_restric_min + ' MINUTE) WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
+	}
 }
 
 function mapIdToSym(objId) {
@@ -53363,7 +53377,7 @@ function setBattleTime(element, index, array) {
 	connection.query('SELECT chat_id FROM player WHERE id = ' + enemy_id, function (err, rows, fields) {
 		if (err) throw err;
 
-		mapPlayerKilled(lobby_id, player_id, 2, null, 0);
+		mapPlayerKilled(lobby_id, player_id, 2, null, 1);
 
 		bot.sendMessage(chat_id, "Il tempo per il turno è scaduto!\nDal nulla arriva una freccia a gran velocità e decreta il tuo avversario come vincitore dello scontro!");
 		bot.sendMessage(rows[0].chat_id, "Il tempo per il turno da parte dell'avversario è scaduto!\nHai vinto lo scontro!");
@@ -53401,7 +53415,7 @@ function setBattleTimeLimit(element, index, array) {
 	connection.query('SELECT chat_id FROM player WHERE id = ' + enemy_id, function (err, rows, fields) {
 		if (err) throw err;
 
-		mapPlayerKilled(lobby_id, player_id, 2, null, 0);
+		mapPlayerKilled(lobby_id, player_id, 2, null, 1);
 
 		bot.sendMessage(chat_id, "Il tempo per il combattimento è scaduto!\nDal nulla arriva una freccia a gran velocità e decreta il tuo avversario come vincitore dello scontro!");
 		bot.sendMessage(rows[0].chat_id, "Il tempo per il combattimento da parte dell'avversario è scaduto!\nHai vinto lo scontro!");
