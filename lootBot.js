@@ -22243,7 +22243,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 												return;
 											}
 											var nickname = split[1];
-											connection.query('SELECT P.nickname, T.player_id FROM team_player T, player P WHERE T.player_id = P.id AND player_id = (SELECT id FROM player WHERE nickname = "' + nickname + '")', function (err, rows, fields) {
+											connection.query('SELECT P.nickname, T.player_id, P.chat_id FROM team_player T, player P WHERE T.player_id = P.id AND player_id = (SELECT id FROM player WHERE nickname = "' + nickname + '")', function (err, rows, fields) {
 												if (err) throw err;
 
 												if (Object.keys(rows).length == 0) {
@@ -22258,6 +22258,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 
 												var remove_player_id = rows[0].player_id;
 												var remove_nickname = rows[0].nickname;
+												var remove_chat_id = rows[0].chat_id;
 
 												connection.query('SELECT place_id FROM assault_place_player_id WHERE team_id = ' + team_id + ' AND player_id = ' + remove_player_id, function (err, rows, fields) {
 													if (err) throw err;
@@ -22290,6 +22291,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																	});
 																}
 																bot.sendMessage(message.chat.id, "Giocatore rimosso!", kbBack);
+																bot.sendMessage(remove_chat_id, "Sei stato rimosso dalla postazione da un amministratore!");
 															}
 														}
 													});
@@ -22802,7 +22804,6 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 														});
 													});
 												} else if (selected == 2) {
-
 													var lap_qnt = 5;
 													var max_qnt = level*5;
 
@@ -42066,7 +42067,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 					var global_desc = rows[0].global_desc;
 					var global_date = rows[0].global_date;
 
-					connection.query('SELECT L.name, L.det, L.value, L.reward, L.type, S.progress, I.name As itemName, L.multiply, S.completed FROM achievement_daily D INNER JOIN achievement_list L ON D.achievement_id = L.id LEFT JOIN achievement_status S ON S.achievement_id = D.achievement_id AND S.player_id = ' + player_id + ' LEFT JOIN item I ON D.item_id = I.id', function (err, rows, fields) {
+					connection.query('SELECT L.name, L.det, L.value, L.reward, L.type, S.progress, I.name As itemName, L.multiply, S.completed FROM achievement_daily D INNER JOIN achievement_list L ON D.achievement_id = L.id LEFT JOIN achievement_status S ON S.achievement_id = D.achievement_id AND S.player_id = ' + player_id + ' LEFT JOIN item I ON D.item_id = I.id ORDER BY D.id', function (err, rows, fields) {
 						if (err) throw err;
 						var text = "<b>Imprese giornaliere</b>\n";
 						if (Object.keys(rows).length > 0) {
@@ -43634,7 +43635,7 @@ function mainMenu(message) {
 												}
 											*/
 											
-											connection.query('SELECT achievement_id FROM achievement_daily ORDER BY id DESC', function (err, rows, fields) {
+											connection.query('SELECT achievement_id FROM achievement_daily ORDER BY id', function (err, rows, fields) {
 												if (err) throw err;
 
 												var achievement = "";
@@ -43645,9 +43646,9 @@ function mainMenu(message) {
 															if (ach[0].completed == 1)
 																achievement += "✅ ";
 															else
-																achievement += "⛔️ ";
+																achievement += "❌ ";
 														} else
-															achievement += "⛔️ ";
+															achievement += "❌ ";
 													}
 													achievement = "\n🏋 Imprese: " + achievement;
 												}
