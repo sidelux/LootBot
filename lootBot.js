@@ -6094,10 +6094,11 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 														"\n> Il comando Difendi, nel caso di successo obbliga a saltare il turno successivo del nemico, nel caso di fallimento il turno lo salta l'utilizzatore, può effettuare una parata parziale o totale del colpo subito." +
 														"\n\n<b>Istruzioni base</b>" +
 														"\n> Il personaggio inizierà la partita con un equip base, zero monete e zero rottami." +
-														"\n> Ogni " + lobby_restric_min + " minuti (" + (lobby_restric_min*2) + " appena avviata la partita) la mappa si restringe bruciando uno strato esterno fino alla mappa completa." +
+														"\n> Ogni " + lobby_restric_min + " minuti (" + (lobby_restric_min*2) + " appena avviata la partita) la mappa si restringe bruciando uno strato esterno fino a che rimane solo un quadratino centrale." +
 														"\n> Quando un giocatore incontra un altro giocatore, ha inizio una battaglia dove lo sconfitto uscirà dalla partita." +
 														"\n> Se la trappola sconfigge il giocatore, quest'ultimo uscirà dalla partita." + 
 														"\n> Se il giocatore viene bruciato dal restringimento della mappa o ci entra di sua volontà, uscirà dalla partita." +
+														"\n> Per ogni movimento su una casella vuota, il giocatore recupera una piccola percentuale di salute." +
 														"\n> La partita termina quando tutti i giocatori tranne uno sono stati sconfitti, oppure sono stati tutti bruciati." +
 														"\n\n<b>Stagione</b>" +
 														"\n> Le stagioni durano circa un mese, la data precisa è indicata nel messaggio precedente a questo." +
@@ -49517,16 +49518,7 @@ function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnem
 	return text;
 }
 
-function generateFinalPoints(mapMatrix) {
-	var widthLen = mapMatrix[0].length;
-	var heightLen = mapMatrix.length;
-	var pointX = Math.round(getRandomArbitrary(widthLen/2-widthLen/4, widthLen/2+widthLen/4));
-	var pointY = Math.round(getRandomArbitrary(heightLen/2-heightLen/4, heightLen/2+heightLen/4));
-	console.log("finalPoints: " + pointX + " " + pointY);
-	return [pointX, pointY];
-}
-
-function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber, conditions) {
+function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 	mapMatrix = JSON.parse(mapMatrix);
 	mapArray = JSON.stringify(mapMatrix);
 
@@ -49538,8 +49530,6 @@ function restrictMap(lobby_id, mapMatrix, finalPointX, finalPointY, turnNumber, 
 	console.log("widthLen " + widthLen);
 	console.log("heightLen " + heightLen);
 	console.log("turnNumber " + turnNumber);
-	console.log("finalPointX " + finalPointX);
-	console.log("finalPointY " + finalPointY);
 	*/
 
 	if (turnNumber >= widthLen) {
@@ -53448,8 +53438,7 @@ function setFullLobby(element, index, array) {
 	var players = element.cnt;
 	var size = Math.round(players*2-1);	// sempre dispari
 	var mapMatrix = generateMap(size, size, players);
-	var finalPoints = generateFinalPoints(mapMatrix);
-	connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, final_point_x, final_point_y, turn_number, next_restrict_time, conditions) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", ' + finalPoints[0] + ', ' + finalPoints[1] + ', 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE), ' + map_conditions + ')', function (err, rows, fields) {
+	connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, turn_number, next_restrict_time, conditions) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE), ' + map_conditions + ')', function (err, rows, fields) {
 		if (err) throw err;
 
 		connection.query('SELECT P.id, P.chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
@@ -53627,7 +53616,7 @@ function setSeasonEnd(element, index, array) {
 }
 
 function checkRestrictMap() {
-	connection.query('SELECT lobby_id, map_json, final_point_x, final_point_y, turn_number, conditions FROM map_lobby_list WHERE next_restrict_time < NOW()', function (err, rows, fields) {
+	connection.query('SELECT lobby_id, map_json, turn_number, conditions FROM map_lobby_list WHERE next_restrict_time < NOW()', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
@@ -53642,12 +53631,10 @@ function checkRestrictMap() {
 function setRestrictMap(element, index, array) {
 	var lobby_id = element.lobby_id;
 	var mapMatrix = element.map_json;
-	var finalPointX = element.final_point_x;
-	var finalPointY = element.final_point_y;
 	var turnNumber = element.turn_number;
 	var conditions = element.conditions;
 
-	restrictMap(lobby_id, mapMatrix, finalPointY, finalPointX, turnNumber, conditions);
+	restrictMap(lobby_id, mapMatrix, turnNumber, conditions);
 };
 
 function checkDungeonNotification() {
