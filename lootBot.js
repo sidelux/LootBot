@@ -6102,6 +6102,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 														"\n> Se il giocatore viene bruciato dal restringimento della mappa o ci entra di sua volontà, uscirà dalla partita." +
 														"\n> Per ogni movimento su una casella vuota, il giocatore recupera una piccola percentuale di salute." +
 														"\n> La partita termina quando rimane solo un giocatore o vengono tutti sconfitti dal restringimento." +
+														"\n> Ogni tanto possono cambiare le condizioni della mappa, quando cambiano compare la relativa scritta, le nuove lobby verranno giocate in quelle condizioni." +
 														"\n\n<b>Stagione</b>" +
 														"\n> Le stagioni durano circa un mese, la data precisa è indicata nel messaggio principale." +
 														"\n> Alla fine di ogni partita vengono forniti dei trofei in base alla posizione conclusiva ed alle uccisioni dei nemici." +
@@ -27384,13 +27385,18 @@ bot.onText(/cambia admin/i, function (message) {
 						}
 
 						var iKeys = [];
+						var iKeysVice = [];
 						connection.query('SELECT player.nickname, role FROM team_player, player WHERE team_player.player_id = player.id AND player_id != ' + player_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
 							if (err) throw err;
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-								if ((rows[i].nickname != message.from.username) && (rows[i].role == 0))
+								if ((rows[i].nickname != message.from.username) && (rows[i].role == 0)) {
 									iKeys.push([rows[i].nickname]);
+									iKeysVice.push([rows[i].nickname]);
+								}
 							}
 
+							iKeysVice.push(["Rimuovi tutti"]);
+							iKeysVice.push(["Torna al team"]);
 							iKeys.push(["Torna al team"]);
 
 							var kb = {
@@ -27398,6 +27404,14 @@ bot.onText(/cambia admin/i, function (message) {
 								reply_markup: {
 									resize_keyboard: true,
 									keyboard: iKeys
+								}
+							};
+							
+							var kbVice = {
+								parse_mode: "Markdown",
+								reply_markup: {
+									resize_keyboard: true,
+									keyboard: iKeysVice
 								}
 							};
 
@@ -27426,6 +27440,14 @@ bot.onText(/cambia admin/i, function (message) {
 									keyboard: [["Si"], ["Torna al cambia admin"]]
 								}
 							};
+							
+							var kbBack = {
+								parse_mode: "Markdown",
+								reply_markup: {
+									resize_keyboard: true,
+									keyboard: [["Torna al cambia admin"], ["Torna al menu"]]
+								}
+							};
 
 							bot.sendMessage(message.chat.id, "Quale autorità vuoi gestire?", kb2).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
@@ -27442,7 +27464,7 @@ bot.onText(/cambia admin/i, function (message) {
 												connection.query('SELECT player.nickname FROM team_player, player WHERE team_player.player_id = player.id AND team_id = ' + team_id + ' AND nickname = "' + player + '"', function (err, rows, fields) {
 													if (err) throw err;
 													if (Object.keys(rows).length == 0) {
-														bot.sendMessage(message.chat.id, "Questo giocatore non esiste o non si trova in questo team.", back);
+														bot.sendMessage(message.chat.id, "Questo giocatore non esiste o non si trova in questo team.", kbBack);
 														return;
 													}
 
@@ -27455,7 +27477,7 @@ bot.onText(/cambia admin/i, function (message) {
 																if (err) throw err;
 																var newAdmin = rows[0].id;
 																if (adminId == newAdmin) {
-																	bot.sendMessage(message.chat.id, "Sei già amministratore!", back);
+																	bot.sendMessage(message.chat.id, "Sei già amministratore!", kbBack);
 																	return;
 																}
 																connection.query('UPDATE team_player SET role = 0 WHERE role = 1 AND team_id = ' + team_id, function (err, rows, fields) {
@@ -27464,8 +27486,8 @@ bot.onText(/cambia admin/i, function (message) {
 																connection.query('UPDATE team_player SET role = 1 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
 																	if (err) throw err;
 																});
-																bot.sendMessage(message.chat.id, "Cambio admin completato!", back);
-																bot.sendMessage(rows[0].chat_id, "Sei stato nominato Amministratore del Team!", back);
+																bot.sendMessage(message.chat.id, "Cambio admin completato!", kbBack);
+																bot.sendMessage(rows[0].chat_id, "Sei stato nominato Amministratore del Team!", kbBack);
 															});
 														}
 													});
@@ -27474,7 +27496,7 @@ bot.onText(/cambia admin/i, function (message) {
 										});
 									} else if (answer.text == "Amministratore Accademia") {
 										if (child_team == null) {
-											bot.sendMessage(message.chat.id, "Non hai ancora collegato un'accademia a questo team.", back);
+											bot.sendMessage(message.chat.id, "Non hai ancora collegato un'accademia a questo team.", kbBack);
 											return;
 										}
 
@@ -27487,7 +27509,7 @@ bot.onText(/cambia admin/i, function (message) {
 												connection.query('SELECT player.nickname FROM team_player, player WHERE team_player.player_id = player.id AND team_id = ' + child_team + ' AND nickname = "' + player + '"', function (err, rows, fields) {
 													if (err) throw err;
 													if (Object.keys(rows).length == 0) {
-														bot.sendMessage(message.chat.id, "Questo giocatore non esiste o non si trova nell'accademia.", back);
+														bot.sendMessage(message.chat.id, "Questo giocatore non esiste o non si trova nell'accademia.", kbBack);
 														return;
 													}
 
@@ -27505,8 +27527,8 @@ bot.onText(/cambia admin/i, function (message) {
 																connection.query('UPDATE team_player SET role = 1 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
 																	if (err) throw err;
 																});
-																bot.sendMessage(message.chat.id, "Cambio admin accademia completato!", back);
-																bot.sendMessage(rows[0].chat_id, "Sei stato nominato Amministratore del Team dal Capo del team Madre!", back);
+																bot.sendMessage(message.chat.id, "Cambio admin accademia completato!", kbBack);
+																bot.sendMessage(rows[0].chat_id, "Sei stato nominato Amministratore del Team dal Capo del team Madre!", kbBack);
 															});
 														}
 													});
@@ -27515,16 +27537,24 @@ bot.onText(/cambia admin/i, function (message) {
 										});
 									} else if (answer.text == "Vice-Amministratore") {
 										var max_vice = 2;
-										bot.sendMessage(message.chat.id, "Chi vuoi eleggere Vice-Amministratore?\nIl team può possedere al massimo " + max_vice + " vice, otterranno i poteri per gestire gli incarichi, i party e potranno inviare messaggi al team", kb).then(function () {
+										bot.sendMessage(message.chat.id, "Chi vuoi eleggere Vice-Amministratore?\nIl team può possedere al massimo " + max_vice + " vice, otterranno i poteri per gestire gli incarichi, i party e potranno inviare messaggi al team", kbVice).then(function () {
 											answerCallbacks[message.chat.id] = function (answer) {
 												if (answer.text == "Torna al team")
 													return;
+												
+												if (answer.text == "Rimuovi tutti") {
+													connection.query('UPDATE team_player SET role = 0 WHERE role = 2 AND team_id = ' + team_id, function (err, rows, fields) {
+														if (err) throw err;
+													});
+													bot.sendMessage(message.chat.id, "Vice-Amministratori rimossi!", kbBack);
+													return;
+												}
 
 												var player = answer.text;
 												connection.query('SELECT player.nickname FROM team_player, player WHERE team_player.player_id = player.id AND team_id = ' + team_id + ' AND nickname = "' + player + '"', function (err, rows, fields) {
 													if (err) throw err;
 													if (Object.keys(rows).length == 0) {
-														bot.sendMessage(message.chat.id, "Questo giocatore non esiste o non si trova in questo team.", back);
+														bot.sendMessage(message.chat.id, "Questo giocatore non esiste o non si trova in questo team.", kbBack);
 														return;
 													}
 
@@ -27547,13 +27577,13 @@ bot.onText(/cambia admin/i, function (message) {
 																		connection.query('UPDATE team_player SET role = 2 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
-																		bot.sendMessage(message.chat.id, "Cambio Vice-Amministratore completato!", back);
+																		bot.sendMessage(message.chat.id, "Cambio Vice-Amministratore completato!", kbBack);
 																		bot.sendMessage(newChatId, "Sei stato nominato Vice-Amministratore del Team!", back);
 																	} else {
 																		connection.query('UPDATE team_player SET role = 2 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
-																		bot.sendMessage(message.chat.id, "Nuovo Vice-Amministratore impostato!", back);
+																		bot.sendMessage(message.chat.id, "Nuovo Vice-Amministratore impostato!", kbBack);
 																		bot.sendMessage(newChatId, "Sei stato nominato Vice-Amministratore del Team!", back);
 																	}
 																});
