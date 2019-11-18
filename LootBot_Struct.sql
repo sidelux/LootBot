@@ -2145,8 +2145,6 @@ CREATE TABLE `map_lobby_list` (
   `lobby_id` int(11) NOT NULL,
   `map_json` text NOT NULL,
   `creation_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `final_point_x` int(11) NOT NULL,
-  `final_point_y` int(11) NOT NULL,
   `turn_number` int(11) NOT NULL,
   `next_restrict_time` timestamp NULL DEFAULT NULL,
   `conditions` int(11) NOT NULL,

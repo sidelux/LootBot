@@ -9235,14 +9235,19 @@ bot.onText(/^\/drago (.+)|^\/drago/, function (message, match) {
 					rows[0].critical += 15;
 				}
 
-				if ((class_id == 7) && (reborn > 1) && (reborn == 5))
-					rows[0].claws += rows[0].claws * 1;
-				else if ((class_id == 7) && (reborn > 1))
+				if ((class_id == 7) && (reborn > 1)) {
 					rows[0].claws += rows[0].claws * 0.5;
-				if ((class_id == 7) && (reborn > 1) && (reborn == 5))
-					rows[0].saddle += rows[0].saddle * 1;
-				else if ((class_id == 7) && (reborn > 1))
 					rows[0].saddle += rows[0].saddle * 0.5;
+				}
+				if ((class_id == 7) && (reborn == 5)) {
+					rows[0].claws += rows[0].claws * 0.5;
+					rows[0].saddle += rows[0].saddle * 0.5;
+				}
+				if ((class_id == 7) && (reborn == 6)) {
+					rows[0].claws += rows[0].claws * 0.1;
+					rows[0].saddle += rows[0].saddle * 0.1;
+				}
+				
 				if ((class_id == 7) && (reborn == 3))
 					rows[0].critical += 5;
 				if ((class_id == 7) && (reborn >= 4))
@@ -10426,14 +10431,18 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																rows[0].critical += 15;
 															}
 
-															if ((class_id == 7) && (reborn > 1) && (reborn == 5))
-																rows[0].claws += rows[0].claws * 1;
-															else if ((class_id == 7) && (reborn > 1))
+															if ((class_id == 7) && (reborn > 1)) {
 																rows[0].claws += rows[0].claws * 0.5;
-															if ((class_id == 7) && (reborn > 1) && (reborn == 5))
-																rows[0].saddle += rows[0].saddle * 1;
-															else if ((class_id == 7) && (reborn > 1))
 																rows[0].saddle += rows[0].saddle * 0.5;
+															}
+															if ((class_id == 7) && (reborn == 5)) {
+																rows[0].claws += rows[0].claws * 0.5;
+																rows[0].saddle += rows[0].saddle * 0.5;
+															}
+															if ((class_id == 7) && (reborn == 6)) {
+																rows[0].claws += rows[0].claws * 0.1;
+																rows[0].saddle += rows[0].saddle * 0.1;
+															}
 
 															if ((class_id == 7) && (reborn == 3))
 																rows[0].critical += 5;
@@ -10628,12 +10637,18 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																								weapon2_crit += 7;
 																							if ((class_id == 6) && (reborn == 5))
 																								weapon3_crit += 7;
+																							if ((class_id == 6) && (reborn == 6))
+																								weapon2_crit += 8;
+																							if ((class_id == 6) && (reborn == 6))
+																								weapon3_crit += 8;
 																							if ((class_id == 8) && (reborn == 3))
 																								weapon3_crit += 5;
 																							if ((class_id == 8) && (reborn >= 4))
 																								weapon3_crit += 7;
 																							if ((class_id == 8) && (reborn == 5))
 																								weapon_crit += 10;
+																							if ((class_id == 8) && (reborn == 6))
+																								weapon_crit += 5;
 																							if ((class_id == 9) && (reborn == 3)) {
 																								weapon_crit += 2;
 																								weapon3_crit += 2;
@@ -10654,6 +10669,8 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																								weapon += weapon * 0.20;
 																							else if ((class_id == 8) && (reborn == 5))
 																								weapon += weapon * 0.38;
+																							else if ((class_id == 8) && (reborn == 6))
+																								weapon += weapon * 0.40;
 
 																							//Descrizioni
 
