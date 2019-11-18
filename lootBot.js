@@ -12586,14 +12586,14 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 			critical_shield += 2;
 		}
 		if ((class_id == 4) && (reborn >= 4)) {
-			critical += 7;
-			critical_armor += 7;
-			critical_shield += 7;
+			critical += 5;
+			critical_armor += 5;
+			critical_shield += 5;
 		}
 		if ((class_id == 5) && (reborn == 3))
-			critical_shield += 4;
+			critical_shield += 5;
 		if ((class_id == 5) && (reborn >= 4))
-			critical_shield += 8;
+			critical_shield += 10;
 		if ((class_id == 6) && (reborn == 3))
 			critical_armor += 2;
 		if ((class_id == 6) && (reborn == 3))
@@ -12722,7 +12722,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 								var rand = Math.random() * 100;
 								if ((class_id == 4) && ((magic == 3) || (magic == 4)) && (reborn == 5))
-									abBonus += 25;
+									abBonus += 20;
 								if (rand < abBonus)
 									magicDouble = 1;
 							}
@@ -12816,7 +12816,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 								check = 1;
 							}
 							if ((class_id == 3) && (reborn == 5)) {
-								magicPow += magicPow * 0.3;
+								magicPow += magicPow * 0.2;
 								magicPow += magicPowBase;
 								check = 1;
 							}
@@ -12832,7 +12832,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 							if ((class_id == 2) && (reborn == 5))
 								magicPow += magicPow * 0.75;
 							if ((class_id == 3) && (reborn == 5))
-								magicPow += magicPow * 0.3;
+								magicPow += magicPow * 0.2;
 						}
 					}
 
@@ -12914,9 +12914,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 									else if ((class_id == 8) && (reborn == 3))
 										danno += danno * 0.15;
 									else if ((class_id == 8) && (reborn == 4))
-										danno += danno * 0.17;
+										danno += danno * 0.20;
 									else if ((class_id == 8) && (reborn == 5))
-										danno += danno * 0.30;
+										danno += danno * 0.38;
 
 									connection.query('SELECT * FROM dungeon_status WHERE player_id = ' + player_id + ' AND monster_id != 0', function (err, rows, fields) {
 										if (err) throw err;
@@ -23917,7 +23917,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		if (Object.keys(ability).length > 0)
 																			abBonus = parseInt(ability[0].ability_level) * ability[0].val;
 																		if ((magic_class_id == 4)  && (magic_reborn == 5) && ((magic_type == 3) || (magic_type == 4)))
-																			abBonus += 25;
+																			abBonus += 20;
 																		abBonus = abBonus+(player[0].cnt*5);
 																		if (abBonus > rand) {
 																			magic_power*2;
@@ -23943,7 +23943,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				check = 1;
 																			}
 																			if ((magic_class_id == 3) && (magic_reborn == 5)) {
-																				magic_power += magic_power * 0.3;
+																				magic_power += magic_power * 0.2;
 																				magic_power += magic_power_base;
 																				check = 1;
 																			}
@@ -23957,7 +23957,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			if ((magic_class_id == 2) && (magic_reborn == 5))
 																				magic_power += magic_power * 0.75;
 																			if ((magic_class_id == 3) && (magic_reborn == 5))
-																				magic_power += magic_power * 0.3;
+																				magic_power += magic_power * 0.2;
 																		}
 
 																		if ((magic_class_id == 8) && (magic_reborn > 1))
@@ -43018,14 +43018,14 @@ function getInfo(message, player, myhouse_id) {
 																								weapon3_crit += 2;
 																							}
 																							if ((class_id == 4) && (reborn >= 4)) {
-																								weapon_crit += 7;
-																								weapon2_crit += 7;
-																								weapon3_crit += 7;
+																								weapon_crit += 5;
+																								weapon2_crit += 5;
+																								weapon3_crit += 5;
 																							}
 																							if ((class_id == 5) && (reborn == 3))
-																								weapon3_crit += 4;
+																								weapon3_crit += 5;
 																							if ((class_id == 5) && (reborn >= 4))
-																								weapon3_crit += 8;
+																								weapon3_crit += 10;
 																							if ((class_id == 6) && (reborn == 3))
 																								weapon2_crit += 2;
 																							if ((class_id == 6) && (reborn == 3))
@@ -43061,9 +43061,9 @@ function getInfo(message, player, myhouse_id) {
 																							else if ((class_id == 8) && (reborn == 3))
 																								weapon += weapon * 0.15;
 																							else if ((class_id == 8) && (reborn == 4))
-																								weapon += weapon * 0.17;
+																								weapon += weapon * 0.20;
 																							else if ((class_id == 8) && (reborn == 5))
-																								weapon += weapon * 0.30;
+																								weapon += weapon * 0.38;
 
 																							//Descrizioni
 
@@ -48530,9 +48530,9 @@ function getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class
 	else if ((class_id == 8) && (reborn == 3))
 		danno += danno * 0.15;
 	else if ((class_id == 8) && (reborn == 4))
-		danno += danno * 0.17;
+		danno += danno * 0.20;
 	else if ((class_id == 8) && (reborn == 5))
-		danno += danno * 0.30;
+		danno += danno * 0.38;
 
 	if (crazyMode == 1)
 		danno = danno * 2;
@@ -48589,14 +48589,14 @@ function getPlayerCritics(player_id, weapon_crit, weapon2_crit, weapon3_crit, ch
 		critical_shield += 2;
 	}
 	if ((class_id == 4) && (reborn >= 4)) {
-		critical += 7;
-		critical_armor += 7;
-		critical_shield += 7;
+		critical += 5;
+		critical_armor += 5;
+		critical_shield += 5;
 	}
 	if ((class_id == 5) && (reborn == 3))
-		critical_shield += 4;
+		critical_shield += 5;
 	if ((class_id == 5) && (reborn >= 4))
-		critical_shield += 8;
+		critical_shield += 10;
 	if ((class_id == 6) && (reborn == 3))
 		critical_armor += 2;
 	if ((class_id == 6) && (reborn == 3))
@@ -49034,14 +49034,14 @@ function setEnchant(message, player_id, type, rand, class_id, reborn, week = 0, 
 			});
 		} else if (type == "Armatura") {
 			if ((class_id == 5) && (reborn == 5))
-				rand = rand*2;
+				rand += rand*1.5;
 			connection.query('UPDATE player SET weapon2_enchant_bonus = ' + magic + ', weapon2_enchant_end = "' + long_date + '", weapon2_enchant = weapon2_enchant + ' + rand + ' WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				bot.sendMessage(message.chat.id, "Il valore incantamento armatura è aumentato di *" + rand + "*" + extra, kbBack);
 			});
 		} else if (type == "Scudo") {
 			if ((class_id == 5) && (reborn == 5))
-				rand = rand*2;
+				rand += rand*1.5;
 			connection.query('UPDATE player SET weapon3_enchant_bonus = ' + magic + ', weapon3_enchant_end = "' + long_date + '", weapon3_enchant = weapon3_enchant + ' + rand + ' WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				bot.sendMessage(message.chat.id, "Il valore incantamento scudo è aumentato di *" + rand + "*" + extra, kbBack);

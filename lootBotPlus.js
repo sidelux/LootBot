@@ -10608,14 +10608,14 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																								weapon3_crit += 2;
 																							}
 																							if ((class_id == 4) && (reborn >= 4)) {
-																								weapon_crit += 7;
-																								weapon2_crit += 7;
-																								weapon3_crit += 7;
+																								weapon_crit += 5;
+																								weapon2_crit += 5;
+																								weapon3_crit += 5;
 																							}
 																							if ((class_id == 5) && (reborn == 3))
-																								weapon3_crit += 4;
+																								weapon3_crit += 5;
 																							if ((class_id == 5) && (reborn >= 4))
-																								weapon3_crit += 8;
+																								weapon3_crit += 10;
 																							if ((class_id == 6) && (reborn == 3))
 																								weapon2_crit += 2;
 																							if ((class_id == 6) && (reborn == 3))
@@ -10651,9 +10651,9 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																							else if ((class_id == 8) && (reborn == 3))
 																								weapon += weapon * 0.15;
 																							else if ((class_id == 8) && (reborn == 4))
-																								weapon += weapon * 0.17;
+																								weapon += weapon * 0.20;
 																							else if ((class_id == 8) && (reborn == 5))
-																								weapon += weapon * 0.30;
+																								weapon += weapon * 0.38;
 
 																							//Descrizioni
 
