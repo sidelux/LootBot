@@ -43622,6 +43622,7 @@ function mainMenu(message) {
 												msgtext = msgtext + "\n🔦 Gnomo in ispezione fino alle " + addZero(heist_end.getHours()) + ":" + addZero(heist_end.getMinutes());
 											}
 
+											/*
 											connection.query('SELECT name, progress, value, ROUND(progress/IF(multiply=0, value, value*' + reborn + ')*100) As perc, multiply FROM achievement_daily, achievement_list, achievement_status WHERE achievement_daily.achievement_id = achievement_list.id AND achievement_status.achievement_id = achievement_list.id AND player_id = ' + player_id + ' AND completed = 0 ORDER BY perc DESC', function (err, rows, fields) {
 												if (err) throw err;
 
@@ -43630,6 +43631,25 @@ function mainMenu(message) {
 													if (rows[0].multiply == 1)
 														rows[0].value = rows[0].value*reborn;
 													achievement = "\n🏋 Impresa imminente: " + rows[0].name + " (" + formatNumber(rows[0].progress) + "/" + formatNumber(rows[0].value) + ")";
+												}
+											*/
+											
+											connection.query('SELECT achievement_id FROM achievement_daily ORDER BY id DESC', function (err, rows, fields) {
+												if (err) throw err;
+
+												var achievement = "";
+												if (Object.keys(rows).length > 0) {
+													for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+														var ach = connection_sync.query('SELECT completed FROM achievement_status WHERE player_id = ' + player_id + ' AND achievement_id = ' + rows[i].achievement_id);
+														if (Object.keys(ach).length > 0) {
+															if (ach[0].completed == 1)
+																achievement += "✅ ";
+															else
+																achievement += "⛔️ ";
+														} else
+															achievement += "⛔️ ";
+													}
+													achievement = "\n🏋 Imprese: " + achievement;
 												}
 
 												connection.query('SELECT time_end, day_cnt, item.name FROM merchant_offer, item WHERE merchant_offer.item_id = item.id AND player_id = ' + player_id, function (err, rows, fields) {
@@ -49973,7 +49993,7 @@ function resetGnomorra() {
 }
 
 function reloadAchievement() {
-	connection.query('SELECT id, name, item_rarity, type FROM (SELECT * FROM achievement_list ORDER BY RAND()) as t WHERE id NOT IN (SELECT achievement_id FROM achievement_daily) GROUP BY type ORDER BY RAND() LIMIT 3', function (err, rows, fields) {
+	connection.query('SELECT id, name, item_rarity, type FROM (SELECT * FROM achievement_list WHERE enabled = 1 ORDER BY RAND()) as t WHERE id NOT IN (SELECT achievement_id FROM achievement_daily) GROUP BY type ORDER BY RAND() LIMIT 3', function (err, rows, fields) {
 		if (err) throw err;
 
 		connection.query('DELETE FROM achievement_daily', function (err, rows, fields) {
@@ -53622,6 +53642,8 @@ function setFinishedLobbyEnd(element, index, array) {
 							if (err) throw err;
 						});
 						pos++;
+						
+						setAchievement(rows[i].id, 88, 1);
 					}
 					
 					connection.query('SELECT P.id, P.nickname FROM map_history M, player P WHERE M.player_id = P.id AND M.position = 1 AND M.map_lobby_id = ' + map_lobby_id, function (err, rows, fields) {
