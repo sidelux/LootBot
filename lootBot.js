@@ -6089,6 +6089,8 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 														mapIdToSym(9) + " Rottame - Valuta utile per gli scambi, si ottiene anche in caso gli equip trovati non siano più forti di quelli indossati\n" +
 														mapIdToSym(10) + " Mappa bruciata - Se si capita in una casella bruciata, si viene sconfitti\n" +
 														"\n<b>Combattimento</b>" +
+														"\n> La Vocazione influisce sul combattimento del giocatore." +
+														"\n> Il drago non accompagna il giocatore all'interno della mappa." +
 														"\n> Il comando Attacco infligge un danno base al nemico." +
 														"\n> Il comando Attacco Caricato obbliga a saltare il primo turno successivo all'utilizzo, infligge più danni rispetto all'attacco normale." +
 														"\n> Il comando Difendi, nel caso di successo obbliga a saltare il turno successivo del nemico, nel caso di fallimento il turno lo salta l'utilizzatore, può effettuare una parata parziale o totale del colpo subito." +
@@ -6099,9 +6101,9 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 														"\n> Se la trappola sconfigge il giocatore, quest'ultimo uscirà dalla partita." + 
 														"\n> Se il giocatore viene bruciato dal restringimento della mappa o ci entra di sua volontà, uscirà dalla partita." +
 														"\n> Per ogni movimento su una casella vuota, il giocatore recupera una piccola percentuale di salute." +
-														"\n> La partita termina quando tutti i giocatori tranne uno sono stati sconfitti, oppure sono stati tutti bruciati." +
+														"\n> La partita termina quando rimane solo un giocatore o vengono tutti sconfitti dal restringimento." +
 														"\n\n<b>Stagione</b>" +
-														"\n> Le stagioni durano circa un mese, la data precisa è indicata nel messaggio precedente a questo." +
+														"\n> Le stagioni durano circa un mese, la data precisa è indicata nel messaggio principale." +
 														"\n> Alla fine di ogni partita vengono forniti dei trofei in base alla posizione conclusiva ed alle uccisioni dei nemici." +
 														"\n> Alla fine della stagione si ottiene un premio in base ai trofei accumulati e questi ultimi vengono resettati." +
 														"\n> Alla fine della stagione viene anche accumulato un totale globale dei trofei accumulati che non viene mai resettato.", kbBack);
@@ -6318,11 +6320,12 @@ bot.onText(/attacca!/i, function (message) {
 				
 				var conditions = rows[0].conditions;
 
-				connection.query('SELECT P.chat_id, M.money, P.nickname, M.life, M.total_life, P.class, P.reborn, P.exp, M.battle_shield, M.battle_stunned FROM player P, map_lobby M WHERE M.player_id = P.id AND P.id = ' + enemy_id, function (err, rows, fields) {
+				connection.query('SELECT P.chat_id, M.money, M.scrap, P.nickname, M.life, M.total_life, P.class, P.reborn, P.exp, M.battle_shield, M.battle_stunned FROM player P, map_lobby M WHERE M.player_id = P.id AND P.id = ' + enemy_id, function (err, rows, fields) {
 					if (err) throw err;
 
 					var enemy_chat_id = rows[0].chat_id;
 					var enemy_money = rows[0].money;
+					var enemy_scrap = rows[0].scrap;
 					var enemy_battle_shield = rows[0].battle_shield;
 					var enemy_battle_stunned = rows[0].battle_stunned;
 
@@ -6511,9 +6514,9 @@ bot.onText(/attacca!/i, function (message) {
 								return;
 
 							if (enemy_life - dmg <= 0) {
-								query += ", money = money+" + enemy_money + ", match_kills = match_kills+1, global_kills = global_kills+1";
-								enemy_query += ", life = 0, money = money-" + enemy_money;
-								text += "\nIn modo da sconfiggerlo definitivamente con un colpo mortale!\nFrugando nella sua sacca ottieni <b>" + formatNumber(enemy_money) + "</b> §!";
+								query += ", money = money+" + enemy_money + ", scrap = scrap+" + enemy_scrap + ", match_kills = match_kills+1, global_kills = global_kills+1";
+								enemy_query += ", life = 0, money = money-" + enemy_money + ", scrap = scrap-" + enemy_scrap;
+								text += "\nIn modo da sconfiggerlo definitivamente con un colpo mortale!\nFrugando nella sua sacca ottieni <b>" + formatNumber(enemy_money) + "</b> § e <b>" + enemy_scrap + "</b> 🔩!";
 								enemy_text += "\nVieni sconfitto definitivamente con un colpo mortale!";
 								mapPlayerKilled(lobby_id, enemy_id, 2, null, 1);
 							} else
