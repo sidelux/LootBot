@@ -37940,7 +37940,10 @@ bot.onText(/^apri/i, function (message) {
 
 								chest_rarity = rows[j].rarity_shortname;
 								chest_id = rows[j].chest_id;
-								itemSql = connection_sync.query('SELECT id, name, rarity FROM item WHERE rarity = "' + chest_rarity + '" AND id NOT IN (92, 93, 94) AND craftable = 0');
+								if (chest_id == 10)	// cangiante
+									itemSql = connection_sync.query('SELECT id, name, rarity FROM item WHERE rarity IN ("C", "NC", "R", "UR", "L", "E", "D", "U") AND id NOT IN (92, 93, 94) AND craftable = 0');
+								else
+									itemSql = connection_sync.query('SELECT id, name, rarity FROM item WHERE rarity = "' + chest_rarity + '" AND id NOT IN (92, 93, 94) AND craftable = 0');
 
 								currentRarity = [];
 
@@ -53682,15 +53685,42 @@ function checkSeasonEnd() {
 function setSeasonEnd(element, index, array) {
 	var player_id = element.id;
 	var chat_id = element.chat_id;
-	var trophies = element.trophies;
+	var trophies = element.trophies;	// indicativamente da 30 a 150
 	
 	var text = "";
+	var mana = trophies*100;
+	var dust = trophies;
+	var chest = Math.round(trophies/2);
+	var chestU = 0;
+	var moon = 0;
 	
-	// todo
+	text += "\n " + mana + "x Mana di ogni tipo";
+	text += "\n " + dust + "x Polvere";
+	text += "\n " + chest + "x Scrigni Cangianti";
+	
+	if (trophies >= 130) {
+		chestU = 1;
+		text += "\n " + chestU + "x Scrigni Capsula";
+	}
+	if (trophies >= 150) {
+		moon = 1;
+		text += "\n " + moon + "x Moneta Lunare";
+	}
 	
 	bot.sendMessage(chat_id, "Per i <b>" + trophies + "</b> 🏆 guadagnati combattendo nelle <b>Mappe di Lootia</b>, hai ottenuto:" + text + "\n\n<i>I premi sono in beta, potrebbero cambiare durante le prossime stagioni</i>", html);
 
-	connection.query('UPDATE player SET trophies = 0, total_trophies = total_trophies+' + trophies + ' WHERE id = ' + player_id, function (err, rows, fields) {
+	connection.query('UPDATE event_mana_status SET mana_1 = mana_1+' + mana + ', mana_2 = mana_2+' + mana + ', mana_3 = mana_3+' + mana + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+	});
+	
+	if (dust > 0)
+		addItem(player_id, 646, dust);
+	if (chest > 0)
+		addChest(player_id, 10, chest);
+	if (chestU > 0)
+		addChest(player_id, 7, chestU);
+	
+	connection.query('UPDATE player SET trophies = 0, total_trophies = total_trophies+' + trophies + ', moon_coin = moon_coin+' + moon + ' WHERE id = ' + player_id, function (err, rows, fields) {
 		if (err) throw err;
 	});
 }
@@ -54672,8 +54702,6 @@ function setFinishedMission(element, index, array) {
 									money -= money * 0.15;
 								if ((class_id == 9) && (reborn > 1))
 									money += money * 0.15;
-								if ((class_id == 9) && (reborn == 6))
-									money += money * 0.1;
 
 								if (reborn == 1)
 									money = money * Math.round(6-level/20);
