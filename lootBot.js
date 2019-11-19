@@ -31562,8 +31562,12 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 										keyboard: [["Torna dal Mercante Pazzo"], ["Torna alla piazza"], ["Torna al menu"]]
 									}
 								};
+								
+								var warning = "";
+								if (rarity_id == 9)
+									warning = "\nAcquistando questo speciale pacchetto la fiducia del Mercante sarà nuovamente azzerata!";
 
-								bot.sendMessage(message.chat.id, text + "\n\nAcquisti il pacchetto?", kb2).then(function () {
+								bot.sendMessage(message.chat.id, text + "\n\nAcquisti il pacchetto?" + warning, kb2).then(function () {
 									answerCallbacks[message.chat.id] = function (answer) {
 										if (answer.text == "Accetta") {
 											connection.query('SELECT money FROM player WHERE id = ' + player_id, function (err, rows, fields) {
