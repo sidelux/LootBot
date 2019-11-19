@@ -575,11 +575,11 @@ mainKeys = [['⚔ Missione ⚔'],
 			['Dungeon 🛡', topOpen],
 			['Mappe di Lootia 🗺 (Beta)'],
 			['Alchimia ⚗️', 'Rifugio 🔦'],
-			['Zaino 🎒', 'Piazza 💰', 'Scrigni 🔑'],
-			['Giocatore 👤', 'Team ⚜️'],
-			['Imprese 🏋️', 'Drago 🐉', 'Esplorazioni 🧗‍♀'],
-			['Destino 🔮', 'Eventi 🎯'],
-			['Top 🔝', 'Lunari 🌕', 'Info 📖']]
+			['Zaino 🎒', 'Piazza 💰'],
+			['Giocatore 👤', 'Imprese 🏋️', 'Team ⚜️'],
+			['Eventi 🎯', 'Esplorazioni 🧗‍♀'],
+			['Destino 🔮', 'Top 🔝', 'Lunari 🌕'],
+			['Info 📖']]
 
 var defaultKeys = [];
 defaultKeys = mainKeys.slice();
@@ -43194,8 +43194,9 @@ function getInfo(message, player, myhouse_id) {
 																								else if (((exp <= 50) && (reborn == 2)) || ((exp <= 50) && (reborn == 3)) || ((exp <= 50) && (reborn == 4)) || ((exp <= 50) && (reborn == 5)))
 																									Keys.push(['⭐️ Rinasci ⭐️']);
 
-																								Keys.push(["Vocazione 🏹", "Albero Talenti 🌳"]);
-																								Keys.push(["Link Invito 🗣", "Statistiche 📊", "Artefatti 🔱"]);
+																								Keys.push(["Drago 🐉", "Vocazione 🏹"]); 
+																								Keys.push(["Artefatti 🔱", "Albero Talenti 🌳"]);
+																								Keys.push(["Link Invito 🗣", "Statistiche 📊"]);
 																								if (((weapon_id == 638) || 
 																									 (weapon_id == 639) || 
 																									 (weapon_id == 640) || 
