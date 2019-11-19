@@ -18114,23 +18114,28 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 															bot.sendMessage(message.chat.id, "Sei veramente sicuro di voler abbandonare? Al tuo rientro sarai costretto a ricominciare", kbYesNo).then(function () {
 																answerCallbacks[message.chat.id] = function (answer) {
 																	if (answer.text.toLowerCase() == "si") {
+																		bot.sendMessage(message.chat.id, "L'operazione non è reversibile, continuare ugualmente?", kbYesNo).then(function () {
+																			answerCallbacks[message.chat.id] = function (answer) {
+																				if (answer.text.toLowerCase() == "si") {
+																					connection.query('SELECT combat, rank FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
+																						if (err) throw err;
 
-																		connection.query('SELECT combat, rank FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
-																			if (err) throw err;
+																						if (rows[0].combat == 1) {
+																							bot.sendMessage(message.chat.id, "Non puoi abbandonare la vetta mentre il tuo drago è impegnato in uno scontro", kbBack);
+																							return;
+																						}
 
-																			if (rows[0].combat == 1) {
-																				bot.sendMessage(message.chat.id, "Non puoi abbandonare la vetta mentre il tuo drago è impegnato in uno scontro", kbBack);
-																				return;
+																						connection.query('DELETE FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
+																							if (err) throw err;
+																							bot.sendMessage(message.chat.id, "Hai abbandonato la vetta", kbBack);
+																						});
+
+																						connection.query('UPDATE dragon_top_status SET top_id = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																					});
+																				}
 																			}
-
-																			connection.query('DELETE FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
-																				if (err) throw err;
-																				bot.sendMessage(message.chat.id, "Hai abbandonato la vetta", kbBack);
-																			});
-
-																			connection.query('UPDATE dragon_top_status SET top_id = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
 																		});
 																	};
 																};
@@ -43501,11 +43506,11 @@ function mainMenu(message) {
 					diff = Math.abs(diff);
 
 					if (phase == 1)
-						dayDesc = "Giorno della Preparazione (" + toTime(diff) + ")";
+						dayDesc = "Preparazione (" + toTime(diff) + ")";
 					else if (phase == 2)
-						dayDesc = "Giorno dell'Assalto (" + toTime(diff) + ")";
+						dayDesc = "Assalto (" + toTime(diff) + ")";
 					else if (phase == 3)
-						dayDesc = "Giorno dell'Assalto Completato (" + toTime(diff) + ")";
+						dayDesc = "Assalto Completato (" + toTime(diff) + ")";
 				}
 				msgtext += "\n🐺 " + dayDesc;
 
@@ -43652,35 +43657,41 @@ function mainMenu(message) {
 												var heist_end = new Date(rows[0].datetime);
 												msgtext = msgtext + "\n🔦 Gnomo in ispezione fino alle " + addZero(heist_end.getHours()) + ":" + addZero(heist_end.getMinutes());
 											}
-
-											/*
-											connection.query('SELECT name, progress, value, ROUND(progress/IF(multiply=0, value, value*' + reborn + ')*100) As perc, multiply FROM achievement_daily, achievement_list, achievement_status WHERE achievement_daily.achievement_id = achievement_list.id AND achievement_status.achievement_id = achievement_list.id AND player_id = ' + player_id + ' AND completed = 0 ORDER BY perc DESC', function (err, rows, fields) {
-												if (err) throw err;
-
-												var achievement = "";
-												if (Object.keys(rows).length > 0) {
-													if (rows[0].multiply == 1)
-														rows[0].value = rows[0].value*reborn;
-													achievement = "\n🏋 Impresa imminente: " + rows[0].name + " (" + formatNumber(rows[0].progress) + "/" + formatNumber(rows[0].value) + ")";
-												}
-											*/
 											
 											connection.query('SELECT achievement_id FROM achievement_daily ORDER BY id', function (err, rows, fields) {
 												if (err) throw err;
 
 												var achievement = "";
 												if (Object.keys(rows).length > 0) {
+													var allcomplete = 1;
 													for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 														var ach = connection_sync.query('SELECT completed FROM achievement_status WHERE player_id = ' + player_id + ' AND achievement_id = ' + rows[i].achievement_id);
 														if (Object.keys(ach).length > 0) {
 															if (ach[0].completed == 1)
 																achievement += "✅ ";
-															else
+															else {
 																achievement += "❌ ";
-														} else
+																allcomplete = 0;
+															}
+														} else {
 															achievement += "❌ ";
+															allcomplete = 0;
+														}
 													}
-													achievement = "\n🏋 Imprese: " + achievement;
+													
+													if (allcomplete == 1)
+														achievement = "🏁";
+													
+													var ach_now = connection_sync.query('SELECT name, progress, value, ROUND(progress/IF(multiply=0, value, value*' + reborn + ')*100) As perc, multiply FROM achievement_daily, achievement_list, achievement_status WHERE achievement_daily.achievement_id = achievement_list.id AND achievement_status.achievement_id = achievement_list.id AND player_id = ' + player_id + ' AND completed = 0 ORDER BY perc DESC');
+													var ach_line = "";
+													if (Object.keys(ach_now).length > 0) {
+														if (ach_now[0].multiply == 1)
+															ach_now[0].value = ach_now[0].value*reborn;
+														ach_line = "\n🏋 " + ach_now[0].name + " (" + formatNumber(ach_now[0].progress) + "/" + formatNumber(ach_now[0].value) + ") ";
+													} else
+														ach_line = "\n🏋 Imprese: ";
+													
+													achievement = ach_line + achievement;
 												}
 
 												connection.query('SELECT time_end, day_cnt, item.name FROM merchant_offer, item WHERE merchant_offer.item_id = item.id AND player_id = ' + player_id, function (err, rows, fields) {
