@@ -239,7 +239,7 @@ callNTimes(60000, function () { //Ogni 1 minuto
 	checkFullLobby();
 	checkRestrictMap();
 	checkLobbyEnd();
-	// checkSeasonEnd();
+	checkSeasonEnd();
 
 	if (crazyMode == 1)
 		merchant_limit = 8;
@@ -53755,24 +53755,30 @@ function setSeasonEnd(element, index, array) {
 	var trophies = element.trophies;	// indicativamente da 30 a 150
 	
 	var text = "";
-	var mana = trophies*100;
-	var dust = trophies;
+	var mana = trophies*80;
+	var dust = trophies*2;
 	var chest = Math.round(trophies/2);
 	var chestU = 0;
 	var moon = 0;
 	
-	text += "\n " + mana + "x Mana di ogni tipo";
-	text += "\n " + dust + "x Polvere";
-	text += "\n " + chest + "x Scrigni Cangianti";
+	text += "\n " + formatNumber(mana) + "x Mana di ogni tipo";
+	text += "\n " + formatNumber(dust) + "x Polvere";
+	text += "\n " + formatNumber(chest) + "x Scrigni Cangianti";
 	
-	if (trophies >= 130) {
+	if (trophies >= 100) {
 		chestU = 1;
-		text += "\n " + chestU + "x Scrigni Capsula";
+		text += "\n " + chestU + "x Scrigno Capsula";
 	}
-	if (trophies >= 150) {
+	if (trophies >= 120) {
+		moon = 2;
+		text += "\n " + moon + "x Monete Lunari";
+	} else if (trophies >= 110) {
 		moon = 1;
 		text += "\n " + moon + "x Moneta Lunare";
 	}
+	
+	console.log("trophies: " + trophies);
+	console.log(text);
 	
 	bot.sendMessage(chat_id, "Per i <b>" + trophies + "</b> 🏆 guadagnati combattendo nelle <b>Mappe di Lootia</b>, hai ottenuto:" + text + "\n\n<i>I premi sono in beta, potrebbero cambiare durante le prossime stagioni</i>", html);
 
