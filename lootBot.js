@@ -573,6 +573,7 @@ if (checkDragonTopOn == 1)
 
 mainKeys = [['⚔ Missione ⚔'],
 			['Dungeon 🛡', topOpen],
+			['Mappe di Lootia 🗺 (Beta)'],
 			['Alchimia ⚗️', 'Rifugio 🔦'],
 			['Zaino 🎒', 'Piazza 💰', 'Scrigni 🔑'],
 			['Giocatore 👤', 'Team ⚜️'],
@@ -5931,7 +5932,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 		if (message.from.id != 20471035) {
 			var team = connection_sync.query("SELECT 1 FROM team_player WHERE player_id = " + player_id + " AND team_id IN (3, 277, 225)");
 			if (Object.keys(team).length == 0) {
-				bot.sendMessage(message.chat.id, "Il tuo team non è abilitato all'accesso di questa funzione!", back)
+				bot.sendMessage(message.chat.id, "Le Mappe saranno disponibile a breve!\nAllenati e preparati a sfidare i migliori combattenti di Lootia!", back)
 				return;
 			}
 		}
@@ -20493,7 +20494,6 @@ bot.onText(/team/i, function (message) {
 												iKeys.push(["Assalto 🐺", "Incarichi 📜"]);
 											else
 												iKeys.push(["Incarichi 📜"]);
-											iKeys.push(["Mappe di Lootia 🗺 (Test)"]);
 											iKeys.push(["Dettaglio Membri 👥"]);
 											iKeys.push(["Cassaforte 💰", "Magazzino 📦"]);
 											iKeys.push(["Hall of Fame 🏆", "Liste Membri 🔎"]);
@@ -20519,7 +20519,6 @@ bot.onText(/team/i, function (message) {
 												iKeys.push(["Assalto 🐺", "Incarichi 📜"]);
 											else
 												iKeys.push(["Incarichi 📜"]);
-											iKeys.push(["Mappe di Lootia 🗺 (Test)"]);
 											if (team_details == 1)
 												iKeys.push(["Dettaglio Membri 👥"]);
 											iKeys.push(["Cassaforte 💰", "Magazzino 📦"]);
