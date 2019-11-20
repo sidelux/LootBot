@@ -1134,7 +1134,7 @@ bot.onText(/^\/endtop$/, function (message, match) {
 
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 							top_id = rows[i].id;
-							connection.query('SELECT D.player_id, D.rank, P.chat_id FROM dragon_top_rank D, player P, dragon D2 WHERE P.id = D2.player_id AND D.player_id = P.id AND D.top_id = ' + top_id + ' ORDER BY D.rank DESC, D2.level ASC, P.id ASC', function (err, rows, fields) {
+							connection.query('SELECT D.player_id, D.rank, P.chat_id, P.top_rank_count FROM dragon_top_rank D, player P, dragon D2 WHERE P.id = D2.player_id AND D.player_id = P.id AND D.top_id = ' + top_id + ' ORDER BY D.rank DESC, D2.level ASC, P.id ASC', function (err, rows, fields) {
 								if (err) throw err;
 
 								if (Object.keys(rows).length > 0) {
@@ -1198,7 +1198,7 @@ bot.onText(/^\/endtop$/, function (message, match) {
 											extra_text = "\n> " + moon_qnt + "x Monete Lunari";
 										}
 
-										text = "Per il tuo posizionamento nelle *Vette dei Draghi* hai ricevuto:\n> " + formatNumber(mana) + " Mana per tipo\n> " + formatNumber(dust) + " unità di Polvere" + chestText + extra_text + "\n\nI premi durante le prossime stagioni potrebbero cambiare, grazie per aver partecipato!";
+										text = "Per il tuo posizionamento nelle *Vette dei Draghi* ed il raggiungimento di *" + rows[j].rank + " Ð* (" + formatNumber(parseInt(rows[j].top_rank_count)+acc) + " totali) hai ricevuto:\n> " + formatNumber(mana) + " Mana per tipo\n> " + formatNumber(dust) + " unità di Polvere" + chestText + extra_text + "\n\nI premi durante le prossime stagioni potrebbero cambiare, grazie per aver partecipato!";
 
 										if (test == 0)
 											bot.sendMessage(rows[j].chat_id, text, mark);
@@ -6956,15 +6956,17 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 					}
 
 					var restrict_text = "";
-					var now = new Date();
-					var next_restrict = new Date(next_restrict_time);
-					var min = Math.round(((next_restrict - now) / 1000) / 60);
-					var plur = "i";
-					if (min <= 1)
-						plur = "o";
-					if (min < 1)
-						min = "meno di 1";
-					restrict_text = "\n☠️ " + min + " minut" + plur;
+					if (next_restrict_time != null) {
+						var now = new Date();
+						var next_restrict = new Date(next_restrict_time);
+						var min = Math.round(((next_restrict - now) / 1000) / 60);
+						var plur = "i";
+						if (min <= 1)
+							plur = "o";
+						if (min < 1)
+							min = "meno di 1";
+						restrict_text = "\n☠️ " + min + " minut" + plur;
+					}
 
 					if (killed == 1) {
 						bot.sendMessage(message.chat.id, "Sei stato sconfitto.\nCi sono ancora " + total_players_alive + " sopravvissuti\n" + map, kbBack);
@@ -7287,7 +7289,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										if (weapon3_id != null) {
 											var weapon3 = connection_sync.query("SELECT power_shield FROM item WHERE id = " + weapon3_id);
 											if (item_power < weapon3[0].power_shield) {
-												text += "\nScudo sotituito!";
+												text += "\nScudo sostituito!";
 												item_query = ", weapon3_id = '" + item_id + "'";
 											} else {
 												text += "\nConvertito in un 🔩 Rottame!";
@@ -17556,7 +17558,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				dragon_status = "Dorme fino alle " + short_date;
 			}
 
-			var finishD = new Date("2019-11-20 12:00:00");
+			var finishD = new Date("2019-12-18 12:00:00");
 			var startD = new Date(finishD);
 
 			var finish_date = addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes()) + " del " + addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + "/" + finishD.getFullYear();
@@ -49732,7 +49734,7 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 	if (conditions == 1)
 		time = Math.round(time/2);
 	
-	if (turnNumber == middleX) {
+	if (turnNumber-1 == middleX) {
 		// se raggiunge l'1x1, non restringe più
 		console.log("Restrict end", turnNumber, middleX);
 		connection.query('UPDATE map_lobby_list SET next_restrict_time = NULL WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
