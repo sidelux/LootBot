@@ -5607,8 +5607,9 @@ bot.on('callback_query', function (message) {
 											if (err) throw err;
 												bot.sendMessage(chat_id2, "Il negozio è stato automaticamente eliminato!");
 											});
-										} else
-											updateShop(message, code, undefined, 'Acquisto completato per ' + formatNumber(total_price) + ' §!');
+										}
+										
+										updateShop(message, code, undefined, 'Acquisto completato per ' + formatNumber(total_price) + ' §!');
 										
 										check.splice(index, 1);
 									});
@@ -5772,13 +5773,13 @@ bot.on('callback_query', function (message) {
 											if (err) throw err;
 											bot.sendMessage(chat_id2, "Il negozio è stato automaticamente eliminato!");
 										});
-									} else {
-										updateShop(message, code, undefined, 'Acquisto di ' + item_name + ' per ' + formatNumber(price) + ' §!');
-
-										check.splice(index, 1);
-										if (Object.keys(check).length > 100)
-											check = [];
 									}
+									
+									updateShop(message, code, undefined, 'Acquisto di ' + item_name + ' per ' + formatNumber(price) + ' §!');
+
+									check.splice(index, 1);
+									if (Object.keys(check).length > 100)
+										check = [];
 								});
 							});
 						});
