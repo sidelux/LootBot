@@ -3149,6 +3149,7 @@ CREATE TABLE `public_shop` (
   `public` tinyint(1) NOT NULL DEFAULT '0',
   `massive` tinyint(1) NOT NULL DEFAULT '1',
   `protected` tinyint(1) NOT NULL DEFAULT '0',
+  `autodel` tinyint(1) NOT NULL DEFAULT '0',
   `description` varchar(512) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `shop_no_duplicate` (`code`,`item_id`),

@@ -567,6 +567,7 @@ bot.onText(/^\/comandinegozio/, function (message) {
 					"/privacy - Modifica la privacy del negozio da pubblico a privato e vice versa (usa anche 'tutti')\n" +
 					"/massivo - Modifica la possibilità di acquistare in modo massivo dal negozio (usa anche 'tutti')\n" +
 					"/protetto - Modifica la possibilità di acquistare dal negozio (usa anche 'tutti')\n" +
+					"/autocancella - Modifica la possibilità di cancellare automaticamente il negozio quando svuotato (usa anche 'tutti')\n" +
 					"/negoziodesc - Imposta o modifica la descrizione del negozio specificato (usa anche 'tutti')\n" +
 					"/negozioa - Permette di aggiungere oggetti al negozio\n" +
 					"/negozior - Permette di rimuovere oggetti dal negozio\n" +
@@ -3626,13 +3627,14 @@ bot.onText(/^\/negozi$/, function (message, match) {
 		var player_id = rows[0].id;
 		var text = "I tuoi negozi:\n\n";
 
-		connection.query('SELECT item.name, public_shop.public, public_shop.code, public_shop.price, public_shop.time_end, public_shop.quantity, public_shop.massive, public_shop.protected FROM public_shop, item WHERE item.id = public_shop.item_id AND player_id = ' + player_id + ' ORDER BY time_end, code ASC', function (err, rows, fields) {
+		connection.query('SELECT item.name, public_shop.public, public_shop.code, public_shop.price, public_shop.time_end, public_shop.quantity, public_shop.massive, public_shop.protected, public_shop.autodel FROM public_shop, item WHERE item.id = public_shop.item_id AND player_id = ' + player_id + ' ORDER BY time_end, code ASC', function (err, rows, fields) {
 			if (err) throw err;
 
 			var d = new Date();
 			var isPublic = "";
 			var isMassive = "";
 			var isProtected = "";
+			var isAutoDelete = "";
 
 			if (Object.keys(rows).length > 0) {
 				d = new Date(rows[0].time_end);
@@ -3651,8 +3653,12 @@ bot.onText(/^\/negozi$/, function (message, match) {
 					isProtected = ", Non Protetto";
 				else
 					isProtected = ", Protetto";
+				if (rows[0].autodel == 0)
+					isAutoDelete = ", Cancellazione Automatica Disattivata";
+				else
+					isAutoDelete = ", Cancellazione Automatica Attivata";
 
-				text += "<code>" + rows[0].code + "</code> (Scadenza: " + toDate("it", d) + ") <i>" + isPublic + isMassive + isProtected + "</i>\n";
+				text += "<code>" + rows[0].code + "</code> (Scadenza: " + toDate("it", d) + ") <i>" + isPublic + isMassive + isProtected + isAutoDelete + "</i>\n";
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					if ((i > 0) && (rows[i].code != rows[i - 1].code)) {
 						d = new Date(rows[i].time_end);
@@ -3671,8 +3677,12 @@ bot.onText(/^\/negozi$/, function (message, match) {
 							isProtected = ", Non Protetto";
 						else
 							isProtected = ", Protetto";
+						if (rows[i].autodel == 0)
+							isAutoDelete = ", Cancellazione Automatica Disattivata";
+						else
+							isAutoDelete = ", Cancellazione Automatica Attivata";
 
-						text += "\n<code>" + rows[i].code + "</code> (Scadenza: " + toDate("it", d) + ") <i>" + isPublic + isMassive + isProtected + "</i>\n";
+						text += "\n<code>" + rows[i].code + "</code> (Scadenza: " + toDate("it", d) + ") <i>" + isPublic + isMassive + isProtected + isAutoDelete + "</i>\n";
 					}
 					text += "> " + rows[i].quantity + "x " + rows[i].name + " (" + formatNumber(rows[i].price) + " §)\n";
 				}
@@ -3695,8 +3705,12 @@ bot.onText(/^\/negozi$/, function (message, match) {
 						isProtected = ", Non Protetto";
 					else
 						isProtected = ", Protetto";
+					if (rows[0].autodel == 0)
+						isAutoDelete = ", Cancellazione Automatica Disattivata";
+					else
+						isAutoDelete = ", Cancellazione Automatica Attivata";
 
-					text += "<code>" + rows[0].code + "</code> (Scadenza: " + toDate("it", d) + ") <i>" + isPublic + isMassive + isProtected + "</i>\n";
+					text += "<code>" + rows[0].code + "</code> (Scadenza: " + toDate("it", d) + ") <i>" + isPublic + isMassive + isProtected + isAutoDelete + "</i>\n";
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 						if ((i > 0) && (rows[i].code != rows[i - 1].code)) {
 
@@ -3720,8 +3734,12 @@ bot.onText(/^\/negozi$/, function (message, match) {
 								isProtected = ", Non Protetto";
 							else
 								isProtected = ", Protetto";
+							if (rows[i].autodel == 0)
+								isAutoDelete = ", Cancellazione Automatica Disattivata";
+							else
+								isAutoDelete = ", Cancellazione Automatica Attivata";
 
-							text += "\n<code>" + rows[i].code + "</code> (Scadenza: " + toDate("it", d) + ") <i>" + isPublic + isMassive + isProtected + "</i>\n";
+							text += "\n<code>" + rows[i].code + "</code> (Scadenza: " + toDate("it", d) + ") <i>" + isPublic + isMassive + isProtected + isAutoDelete + "</i>\n";
 						}
 						text += "> " + rows[i].quantity + "x " + rows[i].name + " (" + formatNumber(rows[i].price) + " §)\n";
 					}
@@ -4009,6 +4027,94 @@ bot.onText(/^\/protetto (.+)|^\/protetto/, function (message, match) {
 	});
 });
 
+bot.onText(/^\/autocancella (.+)|^\/autocancella/, function (message, match) {
+	connection.query('SELECT id, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0)
+			return;
+
+		var code = match[1];
+		var player_id = rows[0].id;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "...";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+
+		if (message.reply_to_message != undefined) {
+			var cod = message.reply_to_message.text.match(/[0-9]{7,11}/g);
+			if (cod != undefined)
+				code = cod[0];
+		}
+
+		if ((code == undefined) || (code == "")) {
+			bot.sendMessage(message.chat.id, "La sintassi è: /autocancella CODICE, puoi anche usare /autocancella tutti");
+			return;
+		}
+
+		if (code == "tutti") {
+			connection.query('SELECT player_id, autodel FROM public_shop WHERE player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Non possiedi nessun negozio");
+					return;
+				}
+
+				var autodel = rows[0].autodel;
+
+				if (autodel == 0) {
+					connection.query('UPDATE public_shop SET autodel = 1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+						bot.sendMessage(message.chat.id, "Applicata l'auto cancellazione a tutti i negozi!", mark);
+					});
+				} else if (autodel == 1) {
+					connection.query('UPDATE public_shop SET autodel = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+						bot.sendMessage(message.chat.id, "Rimossa l'auto cancellazione da tutti i negozi!", mark);
+					});
+				}
+			});
+			return;
+		}
+
+		connection.query('SELECT player_id, autodel FROM public_shop WHERE code = ' + code, function (err, rows, fields) {
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Non esiste un negozio con quel codice");
+				return;
+			}
+
+			if (player_id != rows[0].player_id) {
+				bot.sendMessage(message.chat.id, "Non sei l'amministratore del negozio");
+				return;
+			}
+
+			var autodel = rows[0].autodel;
+
+			code = parseInt(code);
+			if (isNaN(code)){
+				bot.sendMessage(message.chat.id, "Codice negozio non valido");
+				return;
+			}
+			if (autodel == 0) {
+				connection.query('UPDATE public_shop SET autodel = 1 WHERE code = ' + code, function (err, rows, fields) {
+					if (err) throw err;
+					bot.sendMessage(message.chat.id, "Hai attivato l'auto cancellazione al negozio!", mark);
+				});
+			} else if (autodel == 1) {
+				connection.query('UPDATE public_shop SET autodel = 0 WHERE code = ' + code, function (err, rows, fields) {
+					if (err) throw err;
+					bot.sendMessage(message.chat.id, "Hai rimosso l'auto cancellazione al negozio!", mark);
+				});
+			}
+		});
+	});
+});
+
 bot.onText(/^\/negoziodesc (.+),(.+)|^\/negoziodesc/, function (message, match) {
 	connection.query('SELECT id, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -4232,6 +4338,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 		var privacy = 0;
 		var massive = 1;
 		var protected = 0;
+		var autodel = 0;
 		if (text.indexOf("#") != -1) {
 			privacy = 1;
 			text = text.replace("#", "");
@@ -4246,6 +4353,10 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 		if (text.indexOf("*") != -1) {
 			protected = 1;
 			text = text.replace("*", "");
+		}
+		if (text.indexOf("?") != -1) {
+			autodel = 1;
+			text = text.replace("?", "");
 		}
 
 		var d = new Date();
@@ -4593,8 +4704,8 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 								quantity = 1;
 							}
 
-							var paramQuery = connection_sync.query('SELECT public, massive, protected FROM public_shop WHERE code = ' + code);
-							var shopQuery = connection_sync.query('SELECT id, public, massive, protected FROM public_shop WHERE item_id = ' + item_id + ' AND code = ' + code);
+							var paramQuery = connection_sync.query('SELECT public, massive, protected, autodel FROM public_shop WHERE code = ' + code);
+							var shopQuery = connection_sync.query('SELECT id, public, massive, protected, autodel FROM public_shop WHERE item_id = ' + item_id + ' AND code = ' + code);
 							if (Object.keys(shopQuery).length > 0)
 								text += "Oggetto già presente: " + item_name + "\n";
 							else{
@@ -4602,10 +4713,11 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 									privacy = paramQuery[0].public;
 									massive = paramQuery[0].massive;
 									protected = paramQuery[0].protected;
+									autodel = paramQuery[0].autodel;
 								}
 
 								// serve sincrono altrimenti non riesce a controllare l'esistenza dell'oggetto
-								connection_sync.query('INSERT INTO public_shop (player_id, code, item_id, price, quantity, time_end, public, massive, protected) VALUES (' + player_id + ',' + code + ',' + item_id + ',' + price + ',' + quantity + ',"' + long_date + '",' + privacy + ',' + massive + ', ' + protected + ')');
+								connection_sync.query('INSERT INTO public_shop (player_id, code, item_id, price, quantity, time_end, public, massive, protected, autodel) VALUES (' + player_id + ',' + code + ',' + item_id + ',' + price + ',' + quantity + ',"' + long_date + '",' + privacy + ',' + massive + ', ' + protected + ', ' + autodel + ')');
 
 								text += "Oggetto aggiunto: " + quantity + "x " + item_name + " a " + formatNumber(price) + " §\n";
 								cnt++;
@@ -4626,6 +4738,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 						else
 							text += "\nAcquisto massivo: _Obbligato_";
 						text += "\nProtezione negozio: " + ((protected == 1) ? "_Abilitata_" : "_Disabilitata_");
+						text += "\nAuto cancellazione negozio: " + ((autodel == 1) ? "_Abilitata_" : "_Disabilitata_");
 					}
 				}
 			}
@@ -5347,7 +5460,7 @@ bot.on('callback_query', function (message) {
 						return;
 					}
 
-					connection.query('SELECT player_id, price, item_id, quantity, massive, protected FROM public_shop WHERE code = ' + code, function (err, rows, fields) {
+					connection.query('SELECT player_id, price, item_id, quantity, massive, protected, autodel FROM public_shop WHERE code = ' + code, function (err, rows, fields) {
 						if (err) throw err;
 
 						if (Object.keys(rows).length == 0){
@@ -5369,6 +5482,7 @@ bot.on('callback_query', function (message) {
 						}
 
 						var player_id2 = rows[0].player_id;
+						var autodel = rows[0].autodel;
 						var total_price = 0;
 						var pQnt = 0;
 
@@ -5484,12 +5598,18 @@ bot.on('callback_query', function (message) {
 												if (rows[0].deny == 0)
 													notify = 1;
 											}
-											if (notify == 1) {
+											if (notify == 1)
 												bot.sendMessage(chat_id2, message.from.username + " ha acquistato tutto il tuo negozio (" + code + ") per " + formatNumber(total_price) + " §!\nDi conseguenza le quantità relative agli oggetti acquistati sono state ridotte.");
-											};
 										});
-
-										updateShop(message, code, undefined, 'Acquisto completato per ' + formatNumber(total_price) + ' §!');
+										
+										if (autodel == 1) {
+											connection.query('DELETE FROM public_shop WHERE code = "' + code + '"', function (err, rows, fields) {
+											if (err) throw err;
+												bot.sendMessage(chat_id2, "Il negozio è stato automaticamente eliminato!");
+											});
+										} else
+											updateShop(message, code, undefined, 'Acquisto completato per ' + formatNumber(total_price) + ' §!');
+										
 										check.splice(index, 1);
 									});
 								});
@@ -5501,7 +5621,7 @@ bot.on('callback_query', function (message) {
 			return;
 		}
 
-		connection.query('SELECT player_id, price, item_id, quantity, code, protected, massive FROM public_shop WHERE id = ' + shop_id, function (err, rows, fields) {
+		connection.query('SELECT player_id, price, item_id, quantity, code, protected, massive, autodel FROM public_shop WHERE id = ' + shop_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
@@ -5515,6 +5635,7 @@ bot.on('callback_query', function (message) {
 			var item_id = rows[0].item_id;
 			var quantity = rows[0].quantity;
 			var code = rows[0].code;
+			var autodel = rows[0].autodel;
 
 			if (rows[0].protected == 1){
 				bot.answerCallbackQuery(message.id, {text: 'Il negozio è protetto!'});
@@ -5614,9 +5735,8 @@ bot.on('callback_query', function (message) {
 										if (rows[0].deny == 0)
 											notify = 1;
 									}
-									if (notify == 1) {
+									if (notify == 1)
 										bot.sendMessage(message.from.id, "Hai acquistato " + item_name + " per " + formatNumber(price) + " § dal negozio di " + player2 + "!");
-									};
 								});
 
 								connection.query('SELECT deny FROM plus_notify WHERE player_id = ' + player_id2 + ' AND type = 2', function (err, rows, fields) {
@@ -5628,14 +5748,13 @@ bot.on('callback_query', function (message) {
 										if (rows[0].deny == 0)
 											notify = 1;
 									}
-									if (notify == 1) {
+									if (notify == 1)
 										bot.sendMessage(chat_id2, message.from.username + " ha acquistato " + item_name + " per " + formatNumber(price) + " § dal tuo negozio (" + code + ")!");
-									};
 								});								
 
 								if (quantity - 1 == 0)
 									bot.sendMessage(chat_id2, "Le scorte di " + item_name + " sono terminate!");
-
+								
 								var d2 = new Date();
 								var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
 
@@ -5644,12 +5763,23 @@ bot.on('callback_query', function (message) {
 								});
 
 								console.log(getNow("it") + " - Acquisto da parte di " + message.from.username + " (" + shop_id + ", " + item_name + ", " + formatNumber(price) + " §)");
+								
+								connection.query('SELECT COUNT(id) As cnt FROM public_shop WHERE quantity > 0 AND code = "' + code + '"', function (err, rows, fields) {
+									if (err) throw err;
+								
+									if ((autodel == 1) && (rows[0].cnt == 0)) {
+										connection.query('DELETE FROM public_shop WHERE code = "' + code + '"', function (err, rows, fields) {
+											if (err) throw err;
+											bot.sendMessage(chat_id2, "Il negozio è stato automaticamente eliminato!");
+										});
+									} else {
+										updateShop(message, code, undefined, 'Acquisto di ' + item_name + ' per ' + formatNumber(price) + ' §!');
 
-								updateShop(message, code, undefined, 'Acquisto di ' + item_name + ' per ' + formatNumber(price) + ' §!');
-
-								check.splice(index, 1);
-								if (Object.keys(check).length > 100)
-									check = [];
+										check.splice(index, 1);
+										if (Object.keys(check).length > 100)
+											check = [];
+									}
+								});
 							});
 						});
 					});

@@ -1148,9 +1148,8 @@ bot.onText(/^\/endtop$/, function (message, match) {
 											});
 										}
 										if ((rows[j].rank < 12) && (this.top_id == 1)) {
-											if (test == 0) {
+											if (test == 0)
 												bot.sendMessage(rows[j].chat_id, "Per il tuo posizionamento nelle *Vette dei Draghi*, essendo rimasto al primo Monte e di basso rango, non hai ricevuto alcun premio aggiuntivo! La prossima volta prova ad impegnarti di più :(", mark);
-											}
 											continue; // per non dare altri premi
 										}
 
@@ -5925,7 +5924,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Accedi alla Lobby 🏹", "Vittorie 🎉"], ["Come funziona? 💬"], ["Torna al menu"]]
+				keyboard: [["Accedi alla Lobby 🏹"], ["Guida 💬", "Vittorie 🎉", "Stagione 🏆"], ["Torna al menu"]]
 			}
 		};
 
@@ -6063,7 +6062,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 											if (err) throw err;
 
 											if (Object.keys(rows).length > 0) {
-												var text = "<b>Ultime 25 vittorie:</b>";
+												var text = "<b>Ultime 25 vittorie della stagione:</b>";
 												for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 													var kills = "uccisioni";
 													if (rows[i].kills == 1)
@@ -6075,7 +6074,26 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 
 											bot.sendMessage(message.chat.id, text, kbBack);
 										});
-									} else if (answer.text.toLowerCase().indexOf("come funziona") != -1) {
+									} else if (answer.text.toLowerCase().indexOf("stagione") != -1) {
+										connection.query('SELECT P.nickname, M.global_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND global_kills > 0 ORDER BY M.global_kills DESC LIMIT 25', function (err, rows, fields) {
+											if (err) throw err;
+
+											if (Object.keys(rows).length > 0) {
+												var text = "<b>Top 25 uccisioni della stagione:</b>";
+												var c = 1;
+												for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+													var kills = "uccisioni";
+													if (rows[i].kills == 1)
+														kills = "uccisione";
+													text += "\n" + c + "° " + rows[i].nickname + " con " + rows[i].global_kills + " " + kills;
+													c++;
+												}
+											} else
+												text = "Ancora nessuna uccisione in questa stagione.";
+
+											bot.sendMessage(message.chat.id, text, kbBack);
+										});
+									} else if (answer.text.toLowerCase().indexOf("guida") != -1) {
 										bot.sendMessage(message.chat.id, "<b>Legenda simboli sulla mappa</b>\n\n" +
 														"📍 Posizione del giocatore\n" +
 														mapIdToSym(0) + " Vuoto\n" +
@@ -6089,13 +6107,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 														mapIdToSym(8) + " Altro giocatore - Ingaggia una battaglia con un altro giocatore\n" +
 														mapIdToSym(9) + " Rottame - Valuta utile per gli scambi, si ottiene anche in caso gli equip trovati non siano più forti di quelli indossati\n" +
 														mapIdToSym(10) + " Mappa bruciata - Se si capita in una casella bruciata, si viene sconfitti\n" +
-														"\n<b>Combattimento</b>" +
-														"\n> La Vocazione influisce sul combattimento del giocatore." +
-														"\n> Il drago non accompagna il giocatore all'interno della mappa." +
-														"\n> Il comando Attacco infligge un danno base al nemico." +
-														"\n> Il comando Attacco Caricato obbliga a saltare il primo turno successivo all'utilizzo, infligge più danni rispetto all'attacco normale." +
-														"\n> Il comando Difendi, nel caso di successo obbliga a saltare il turno successivo del nemico, nel caso di fallimento il turno lo salta l'utilizzatore, può effettuare una parata parziale o totale del colpo subito." +
-														"\n\n<b>Istruzioni base</b>" +
+														"\n<b>Istruzioni base</b>" +
 														"\n> Il personaggio inizierà la partita con un equip base, zero monete e zero rottami." +
 														"\n> Ogni " + lobby_restric_min + " minuti (" + (lobby_restric_min*2) + " appena avviata la partita) la mappa si restringe bruciando uno strato esterno fino a che rimane solo un quadratino centrale." +
 														"\n> Quando un giocatore incontra un altro giocatore, ha inizio una battaglia dove lo sconfitto uscirà dalla partita." +
@@ -6104,10 +6116,16 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 														"\n> Per ogni movimento su una casella vuota, il giocatore recupera una piccola percentuale di salute." +
 														"\n> La partita termina quando rimane solo un giocatore o vengono tutti sconfitti dal restringimento." +
 														"\n> Ogni tanto possono cambiare le condizioni della mappa, quando cambiano compare la relativa scritta, le nuove lobby verranno giocate in quelle condizioni." +
+														"\n\n<b>Combattimento</b>" +
+														"\n> La Vocazione influisce sul combattimento del giocatore." +
+														"\n> Il drago non accompagna il giocatore all'interno della mappa." +
+														"\n> Il comando Attacco infligge un danno base al nemico." +
+														"\n> Il comando Attacco Caricato obbliga a saltare il primo turno successivo all'utilizzo, infligge più danni rispetto all'attacco normale." +
+														"\n> Il comando Difendi, nel caso di successo obbliga a saltare il turno successivo del nemico, nel caso di fallimento il turno lo salta l'utilizzatore, può effettuare una parata parziale o totale del colpo subito." +
 														"\n\n<b>Stagione</b>" +
 														"\n> Le stagioni durano circa un mese, la data precisa è indicata nel messaggio principale." +
 														"\n> Alla fine di ogni partita vengono forniti dei trofei in base alla posizione conclusiva ed alle uccisioni dei nemici." +
-														"\n> Alla fine della stagione si ottiene un premio in base ai trofei accumulati e questi ultimi vengono resettati." +
+														"\n> Alla fine della stagione si ottiene un premio in base ai trofei accumulati e questi ultimi, insieme alle uccisioni totali, vengono resettati." +
 														"\n> Alla fine della stagione viene anche accumulato un totale globale dei trofei accumulati che non viene mai resettato.", kbBack);
 									}
 								}
@@ -53797,6 +53815,10 @@ function setSeasonEnd(element, index, array) {
 		addChest(player_id, 7, chestU);
 	
 	connection.query('UPDATE player SET trophies = 0, total_trophies = total_trophies+' + trophies + ', moon_coin = moon_coin+' + moon + ' WHERE id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+	});
+	
+	connection.query('UPDATE map_lobby SET global_kills = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 		if (err) throw err;
 	});
 }
