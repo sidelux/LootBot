@@ -24,6 +24,7 @@ var eventStory = 0;
 var halloween = 0;
 var snowHouse = 0;
 var snowHouseEnd = 0;
+var blackfriday = 0;
 
 // Variabili globali
 var assaultStop = 0;
@@ -434,12 +435,19 @@ bot.on('message', function (message) {
 
 					if (luckyMode == 1)
 						amount = amount*2;
+					
+					if (blackfriday == 1)
+						amount = amount*5;
 
 					bot.sendMessage("-1001098734700", "#Donazione " + message.from.username + " (" + message.from.id + ") per " + message.successful_payment.total_amount / 100 + " €");
 					bot.sendMessage(message.chat.id, "Hai ricevuto *" + amount + " 🌕* per la tua donazione, grazie mille!", back);
 
 					if (luckyMode == 1) {
 						connection.query('UPDATE player SET donation = donation + ' + Math.round(amount/2) + ' WHERE id = ' + player_id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+					} else if (blackfriday == 1) {
+						connection.query('UPDATE player SET donation = donation + ' + Math.round(amount/5) + ' WHERE id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 						});
 					} else {
@@ -4289,7 +4297,7 @@ bot.onText(/casa dei giochi/i, function (message) {
 	if ((message.from.id != 20471035) && (message.from.username != "Gaius87") && (message.from.username != "Raukonar"))
 		s = 0;
 
-	if (s == 0) {
+	if ((s == 0) && (blackfriday == 0)) {
 		var d = new Date();
 		if (d.getDay() != 3) {
 			bot.sendMessage(message.chat.id, "La Casa dei Giochi è aperta solo il mercoledì, dalle 10:00 alle 22:00", back);
@@ -4516,7 +4524,7 @@ bot.onText(/lancia il dado/i, function (message) {
 	if ((message.from.id != 20471035) && (message.from.username != "Gaius87") && (message.from.username != "Raukonar"))
 		s = 0;
 
-	if (s == 0) {
+	if ((s == 0) && (blackfriday == 0)) {
 		var d = new Date();
 		if (d.getDay() != 3) {
 			bot.sendMessage(message.chat.id, "La Casa dei Giochi è aperta solo il mercoledì, dalle 10:00 alle 22:00", back);
@@ -4555,12 +4563,16 @@ bot.onText(/lancia il dado/i, function (message) {
 			bot.sendMessage(message.chat.id, "Sblocca la casa dei giochi per accedere a questa funzione!", back);
 			return;
 		}
+		
+		var maxqnt = 100;
+		if (blackfriday == 1)
+			maxqnt = 200;
 
 		var kbChoice = {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["50 🌊 Blu", "100 🌊 Blu"], ["50 ⚡️ Giallo", "100 ⚡️ Giallo"], ["50 🔥 Rosso", "100 🔥 Rosso"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
+				keyboard: [["50 🌊 Blu", maxqnt + " 🌊 Blu"], ["50 ⚡️ Giallo", maxqnt + " ⚡️ Giallo"], ["50 🔥 Rosso", maxqnt + " 🔥 Rosso"], ["Torna alla casa dei giochi"], ["Torna al menu"]]
 			}
 		};
 
@@ -4620,7 +4632,7 @@ bot.onText(/lancia il dado/i, function (message) {
 					return;
 				}
 
-				if ((qnt != 50) && (qnt != 100)) {
+				if ((qnt != 50) && (qnt != maxqnt)) {
 					bot.sendMessage(message.chat.id, "Quantità del mana non valida", kbBack);
 					return;
 				}
@@ -4705,7 +4717,7 @@ bot.onText(/gioca numeri/i, function (message) {
 	if ((message.from.id != 20471035) && (message.from.username != "Gaius87") && (message.from.username != "Raukonar"))
 		s = 0;
 
-	if (s == 0) {
+	if ((s == 0) && (blackfriday == 0)) {
 		var d = new Date();
 		if (d.getDay() != 3) {
 			bot.sendMessage(message.chat.id, "La Casa dei Giochi è aperta solo il mercoledì, dalle 10:00 alle 22:00", back);
@@ -4838,6 +4850,9 @@ bot.onText(/gioca numeri/i, function (message) {
 					if (err) throw err;
 
 					var max = 15000*Math.max(Math.min(Math.floor(rows[0].ability/100), 10), 1);
+					
+					if (blackfriday == 1)
+						max = max*2;
 
 					bot.sendMessage(message.chat.id, "La tua puntata in caso di vittoria sarà x*" + Math.round(36 / len) + "*, ora indica l'ammontare per la tua puntata, massimo " + formatNumber(max) + " §. Possiedi " + formatNumber(rows[0].money) + " §", kbBack).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
@@ -4943,7 +4958,7 @@ bot.onText(/gira rotelle/i, function (message) {
 	if ((message.from.id != 20471035) && (message.from.username != "Gaius87") && (message.from.username != "Raukonar"))
 		s = 0;
 
-	if (s == 0) {
+	if ((s == 0) && (blackfriday == 0)) {
 		var d = new Date();
 		if (d.getDay() != 3) {
 			bot.sendMessage(message.chat.id, "La Casa dei Giochi è aperta solo il mercoledì, dalle 10:00 alle 22:00", back);
@@ -5005,6 +5020,9 @@ bot.onText(/gira rotelle/i, function (message) {
 			if (err) throw err;
 
 			var price = 10000;
+			
+			if (blackfriday == 1)
+				price = Math.round(price/2);
 
 			if (rows[0].money < price) {
 				bot.sendMessage(message.chat.id, "Non hai monete sufficienti, ne servono " + formatNumber(price), kbBack);
@@ -5139,7 +5157,7 @@ bot.onText(/vedi la carta/i, function (message) {
 	if ((message.from.id != 20471035) && (message.from.username != "Gaius87") && (message.from.username != "Raukonar"))
 		s = 0;
 
-	if (s == 0) {
+	if ((s == 0) && (blackfriday == 0)) {
 		var d = new Date();
 		if (d.getDay() != 3) {
 			bot.sendMessage(message.chat.id, "La Casa dei Giochi è aperta solo il mercoledì, dalle 10:00 alle 22:00", back);
@@ -43334,7 +43352,9 @@ function mainMenu(message) {
 		var day = fest_d.getDate();
 		var month = fest_d.getMonth();
 		var easter = getEaster();
-		if ((day == 25) && (month == 11))
+		if (blackfriday == 1)
+			msgtext += " Buon <a href='https://t.me/LootBotAvvisi'>Black Friday</a>! 💰";
+		else if ((day == 25) && (month == 11))
 			msgtext += " Buon Natale! " + christmas;
 		else if ((day == easter[1]) && (month == easter[0]-1))
 			msgtext += " Buona Pasqua! 🐣";
@@ -43912,7 +43932,7 @@ function checkKeyboard() {
 	if (eventTeamStory == 1)
 		mainKeys.splice(0, 0, ['💬 Il Canto del Bardo (Evento) 📚']);
 	var d = new Date();
-	if ((d.getDay() == 3) && (d.getHours() > 9) && (d.getHours() < 22))
+	if (((d.getDay() == 3) && (d.getHours() > 9) && (d.getHours() < 22)) || (blackfriday == 1))
 		mainKeys.splice(0, 0, ['📃 Casa dei Giochi (Evento) 🎲']);
 	if (snowHouse == 1)
 		mainKeys.splice(0, 0, ['🎄 Villaggio Innevato (Evento) 🌨']);
@@ -53714,7 +53734,9 @@ function checkTopSeasonStart() {
 	connection.query('SELECT 1 FROM config WHERE NOW() >= DATE_SUB(top_season_end, INTERVAL 7 DAY)', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 1) {
+			
 			console.log("Apertura vette in corso...");
+			
 			connection.query('ALTER TABLE dragon_dummy AUTO_INCREMENT = 100000', function (err, rows, fields) {
 				if (err) throw err;
 			});
@@ -53731,7 +53753,7 @@ function checkTopSeasonStart() {
 				if (err) throw err;
 			});
 			
-			console.log("Pulizia completata...");
+			console.log("Pulizia completata");
 			
 			connection.query('UPDATE config SET global_msg = "Le <b>Vette dei Draghi</b> sono aperte!\nPartecipa agli incontri tra draghi più popolari delle terre di Lootia e vinci sostanziosi <b>premi</b>!\nBuon divertimento!", global_msg_on = 1', function (err, rows, fields) {
 				if (err) throw err;
@@ -53763,7 +53785,9 @@ function checkTopSeasonEnd() {
 	connection.query('SELECT 1 FROM config WHERE NOW() >= top_season_end', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 1) {
+			
 			console.log("Chiusura vette in corso...");
+			
 			connection.query('SELECT 1 FROM dragon_top_rank WHERE combat = 1', function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
