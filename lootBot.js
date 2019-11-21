@@ -1071,61 +1071,6 @@ bot.onText(/^\/failglobal/, function (message, match) {
 	};
 });
 
-bot.onText(/^\/msgtop$/, function (message, match) {
-	if (message.from.id == 20471035) {
-		connection.query('UPDATE config SET global_msg = "Le <b>Vette dei Draghi</b> sono aperte!\nPartecipa agli incontri tra draghi più popolari delle terre di Lootia e vinci sostanziosi <b>premi</b>!\nBuon divertimento!", global_msg_on = 1', function (err, rows, fields) {
-			if (err) throw err;
-			bot.sendMessage(message.chat.id, "Ora lancia /sendmsg per inviare i messaggi globali.");
-		});
-	}
-});
-
-bot.onText(/^\/cleantop$/, function (message, match) {
-	if (message.from.id == 20471035) {
-		connection.query('ALTER TABLE dragon_dummy AUTO_INCREMENT = 100000;', function (err, rows, fields) {
-			if (err) throw err;
-		});
-		connection.query('DELETE FROM dragon_dummy;', function (err, rows, fields) {
-			if (err) throw err;
-		});
-		connection.query('DELETE FROM dragon_top_dummy;', function (err, rows, fields) {
-			if (err) throw err;
-		});
-		connection.query('DELETE FROM dragon_top_rank;', function (err, rows, fields) {
-			if (err) throw err;
-		});
-		connection.query('DELETE FROM dragon_top_status;', function (err, rows, fields) {
-			if (err) throw err;
-		});
-
-		bot.sendMessage(message.chat.id, "Fatto!");
-	}
-});
-
-bot.onText(/^\/topon$/, function (message, match) {
-	if (message.from.id == 20471035) {
-		updateValue("checkDragonTopOn", 1);
-		reloadEvents();
-		checkKeyboard();
-		bot.sendMessage(message.chat.id, "Fatto!");
-	}
-});
-
-bot.onText(/^\/endtop$/, function (message, match) {
-
-	var test = 0;
-
-	if (message.from.id == 20471035) {
-		bot.sendMessage(message.chat.id, "Confermi?", yesno).then(function () {
-			answerCallbacks[message.chat.id] = function (answer) {
-				if (answer.text == "Si") {
-					endTop();
-				};
-			};
-		});
-	}
-});
-
 bot.onText(/^\/refreshSpread/i, function (message) {
 	if (message.from.id == 20471035) {
 
