@@ -239,7 +239,10 @@ callNTimes(60000, function () { //Ogni 1 minuto
 	checkFullLobby();
 	checkRestrictMap();
 	checkLobbyEnd();
-	checkSeasonEnd();
+	checkMapSeasonEnd();
+	
+	// checkTopSeasonStart();
+	// checkTopSeasonEnd();
 
 	if (crazyMode == 1)
 		merchant_limit = 8;
@@ -1116,106 +1119,7 @@ bot.onText(/^\/endtop$/, function (message, match) {
 		bot.sendMessage(message.chat.id, "Confermi?", yesno).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text == "Si") {
-					connection.query('SELECT id FROM dragon_top_list ORDER BY id', function (err, rows, fields) {
-						if (err) throw err;
-						var top_id = 0;
-						var mana = 0;
-						var dust = 0;
-						var chest = 0;
-						var moon_qnt = 0;
-						var extra_text = "";
-						var chestText = "";
-						var text = "";
-
-						var multi = 1.2;
-
-						if (test == 1)
-							console.log("Modalità test attiva, nessun messaggio nè aggiornamento");
-
-						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-							top_id = rows[i].id;
-							connection.query('SELECT D.player_id, D.rank, P.chat_id, P.top_rank_count FROM dragon_top_rank D, player P, dragon D2 WHERE P.id = D2.player_id AND D.player_id = P.id AND D.top_id = ' + top_id + ' ORDER BY D.rank DESC, D2.level ASC, P.id ASC', function (err, rows, fields) {
-								if (err) throw err;
-
-								if (Object.keys(rows).length > 0) {
-									var acc = 0;
-									for (var j = 0, len = Object.keys(rows).length; j < len; j++) {
-										acc = ((10*this.top_id)+rows[j].rank);
-										console.log("Accumulati: " + acc + " per " + rows[j].player_id);
-										if (test == 0) {
-											connection.query('UPDATE player SET top_rank_count = top_rank_count+' + acc + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
-												if (err) throw err;
-											});
-										}
-										if ((rows[j].rank < 12) && (this.top_id == 1)) {
-											if (test == 0)
-												bot.sendMessage(rows[j].chat_id, "Per il tuo posizionamento nelle *Vette dei Draghi*, essendo rimasto al primo Monte e di basso rango, non hai ricevuto alcun premio aggiuntivo! La prossima volta prova ad impegnarti di più :(", mark);
-											continue; // per non dare altri premi
-										}
-
-										mana = Math.round(Math.pow(this.top_id, multi) * 200);
-										chest = Math.floor(this.top_id*Math.log2(rows[j].rank));
-										if (chest < 0)
-											chest = 0;
-										if (rows[j].rank > 50)
-											rows[j].rank = 50;
-										dust = Math.round(rows[j].rank * (Math.pow(this.top_id, multi) * 8));
-
-										if ((this.top_id == max_top_id) && (j < 8))
-											moon_qnt = 4-Math.floor(j/2);
-										else
-											moon_qnt = 0;
-
-										if ((j == 0) && (test == 0)) {
-											connection.query('UPDATE player SET top_win = top_win+1 WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
-												if (err) throw err;
-											});
-										}
-
-										console.log(rows[j].player_id, mana, chest, dust, moon_qnt);
-
-										if (test == 0) {
-											connection.query('UPDATE event_mana_status SET mana_1 = mana_1+' + mana + ', mana_2 = mana_2+' + mana + ', mana_3 = mana_3+' + mana + ' WHERE player_id = ' + rows[j].player_id, function (err, rows, fields) {
-												if (err) throw err;
-											});
-											addItem(rows[j].player_id, 646, dust);
-											addChest(rows[j].player_id, 9, chest);
-											setAchievement(rows[j].player_id, 81, mana);
-										}
-
-										chestText = "";
-										if (chest > 0)
-											chestText = "\n> " + chest + "x Scrigni Scaglia";
-
-										extra_text = "";
-										if (moon_qnt > 0) {
-											if (test == 0) {
-												connection.query('UPDATE player SET moon_coin = moon_coin+' + moon_qnt + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
-													if (err) throw err;
-												});
-											}
-											extra_text = "\n> " + moon_qnt + "x Monete Lunari";
-										}
-
-										text = "Per il tuo posizionamento nelle *Vette dei Draghi* ed il raggiungimento di *" + rows[j].rank + " Ð* (" + formatNumber(parseInt(rows[j].top_rank_count)+acc) + " totali) hai ricevuto:\n> " + formatNumber(mana) + " Mana per tipo\n> " + formatNumber(dust) + " unità di Polvere" + chestText + extra_text + "\n\nI premi durante le prossime stagioni potrebbero cambiare, grazie per aver partecipato!";
-
-										if (test == 0)
-											bot.sendMessage(rows[j].chat_id, text, mark);
-										else
-											console.log(text);
-									}
-									if (test == 0) {
-										connection.query('UPDATE player SET top_first = 0', function (err, rows, fields) {
-											if (err) throw err;
-										});
-									}
-								}
-							}.bind({
-								top_id: top_id
-							}));
-						}
-						bot.sendMessage(message.chat.id, "Fatto!", back);
-					});
+					endTop();
 				};
 			};
 		});
@@ -15970,7 +15874,7 @@ bot.onText(/cambia tipo/i, function (message) {
 			connection.query('SELECT id, top_id FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
-				if (Object.keys(rows).length > 0) {
+				if ((checkDragonTopOn == 1) && (Object.keys(rows).length > 0)) {
 					if (rows[0].top_id > 0) {
 						bot.sendMessage(message.chat.id, "Non puoi cambiare tipo al drago finchè sei iscritto alla Vetta.", kbBack);
 						return;
@@ -17549,438 +17453,560 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 			bot.sendMessage(message.chat.id, "Devi raggiungere almeno la Rinascita 1 (Livello 100) per utilizzare questa funzione! Dopo di che potrai combattere in incredibili arene comandando il tuo drago! Ma solo quando sia tu che lui avrete abbastanza esperienza per farlo. Forza!", back);
 			return;
 		}
-
-		connection.query('SELECT id, name, type, level, life, total_life, arms_id, sleep_time_end FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
+		
+		connection.query('SELECT top_season_end FROM config', function (err, rows, fields) {
 			if (err) throw err;
-			if (Object.keys(rows).length == 0) {
-				bot.sendMessage(message.chat.id, "Non possiedi il drago.", back);
-				return;
-			}
+			
+			var top_season_end = rows[0].top_season_end;
 
-			var dragon_id = rows[0].id;
-			var dragon_name = rows[0].name;
-			var my_dragon_type = rows[0].type;
-			var dragon_level = rows[0].level;
-			var dragon_life = rows[0].life;
-			var dragon_total_life = rows[0].total_life;
-			var dragon_arms_id = rows[0].arms_id;
-			var sleep_time = rows[0].sleep_time_end;
-			var dragon_status = "In salute";
-
-			if (dragon_life <= 0)
-				dragon_status = "Esausto";
-
-			if (rows[0].sleep_h > 0) {
-				var d = new Date(sleep_time);
-				var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
-				dragon_status = "Dorme fino alle " + short_date;
-			}
-
-			var finishD = new Date("2019-12-18 12:00:00");
-			var startD = new Date(finishD);
-
-			var finish_date = addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes()) + " del " + addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + "/" + finishD.getFullYear();
-			var finish_date_f = addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + " alle " + addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes());
-
-			startD.setDate(startD.getDate() - 7);
-			var start_date_f = addZero(startD.getDate()) + "/" + addZero(startD.getMonth() + 1) + " alle " + addZero(startD.getHours()) + ':' + addZero(startD.getMinutes());
-
-			connection.query('SELECT nickname, CONCAT(D.name, " ", D.type) As dragon, L.name, R.rank FROM dragon_top_rank R, dragon D, player, dragon_top_list L WHERE L.id = top_id AND R.dragon_id = D.id AND player.id = R.player_id ORDER BY R.top_id DESC, R.rank DESC LIMIT 25', function (err, rows, fields) {
+			connection.query('SELECT id, name, type, level, life, total_life, arms_id, sleep_time_end FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
-
-				var top = "";
-				if (Object.keys(rows).length > 0) {
-					top = "\n\nClassifica della stagione precedente:\n";
-					var c = 0;
-					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-						c++;
-						top += c + "° " + rows[i].dragon + " di " + rows[i].nickname + " (" + rows[i].name + ", " + rows[i].rank + " Ð)\n";
-					}
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Non possiedi il drago.", back);
+					return;
 				}
 
-				if (player_id != 1) {
-					if (checkDragonTopOn == 0) {
-						bot.sendMessage(message.chat.id, "\nProssima stagione: " + start_date_f + " - " + finish_date_f + "\nSe hai partecipato alla stagione precedente, riceverai i premi a breve!" + top, back_html);
-						return;
-					}
+				var dragon_id = rows[0].id;
+				var dragon_name = rows[0].name;
+				var my_dragon_type = rows[0].type;
+				var dragon_level = rows[0].level;
+				var dragon_life = rows[0].life;
+				var dragon_total_life = rows[0].total_life;
+				var dragon_arms_id = rows[0].arms_id;
+				var sleep_time = rows[0].sleep_time_end;
+				var dragon_status = "In salute";
+
+				if (dragon_life <= 0)
+					dragon_status = "Esausto";
+
+				if (rows[0].sleep_h > 0) {
+					var d = new Date(sleep_time);
+					var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
+					dragon_status = "Dorme fino alle " + short_date;
 				}
 
-				var kb2 = {
-					parse_mode: "HTML",
-					reply_markup: {
-						resize_keyboard: true,
-						keyboard: [['Entra nella Vetta'], ['Torna al menu']]
-					}
-				};
+				var finishD = new Date(top_season_end);
+				var startD = new Date(finishD);
 
-				var kbBack = {
-					parse_mode: "Markdown",
-					reply_markup: {
-						resize_keyboard: true,
-						keyboard: [['Torna alla vetta'], ['Torna al menu']]
-					}
-				};
+				var finish_date = addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes()) + " del " + addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + "/" + finishD.getFullYear();
+				var finish_date_f = addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + " alle " + addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes());
 
-				var kbBack_html = {
-					parse_mode: "HTML",
-					reply_markup: {
-						resize_keyboard: true,
-						keyboard: [['Torna alla vetta'], ['Torna al menu']]
-					}
-				};
+				startD.setDate(startD.getDate() - 7);
+				var start_date_f = addZero(startD.getDate()) + "/" + addZero(startD.getMonth() + 1) + " alle " + addZero(startD.getHours()) + ':' + addZero(startD.getMinutes());
 
-				var kbClean_html = {
-					parse_mode: "HTML",
-					reply_markup: {
-						resize_keyboard: true,
-						keyboard: [['Nascondi log vecchi', 'Mostra log vecchi'], ['Torna alla vetta'], ['Torna al menu']]
-					}
-				};
-
-				var kbClean2_html = {
-					parse_mode: "HTML",
-					reply_markup: {
-						resize_keyboard: true,
-						keyboard: [['Mostra log vecchi', 'Torna alla vetta'], ['Torna al menu']]
-					}
-				};
-
-				var kbCombat = {
-					parse_mode: "HTML",
-					reply_markup: {
-						resize_keyboard: true,
-						keyboard: [['Entra in combattimento'], ['Torna al menu']]
-					}
-				};
-
-				var kbYesNo = {
-					parse_mode: "HTML",
-					reply_markup: {
-						resize_keyboard: true,
-						keyboard: [['Si'], ['Torna alla vetta']]
-					}
-				};
-
-				var kbWake = {
-					parse_mode: "HTML",
-					reply_markup: {
-						resize_keyboard: true,
-						keyboard: [['Si'], ['Torna alla vetta']]
-					}
-				};
-
-				connection.query('SELECT id, top_id, enemy_dragon_id, wait_time, no_match_time, is_dummy, reject FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+				connection.query('SELECT nickname, CONCAT(D.name, " ", D.type) As dragon, L.name, R.rank FROM dragon_top_rank R, dragon D, player, dragon_top_list L WHERE L.id = top_id AND R.dragon_id = D.id AND player.id = R.player_id ORDER BY R.top_id DESC, R.rank DESC LIMIT 25', function (err, rows, fields) {
 					if (err) throw err;
 
-					if (Object.keys(rows).length == 0) {
-						if (dragon_level < 30) {
-							bot.sendMessage(message.chat.id, "E' richiesto almeno il livello 30 del drago per partecipare.", back);
+					var top = "";
+					if (Object.keys(rows).length > 0) {
+						top = "\n\nClassifica della stagione precedente:\n";
+						var c = 0;
+						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+							c++;
+							top += c + "° " + rows[i].dragon + " di " + rows[i].nickname + " (" + rows[i].name + ", " + rows[i].rank + " Ð)\n";
+						}
+					}
+
+					if (player_id != 1) {
+						if (checkDragonTopOn == 0) {
+							bot.sendMessage(message.chat.id, "\nProssima stagione: " + start_date_f + " - " + finish_date_f + "\nSe hai partecipato alla stagione precedente, riceverai i premi a breve!" + top, back_html);
 							return;
 						}
+					}
 
-						var now = new Date();
-						var now_date_compare = addZero(now.getDate()) + "/" + addZero(now.getMonth() + 1) + "/" + now.getFullYear();
-						var finish_date_compare = addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + "/" + finishD.getFullYear();
-						if (now_date_compare == finish_date_compare) {
-							bot.sendMessage(message.chat.id, "Non puoi accedere alle vette l'ultimo giorno.", back);
-							return;
+					var kb2 = {
+						parse_mode: "HTML",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: [['Entra nella Vetta'], ['Torna al menu']]
 						}
+					};
 
-						connection.query('INSERT INTO dragon_top_status (player_id, dragon_id) VALUES (' + player_id + ',' + dragon_id + ')', function (err, rows, fields) {
-							if (err) throw err;
-							bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nelle <b>Vette dei Draghi</b> 🐲!\nIn questo luoghi dovrai sottoporre il tuo <i>" + dragon_name + "</i> all'ardua sfida di raggiungere le cime dei monti più alti di Lootia! Durante questa sfida incontrerai altri draghi, dovrai sfidarli ed essere un bravo domatore per salire fino alla vetta. Le battaglie si svolgono in diversi Monti, tutti iniziano dal primo e man mano che si ottengono vittorie si passa al successivo!\nRicorda che quando il drago combatte, non ti potrà aiutare nelle battaglie al di fuori della vetta.\n\n<b>Funzionamento</b>:\n\n- Il drago da sfidare verrà scelto casualmente in base al Monte in cui si viene inseriti\n- Una volta sconfitto si ottiene 1 Ð o più, se si viene sconfitti lo si perde\n- Al termine della giornata per avanzare di Monte è necessario raggiungere almeno 12 Ð, mentre se ne possiedi 2 o meno tornerai al precedente, inoltre spostandoti di monte le Ð si resettano\n- Ogni mossa consuma un certo numero di Scaglie ⚜️ e ne ottieni una alla fine di ogni turno, per un massimo di 5, puoi ottenerne una anche solo Saltando il turno\n- Riceverai un premio in base al posizionamento ottenuto alla fine della stagione.\n- Al primo accesso otterrai Ð in base al livello del tuo drago\n\nLa stagione attuale scadrà alle " + finish_date, kb2);
-						});
-					} else {
-						var top_id = rows[0].top_id;
-						var enemy_dragon_id = rows[0].enemy_dragon_id;
-						var wait_time = rows[0].wait_time;
-						var no_match_time = rows[0].no_match_time;
-						var is_dummy = rows[0].is_dummy;
-						var reject = rows[0].reject;
-
-						if (enemy_dragon_id != null) {
-							bot.sendMessage(message.chat.id, "Stai combattendo contro un drago!", kbCombat);
-							return;
+					var kbBack = {
+						parse_mode: "Markdown",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: [['Torna alla vetta'], ['Torna al menu']]
 						}
+					};
 
-						if (top_id == 0) {
-							var top_id = 1;
-							if (dragon_level > 200)
-								top_id = 2;
+					var kbBack_html = {
+						parse_mode: "HTML",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: [['Torna alla vetta'], ['Torna al menu']]
+						}
+					};
 
-							connection.query('SELECT name FROM dragon_top_list WHERE id = ' + top_id, function (err, rows, fields) {
+					var kbClean_html = {
+						parse_mode: "HTML",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: [['Nascondi log vecchi', 'Mostra log vecchi'], ['Torna alla vetta'], ['Torna al menu']]
+						}
+					};
+
+					var kbClean2_html = {
+						parse_mode: "HTML",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: [['Mostra log vecchi', 'Torna alla vetta'], ['Torna al menu']]
+						}
+					};
+
+					var kbCombat = {
+						parse_mode: "HTML",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: [['Entra in combattimento'], ['Torna al menu']]
+						}
+					};
+
+					var kbYesNo = {
+						parse_mode: "HTML",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: [['Si'], ['Torna alla vetta']]
+						}
+					};
+
+					var kbWake = {
+						parse_mode: "HTML",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: [['Si'], ['Torna alla vetta']]
+						}
+					};
+
+					connection.query('SELECT id, top_id, enemy_dragon_id, wait_time, no_match_time, is_dummy, reject FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+
+						if (Object.keys(rows).length == 0) {
+							if (dragon_level < 30) {
+								bot.sendMessage(message.chat.id, "E' richiesto almeno il livello 30 del drago per partecipare.", back);
+								return;
+							}
+
+							var now = new Date();
+							var now_date_compare = addZero(now.getDate()) + "/" + addZero(now.getMonth() + 1) + "/" + now.getFullYear();
+							var finish_date_compare = addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + "/" + finishD.getFullYear();
+							if (now_date_compare == finish_date_compare) {
+								bot.sendMessage(message.chat.id, "Non puoi accedere alle vette l'ultimo giorno.", back);
+								return;
+							}
+
+							connection.query('INSERT INTO dragon_top_status (player_id, dragon_id) VALUES (' + player_id + ',' + dragon_id + ')', function (err, rows, fields) {
 								if (err) throw err;
-								var name = rows[0].name;
-
-								var d = new Date();
-								d.setMinutes(d.getMinutes() + 5);
-								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-
-								connection.query('UPDATE dragon_top_status SET top_id = ' + top_id + ', no_match_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
-									if (err) throw err;
-
-									var start_rank = Math.floor(dragon_level / 25);
-									if (top_first == 1)
-										start_rank = 0;
-									else {
-										connection.query('UPDATE player SET top_first = 1 WHERE id = ' + player_id, function (err, rows, fields) {
-											if (err) throw err;
-										});
-									}
-
-									if (top_id == 2)
-										start_rank = 6;
-
-									connection.query('INSERT INTO dragon_top_rank (player_id, top_id, dragon_id, rank) VALUES (' + player_id + ',' + top_id + ',' + dragon_id + ',' + start_rank + ')', function (err, rows, fields) {
-										if (err) throw err;
-										bot.sendMessage(message.chat.id, "Sei stato assegnato al monte di partenza, il *" + name + "*!", kbBack);
-									});
-								});
+								bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nelle <b>Vette dei Draghi</b> 🐲!\nIn questo luoghi dovrai sottoporre il tuo <i>" + dragon_name + "</i> all'ardua sfida di raggiungere le cime dei monti più alti di Lootia! Durante questa sfida incontrerai altri draghi, dovrai sfidarli ed essere un bravo domatore per salire fino alla vetta. Le battaglie si svolgono in diversi Monti, tutti iniziano dal primo e man mano che si ottengono vittorie si passa al successivo!\nRicorda che quando il drago combatte, non ti potrà aiutare nelle battaglie al di fuori della vetta.\n\n<b>Funzionamento</b>:\n\n- Il drago da sfidare verrà scelto casualmente in base al Monte in cui si viene inseriti\n- Una volta sconfitto si ottiene 1 Ð o più, se si viene sconfitti lo si perde\n- Al termine della giornata per avanzare di Monte è necessario raggiungere almeno 12 Ð, mentre se ne possiedi 2 o meno tornerai al precedente, inoltre spostandoti di monte le Ð si resettano\n- Ogni mossa consuma un certo numero di Scaglie ⚜️ e ne ottieni una alla fine di ogni turno, per un massimo di 5, puoi ottenerne una anche solo Saltando il turno\n- Riceverai un premio in base al posizionamento ottenuto alla fine della stagione.\n- Al primo accesso otterrai Ð in base al livello del tuo drago\n\nLa stagione attuale scadrà alle " + finish_date, kb2);
 							});
 						} else {
-							connection.query('SELECT combat, rank FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
-								if (err) throw err;
+							var top_id = rows[0].top_id;
+							var enemy_dragon_id = rows[0].enemy_dragon_id;
+							var wait_time = rows[0].wait_time;
+							var no_match_time = rows[0].no_match_time;
+							var is_dummy = rows[0].is_dummy;
+							var reject = rows[0].reject;
 
-								var inCombat = 0;
-								if (rows[0].combat == 1)
-									inCombat = 1;
+							if (enemy_dragon_id != null) {
+								bot.sendMessage(message.chat.id, "Stai combattendo contro un drago!", kbCombat);
+								return;
+							}
 
-								var my_dragon_rank = rows[0].rank;
+							if (top_id == 0) {
+								var top_id = 1;
+								if (dragon_level > 200)
+									top_id = 2;
 
-								connection.query('SELECT 1 FROM dragon_top_status WHERE enemy_dragon_id = ' + dragon_id, function (err, rows, fields) {
+								connection.query('SELECT name FROM dragon_top_list WHERE id = ' + top_id, function (err, rows, fields) {
 									if (err) throw err;
+									var name = rows[0].name;
 
-									if (Object.keys(rows).length == 1)
-										inCombat = 1;
+									var d = new Date();
+									d.setMinutes(d.getMinutes() + 5);
+									var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-									connection.query('SELECT R.id, R.dragon_id, R.rank, D.name, D.type FROM dragon_top_rank R, dragon D, player P WHERE P.id = D.player_id AND R.dragon_id = D.id AND top_id = ' + top_id + ' ORDER BY rank DESC, D.level ASC, P.id ASC', function (err, rows, fields) {
+									connection.query('UPDATE dragon_top_status SET top_id = ' + top_id + ', no_match_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 
-										var range = 5;
-										var leaderboard = [];
-										var dragon_names = [];
-										var dragon_type = [];
-										var dragon_rank = [];
-										var mypos = 0;
-										var myrank = 0;
-										var text = "";
-
-										var dragon_num = Object.keys(rows).length;
-
-										for (var i = 0, len = dragon_num; i < len; i++) {
-											leaderboard.push(rows[i].id);
-											dragon_names.push(rows[i].name);
-											dragon_type.push(rows[i].type);
-											dragon_rank.push(rows[i].rank);
-											if (dragon_id == rows[i].dragon_id) {
-												mypos = i;
-												myrank = rows[i].rank;
-											}
+										var start_rank = Math.floor(dragon_level / 25);
+										if (top_first == 1)
+											start_rank = 0;
+										else {
+											connection.query('UPDATE player SET top_first = 1 WHERE id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+											});
 										}
 
-										if (top_min == 0) {
-											for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
-												if (dragon_names[i] != undefined) {
-													if (i == mypos)
-														text += (i + 1) + "° <b>" + dragon_names[i] + " " + dragon_type[i] + "</b> " + dragonSym(dragon_type[i]) + " (" + dragon_rank[i] + " Ð)\n";
-													else
-														text += (i + 1) + "° " + dragon_names[i] + " " + dragon_type[i] + " " + dragonSym(dragon_type[i]) + " (" + dragon_rank[i] + " Ð)\n";
-												}
-											}
-										} else {
-											for (var i = 0; i < 25; i++) {
-												if (dragon_names[i] != undefined) {
-													if (i == mypos)
-														text += (i + 1) + "° <b>" + dragon_names[i] + " " + dragon_type[i] + "</b> " + dragonSym(dragon_type[i]) + " (" + dragon_rank[i] + " Ð)\n";
-													else
-														text += (i + 1) + "° " + dragon_names[i] + " " + dragon_type[i] + " " + dragonSym(dragon_type[i]) + " (" + dragon_rank[i] + " Ð)\n";
-												}
-											}
+										if (top_id == 2)
+											start_rank = 6;
 
-											text += "\nTu: " + (mypos+1) + "° " + dragon_name + " " + my_dragon_type + " " + dragonSym(my_dragon_type) + " (" + myrank + " Ð)\n";
-										}
+										connection.query('INSERT INTO dragon_top_rank (player_id, top_id, dragon_id, rank) VALUES (' + player_id + ',' + top_id + ',' + dragon_id + ',' + start_rank + ')', function (err, rows, fields) {
+											if (err) throw err;
+											bot.sendMessage(message.chat.id, "Sei stato assegnato al monte di partenza, il *" + name + "*!", kbBack);
+										});
+									});
+								});
+							} else {
+								connection.query('SELECT combat, rank FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
+									if (err) throw err;
 
-										connection.query('SELECT name, pnt FROM dragon_top_list WHERE id = ' + top_id, function (err, rows, fields) {
+									var inCombat = 0;
+									if (rows[0].combat == 1)
+										inCombat = 1;
+
+									var my_dragon_rank = rows[0].rank;
+
+									connection.query('SELECT 1 FROM dragon_top_status WHERE enemy_dragon_id = ' + dragon_id, function (err, rows, fields) {
+										if (err) throw err;
+
+										if (Object.keys(rows).length == 1)
+											inCombat = 1;
+
+										connection.query('SELECT R.id, R.dragon_id, R.rank, D.name, D.type FROM dragon_top_rank R, dragon D, player P WHERE P.id = D.player_id AND R.dragon_id = D.id AND top_id = ' + top_id + ' ORDER BY rank DESC, D.level ASC, P.id ASC', function (err, rows, fields) {
 											if (err) throw err;
 
-											var kb = {
-												parse_mode: "HTML",
-												reply_markup: {
-													resize_keyboard: true,
-													keyboard: [['Combatti 🐉'], ['Riposa 💤', 'Abbandona 🚫'], ['Risorse 🍵', 'Log 📃'], ['Monti ⛰'], ['Torna al menu']]
-												}
-											};
-											var kbSleep = {
-												parse_mode: "HTML",
-												reply_markup: {
-													resize_keyboard: true,
-													keyboard: [['10', '20', '30', '40'], ['50', '60', '70', '80'], ['90', '100'], ['Torna alla vetta'], ['Torna al menu']]
-												}
-											};
+											var range = 5;
+											var leaderboard = [];
+											var dragon_names = [];
+											var dragon_type = [];
+											var dragon_rank = [];
+											var mypos = 0;
+											var myrank = 0;
+											var text = "";
 
-											var arena = rows[0].name;
-											var arenaPnt = rows[0].pnt;
+											var dragon_num = Object.keys(rows).length;
 
-											connection.query('SELECT D.name, D.id, D.arms_id, D.type, D.level, D.life, D.total_life, S.battle_time, P.chat_id, P.id As player_id, R.rank, R.top_id, C.name As class_name FROM dragon D, dragon_top_status S, player P, dragon_top_rank R, class C WHERE P.class = C.id AND R.player_id = P.id AND P.id = D.player_id AND D.id = S.dragon_id AND S.enemy_dragon_id = ' + dragon_id, function (err, rows, fields) {
+											for (var i = 0, len = dragon_num; i < len; i++) {
+												leaderboard.push(rows[i].id);
+												dragon_names.push(rows[i].name);
+												dragon_type.push(rows[i].type);
+												dragon_rank.push(rows[i].rank);
+												if (dragon_id == rows[i].dragon_id) {
+													mypos = i;
+													myrank = rows[i].rank;
+												}
+											}
+
+											if (top_min == 0) {
+												for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
+													if (dragon_names[i] != undefined) {
+														if (i == mypos)
+															text += (i + 1) + "° <b>" + dragon_names[i] + " " + dragon_type[i] + "</b> " + dragonSym(dragon_type[i]) + " (" + dragon_rank[i] + " Ð)\n";
+														else
+															text += (i + 1) + "° " + dragon_names[i] + " " + dragon_type[i] + " " + dragonSym(dragon_type[i]) + " (" + dragon_rank[i] + " Ð)\n";
+													}
+												}
+											} else {
+												for (var i = 0; i < 25; i++) {
+													if (dragon_names[i] != undefined) {
+														if (i == mypos)
+															text += (i + 1) + "° <b>" + dragon_names[i] + " " + dragon_type[i] + "</b> " + dragonSym(dragon_type[i]) + " (" + dragon_rank[i] + " Ð)\n";
+														else
+															text += (i + 1) + "° " + dragon_names[i] + " " + dragon_type[i] + " " + dragonSym(dragon_type[i]) + " (" + dragon_rank[i] + " Ð)\n";
+													}
+												}
+
+												text += "\nTu: " + (mypos+1) + "° " + dragon_name + " " + my_dragon_type + " " + dragonSym(my_dragon_type) + " (" + myrank + " Ð)\n";
+											}
+
+											connection.query('SELECT name, pnt FROM dragon_top_list WHERE id = ' + top_id, function (err, rows, fields) {
 												if (err) throw err;
-												var inCombatText = "";
-												var enemy_dragon_id = null;
-												var enemy_dragon_life = 0;
-												var enemy_dragon_total_life = 0;
-												var enemy_dragon_name = "";
-												var enemy_dragon_type = "";
-												var enemy_dragon_level = 0;
-												var enemy_dragon_arms_id = 0;
-												var enemy_dragon_rank = 0;
-												var enemy_top_id = 0;
-												var enemy_class = "";
-												var player_id2 = 0;
-												var chat_id2 = 0;
-												if ((inCombat == 1) && (Object.keys(rows).length > 0)) {
-													var d = new Date(rows[0].battle_time);
-													var battle_time = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
-													enemy_dragon_id = rows[0].id;
-													enemy_dragon_life = rows[0].life;
-													enemy_dragon_total_life = rows[0].total_life;
-													enemy_dragon_name = rows[0].name;
-													enemy_dragon_type = rows[0].type;
-													enemy_dragon_level = rows[0].level;
-													enemy_dragon_arms_id = rows[0].arms_id;
-													chat_id2 = rows[0].chat_id;
-													player_id2 = rows[0].player_id;
-													enemy_dragon_rank = rows[0].rank;
-													enemy_top_id = rows[0].top_id;
-													enemy_class = rows[0].class_name + " " + classSym(rows[0].class_name);
-													inCombatText = "\nIl tuo drago è in combattimento nell'arena contro " + rows[0].name + ", scadrà alle " + battle_time + "!";
 
-													kb = {
-														parse_mode: "HTML",
-														reply_markup: {
-															resize_keyboard: true,
-															keyboard: [['Risorse 🍵', 'Scruta 🔎'], ['Rinuncia 🚫', 'Log 📃'], ['Torna al menu']]
-														}
-													};
-												}
+												var kb = {
+													parse_mode: "HTML",
+													reply_markup: {
+														resize_keyboard: true,
+														keyboard: [['Combatti 🐉'], ['Riposa 💤', 'Abbandona 🚫'], ['Risorse 🍵', 'Log 📃'], ['Monti ⛰'], ['Torna al menu']]
+													}
+												};
+												var kbSleep = {
+													parse_mode: "HTML",
+													reply_markup: {
+														resize_keyboard: true,
+														keyboard: [['10', '20', '30', '40'], ['50', '60', '70', '80'], ['90', '100'], ['Torna alla vetta'], ['Torna al menu']]
+													}
+												};
 
-												var status = "<i>" + dragon_name + " " + my_dragon_type + " " + dragonSym(my_dragon_type) +
-													"</i>\nSalute: |" + progressBar(dragon_life, dragon_total_life) + "| " + formatNumber(dragon_life) + " 🔺\nStato: " + dragon_status + "\n";
+												var arena = rows[0].name;
+												var arenaPnt = rows[0].pnt;
 
-												var toptext = "";
-												if (top_id == 1)
-													toptext = arenaPnt + " Ð o più per salire";
-												else if (top_id == max_top_id)
-													toptext = "2 Ð o meno per scendere, nessun limite massimo";
-												else
-													toptext = arenaPnt + " Ð o più per salire, 2 Ð o meno per scendere";
+												connection.query('SELECT D.name, D.id, D.arms_id, D.type, D.level, D.life, D.total_life, S.battle_time, P.chat_id, P.id As player_id, R.rank, R.top_id, C.name As class_name FROM dragon D, dragon_top_status S, player P, dragon_top_rank R, class C WHERE P.class = C.id AND R.player_id = P.id AND P.id = D.player_id AND D.id = S.dragon_id AND S.enemy_dragon_id = ' + dragon_id, function (err, rows, fields) {
+													if (err) throw err;
+													var inCombatText = "";
+													var enemy_dragon_id = null;
+													var enemy_dragon_life = 0;
+													var enemy_dragon_total_life = 0;
+													var enemy_dragon_name = "";
+													var enemy_dragon_type = "";
+													var enemy_dragon_level = 0;
+													var enemy_dragon_arms_id = 0;
+													var enemy_dragon_rank = 0;
+													var enemy_top_id = 0;
+													var enemy_class = "";
+													var player_id2 = 0;
+													var chat_id2 = 0;
+													if ((inCombat == 1) && (Object.keys(rows).length > 0)) {
+														var d = new Date(rows[0].battle_time);
+														var battle_time = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
+														enemy_dragon_id = rows[0].id;
+														enemy_dragon_life = rows[0].life;
+														enemy_dragon_total_life = rows[0].total_life;
+														enemy_dragon_name = rows[0].name;
+														enemy_dragon_type = rows[0].type;
+														enemy_dragon_level = rows[0].level;
+														enemy_dragon_arms_id = rows[0].arms_id;
+														chat_id2 = rows[0].chat_id;
+														player_id2 = rows[0].player_id;
+														enemy_dragon_rank = rows[0].rank;
+														enemy_top_id = rows[0].top_id;
+														enemy_class = rows[0].class_name + " " + classSym(rows[0].class_name);
+														inCombatText = "\nIl tuo drago è in combattimento nell'arena contro " + rows[0].name + ", scadrà alle " + battle_time + "!";
 
-												bot.sendMessage(message.chat.id, status + "\nClassifica attuale <b>" + arena + "</b>\n(" + dragon_num + " draghi,  " + toptext + ")\n\n" + text + inCombatText + "\nLa stagione attuale scadrà alle " + finish_date + "\nI Monti verranno aggiornati alle 3:00 di ogni notte", kb).then(function () {
-													answerCallbacks[message.chat.id] = function (answer) {
-														if (answer.text.indexOf("Combatti") != -1) {
-															connection.query('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
-																if (err) throw err;
+														kb = {
+															parse_mode: "HTML",
+															reply_markup: {
+																resize_keyboard: true,
+																keyboard: [['Risorse 🍵', 'Scruta 🔎'], ['Rinuncia 🚫', 'Log 📃'], ['Torna al menu']]
+															}
+														};
+													}
 
-																if (rows[0].combat == 1) {
-																	bot.sendMessage(message.chat.id, "Il drago è già impegnato in uno scontro!", kbBack);
-																	return;
-																}
+													var status = "<i>" + dragon_name + " " + my_dragon_type + " " + dragonSym(my_dragon_type) +
+														"</i>\nSalute: |" + progressBar(dragon_life, dragon_total_life) + "| " + formatNumber(dragon_life) + " 🔺\nStato: " + dragon_status + "\n";
 
-																var d = new Date();
-																var err = 0;
-																if (d.getHours() == 2) {
-																	if (d.getMinutes() > 30)
+													var toptext = "";
+													if (top_id == 1)
+														toptext = arenaPnt + " Ð o più per salire";
+													else if (top_id == max_top_id)
+														toptext = "2 Ð o meno per scendere, nessun limite massimo";
+													else
+														toptext = arenaPnt + " Ð o più per salire, 2 Ð o meno per scendere";
+
+													bot.sendMessage(message.chat.id, status + "\nClassifica attuale <b>" + arena + "</b>\n(" + dragon_num + " draghi,  " + toptext + ")\n\n" + text + inCombatText + "\nLa stagione attuale scadrà alle " + finish_date + "\nI Monti verranno aggiornati alle 3:00 di ogni notte", kb).then(function () {
+														answerCallbacks[message.chat.id] = function (answer) {
+															if (answer.text.indexOf("Combatti") != -1) {
+																connection.query('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+
+																	if (rows[0].combat == 1) {
+																		bot.sendMessage(message.chat.id, "Il drago è già impegnato in uno scontro!", kbBack);
+																		return;
+																	}
+
+																	var d = new Date();
+																	var err = 0;
+																	if (d.getHours() == 2) {
+																		if (d.getMinutes() > 30)
+																			err = 1;
+																	}
+																	if ((d.getHours() >= 3) && (d.getHours() < 9))
 																		err = 1;
-																}
-																if ((d.getHours() >= 3) && (d.getHours() < 9))
-																	err = 1;
-																if (err == 1) {
-																	bot.sendMessage(message.chat.id, "Non puoi avviare scontri tra le 2.30 e le 9.00!", kbBack);
-																	return;
-																}
+																	if (err == 1) {
+																		bot.sendMessage(message.chat.id, "Non puoi avviare scontri tra le 2.30 e le 9.00!", kbBack);
+																		return;
+																	}
 
-																bot.sendMessage(message.chat.id, "Cercare un drago avversario? Durante la battaglia il tuo drago non potrà accompagnarti nelle tue avventure", kbYesNo).then(function () {
-																	answerCallbacks[message.chat.id] = function (answer) {
-																		if (answer.text.toLowerCase() == "si") {
+																	bot.sendMessage(message.chat.id, "Cercare un drago avversario? Durante la battaglia il tuo drago non potrà accompagnarti nelle tue avventure", kbYesNo).then(function () {
+																		answerCallbacks[message.chat.id] = function (answer) {
+																			if (answer.text.toLowerCase() == "si") {
 
-																			var now = new Date();
+																				var now = new Date();
 
-																			if (finishD < now) {
-																				bot.sendMessage(message.chat.id, "La stagione è terminata! A breve riceverai il premio finale ma nel frattempo non puoi cercare altre battaglie", kbBack);
-																				return;
-																			}
-
-																			connection.query('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
-																				if (err) throw err;
-
-																				if (rows[0].combat == 1) {
-																					bot.sendMessage(message.chat.id, "Il drago è stato appena sfidato!", kbBack);
+																				if (finishD < now) {
+																					bot.sendMessage(message.chat.id, "La stagione è terminata! A breve riceverai il premio finale ma nel frattempo non puoi cercare altre battaglie", kbBack);
 																					return;
 																				}
 
-																				connection.query('SELECT sleep_time_end FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
+																				connection.query('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
 
-																					if (rows[0].sleep_time_end != null) {
-																						var d = new Date(rows[0].sleep_time_end);
-																						var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
-																						bot.sendMessage(message.chat.id, "Il tuo drago sta riposando... Si sveglierà alle " + short_date, kbBack);
-																						return;
+																					if (rows[0].combat == 1) {
+																						bot.sendMessage(message.chat.id, "Il drago è stato appena sfidato!", kbBack);
 																						return;
 																					}
 
-																					connection.query('SELECT wait_time, no_match_time FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+																					connection.query('SELECT sleep_time_end FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 
-																						if (rows[0].wait_time != null) {
-																							var d = new Date(rows[0].wait_time);
+																						if (rows[0].sleep_time_end != null) {
+																							var d = new Date(rows[0].sleep_time_end);
 																							var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
-																							bot.sendMessage(message.chat.id, "Il tuo drago ha appena concluso uno scontro, attendi fino alle " + short_date, kbBack);
+																							bot.sendMessage(message.chat.id, "Il tuo drago sta riposando... Si sveglierà alle " + short_date, kbBack);
+																							return;
 																							return;
 																						}
 
-																						if (rows[0].no_match_time != null) {
-																							connection.query('UPDATE dragon_top_status SET no_match_time = NULL WHERE dragon_id = ' + dragon_id, function (err, rows, fields) {
-																								if (err) throw err;
-																							});
-																						}
-
-																						var kbSleep = {
-																							parse_mode: "HTML",
-																							reply_markup: {
-																								resize_keyboard: true,
-																								keyboard: [['Riposa'], ["Torna alla vetta"]]
-																							}
-																						};
-
-																						connection.query('SELECT life FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
+																						connection.query('SELECT wait_time, no_match_time FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 																							if (err) throw err;
 
-																							if (rows[0].life <= 0) {
-																								bot.sendMessage(message.chat.id, "Il tuo drago è esausto, fallo riposare per tornare a combattere!", kbSleep);
+																							if (rows[0].wait_time != null) {
+																								var d = new Date(rows[0].wait_time);
+																								var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
+																								bot.sendMessage(message.chat.id, "Il tuo drago ha appena concluso uno scontro, attendi fino alle " + short_date, kbBack);
 																								return;
 																							}
 
-																							var kbStop = {
+																							if (rows[0].no_match_time != null) {
+																								connection.query('UPDATE dragon_top_status SET no_match_time = NULL WHERE dragon_id = ' + dragon_id, function (err, rows, fields) {
+																									if (err) throw err;
+																								});
+																							}
+
+																							var kbSleep = {
 																								parse_mode: "HTML",
 																								reply_markup: {
 																									resize_keyboard: true,
-																									keyboard: [['Interrompi']]
+																									keyboard: [['Riposa'], ["Torna alla vetta"]]
 																								}
 																							};
 
-																							connection.query('SELECT COUNT(*) As cnt FROM player, dragon_top_rank d WHERE player.id = d.player_id AND status > 0 AND d.top_id = ' + top_id, function (err, rows, fields) {
+																							connection.query('SELECT life FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
 
-																								var cnt = rows[0].cnt;
-																								connection.query('UPDATE player SET status = IFNULL((SELECT * FROM (SELECT MAX(status) As mx FROM player, dragon_top_rank d WHERE player.id = d.player_id AND status IS NOT NULL AND d.top_id = ' + top_id + ') As a),0)+1 WHERE id = ' + player_id, function (err, rows, fields) {
+																								if (rows[0].life <= 0) {
+																									bot.sendMessage(message.chat.id, "Il tuo drago è esausto, fallo riposare per tornare a combattere!", kbSleep);
+																									return;
+																								}
+
+																								var kbStop = {
+																									parse_mode: "HTML",
+																									reply_markup: {
+																										resize_keyboard: true,
+																										keyboard: [['Interrompi']]
+																									}
+																								};
+
+																								connection.query('SELECT COUNT(*) As cnt FROM player, dragon_top_rank d WHERE player.id = d.player_id AND status > 0 AND d.top_id = ' + top_id, function (err, rows, fields) {
 																									if (err) throw err;
 
-																									var queue = cnt + " draghi in coda";
-																									if (cnt == 1)
-																										queue = "1 drago in coda";
-																									else if (cnt == 0)
-																										queue = "Nessun drago in coda";
+																									var cnt = rows[0].cnt;
+																									connection.query('UPDATE player SET status = IFNULL((SELECT * FROM (SELECT MAX(status) As mx FROM player, dragon_top_rank d WHERE player.id = d.player_id AND status IS NOT NULL AND d.top_id = ' + top_id + ') As a),0)+1 WHERE id = ' + player_id, function (err, rows, fields) {
+																										if (err) throw err;
 
-																									bot.sendMessage(message.chat.id, "Ricerca avversario in corso... Scrivendo qualsiasi cosa la ricerca sarà interrotta. Nel caso non vi fossero draghi in coda, scadrà tra 5 minuti.\n" + queue, kbStop);
+																										var queue = cnt + " draghi in coda";
+																										if (cnt == 1)
+																											queue = "1 drago in coda";
+																										else if (cnt == 0)
+																											queue = "Nessun drago in coda";
+
+																										bot.sendMessage(message.chat.id, "Ricerca avversario in corso... Scrivendo qualsiasi cosa la ricerca sarà interrotta. Nel caso non vi fossero draghi in coda, scadrà tra 5 minuti.\n" + queue, kbStop);
+																									});
+																								});
+																							});
+																						});
+																					});
+																				});
+																			};
+																		};
+																	});
+																});
+															} else if (answer.text == "ricarica") {
+																if (player_id != 1)
+																	return;
+																connection.query('UPDATE dragon SET life = total_life WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+																	bot.sendMessage(message.chat.id, "Ricaricato!", kbBack);
+																});
+															} else if (answer.text.indexOf("Rinuncia") != -1) {
+
+																// Solo se in difesa
+																if (inCombat == 0) {
+																	bot.sendMessage(message.chat.id, "Puoi rinunciare ad uno scontro solo mentre sei in combattimento", kbBack);
+																	return;
+																}
+
+																if (reject >= 3) {
+																	bot.sendMessage(message.chat.id, "Hai già rinunciato a 3 incontri oggi", kbBack);
+																	return;
+																}
+
+																bot.sendMessage(message.chat.id, "Sei veramente sicuro di voler abbandonare la battaglia? Verrà conteggiata come persa, inoltre puoi rinunciare solamente ad un combattimento al giorno.", kbYesNo).then(function () {
+																	answerCallbacks[message.chat.id] = function (answer) {
+																		if (answer.text.toLowerCase() == "si") {
+																			connection.query('SELECT combat, rank FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
+																				if (err) throw err;
+
+																				if (rows[0].combat == 0) {
+																					bot.sendMessage(message.chat.id, "Puoi rinunciare ad uno scontro solo mentre sei in combattimento", kbBack);
+																					return;
+																				}
+
+																				var d = new Date();
+																				d.setMinutes(d.getMinutes() + 5);
+																				var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+																				var d = new Date();
+																				d.setMinutes(d.getMinutes() + 15);
+																				var long_date2 = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+																				connection.query('UPDATE dragon_top_status SET enemy_dragon_id = NULL, battle_time = NULL, no_match_time = "' + long_date + '", reject = reject+1 WHERE dragon_id = ' + dragon_id, function (err, rows, fields) {
+																					if (err) throw err;
+																					connection.query('UPDATE dragon_top_status SET enemy_dragon_id = NULL, battle_time = NULL, no_match_time = "' + long_date2 + '" WHERE dragon_id = ' + enemy_dragon_id, function (err, rows, fields) {
+																						if (err) throw err;
+																						connection.query('UPDATE dragon_top_rank SET combat = 0 WHERE dragon_id = ' + dragon_id, function (err, rows, fields) {
+																							if (err) throw err;
+																							connection.query('UPDATE dragon_top_rank SET combat = 0 WHERE dragon_id = ' + enemy_dragon_id, function (err, rows, fields) {
+																								if (err) throw err;
+
+																								var chest = 1;
+
+																								if (enemy_dragon_level > (dragon_level + 50))
+																									chest = 0;
+
+																								if (enemy_dragon_arms_id == 714) {
+																									var randS = Math.random() * 100;
+																									if (randS < 50)
+																										chest++;
+																								}
+
+																								if (my_dragon_rank == 0)		// exploit
+																									chest = 0;
+
+																								var extra = "";
+																								if (chest == 1) {
+																									extra = " uno Scrigno Scaglia!";
+																									addChest(player_id2, 9);
+																								} else if (chest > 1) {
+																									extra = " " + chest + " Scrigni Scaglia!";
+																									addChest(player_id2, 9, chest);
+																								}
+
+																								if (my_dragon_rank > 0) {
+																									connection.query('UPDATE dragon_top_rank SET rank = rank-1 WHERE rank > 0 AND dragon_id = ' + dragon_id, function (err, rows, fields) {
+																										if (err) throw err;
+																									});
+
+																									var win_rank = 1;
+																									if (enemy_top_id < max_top_id) {
+																										if (enemy_dragon_rank + win_rank >= rank_cap) {
+																											win_rank = rank_cap - enemy_dragon_rank;
+																											if (win_rank < 0)
+																												win_rank = 0;
+																										}
+																									}
+
+																									connection.query('UPDATE dragon_top_rank SET rank = rank+' + win_rank + ' WHERE dragon_id = ' + enemy_dragon_id, function (err, rows, fields) {
+																										if (err) throw err;
+																									});
+
+																									bot.sendMessage(message.chat.id, "Hai abbandonato la battaglia e hai perso 1 Ð!", kbBack);
+
+																									if (extra != "")
+																										extra = " e" + extra;
+																									bot.sendMessage(chat_id2, "Il tuo sfidante " + dragon_name + " ha abbandonato lo scontro, hai ottenuto " + win_rank + " Ð" + extra + "!");
+																								} else {
+																									bot.sendMessage(message.chat.id, "Hai abbandonato la battaglia!", kbBack);
+
+																									if (extra != "")
+																										extra = " e hai ricevuto" + extra;
+																									bot.sendMessage(chat_id2, "Il tuo sfidante " + dragon_name + " ha abbandonato lo scontro" + extra + "!");
+																								}
+
+																								var d = new Date();
+																								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+																								connection.query('INSERT INTO dragon_top_log (player_id, dragon_id, enemy_player_id, enemy_dragon_id, time, win, note) VALUES (' + player_id + ',' + dragon_id + ',' + player_id2 + ',' + enemy_dragon_id + ',"' + long_date + '",2,"Rinuncia")', function (err, rows, fields) {
+																									if (err) throw err;
 																								});
 																							});
 																						});
@@ -17990,211 +18016,95 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																		};
 																	};
 																});
-															});
-														} else if (answer.text == "ricarica") {
-															if (player_id != 1)
+															} else if (answer.text.indexOf("Scruta") != -1) {
+																if (inCombat == 0) {
+																	bot.sendMessage(message.chat.id, "Puoi visualizzare info sul drago avversario solo mentre sei in combattimento", kbBack);
+																	return;
+																}
+																bot.sendMessage(message.chat.id, "<b>Informazioni sul drago avversario:</b>\nSalute: " + progressBar(enemy_dragon_life, enemy_dragon_total_life) + " " + formatNumber(enemy_dragon_life) + "/" + formatNumber(enemy_dragon_total_life) + "\nNome: " + enemy_dragon_name + " " + enemy_dragon_type + " " + dragonSym(enemy_dragon_type) + "\nLivello: " + enemy_dragon_level + "\nVocazione: " + enemy_class, kbBack_html);
 																return;
-															connection.query('UPDATE dragon SET life = total_life WHERE player_id = ' + player_id, function (err, rows, fields) {
-																if (err) throw err;
-																bot.sendMessage(message.chat.id, "Ricaricato!", kbBack);
-															});
-														} else if (answer.text.indexOf("Rinuncia") != -1) {
-
-															// Solo se in difesa
-															if (inCombat == 0) {
-																bot.sendMessage(message.chat.id, "Puoi rinunciare ad uno scontro solo mentre sei in combattimento", kbBack);
+															} else if (answer.text.indexOf("Monti") != -1) {
+																connection.query('SELECT L.name, COUNT(R.top_id) As cnt FROM dragon_top_rank R, dragon_top_list L WHERE L.id = R.top_id GROUP BY R.top_id ORDER BY top_id', function (err, rows, fields) {
+																	if (err) throw err;
+																	var text = "";
+																	for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+																		if (top_id == i+1)
+																			text += (i+1) + ". *" + rows[i].name + "* (" + rows[i].cnt + ")\n";
+																		else
+																			text += (i+1) + ". " + rows[i].name + " (" + rows[i].cnt + ")\n";
+																	}
+																	bot.sendMessage(message.chat.id, "*Informazioni sui Monti:*\n" + text, kbBack);
+																});
 																return;
-															}
-
-															if (reject >= 3) {
-																bot.sendMessage(message.chat.id, "Hai già rinunciato a 3 incontri oggi", kbBack);
-																return;
-															}
-
-															bot.sendMessage(message.chat.id, "Sei veramente sicuro di voler abbandonare la battaglia? Verrà conteggiata come persa, inoltre puoi rinunciare solamente ad un combattimento al giorno.", kbYesNo).then(function () {
-																answerCallbacks[message.chat.id] = function (answer) {
-																	if (answer.text.toLowerCase() == "si") {
-																		connection.query('SELECT combat, rank FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
-																			if (err) throw err;
-
-																			if (rows[0].combat == 0) {
-																				bot.sendMessage(message.chat.id, "Puoi rinunciare ad uno scontro solo mentre sei in combattimento", kbBack);
-																				return;
-																			}
-
-																			var d = new Date();
-																			d.setMinutes(d.getMinutes() + 5);
-																			var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-
-																			var d = new Date();
-																			d.setMinutes(d.getMinutes() + 15);
-																			var long_date2 = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-
-																			connection.query('UPDATE dragon_top_status SET enemy_dragon_id = NULL, battle_time = NULL, no_match_time = "' + long_date + '", reject = reject+1 WHERE dragon_id = ' + dragon_id, function (err, rows, fields) {
-																				if (err) throw err;
-																				connection.query('UPDATE dragon_top_status SET enemy_dragon_id = NULL, battle_time = NULL, no_match_time = "' + long_date2 + '" WHERE dragon_id = ' + enemy_dragon_id, function (err, rows, fields) {
-																					if (err) throw err;
-																					connection.query('UPDATE dragon_top_rank SET combat = 0 WHERE dragon_id = ' + dragon_id, function (err, rows, fields) {
-																						if (err) throw err;
-																						connection.query('UPDATE dragon_top_rank SET combat = 0 WHERE dragon_id = ' + enemy_dragon_id, function (err, rows, fields) {
+															} else if (answer.text.indexOf("Abbandona") != -1) {
+																if (inCombat == 1) {
+																	bot.sendMessage(message.chat.id, "Non puoi abbandonare la vetta mentre il tuo drago è impegnato in uno scontro", kbBack);
+																	return;
+																}
+																bot.sendMessage(message.chat.id, "Sei veramente sicuro di voler abbandonare? Al tuo rientro sarai costretto a ricominciare", kbYesNo).then(function () {
+																	answerCallbacks[message.chat.id] = function (answer) {
+																		if (answer.text.toLowerCase() == "si") {
+																			bot.sendMessage(message.chat.id, "L'operazione non è reversibile, continuare ugualmente?", kbYesNo).then(function () {
+																				answerCallbacks[message.chat.id] = function (answer) {
+																					if (answer.text.toLowerCase() == "si") {
+																						connection.query('SELECT combat, rank FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
 																							if (err) throw err;
 
-																							var chest = 1;
-
-																							if (enemy_dragon_level > (dragon_level + 50))
-																								chest = 0;
-
-																							if (enemy_dragon_arms_id == 714) {
-																								var randS = Math.random() * 100;
-																								if (randS < 50)
-																									chest++;
+																							if (rows[0].combat == 1) {
+																								bot.sendMessage(message.chat.id, "Non puoi abbandonare la vetta mentre il tuo drago è impegnato in uno scontro", kbBack);
+																								return;
 																							}
 
-																							if (my_dragon_rank == 0)		// exploit
-																								chest = 0;
+																							connection.query('DELETE FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
+																								if (err) throw err;
+																								bot.sendMessage(message.chat.id, "Hai abbandonato la vetta", kbBack);
+																							});
 
-																							var extra = "";
-																							if (chest == 1) {
-																								extra = " uno Scrigno Scaglia!";
-																								addChest(player_id2, 9);
-																							} else if (chest > 1) {
-																								extra = " " + chest + " Scrigni Scaglia!";
-																								addChest(player_id2, 9, chest);
-																							}
-
-																							if (my_dragon_rank > 0) {
-																								connection.query('UPDATE dragon_top_rank SET rank = rank-1 WHERE rank > 0 AND dragon_id = ' + dragon_id, function (err, rows, fields) {
-																									if (err) throw err;
-																								});
-
-																								var win_rank = 1;
-																								if (enemy_top_id < max_top_id) {
-																									if (enemy_dragon_rank + win_rank >= rank_cap) {
-																										win_rank = rank_cap - enemy_dragon_rank;
-																										if (win_rank < 0)
-																											win_rank = 0;
-																									}
-																								}
-
-																								connection.query('UPDATE dragon_top_rank SET rank = rank+' + win_rank + ' WHERE dragon_id = ' + enemy_dragon_id, function (err, rows, fields) {
-																									if (err) throw err;
-																								});
-
-																								bot.sendMessage(message.chat.id, "Hai abbandonato la battaglia e hai perso 1 Ð!", kbBack);
-
-																								if (extra != "")
-																									extra = " e" + extra;
-																								bot.sendMessage(chat_id2, "Il tuo sfidante " + dragon_name + " ha abbandonato lo scontro, hai ottenuto " + win_rank + " Ð" + extra + "!");
-																							} else {
-																								bot.sendMessage(message.chat.id, "Hai abbandonato la battaglia!", kbBack);
-
-																								if (extra != "")
-																									extra = " e hai ricevuto" + extra;
-																								bot.sendMessage(chat_id2, "Il tuo sfidante " + dragon_name + " ha abbandonato lo scontro" + extra + "!");
-																							}
-
-																							var d = new Date();
-																							var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-
-																							connection.query('INSERT INTO dragon_top_log (player_id, dragon_id, enemy_player_id, enemy_dragon_id, time, win, note) VALUES (' + player_id + ',' + dragon_id + ',' + player_id2 + ',' + enemy_dragon_id + ',"' + long_date + '",2,"Rinuncia")', function (err, rows, fields) {
+																							connection.query('UPDATE dragon_top_status SET top_id = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
 																						});
-																					});
-																				});
-																			});
-																		});
-																	};
-																};
-															});
-														} else if (answer.text.indexOf("Scruta") != -1) {
-															if (inCombat == 0) {
-																bot.sendMessage(message.chat.id, "Puoi visualizzare info sul drago avversario solo mentre sei in combattimento", kbBack);
-																return;
-															}
-															bot.sendMessage(message.chat.id, "<b>Informazioni sul drago avversario:</b>\nSalute: " + progressBar(enemy_dragon_life, enemy_dragon_total_life) + " " + formatNumber(enemy_dragon_life) + "/" + formatNumber(enemy_dragon_total_life) + "\nNome: " + enemy_dragon_name + " " + enemy_dragon_type + " " + dragonSym(enemy_dragon_type) + "\nLivello: " + enemy_dragon_level + "\nVocazione: " + enemy_class, kbBack_html);
-															return;
-														} else if (answer.text.indexOf("Monti") != -1) {
-															connection.query('SELECT L.name, COUNT(R.top_id) As cnt FROM dragon_top_rank R, dragon_top_list L WHERE L.id = R.top_id GROUP BY R.top_id ORDER BY top_id', function (err, rows, fields) {
-																if (err) throw err;
-																var text = "";
-																for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-																	if (top_id == i+1)
-																		text += (i+1) + ". *" + rows[i].name + "* (" + rows[i].cnt + ")\n";
-																	else
-																		text += (i+1) + ". " + rows[i].name + " (" + rows[i].cnt + ")\n";
-																}
-																bot.sendMessage(message.chat.id, "*Informazioni sui Monti:*\n" + text, kbBack);
-															});
-															return;
-														} else if (answer.text.indexOf("Abbandona") != -1) {
-															if (inCombat == 1) {
-																bot.sendMessage(message.chat.id, "Non puoi abbandonare la vetta mentre il tuo drago è impegnato in uno scontro", kbBack);
-																return;
-															}
-															bot.sendMessage(message.chat.id, "Sei veramente sicuro di voler abbandonare? Al tuo rientro sarai costretto a ricominciare", kbYesNo).then(function () {
-																answerCallbacks[message.chat.id] = function (answer) {
-																	if (answer.text.toLowerCase() == "si") {
-																		bot.sendMessage(message.chat.id, "L'operazione non è reversibile, continuare ugualmente?", kbYesNo).then(function () {
-																			answerCallbacks[message.chat.id] = function (answer) {
-																				if (answer.text.toLowerCase() == "si") {
-																					connection.query('SELECT combat, rank FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
-																						if (err) throw err;
-
-																						if (rows[0].combat == 1) {
-																							bot.sendMessage(message.chat.id, "Non puoi abbandonare la vetta mentre il tuo drago è impegnato in uno scontro", kbBack);
-																							return;
-																						}
-
-																						connection.query('DELETE FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
-																							if (err) throw err;
-																							bot.sendMessage(message.chat.id, "Hai abbandonato la vetta", kbBack);
-																						});
-
-																						connection.query('UPDATE dragon_top_status SET top_id = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
-																							if (err) throw err;
-																						});
-																					});
+																					}
 																				}
-																			}
-																		});
+																			});
+																		};
 																	};
-																};
-															});
-														} else if (answer.text.indexOf("Log") != -1) {
-															connection.query('SELECT L.id, P1.nickname As nick1, P2.nickname As nick2, D1.name As dragon1, D2.name As dragon2, D1.type As type1, D2.type As type2, win, note, time FROM dragon_top_log L INNER JOIN player P1 ON P1.id = L.player_id INNER JOIN player P2 ON P2.id = L.enemy_player_id INNER JOIN dragon D1 ON D1.id = L.dragon_id INNER JOIN dragon D2 ON D2.id = L.enemy_dragon_id WHERE (dragon_id = ' + dragon_id + ' OR enemy_dragon_id = ' + dragon_id + ') AND player_visible = 1 AND enemy_visible = 1 ORDER BY L.id DESC LIMIT 30', function (err, rows, fields) {
-																if (err) throw err;
+																});
+															} else if (answer.text.indexOf("Log") != -1) {
+																connection.query('SELECT L.id, P1.nickname As nick1, P2.nickname As nick2, D1.name As dragon1, D2.name As dragon2, D1.type As type1, D2.type As type2, win, note, time FROM dragon_top_log L INNER JOIN player P1 ON P1.id = L.player_id INNER JOIN player P2 ON P2.id = L.enemy_player_id INNER JOIN dragon D1 ON D1.id = L.dragon_id INNER JOIN dragon D2 ON D2.id = L.enemy_dragon_id WHERE (dragon_id = ' + dragon_id + ' OR enemy_dragon_id = ' + dragon_id + ') AND player_visible = 1 AND enemy_visible = 1 ORDER BY L.id DESC LIMIT 30', function (err, rows, fields) {
+																	if (err) throw err;
 
-																if (Object.keys(rows).length > 0) {
-																	var text = "";
-																	for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-																		if (rows[i].win == 1) {
-																			rows[i].dragon1 = "<b>" + rows[i].dragon1 + " " + rows[i].type1 + " " + dragonSym(rows[i].type1) + "</b>";
-																			rows[i].dragon2 = rows[i].dragon2 + " " + rows[i].type2 + " " + dragonSym(rows[i].type2);
-																		} else {
-																			rows[i].dragon2 = "<b>" + rows[i].dragon2 + " " + rows[i].type2 + " " + dragonSym(rows[i].type2) + "</b>";
-																			rows[i].dragon1 = rows[i].dragon1 + " " + rows[i].type1 + " " + dragonSym(rows[i].type1);
+																	if (Object.keys(rows).length > 0) {
+																		var text = "";
+																		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+																			if (rows[i].win == 1) {
+																				rows[i].dragon1 = "<b>" + rows[i].dragon1 + " " + rows[i].type1 + " " + dragonSym(rows[i].type1) + "</b>";
+																				rows[i].dragon2 = rows[i].dragon2 + " " + rows[i].type2 + " " + dragonSym(rows[i].type2);
+																			} else {
+																				rows[i].dragon2 = "<b>" + rows[i].dragon2 + " " + rows[i].type2 + " " + dragonSym(rows[i].type2) + "</b>";
+																				rows[i].dragon1 = rows[i].dragon1 + " " + rows[i].type1 + " " + dragonSym(rows[i].type1);
+																			}
+
+																			var d = new Date(rows[i].time);
+																			var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
+
+																			text += rows[i].dragon1 + " vs " + rows[i].dragon2 + " (" + rows[i].note + " alle " + short_date + ")\n";
 																		}
-
-																		var d = new Date(rows[i].time);
-																		var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
-
-																		text += rows[i].dragon1 + " vs " + rows[i].dragon2 + " (" + rows[i].note + " alle " + short_date + ")\n";
-																	}
-																	bot.sendMessage(message.chat.id, "Ultime 30 battaglie:\n\n" + text, kbClean_html);
-																} else
-																	bot.sendMessage(message.chat.id, "Non hai ancora completato alcuna battaglia!\nOppure sono tutte nascoste perchè è da molto che non combatti :(", kbClean2_html);
-															});
-														}
-													};
+																		bot.sendMessage(message.chat.id, "Ultime 30 battaglie:\n\n" + text, kbClean_html);
+																	} else
+																		bot.sendMessage(message.chat.id, "Non hai ancora completato alcuna battaglia!\nOppure sono tutte nascoste perchè è da molto che non combatti :(", kbClean2_html);
+																});
+															}
+														};
+													});
 												});
 											});
 										});
 									});
 								});
-							});
+							};
 						};
-					};
+					});
 				});
 			});
 		});
@@ -53749,7 +53659,7 @@ function setFinishedLobbyEnd(element, index, array) {
 	});
 }
 
-function checkSeasonEnd() {
+function checkMapSeasonEnd() {
 	connection.query('SELECT 1 FROM config WHERE NOW() >= map_season_end', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 1) {
@@ -53844,6 +53754,177 @@ function setRestrictMap(element, index, array) {
 
 	restrictMap(lobby_id, mapMatrix, turnNumber, conditions);
 };
+
+function checkTopSeasonStart() {
+	connection.query('SELECT 1 FROM config WHERE NOW() >= DATE_SUB(top_season_end, INTERVAL 7 DAY)', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 1) {
+			connection.query('ALTER TABLE dragon_dummy AUTO_INCREMENT = 100000', function (err, rows, fields) {
+				if (err) throw err;
+			});
+			connection.query('DELETE FROM dragon_dummy', function (err, rows, fields) {
+				if (err) throw err;
+			});
+			connection.query('DELETE FROM dragon_top_dummy', function (err, rows, fields) {
+				if (err) throw err;
+			});
+			connection.query('DELETE FROM dragon_top_rank', function (err, rows, fields) {
+				if (err) throw err;
+			});
+			connection.query('DELETE FROM dragon_top_status', function (err, rows, fields) {
+				if (err) throw err;
+			});
+			
+			connection.query('UPDATE config SET global_msg = "Le <b>Vette dei Draghi</b> sono aperte!\nPartecipa agli incontri tra draghi più popolari delle terre di Lootia e vinci sostanziosi <b>premi</b>!\nBuon divertimento!", global_msg_on = 1', function (err, rows, fields) {
+				if (err) throw err;
+				connection.query('DELETE FROM global_msg', function (err, rows, fields) {
+					if (err) throw err;
+					connection.query('ALTER TABLE global_msg AUTO_INCREMENT=1', function (err, rows, fields) {
+						if (err) throw err;
+						connection.query('UPDATE config SET global_msg_on = 1', function (err, rows, fields) {
+							if (err) throw err;
+							connection.query('INSERT INTO global_msg (chat_id) SELECT P.chat_id FROM last_command L, player P WHERE L.account_id = P.account_id AND L.time > NOW() - INTERVAL 4 WEEK AND P.global_msg = 1 AND P.account_id NOT IN (SELECT account_id FROM banlist)', function (err, rows, fields) {
+								if (err) throw err;
+								console.log("Caricate " + rows.affectedRows + " voci per il messaggio apertura vette");
+							});
+						});
+					});
+				});
+			});
+			
+			updateValue("checkDragonTopOn", 1);
+			reloadEvents();
+			checkKeyboard();
+		}
+	});
+}
+
+function checkTopSeasonEnd() {
+	connection.query('SELECT 1 FROM config WHERE NOW() >= top_season_end', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 1) {
+			connection.query('SELECT 1 FROM dragon_top_rank WHERE combat = 1', function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					var next_season_end = new Date();
+					next_season_end.setMonth(next_season_end.getMonth()+1);
+					var long_date = next_season_end.getFullYear() + "-" + addZero(next_season_end.getMonth() + 1) + "-05 12:00:00";
+					connection.query('UPDATE config SET top_season_end = "' + long_date + '"', function (err, rows, fields) {
+						if (err) throw err;
+					});
+					endTop();
+				}
+			});
+		}
+	});
+}
+
+function endTop() {
+	var test = 0;
+	connection.query('SELECT id FROM dragon_top_list ORDER BY id', function (err, rows, fields) {
+		if (err) throw err;
+		var top_id = 0;
+		var mana = 0;
+		var dust = 0;
+		var chest = 0;
+		var moon_qnt = 0;
+		var extra_text = "";
+		var chestText = "";
+		var text = "";
+
+		var multi = 1.2;
+
+		if (test == 1)
+			console.log("Modalità test attiva, nessun messaggio nè aggiornamento");
+
+		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+			top_id = rows[i].id;
+			connection.query('SELECT D.player_id, D.rank, P.chat_id, P.top_rank_count FROM dragon_top_rank D, player P, dragon D2 WHERE P.id = D2.player_id AND D.player_id = P.id AND D.top_id = ' + top_id + ' ORDER BY D.rank DESC, D2.level ASC, P.id ASC', function (err, rows, fields) {
+				if (err) throw err;
+
+				if (Object.keys(rows).length > 0) {
+					var acc = 0;
+					for (var j = 0, len = Object.keys(rows).length; j < len; j++) {
+						acc = ((10*this.top_id)+rows[j].rank);
+						console.log("Accumulati: " + acc + " per " + rows[j].player_id);
+						if (test == 0) {
+							connection.query('UPDATE player SET top_rank_count = top_rank_count+' + acc + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
+								if (err) throw err;
+							});
+						}
+						if ((rows[j].rank < 12) && (this.top_id == 1)) {
+							if (test == 0)
+								bot.sendMessage(rows[j].chat_id, "Per il tuo posizionamento nelle *Vette dei Draghi*, essendo rimasto al primo Monte e di basso rango, non hai ricevuto alcun premio aggiuntivo! La prossima volta prova ad impegnarti di più :(", mark);
+							continue; // per non dare altri premi
+						}
+
+						mana = Math.round(Math.pow(this.top_id, multi) * 200);
+						chest = Math.floor(this.top_id*Math.log2(rows[j].rank));
+						if (chest < 0)
+							chest = 0;
+						if (rows[j].rank > 50)
+							rows[j].rank = 50;
+						dust = Math.round(rows[j].rank * (Math.pow(this.top_id, multi) * 8));
+
+						if ((this.top_id == max_top_id) && (j < 8))
+							moon_qnt = 4-Math.floor(j/2);
+						else
+							moon_qnt = 0;
+
+						if ((j == 0) && (test == 0)) {
+							connection.query('UPDATE player SET top_win = top_win+1 WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
+								if (err) throw err;
+							});
+						}
+
+						console.log(rows[j].player_id, mana, chest, dust, moon_qnt);
+
+						if (test == 0) {
+							connection.query('UPDATE event_mana_status SET mana_1 = mana_1+' + mana + ', mana_2 = mana_2+' + mana + ', mana_3 = mana_3+' + mana + ' WHERE player_id = ' + rows[j].player_id, function (err, rows, fields) {
+								if (err) throw err;
+							});
+							addItem(rows[j].player_id, 646, dust);
+							addChest(rows[j].player_id, 9, chest);
+							setAchievement(rows[j].player_id, 81, mana);
+						}
+
+						chestText = "";
+						if (chest > 0)
+							chestText = "\n> " + chest + "x Scrigni Scaglia";
+
+						extra_text = "";
+						if (moon_qnt > 0) {
+							if (test == 0) {
+								connection.query('UPDATE player SET moon_coin = moon_coin+' + moon_qnt + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
+									if (err) throw err;
+								});
+							}
+							extra_text = "\n> " + moon_qnt + "x Monete Lunari";
+						}
+
+						text = "Per il tuo posizionamento nelle *Vette dei Draghi* ed il raggiungimento di *" + rows[j].rank + " Ð* (" + formatNumber(parseInt(rows[j].top_rank_count)+acc) + " totali) hai ricevuto:\n> " + formatNumber(mana) + " Mana per tipo\n> " + formatNumber(dust) + " unità di Polvere" + chestText + extra_text + "\n\nI premi durante le prossime stagioni potrebbero cambiare, grazie per aver partecipato!";
+
+						if (test == 0)
+							bot.sendMessage(rows[j].chat_id, text, mark);
+						else
+							console.log(text);
+					}
+					if (test == 0) {
+						connection.query('UPDATE player SET top_first = 0', function (err, rows, fields) {
+							if (err) throw err;
+						});
+						
+						updateValue("checkDragonTopOn", 0);
+						reloadEvents();
+						checkKeyboard();
+					}
+				}
+			}.bind({
+				top_id: top_id
+			}));
+		}
+	});
+}
 
 function checkDungeonNotification() {
 	connection.query('SELECT player_id, id FROM dungeon_status WHERE TIMESTAMPDIFF(MINUTE, NOW(), finish_time) < 60 AND finish_time IS NOT NULL AND notified = 0 AND unlimited = 0', function (err, rows, fields) {
@@ -55193,7 +55274,7 @@ function setFinishedHeist(element, index, array) {
 											if (err) throw err;
 										});
 
-										connection.query('SELECT nickname, from_id, COUNT(from_id) FROM heist_history, player, event_wanted_status WHERE account_id NOT IN (SELECT account_id FROM banlist) AND fail = 0 AND event_wanted_status.player_id = player.id AND player.id = heist_history.from_id AND player.id != ' + fromId + ' AND time between DATE_SUB(now(),INTERVAL 2 MONTH) AND NOW() GROUP BY from_id ORDER BY COUNT(from_id) DESC LIMIT 200', function (err, rows, fields) {
+										connection.query('SELECT nickname, from_id, COUNT(from_id) FROM heist_history, player, event_wanted_status WHERE account_id NOT IN (SELECT account_id FROM banlist) AND fail = 0 AND event_wanted_status.player_id = player.id AND player.id = heist_history.from_id AND player.id != ' + fromId + ' AND time between DATE_SUB(now(), INTERVAL 2 MONTH) AND NOW() GROUP BY from_id ORDER BY COUNT(from_id) DESC LIMIT 200', function (err, rows, fields) {
 											if (err) throw err;
 
 											var len = Object.keys(rows).length;

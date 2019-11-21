@@ -715,6 +715,7 @@ DROP TABLE IF EXISTS `config`;
 CREATE TABLE `config` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `map_season_end` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `top_season_end` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `next_event_name` varchar(32) DEFAULT NULL,
   `global_eventon` int(11) NOT NULL DEFAULT '0',
   `global_eventwait` int(11) NOT NULL DEFAULT '0' COMMENT 'Raccogliendo dati',
