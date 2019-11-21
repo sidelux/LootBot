@@ -83,6 +83,7 @@ var https = require('https');
 var fs = require('fs');
 var bodyParser = require('body-parser');
 var iniBuilder = require('ini-builder');
+var moment = require('moment');
 
 // Eventi
 var crazyMode;					// nulla
@@ -53730,6 +53731,8 @@ function checkTopSeasonStart() {
 				if (err) throw err;
 			});
 			
+			console.log("Pulizia completata...");
+			
 			connection.query('UPDATE config SET global_msg = "Le <b>Vette dei Draghi</b> sono aperte!\nPartecipa agli incontri tra draghi più popolari delle terre di Lootia e vinci sostanziosi <b>premi</b>!\nBuon divertimento!", global_msg_on = 1', function (err, rows, fields) {
 				if (err) throw err;
 				connection.query('DELETE FROM global_msg', function (err, rows, fields) {
@@ -53769,16 +53772,14 @@ function checkTopSeasonEnd() {
 					if (test == 1)
 						console.log("Modalità test attiva, nessun messaggio nè aggiornamento");
 					
-					var next_season_end = new Date();
-					next_season_end.setMonth(next_season_end.getMonth()+1);
-					var long_date = next_season_end.getFullYear() + "-" + addZero(next_season_end.getMonth() + 1) + "-05 12:00:00";
-					
+					// terzo mercoledì di ogni mese
+					var next_season_end = moment().startOf('month').add(1, 'months').weekday('3').add(2, 'weeks').format('D-M-YYYY') + " 12:00:00";
 					if (test == 0) {
-						connection.query('UPDATE config SET top_season_end = "' + long_date + '"', function (err, rows, fields) {
+						connection.query('UPDATE config SET top_season_end = "' + next_season_end + '"', function (err, rows, fields) {
 							if (err) throw err;
 						});
 					} else
-						console.log("Data prossima chiusura vette: " + long_date);
+						console.log("Data prossima chiusura vette: " + next_season_end);
 					
 					connection.query('SELECT id FROM dragon_top_list ORDER BY id', function (err, rows, fields) {
 						if (err) throw err;
