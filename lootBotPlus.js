@@ -6378,8 +6378,10 @@ bot.onText(/^\/offri/i, function (message) {
 	if (Object.keys(elements).length == 1)
 		elements.push("1");
 
-	if (message.reply_to_message != undefined)
-		elements.push(message.reply_to_message.from.username);
+	if (message.reply_to_message != undefined) {
+		if (message.reply_to_message.from.is_bot == 0)
+			elements.push(message.reply_to_message.from.username);
+	}
 
 	if (Object.keys(elements).length != 3) {
 		bot.sendMessage(message.from.id, "Numero parametri errato nell'offerta: " + Object.keys(elements).length + " su 3\n" + syntax);
