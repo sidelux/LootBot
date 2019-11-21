@@ -44,7 +44,6 @@ var lobby_total_space = 5;
 var lobby_restric_min = 10;
 var lobby_daily_limit = 5;
 var battle_timeout_limit_min = 60;
-var map_conditions = 0;
 var dragon_limit_search = 15;
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
 var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750, 2500, 3000, 3750];
@@ -773,6 +772,31 @@ bot.onText(/^\/nextevent (.+)|^\/nextevent/, function (message, match) {
 				bot.sendMessage(message.chat.id, "Salvato!\nProssimo evento: " + match[1]);
 			});		 
 		}
+	});
+});
+
+bot.onText(/^\/conditions (.+)|^\/conditions/, function (message, match) {
+	if (message.from.id != 20471035)
+		return;
+	connection.query('SELECT map_conditions FROM config', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (match[1] == undefined) {
+			bot.sendMessage(message.chat.id, "Condizioni mappe attuali: " + rows[0].map_conditions);
+			return;
+		}
+		
+		var cond = match[1];
+		
+		if ((cond < 0) || (cond > 5)) {
+			bot.sendMessage(message.chat.id, "Valore non valido, 0-5");
+			return;
+		}
+
+		connection.query('UPDATE config SET map_conditions = "' + cond + '"', function (err, rows, fields) {
+			if (err) throw err;
+			bot.sendMessage(message.chat.id, "Salvato!\nCondizioni mappe impostate a " + cond);
+		});
 	});
 });
 
@@ -5821,163 +5845,169 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 								bot.sendMessage(message.chat.id, "Esplorazione mappa in corso!", kbBack);
 						});
 					} else {
-						connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL', function (err, rows, fields) {
+						connection.query('SELECT map_conditions FROM config', function (err, rows, fields) {
 							if (err) throw err;
-
-							var lobby_players = rows[0].cnt;
-							var map_daily_diff = lobby_daily_limit-map_count;
 							
-							var conditions = "\n\nCondizioni mappa: ";
-							if (map_conditions == 0)
-								conditions += "✅ Normali";
-							else if (map_conditions == 1)
-								conditions += "☠️ Restringimento veloce";
-							else if (map_conditions == 2)
-								conditions += "⚡️ Trappole pericolose";
-							else if (map_conditions == 3)
-								conditions += "⚔️ Danni raddoppiati";
-							else if (map_conditions == 4)
-								conditions += "🏆 Trofei raddoppiati";
-							else if (map_conditions == 5)
-								conditions += "💰 Risorse raddoppiate";
+							var map_conditions = rows[0].map_conditions;
 							
-							bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\n\n<b>" + lobby_players + "</b> ⚔️ combattenti dentro una lobby\n<b>" + trophies + "</b> 🏆 in questa stagione (terminerà tra " + diff + ")\n<b>" + map_daily_diff + "</b> 💥 partite ancora avviabili oggi" + conditions, kbMain).then(function () {
-								answerCallbacks[message.chat.id] = function (answer) {
-									if (answer.text == "Torna al menu")
-										return;
+							connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL', function (err, rows, fields) {
+								if (err) throw err;
 
-									if (answer.text.toLowerCase().indexOf("lobby") != -1) {
-										var d = new Date();
-										if ((d.getHours() < 9) || (d.getHours() > 22)) {
-											bot.sendMessage(message.chat.id, "Puoi accedere ad una lobby solamente di giorno, dalle 9 alle 22", kbBack);
+								var lobby_players = rows[0].cnt;
+								var map_daily_diff = lobby_daily_limit-map_count;
+
+								var conditions = "\n\nCondizioni mappa: ";
+								if (map_conditions == 0)
+									conditions += "✅ Normali";
+								else if (map_conditions == 1)
+									conditions += "☠️ Restringimento veloce";
+								else if (map_conditions == 2)
+									conditions += "⚡️ Trappole pericolose";
+								else if (map_conditions == 3)
+									conditions += "⚔️ Danni raddoppiati";
+								else if (map_conditions == 4)
+									conditions += "🏆 Trofei raddoppiati";
+								else if (map_conditions == 5)
+									conditions += "💰 Risorse raddoppiate";
+
+								bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\n\n<b>" + lobby_players + "</b> ⚔️ combattenti dentro una lobby\n<b>" + trophies + "</b> 🏆 in questa stagione (terminerà tra " + diff + ")\n<b>" + map_daily_diff + "</b> 💥 partite ancora avviabili oggi" + conditions, kbMain).then(function () {
+									answerCallbacks[message.chat.id] = function (answer) {
+										if (answer.text == "Torna al menu")
 											return;
-										}
-										if (lobby_id != null) {
-											bot.sendMessage(message.chat.id, "Sei già in attesa in una lobby", kbStop);
-											return;
-										}
-										if (map_daily_diff == 0) {
-											bot.sendMessage(message.chat.id, "Hai raggiunto il limite giornaliero di partite, torna domani", kbBack);
-											return;
-										}
 
-										connection.query('SELECT lobby_id, COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL GROUP BY lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY id', function (err, rows, fields) {
-											if (err) throw err;
-
-											var lobby_id;
-											var text = "";
-
-											if (Object.keys(rows).length == 0) {
-												// nuova lobby
-
-												var max_lobby = connection_sync.query('SELECT MAX(lobby_id) As mx FROM map_lobby WHERE lobby_id IS NOT NULL');
-
-												if (Object.keys(max_lobby).length == 0)
-													lobby_id = 1;
-												else 
-													lobby_id = max_lobby[0].mx+1;
-
-												text = "Sei stato aggiunto ad una nuova lobby, attendi che altri giocatori si uniscano o interrompi la ricerca...";
-											} else {
-												lobby_id = rows[0].lobby_id;
-												var members_cnt = rows[0].cnt;
-
-												connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
-													if (err) throw err;
-
-													for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-														bot.sendMessage(rows[i].chat_id, "Un giocatore si è unito alla tua lobby! Ci sono " + (members_cnt+1) + " su " + lobby_total_space + " giocatori in attesa...");
-												});
-
-												var members = " insieme ad altri " + members_cnt + " partecipanti";
-												var wait = ", attendi che altri giocatori si uniscano o interrompi la ricerca...";
-												if (rows[0].cnt == 1)
-													members = " insieme ad un altro partecipante";
-												else if (rows[0].cnt == 0)
-													members = "";
-												if (rows[0].cnt == lobby_total_space)
-													wait = ", a breve inizierà lo scontro...";
-												text = "Sei stato aggiunto alla lobby" + members + wait;
+										if (answer.text.toLowerCase().indexOf("lobby") != -1) {
+											var d = new Date();
+											if ((d.getHours() < 9) || (d.getHours() > 22)) {
+												bot.sendMessage(message.chat.id, "Puoi accedere ad una lobby solamente di giorno, dalle 9 alle 22", kbBack);
+												return;
+											}
+											if (lobby_id != null) {
+												bot.sendMessage(message.chat.id, "Sei già in attesa in una lobby", kbStop);
+												return;
+											}
+											if (map_daily_diff == 0) {
+												bot.sendMessage(message.chat.id, "Hai raggiunto il limite giornaliero di partite, torna domani", kbBack);
+												return;
 											}
 
-											connection.query('UPDATE map_lobby SET lobby_id = ' + lobby_id + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+											connection.query('SELECT lobby_id, COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL GROUP BY lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY id', function (err, rows, fields) {
 												if (err) throw err;
+
+												var lobby_id;
+												var text = "";
+
+												if (Object.keys(rows).length == 0) {
+													// nuova lobby
+
+													var max_lobby = connection_sync.query('SELECT MAX(lobby_id) As mx FROM map_lobby WHERE lobby_id IS NOT NULL');
+
+													if (Object.keys(max_lobby).length == 0)
+														lobby_id = 1;
+													else 
+														lobby_id = max_lobby[0].mx+1;
+
+													text = "Sei stato aggiunto ad una nuova lobby, attendi che altri giocatori si uniscano o interrompi la ricerca...";
+												} else {
+													lobby_id = rows[0].lobby_id;
+													var members_cnt = rows[0].cnt;
+
+													connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
+														if (err) throw err;
+
+														for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+															bot.sendMessage(rows[i].chat_id, "Un giocatore si è unito alla tua lobby! Ci sono " + (members_cnt+1) + " su " + lobby_total_space + " giocatori in attesa...");
+													});
+
+													var members = " insieme ad altri " + members_cnt + " partecipanti";
+													var wait = ", attendi che altri giocatori si uniscano o interrompi la ricerca...";
+													if (rows[0].cnt == 1)
+														members = " insieme ad un altro partecipante";
+													else if (rows[0].cnt == 0)
+														members = "";
+													if (rows[0].cnt == lobby_total_space)
+														wait = ", a breve inizierà lo scontro...";
+													text = "Sei stato aggiunto alla lobby" + members + wait;
+												}
+
+												connection.query('UPDATE map_lobby SET lobby_id = ' + lobby_id + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+												});
+
+												bot.sendMessage(message.chat.id, text, kbStop);
 											});
+										} else if (answer.text.toLowerCase().indexOf("vittorie") != -1) {
+											connection.query('SELECT P.nickname, M.kills, M.insert_date FROM map_history M, player P WHERE M.player_id = P.id AND M.position = 1 ORDER BY M.id DESC LIMIT 25', function (err, rows, fields) {
+												if (err) throw err;
 
-											bot.sendMessage(message.chat.id, text, kbStop);
-										});
-									} else if (answer.text.toLowerCase().indexOf("vittorie") != -1) {
-										connection.query('SELECT P.nickname, M.kills, M.insert_date FROM map_history M, player P WHERE M.player_id = P.id AND M.position = 1 ORDER BY M.id DESC LIMIT 25', function (err, rows, fields) {
-											if (err) throw err;
+												if (Object.keys(rows).length > 0) {
+													var text = "<b>Ultime 25 vittorie della stagione:</b>";
+													for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+														var kills = "uccisioni";
+														if (rows[i].kills == 1)
+															kills = "uccisione";
+														text += "\n> " + rows[i].nickname + " con " + rows[i].kills + " " + kills + " il " + toDate("it", rows[i].insert_date);
+													}
+												} else
+													text = "Ancora nessuna vittoria ottenuta questa stagione.";
 
-											if (Object.keys(rows).length > 0) {
-												var text = "<b>Ultime 25 vittorie della stagione:</b>";
-												for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-													var kills = "uccisioni";
-													if (rows[i].kills == 1)
-														kills = "uccisione";
-													text += "\n> " + rows[i].nickname + " con " + rows[i].kills + " " + kills + " il " + toDate("it", rows[i].insert_date);
-												}
-											} else
-												text = "Ancora nessuna vittoria ottenuta questa stagione.";
+												bot.sendMessage(message.chat.id, text, kbBack);
+											});
+										} else if (answer.text.toLowerCase().indexOf("stagione") != -1) {
+											connection.query('SELECT P.nickname, M.global_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND global_kills > 0 ORDER BY M.global_kills DESC LIMIT 25', function (err, rows, fields) {
+												if (err) throw err;
 
-											bot.sendMessage(message.chat.id, text, kbBack);
-										});
-									} else if (answer.text.toLowerCase().indexOf("stagione") != -1) {
-										connection.query('SELECT P.nickname, M.global_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND global_kills > 0 ORDER BY M.global_kills DESC LIMIT 25', function (err, rows, fields) {
-											if (err) throw err;
+												if (Object.keys(rows).length > 0) {
+													var text = "<b>Top 25 uccisioni della stagione:</b>";
+													var c = 1;
+													for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+														var kills = "uccisioni";
+														if (rows[i].kills == 1)
+															kills = "uccisione";
+														text += "\n" + c + "° " + rows[i].nickname + " con " + rows[i].global_kills + " " + kills;
+														c++;
+													}
+												} else
+													text = "Ancora nessuna uccisione in questa stagione.";
 
-											if (Object.keys(rows).length > 0) {
-												var text = "<b>Top 25 uccisioni della stagione:</b>";
-												var c = 1;
-												for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-													var kills = "uccisioni";
-													if (rows[i].kills == 1)
-														kills = "uccisione";
-													text += "\n" + c + "° " + rows[i].nickname + " con " + rows[i].global_kills + " " + kills;
-													c++;
-												}
-											} else
-												text = "Ancora nessuna uccisione in questa stagione.";
-
-											bot.sendMessage(message.chat.id, text, kbBack);
-										});
-									} else if (answer.text.toLowerCase().indexOf("guida") != -1) {
-										bot.sendMessage(message.chat.id, "<b>Legenda simboli sulla mappa</b>\n\n" +
-														"📍 Posizione del giocatore\n" +
-														mapIdToSym(0) + " Vuoto\n" +
-														mapIdToSym(1) + " Scrigno - Fornisce un equip base di bassa rarità\n" +
-														mapIdToSym(2) + " Scrigno Epico - Fornisce un equip base di alta rarità\n" +
-														mapIdToSym(3) + " Trappola - Danneggia il giocatore\n" +
-														mapIdToSym(4) + " Farmacia - Consente di recuperare l'intera salute al costo di monete\n" +
-														mapIdToSym(5) + " Scambio - Consente lo scambio di equip per rottami\n" +
-														mapIdToSym(6) + " Vendita - Consente l'acquisto di equip per monete\n" +
-														mapIdToSym(7) + " Impulso - Visualizza le caselle circostanti\n" +
-														mapIdToSym(8) + " Altro giocatore - Ingaggia una battaglia con un altro giocatore\n" +
-														mapIdToSym(9) + " Rottame - Valuta utile per gli scambi, si ottiene anche in caso gli equip trovati non siano più forti di quelli indossati\n" +
-														mapIdToSym(10) + " Mappa bruciata - Se si capita in una casella bruciata, si viene sconfitti\n" +
-														"\n<b>Istruzioni base</b>" +
-														"\n> Il personaggio inizierà la partita con un equip base, zero monete e zero rottami." +
-														"\n> Ogni " + lobby_restric_min + " minuti (" + (lobby_restric_min*2) + " appena avviata la partita) la mappa si restringe bruciando uno strato esterno fino a che rimane solo un quadratino centrale." +
-														"\n> Quando un giocatore incontra un altro giocatore, ha inizio una battaglia dove lo sconfitto uscirà dalla partita." +
-														"\n> Se la trappola sconfigge il giocatore, quest'ultimo uscirà dalla partita." + 
-														"\n> Se il giocatore viene bruciato dal restringimento della mappa o ci entra di sua volontà, uscirà dalla partita." +
-														"\n> Per ogni movimento su una casella vuota, il giocatore recupera una piccola percentuale di salute." +
-														"\n> La partita termina quando rimane solo un giocatore o vengono tutti sconfitti dal restringimento." +
-														"\n> Ogni tanto possono cambiare le condizioni della mappa, quando cambiano compare la relativa scritta, le nuove lobby verranno giocate in quelle condizioni." +
-														"\n\n<b>Combattimento</b>" +
-														"\n> La Vocazione influisce sul combattimento del giocatore." +
-														"\n> Il drago non accompagna il giocatore all'interno della mappa." +
-														"\n> Il comando Attacco infligge un danno base al nemico." +
-														"\n> Il comando Attacco Caricato obbliga a saltare il primo turno successivo all'utilizzo, infligge più danni rispetto all'attacco normale." +
-														"\n> Il comando Difendi, nel caso di successo obbliga a saltare il turno successivo del nemico, nel caso di fallimento il turno lo salta l'utilizzatore, può effettuare una parata parziale o totale del colpo subito." +
-														"\n\n<b>Stagione</b>" +
-														"\n> Le stagioni durano circa un mese, la data precisa è indicata nel messaggio principale." +
-														"\n> Alla fine di ogni partita vengono forniti dei trofei in base alla posizione conclusiva ed alle uccisioni dei nemici." +
-														"\n> Alla fine della stagione si ottiene un premio in base ai trofei accumulati e questi ultimi, insieme alle uccisioni totali, vengono resettati." +
-														"\n> Alla fine della stagione viene anche accumulato un totale globale dei trofei accumulati che non viene mai resettato.", kbBack);
+												bot.sendMessage(message.chat.id, text, kbBack);
+											});
+										} else if (answer.text.toLowerCase().indexOf("guida") != -1) {
+											bot.sendMessage(message.chat.id, "<b>Legenda simboli sulla mappa</b>\n\n" +
+															"📍 Posizione del giocatore\n" +
+															mapIdToSym(0) + " Vuoto\n" +
+															mapIdToSym(1) + " Scrigno - Fornisce un equip base di bassa rarità\n" +
+															mapIdToSym(2) + " Scrigno Epico - Fornisce un equip base di alta rarità\n" +
+															mapIdToSym(3) + " Trappola - Danneggia il giocatore\n" +
+															mapIdToSym(4) + " Farmacia - Consente di recuperare l'intera salute al costo di monete\n" +
+															mapIdToSym(5) + " Scambio - Consente lo scambio di equip per rottami\n" +
+															mapIdToSym(6) + " Vendita - Consente l'acquisto di equip per monete\n" +
+															mapIdToSym(7) + " Impulso - Visualizza le caselle circostanti\n" +
+															mapIdToSym(8) + " Altro giocatore - Ingaggia una battaglia con un altro giocatore\n" +
+															mapIdToSym(9) + " Rottame - Valuta utile per gli scambi, si ottiene anche in caso gli equip trovati non siano più forti di quelli indossati\n" +
+															mapIdToSym(10) + " Mappa bruciata - Se si capita in una casella bruciata, si viene sconfitti\n" +
+															"\n<b>Istruzioni base</b>" +
+															"\n> Il personaggio inizierà la partita con un equip base, zero monete e zero rottami." +
+															"\n> Ogni " + lobby_restric_min + " minuti (" + (lobby_restric_min*2) + " appena avviata la partita) la mappa si restringe bruciando uno strato esterno fino a che rimane solo un quadratino centrale." +
+															"\n> Quando un giocatore incontra un altro giocatore, ha inizio una battaglia dove lo sconfitto uscirà dalla partita." +
+															"\n> Se la trappola sconfigge il giocatore, quest'ultimo uscirà dalla partita." + 
+															"\n> Se il giocatore viene bruciato dal restringimento della mappa o ci entra di sua volontà, uscirà dalla partita." +
+															"\n> Per ogni movimento su una casella vuota, il giocatore recupera una piccola percentuale di salute." +
+															"\n> La partita termina quando rimane solo un giocatore o vengono tutti sconfitti dal restringimento." +
+															"\n> Ogni tanto possono cambiare le condizioni della mappa, quando cambiano compare la relativa scritta, le nuove lobby verranno giocate in quelle condizioni." +
+															"\n\n<b>Combattimento</b>" +
+															"\n> La Vocazione influisce sul combattimento del giocatore." +
+															"\n> Il drago non accompagna il giocatore all'interno della mappa." +
+															"\n> Il comando Attacco infligge un danno base al nemico." +
+															"\n> Il comando Attacco Caricato obbliga a saltare il primo turno successivo all'utilizzo, infligge più danni rispetto all'attacco normale." +
+															"\n> Il comando Difendi, nel caso di successo obbliga a saltare il turno successivo del nemico, nel caso di fallimento il turno lo salta l'utilizzatore, può effettuare una parata parziale o totale del colpo subito." +
+															"\n\n<b>Stagione</b>" +
+															"\n> Le stagioni durano circa un mese, la data precisa è indicata nel messaggio principale." +
+															"\n> Alla fine di ogni partita vengono forniti dei trofei in base alla posizione conclusiva ed alle uccisioni dei nemici." +
+															"\n> Alla fine della stagione si ottiene un premio in base ai trofei accumulati e questi ultimi, insieme alle uccisioni totali, vengono resettati." +
+															"\n> Alla fine della stagione viene anche accumulato un totale globale dei trofei accumulati che non viene mai resettato.", kbBack);
+										}
 									}
-								}
+								});
 							});
 						});
 					};
