@@ -53757,116 +53757,113 @@ function checkTopSeasonEnd() {
 					connection.query('UPDATE config SET top_season_end = "' + long_date + '"', function (err, rows, fields) {
 						if (err) throw err;
 					});
-					endTop();
+					
+					var test = 0;
+					connection.query('SELECT id FROM dragon_top_list ORDER BY id', function (err, rows, fields) {
+						if (err) throw err;
+						var top_id = 0;
+						var mana = 0;
+						var dust = 0;
+						var chest = 0;
+						var moon_qnt = 0;
+						var extra_text = "";
+						var chestText = "";
+						var text = "";
+
+						var multi = 1.2;
+
+						if (test == 1)
+							console.log("Modalità test attiva, nessun messaggio nè aggiornamento");
+
+						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+							top_id = rows[i].id;
+							connection.query('SELECT D.player_id, D.rank, P.chat_id, P.top_rank_count FROM dragon_top_rank D, player P, dragon D2 WHERE P.id = D2.player_id AND D.player_id = P.id AND D.top_id = ' + top_id + ' ORDER BY D.rank DESC, D2.level ASC, P.id ASC', function (err, rows, fields) {
+								if (err) throw err;
+
+								if (Object.keys(rows).length > 0) {
+									var acc = 0;
+									for (var j = 0, len = Object.keys(rows).length; j < len; j++) {
+										acc = ((10*this.top_id)+rows[j].rank);
+										console.log("Accumulati: " + acc + " per " + rows[j].player_id);
+										if (test == 0) {
+											connection.query('UPDATE player SET top_rank_count = top_rank_count+' + acc + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
+												if (err) throw err;
+											});
+										}
+										if ((rows[j].rank < 12) && (this.top_id == 1)) {
+											if (test == 0)
+												bot.sendMessage(rows[j].chat_id, "Per il tuo posizionamento nelle *Vette dei Draghi*, essendo rimasto al primo Monte e di basso rango, non hai ricevuto alcun premio aggiuntivo! La prossima volta prova ad impegnarti di più :(", mark);
+											continue; // per non dare altri premi
+										}
+
+										mana = Math.round(Math.pow(this.top_id, multi) * 200);
+										chest = Math.floor(this.top_id*Math.log2(rows[j].rank));
+										if (chest < 0)
+											chest = 0;
+										if (rows[j].rank > 50)
+											rows[j].rank = 50;
+										dust = Math.round(rows[j].rank * (Math.pow(this.top_id, multi) * 8));
+
+										if ((this.top_id == max_top_id) && (j < 8))
+											moon_qnt = 4-Math.floor(j/2);
+										else
+											moon_qnt = 0;
+
+										if ((j == 0) && (test == 0)) {
+											connection.query('UPDATE player SET top_win = top_win+1 WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
+												if (err) throw err;
+											});
+										}
+
+										console.log(rows[j].player_id, mana, chest, dust, moon_qnt);
+
+										if (test == 0) {
+											connection.query('UPDATE event_mana_status SET mana_1 = mana_1+' + mana + ', mana_2 = mana_2+' + mana + ', mana_3 = mana_3+' + mana + ' WHERE player_id = ' + rows[j].player_id, function (err, rows, fields) {
+												if (err) throw err;
+											});
+											addItem(rows[j].player_id, 646, dust);
+											addChest(rows[j].player_id, 9, chest);
+											setAchievement(rows[j].player_id, 81, mana);
+										}
+
+										chestText = "";
+										if (chest > 0)
+											chestText = "\n> " + chest + "x Scrigni Scaglia";
+
+										extra_text = "";
+										if (moon_qnt > 0) {
+											if (test == 0) {
+												connection.query('UPDATE player SET moon_coin = moon_coin+' + moon_qnt + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
+													if (err) throw err;
+												});
+											}
+											extra_text = "\n> " + moon_qnt + "x Monete Lunari";
+										}
+
+										text = "Per il tuo posizionamento nelle *Vette dei Draghi* ed il raggiungimento di *" + rows[j].rank + " Ð* (" + formatNumber(parseInt(rows[j].top_rank_count)+acc) + " totali) hai ricevuto:\n> " + formatNumber(mana) + " Mana per tipo\n> " + formatNumber(dust) + " unità di Polvere" + chestText + extra_text + "\n\nI premi durante le prossime stagioni potrebbero cambiare, grazie per aver partecipato!";
+
+										if (test == 0)
+											bot.sendMessage(rows[j].chat_id, text, mark);
+										else
+											console.log(text);
+									}
+									if (test == 0) {
+										connection.query('UPDATE player SET top_first = 0', function (err, rows, fields) {
+											if (err) throw err;
+										});
+
+										updateValue("checkDragonTopOn", 0);
+										reloadEvents();
+										checkKeyboard();
+									}
+								}
+							}.bind({
+								top_id: top_id
+							}));
+						}
+					});
 				}
 			});
-		}
-	});
-}
-
-function endTop() {
-	var test = 0;
-	connection.query('SELECT id FROM dragon_top_list ORDER BY id', function (err, rows, fields) {
-		if (err) throw err;
-		var top_id = 0;
-		var mana = 0;
-		var dust = 0;
-		var chest = 0;
-		var moon_qnt = 0;
-		var extra_text = "";
-		var chestText = "";
-		var text = "";
-
-		var multi = 1.2;
-
-		if (test == 1)
-			console.log("Modalità test attiva, nessun messaggio nè aggiornamento");
-
-		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-			top_id = rows[i].id;
-			connection.query('SELECT D.player_id, D.rank, P.chat_id, P.top_rank_count FROM dragon_top_rank D, player P, dragon D2 WHERE P.id = D2.player_id AND D.player_id = P.id AND D.top_id = ' + top_id + ' ORDER BY D.rank DESC, D2.level ASC, P.id ASC', function (err, rows, fields) {
-				if (err) throw err;
-
-				if (Object.keys(rows).length > 0) {
-					var acc = 0;
-					for (var j = 0, len = Object.keys(rows).length; j < len; j++) {
-						acc = ((10*this.top_id)+rows[j].rank);
-						console.log("Accumulati: " + acc + " per " + rows[j].player_id);
-						if (test == 0) {
-							connection.query('UPDATE player SET top_rank_count = top_rank_count+' + acc + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
-								if (err) throw err;
-							});
-						}
-						if ((rows[j].rank < 12) && (this.top_id == 1)) {
-							if (test == 0)
-								bot.sendMessage(rows[j].chat_id, "Per il tuo posizionamento nelle *Vette dei Draghi*, essendo rimasto al primo Monte e di basso rango, non hai ricevuto alcun premio aggiuntivo! La prossima volta prova ad impegnarti di più :(", mark);
-							continue; // per non dare altri premi
-						}
-
-						mana = Math.round(Math.pow(this.top_id, multi) * 200);
-						chest = Math.floor(this.top_id*Math.log2(rows[j].rank));
-						if (chest < 0)
-							chest = 0;
-						if (rows[j].rank > 50)
-							rows[j].rank = 50;
-						dust = Math.round(rows[j].rank * (Math.pow(this.top_id, multi) * 8));
-
-						if ((this.top_id == max_top_id) && (j < 8))
-							moon_qnt = 4-Math.floor(j/2);
-						else
-							moon_qnt = 0;
-
-						if ((j == 0) && (test == 0)) {
-							connection.query('UPDATE player SET top_win = top_win+1 WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
-								if (err) throw err;
-							});
-						}
-
-						console.log(rows[j].player_id, mana, chest, dust, moon_qnt);
-
-						if (test == 0) {
-							connection.query('UPDATE event_mana_status SET mana_1 = mana_1+' + mana + ', mana_2 = mana_2+' + mana + ', mana_3 = mana_3+' + mana + ' WHERE player_id = ' + rows[j].player_id, function (err, rows, fields) {
-								if (err) throw err;
-							});
-							addItem(rows[j].player_id, 646, dust);
-							addChest(rows[j].player_id, 9, chest);
-							setAchievement(rows[j].player_id, 81, mana);
-						}
-
-						chestText = "";
-						if (chest > 0)
-							chestText = "\n> " + chest + "x Scrigni Scaglia";
-
-						extra_text = "";
-						if (moon_qnt > 0) {
-							if (test == 0) {
-								connection.query('UPDATE player SET moon_coin = moon_coin+' + moon_qnt + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
-									if (err) throw err;
-								});
-							}
-							extra_text = "\n> " + moon_qnt + "x Monete Lunari";
-						}
-
-						text = "Per il tuo posizionamento nelle *Vette dei Draghi* ed il raggiungimento di *" + rows[j].rank + " Ð* (" + formatNumber(parseInt(rows[j].top_rank_count)+acc) + " totali) hai ricevuto:\n> " + formatNumber(mana) + " Mana per tipo\n> " + formatNumber(dust) + " unità di Polvere" + chestText + extra_text + "\n\nI premi durante le prossime stagioni potrebbero cambiare, grazie per aver partecipato!";
-
-						if (test == 0)
-							bot.sendMessage(rows[j].chat_id, text, mark);
-						else
-							console.log(text);
-					}
-					if (test == 0) {
-						connection.query('UPDATE player SET top_first = 0', function (err, rows, fields) {
-							if (err) throw err;
-						});
-						
-						updateValue("checkDragonTopOn", 0);
-						reloadEvents();
-						checkKeyboard();
-					}
-				}
-			}.bind({
-				top_id: top_id
-			}));
 		}
 	});
 }
