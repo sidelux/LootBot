@@ -53751,14 +53751,22 @@ function checkTopSeasonEnd() {
 			connection.query('SELECT 1 FROM dragon_top_rank WHERE combat = 1', function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
+					var test = 0;
+					
+					if (test == 1)
+						console.log("Modalità test attiva, nessun messaggio nè aggiornamento");
+					
 					var next_season_end = new Date();
 					next_season_end.setMonth(next_season_end.getMonth()+1);
 					var long_date = next_season_end.getFullYear() + "-" + addZero(next_season_end.getMonth() + 1) + "-05 12:00:00";
-					connection.query('UPDATE config SET top_season_end = "' + long_date + '"', function (err, rows, fields) {
-						if (err) throw err;
-					});
 					
-					var test = 0;
+					if (test == 0) {
+						connection.query('UPDATE config SET top_season_end = "' + long_date + '"', function (err, rows, fields) {
+							if (err) throw err;
+						});
+					} else
+						console.log("Data prossima chiusura vette: " + long_date);
+					
 					connection.query('SELECT id FROM dragon_top_list ORDER BY id', function (err, rows, fields) {
 						if (err) throw err;
 						var top_id = 0;
@@ -53771,9 +53779,6 @@ function checkTopSeasonEnd() {
 						var text = "";
 
 						var multi = 1.2;
-
-						if (test == 1)
-							console.log("Modalità test attiva, nessun messaggio nè aggiornamento");
 
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 							top_id = rows[i].id;
