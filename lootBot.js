@@ -240,8 +240,12 @@ callNTimes(60000, function () { //Ogni 1 minuto
 	checkLobbyEnd();
 	checkMapSeasonEnd();
 	
-	// checkTopSeasonStart();
-	// checkTopSeasonEnd();
+	/*
+	if (checkDragonTopOn == 0)
+		checkTopSeasonStart();
+	if (checkDragonTopOn == 1)
+		checkTopSeasonEnd();
+	*/
 
 	if (crazyMode == 1)
 		merchant_limit = 8;
@@ -53709,6 +53713,7 @@ function checkTopSeasonStart() {
 	connection.query('SELECT 1 FROM config WHERE NOW() >= DATE_SUB(top_season_end, INTERVAL 7 DAY)', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 1) {
+			console.log("Apertura vette in corso...");
 			connection.query('ALTER TABLE dragon_dummy AUTO_INCREMENT = 100000', function (err, rows, fields) {
 				if (err) throw err;
 			});
@@ -53745,6 +53750,8 @@ function checkTopSeasonStart() {
 			updateValue("checkDragonTopOn", 1);
 			reloadEvents();
 			checkKeyboard();
+			
+			console.log("Vette aperte!");
 		}
 	});
 }
@@ -53753,6 +53760,7 @@ function checkTopSeasonEnd() {
 	connection.query('SELECT 1 FROM config WHERE NOW() >= top_season_end', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 1) {
+			console.log("Chiusura vette in corso...");
 			connection.query('SELECT 1 FROM dragon_top_rank WHERE combat = 1', function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
@@ -53865,6 +53873,8 @@ function checkTopSeasonEnd() {
 										updateValue("checkDragonTopOn", 0);
 										reloadEvents();
 										checkKeyboard();
+										
+										console.log("Vette chiuse!");
 									}
 								}
 							}.bind({
