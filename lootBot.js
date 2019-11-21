@@ -53773,7 +53773,7 @@ function checkTopSeasonEnd() {
 						console.log("Modalità test attiva, nessun messaggio nè aggiornamento");
 					
 					// terzo mercoledì di ogni mese
-					var next_season_end = moment().startOf('month').add(1, 'months').weekday('3').add(2, 'weeks').format('D-M-YYYY') + " 12:00:00";
+					var next_season_end = moment().startOf('month').add(1, 'months').weekday('3').add(2, 'weeks').format('D-MM-YYYY') + " 12:00:00";
 					if (test == 0) {
 						connection.query('UPDATE config SET top_season_end = "' + next_season_end + '"', function (err, rows, fields) {
 							if (err) throw err;
