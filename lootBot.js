@@ -43479,7 +43479,7 @@ function mainMenu(message) {
 				}
 			}
 
-			connection.query("SELECT lobby_id, wait_time FROM map_lobby WHERE player_id = " + player_id, function (err, rows, fields) {
+			connection.query("SELECT lobby_id, wait_time, enemy_id, my_turn FROM map_lobby WHERE player_id = " + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length > 0) {
 					if (rows[0].wait_time != null) {
@@ -43492,6 +43492,11 @@ function mainMenu(message) {
 						if (min < 1)
 							min = "meno di 1";
 						msgtext += "\n🗺 Attesa mappa " + min + " minut" + plur;
+					}  else if (rows[0].enemy_id != null) {
+						var turn = "a te!";
+						if (rows[0].my_turn == 0)
+							turn = "all'avversario!";
+						msgtext += "\n🗺 In combattimento... tocca " + turn;
 					} else if (rows[0].lobby_id != null) {
 						var lobby = connection_sync.query('SELECT 1 FROM map_lobby_list WHERE lobby_id = ' + rows[0].lobby_id);
 						if (Object.keys(lobby).length == 0) {
@@ -49648,7 +49653,7 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 	if (conditions == 1)
 		time = Math.round(time/2);
 	
-	if (turnNumber-2 >= middleX) {
+	if (turnNumber+1 == middleX) {
 		// se raggiunge l'1x1, non restringe più
 		console.log("Restrict end", turnNumber, middleX);
 		connection.query('UPDATE map_lobby_list SET next_restrict_time = NULL WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
