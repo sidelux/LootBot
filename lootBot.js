@@ -6997,14 +6997,25 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 								var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id, enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + posX + ' AND posY = ' + posY + ' AND killed = 0 AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
 								if (Object.keys(checkEnemy).length > 0) {
-									if (checkEnemy[0].enemy_id != null)
+									var checkEnemyNickname = "";
+									var checkEnemyPlayerId = -1;
+									var checkEnemyChatId = -1;
+									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+										if (checkEnemy[i].enemy_id == null) {
+											checkEnemyNickname = checkEnemy[i].nickname;
+											checkEnemyPlayerId = checkEnemy[i].player_id;
+											checkEnemyChatId = checkEnemy[i].chat_id;
+										}
+									}
+									
+									if (checkEnemyPlayerId == -1)
 										text += "Vedi in lontananza due giocatori che stanno combattendo all'ultimo sangue, decidi però di non immischiarti nei loro affari...\n";
 									else {
 										objId = 8; // salta gli item dopo
 										isEnemy = 1;
-										text += "Hai incontrato un altro giocatore!\nScambi uno sguardo di sfida a <b>" + checkEnemy[0].nickname + "</b> e ti prepari al duello!";
-										enemy_id = checkEnemy[0].player_id;
-										enemy_chat_id = checkEnemy[0].chat_id;
+										text += "Hai incontrato un altro giocatore!\nScambi uno sguardo di sfida a <b>" + checkEnemyNickname + "</b> e ti prepari al duello!";
+										enemy_id = checkEnemyPlayerId;
+										enemy_chat_id = checkEnemyChatId;
 										enemy_query = ", enemy_id = " + enemy_id + ", my_turn = 1";
 									}
 								}
@@ -49637,7 +49648,7 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 	if (conditions == 1)
 		time = Math.round(time/2);
 	
-	if (turnNumber-1 == middleX) {
+	if (turnNumber-2 >= middleX) {
 		// se raggiunge l'1x1, non restringe più
 		console.log("Restrict end", turnNumber, middleX);
 		connection.query('UPDATE map_lobby_list SET next_restrict_time = NULL WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
@@ -53492,40 +53503,47 @@ function setFullLobby(element, index, array) {
 	var players = element.cnt;
 	var size = Math.round(players*2-1);	// sempre dispari
 	var mapMatrix = generateMap(size, size, players);
-	connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, turn_number, next_restrict_time, conditions) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE), ' + map_conditions + ')', function (err, rows, fields) {
+	
+	connection.query('SELECT map_conditions FROM config', function (err, rows, fields) {
 		if (err) throw err;
-
-		connection.query('SELECT P.id, P.chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
+		
+		var map_conditions = rows[0].map_conditions;
+		
+		connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, turn_number, next_restrict_time, conditions) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE), ' + map_conditions + ')', function (err, rows, fields) {
 			if (err) throw err;
 
-			var kb = {
-				parse_mode: "HTML",
-				reply_markup: {
-					resize_keyboard: true,
-					keyboard: [["Vai in battaglia"], ["Torna al menu"]]
+			connection.query('SELECT P.id, P.chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
+				if (err) throw err;
+
+				var kb = {
+					parse_mode: "HTML",
+					reply_markup: {
+						resize_keyboard: true,
+						keyboard: [["Vai in battaglia"], ["Torna al menu"]]
+					}
+				};
+
+				var posX = 0;
+				var posY = 0;
+				var posArr = [];
+
+				for(i = 0; i < mapMatrix.length; i++) {
+					for(j = 0; j < mapMatrix[i].length; j++) {
+						if (mapMatrix[i][j] == 8)
+							posArr.push([i, j]);
+					}
 				}
-			};
 
-			var posX = 0;
-			var posY = 0;
-			var posArr = [];
+				var life = 5000;
 
-			for(i = 0; i < mapMatrix.length; i++) {
-				for(j = 0; j < mapMatrix[i].length; j++) {
-					if (mapMatrix[i][j] == 8)
-						posArr.push([i, j]);
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+					connection.query('UPDATE map_lobby SET weapon_id = 13, weapon2_id = 56, weapon3_id = 26, posX = ' + posArr[i][0] + ', posY = ' + posArr[i][1] + ', life = ' + life + ', total_life = ' + life + ' WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
+						if (err) throw err;
+					});
+
+					bot.sendMessage(rows[i].chat_id, "La mappa è stata generata!\nEntra in battaglia e conquista la vittoria!", kb);
 				}
-			}
-
-			var life = 5000;
-
-			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-				connection.query('UPDATE map_lobby SET weapon_id = 13, weapon2_id = 56, weapon3_id = 26, posX = ' + posArr[i][0] + ', posY = ' + posArr[i][1] + ', life = ' + life + ', total_life = ' + life + ' WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
-					if (err) throw err;
-				});
-
-				bot.sendMessage(rows[i].chat_id, "La mappa è stata generata!\nEntra in battaglia e conquista la vittoria!", kb);
-			}
+			});
 		});
 	});
 };
