@@ -38164,9 +38164,10 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 	if (d.getDay() == 0)
 		moon = "Nera";
 
-	connection.query('SELECT id, holiday, account_id, exp, reborn, weapon_enchant, weapon2_enchant, weapon3_enchant, class FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, money, holiday, account_id, exp, reborn, weapon_enchant, weapon2_enchant, weapon3_enchant, class FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
+		var my_money = rows[0].money;
 		var lev = Math.floor(rows[0].exp / 10);
 		var reborn = rows[0].reborn;
 		var weapon_enchant = rows[0].weapon_enchant;
@@ -38302,6 +38303,13 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 										setAchievement(player_id, 81, 6000);
 									} else if (rand == 11) {
 										var money = 5000000*reborn;
+										if (money + my_money >= 1000000000) {
+											connection.query('UPDATE player SET moon_coin = moon_coin+2 WHERE id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+											});
+											bot.sendMessage(message.chat.id, "Avresti ottenuto monete, ma avresti raggiunto il cap, ritira!", kbBack);
+											return;
+										}
 										connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 											bot.sendMessage(message.chat.id, "Hai ricevuto " + formatNumber(money) + " §!", kbBack);
