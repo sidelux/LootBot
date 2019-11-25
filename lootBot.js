@@ -11374,6 +11374,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	if (err) throw err;
 																});
 															}
+															
+															setAchievement(player_id, 80, 1);
 														} else if (answer.text == "Ignora") {
 															bot.sendMessage(message.chat.id, "Giri curioso attorno al piccolo specchio, e lo osservi incresparsi come una tavola d'acqua col vento...\nEsiti un ultimo istante, prima di proseguire verso la prossima stanza", dNext);
 
@@ -11639,8 +11641,6 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
-
-																setAchievement(player_id, 80, 1);
 															});
 														} else if (answer.text == "Ignora") {
 
