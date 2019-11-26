@@ -28,6 +28,7 @@ var blackfriday = 0;
 
 // Variabili globali
 var assaultStop = 0;
+var mapStop = 0;
 var teamMission = 1;
 var missionDayLimit = 10;
 var sconto = 10;
@@ -753,6 +754,16 @@ bot.onText(/^\/assaultstop/, function (message, match) {
 	}
 });
 
+bot.onText(/^\/mapstop/, function (message, match) {
+	if (mapStop == 0) {
+		mapStop = 1;
+		bot.sendMessage(message.chat.id, "Mappe messe in manutenzione!", back);
+	} else {
+		mapStop = 0;
+		bot.sendMessage(message.chat.id, "Mappe rimosse dalla manutenzione!", back);
+	}
+});
+
 bot.onText(/^\/nextevent (.+)|^\/nextevent/, function (message, match) {
 	if (message.from.id != 20471035)
 		return;
@@ -1288,7 +1299,8 @@ bot.onText(/^\/comandi/, function (message, match) {
 						"/failglobal (fallimento globale)\n" +
 						"/avviso testo (msg agli attivi < 48h)\n" +
 						"/refill (lancia refreshLife())\n" +
-						"/assaultstop (manutenzione assalto)");
+						"/assaultstop (manutenzione assalto)" +
+					   	"/mapstop (manutenzione mappe)");
 	} else
 		bot.sendMessage(message.chat.id, "Piacerebbe :D");
 });
@@ -5783,6 +5795,13 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back)
 			return;
 		}
+		
+		if (message.from.id != 20471035) {
+			if (mapStop == 1) {
+				bot.sendMessage(message.chat.id, "Manutenzione, riprova più tardi!", back)
+				return;
+			}
+		}
 
 		var player_id = rows[0].id;
 		var trophies = rows[0].trophies;
@@ -5824,6 +5843,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 			}
 		};
 
+		/*
 		if (message.from.id != 20471035) {
 			var team = connection_sync.query("SELECT 1 FROM team_player WHERE player_id = " + player_id + " AND team_id IN (3, 277, 225)");
 			if (Object.keys(team).length == 0) {
@@ -5831,6 +5851,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 				return;
 			}
 		}
+		*/
 
 		connection.query('SELECT map_season_end FROM config', function (err, rows, fields) {
 			if (err) throw err;
@@ -5854,6 +5875,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Benvenuto nelle *Mappe di Lootia*!\nAffronta altri giocatori in mappe generate in modo completamente casuale, ottieni oggetti, monete, sfuggi a trappole e scambia oggetti per potenziare il tuo personaggio.\nOtteni o perdi trofei al termine della partita e vinci interessanti premi al termine della stagione!\nCosa aspetti?", kbEvent);
 					});
+					console.log("Registrazione alle mappe di " + message.from.username);
 				} else {
 					var lobby_id = rows[0].lobby_id;
 					if (lobby_id != null) {
@@ -6388,7 +6410,7 @@ bot.onText(/attacca!/i, function (message) {
 									var defenceRand = Math.random()*100;
 									if (30 >= defenceRand) {
 										text += "L'avversario si protegge con lo scudo e per il contraccolpo vieni stordito!";
-										enemy_text += "Riesci a proteggerti completamente dall'attacco del tuo avversario, inoltra per il contraccolpo l'avversario rimane stordito!";
+										enemy_text += "Riesci a proteggerti completamente dall'attacco del tuo avversario, inoltre per il contraccolpo l'avversario rimane stordito!";
 										fullProtected = 1;
 										query += ", battle_stunned = 1";
 									} else {
@@ -6585,7 +6607,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 					if (last_obj == 4) {
 						var perc = (total_life-life) / total_life*100;
-						var price = perc*1000;
+						var price = Math.round(perc*1000);
 						if (perc == 0) {
 							bot.sendMessage(message.chat.id, "Non necessiti di cure, procedi?", kbYes).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
@@ -20200,7 +20222,6 @@ bot.onText(/team/i, function (message) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
-
 				var kb = {
 					parse_mode: "Markdown",
 					reply_markup: {
@@ -21867,9 +21888,11 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 
 		var player_id = rows[0].id;
 
-		if (assaultStop == 1) {
-			bot.sendMessage(message.chat.id, "Manutenzione, riprova più tardi!", back)
-			return;
+		if (message.from.id != 20471035) {
+			if (assaultStop == 1) {
+				bot.sendMessage(message.chat.id, "Manutenzione, riprova più tardi!", back)
+				return;
+			}
 		}
 
 		var banReason = isBanned(rows[0].account_id);
@@ -32226,7 +32249,7 @@ bot.onText(/cambia visualizzazione/i, function (message) {
 bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 
 	/*
-	if ((message.from.id != 20471035) && (message.from.id != 200492030)){
+	if ((message.from.id != 20471035) && (message.from.id != 200492030)) {
 		bot.sendMessage(message.chat.id, "Manutenzione!", back);
 		return;
 	}
@@ -32401,7 +32424,7 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 																		if (err) throw err;
 																	});
 																	name = formatNumber(money) + "x Monete";
-																} else if (rarity < 9){
+																} else if (rarity < 9) {
 																	rand = Math.random()*100;
 																	if (rand < 80) {
 																		addChest(player_id, 5, 10);
@@ -42632,7 +42655,7 @@ function multiDimensionalUnique(arr) {
 	return uniques;
 }
 
-function generateCardRarity(){
+function generateCardRarity() {
 	var seed = Math.ceil(10 / Math.PI * Math.abs(Math.sqrt(-2.0 * Math.log(Math.random())) * Math.cos(2.0 * Math.PI * Math.random())));
 	if (seed > 10) return 10;
 	else if (seed < 1) return 1;
@@ -48364,7 +48387,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 									});
 								}
 
-								if ((is_boss == 0) && (rows[i].reborn > 2)){
+								if ((is_boss == 0) && (rows[i].reborn > 2)) {
 									var card = connection_sync.query('SELECT id, rarity FROM card_list WHERE name = "' + mob_name + '"');
 									if (Object.keys(card).length == 0) {
 										var randVal = Math.random()*100;
@@ -53627,7 +53650,9 @@ function setFinishedLobbyEnd(element, index, array) {
 						multiplier = 2;
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 						kill_text = "";
-						if (rows[i].kills > 0)
+						if (rows[i].kills == 1)
+							kill_text = "1 uccisione, ";
+						else if (rows[i].kills > 0)
 							kill_text = rows[i].kills + " uccisioni, ";
 						trophies_query = "+" + ((lobby_total_space-pos+1)+parseInt(rows[i].kills))*multiplier;
 						list += pos + "° " + rows[i].nickname + " (" + kill_text + trophies_query + " 🏆)\n";

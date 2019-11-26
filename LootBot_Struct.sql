@@ -50,6 +50,7 @@ CREATE TABLE `ability_list` (
   `prev` int(1) NOT NULL DEFAULT '0',
   `val` int(11) NOT NULL DEFAULT '0',
   `det` text NOT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
