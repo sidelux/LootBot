@@ -46,6 +46,7 @@ var lobby_total_space = 5;
 var lobby_restric_min = 10;
 var lobby_daily_limit = 5;
 var battle_timeout_limit_min = 60;
+var battle_timeout = 2;
 var dragon_limit_search = 15;
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
 var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750, 2500, 3000, 3750];
@@ -5900,6 +5901,9 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 
 								var lobby_players = rows[0].cnt;
 								var map_daily_diff = lobby_daily_limit-map_count;
+								
+								if (map_daily_diff < 0)
+									map_daily_diff = 0;
 
 								var conditions = "\n\nCondizioni mappa: ";
 								if (map_conditions == 0)
@@ -5915,7 +5919,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 								else if (map_conditions == 5)
 									conditions += "💰 Risorse raddoppiate";
 
-								bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\n\n<b>" + lobby_players + "</b> ⚔️ combattenti dentro una lobby\n<b>" + trophies + "</b> 🏆 in questa stagione (terminerà tra " + diff + ")\n<b>" + map_daily_diff + "</b> 💥 partite ancora avviabili oggi" + conditions, kbMain).then(function () {
+								bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\n\n<b>" + lobby_players + "</b> ⚔️ combattenti dentro una lobby\n<b>" + trophies + "</b> 🏆 in questa stagione (terminerà tra " + diff + ")\n<b>" + map_daily_diff + "</b> 💥 partite avviabili oggi per ottenere trofei" + conditions, kbMain).then(function () {
 									answerCallbacks[message.chat.id] = function (answer) {
 										if (answer.text == "Torna al menu")
 											return;
@@ -5928,10 +5932,6 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 											}
 											if (lobby_id != null) {
 												bot.sendMessage(message.chat.id, "Sei già in attesa in una lobby", kbStop);
-												return;
-											}
-											if (map_daily_diff == 0) {
-												bot.sendMessage(message.chat.id, "Hai raggiunto il limite giornaliero di partite, torna domani", kbBack);
 												return;
 											}
 
@@ -6322,159 +6322,183 @@ bot.onText(/attacca!/i, function (message) {
 						answerCallbacks[message.chat.id] = function (answer) {
 							if (answer.text == "Torna al menu")
 								return;
-
-							var damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn);
-							var defence = getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def);
-							var crit = getPlayerCritics(player_id, weapon_crit, weapon2_crit, weapon3_crit, charm_id, power_weapon, power_armor, power_shield, class_id, reborn);
-
-							var full_damage = damage;
-							var full_critical = crit[0];
-							var full_defence = defence;
-
-							var enemy_damage = getPlayerDamage(enemy_exp, enemy_weapon, enemy_weapon_enchant, enemy_charm_id, enemy_power_dmg, enemy_class_id, enemy_reborn);
-							var enemy_defence = getPlayerDefence(enemy_weapon2, enemy_weapon3, enemy_weapon_enchant, enemy_weapon2_enchant, enemy_weapon3_enchant, enemy_exp, enemy_power_def);
-							var enemy_crit = getPlayerCritics(enemy_player_id, enemy_weapon_crit, enemy_weapon2_crit, enemy_weapon3_crit, enemy_charm_id, enemy_power_weapon, enemy_power_armor, enemy_power_shield, enemy_class_id, enemy_reborn);
-
-							var enemy_full_damage = enemy_damage;
-							var enemy_full_critical = enemy_crit[0];
-							var enemy_full_defence = enemy_defence;
-
-							full_damage = full_damage-enemy_full_defence;
-							full_damage = Math.round(full_damage);
-
-							if (conditions == 3)
-								full_damage = full_damage*2;
-
-							if (full_damage < 0)
-								full_damage = 0;
-
-							var query = "";
-							var enemy_query = "";
-
-							var d = new Date();
-							d.setMinutes(d.getMinutes() + 10);
-							var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-
-							query = "my_turn = 0, battle_timeout = NULL";
-							enemy_query = "my_turn = 1, battle_timeout = '" + long_date + "'";
-
-							var text = "";
-							var enemy_text = "";
-							var dmg = 0;	// si riempie solo ad attacco andato a segno
-
-							if (battle_shield == 1)
-								query += ", battle_shield = 0";
-							if (enemy_battle_shield == 1)
-								enemy_query += ", battle_shield = 0";
-
-							if (answer.text.toLowerCase().indexOf("riprenditi") != -1) {
-								if (battle_shield == 2) {
-									text += "Ti riprendi barcollando dall'ultima parata...";
-									enemy_text += "L'avversario barcolla riprendendosi dall'ultimo attacco...";
-									query += ", battle_shield = 0";
-								} else if (battle_stunned == 1) {
-									text += "Ti riprendi barcollando dall'ultimo contraccolpo...";
-									enemy_text += "L'avversario barcolla riprendendosi dall'ultimo contraccolpo...";
-									query += ", battle_stunned = 0";
-								} else {
-									bot.sendMessage(message.chat.id, "Non puoi riprenderti in queste condizioni!", kbFight);
+							
+							connection.query('SELECT enemy_id FROM map_lobby WHERE WHERE player_id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+								
+								if (rows[0].enemy_id == null) {
+									bot.sendMessage(message.chat.id, "Non sei più in combattimento", kbBack);
 									return;
 								}
-							} else if (answer.text.toLowerCase().indexOf("caricato") != -1) {
-								if (battle_heavy == 1) {
-									bot.sendMessage(message.chat.id, "Non puoi caricare un'altro attacco!", kbFight);
-									return;
-								}
-								if ((battle_shield == 2) || (battle_stunned == 1)) {
-									bot.sendMessage(message.chat.id, "Devi riprenderti prima di sferrare un altro attacco!", kbFight);
-									return;
-								}
-								text += "Carichi l'attacco che verrà sferrato al turno successivo!";
-								enemy_text += "L'avversario inizia a caricare l'attacco!";
-								query += ", battle_heavy = 1";
-							} else if (answer.text.toLowerCase().indexOf("attacco") != -1) {
-								if ((battle_shield == 2) || (battle_stunned == 1)) {
-									bot.sendMessage(message.chat.id, "Devi riprenderti prima di sferrare un altro attacco!", kbFight);
-									return;
-								}
-								var heavyText = "";
-								if (battle_heavy == 1) {
+
+								var damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn);
+								var defence = getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def);
+								var crit = getPlayerCritics(player_id, weapon_crit, weapon2_crit, weapon3_crit, charm_id, power_weapon, power_armor, power_shield, class_id, reborn);
+
+								var full_damage = damage;
+								var full_critical = crit[0];
+								var full_defence = defence;
+
+								var enemy_damage = getPlayerDamage(enemy_exp, enemy_weapon, enemy_weapon_enchant, enemy_charm_id, enemy_power_dmg, enemy_class_id, enemy_reborn);
+								var enemy_defence = getPlayerDefence(enemy_weapon2, enemy_weapon3, enemy_weapon_enchant, enemy_weapon2_enchant, enemy_weapon3_enchant, enemy_exp, enemy_power_def);
+								var enemy_crit = getPlayerCritics(enemy_player_id, enemy_weapon_crit, enemy_weapon2_crit, enemy_weapon3_crit, enemy_charm_id, enemy_power_weapon, enemy_power_armor, enemy_power_shield, enemy_class_id, enemy_reborn);
+
+								var enemy_full_damage = enemy_damage;
+								var enemy_full_critical = enemy_crit[0];
+								var enemy_full_defence = enemy_defence;
+
+								full_damage = full_damage-enemy_full_defence;
+								full_damage = Math.round(full_damage);
+
+								if (conditions == 3)
 									full_damage = full_damage*2;
-									heavyText = " con attacco caricato";
-									query += ", battle_heavy = 0";
-								}
-								var fullProtected = 0;
-								var partialProtected = 0;
-								var shieldText = "";
-								if (enemy_battle_shield == 1) {
-									var defenceRand = Math.random()*100;
-									if (30 >= defenceRand) {
-										text += "L'avversario si protegge con lo scudo e per il contraccolpo vieni stordito!";
-										enemy_text += "Riesci a proteggerti completamente dall'attacco del tuo avversario, inoltre per il contraccolpo l'avversario rimane stordito!";
-										fullProtected = 1;
-										query += ", battle_stunned = 1";
+
+								if (full_damage < 0)
+									full_damage = 0;
+
+								var query = "";
+								var enemy_query = "";
+
+								var d = new Date();
+								d.setMinutes(d.getMinutes() + battle_timeout);
+								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+								query = "my_turn = 0, battle_timeout = NULL";
+								enemy_query = "my_turn = 1, battle_timeout = '" + long_date + "'";
+
+								var text = "";
+								var enemy_text = "";
+								var dmg = 0;	// si riempie solo ad attacco andato a segno
+
+								if (battle_shield == 1)
+									query += ", battle_shield = 0";
+								if (enemy_battle_shield == 1)
+									enemy_query += ", battle_shield = 0";
+
+								if (answer.text.toLowerCase().indexOf("riprenditi") != -1) {
+									if (battle_shield == 2) {
+										text += "Ti riprendi barcollando dall'ultima parata...";
+										enemy_text += "L'avversario barcolla riprendendosi dall'ultimo attacco...";
+										query += ", battle_shield = 0";
+									} else if (battle_stunned == 1) {
+										text += "Ti riprendi barcollando dall'ultimo contraccolpo...";
+										enemy_text += "L'avversario barcolla riprendendosi dall'ultimo contraccolpo...";
+										query += ", battle_stunned = 0";
 									} else {
-										partialProtected = 1;
-										enemy_query += ", battle_shield = 2";
+										bot.sendMessage(message.chat.id, "Non puoi riprenderti in queste condizioni!", kbFight);
+										return;
 									}
-								}
-								if (fullProtected == 0) {
-									var randDodge = Math.random()*100;
-									var probDodge = 10;
-									if (probDodge >= randDodge) {
-										text += "L'avversario riesce a schivare il tuo attacco!";
-										enemy_text += "Riesci a schivare l'attacco del tuo avversario!";
-									} else {
-										var randCrit = Math.random()*100;
-										var critText = "";
-										if (full_critical >= randCrit) {
-											full_damage = full_damage*2;
-											critText = " critici";
-										}
-
-										if (partialProtected == 1) {
-											full_damage = Math.round(full_damage/2);
-											shieldText = " ridotto grazie allo scudo";
-										}
-										text += "Attacchi l'avversario e gli infliggi <b>" + formatNumber(full_damage) + "</b> danni" + critText + heavyText + shieldText + "!";
-										enemy_text += "Vieni colpito dall'avversario subendo <b>" + formatNumber(full_damage) + "</b> danni" + critText + heavyText + shieldText + "!";
-										dmg = full_damage;
+								} else if (answer.text.toLowerCase().indexOf("caricato") != -1) {
+									if (battle_heavy == 1) {
+										bot.sendMessage(message.chat.id, "Non puoi caricare un'altro attacco!", kbFight);
+										return;
 									}
-								}
-							} else if (answer.text.toLowerCase().indexOf("difendi") != -1) {
-								if (battle_heavy == 1) {
-									bot.sendMessage(message.chat.id, "Non puoi difenderti se stai caricando un attacco!", kbFight);
+									if ((battle_shield == 2) || (battle_stunned == 1)) {
+										bot.sendMessage(message.chat.id, "Devi riprenderti prima di sferrare un altro attacco!", kbFight);
+										return;
+									}
+									text += "Carichi l'attacco che verrà sferrato al turno successivo!";
+									enemy_text += "L'avversario inizia a caricare l'attacco!";
+									query += ", battle_heavy = 1";
+								} else if (answer.text.toLowerCase().indexOf("attacco") != -1) {
+									if ((battle_shield == 2) || (battle_stunned == 1)) {
+										bot.sendMessage(message.chat.id, "Devi riprenderti prima di sferrare un altro attacco!", kbFight);
+										return;
+									}
+									var heavyText = "";
+									if (battle_heavy == 1) {
+										full_damage = full_damage*2;
+										heavyText = " con attacco caricato";
+										query += ", battle_heavy = 0";
+									}
+									var fullProtected = 0;
+									var partialProtected = 0;
+									var shieldText = "";
+									if (enemy_battle_shield == 1) {
+										var defenceRand = Math.random()*100;
+										if (30 >= defenceRand) {
+											text += "L'avversario si protegge con lo scudo e per il contraccolpo vieni stordito!";
+											enemy_text += "Riesci a proteggerti completamente dall'attacco del tuo avversario, inoltre per il contraccolpo l'avversario rimane stordito!";
+											fullProtected = 1;
+											query += ", battle_stunned = 1";
+										} else {
+											partialProtected = 1;
+											enemy_query += ", battle_shield = 2";
+										}
+									}
+									if (fullProtected == 0) {
+										var randDodge = Math.random()*100;
+										var probDodge = 10;
+										if (probDodge >= randDodge) {
+											text += "L'avversario riesce a schivare il tuo attacco!";
+											enemy_text += "Riesci a schivare l'attacco del tuo avversario!";
+											if (enemy_battle_shield == 2)
+												enemy_query += ", battle_shield = 0";
+											if (enemy_battle_stunned == 1)
+												enemy_query += ", battle_stunned = 0";
+										} else {
+											var randCrit = Math.random()*100;
+											var critText = "";
+											if (full_critical >= randCrit) {
+												full_damage = full_damage*2;
+												critText = " critici";
+											}
+
+											if (partialProtected == 1) {
+												full_damage = Math.round(full_damage/2);
+												shieldText = " ridotto grazie allo scudo";
+											}
+											text += "Attacchi l'avversario e gli infliggi <b>" + formatNumber(full_damage) + "</b> danni" + critText + heavyText + shieldText + "!";
+											enemy_text += "Vieni colpito dall'avversario subendo <b>" + formatNumber(full_damage) + "</b> danni" + critText + heavyText + shieldText + "!";
+											dmg = full_damage;
+										}
+									}
+								} else if (answer.text.toLowerCase().indexOf("difendi") != -1) {
+									if (battle_heavy == 1) {
+										bot.sendMessage(message.chat.id, "Non puoi difenderti se stai caricando un attacco!", kbFight);
+										return;
+									}
+									if ((battle_shield == 2) || (battle_stunned == 1)) {
+										bot.sendMessage(message.chat.id, "Devi riprenderti prima di difenderti nuovamente!", kbFight);
+										return;
+									}
+
+									text += "Ti metti in posizione difensiva in attesa dell'avversario!";
+									enemy_text += "L'avversario si mette in posizione difensiva con lo scudo pronto!";
+									query += ", battle_shield = 1";
+								} else
 									return;
-								}
-								if ((battle_shield == 2) || (battle_stunned == 1)) {
-									bot.sendMessage(message.chat.id, "Devi riprenderti prima di difenderti nuovamente!", kbFight);
-									return;
-								}
 
-								text += "Ti metti in posizione difensiva in attesa dell'avversario!";
-								enemy_text += "L'avversario si mette in posizione difensiva con lo scudo pronto!";
-								query += ", battle_shield = 1";
-							} else
-								return;
+								if (enemy_life - dmg <= 0) {
+									query += ", money = money+" + enemy_money + ", scrap = scrap+" + enemy_scrap + ", match_kills = match_kills+1, global_kills = global_kills+1";
+									enemy_query += ", life = 0, money = money-" + enemy_money + ", scrap = scrap-" + enemy_scrap;
+									text += "\nIn modo da sconfiggerlo definitivamente con un colpo mortale!";
+									if ((enemy_money > 0) || (enemy_scrap > 0)) {
+										text += "\nFrugando nella sua sacca ottieni ";
+										if ((enemy_money > 0) && (enemy_scrap > 0))
+											text += "<b>" + formatNumber(enemy_money) + "</b> § e <b>" + enemy_scrap + "</b> 🔩!";
+										else {
+											if (enemy_money > 0)
+												text += "<b>" + formatNumber(enemy_money) + "</b> §";
+											if (enemy_scrap > 0)
+												text += "<b>" + enemy_scrap + "</b> 🔩!";
+										}
+									}
+									enemy_text += "\nVieni sconfitto definitivamente con un colpo mortale!";
+									mapPlayerKilled(lobby_id, enemy_id, 2, null, 1);
+								} else
+									enemy_query += ", life = life-" + dmg;
 
-							if (enemy_life - dmg <= 0) {
-								query += ", money = money+" + enemy_money + ", scrap = scrap+" + enemy_scrap + ", match_kills = match_kills+1, global_kills = global_kills+1";
-								enemy_query += ", life = 0, money = money-" + enemy_money + ", scrap = scrap-" + enemy_scrap;
-								text += "\nIn modo da sconfiggerlo definitivamente con un colpo mortale!\nFrugando nella sua sacca ottieni <b>" + formatNumber(enemy_money) + "</b> § e <b>" + enemy_scrap + "</b> 🔩!";
-								enemy_text += "\nVieni sconfitto definitivamente con un colpo mortale!";
-								mapPlayerKilled(lobby_id, enemy_id, 2, null, 1);
-							} else
-								enemy_query += ", life = life-" + dmg;
+								connection.query('UPDATE map_lobby SET ' + query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+									if (err) throw err;
+								});
+								connection.query('UPDATE map_lobby SET ' + enemy_query + ' WHERE player_id = ' + enemy_id, function (err, rows, fields) {
+									if (err) throw err;
+								});
 
-							connection.query('UPDATE map_lobby SET ' + query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
-								if (err) throw err;
+								bot.sendMessage(message.chat.id, text, kbFightWait);
+								bot.sendMessage(enemy_chat_id, enemy_text, kbFightEnemy);
 							});
-							connection.query('UPDATE map_lobby SET ' + enemy_query + ' WHERE player_id = ' + enemy_id, function (err, rows, fields) {
-								if (err) throw err;
-							});
-
-							bot.sendMessage(message.chat.id, text, kbFightWait);
-							bot.sendMessage(enemy_chat_id, enemy_text, kbFightEnemy);
 						}
 					});
 				});
@@ -6607,7 +6631,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 					if (last_obj == 4) {
 						var perc = (total_life-life) / total_life*100;
-						var price = Math.round(perc*1000);
+						var price = Math.round(perc*100);
 						if (perc == 0) {
 							bot.sendMessage(message.chat.id, "Non necessiti di cure, procedi?", kbYes).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
@@ -6727,12 +6751,13 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											if (err) throw err;
 											bot.sendMessage(message.chat.id, "Hai accettato lo scambio!" + text, kbBack);
 										});
-									} else {
+									} else if (answer.text.toLowerCase().indexOf("no") != -1) {
 										connection.query('UPDATE map_lobby SET last_obj = NULL, last_obj_val = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 											bot.sendMessage(message.chat.id, "Hai rinunciato allo scambio", kbBack);
 										});
-									}
+									} else 
+										return;
 								}
 							});
 						});
@@ -6829,12 +6854,13 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											if (err) throw err;
 											bot.sendMessage(message.chat.id, "Hai completato l'acquisto!" + text, kbBack);
 										});
-									} else {
+									} else if (answer.text.toLowerCase().indexOf("no") != -1) {
 										connection.query('UPDATE map_lobby SET last_obj = NULL, last_obj_val = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 											bot.sendMessage(message.chat.id, "Hai rinunciato all'acquisto", kbBack);
 										});
-									}
+									} else
+										return;
 								}
 							});
 						});
@@ -49702,7 +49728,6 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 
 	if (turnNumber+1 == middleX) {
 		// se raggiunge l'1x1, non restringe più
-		console.log("Restrict end", turnNumber, middleX);
 		connection.query('UPDATE map_lobby_list SET next_restrict_time = NULL WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
@@ -53638,7 +53663,7 @@ function setFinishedLobbyEnd(element, index, array) {
 					connection_sync.query('INSERT INTO map_history (map_lobby_id, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + winner_player_id + ', 1, ' + winner_match_kills + ')');
 				}
 
-				connection.query('SELECT M.id As mapId, P.id, P.nickname, P.trophies, M.position, M.kills, M.life FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position ASC, kills DESC, life DESC, insert_date DESC', function (err, rows, fields) {
+				connection.query('SELECT M.id As mapId, P.id, P.nickname, P.trophies, M.position, M.kills, M.life, P.map_count FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position ASC, kills DESC, life DESC, insert_date DESC', function (err, rows, fields) {
 					if (err) throw err;
 
 					var list = "";
@@ -53655,6 +53680,8 @@ function setFinishedLobbyEnd(element, index, array) {
 						else if (rows[i].kills > 0)
 							kill_text = rows[i].kills + " uccisioni, ";
 						trophies_query = "+" + ((lobby_total_space-pos+1)+parseInt(rows[i].kills))*multiplier;
+						if (rows[i].map_count >= lobby_daily_limit)
+							trophies_query = "+0";
 						list += pos + "° " + rows[i].nickname + " (" + kill_text + trophies_query + " 🏆)\n";
 
 						// aggiorna la history se c'erano due posizioni uguali per combattimento
