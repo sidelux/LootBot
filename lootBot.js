@@ -6323,7 +6323,7 @@ bot.onText(/attacca!/i, function (message) {
 							if (answer.text == "Torna al menu")
 								return;
 							
-							connection.query('SELECT enemy_id FROM map_lobby WHERE WHERE player_id = ' + player_id, function (err, rows, fields) {
+							connection.query('SELECT enemy_id FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
 								
 								if (rows[0].enemy_id == null) {
@@ -6331,21 +6331,25 @@ bot.onText(/attacca!/i, function (message) {
 									return;
 								}
 
-								var damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn);
-								var defence = getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def);
+								var damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn, 1);
+								var defence = getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def, 1);
 								var crit = getPlayerCritics(player_id, weapon_crit, weapon2_crit, weapon3_crit, charm_id, power_weapon, power_armor, power_shield, class_id, reborn);
 
 								var full_damage = damage;
 								var full_critical = crit[0];
 								var full_defence = defence;
+								var full_armor = crit[1];
+								var full_shield = crit[2];
 
-								var enemy_damage = getPlayerDamage(enemy_exp, enemy_weapon, enemy_weapon_enchant, enemy_charm_id, enemy_power_dmg, enemy_class_id, enemy_reborn);
-								var enemy_defence = getPlayerDefence(enemy_weapon2, enemy_weapon3, enemy_weapon_enchant, enemy_weapon2_enchant, enemy_weapon3_enchant, enemy_exp, enemy_power_def);
+								var enemy_damage = getPlayerDamage(enemy_exp, enemy_weapon, enemy_weapon_enchant, enemy_charm_id, enemy_power_dmg, enemy_class_id, enemy_reborn, 1);
+								var enemy_defence = getPlayerDefence(enemy_weapon2, enemy_weapon3, enemy_weapon_enchant, enemy_weapon2_enchant, enemy_weapon3_enchant, enemy_exp, enemy_power_def, 1);
 								var enemy_crit = getPlayerCritics(enemy_player_id, enemy_weapon_crit, enemy_weapon2_crit, enemy_weapon3_crit, enemy_charm_id, enemy_power_weapon, enemy_power_armor, enemy_power_shield, enemy_class_id, enemy_reborn);
 
 								var enemy_full_damage = enemy_damage;
 								var enemy_full_critical = enemy_crit[0];
 								var enemy_full_defence = enemy_defence;
+								var enemy_full_armor = enemy_crit[1];
+								var enemy_full_shield = enemy_crit[2];
 
 								full_damage = full_damage-enemy_full_defence;
 								full_damage = Math.round(full_damage);
@@ -6362,6 +6366,9 @@ bot.onText(/attacca!/i, function (message) {
 								var d = new Date();
 								d.setMinutes(d.getMinutes() + battle_timeout);
 								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+								
+								console.log("full_damage", full_damage);
+								console.log("full_defence", full_defence);
 
 								query = "my_turn = 0, battle_timeout = NULL";
 								enemy_query = "my_turn = 1, battle_timeout = '" + long_date + "'";
@@ -6416,7 +6423,7 @@ bot.onText(/attacca!/i, function (message) {
 									var shieldText = "";
 									if (enemy_battle_shield == 1) {
 										var defenceRand = Math.random()*100;
-										if (30 >= defenceRand) {
+										if (enemy_full_armor >= defenceRand) {
 											text += "L'avversario si protegge con lo scudo e per il contraccolpo vieni stordito!";
 											enemy_text += "Riesci a proteggerti completamente dall'attacco del tuo avversario, inoltre per il contraccolpo l'avversario rimane stordito!";
 											fullProtected = 1;
@@ -6428,14 +6435,22 @@ bot.onText(/attacca!/i, function (message) {
 									}
 									if (fullProtected == 0) {
 										var randDodge = Math.random()*100;
-										var probDodge = 10;
-										if (probDodge >= randDodge) {
+										if (enemy_full_shield >= randDodge) {
 											text += "L'avversario riesce a schivare il tuo attacco!";
 											enemy_text += "Riesci a schivare l'attacco del tuo avversario!";
-											if (enemy_battle_shield == 2)
-												enemy_query += ", battle_shield = 0";
-											if (enemy_battle_stunned == 1)
-												enemy_query += ", battle_stunned = 0";
+											if (enemy_battle_shield == 2) {
+												if (enemy_query.indexOf("battle_shield") != -1)
+													enemy_query = enemy_query.replace("battle_shield = 2", "battle_shield = 0");
+												else
+													enemy_query += ", battle_shield = 0";
+											}
+											if (enemy_battle_stunned == 1) {
+												if (enemy_query.indexOf("battle_stunned") != -1)
+													enemy_query = enemy_query.replace("battle_stunned = 1", "battle_stunned = 0");
+												else
+													enemy_query += ", battle_stunned = 0";
+											}
+											console.log(enemy_battle_shield, enemy_battle_stunned, enemy_query);
 										} else {
 											var randCrit = Math.random()*100;
 											var critText = "";
@@ -23929,7 +23944,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		if (Object.keys(avg_players).length > 0) {
 																			var avg_tot = 0;
 																			for (var i = 0, len = Object.keys(avg_players).length; i < len; i++) {
-																				avg_tot += getPlayerDamage(avg_players[0].exp, avg_players[0].weapon, avg_players[0].weapon_enchant, avg_players[0].charm_id, avg_players[0].power_dmg, avg_players[0].class, avg_players[0].reborn);
+																				avg_tot += getPlayerDamage(avg_players[0].exp, avg_players[0].weapon, avg_players[0].weapon_enchant, avg_players[0].charm_id, avg_players[0].power_dmg, avg_players[0].class, avg_players[0].reborn, 0);
 																			}
 																			avg_dmg = avg_tot/Object.keys(avg_players).length;
 																		}
@@ -24173,7 +24188,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			magic3 = 0;
 																			magic4 = 0;
 
-																			damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn);
+																			damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn, 0);
 																			crit = getPlayerCritics(playerid, weapon_crit, weapon2_crit, weapon3_crit, charm_id, power_weapon, power_armor, power_shield, class_id, reborn);
 																			dragon = getPlayerDragon(playerid, class_id, reborn, charm_id);
 
@@ -24583,7 +24598,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			power_armor = player[i].power_armor;
 																			power_shield = player[i].power_shield;
 
-																			defence = getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def);
+																			defence = getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def, 0);
 																			crit = getPlayerCritics(playerid, weapon_crit, weapon2_crit, weapon3_crit, charm_id, power_weapon, power_armor, power_shield, class_id, reborn);
 																			dragon = getPlayerDragon(playerid, class_id, reborn, charm_id);
 
@@ -24930,7 +24945,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			magic3 = 0;
 																			magic4 = 0;
 
-																			damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn);
+																			damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn, 0);
 																			crit = getPlayerCritics(playerid, weapon_crit, weapon2_crit, weapon3_crit, charm_id, power_weapon, power_armor, power_shield, class_id, reborn);
 																			dragon = getPlayerDragon(playerid, class_id, reborn, charm_id);
 
@@ -48635,8 +48650,11 @@ function repairWall(team_id) {
 	});
 }
 
-function getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn) {
+function getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn, fixed) {
 	var danno = Math.round(Math.random() * (exp / 15 + weapon) + weapon) + weapon_enchant + power_dmg;
+	
+	if (fixed == 1)
+		danno = Math.round(((exp / 15 + weapon) + weapon) + weapon_enchant + power_dmg);
 
 	if (charm_id == 62)
 		danno += 10;
@@ -48666,11 +48684,14 @@ function getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class
 	return danno;
 }
 
-function getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def) {
+function getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def, fixed) {
 	var defence = 0;
 	if (weapon2 < 0) {
 		var defence = Math.abs(weapon2) + Math.abs(weapon3) + weapon2_enchant + weapon3_enchant;
-		defence += Math.round(Math.random() * ((exp / 10 + defence) / 2));
+		if (fixed == 1)
+			defence += Math.round((exp / 10 + defence) / 2);
+		else
+			defence += Math.round(Math.random() * ((exp / 10 + defence) / 2));
 	}
 	defence = parseInt(defence+power_def);
 
