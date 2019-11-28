@@ -5919,7 +5919,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 								else if (map_conditions == 5)
 									conditions += "💰 Risorse raddoppiate";
 
-								bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\n\n<b>" + lobby_players + "</b> ⚔️ combattenti dentro una lobby\n<b>" + trophies + "</b> 🏆 in questa stagione (terminerà tra " + diff + ")\n<b>" + map_daily_diff + "</b> 💥 partite avviabili oggi per ottenere trofei" + conditions, kbMain).then(function () {
+								bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\n\n<b>" + lobby_players + "</b> ⚔️ combattenti dentro una lobby\n<b>" + trophies + "</b> 🏆 in questa stagione (terminerà tra " + diff + ")\n<b>" + map_daily_diff + "</b> 💥 partite avviabili oggi" + conditions, kbMain).then(function () {
 									answerCallbacks[message.chat.id] = function (answer) {
 										if (answer.text == "Torna al menu")
 											return;
@@ -5932,6 +5932,10 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 											}
 											if (lobby_id != null) {
 												bot.sendMessage(message.chat.id, "Sei già in attesa in una lobby", kbStop);
+												return;
+											}
+											if (map_daily_diff <= 0) {
+												bot.sendMessage(message.chat.id, "Hai già giocato il numero massimo di partite oggi", kbStop);
 												return;
 											}
 
@@ -6350,8 +6354,10 @@ bot.onText(/attacca!/i, function (message) {
 								var enemy_full_defence = enemy_defence;
 								var enemy_full_armor = enemy_crit[1];
 								var enemy_full_shield = enemy_crit[2];
+								
+								console.log(full_damage, enemy_full_defence, full_damage-enemy_full_defence);
 
-								full_damage = full_damage-enemy_full_defence;
+								// full_damage = full_damage-enemy_full_defence;
 								full_damage = Math.round(full_damage);
 
 								if (conditions == 3)
@@ -6445,7 +6451,11 @@ bot.onText(/attacca!/i, function (message) {
 										if (enemy_full_shield >= randDodge) {
 											text += "L'avversario riesce a schivare il tuo attacco!";
 											enemy_text += "Riesci a schivare l'attacco del tuo avversario!";
-											if (enemy_battle_shield == 2)
+											/*
+											console.log("enemy_battle_shield", enemy_battle_shield);
+											console.log("enemy_battle_stunned", enemy_battle_stunned);
+											*/
+											if ((enemy_battle_shield == 2) || (partialProtected == 1))
 												set_enemy_battle_shield = 0;
 											if (enemy_battle_stunned == 1)
 												set_enemy_battle_stunned = 0;
@@ -6481,8 +6491,6 @@ bot.onText(/attacca!/i, function (message) {
 									return;
 
 								if (enemy_life - dmg <= 0) {
-									query += ", money = money+" + enemy_money + ", scrap = scrap+" + enemy_scrap + ", match_kills = match_kills+1, global_kills = global_kills+1";
-									enemy_query += ", life = 0, money = money-" + enemy_money + ", scrap = scrap-" + enemy_scrap;
 									text += "\nIn modo da sconfiggerlo definitivamente con un colpo mortale!";
 									if ((enemy_money > 0) || (enemy_scrap > 0)) {
 										text += "\nFrugando nella sua sacca ottieni ";
@@ -6495,6 +6503,56 @@ bot.onText(/attacca!/i, function (message) {
 												text += "<b>" + enemy_scrap + "</b> 🔩!";
 										}
 									}
+									
+									// Modifica anche gli altri due
+									var item_query = "";
+									var enemy_item_query = "";
+									
+									var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + enemy_weapon_id);
+									var weapon_name = weaponQuery[0].name;
+									if (weapon_id != null) {
+										if (enemy_weapon > weapon) {
+											text += "\nArma " + weapon_name + " sgraffignata e sostituita!";
+											item_query = ", weapon_id = '" + enemy_weapon_id + "'";
+											enemy_item_query = ", weapon_id = NULL";
+										}
+									} else {
+										text += "\nArma " + weapon_name + " sgraffignata ed equipaggiata!";
+										item_query = ", weapon_id = '" + enemy_weapon_id + "'";
+										enemy_item_query = ", weapon_id = NULL";
+									}
+										
+									var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + enemy_weapon2_id);
+									var weapon_name = weaponQuery[0].name;
+									if (weapon2_id != null) {
+										if (enemy_weapon2 < weapon2) {
+											text += "\nArmatura " + weapon_name + " sgraffignata e sostituita!";
+											item_query = ", weapon2_id = '" + enemy_weapon2_id + "'";
+											enemy_item_query = ", weapon2_id = NULL";
+										}
+									} else {
+										text += "\nArmatura " + weapon_name + " sgraffignata ed equipaggiata!";
+										item_query = ", weapon2_id = '" + enemy_weapon2_id + "'";
+										enemy_item_query = ", weapon2_id = NULL";
+									}
+										
+									var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + enemy_weapon3_id);
+									var weapon_name = weaponQuery[0].name;
+									if (weapon3_id != null) {
+										if (enemy_weapon3 < weapon3) {
+											text += "\nScudo " + weapon_name + " sgraffignato e sostituito!";
+											item_query = ", weapon3_id = '" + enemy_weapon3_id + "'";
+											enemy_item_query = ", weapon3_id = NULL";
+										}
+									} else {
+										text += "\nScudo " + weapon_name + " sgraffignato ed equipaggiato!";
+										item_query = ", weapon3_id = '" + enemy_weapon3_id + "'";
+										enemy_item_query = ", weapon3_id = NULL";
+									}
+									
+									query += ", money = money+" + enemy_money + ", scrap = scrap+" + enemy_scrap + ", match_kills = match_kills+1, global_kills = global_kills+1" + item_query;
+									enemy_query += ", life = 0, money = money-" + enemy_money + ", scrap = scrap-" + enemy_scrap + enemy_item_query;
+									
 									enemy_text += "\nVieni sconfitto definitivamente con un colpo mortale!";
 									mapPlayerKilled(lobby_id, enemy_id, 2, null, 1);
 								} else
@@ -53737,7 +53795,7 @@ function setFinishedLobbyEnd(element, index, array) {
 						connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 							if (err) throw err;
 
-							var msg = "La partità è terminata!";
+							var msg = "La partita è terminata!";
 							if (winner_player_id != -1)
 								msg += "\n🎉 Il vincitore è <b>" + winner_nickname + "</b>! 🎉";
 							msg += "\n\n" + list;
