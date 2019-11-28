@@ -6355,10 +6355,10 @@ bot.onText(/attacca!/i, function (message) {
 								var enemy_full_armor = enemy_crit[1];
 								var enemy_full_shield = enemy_crit[2];
 								
-								console.log(full_damage, enemy_full_defence, full_damage-enemy_full_defence);
-
-								// full_damage = full_damage-enemy_full_defence;
+								// console.log(full_damage, enemy_full_defence);
+								full_damage = 3*(full_damage / Math.log(enemy_full_defence+1));
 								full_damage = Math.round(full_damage);
+								// console.log("full_damage", full_damage);
 
 								if (conditions == 3)
 									full_damage = full_damage*2;
@@ -6372,11 +6372,6 @@ bot.onText(/attacca!/i, function (message) {
 								var d = new Date();
 								d.setMinutes(d.getMinutes() + battle_timeout);
 								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-								
-								/*
-								console.log("full_damage", full_damage);
-								console.log("full_defence", full_defence);
-								*/
 
 								query = "my_turn = 0, battle_timeout = NULL";
 								enemy_query = "my_turn = 1, battle_timeout = '" + long_date + "'";
@@ -6504,6 +6499,8 @@ bot.onText(/attacca!/i, function (message) {
 										}
 									}
 									
+									text += "\n";
+									
 									// Modifica anche gli altri due
 									var item_query = "";
 									var enemy_item_query = "";
@@ -6511,44 +6508,49 @@ bot.onText(/attacca!/i, function (message) {
 									var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + enemy_weapon_id);
 									var weapon_name = weaponQuery[0].name;
 									if (weapon_id != null) {
+										// console.log("weapon", enemy_weapon, weapon);
 										if (enemy_weapon > weapon) {
-											text += "\nArma " + weapon_name + " sgraffignata e sostituita!";
-											item_query = ", weapon_id = '" + enemy_weapon_id + "'";
+											text += "\nArma <b>" + weapon_name + "</b> sgraffignata e sostituita!";
+											item_query = ", weapon_id = " + enemy_weapon_id;
 											enemy_item_query = ", weapon_id = NULL";
 										}
 									} else {
-										text += "\nArma " + weapon_name + " sgraffignata ed equipaggiata!";
-										item_query = ", weapon_id = '" + enemy_weapon_id + "'";
+										text += "\nArma <b>" + weapon_name + "</b> sgraffignata ed equipaggiata!";
+										item_query = ", weapon_id = " + enemy_weapon_id;
 										enemy_item_query = ", weapon_id = NULL";
 									}
 										
 									var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + enemy_weapon2_id);
 									var weapon_name = weaponQuery[0].name;
 									if (weapon2_id != null) {
+										// console.log("weapon2", enemy_weapon2, weapon2);
 										if (enemy_weapon2 < weapon2) {
-											text += "\nArmatura " + weapon_name + " sgraffignata e sostituita!";
-											item_query = ", weapon2_id = '" + enemy_weapon2_id + "'";
+											text += "\nArmatura <b>" + weapon_name + "</b> sgraffignata e sostituita!";
+											item_query = ", weapon2_id = " + enemy_weapon2_id;
 											enemy_item_query = ", weapon2_id = NULL";
 										}
 									} else {
-										text += "\nArmatura " + weapon_name + " sgraffignata ed equipaggiata!";
-										item_query = ", weapon2_id = '" + enemy_weapon2_id + "'";
+										text += "\nArmatura <b>" + weapon_name + "</b> sgraffignata ed equipaggiata!";
+										item_query = ", weapon2_id = " + enemy_weapon2_id;
 										enemy_item_query = ", weapon2_id = NULL";
 									}
 										
 									var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + enemy_weapon3_id);
 									var weapon_name = weaponQuery[0].name;
 									if (weapon3_id != null) {
+										// console.log("weapon3", enemy_weapon3, weapon3);
 										if (enemy_weapon3 < weapon3) {
-											text += "\nScudo " + weapon_name + " sgraffignato e sostituito!";
-											item_query = ", weapon3_id = '" + enemy_weapon3_id + "'";
+											text += "\nScudo <b>" + weapon_name + "</b> sgraffignato e sostituito!";
+											item_query = ", weapon3_id = " + enemy_weapon3_id;
 											enemy_item_query = ", weapon3_id = NULL";
 										}
 									} else {
-										text += "\nScudo " + weapon_name + " sgraffignato ed equipaggiato!";
-										item_query = ", weapon3_id = '" + enemy_weapon3_id + "'";
+										text += "\nScudo <b>" + weapon_name + "</b> sgraffignato ed equipaggiato!";
+										item_query = ", weapon3_id = " + enemy_weapon3_id;
 										enemy_item_query = ", weapon3_id = NULL";
 									}
+									
+									// console.log("query", query);
 									
 									query += ", money = money+" + enemy_money + ", scrap = scrap+" + enemy_scrap + ", match_kills = match_kills+1, global_kills = global_kills+1" + item_query;
 									enemy_query += ", life = 0, money = money-" + enemy_money + ", scrap = scrap-" + enemy_scrap + enemy_item_query;
@@ -6774,7 +6776,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 								item_power = rows[0].power_shield;
 							}
 
-							bot.sendMessage(message.chat.id, "Puoi scambiare " + price + " 🔩 Rottam" + plur + " per <b>" + item_name + "</b>, al momento ne possiedi " + scrap + ", procedi?", kbYesNo).then(function () {
+							bot.sendMessage(message.chat.id, "Puoi scambiare " + price + " 🔩 Rottam" + plur + " per <b>" + item_name + "</b> (" + item_power + "), al momento ne possiedi " + scrap + ", procedi?", kbYesNo).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text == "Torna al menu")
 										return;
@@ -6867,7 +6869,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 								item_power = rows[0].power_shield;
 							}
 
-							bot.sendMessage(message.chat.id, "Puoi acquistare <b>" + item_name + "</b> per " + formatNumber(price) + " §, al momento possiedi " + formatNumber(money) + " §, procedi?", kbYesNo).then(function () {
+							bot.sendMessage(message.chat.id, "Puoi acquistare <b>" + item_name + "</b> (" + item_power + ") per " + formatNumber(price) + " §, al momento possiedi " + formatNumber(money) + " §, procedi?", kbYesNo).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text == "Torna al menu")
 										return;
@@ -13824,20 +13826,13 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																													if (err) throw err;
 																												});
 																												getrank2 = 1;
+																												console.log("rank 1");
 																											} else if (rank - rows[0].rank >= 150) {
 																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + pass_id, function (err, rows, fields) {
 																													if (err) throw err;
 																												});
 																												getrank2 = 1;
-																											} else {
-																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + player_id, function (err, rows, fields) {
-																													if (err) throw err;
-																												});
-																												getrank1 = 1;
-																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + pass_id, function (err, rows, fields) {
-																													if (err) throw err;
-																												});
-																												getrank2 = 1;
+																												console.log("rank 2");
 																											}
 
 																											if (getrank2 == 1)
