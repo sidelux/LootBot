@@ -1011,7 +1011,7 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 										if (err) throw err;
 
 										var minValue = 100;
-										var bonusText = "-25% tempo missioni";
+										var bonusText = "+7 PA alla sconfitta dei mob/boss";
 
 										var text = "";
 
@@ -7387,13 +7387,17 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									d.setMinutes(d.getMinutes() + battle_timeout_limit_min);
 									var long_date_battle = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
+									var d = new Date();
+									d.setMinutes(d.getMinutes() + battle_timeout);
+									var long_date_turn = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+									
 									var life_query = "";
 									if (life_lost > 0)
 										life_query = ', life = life-' + life_lost;
 									else if (life_gain > 0)
 										life_query = ', life = life+' + life_gain;
 
-									connection.query('UPDATE map_lobby SET wait_time = "' + long_date + '", battle_timeout_limit = "' + long_date_battle + '", posX = ' + posX + ', posY = ' + posY + item_query + last_obj_query + scrap_query + enemy_query + pulse_query + life_query + ', money = money+' + money + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+									connection.query('UPDATE map_lobby SET wait_time = "' + long_date + '", battle_timeout = "' + long_date_turn + '", battle_timeout_limit = "' + long_date_battle + '", posX = ' + posX + ', posY = ' + posY + item_query + last_obj_query + scrap_query + enemy_query + pulse_query + life_query + ', money = money+' + money + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 
 										if (isBuild)
@@ -42018,11 +42022,12 @@ bot.onText(/missione/i, function (message) {
 							duration_extend += 25;
 						}
 						*/
-
+						/*
 						if (global_end == 1) {
 							name += " (Ridotta per bonus globale)";
 							duration_reduce += 25;
 						}
+						*/
 
 						if (duration_reduce > 0)
 							duration -= (duration / 100 * duration_reduce);
@@ -48045,7 +48050,6 @@ function assaultIncrement(message, player_id, team_id) {
 				if (silent == 0)
 					bot.sendMessage(message.chat.id, "Hai attivato l'incremento per questo turno!", kbBack);
 				setAchievement(player_id, 44, 1);
-				globalAchievement(player_id, 1);
 
 				connection.query('SELECT 1 FROM assault_increment_history WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
@@ -48367,12 +48371,10 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								chest5 = Math.round(chest5);
 								chest6 = Math.round(chest6);
 
-								/*
 								if (rows[i].global_end == 1) {
 									paUpd += 7;
 									paView += 7;
 								}
-								*/
 
 								if (is_boss == 1) {
 									randProb = Math.random()*100;
@@ -49436,10 +49438,14 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 										d.setMinutes(d.getMinutes() + battle_timeout_limit_min);
 										var long_date_battle = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
+										var d = new Date();
+										d.setMinutes(d.getMinutes() + battle_timeout);
+										var long_date_turn = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+										
 										var encounter_id = rows[0].player_id;
 										var encounter_chat_id = rows[0].chat_id;
 
-										connection.query('UPDATE map_lobby SET battle_timeout_limit = "' + long_date_battle + '", enemy_id = ' + encounter_id + ', my_turn = 1 WHERE player_id = ' + enemy_id, function (err, rows, fields) {
+										connection.query('UPDATE map_lobby SET battle_timeout = "' + long_date_turn + '", battle_timeout_limit = "' + long_date_battle + '", enemy_id = ' + encounter_id + ', my_turn = 1 WHERE player_id = ' + enemy_id, function (err, rows, fields) {
 											if (err) throw err;
 											connection.query('SELECT nickname, chat_id FROM player WHERE id = ' + enemy_id, function (err, rows, fields) {
 												if (err) throw err;
@@ -53410,7 +53416,7 @@ function reloadFestival(manualFinish) {
 								item_name = rows[0].name;
 							}
 
-							connection.query('SELECT rarity, name, id FROM item WHERE craftable = 1 AND rarity = "' + shortname + '" AND id NOT IN (SELECT item_id FROM event_crafting_item) ORDER BY RAND()', function (err, rows, fields) {
+							connection.query('SELECT rarity, name, id FROM item WHERE craftable = 1 AND rarity = "' + shortname + '" AND id NOT IN (SELECT item_id FROM event_crafting_item WHERE (CURRENT_DATE() = date(time) OR CURRENT_DATE() = DATE_SUB(date(time), INTERVAL 1 DAY))) ORDER BY RAND()', function (err, rows, fields) {
 								if (err) throw err;
 
 								if ((Object.keys(rows).length > 0) && (item_id == 0)) {
@@ -54433,6 +54439,9 @@ function resetMapCount() {
 	connection.query('UPDATE player SET map_count = 0 WHERE map_count != 0', function (err, rows, fields) {
 		if (err) throw err;
 	});
+	connection.query('UPDATE map_lobby SET lobby_id = NULL WHERE lobby_id != NULL', function (err, rows, fields) {
+		if (err) throw err;
+	});
 };
 
 function resetDragonReject() {
@@ -55063,6 +55072,9 @@ function setFinishedMission(element, index, array) {
 								*/
 
 								exp = Math.round(exp);
+								
+								if (mission_gem == 0)
+									globalAchievement(element.id, 1);
 
 								bot.sendMessage(chat_id, "Missione completata! Hai ottenuto:\n" + crazyText + "*" + rows[0].name + "* (" + rows[0].rarity_shortname + ")" + evolved_text + ", *" + formatNumber(money) + "* § e *" + exp + "* exp " + extra + "!" + rarity_miss, mark);
 
