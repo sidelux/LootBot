@@ -13837,26 +13837,28 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																										var getrank1 = 0;
 
 																										if (pass_id != 0) {
-																											var getrank2 = 0;
-																											console.log("rank: ", dungeon_min_rank, rows[0].rank, min_rank_succ);
-																											
-																											if ((dungeon_min_rank <= rows[0].rank) && (min_rank_succ >= rows[0].rank)) {	// stessa fascia di rango
-																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + player_id, function (err, rows, fields) {
-																													if (err) throw err;
-																												});
+																											var getrank2 = 0;																											
+																											if ((dungeon_min_rank <= rank) && (min_rank_succ >= rank)) {	// stessa fascia di rango
 																												getrank1 = 1;
-																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + pass_id, function (err, rows, fields) {
-																													if (err) throw err;
-																												});
 																												getrank2 = 1;
-																											} else if (rank - rows[0].rank >= 150) {
-																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + pass_id, function (err, rows, fields) {
-																													if (err) throw err;
-																												});
+																											} else if (rank - rows[0].rank >= 150)
+																												getrank2 = 1;
+																											else {
+																												getrank1 = 1;
 																												getrank2 = 1;
 																											}
 																											
-																											bot.sendMessage(20471035, "rank: " + dungeon_min_rank + " " + rows[0].rank + " " + min_rank_succ + " " + getrank1 + " " + getrank2);
+																											if (getrank1 == 1) {
+																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																													if (err) throw err;
+																												});
+																											}
+																											
+																											if (getrank2 == 1) {
+																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + pass_id, function (err, rows, fields) {
+																													if (err) throw err;
+																												});
+																											}
 
 																											if (getrank2 == 1)
 																												bot.sendMessage(rows[0].chat_id, "Il tuo compagno " + message.from.username + " ha completato il dungeon ed hai ottenuto " + rankPoint + " punt" + plur + " rango!");
@@ -38298,7 +38300,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 	};
 
 	var d = new Date();
-	if (luckyMode == 0) {
+	if ((luckyMode == 0) && (blackfriday == 0)) {
 		if ((d.getDay() == 0) || (d.getDay() == 6)) {
 			bot.sendMessage(message.chat.id, "Puoi tentare la fortuna solamente in settimana!", back);
 			return;
@@ -48708,10 +48710,10 @@ function repairWall(team_id) {
 }
 
 function getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn, fixed) {
-	var danno = Math.round(Math.random() * (exp / 15 + weapon) + weapon) + weapon_enchant + power_dmg;
+	var danno = Math.round((Math.random() * (exp / 15)) + (weapon * 2)) + weapon_enchant + power_dmg;
 	
 	if (fixed == 1)
-		danno = Math.round(((exp / 15 + weapon) + weapon) + weapon_enchant + power_dmg);
+		danno = Math.round(((exp / 15)) + (weapon * 2)) + weapon_enchant + power_dmg;
 
 	if (charm_id == 62)
 		danno += 10;
@@ -48746,9 +48748,9 @@ function getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, wea
 	if (weapon2 < 0) {
 		var defence = Math.abs(weapon2) + Math.abs(weapon3) + weapon2_enchant + weapon3_enchant;
 		if (fixed == 1)
-			defence += Math.round((exp / 10 + defence) / 2);
+			defence += Math.round((exp / 10) / 2) + defence;
 		else
-			defence += Math.round(Math.random() * ((exp / 10 + defence) / 2));
+			defence += Math.round(Math.random() * ((exp / 10) / 2)) + defence;
 	}
 	defence = parseInt(defence+power_def);
 
