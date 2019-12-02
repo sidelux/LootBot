@@ -459,7 +459,11 @@ bot.on('message', function (message) {
 					connection.query('UPDATE player SET moon_coin = moon_coin + ' + amount + ' WHERE id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 					});
-					if (luckyMode == 1) {
+					if (blackfriday == 1) {
+						connection.query('INSERT INTO donation_history (player_id, amount, source) VALUES (' + player_id + ', ' + Math.round(amount/5) + ', "Telegram")', function (err, rows, fields) {
+							if (err) throw err;
+						});
+					} else if (luckyMode == 1) {
 						connection.query('INSERT INTO donation_history (player_id, amount, source) VALUES (' + player_id + ', ' + Math.round(amount/2) + ', "Telegram")', function (err, rows, fields) {
 							if (err) throw err;
 						});
@@ -2138,12 +2142,12 @@ bot.onText(/\/dona (.+)/, function (message, match) {
 			connection.query('UPDATE player SET moon_coin = moon_coin + ' + qnt + ', donation = donation + ' + qnt + ' WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			if (luckyMode == 1) {
-				connection.query('INSERT INTO donation_history (player_id, amount, source) VALUES (' + player_id + ', ' + Math.round(qnt/2) + ', "Paypal")', function (err, rows, fields) {
+			if (blackfriday == 1) {
+				connection.query('INSERT INTO donation_history (player_id, amount, source) VALUES (' + player_id + ', ' + Math.round(qnt/5) + ', "Paypal")', function (err, rows, fields) {
 					if (err) throw err;
 				});
-			} else if (blackfriday == 1) {
-				connection.query('INSERT INTO donation_history (player_id, amount, source) VALUES (' + player_id + ', ' + Math.round(qnt/5) + ', "Paypal")', function (err, rows, fields) {
+			} else if (luckyMode == 1) {
+				connection.query('INSERT INTO donation_history (player_id, amount, source) VALUES (' + player_id + ', ' + Math.round(qnt/2) + ', "Paypal")', function (err, rows, fields) {
 					if (err) throw err;
 				});
 			} else {
@@ -49704,7 +49708,6 @@ function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnem
 	for(i = 0; i < mapMatrix.length; i++) {
 		text += "\n";
 		for(j = 0; j < mapMatrix[i].length; j++) {
-			isEnemy = 0;
 			if ((i == posX) && (j == posY)) {
 				if (killed == 0)
 					text += "📍 ";
