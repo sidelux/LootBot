@@ -8362,7 +8362,7 @@ bot.onText(/^\/statistiche/, function (message) {
 																																					if (err) throw err;
 																																					var assaults_win = rows[0].compl;
 																																					var assaults_lost = rows[0].persi;
-																																					connection.query('SELECT COUNT(id) As cnt FROM map_history GROUP BY map_lobby_id', function (err, rows, fields) {
+																																					connection.query('SELECT map_lobby_id As cnt FROM map_history ORDER BY id DESC LIMIT 1', function (err, rows, fields) {
 																																					if (err) throw err;
 																																						var map_plays = 0;
 																																						if (Object.keys(rows).length > 0)
@@ -8381,6 +8381,7 @@ bot.onText(/^\/statistiche/, function (message) {
 																																										"*Utenti attivi (1):* " + formatNumber(act) + "\n" +
 																																										"_Dei quali " + formatNumber(act_male) + " esploratori e " + formatNumber(act_female) + " esploratrici_\n" +
 																																										"_Età media: " + avg_age + " anni_\n" +
+																																										birthday + 
 																																										"*Utenti attivi mensili (2):* " + formatNumber(act_monthly) + "\n" +
 																																										"*Utenti attivi settimanali (3):* " + formatNumber(act_weekly) + "\n" +
 																																										"*Monete attuali*: " + formatNumber(money) + " §\n" +
@@ -8409,7 +8410,6 @@ bot.onText(/^\/statistiche/, function (message) {
 																																										"*Incarichi in corso/completati:* " + formatNumber(mission_team_current) + "/" + formatNumber(mission_team) + "\n" +
 																																										"*Artefatti ottenuti:* " + formatNumber(artifacts) + "\n" +
 																																										"*Assalti in corso/completati/falliti:* " + formatNumber(assaults) + "/" + formatNumber(assaults_win) + "/" + formatNumber(assaults_lost) + "\n" +
-																																										birthday + 
 																																										"*Figurine:* " + formatNumber(cards) + "\n" +
 																																										"*Partite giocate nelle Mappe:* " + formatNumber(map_plays) + "\n" +
 																																										"*Uccisioni nelle Mappe:* " + formatNumber(map_kills) + "\n" +

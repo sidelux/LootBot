@@ -6712,7 +6712,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 				var next_restrict_time = rows[0].next_restrict_time;
 				var mapMatrix = JSON.parse(rows[0].map_json);
-				var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND enemy_id IS NULL AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
+				var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id, posX, posY FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND enemy_id IS NULL AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
 				var map = printMap(mapMatrix, posX, posY, pulsePosX, pulsePosY, killed, checkEnemy);
 				var conditions = rows[0].conditions;
 
@@ -49723,10 +49723,13 @@ function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnem
 					((i == pulsePosX) && (j == pulsePosY+1)) ||
 					((i == pulsePosX+1) && (j == pulsePosY+1)))) {
 
-					for (var k = 0, len = Object.keys(checkEnemy).length; k < len; k++) {
-						if ((checkEnemy[k]["posY"] == posX) && (checkEnemy[k]["posX"] == posY)) {
-							text += mapIdToSym[8] + " ";
-							isEnemy = 1;
+					isEnemy = 0;
+					if (Object.keys(checkEnemy).length > 0) {
+						for (var k = 0, len = Object.keys(checkEnemy).length; k < len; k++) {
+							if ((checkEnemy[k].posY == posX) && (checkEnemy[k].posX == posY)) {
+								text += mapIdToSym(8) + " ";
+								isEnemy = 1;
+							}
 						}
 					}
 
@@ -49741,7 +49744,7 @@ function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnem
 			}
 		}
 	}
-
+	
 	return text;
 }
 
