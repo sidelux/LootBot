@@ -2122,6 +2122,8 @@ CREATE TABLE `map_lobby` (
   `battle_stunned` tinyint(1) DEFAULT '0',
   `battle_timeout` timestamp NULL DEFAULT NULL,
   `battle_timeout_limit` timestamp NULL DEFAULT NULL,
+  `battle_turn_start` timestamp NULL DEFAULT NULL,
+  `battle_time_elapsed` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `map_lobby_player_id` (`player_id`),
   KEY `map_lobby_lobby_id` (`lobby_id`),
