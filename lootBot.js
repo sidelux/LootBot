@@ -6070,6 +6070,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 															mapIdToSym(9) + " Rottame - Valuta utile per gli scambi, si ottiene anche in caso gli equip trovati non siano più forti di quelli indossati\n" +
 															mapIdToSym(10) + " Mappa bruciata - Se si capita in una casella bruciata, si viene sconfitti\n" +
 															mapIdToSym(11) + " Teletrasporto - Teletrasporta il giocatore in una casella casuale non bruciata, senza attivarne la funzione\n" +
+															mapIdToSym(12) + " Campo Paralizzante - Paralizza il giocatore costringendogli a ritardare la continuazione dell'esplorazione\n" +
 															"\n<b>Istruzioni base</b>" +
 															"\n> Il personaggio inizierà la partita con un equip base, zero monete e zero rottami." +
 															"\n> Ogni " + lobby_restric_min + " minuti (" + (lobby_restric_min*2) + " appena avviata la partita) la mappa si restringe bruciando uno strato esterno fino a che rimane solo un quadratino centrale." +
@@ -7175,6 +7176,8 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									var life_gain = 0;
 									var item_id = 0;
 									var money = 0;
+									
+									var wait_time = 3;
 
 									var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id, enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + posX + ' AND posY = ' + posY + ' AND killed = 0 AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
 									if (Object.keys(checkEnemy).length > 0) {
@@ -7213,7 +7216,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										var rand = Math.random()*100;
 										var item_type = 0;
 										var item_power = 0;
-										text += "Hai trovato uno 💰 <b>Scrigno</b> con al suo interno:\n";
+										text += "Hai trovato uno " + mapIdToSym(1) + " <b>Scrigno</b> con al suo interno:\n";
 										if (rand < 50) {
 											money = Math.round(getRandomArbitrary(1000, 2000));
 											if (conditions == 5)
@@ -7247,7 +7250,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										toClear = 1;
 									} else if (objId == 2) {		// scrigno epico
 										var rand = Math.random()*100;
-										text += "Hai trovato uno 💰 <b>Scrigno Epico</b> con al suo interno:\n";
+										text += "Hai trovato uno " + mapIdToSym(2) + " <b>Scrigno Epico</b> con al suo interno:\n";
 										if (rand < 60) {
 											money = Math.round(getRandomArbitrary(2000, 3000));
 											if (conditions == 5)
@@ -7286,13 +7289,13 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 										if (life <= life_lost) {
 											mapPlayerKilled(lobby_id, player_id, 1, null, 0);
-											text += "Cadi in una ⚡️ Trappola e perdi <b>" + life_lost + "</b> hp, vieni ucciso e perdi la partita!\n";
+											text += "Cadi in una " + mapIdToSym(3) + " Trappola e perdi <b>" + life_lost + "</b> hp, vieni ucciso e perdi la partita!\n";
 										} else
-											text += "Cadi in una ⚡️ Trappola e perdi <b>" + life_lost + "</b> hp!\n";
+											text += "Cadi in una " + mapIdToSym(3) + " Trappola e perdi <b>" + life_lost + "</b> hp!\n";
 									} else if (objId == 4) {		// farmacia
 										last_obj_query = ", last_obj = 4";
 										isBuild = 1;
-										text += "Raggiungi una 💊 Farmacia, qui puoi recuperare la salute ad un costo onesto.\n";
+										text += "Raggiungi una " + mapIdToSym(4) + " Farmacia, qui puoi recuperare la salute ad un costo onesto.\n";
 									} else if (objId == 5) {		// scambio
 										last_obj_query = ", last_obj = 5";
 										var randRarity = Math.random()*100;
@@ -7311,7 +7314,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										var item = connection_sync.query("SELECT id FROM item WHERE (power > 1 OR power_armor < -1 OR power_shield < -1) AND rarity = '" + rarity + "' ORDER BY RAND()");
 										last_obj_query += ", last_obj_val = '" + item[0].id + ":" + price + "'";
 										isBuild = 1;
-										text += "Raggiungi un 🔁 Centro Scambi, qui puoi scambiare oggetti che ti potranno essere utili.\n";
+										text += "Raggiungi un " + mapIdToSym(5) + " Centro Scambi, qui puoi scambiare oggetti che ti potranno essere utili.\n";
 									} else if (objId == 6) {		// vendita
 										last_obj_query = ", last_obj = 6";
 										var randRarity = Math.random()*100;
@@ -7348,7 +7351,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											scrap_query = ", scrap = scrap+2";
 										else
 											scrap_query = ", scrap = scrap+1";
-										text += "Hai trovato uno <b>Strano Congegno</b> con al suo interno un 🔩 <b>Rottame</b>, utile per gli scambi!";
+										text += "Hai trovato uno <b>Strano Congegno</b> con al suo interno un " + mapIdToSym(5) + " <b>Rottame</b>, utile per gli scambi!";
 										toClear = 1;
 									} else if (objId == 10) {		// zona bruciata
 										text += "Decidi di gettarti verso la tua sconfitta nell'area bruciata...";
@@ -7358,6 +7361,10 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										posX = randomPos[0];
 										posY = randomPos[1];
 										text += "Hai trovato una <b>Piattaforma Luminosa</b>, toccandola vieni teletrasportato in un altro luogo!";
+									} else if (objId == 12) {		// campo paralizzante
+										wait_time = 6;
+										text += "Cadi in un " + mapIdToSym(12) + " Campo Paralizzante e vieni immobilizzato! Dovrai attendere più tempo per continuare\n";
+										toClear = 1;
 									}
 
 									// svuota la risorsa
@@ -7420,7 +7427,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									}
 
 									var d = new Date();
-									d.setMinutes(d.getMinutes() + 3);
+									d.setMinutes(d.getMinutes() + wait_time);
 									var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
 									var d = new Date();
@@ -49569,12 +49576,13 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 function generateMap(width, height, players) {
 	var build = [4, 5, 6];
 	var buildQnt = [2, 2, 2];
-	var chestRate = 25;
+	var chestRate = 20;
 	var chestEpicRate = 15;
 	var trapRate = 15;
 	var pulseRate = 5;
 	var scrapRate = 20;
 	var teleportRate = 5;
+	var paralyzeRate = 5;
 
 	console.log("Generazione mappa da " + width + "x" + height + " ticks con il " + (chestRate+chestEpicRate+trapRate+pulseRate+scrapRate) + "% di oggetti e " + buildQnt + " costruzioni");
 
@@ -49592,6 +49600,7 @@ function generateMap(width, height, players) {
 	9 = rottame
 	10 = mappa bruciata
 	11 = teletrasporto
+	12 = paralisi
 
 	*/
 
@@ -49663,6 +49672,13 @@ function generateMap(width, height, players) {
 	console.log("Generazione " + teleportTicks + " teletrasporti...");
 	for(i = 0; i < teleportTicks; i++)
 		matrix = insertRandomPos(matrix, 11, 0);
+	
+	// genera campi paralizzanti
+
+	var paralyzeTicks = Math.round(totTicks*(paralyzeRate/100));
+	console.log("Generazione " + paralyzeTicks + " campi paralizzanti...");
+	for(i = 0; i < paralyzeTicks; i++)
+		matrix = insertRandomPos(matrix, 12, 0);
 
 	console.log("Generazione completata");
 
@@ -49944,7 +49960,7 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 }
 
 function mapIdToSym(objId) {
-	var symArr = ["◻️", "💰", "💰", "⚡️", "💊", "🔁", "💸", "✨", "👣", "🔩", "☠️", "✨"];
+	var symArr = ["◻️", "💰", "💰", "🧨", "💊", "🔁", "💸", "✨", "👣", "🔩", "☠️", "✨", "⚡️"];
 	if (symArr[objId] == undefined)
 		console.log("mapIdToSym undefined: " + objId);
 	return symArr[objId];
