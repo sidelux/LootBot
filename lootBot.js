@@ -7156,6 +7156,11 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 								connection.query('SELECT map_json FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 									if (err) throw err;
+									
+									if (Object.keys(rows).length == 0) {
+										bot.sendMessage(message.chat.id, "Mappa non trovata, riprova", kbBack);
+										return;
+									}
 
 									// ricarica mappa per eventuali modifiche
 									var mapMatrix = JSON.parse(rows[0].map_json);
@@ -7351,7 +7356,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											scrap_query = ", scrap = scrap+2";
 										else
 											scrap_query = ", scrap = scrap+1";
-										text += "Hai trovato uno <b>Strano Congegno</b> con al suo interno un " + mapIdToSym(5) + " <b>Rottame</b>, utile per gli scambi!";
+										text += "Hai trovato uno <b>Strano Congegno</b> con al suo interno un " + mapIdToSym(9) + " <b>Rottame</b>, utile per gli scambi!";
 										toClear = 1;
 									} else if (objId == 10) {		// zona bruciata
 										text += "Decidi di gettarti verso la tua sconfitta nell'area bruciata...";
@@ -7360,7 +7365,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										var randomPos = getRandomPos(mapMatrix);
 										posX = randomPos[0];
 										posY = randomPos[1];
-										text += "Hai trovato una <b>Piattaforma Luminosa</b>, toccandola vieni teletrasportato in un altro luogo!";
+										text += "Hai trovato una " + mapIdToSym(11) + " <b>Piattaforma Luminosa</b>, toccandola vieni teletrasportato in un altro luogo!";
 									} else if (objId == 12) {		// campo paralizzante
 										wait_time = 6;
 										text += "Cadi in un " + mapIdToSym(12) + " Campo Paralizzante e vieni immobilizzato! Dovrai attendere più tempo per continuare\n";
@@ -49584,7 +49589,8 @@ function generateMap(width, height, players) {
 	var teleportRate = 5;
 	var paralyzeRate = 5;
 
-	console.log("Generazione mappa da " + width + "x" + height + " ticks con il " + (chestRate+chestEpicRate+trapRate+pulseRate+scrapRate) + "% di oggetti e " + buildQnt + " costruzioni");
+	var totalRate = chestRate+chestEpicRate+trapRate+pulseRate+scrapRate+teleportRate+paralyzeRate;
+	console.log("Generazione mappa da " + width + "x" + height + " ticks con il " + totalRate + "% di oggetti e " + buildQnt + " costruzioni");
 
 	/* LEGENDA
 
@@ -49710,7 +49716,7 @@ function getRandomPos(mapMatrix) {
 	posX = randomPosX[randIndex];
 	posY = randomPosY[randIndex];
 
-	console.log("Teleport to " + posX + ", " + posY);
+	// console.log("Teleport to " + posX + ", " + posY);
 	
 	return [posX, posY];
 }
@@ -49960,7 +49966,7 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 }
 
 function mapIdToSym(objId) {
-	var symArr = ["◻️", "💰", "💰", "🧨", "💊", "🔁", "💸", "✨", "👣", "🔩", "☠️", "✨", "⚡️"];
+	var symArr = ["◻️", "💰", "💰", "🕳", "💊", "🔁", "💸", "✨", "👣", "🔩", "☠️", "💨", "⚡️"];
 	if (symArr[objId] == undefined)
 		console.log("mapIdToSym undefined: " + objId);
 	return symArr[objId];
@@ -53963,7 +53969,6 @@ function setFinishedLobbyEnd(element, index, array) {
 						if (pos > Math.ceil(lobby_total_space/2)) {
 							trophies_count = (-negpos)+parseInt(rows[i].kills);
 							negpos++;
-							console.log("negpos", trophies_count);
 						}
 						if (rows[i].map_count >= lobby_daily_limit)
 							trophies_count = 0;
@@ -53978,7 +53983,7 @@ function setFinishedLobbyEnd(element, index, array) {
 							trophies_query = "-" + trophies_count;
 						}
 						line = pos + "° " + rows[i].nickname + " (" + kill_text + trophies_query + " 🏆)\n";
-						console.log(line);
+						// console.log(line);
 						list += line;
 
 						// aggiorna la history se c'erano due posizioni uguali per combattimento
