@@ -817,9 +817,9 @@ bot.onText(/^\/conditions (.+)|^\/conditions/, function (message, match) {
 		}
 
 		var cond = match[1];
-
-		if ((cond < 0) || (cond > 5)) {
-			bot.sendMessage(message.chat.id, "Valore non valido, 0-5");
+		var maxVal = 7;
+		if ((cond < 0) || (cond > maxVal)) {
+			bot.sendMessage(message.chat.id, "Valore non valido, 0-" + maxVal);
 			return;
 		}
 
@@ -5927,13 +5927,17 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 								else if (map_conditions == 1)
 									conditions += "☠️ Restringimento veloce";
 								else if (map_conditions == 2)
-									conditions += "⚡️ Trappole pericolose";
+									conditions += "🕳 Trappole pericolose";
 								else if (map_conditions == 3)
 									conditions += "⚔️ Danni raddoppiati";
 								else if (map_conditions == 4)
 									conditions += "🏆 Trofei raddoppiati";
 								else if (map_conditions == 5)
 									conditions += "💰 Risorse raddoppiate";
+								else if (map_conditions == 6)
+									conditions += "⚡️ Corsa contro il tempo";
+								else if (map_conditions == 7)
+									conditions += "🖐 Senza fretta";
 
 								bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\n\n<b>" + lobby_players + "</b> ⚔️ combattenti dentro una lobby\n<b>" + trophies + "</b> 🏆 in questa stagione (terminerà tra " + diff + ")\n<b>" + map_daily_diff + "</b> 💥 partite avviabili oggi" + conditions, kbMain).then(function () {
 									answerCallbacks[message.chat.id] = function (answer) {
@@ -5957,7 +5961,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 											
 											var max_lobby_count = 3;
 
-											connection.query('SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg FROM map_lobby L, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY RAND()', function (err, rows, fields) {
+											connection.query('SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg FROM map_lobby L, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space, function (err, rows, fields) {
 												if (err) throw err;
 
 												var lobby_id;
@@ -5995,12 +5999,14 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 													lobby_id = lobbies[index];
 													var members_cnt = rows[0].cnt;
 
+													/*
 													connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
 														if (err) throw err;
 
 														for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 															bot.sendMessage(rows[i].chat_id, "Un giocatore si è unito alla tua lobby! Ci sono " + (members_cnt+1) + " su " + lobby_total_space + " giocatori in attesa...");
 													});
+													*/
 
 													var members = " insieme ad altri " + members_cnt + " partecipanti";
 													var wait = ", attendi che altri giocatori si uniscano o interrompi la ricerca...";
@@ -6140,12 +6146,14 @@ bot.onText(/esci dalla lobby/i, function (message) {
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Sei uscito dalla lobby!", kbBack);
 
+						/*
 						connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
 							if (err) throw err;
 
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 								bot.sendMessage(rows[i].chat_id, "Un giocatore è uscito dalla lobby!");
 						});
+						*/
 					});
 				} else {
 					bot.sendMessage(message.chat.id, "Non puoi uscire dalla lobby finchè sei in partita!", kbBack);
@@ -6375,8 +6383,8 @@ bot.onText(/attacca!/i, function (message) {
 									return;
 								}
 
-								var damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn, 0);
-								var defence = getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def, 0);
+								var damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn);
+								var defence = getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def);
 								var crit = getPlayerCritics(player_id, weapon_crit, weapon2_crit, weapon3_crit, charm_id, power_weapon, power_armor, power_shield, class_id, reborn);
 
 								var full_damage = damage;
@@ -6385,8 +6393,8 @@ bot.onText(/attacca!/i, function (message) {
 								var full_armor = crit[1];
 								var full_shield = crit[2];
 
-								var enemy_damage = getPlayerDamage(enemy_exp, enemy_weapon, enemy_weapon_enchant, enemy_charm_id, enemy_power_dmg, enemy_class_id, enemy_reborn, 0);
-								var enemy_defence = getPlayerDefence(enemy_weapon2, enemy_weapon3, enemy_weapon_enchant, enemy_weapon2_enchant, enemy_weapon3_enchant, enemy_exp, enemy_power_def, 0);
+								var enemy_damage = getPlayerDamage(enemy_exp, enemy_weapon, enemy_weapon_enchant, enemy_charm_id, enemy_power_dmg, enemy_class_id, enemy_reborn);
+								var enemy_defence = getPlayerDefence(enemy_weapon2, enemy_weapon3, enemy_weapon_enchant, enemy_weapon2_enchant, enemy_weapon3_enchant, enemy_exp, enemy_power_def);
 								var enemy_crit = getPlayerCritics(enemy_player_id, enemy_weapon_crit, enemy_weapon2_crit, enemy_weapon3_crit, enemy_charm_id, enemy_power_weapon, enemy_power_armor, enemy_power_shield, enemy_class_id, enemy_reborn);
 
 								var enemy_full_damage = enemy_damage;
@@ -24080,7 +24088,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		if (Object.keys(avg_players).length > 0) {
 																			var avg_tot = 0;
 																			for (var i = 0, len = Object.keys(avg_players).length; i < len; i++) {
-																				avg_tot += getPlayerDamage(avg_players[0].exp, avg_players[0].weapon, avg_players[0].weapon_enchant, avg_players[0].charm_id, avg_players[0].power_dmg, avg_players[0].class, avg_players[0].reborn, 0);
+																				avg_tot += getPlayerDamage(avg_players[0].exp, avg_players[0].weapon, avg_players[0].weapon_enchant, avg_players[0].charm_id, avg_players[0].power_dmg, avg_players[0].class, avg_players[0].reborn);
 																			}
 																			avg_dmg = avg_tot/Object.keys(avg_players).length;
 																		}
@@ -24324,7 +24332,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			magic3 = 0;
 																			magic4 = 0;
 
-																			damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn, 0);
+																			damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn);
 																			crit = getPlayerCritics(playerid, weapon_crit, weapon2_crit, weapon3_crit, charm_id, power_weapon, power_armor, power_shield, class_id, reborn);
 																			dragon = getPlayerDragon(playerid, class_id, reborn, charm_id);
 
@@ -24734,7 +24742,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			power_armor = player[i].power_armor;
 																			power_shield = player[i].power_shield;
 
-																			defence = getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def, 0);
+																			defence = getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def);
 																			crit = getPlayerCritics(playerid, weapon_crit, weapon2_crit, weapon3_crit, charm_id, power_weapon, power_armor, power_shield, class_id, reborn);
 																			dragon = getPlayerDragon(playerid, class_id, reborn, charm_id);
 
@@ -25081,7 +25089,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			magic3 = 0;
 																			magic4 = 0;
 
-																			damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn, 0);
+																			damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn);
 																			crit = getPlayerCritics(playerid, weapon_crit, weapon2_crit, weapon3_crit, charm_id, power_weapon, power_armor, power_shield, class_id, reborn);
 																			dragon = getPlayerDragon(playerid, class_id, reborn, charm_id);
 
@@ -48808,11 +48816,8 @@ function repairWall(team_id) {
 	});
 }
 
-function getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn, fixed) {
-	var danno = Math.round((Math.random() * (exp / 15)) + (weapon * 2)) + weapon_enchant + power_dmg;
-	
-	if (fixed == 1)
-		danno = Math.round(((exp / 15)) + (weapon * 2)) + weapon_enchant + power_dmg;
+function getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn) {
+	var danno = Math.round((exp/30) + (Math.random() * (exp / 30)) + (weapon * 2)) + weapon_enchant + power_dmg;
 
 	if (charm_id == 62)
 		danno += 10;
@@ -48842,14 +48847,11 @@ function getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class
 	return danno;
 }
 
-function getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def, fixed) {
+function getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def) {
 	var defence = 0;
 	if (weapon2 < 0) {
 		var defence = Math.abs(weapon2) + Math.abs(weapon3) + weapon2_enchant + weapon3_enchant;
-		if (fixed == 1)
-			defence += Math.round((exp / 10) / 2) + defence;
-		else
-			defence += Math.round(Math.random() * ((exp / 10) / 2)) + defence;
+		defence += Math.round(Math.random() * ((exp / 10) / 2)) + defence;
 	}
 	defence = parseInt(defence+power_def);
 
@@ -49578,7 +49580,7 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 	});
 }
 
-function generateMap(width, height, players) {
+function generateMap(width, height, players, conditions) {
 	var build = [4, 5, 6];
 	var buildQnt = [2, 2, 2];
 	var chestRate = 20;
@@ -49588,6 +49590,16 @@ function generateMap(width, height, players) {
 	var scrapRate = 20;
 	var teleportRate = 5;
 	var paralyzeRate = 5;
+	
+	if (conditions == 6) {
+		chestRate = 0;
+		chestEpicRate = 0;
+		trapRate = 10;
+		pulseRate = 10;
+		scrapRate = 0;
+		teleportRate = 10;
+		paralyzeRate = 50;
+	}
 
 	var totalRate = chestRate+chestEpicRate+trapRate+pulseRate+scrapRate+teleportRate+paralyzeRate;
 	console.log("Generazione mappa da " + width + "x" + height + " ticks con il " + totalRate + "% di oggetti e " + buildQnt + " costruzioni");
@@ -49959,9 +49971,11 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 			if (err) throw err;
 		});
 	} else {
-		connection.query('UPDATE map_lobby_list SET next_restrict_time = DATE_ADD(next_restrict_time, INTERVAL ' + lobby_restric_min + ' MINUTE) WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
-			if (err) throw err;
-		});
+		if (conditions != 7) {
+			connection.query('UPDATE map_lobby_list SET next_restrict_time = DATE_ADD(next_restrict_time, INTERVAL ' + lobby_restric_min + ' MINUTE) WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
 	}
 }
 
@@ -53859,13 +53873,14 @@ function checkFullLobby() {
 function setFullLobby(element, index, array) {
 	var lobby_id = element.lobby_id;
 	var players = element.cnt;
-	var size = Math.round(players*2-1);	// sempre dispari
-	var mapMatrix = generateMap(size, size, players);
 
 	connection.query('SELECT map_conditions FROM config', function (err, rows, fields) {
 		if (err) throw err;
 
 		var map_conditions = rows[0].map_conditions;
+		
+		var size = Math.round(players*2-1);	// sempre dispari
+		var mapMatrix = generateMap(size, size, players, map_conditions);
 
 		connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, turn_number, next_restrict_time, conditions) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE), ' + map_conditions + ')', function (err, rows, fields) {
 			if (err) throw err;
