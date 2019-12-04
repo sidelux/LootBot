@@ -243,7 +243,7 @@ callNTimes(60000, function () { //Ogni 1 minuto
 	checkFullLobby();
 	checkRestrictMap();
 	checkLobbyEnd();
-	checkMapSeasonEnd();
+	// checkMapSeasonEnd();
 
 	/*
 	if (checkDragonTopOn == 0)
@@ -5798,7 +5798,7 @@ bot.onText(/statistiche/i, function (message) {
 });
 
 bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function (message) {
-	connection.query('SELECT id, holiday, account_id, gender, trophies, map_count FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, holiday, account_id, gender, trophies, map_count, exp FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -5822,6 +5822,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 		var player_id = rows[0].id;
 		var trophies = rows[0].trophies;
 		var map_count = rows[0].map_count;
+		var exp = rows[0].exp;
 
 		var gender_text = "a";
 		if (rows[0].gender == "M")
@@ -5953,18 +5954,17 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 												bot.sendMessage(message.chat.id, "Hai già giocato il numero massimo di partite oggi", kbStop);
 												return;
 											}
+											
+											var max_lobby_count = 3;
 
-											connection.query('SELECT lobby_id, COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL GROUP BY lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY id', function (err, rows, fields) {
+											connection.query('SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg FROM map_lobby L, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY RAND()', function (err, rows, fields) {
 												if (err) throw err;
 
 												var lobby_id;
 												var text = "";
 
-												if (Object.keys(rows).length == 0) {
-													// nuova lobby
-
+												if (Object.keys(rows).length < max_lobby_count) {
 													var max_lobby = connection_sync.query('SELECT MAX(lobby_id) As mx FROM map_lobby WHERE lobby_id IS NOT NULL');
-
 													if (Object.keys(max_lobby).length == 0)
 														lobby_id = 1;
 													else 
@@ -5972,7 +5972,25 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 
 													text = "Sei stato aggiunto ad una nuova lobby, attendi che altri giocatori si uniscano o interrompi la ricerca...";
 												} else {
-													lobby_id = rows[0].lobby_id;
+													var counts = [];
+													var lobbies = [];
+													for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+														counts.push(rows[i].exp_avg);
+														lobbies.push(rows[i].lobby_id)
+													}
+													
+													var closest = counts.reduce(function(prev, curr) {
+														return (Math.abs(curr - exp) < Math.abs(prev - exp) ? curr : prev);
+													});
+													
+													var index = counts.indexOf(closest);
+													
+													console.log("exp", exp);
+													console.log(counts);
+													console.log("closest", closest);
+													console.log("index", index);
+													
+													lobby_id = lobbies[index];
 													var members_cnt = rows[0].cnt;
 
 													connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
@@ -5984,11 +6002,11 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 
 													var members = " insieme ad altri " + members_cnt + " partecipanti";
 													var wait = ", attendi che altri giocatori si uniscano o interrompi la ricerca...";
-													if (rows[0].cnt == 1)
+													if (members_cnt == 1)
 														members = " insieme ad un altro partecipante";
-													else if (rows[0].cnt == 0)
+													else if (members_cnt == 0)
 														members = "";
-													if (rows[0].cnt == (lobby_total_space-1))
+													if (members_cnt == (lobby_total_space-1))
 														wait = ", a breve inizierà lo scontro...";
 													text = "Sei stato aggiunto alla lobby" + members + wait;
 												}
@@ -42332,7 +42350,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 									var cap = global_cap;
 									if (global_hide == 1)
 										cap = "???";
-									text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> " + global_desc + ".\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
+									text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> " + global_desc + "\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
 								}
 							}
 						}
@@ -53615,7 +53633,7 @@ function setBattleTimeElapsed(element, index, array) {
 	if (battle_time_elapsed+diff < battle_timeout_elapsed)
 		return;
 	
-	console.log("elapsed", (battle_time_elapsed+diff));
+	// console.log("elapsed", (battle_time_elapsed+diff));
 
 	connection.query('SELECT chat_id FROM player WHERE id = ' + enemy_id, function (err, rows, fields) {
 		if (err) throw err;
@@ -53817,8 +53835,12 @@ function setFinishedLobbyEnd(element, index, array) {
 					var list = "";
 					var kill_text = "";
 					var trophies_query = "";
+					var trophies_count = 0;
+					var trophies_actual = 0;
 					var pos = 1;
+					var negpos = 1;
 					var multiplier = 1;
+					var line = "";
 					if (conditions == 4)
 						multiplier = 2;
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
@@ -53827,10 +53849,27 @@ function setFinishedLobbyEnd(element, index, array) {
 							kill_text = "1 uccisione, ";
 						else if (rows[i].kills > 0)
 							kill_text = rows[i].kills + " uccisioni, ";
-						trophies_query = "+" + ((lobby_total_space-pos+1)+parseInt(rows[i].kills))*multiplier;
+						
+						trophies_count = ((lobby_total_space-pos+1)+parseInt(rows[i].kills))*multiplier;
+						if (pos < Math.floor(lobby_total_space/2)) {
+							trophies_count = (-negpos)+parseInt(rows[i].kills);
+							negpos++;
+						}
 						if (rows[i].map_count >= lobby_daily_limit)
-							trophies_query = "+0";
-						list += pos + "° " + rows[i].nickname + " (" + kill_text + trophies_query + " 🏆)\n";
+							trophies_count = 0;
+						
+						if (trophies_count >= 0)
+							trophies_query = "+" + trophies_count;
+						else {
+							trophies_actual = rows[i].trophies;
+							trophies_count = Math.abs(trophies_count);
+							if (trophies_actual-trophies_count <= 0)
+								trophies_count = trophies_actual;
+							trophies_query = "-" + trophies_count;
+						}
+						line = pos + "° " + rows[i].nickname + " (" + kill_text + trophies_query + " 🏆)\n";
+						console.log(line);
+						list += line;
 
 						// aggiorna la history se c'erano due posizioni uguali per combattimento
 						connection.query('UPDATE map_history SET position = ' + pos + ' WHERE id = ' + rows[i].mapId, function (err, rows, fields) {
