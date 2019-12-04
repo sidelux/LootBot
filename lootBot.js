@@ -5985,10 +5985,12 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 													
 													var index = counts.indexOf(closest);
 													
+													/*
 													console.log("exp", exp);
 													console.log(counts);
 													console.log("closest", closest);
 													console.log("index", index);
+													*/
 													
 													lobby_id = lobbies[index];
 													var members_cnt = rows[0].cnt;
@@ -6067,10 +6069,12 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 															mapIdToSym(8) + " Altro giocatore - Ingaggia una battaglia con un altro giocatore\n" +
 															mapIdToSym(9) + " Rottame - Valuta utile per gli scambi, si ottiene anche in caso gli equip trovati non siano più forti di quelli indossati\n" +
 															mapIdToSym(10) + " Mappa bruciata - Se si capita in una casella bruciata, si viene sconfitti\n" +
+															mapIdToSym(11) + " Teletrasporto - Teletrasporta il giocatore in una casella casuale non bruciata, senza attivarne la funzione\n" +
 															"\n<b>Istruzioni base</b>" +
 															"\n> Il personaggio inizierà la partita con un equip base, zero monete e zero rottami." +
 															"\n> Ogni " + lobby_restric_min + " minuti (" + (lobby_restric_min*2) + " appena avviata la partita) la mappa si restringe bruciando uno strato esterno fino a che rimane solo un quadratino centrale." +
 															"\n> Quando un giocatore incontra un altro giocatore, ha inizio una battaglia dove lo sconfitto uscirà dalla partita." +
+															"\n> E' possibile utilizzare il pulsante Controlla per azionare l'evento relativo alla posizione in cui ci si trova, utile per esempio nel caso del teletrasporto." + 
 															"\n> Se la trappola sconfigge il giocatore, quest'ultimo uscirà dalla partita." + 
 															"\n> Se il giocatore viene bruciato dal restringimento della mappa o ci entra di sua volontà, uscirà dalla partita." +
 															"\n> Per ogni movimento su una casella vuota, il giocatore recupera una piccola percentuale di salute." +
@@ -7349,6 +7353,11 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									} else if (objId == 10) {		// zona bruciata
 										text += "Decidi di gettarti verso la tua sconfitta nell'area bruciata...";
 										mapPlayerKilled(lobby_id, player_id, 3, null, 0);
+									} else if (objId == 11) {		// teletrasporto
+										var randomPos = getRandomPos(mapMatrix);
+										posX = randomPos[0];
+										posY = randomPos[1];
+										text += "Hai trovato una <b>Piattaforma Luminosa</b>, toccandola vieni teletrasportato in un altro luogo!";
 									}
 
 									// svuota la risorsa
@@ -40705,8 +40714,6 @@ bot.onText(/^rifugio|Torna al rifugio|^ispezione$/i, function (message) {
 					}
 				};
 
-				//var cost = Math.min(2000, ability*10);
-
 				var kb2 = {
 					parse_mode: "Markdown",
 					reply_markup: {
@@ -40882,11 +40889,19 @@ bot.onText(/matchmaking|^mm$/i, function (message) {
 			bot.sendMessage(message.chat.id, "Il tuo livello è ancora troppo basso, torna quando avrai raggiunto il livello 15.", back);
 			return;
 		}
+		
+		var kbBack = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Torna al rifugio"], ["Torna al menu"]]
+			}
+		};
 
 		connection.query('SELECT id FROM heist_progress WHERE from_id = ' + from_id, function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
-				bot.sendMessage(message.chat.id, "Stai svolgendo un ispezione, completala prima di iniziarne un'altra", back);
+				bot.sendMessage(message.chat.id, "Stai svolgendo un ispezione, completala prima di iniziarne un'altra", kbBack);
 				return;
 			}
 
@@ -41033,10 +41048,19 @@ bot.onText(/inserisci il nickname|ispeziona: /i, function (message) {
 					bot.sendMessage(message.chat.id, text, abort_heist);
 				return;
 			}
+			
+			var kbBack = {
+				parse_mode: "Markdown",
+				reply_markup: {
+					resize_keyboard: true,
+					keyboard: [["Torna al rifugio"], ["Torna al menu"]]
+				}
+			};
+			
 			connection.query('SELECT id FROM heist_progress WHERE from_id = ' + from_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length > 0) {
-					bot.sendMessage(message.chat.id, "Stai svolgendo un ispezione, completala prima di iniziarne un'altra", back);
+					bot.sendMessage(message.chat.id, "Stai svolgendo un ispezione, completala prima di iniziarne un'altra", kbBack);
 					return;
 				}
 
@@ -43660,7 +43684,7 @@ function mainMenu(message) {
 				}
 			}
 
-			connection.query("SELECT lobby_id, wait_time, enemy_id, my_turn FROM map_lobby WHERE player_id = " + player_id, function (err, rows, fields) {
+			connection.query("SELECT M.lobby_id, M.wait_time, M.enemy_id, M.my_turn, L.next_restrict_time FROM map_lobby M LEFT JOIN map_lobby_list L ON M.lobby_id = L.lobby_id WHERE M.player_id = " + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length > 0) {
 					if (rows[0].wait_time != null) {
@@ -43672,7 +43696,18 @@ function mainMenu(message) {
 							plur = "o";
 						if (min < 1)
 							min = "meno di 1";
-						msgtext += "\n🗺 Attesa mappa " + min + " minut" + plur;
+						var restrict_text = "";
+						if (rows[0].next_restrict_time != null) {
+							var restrict_time = new Date(rows[0].next_restrict_time);
+							var restrict_min = Math.round(((restrict_time - now) / 1000) / 60);
+							var restrict_plur = "i";
+							if (restrict_min <= 1)
+								restrict_plur = "o";
+							if (restrict_min < 1)
+								restrict_min = "meno di 1";
+							restrict_text = " (☠️ " + restrict_min + ")";
+						}
+						msgtext += "\n🗺 Attesa mappa " + min + " minut" + plur + restrict_text;
 					}  else if (rows[0].enemy_id != null) {
 						var turn = "a te!";
 						if (rows[0].my_turn == 0)
@@ -43684,6 +43719,19 @@ function mainMenu(message) {
 							var wait = connection_sync.query('SELECT COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id = ' + rows[0].lobby_id);
 							msgtext += "\n🗺 Lobby in attesa... " + wait[0].cnt + "/" + lobby_total_space + " giocatori";
 						}
+					} else {
+						var restrict_text = "";
+						if (rows[0].next_restrict_time != null) {
+							var restrict_time = new Date(rows[0].next_restrict_time);
+							var restrict_min = Math.round(((restrict_time - now) / 1000) / 60);
+							var restrict_plur = "i";
+							if (restrict_min <= 1)
+								restrict_plur = "o";
+							if (restrict_min < 1)
+								restrict_min = "meno di 1";
+							restrict_text = " (☠️ " + restrict_min + ")";
+						}
+						msgtext += "\n🗺 Puoi esplorare" + restrict_text;
 					}
 				}
 
@@ -45359,11 +45407,19 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 							answerCallbacks[message.chat.id] = function (answer) {
 								if ((answer.text == "Torna al menu") || (answer.text == "Matchmaking"))
 									return;
+								
+								var kbBack = {
+									parse_mode: "Markdown",
+									reply_markup: {
+										resize_keyboard: true,
+										keyboard: [["Torna al rifugio"], ["Torna al menu"]]
+									}
+								};
 
 								connection.query('SELECT id FROM heist_progress WHERE from_id = ' + from_id, function (err, rows, fields) {
 									if (err) throw err;
 									if (Object.keys(rows).length > 0) {
-										bot.sendMessage(message.chat.id, "Stai svolgendo un ispezione, completala prima di iniziarne un'altra", back);
+										bot.sendMessage(message.chat.id, "Stai svolgendo un ispezione, completala prima di iniziarne un'altra", kbBack);
 										return;
 									}
 
@@ -49513,11 +49569,12 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 function generateMap(width, height, players) {
 	var build = [4, 5, 6];
 	var buildQnt = [2, 2, 2];
-	var chestRate = 30;
+	var chestRate = 25;
 	var chestEpicRate = 15;
 	var trapRate = 15;
 	var pulseRate = 5;
 	var scrapRate = 20;
+	var teleportRate = 5;
 
 	console.log("Generazione mappa da " + width + "x" + height + " ticks con il " + (chestRate+chestEpicRate+trapRate+pulseRate+scrapRate) + "% di oggetti e " + buildQnt + " costruzioni");
 
@@ -49534,6 +49591,7 @@ function generateMap(width, height, players) {
 	8 = giocatore
 	9 = rottame
 	10 = mappa bruciata
+	11 = teletrasporto
 
 	*/
 
@@ -49598,6 +49656,13 @@ function generateMap(width, height, players) {
 	console.log("Generazione " + scrapTicks + " rottami...");
 	for(i = 0; i < scrapTicks; i++)
 		matrix = insertRandomPos(matrix, 9, 0);
+	
+	// genera teletrasporti
+
+	var teleportTicks = Math.round(totTicks*(teleportRate/100));
+	console.log("Generazione " + teleportTicks + " teletrasporti...");
+	for(i = 0; i < teleportTicks; i++)
+		matrix = insertRandomPos(matrix, 11, 0);
 
 	console.log("Generazione completata");
 
@@ -49609,6 +49674,29 @@ function updateMap(matrix, posY, posX, value) {
 	if ((posX >= 0) && (posY >= 0))
 		mapMatrix[posX][posY] = value;
 	return JSON.stringify(mapMatrix);
+}
+
+function getRandomPos(mapMatrix) {
+	var posX = 0;
+	var posY = 0;
+	var randomPosX = [];
+	var randomPosY = [];
+	for(i = 0; i < mapMatrix.length; i++) {
+		for(j = 0; j < mapMatrix[i].length; j++) {
+			if (mapMatrix[i][j] != 10) {
+				randomPosX.push(i);
+				randomPosY.push(j);
+			}
+		}
+	}
+	
+	var randIndex = Math.floor(Math.random()*randomPosX.length);
+	posX = randomPosX[randIndex];
+	posY = randomPosY[randIndex];
+
+	console.log("Teleport to " + posX + ", " + posY);
+	
+	return [posX, posY];
 }
 
 function insertRandomPos(matrix, objId, distanceValue) {
@@ -49856,7 +49944,7 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 }
 
 function mapIdToSym(objId) {
-	var symArr = ["◻️", "💰", "💰", "⚡️", "💊", "🔁", "💸", "✨", "👣", "🔩", "☠️"];
+	var symArr = ["◻️", "💰", "💰", "⚡️", "💊", "🔁", "💸", "✨", "👣", "🔩", "☠️", "✨"];
 	if (symArr[objId] == undefined)
 		console.log("mapIdToSym undefined: " + objId);
 	return symArr[objId];
@@ -53856,7 +53944,7 @@ function setFinishedLobbyEnd(element, index, array) {
 							kill_text = rows[i].kills + " uccisioni, ";
 						
 						trophies_count = ((lobby_total_space-pos+1)+parseInt(rows[i].kills))*multiplier;
-						if (pos < Math.floor(lobby_total_space/2)) {
+						if (pos > Math.ceil(lobby_total_space/2)) {
 							trophies_count = (-negpos)+parseInt(rows[i].kills);
 							negpos++;
 							console.log("negpos", trophies_count);
