@@ -7014,7 +7014,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 					if (btnDw)
 						iKeys.push(["⬇️"]);
 
-					iKeys.push(["🛠 Sacca"]);
+					iKeys.push(["🛠 Sacca", "🖐 Controlla"]);
 					iKeys.push(["Torna al menu"]);
 
 					var kbSel = {
@@ -7134,6 +7134,11 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										return;
 									}
 									posX--;
+								} else if (answer.text.toLowerCase().indexOf("controlla") != -1) {
+									if ((last_obj == 4) || (last_obj == 5) || (last_obj == 6)) {
+										bot.sendMessage(message.chat.id, "L'edificio ormai ha chiuso le porte...", kbBack);
+										return;
+									}
 								} else {
 									bot.sendMessage(message.chat.id, "Posizione non valida, riprova", kbBack);
 									return;
@@ -53854,6 +53859,7 @@ function setFinishedLobbyEnd(element, index, array) {
 						if (pos < Math.floor(lobby_total_space/2)) {
 							trophies_count = (-negpos)+parseInt(rows[i].kills);
 							negpos++;
+							console.log("negpos", trophies_count);
 						}
 						if (rows[i].map_count >= lobby_daily_limit)
 							trophies_count = 0;
