@@ -24,7 +24,7 @@ var eventStory = 0;
 var halloween = 0;
 var snowHouse = 0;
 var snowHouseEnd = 0;
-var blackfriday = 1;
+var blackfriday = 0;
 
 // Variabili globali
 var assaultStop = 0;
@@ -6680,6 +6680,14 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 				keyboard: [["Si"], ["No"], ["Torna al menu"]]
 			}
 		};
+		
+		var kbTeleport = {
+			parse_mode: "HTML",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Teletrasportami"], ["Affronta un nemico"], ["Esci"], ["Torna al menu"]]
+			}
+		};
 
 		var kbYes = {
 			parse_mode: "HTML",
@@ -6992,6 +7000,42 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										return;
 								}
 							});
+						});
+						return;
+					} else if (last_obj == 11) {
+						bot.sendMessage(message.chat.id, "In questo luogo puoi scegliere se utilizzare il teletrasporto, rischiando di ritrovarti in un luogo pericoloso o di fronte ad un nemico, oppure non rieschiare e riprendere la tua esplorazione.", kbTeleport).then(function () {
+							answerCallbacks[message.chat.id] = function (answer) {
+								if (answer.text == "Torna al menu")
+									return;
+
+								if (answer.text.toLowerCase().indexOf("teletrasportami") != -1) {
+									var randomPos = getRandomPos(mapMatrix);
+									posX = randomPos[0];
+									posY = randomPos[1];
+									connection.query('UPDATE map_lobby SET last_obj = NULL, posX = ' + posX + ', posY = ' + posY + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+										bot.sendMessage(message.chat.id, "Hai deciso di teletrasportati in un luogo inesplorato!", kbBack);
+									});
+								} else if (answer.text.toLowerCase().indexOf("affronta") != -1) {
+									var randomPos = getRandomPosEnemy(mapMatrix, checkEnemy);
+									posX = randomPos[0];
+									posY = randomPos[1];
+									if (posX == -1) {
+										bot.sendMessage(message.chat.id, "Sembra non ci sia nessun nemico ancora in vita...", kbBack);
+										return;
+									}
+									connection.query('UPDATE map_lobby SET last_obj = NULL, posX = ' + posX + ', posY = ' + posY + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+										bot.sendMessage(message.chat.id, "Hai deciso di teletrasportati direttamente su un nemico!", kbBack);
+									});
+								} else if (answer.text.toLowerCase().indexOf("esci") != -1) {
+									connection.query('UPDATE map_lobby SET last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+										bot.sendMessage(message.chat.id, "Esci dall'edificio proseguendo la tua esplorazione", kbBack);
+									});
+								} else
+									return
+							}
 						});
 						return;
 					}
@@ -7370,10 +7414,9 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										text += "Decidi di gettarti verso la tua sconfitta nell'area bruciata...";
 										mapPlayerKilled(lobby_id, player_id, 3, null, 0);
 									} else if (objId == 11) {		// teletrasporto
-										var randomPos = getRandomPos(mapMatrix);
-										posX = randomPos[0];
-										posY = randomPos[1];
-										text += "Hai trovato una " + mapIdToSym(11) + " <b>Piattaforma Luminosa</b>, toccandola vieni teletrasportato in un altro luogo!";
+										last_obj_query = ", last_obj = 11";
+										isBuild = 1;
+										text += "Raggiungi un luogo che emana una luce accecante, entri per scoprire i suoi segreti.";
 									} else if (objId == 12) {		// campo paralizzante
 										wait_time = 6;
 										text += "Cadi in un " + mapIdToSym(12) + " Campo Paralizzante e vieni immobilizzato! Dovrai attendere più tempo per continuare\n";
@@ -43558,7 +43601,7 @@ function mainMenu(message) {
 	else if ((n > 19) && (n < 23))
 		time = "🌙 Buonasera";
 
-	connection.query('SELECT id, account_id, mission_id, mission_special_id, travel_id, cave_id, exp, life, total_life, reborn, money, holiday, boost_id, market_pack, heist_protection, mission_time_end, mission_special_time_end, travel_time_end, cave_time_end, dungeon_time, boost_mission, paralyzed, mission_party, gender, show_time FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, account_id, mission_id, mission_special_id, travel_id, cave_id, exp, life, total_life, reborn, money, holiday, boost_id, market_pack, heist_protection, mission_time_end, mission_special_time_end, travel_time_end, cave_time_end, dungeon_time, boost_mission, paralyzed, mission_party, gender, show_time, map_count FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0)
@@ -43629,6 +43672,7 @@ function mainMenu(message) {
 		var dungeon_time = rows[0].dungeon_time;
 		var boost_end = rows[0].boost_mission;
 		var mission_party = rows[0].mission_party;
+		var map_count = rows[0].map_count;
 
 		checkAllProgress(player_id);
 
@@ -43740,18 +43784,22 @@ function mainMenu(message) {
 							msgtext += "\n🗺 Lobby in attesa... " + wait[0].cnt + "/" + lobby_total_space + " giocatori";
 						}
 					} else {
-						var restrict_text = "";
-						if (rows[0].next_restrict_time != null) {
-							var restrict_time = new Date(rows[0].next_restrict_time);
-							var restrict_min = Math.round(((restrict_time - now) / 1000) / 60);
-							var restrict_plur = "i";
-							if (restrict_min <= 1)
-								restrict_plur = "o";
-							if (restrict_min < 1)
-								restrict_min = "meno di 1";
-							restrict_text = " (☠️ " + restrict_min + ")";
+						var d = new Date();
+						var map_daily_diff = lobby_daily_limit-map_count;
+						if (((d.getHours() >= 9) && (d.getHours() <= 22)) && (map_daily_diff > 0)) {
+							var restrict_text = "";
+							if (rows[0].next_restrict_time != null) {
+								var restrict_time = new Date(rows[0].next_restrict_time);
+								var restrict_min = Math.round(((restrict_time - now) / 1000) / 60);
+								var restrict_plur = "i";
+								if (restrict_min <= 1)
+									restrict_plur = "o";
+								if (restrict_min < 1)
+									restrict_min = "meno di 1";
+								restrict_text = " (☠️ " + restrict_min + ")";
+							}
+							msgtext += "\n🗺 Puoi esplorare le Mappe" + restrict_text;
 						}
-						msgtext += "\n🗺 Puoi esplorare" + restrict_text;
 					}
 				}
 
@@ -49586,9 +49634,9 @@ function generateMap(width, height, players, conditions) {
 	var chestRate = 20;
 	var chestEpicRate = 15;
 	var trapRate = 15;
-	var pulseRate = 5;
+	var pulseRate = 7;
 	var scrapRate = 20;
-	var teleportRate = 5;
+	var teleportRate = 3;
 	var paralyzeRate = 5;
 	
 	if (conditions == 6) {
@@ -49727,8 +49775,35 @@ function getRandomPos(mapMatrix) {
 	var randIndex = Math.floor(Math.random()*randomPosX.length);
 	posX = randomPosX[randIndex];
 	posY = randomPosY[randIndex];
+	
+	return [posX, posY];
+}
 
-	// console.log("Teleport to " + posX + ", " + posY);
+function getRandomPosEnemy(mapMatrix, checkEnemy) {
+	if (Object.keys(checkEnemy).length == 0)
+		return [-1, -1];
+	
+	var posX = 0;
+	var posY = 0;
+	var randomPosX = [];
+	var randomPosY = [];
+	for(i = 0; i < mapMatrix.length; i++) {
+		for(j = 0; j < mapMatrix[i].length; j++) {
+			for (var k = 0, len = Object.keys(checkEnemy).length; k < len; k++) {
+				if ((checkEnemy[k].posY == i) && (checkEnemy[k].posX == j)) {
+					randomPosX.push(i);
+					randomPosY.push(j);
+				}
+			}
+		}
+	}
+	
+	if (randomPosX.length == 0)
+		return [-1, -1];
+	
+	var randIndex = Math.floor(Math.random()*randomPosX.length);
+	posX = randomPosX[randIndex];
+	posY = randomPosY[randIndex];
 	
 	return [posX, posY];
 }
