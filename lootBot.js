@@ -5961,7 +5961,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 											
 											var max_lobby_count = 3;
 
-											connection.query('SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg FROM map_lobby L, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space, function (err, rows, fields) {
+											connection.query('SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg FROM map_lobby L, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY RAND()', function (err, rows, fields) {
 												if (err) throw err;
 
 												var lobby_id;
@@ -5978,26 +5978,24 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 												} else {
 													var counts = [];
 													var lobbies = [];
+													var members = [];
 													for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 														counts.push(rows[i].exp_avg);
 														lobbies.push(rows[i].lobby_id)
+														members.push(rows[i].cnt);
 													}
 													
-													var closest = counts.reduce(function(prev, curr) {
-														return (Math.abs(curr - exp) < Math.abs(prev - exp) ? curr : prev);
-													});
-													
-													var index = counts.indexOf(closest);
-													
-													/*
-													console.log("exp", exp);
-													console.log(counts);
-													console.log("closest", closest);
-													console.log("index", index);
-													*/
+													var index = 0;
+													var rand = Math.random()*100;
+													if (rand < 50) {
+														var closest = counts.reduce(function(prev, curr) {
+															return (Math.abs(curr - exp) < Math.abs(prev - exp) ? curr : prev);
+														});
+														index = counts.indexOf(closest);
+													}
 													
 													lobby_id = lobbies[index];
-													var members_cnt = rows[0].cnt;
+													var members_cnt = members[index];
 
 													/*
 													connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
@@ -43769,7 +43767,7 @@ function mainMenu(message) {
 								restrict_plur = "o";
 							if (restrict_min < 1)
 								restrict_min = "meno di 1";
-							restrict_text = " (☠️ " + restrict_min + ")";
+							restrict_text = " (☠️ " + restrict_min + " minut" + restrict_plur + ")";
 						}
 						msgtext += "\n🗺 Attesa mappa " + min + " minut" + plur + restrict_text;
 					}  else if (rows[0].enemy_id != null) {
