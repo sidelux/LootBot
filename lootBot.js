@@ -53833,8 +53833,34 @@ function setBattleTimeElapsed(element, index, array) {
 	console.log("diff", diff);
 	*/
 	
-	if (battle_time_elapsed+diff < battle_timeout_elapsed)
+	if (battle_time_elapsed+diff < battle_timeout_elapsed) {
+		if (diff >= 30) {
+			// cambia turno perchè scaduto
+			var d = new Date();
+			d.setMinutes(d.getMinutes() + battle_timeout_turn);
+			var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+			// calcola tempo trascorso in secondi
+			var d = new Date(battle_turn_start);
+			var now = new Date();
+			var diff = Math.round(((now - d) / 1000));	// secondi
+			diff = Math.abs(diff);
+
+			connection.query('UPDATE map_lobby SET my_turn = 0, battle_timeout = NULL, battle_time_elapsed = battle_time_elapsed + ' + diff + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+			connection.query('UPDATE map_lobby SET my_turn = 1, battle_timeout = "' + long_date + '", battle_turn_start = NOW() WHERE player_id = ' + enemy_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+			
+			connection.query('SELECT chat_id FROM player WHERE id = ' + enemy_id, function (err, rows, fields) {
+				if (err) throw err;
+				bot.sendMessage(chat_id, "Il tempo per il turno è scaduto, tocca all'avversario!");
+				bot.sendMessage(rows[0].chat_id, "Il tempo per il turno dell'avversario è scaduto! Tocca a te!");
+			});
+		}
 		return;
+	}
 	
 	// console.log("elapsed", (battle_time_elapsed+diff));
 
