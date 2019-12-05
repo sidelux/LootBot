@@ -7015,6 +7015,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										bot.sendMessage(message.chat.id, "Hai deciso di teletrasportati in un luogo inesplorato!", kbBack);
 									});
 								} else if (answer.text.toLowerCase().indexOf("affronta") != -1) {
+									var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id, posX, posY FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND enemy_id IS NULL AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
 									var randomPos = getRandomPosEnemy(mapMatrix, checkEnemy);
 									posX = randomPos[0];
 									posY = randomPos[1];
