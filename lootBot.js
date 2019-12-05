@@ -7367,7 +7367,15 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											rarity = "R";
 											price = 1;
 										}
-										var item = connection_sync.query("SELECT id FROM item WHERE (power > 1 OR power_armor < -1 OR power_shield < -1) AND rarity = '" + rarity + "' ORDER BY RAND()");
+										var bag = connection_sync.query("SELECT I1.power, I2.power_armor, I3.power_shield FROM map_lobby M LEFT JOIN item I1 ON M.weapon_id = I1.id LEFT JOIN item I2 ON M.weapon_id = I2.id LEFT JOIN item I3 ON M.weapon_id = I3.id WHERE player_id = " + player_id);
+										var weapon_power = (bag[0].power == null ? "1" : bag[0].power);
+										var weapon2_power = (bag[0].power_armor == null ? "-1" : bag[0].power_armor);
+										var weapon3_power = (bag[0].power_shield == null ? "-1" : bag[0].power_shield);
+										var item = connection_sync.query("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") AND rarity = '" + rarity + "' ORDER BY RAND()");
+										if (Object.keys(item).length == 0) {
+											// se non trova a causa della rarità, riprova senza il filtro
+											item = connection_sync.query("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") ORDER BY RAND()");
+										}
 										last_obj_query += ", last_obj_val = '" + item[0].id + ":" + price + "'";
 										isBuild = 1;
 										text += "Raggiungi un " + mapIdToSym(5) + " Centro Scambi, qui puoi scambiare oggetti che ti potranno essere utili.\n";

@@ -1938,21 +1938,6 @@ CREATE TABLE `inventory_chest` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Temporary table structure for view `inventory_public`
---
-
-DROP TABLE IF EXISTS `inventory_public`;
-/*!50001 DROP VIEW IF EXISTS `inventory_public`*/;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
-/*!50001 CREATE TABLE `inventory_public` (
-  `player_id` tinyint NOT NULL,
-  `name` tinyint NOT NULL,
-  `quantity` tinyint NOT NULL
-) ENGINE=MyISAM */;
-SET character_set_client = @saved_cs_client;
-
---
 -- Table structure for table `item`
 --
 
@@ -3656,25 +3641,6 @@ CREATE TABLE `travel` (
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
 /*!50001 VIEW `heist_public` AS select `H`.`id` AS `id`,`P1`.`nickname` AS `fom_nick`,`P2`.`nickname` AS `to_nick`,`H`.`fail` AS `fail`,`H`.`time` AS `time`,`H`.`matchmaking` AS `matchmaking` from ((`heist_history` `H` join `player` `P1` on((`H`.`from_id` = `P1`.`id`))) join `player` `P2` on((`H`.`to_id` = `P2`.`id`))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `inventory_public`
---
-
-/*!50001 DROP TABLE IF EXISTS `inventory_public`*/;
-/*!50001 DROP VIEW IF EXISTS `inventory_public`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `inventory_public` AS select `IV`.`player_id` AS `player_id`,`I`.`name` AS `name`,`IV`.`quantity` AS `quantity` from (`inventory` `IV` join `item` `I`) where (`IV`.`item_id` = `I`.`id`) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
