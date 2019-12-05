@@ -53828,11 +53828,6 @@ function setBattleTimeElapsed(element, index, array) {
 	var diff = Math.round(((now - d) / 1000));	// secondi
 	diff = Math.abs(diff);
 	
-	/*
-	console.log("battle_time_elapsed", battle_time_elapsed);
-	console.log("diff", diff);
-	*/
-	
 	if (battle_time_elapsed+diff < battle_timeout_elapsed) {
 		if (diff >= 30) {
 			// cambia turno perchè scaduto
@@ -53861,8 +53856,6 @@ function setBattleTimeElapsed(element, index, array) {
 		}
 		return;
 	}
-	
-	// console.log("elapsed", (battle_time_elapsed+diff));
 
 	connection.query('SELECT chat_id FROM player WHERE id = ' + enemy_id, function (err, rows, fields) {
 		if (err) throw err;
