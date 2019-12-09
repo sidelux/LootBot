@@ -1305,8 +1305,9 @@ bot.onText(/^\/comandi/, function (message, match) {
 						"/failglobal (fallimento globale)\n" +
 						"/avviso testo (msg agli attivi < 48h)\n" +
 						"/refill (lancia refreshLife())\n" +
-						"/assaultstop (manutenzione assalto)" +
-					   	"/mapstop (manutenzione mappe)");
+						"/assaultstop (manutenzione assalto)\n" +
+					   	"/mapstop (manutenzione mappe)\n" +
+						"/conditions num (condizioni mappe)\n");
 	} else
 		bot.sendMessage(message.chat.id, "Piacerebbe :D");
 });
@@ -7001,7 +7002,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 						});
 						return;
 					} else if (last_obj == 11) {
-						bot.sendMessage(message.chat.id, "In questo luogo puoi scegliere se utilizzare il teletrasporto, rischiando di ritrovarti in un luogo pericoloso o di fronte ad un nemico, oppure non rieschiare e riprendere la tua esplorazione.", kbTeleport).then(function () {
+						bot.sendMessage(message.chat.id, "In questo luogo puoi scegliere se utilizzare il teletrasporto, rischiando di ritrovarti in un luogo pericoloso o di fronte ad un nemico, oppure non rieschiare e riprendere la tua esplorazione. In entrambi i casi non dovrai aspettare per proseguire.", kbTeleport).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
 								if (answer.text == "Torna al menu")
 									return;
@@ -7010,7 +7011,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									var randomPos = getRandomPos(mapMatrix);
 									posX = randomPos[0];
 									posY = randomPos[1];
-									connection.query('UPDATE map_lobby SET last_obj = NULL, posX = ' + posX + ', posY = ' + posY + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+									connection.query('UPDATE map_lobby SET last_obj = NULL, posX = ' + posX + ', posY = ' + posY + ', wait_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 										bot.sendMessage(message.chat.id, "Hai deciso di teletrasportati in un luogo inesplorato!", kbBack);
 									});
@@ -7020,10 +7021,10 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									posX = randomPos[0];
 									posY = randomPos[1];
 									if (posX == -1) {
-										bot.sendMessage(message.chat.id, "Sembra non ci sia nessun nemico ancora in vita...", kbBack);
+										bot.sendMessage(message.chat.id, "Sembra non ci sia nessun nemico disponibile...", kbBack);
 										return;
 									}
-									connection.query('UPDATE map_lobby SET last_obj = NULL, posX = ' + posX + ', posY = ' + posY + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+									connection.query('UPDATE map_lobby SET last_obj = NULL, posX = ' + posX + ', posY = ' + posY + ', wait_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 										bot.sendMessage(message.chat.id, "Hai deciso di teletrasportati direttamente su un nemico!", kbBack);
 									});
@@ -17503,17 +17504,16 @@ bot.onText(/magazzino/i, function (message, match) {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text == "Torna al magazzino")
 										return;
-									connection.query('SELECT id, name, cons FROM item WHERE ((craftable = 1 AND rarity IN ("NC", "R", "UR", "L", "E")) OR (name LIKE "Pietra%" AND rarity = "D")) AND name = "' + answer.text + '"', function (err, rows, fields) {
+									connection.query('SELECT id, name FROM item WHERE ((craftable = 1 AND rarity IN ("NC", "R", "UR", "L", "E")) OR (name LIKE "Pietra%" AND rarity = "D")) AND name = "' + answer.text + '" AND cons = 0', function (err, rows, fields) {
 										if (err) throw err;
 
 										if (Object.keys(rows).length == 0) {
-											bot.sendMessage(message.from.id, "L'oggetto specificato non esiste o non è consentito, sono consentiti solo i creabili di rarità NC -> E e Pietre del Drago", kbBack);
+											bot.sendMessage(message.from.id, "L'oggetto specificato non esiste o non è consentito, sono consentiti solo i creabili di rarità NC -> E, Pietre del Drago ma non consumabili", kbBack);
 											return;
 										}
 
 										var item_id = rows[0].id;
 										var item_name = rows[0].name;
-										var cons = rows[0].cons;
 										var qnt = getItemCnt(player_id, item_id);
 
 										var kbNum = {
@@ -49960,7 +49960,7 @@ function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnem
 					isEnemy = 0;
 					if (Object.keys(checkEnemy).length > 0) {
 						for (var k = 0, len = Object.keys(checkEnemy).length; k < len; k++) {
-							if ((checkEnemy[k].posY == posX) && (checkEnemy[k].posX == posY)) {
+							if ((checkEnemy[k].posX == i) && (checkEnemy[k].posY == j)) {
 								text += mapIdToSym(8) + " ";
 								isEnemy = 1;
 							}
@@ -49969,7 +49969,7 @@ function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnem
 
 					if (isEnemy == 0) {
 						if (mapMatrix[i][j] == 8)	// posizione di partenza
-							text += "◻️ ";
+							text += mapIdToSym(0) + " ";
 						else
 							text += mapIdToSym(mapMatrix[i][j]) + " ";
 					}
