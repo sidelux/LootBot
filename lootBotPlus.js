@@ -10,6 +10,8 @@ process.on('unhandledRejection', function (error, p) {
 });
 
 var config = require('./config.js');
+var tips_controller = require('./suggestions/tips_message_controller.js');
+tips_controller.initialize();
 var TelegramBot = require('node-telegram-bot-api');
 var ms = require("ms");
 var mysql = require('mysql');
@@ -114,8 +116,62 @@ bot.on('edited_message', function (message) {
 	});
 });
 
-bot.on('message', function (message) {
+bot.on('message', function (message, match) {
 	if (message.text != undefined) {
+		
+		// Suggestions
+		
+		if (message.entities != undefined) {
+			var entities = message.entities;
+			let is_suggestion;
+			if (typeof entities != "undefined" && entities != null && entities.length != null && entities.length > 0) {
+				let first_string = message.text.substr(entities[0].offset + 1, (entities[0].length) - 2).toLowerCase();
+				if (first_string.indexOf("suggeriment") >= 0 || first_string == "sug")
+					is_suggestion = true;
+			}
+
+			if (is_suggestion) {
+				console.log("> Sugg. da parte di " + message.from.username);
+				tips_controller.suggestionManager(message).then(function (res_mess) {
+					if (typeof (res_mess) != "undefined") {
+						//se c'è da editare qualche cosa...
+						if (typeof (res_mess.toEdit) != "undefined") {
+							bot.editMessageText(
+								res_mess.toEdit.message_txt, {
+									chat_id: res_mess.toEdit.chat_id,
+									message_id: res_mess.toEdit.mess_id,
+									parse_mode: res_mess.toEdit.options.parse_mode,
+									disable_web_page_preview: true,
+									reply_markup: res_mess.toEdit.options.reply_markup
+								}).catch(function (err) {
+									bot.sendMessage(
+										16964514,
+										"👮Hey:\nC'è stato un problema!\n" + err.response.body.description +
+										"\nNella chat: " + res_mess.toSend.chat_id + "\n" + err.response.body
+									);
+								});
+						}
+						if (typeof (res_mess.toSend) != "undefined") {
+							bot.sendMessage(
+								res_mess.toSend.chat_id,
+								res_mess.toSend.message_txt,
+								res_mess.toSend.options
+							).catch(function (err) {
+								bot.sendMessage(
+									res_mess.toSend.chat_id,
+									"Upps!\n" +
+									"Sembra tu stia usando uno dei caratteri markdown non correttamente...\n" +
+									"O comunque, questo è quello che dice Telegram:\n\n```" + err.response.body.description + "\n```"
+								);
+							});
+						}
+					}
+				}).catch(function (err) { console.log(err); });
+			}
+		}
+
+		// End suggestions
+		
 		if (message.text.startsWith("/") && !(message.text.startsWith("//"))) {
 			if (message.text.indexOf("@") == -1)
 				console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
@@ -4909,6 +4965,53 @@ bot.onText(/^\/cancellanegozio (.+)|^\/cancellanegozio$/, function (message, mat
 });
 
 bot.on('callback_query', function (message) {
+	let func = message.data.split(":");
+	if (func[0] == 'SUGGESTION') {
+		tips_controller.manageCallBack(query).then(function (sugg_results) {
+			if (sugg_results.query) {
+				bot.answerCallbackQuery(
+					sugg_results.query.id,
+					sugg_results.query.options
+				).catch(function (err) {
+					console.log("Query -> " + err.response.body);
+				});
+			}
+			if (sugg_results.toDelete) {
+				bot.deleteMessage(
+					sugg_results.toDelete.chat_id,
+					sugg_results.toDelete.mess_id
+				).catch(function (err) {
+					console.log("!toDelete -> " + err.response.body.description);
+				});
+			}
+			if (sugg_results.toEdit) {
+				bot.editMessageText(
+					sugg_results.toEdit.message_txt, {
+						chat_id: sugg_results.toEdit.chat_id,
+						message_id: sugg_results.toEdit.mess_id,
+						parse_mode: sugg_results.toEdit.options.parse_mode,
+						disable_web_page_preview: true,
+						reply_markup: sugg_results.toEdit.options.reply_markup
+					}).catch(function (err) {
+					console.log("Errore toEdit: ");
+					console.log(err.response.body);
+				});
+			}
+			if (sugg_results.toSend) {
+				bot.sendMessage(
+					sugg_results.toSend.chat_id,
+					sugg_results.toSend.message_txt,
+					sugg_results.toSend.options
+				).catch(function (err) {
+					console.log("toSend-> " + err.response.body);
+				});
+			}
+		}).catch(function (err) {
+			console.log("> C'è stato un errore di sotto...");
+			console.log(err);
+		});
+	}
+	
 	connection.query('SELECT account_id, market_ban, money, id, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
