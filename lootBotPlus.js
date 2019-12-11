@@ -131,7 +131,7 @@ bot.on('message', function (message, match) {
 			}
 
 			if (is_suggestion) {
-				console.log("> Sugg. da parte di " + message.from.username);
+				// console.log("> Sugg. da parte di " + message.from.username);
 				tips_controller.suggestionManager(message).then(function (res_mess) {
 					if (typeof (res_mess) != "undefined") {
 						//se c'è da editare qualche cosa...
@@ -4442,12 +4442,16 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			var code = 0;
 			for (var i = 0; i < arrLen; i++) {
 				code = elements[i];
+				
+				d.setDate(d.getDate() + 3);
+				long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+				
 				var shopQuery = connection_sync.query('SELECT 1 FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id);
 				if (Object.keys(shopQuery).length > 0) {
 					connection.query('UPDATE public_shop SET time_end = "' + long_date + '", notified = 0, time_creation = NOW() WHERE code = ' + code, function (err, rows, fields) {
 						if (err) throw err;
 					});
-					bot.sendMessage(message.chat.id, "Negozio " + code + " rinnovato per 4 giorni");
+					bot.sendMessage(message.chat.id, "Negozio " + code + " rinnovato per 7 giorni");
 				} else
 					bot.sendMessage(message.chat.id, "Non hai il permesso per rinnovare il negozio oppure non esiste (" + code + ")");
 			}
@@ -4967,13 +4971,13 @@ bot.onText(/^\/cancellanegozio (.+)|^\/cancellanegozio$/, function (message, mat
 bot.on('callback_query', function (message) {
 	let func = message.data.split(":");
 	if (func[0] == 'SUGGESTION') {
-		tips_controller.manageCallBack(query).then(function (sugg_results) {
+		tips_controller.manageCallBack(message).then(function (sugg_results) {
 			if (sugg_results.query) {
 				bot.answerCallbackQuery(
 					sugg_results.query.id,
 					sugg_results.query.options
 				).catch(function (err) {
-					console.log("Query -> " + err.response.body);
+					// console.log("Query -> " + err.response.body);
 				});
 			}
 			if (sugg_results.toDelete) {
@@ -4981,7 +4985,7 @@ bot.on('callback_query', function (message) {
 					sugg_results.toDelete.chat_id,
 					sugg_results.toDelete.mess_id
 				).catch(function (err) {
-					console.log("!toDelete -> " + err.response.body.description);
+					// console.log("!toDelete -> " + err.response.body.description);
 				});
 			}
 			if (sugg_results.toEdit) {
@@ -4993,8 +4997,8 @@ bot.on('callback_query', function (message) {
 						disable_web_page_preview: true,
 						reply_markup: sugg_results.toEdit.options.reply_markup
 					}).catch(function (err) {
-					console.log("Errore toEdit: ");
-					console.log(err.response.body);
+					// console.log("Errore toEdit: ");
+					// console.log(err.response.body);
 				});
 			}
 			if (sugg_results.toSend) {
@@ -5003,12 +5007,12 @@ bot.on('callback_query', function (message) {
 					sugg_results.toSend.message_txt,
 					sugg_results.toSend.options
 				).catch(function (err) {
-					console.log("toSend-> " + err.response.body);
+					// console.log("toSend-> " + err.response.body);
 				});
 			}
 		}).catch(function (err) {
-			console.log("> C'è stato un errore di sotto...");
-			console.log(err);
+			// console.log("> C'è stato un errore di sotto...");
+			// console.log(err);
 		});
 	}
 	

@@ -53864,10 +53864,11 @@ function setBattleTimeElapsed(element, index, array) {
 			var diff = Math.round(((now - d) / 1000));	// secondi
 			diff = Math.abs(diff);
 			
-			connection.query('SELECT battle_shield FROM map_lobby WHERE player_id = ' + enemy_id, function (err, rows, fields) {
+			connection.query('SELECT M.battle_shield, P.chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND M.player_id = ' + enemy_id, function (err, rows, fields) {
 				if (err) throw err;
 				
 				var enemy_battle_shield = rows[0].battle_shield;
+				var enemy_chat_id = rows[0].chat_id;
 				
 				var query = "";
 				var enemy_query = "";
@@ -53884,21 +53885,29 @@ function setBattleTimeElapsed(element, index, array) {
 				if (set_enemy_battle_shield != -1)
 					enemy_query += ", battle_shield = " + set_enemy_battle_shield;
 
-				connection.query('UPDATE map_lobby SET my_turn = 0, battle_timeout = NULL, battle_turn_lost = battle_turn_lost+1, battle_time_elapsed = battle_time_elapsed + ' + diff + query + ', WHERE player_id = ' + player_id, function (err, rows, fields) {
+				connection.query('UPDATE map_lobby SET my_turn = 0, battle_timeout = NULL, battle_turn_lost = battle_turn_lost + 1, battle_time_elapsed = battle_time_elapsed + ' + diff + query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 				});
 				connection.query('UPDATE map_lobby SET my_turn = 1, battle_timeout = "' + long_date + '", battle_turn_start = NOW()' + enemy_query + ' WHERE player_id = ' + enemy_id, function (err, rows, fields) {
 					if (err) throw err;
 				});
 				
-				if (battle_turn_lost+1 >= 5)
-					battleTimeElapsed(player_id, chat_id, lobby_id, enemy_id);
-				else {
-					connection.query('SELECT chat_id FROM player WHERE id = ' + enemy_id, function (err, rows, fields) {
+				if (battle_turn_lost+1 >= 5) {
+					mapPlayerKilled(lobby_id, player_id, 2, null, 1);
+
+					bot.sendMessage(chat_id, "Troppi turni sono scaduti!\nDal nulla arriva una freccia a gran velocità e decreta il tuo avversario come vincitore dello scontro!");
+					bot.sendMessage(enemy_chat_id, "L'avversario ha perso troppi turni!\nHai vinto lo scontro!");
+
+					connection.query('UPDATE map_lobby SET match_kills = match_kills+1, global_kills = global_kills+1 WHERE player_id = ' + enemy_id, function (err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(chat_id, "Il tempo per il turno è scaduto, tocca all'avversario!");
-						bot.sendMessage(rows[0].chat_id, "Il tempo per il turno dell'avversario è scaduto! Tocca a te!", kbNext);
 					});
+
+					connection.query('UPDATE map_lobby SET battle_timeout = NULL WHERE player_id IN (' + player_id + ', ' + enemy_id + ')', function (err, rows, fields) {
+						if (err) throw err;
+					});
+				} else {
+					bot.sendMessage(chat_id, "Il tempo per il turno è scaduto, tocca all'avversario!");
+					bot.sendMessage(enemy_chat_id, "Il tempo per il turno dell'avversario è scaduto! Tocca a te!", kbNext);
 				}
 			});
 		}
@@ -53912,25 +53921,6 @@ function setBattleTimeElapsed(element, index, array) {
 
 		bot.sendMessage(chat_id, "Il tempo per la tua battaglia è scaduto!\nDal nulla arriva una freccia a gran velocità e decreta il tuo avversario come vincitore dello scontro!");
 		bot.sendMessage(rows[0].chat_id, "Il tempo per la battaglia da parte dell'avversario è scaduto!\nHai vinto lo scontro!");
-
-		connection.query('UPDATE map_lobby SET match_kills = match_kills+1, global_kills = global_kills+1 WHERE player_id = ' + enemy_id, function (err, rows, fields) {
-			if (err) throw err;
-		});
-
-		connection.query('UPDATE map_lobby SET battle_timeout = NULL WHERE player_id IN (' + player_id + ', ' + enemy_id + ')', function (err, rows, fields) {
-			if (err) throw err;
-		});
-	});
-}
-
-function battleTimeElapsed(player_id, chat_id, lobby_id, enemy_id) {	
-	connection.query('SELECT chat_id FROM player WHERE id = ' + enemy_id, function (err, rows, fields) {
-		if (err) throw err;
-
-		mapPlayerKilled(lobby_id, player_id, 2, null, 1);
-
-		bot.sendMessage(chat_id, "Troppi turni sono scaduti!\nDal nulla arriva una freccia a gran velocità e decreta il tuo avversario come vincitore dello scontro!");
-		bot.sendMessage(rows[0].chat_id, "L'avversario ha perso troppi turni!\nHai vinto lo scontro!");
 
 		connection.query('UPDATE map_lobby SET match_kills = match_kills+1, global_kills = global_kills+1 WHERE player_id = ' + enemy_id, function (err, rows, fields) {
 			if (err) throw err;

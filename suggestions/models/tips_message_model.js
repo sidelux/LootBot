@@ -204,16 +204,16 @@ function getRecentlyApproved() {
 		query += "  WHERE SCLOSED = 1 AND SDATE != 0 ORDER BY SDATE DESC LIMIT 10;";
 
 		sugg_pool.query(query,
-			function (error, results) {
-				if (!error) {
-					getRecentlyApproved_resolve(results);
-				}
-				else {
-					console.log(error);
-					getRecentlyApproved_resolve(-1);
-				}
+						function (error, results) {
+			if (!error) {
+				getRecentlyApproved_resolve(results);
+			}
+			else {
+				console.log(error);
+				getRecentlyApproved_resolve(-1);
+			}
 
-			});
+		});
 	});
 }
 module.exports.getRecentlyApproved = getRecentlyApproved;
@@ -231,15 +231,15 @@ function getOpensFor(id) {
 		query += " WHERE SUSER_ID = ? ORDER BY SDATE DESC LIMIT 20";
 
 		sugg_pool.query(query, id,
-			function (error, results) {
-				if (!error) {
-					getOpensFor_resolve(results);
-				}
-				else {
-					getOpensFor_resolve(-1);
-				}
+						function (error, results) {
+			if (!error) {
+				getOpensFor_resolve(results);
+			}
+			else {
+				getOpensFor_resolve(-1);
+			}
 
-			});
+		});
 	});
 
 }
@@ -250,35 +250,35 @@ function getSuggestionStatus(sugg_id, connection) { //0, -1, 1
 		if (manual_log) { console.log(">  getSuggestionStatus of: " + sugg_id); }
 
 		connection.query("SELECT SCLOSED AS status," +
-			" SDATE AS sDate," +
-			" SONCLOSE_UPVOTE AS upOnClose," +
-			" SONCLOSE_DOWNVOTE AS downOnClose," +
-			" MSG_ID AS msg_id" +
-			" FROM " + tables_names.sugg + " WHERE SUGGESTION_ID LIKE ?", sugg_id,
-			function (err, count) {
-				if (!err) {
-					getSuggestionStatus_resolve(count[0]);
-				}
-				else {
-					console.log(err);
-					getSuggestionStatus_resolve(null);
-				}
-			});
+						 " SDATE AS sDate," +
+						 " SONCLOSE_UPVOTE AS upOnClose," +
+						 " SONCLOSE_DOWNVOTE AS downOnClose," +
+						 " MSG_ID AS msg_id" +
+						 " FROM " + tables_names.sugg + " WHERE SUGGESTION_ID LIKE ?", sugg_id,
+						 function (err, count) {
+			if (!err) {
+				getSuggestionStatus_resolve(count[0]);
+			}
+			else {
+				console.log(err);
+				getSuggestionStatus_resolve(null);
+			}
+		});
 	});
 }
 
 function setSuggestionLimit(newLimit) {
 	return new Promise(function (setSuggestionStatus_resolve) {
 		sugg_pool.query("UPDATE " + tables_names.usr + " SET WARN = ? WHERE USER_ID LIKE 20471035"
-			, newLimit,
-			function (error, results) {
-				if (!error) {
-					setSuggestionStatus_resolve(newLimit);
-				}
-				else {
-					setSuggestionStatus_resolve(-1);
-				}
-			});
+						, newLimit,
+						function (error, results) {
+			if (!error) {
+				setSuggestionStatus_resolve(newLimit);
+			}
+			else {
+				setSuggestionStatus_resolve(-1);
+			}
+		});
 	});
 }
 module.exports.setSuggestionLimit = setSuggestionLimit;
@@ -286,20 +286,20 @@ module.exports.setSuggestionLimit = setSuggestionLimit;
 function getSuggestionsLimit(single_connection) {
 	return new Promise(function (setSuggestionStatus_resolve) {
 		single_connection.query("SELECT WARN AS 'limit' FROM " + tables_names.usr + " WHERE USER_ID LIKE 20471035",
-			function (error, results) {
-				if (!error) {
-					if (results.length > 0) {
-						setSuggestionStatus_resolve(results[0]);
+								function (error, results) {
+			if (!error) {
+				if (results.length > 0) {
+					setSuggestionStatus_resolve(results[0]);
 
-					} else {
-						setSuggestionStatus_resolve(0);
-					}
+				} else {
+					setSuggestionStatus_resolve(0);
 				}
-				else {
-					console.log(error);
-					setSuggestionStatus_resolve(-1);
-				}
-			});
+			}
+			else {
+				console.log(error);
+				setSuggestionStatus_resolve(-1);
+			}
+		});
 	});
 }
 module.exports.getSuggestionsLimit = getSuggestionsLimit;
@@ -309,17 +309,17 @@ function setSuggestionStatus(sugg_id, status) { //0, -1, 1
 		console.log(">  setSuggestionStatus of: " + sugg_id + ", new status: " + status);
 
 		sugg_pool.query("UPDATE " + tables_names.sugg + " SET SCLOSED = ? WHERE SUGGESTION_ID = ?",
-			[status, sugg_id],
-			function (error, results) {
-				if (!error) {
-					console.log("> Update dello status -> " + !error);
-					setSuggestionStatus_resolve(sugg_id);
-				}
-				else {
-					setSuggestionStatus_resolve(-1);
-				}
+						[status, sugg_id],
+						function (error, results) {
+			if (!error) {
+				console.log("> Update dello status -> " + !error);
+				setSuggestionStatus_resolve(sugg_id);
+			}
+			else {
+				setSuggestionStatus_resolve(-1);
+			}
 
-			});
+		});
 	});
 }
 module.exports.setSuggestionStatus = setSuggestionStatus;
@@ -330,17 +330,17 @@ function setMsgID(check, sugg_id, msg_id) { //0, -1, 1
 			setSuggestionStatus_resolve(sugg_id);
 		} else {
 			sugg_pool.query("UPDATE " + tables_names.sugg + " SET MSG_ID = ? WHERE SUGGESTION_ID LIKE ?",
-				[msg_id, sugg_id],
-				function (error, results) {
-					if (!error) {
-						console.log("> Update del msg_id -> " + !error);
-						setSuggestionStatus_resolve(sugg_id);
-					}
-					else {
-						setSuggestionStatus_resolve(-1);
-					}
+							[msg_id, sugg_id],
+							function (error, results) {
+				if (!error) {
+					console.log("> Update del msg_id -> " + !error);
+					setSuggestionStatus_resolve(sugg_id);
+				}
+				else {
+					setSuggestionStatus_resolve(-1);
+				}
 
-				});
+			});
 		}
 	});
 }
@@ -357,15 +357,15 @@ function getSuggestionN_byStatus(connection) { //0, -1, 1
 		query += "FROM " + tables_names.sugg + ";"
 
 		connection.query(query,
-			function (err, count) {
-				if (!err) {
-					getSuggestionN_byStatus_resolve(count[0]);
-				}
-				else {
-					console.log(err);
-					getSuggestionN_byStatus_resolve(null);
-				}
-			});
+						 function (err, count) {
+			if (!err) {
+				getSuggestionN_byStatus_resolve(count[0]);
+			}
+			else {
+				console.log(err);
+				getSuggestionN_byStatus_resolve(null);
+			}
+		});
 	});
 }
 
@@ -374,15 +374,15 @@ function getSuggestionN_byUser(user, connection) {
 		if (manual_log) { console.log(">  getSuggestionN_byUser: " + user); }
 
 		connection.query("SELECT COUNT(*) AS byuser FROM " + tables_names.sugg + " WHERE SUSER_ID = ?", user,
-			function (err, count) {
-				if (!err) {
-					getSuggestionN_byUser_resolve(count[0]);
-				}
-				else {
-					console.log(err);
-					getSuggestionN_byUser_resolve(null);
-				}
-			});
+						 function (err, count) {
+			if (!err) {
+				getSuggestionN_byUser_resolve(count[0]);
+			}
+			else {
+				console.log(err);
+				getSuggestionN_byUser_resolve(null);
+			}
+		});
 	});
 }
 
@@ -391,18 +391,18 @@ function getSuggestionOpensByUser(user, connection) {
 		if (manual_log) { console.log(">  getSuggestionOpensByUser: " + user); }
 		let aWeekAgo = Date.now() - 604800000;
 		connection.query("SELECT SUM(case when SCLOSED = 0 then 1 else 0 end) AS 'opensByUser',  " +
-			"SUM(case when SDATE > " + (aWeekAgo / 1000) + " then 1 else 0 end) AS 'recents' " +
-			"FROM " + tables_names.sugg +
-			" WHERE SUSER_ID = ?", user,
-			function (err, count) {
-				if (!err) {
-					getSuggestionOpensByUser_resolve(count[0]);
-				}
-				else {
-					console.log(err);
-					getSuggestionOpensByUser_resolve(null);
-				}
-			});
+						 "SUM(case when SDATE > " + (aWeekAgo / 1000) + " then 1 else 0 end) AS 'recents' " +
+						 "FROM " + tables_names.sugg +
+						 " WHERE SUSER_ID = ?", user,
+						 function (err, count) {
+			if (!err) {
+				getSuggestionOpensByUser_resolve(count[0]);
+			}
+			else {
+				console.log(err);
+				getSuggestionOpensByUser_resolve(null);
+			}
+		});
 	});
 
 }
@@ -412,18 +412,18 @@ function getSuggestionApprovedOfUser(user, connection) {
 		if (manual_log) { console.log(">  getSuggestionOpensByUser: " + user); }
 
 		connection.query("SELECT COUNT(*) AS opensByUser " +
-			"FROM " + tables_names.sugg +
-			" WHERE SCLOSED = 1" +
-			" AND SUSER_ID = ?", user,
-			function (err, count) {
-				if (!err) {
-					getSuggestionOpensByUser_resolve(count[0]);
-				}
-				else {
-					console.log(err);
-					getSuggestionOpensByUser_resolve(null);
-				}
-			});
+						 "FROM " + tables_names.sugg +
+						 " WHERE SCLOSED = 1" +
+						 " AND SUSER_ID = ?", user,
+						 function (err, count) {
+			if (!err) {
+				getSuggestionOpensByUser_resolve(count[0]);
+			}
+			else {
+				console.log(err);
+				getSuggestionOpensByUser_resolve(null);
+			}
+		});
 	});
 
 }
@@ -433,19 +433,19 @@ function getVotesFor(sugg_id, flagN, connection) {
 		if (manual_log) { console.log(">  getVotesFor: " + sugg_id); }
 
 		connection.query("SELECT" +
-			" SUM(SUVOTE) AS votes" +
-			" FROM " + tables_names.votes +
-			" WHERE SUGGESTION_ID LIKE ? " +
-			" AND SUVOTE = ?", [sugg_id, flagN],
-			function (err, count) {
-				if (!err) {
-					getVotesFor_resolve(count[0]);
-				}
-				else {
-					console.log(err);
-					getVotesFor_resolve(null);
-				}
-			});
+						 " SUM(SUVOTE) AS votes" +
+						 " FROM " + tables_names.votes +
+						 " WHERE SUGGESTION_ID LIKE ? " +
+						 " AND SUVOTE = ?", [sugg_id, flagN],
+						 function (err, count) {
+			if (!err) {
+				getVotesFor_resolve(count[0]);
+			}
+			else {
+				console.log(err);
+				getVotesFor_resolve(null);
+			}
+		});
 	});
 }
 
@@ -454,21 +454,21 @@ function getVotesOnOpens_recivedByUser(user, connection) {
 		if (manual_log) { console.log(">  getVotesOnOpensRecivedByUser: " + user); }
 
 		connection.query("SELECT SUM(SUVOTE) AS onOpens" +
-			" FROM " + tables_names.votes +
-			" INNER JOIN " + tables_names.sugg +
-			" ON " + tables_names.votes + ".SUGGESTION_ID =" +
-			" " + tables_names.sugg + ".SUGGESTION_ID " +
-			" WHERE " + tables_names.sugg + ".SCLOSED = 0" +
-			" AND " + tables_names.votes + ".AUTHOR_ID = ?", user,
-			function (err, count) {
-				if (!err) {
-					getVotesOnOpens_recivedByUser_resolve(count[0]);
-				}
-				else {
-					console.log(err);
-					getVotesOnOpens_recivedByUser_resolve(null);
-				}
-			});
+						 " FROM " + tables_names.votes +
+						 " INNER JOIN " + tables_names.sugg +
+						 " ON " + tables_names.votes + ".SUGGESTION_ID =" +
+						 " " + tables_names.sugg + ".SUGGESTION_ID " +
+						 " WHERE " + tables_names.sugg + ".SCLOSED = 0" +
+						 " AND " + tables_names.votes + ".AUTHOR_ID = ?", user,
+						 function (err, count) {
+			if (!err) {
+				getVotesOnOpens_recivedByUser_resolve(count[0]);
+			}
+			else {
+				console.log(err);
+				getVotesOnOpens_recivedByUser_resolve(null);
+			}
+		});
 	});
 }
 
@@ -483,15 +483,15 @@ function getTotalVotesRecivedByUser(user_id, connection) {
 			count.push(getTotalVotesCount(user_id, 'approved', connection));
 
 			Promise.all(count).
-				then(function (res) {
-					let total_count = {
-						closedTotalCount: { up: res[0].closedUpTotalCount, down: res[0].closedDownTotalCount },
-						approvedTotalCount: { up: res[1].approvedUpTotalCount, down: res[1].approvedDownTotalCount }
-					}
-					getTotalVotesRecivedByUser_resolve(total_count);
+			then(function (res) {
+				let total_count = {
+					closedTotalCount: { up: res[0].closedUpTotalCount, down: res[0].closedDownTotalCount },
+					approvedTotalCount: { up: res[1].approvedUpTotalCount, down: res[1].approvedDownTotalCount }
+				}
+				getTotalVotesRecivedByUser_resolve(total_count);
 
-				}).
-				catch(function (err) { console.log(err); })
+			}).
+			catch(function (err) { console.log(err); })
 		}
 
 	});
@@ -501,16 +501,16 @@ function getTotalSuggestionCount(connection) {
 	return new Promise(function (getTotalSuggestionCount_resolve) {
 		if (manual_log) { console.log(">  getTotalSuggestionCount"); }
 		connection.
-			query("SELECT COUNT(*) AS totalSugg FROM " + tables_names.sugg,
-				function (err, count) {
-					if (!err) {
-						getTotalSuggestionCount_resolve(count[0]);
-					}
-					else {
-						console.log(err);
-						getTotalSuggestionCount_resolve(null);
-					}
-				});
+		query("SELECT COUNT(*) AS totalSugg FROM " + tables_names.sugg,
+			  function (err, count) {
+			if (!err) {
+				getTotalSuggestionCount_resolve(count[0]);
+			}
+			else {
+				console.log(err);
+				getTotalSuggestionCount_resolve(null);
+			}
+		});
 	});
 }
 
@@ -522,21 +522,21 @@ function getTotalVotesCount(user_id, sugg_flag, connection) {
 			flagN = -1;
 
 		connection.
-			query("SELECT" +
-				" SUM(SONCLOSE_UPVOTE) AS " + sugg_flag + "UpTotalCount," +
-				" SUM(SONCLOSE_DOWNVOTE) AS " + sugg_flag + "DownTotalCount" +
-				" FROM " + tables_names.sugg +
-				" WHERE SUSER_ID = " + user_id +
-				" AND SCLOSED = " + flagN,
-				function (err, count) {
-					if (!err) {
-						getTotalVotesCount_resolve(count[0]);
-					}
-					else {
-						console.log(err);
-						getTotalVotesCount_resolve(null);
-					}
-				});
+		query("SELECT" +
+			  " SUM(SONCLOSE_UPVOTE) AS " + sugg_flag + "UpTotalCount," +
+			  " SUM(SONCLOSE_DOWNVOTE) AS " + sugg_flag + "DownTotalCount" +
+			  " FROM " + tables_names.sugg +
+			  " WHERE SUSER_ID = " + user_id +
+			  " AND SCLOSED = " + flagN,
+			  function (err, count) {
+			if (!err) {
+				getTotalVotesCount_resolve(count[0]);
+			}
+			else {
+				console.log(err);
+				getTotalVotesCount_resolve(null);
+			}
+		});
 	});
 }
 
@@ -545,16 +545,16 @@ function getTotalUserCount(connection) {
 		if (manual_log) { console.log(">  getTotalUserCount"); }
 		let date = ((Date.now() / 1000) - 2592000).toFixed();
 		connection.query("SELECT COUNT(*) AS totalUsers FROM " + tables_names.usr +
-			" WHERE USER_LASTQUERYDATE > ?", date, //" WHERE NOT USER_LASTQUERYDATE = 0",
-			function (err, count) {
-				if (!err) {
-					getTotalSuggestionCount_resolve(count[0]);
-				}
-				else {
-					console.log(err);
-					getTotalSuggestionCount_resolve(null);
-				}
-			});
+						 " WHERE USER_LASTQUERYDATE > ?", date, //" WHERE NOT USER_LASTQUERYDATE = 0",
+						 function (err, count) {
+			if (!err) {
+				getTotalSuggestionCount_resolve(count[0]);
+			}
+			else {
+				console.log(err);
+				getTotalSuggestionCount_resolve(null);
+			}
+		});
 	});
 }
 
@@ -562,17 +562,17 @@ function getTotalActiveCount(connection) {
 	return new Promise(function (getTotalActiveCount_resolve) {
 		let date = (Date.now() / 1000) - (86400);
 		connection.
-			query("SELECT COUNT(*) AS active FROM " + tables_names.usr +
-				" WHERE USER_LASTQUERYDATE > ?", date,
-				function (err, count) {
-					if (!err) {
-						getTotalActiveCount_resolve(count[0]);
-					}
-					else {
-						console.log(err);
-						getTotalActiveCount_resolve(null);
-					}
-				});
+		query("SELECT COUNT(*) AS active FROM " + tables_names.usr +
+			  " WHERE USER_LASTQUERYDATE > ?", date,
+			  function (err, count) {
+			if (!err) {
+				getTotalActiveCount_resolve(count[0]);
+			}
+			else {
+				console.log(err);
+				getTotalActiveCount_resolve(null);
+			}
+		});
 	});
 }
 
@@ -580,17 +580,17 @@ function getNormalUserTotalCount(connection) {
 	return new Promise(function (getNormalUserTotalCount_resolve) {
 		if (manual_log) { console.log(">  getNormakUserCount"); }
 		connection.
-			query("SELECT COUNT(*) AS normaUsers FROM " + tables_names.usr +
-				" WHERE NOT USER_LASTSUGG = 0",
-				function (err, count) {
-					if (!err) {
-						getNormalUserTotalCount_resolve(count[0]);
-					}
-					else {
-						console.log(err);
-						getNormalUserTotalCount_resolve(null);
-					}
-				});
+		query("SELECT COUNT(*) AS normaUsers FROM " + tables_names.usr +
+			  " WHERE NOT USER_LASTSUGG = 0",
+			  function (err, count) {
+			if (!err) {
+				getNormalUserTotalCount_resolve(count[0]);
+			}
+			else {
+				console.log(err);
+				getNormalUserTotalCount_resolve(null);
+			}
+		});
 	});
 }
 
@@ -598,47 +598,47 @@ function getLastUserVotes(user_id) {
 	return new Promise(function (getLastUserVotes_resolve) {
 		if (manual_log) { console.log(">  getLastUserVotes: id " + user_id); }
 		sugg_pool.
-			query("SELECT SUGGESTION_ID AS sugg_id," +
-				" SUVOTE AS usr_vote" +
-				" FROM " + tables_names.votes +
-				" WHERE USER_ID = ? LIMIT 10",
-				user_id,
-				function (error, results) {
-					if (!error) {
-						if (manual_log) { console.log("> getLastUserVote -> " + results.length); }
-						console.log(results);
-						getLastUserVotes_resolve(results);
-					}
-					else {
-						console.log(error);
-						getLastUserVotes_resolve(-1);
-					}
+		query("SELECT SUGGESTION_ID AS sugg_id," +
+			  " SUVOTE AS usr_vote" +
+			  " FROM " + tables_names.votes +
+			  " WHERE USER_ID = ? LIMIT 10",
+			  user_id,
+			  function (error, results) {
+			if (!error) {
+				if (manual_log) { console.log("> getLastUserVote -> " + results.length); }
+				console.log(results);
+				getLastUserVotes_resolve(results);
+			}
+			else {
+				console.log(error);
+				getLastUserVotes_resolve(-1);
+			}
 
 
-				});
+		});
 	});
 }
 module.exports.getLastUserVotes = getLastUserVotes;
 
 function getIDOf(sugg_id) {
 	return new Promise(function (getIDOf_resolve) {
-		console.log(">  Chiesta getIDOf per " + sugg_id);
+		if (manual_log) { console.log(">  Chiesta getIDOf per " + sugg_id); }
 		if (sugg_id == "nrc") {
 			return getIDOf_resolve([]);
 		} else {
 			sugg_pool.
-				query("SELECT MSG_ID AS 'id' FROM " + tables_names.sugg + " WHERE SUGGESTION_ID LIKE  ?", sugg_id,
-					function (err, results) {
-						console.log("> Esito -> " + results);
-						if (!err) {
-							console.log("> Niente errori -> " + results);
-							return getIDOf_resolve(results);
-						}
-						else {
-							console.log(err);
-							return getIDOf_resolve(-1);
-						}
-					});
+			query("SELECT MSG_ID AS 'id' FROM " + tables_names.sugg + " WHERE SUGGESTION_ID LIKE  ?", sugg_id,
+				  function (err, results) {
+				console.log("> Esito -> " + results);
+				if (!err) {
+					console.log("> Niente errori -> " + results);
+					return getIDOf_resolve(results);
+				}
+				else {
+					console.log(err);
+					return getIDOf_resolve(-1);
+				}
+			});
 
 		}
 	});
@@ -697,7 +697,7 @@ function getGlobalStats() {
 					sugg_pool.releaseConnection(single_connection);
 					return getGlobalStats_resolve(res_stats);
 				}).
-					catch(function (err) { console.log(err); sugg_pool.releaseConnection(single_connection); })
+				catch(function (err) { console.log(err); sugg_pool.releaseConnection(single_connection); })
 			}
 		});
 	});
@@ -772,30 +772,30 @@ function getSuggestionInfos(sugg_id, usr_id) {
 
 
 				Promise.all(votesCount).
-					then(function (res) {
+				then(function (res) {
 
-						if (res[0] == null) {
-							sugg_pool.releaseConnection(single_connection);
-							getSuggestionVotes_resolve(null);
-						} else {
-							let sugg_infos = {
-								author: (res[0] != null ? res[0].author : "NOAUTHOR"),
-								sugg_text: ((res[0] != null) ? res[0].sugg_text : ""),
-								upVotes: ((res[1].upVotes != null) ? res[1].upVotes : 0),
-								downVotes: ((res[2].downVotes != null) ? res[2].downVotes : 0),
-								totalVotes: ((res[3].totalVotes != null) ? res[3].totalVotes : 0),
-								usr_prevVote: ((res[4].prevVote != null) ? res[4].prevVote : 0),
-								status: ((res[5] != null) ? res[5].status : -3),
-								sDate: ((res[5] != null) ? res[5].sDate : 0),
-								upOnClose: ((res[5] != null) ? res[5].upOnClose : 0),
-								downOnClose: ((res[5] != null) ? res[5].downOnClose : 0),
-								msg_id: ((res[5] != null) ? res[5].msg_id : 0)
-							};
-							sugg_pool.releaseConnection(single_connection);
-							getSuggestionVotes_resolve(sugg_infos);
-						}
-					}).
-					catch(function (err) { console.log(err); })
+					if (res[0] == null) {
+						sugg_pool.releaseConnection(single_connection);
+						getSuggestionVotes_resolve(null);
+					} else {
+						let sugg_infos = {
+							author: (res[0] != null ? res[0].author : "NOAUTHOR"),
+							sugg_text: ((res[0] != null) ? res[0].sugg_text : ""),
+							upVotes: ((res[1].upVotes != null) ? res[1].upVotes : 0),
+							downVotes: ((res[2].downVotes != null) ? res[2].downVotes : 0),
+							totalVotes: ((res[3].totalVotes != null) ? res[3].totalVotes : 0),
+							usr_prevVote: ((res[4].prevVote != null) ? res[4].prevVote : 0),
+							status: ((res[5] != null) ? res[5].status : -3),
+							sDate: ((res[5] != null) ? res[5].sDate : 0),
+							upOnClose: ((res[5] != null) ? res[5].upOnClose : 0),
+							downOnClose: ((res[5] != null) ? res[5].downOnClose : 0),
+							msg_id: ((res[5] != null) ? res[5].msg_id : 0)
+						};
+						sugg_pool.releaseConnection(single_connection);
+						getSuggestionVotes_resolve(sugg_infos);
+					}
+				}).
+				catch(function (err) { console.log(err); })
 			}
 		});
 
@@ -811,17 +811,17 @@ function getApprovedOf(user_id) {
 		queryText += " WHERE SCLOSED = 1 AND SUSER_ID = ?";
 		queryText += " ORDER BY (SONCLOSE_UPVOTE + SONCLOSE_DOWNVOTE) DESC LIMIT 20;";
 		sugg_pool.
-			query(queryText, user_id,
-				function (err, res) {
-					if (!err) {
-						//console.log(res);
-						getApprovedOf_resolve(res);
-					}
-					else {
-						console.log(err);
-						getApprovedOf_resolve(null);
-					}
-				});
+		query(queryText, user_id,
+			  function (err, res) {
+			if (!err) {
+				//console.log(res);
+				getApprovedOf_resolve(res);
+			}
+			else {
+				console.log(err);
+				getApprovedOf_resolve(null);
+			}
+		});
 	});
 }
 module.exports.getApprovedOf = getApprovedOf;
@@ -832,17 +832,17 @@ function getRefusedOf(user_id) {
 		queryText += " WHERE SCLOSED = -1 AND SUSER_ID = ? AND SONCLOSE_UPVOTE > 15";
 		queryText += " ORDER BY (SONCLOSE_UPVOTE + SONCLOSE_DOWNVOTE) DESC LIMIT 20;";
 		sugg_pool.
-			query(queryText, user_id,
-				function (err, res) {
-					if (!err) {
-						//console.log(res);
-						getRefusedOf_resolve(res);
-					}
-					else {
-						console.log(err);
-						getRefusedOf_resolve(null);
-					}
-				});
+		query(queryText, user_id,
+			  function (err, res) {
+			if (!err) {
+				//console.log(res);
+				getRefusedOf_resolve(res);
+			}
+			else {
+				console.log(err);
+				getRefusedOf_resolve(null);
+			}
+		});
 	});
 }
 module.exports.getRefusedOf = getRefusedOf;
@@ -851,19 +851,19 @@ function getSuggestionAuthorFor(sugg_id, connection) {
 	return new Promise(function (getSuggestionAuthorFor_resolve) {
 		if (manual_log) { console.log(">  getSuggestionAuthorFor: " + sugg_id); }
 		connection.
-			query("SELECT SUSER_ID, STEXT" +
-				" FROM " + tables_names.sugg +
-				" WHERE SUGGESTION_ID LIKE ?", sugg_id,
-				function (err, count) {
-					if (!err && count.length != 0 && typeof (count[0]) != 'undefined') {
-						getSuggestionAuthorFor_resolve({ author: count[0].SUSER_ID, sugg_text: count[0].STEXT });
-					}
-					else {
-						console.log(count);
-						console.log(err);
-						getSuggestionAuthorFor_resolve(null);
-					}
-				});
+		query("SELECT SUSER_ID, STEXT" +
+			  " FROM " + tables_names.sugg +
+			  " WHERE SUGGESTION_ID LIKE ?", sugg_id,
+			  function (err, count) {
+			if (!err && count.length != 0 && typeof (count[0]) != 'undefined') {
+				getSuggestionAuthorFor_resolve({ author: count[0].SUSER_ID, sugg_text: count[0].STEXT });
+			}
+			else {
+				console.log(count);
+				console.log(err);
+				getSuggestionAuthorFor_resolve(null);
+			}
+		});
 	});
 }
 
@@ -874,72 +874,72 @@ function insertSuggestion(user_id, suggestion_txt) {
 		let sugg_id = suggestionID_builder();
 
 		return unique_suggId(suggestionID_builder(), 0).
-			then(function (unique_id) {
-				if (unique_id == -1) {
-					insertSuggestion_resolve(false);
-				} else {
-					if (manual_log) { console.log("> ID UNICO: " + unique_id); }
-					let new_suggestion = {
-						SUGGESTION_ID: unique_id,
-						SUSER_ID: user_id,
-						STEXT: suggestion_txt,
-						SDATE: Date.now() / 1000
-					};
-					insertSuggestion_resolve(insertOn(tables_names.sugg, new_suggestion));
-				}
-			}).
-			catch(function (err) { console.log(err); });
+		then(function (unique_id) {
+			if (unique_id == -1) {
+				insertSuggestion_resolve(false);
+			} else {
+				if (manual_log) { console.log("> ID UNICO: " + unique_id); }
+				let new_suggestion = {
+					SUGGESTION_ID: unique_id,
+					SUSER_ID: user_id,
+					STEXT: suggestion_txt,
+					SDATE: Date.now() / 1000
+				};
+				insertSuggestion_resolve(insertOn(tables_names.sugg, new_suggestion));
+			}
+		}).
+		catch(function (err) { console.log(err); });
 	});
 }
 module.exports.insertSuggestion = insertSuggestion;
 
 function closeSuggestion(sugg_id, val) {
 	return new Promise(function (close_Suggestion_resolve) {
-		console.log(">  close_Suggestion (" + sugg_id + ") -> " + val);
+		if (manual_log) { console.log(">  close_Suggestion (" + sugg_id + ") -> " + val); }
 
 		sugg_pool.
-			getConnection(function (conn_err, single_connection) {
+		getConnection(function (conn_err, single_connection) {
 
-				if (single_connection) {
-					let retriveCounts = [];
+			if (single_connection) {
+				let retriveCounts = [];
 
-					retriveCounts.push(getVotesFor(sugg_id, 1, single_connection));
-					retriveCounts.push(getVotesFor(sugg_id, -1, single_connection));
+				retriveCounts.push(getVotesFor(sugg_id, 1, single_connection));
+				retriveCounts.push(getVotesFor(sugg_id, -1, single_connection));
 
-					Promise.all(retriveCounts).
-						then(function (res) {
-							single_connection.
-								query("UPDATE " + tables_names.sugg +
-									" SET SCLOSED = ?," +
-									" SONCLOSE_UPVOTE = ?," +
-									" SONCLOSE_DOWNVOTE = ?" +
-									" WHERE SUGGESTION_ID LIKE ?",
-									[val, (res[0].votes != null ? res[0].votes : 0), (res[1].votes != null ? res[1].votes : 0), sugg_id],
-									function (error, results) {
-										if (!error) {
-											console.log("> Chiusura -> " + res);
+				Promise.all(retriveCounts).
+				then(function (res) {
+					single_connection.
+					query("UPDATE " + tables_names.sugg +
+						  " SET SCLOSED = ?," +
+						  " SONCLOSE_UPVOTE = ?," +
+						  " SONCLOSE_DOWNVOTE = ?" +
+						  " WHERE SUGGESTION_ID LIKE ?",
+						  [val, (res[0].votes != null ? res[0].votes : 0), (res[1].votes != null ? res[1].votes : 0), sugg_id],
+						  function (error, results) {
+						if (!error) {
+							if (manual_log) { console.log("> Chiusura -> " + res); }
 
-											dropSuggestion(sugg_id).
-												then(function (drop_res) {
-													console.log("> Risultato drop -> " + drop_res);
-													return close_Suggestion_resolve([sugg_id, drop_res]);
-												}).
-												catch(function (err) { console.log(err) });
+							dropSuggestion(sugg_id).
+							then(function (drop_res) {
+								if (manual_log) {console.log("> Risultato drop -> " + drop_res); }
+								return close_Suggestion_resolve([sugg_id, drop_res]);
+							}).
+							catch(function (err) { console.log(err) });
 
-										}
-										else {
-											console.log("> Errore in chiusura: " + error);
+						}
+						else {
+							console.log("> Errore in chiusura: " + error);
 
-											return close_Suggestion_resolve([-1, 0]);
-										}
+							return close_Suggestion_resolve([-1, 0]);
+						}
 
 
-									});
-						}).
-						catch(function (err) { console.log(err); });
-					sugg_pool.releaseConnection(single_connection);
-				}
-			});
+					});
+				}).
+				catch(function (err) { console.log(err); });
+				sugg_pool.releaseConnection(single_connection);
+			}
+		});
 	});
 }
 module.exports.closeSuggestion = closeSuggestion;
@@ -948,10 +948,10 @@ function dropSuggestion(sugg_id) {
 	return new Promise(function (dropSuggestion_resolve) {
 		if (manual_log) { console.log(">  DropSuggestion (" + sugg_id + ")"); }
 		removeVote(sugg_id, null).
-			then(function (res) {
-				dropSuggestion_resolve(res);
-			}).
-			catch(function (err) { console.log(err) });
+		then(function (res) {
+			dropSuggestion_resolve(res);
+		}).
+		catch(function (err) { console.log(err) });
 	});
 }
 module.exports.dropSuggestion = dropSuggestion;
@@ -967,65 +967,64 @@ function getUserInfo(user_id, addNew) {
 		if (manual_log) { console.log(">  getUserInfo(" + user_id + ")"); }
 
 		queryOn(tables_names.usr, user_id).then(function (check_res) {
-				let user_info = {};
-				if (Array.isArray(check_res) && check_res.length > 0) {
-					if (manual_log) { console.log("> L'utente esiste: lo restituisco"); }
+			let user_info = {};
+			if (Array.isArray(check_res) && check_res.length > 0) {
+				if (manual_log) { console.log("> L'utente esiste: lo restituisco"); }
 
-					user_info.id = check_res[0].USER_ID;
-					user_info.role = check_res[0].USER_ROLE;
-					user_info.lastSugg = check_res[0].USER_LASTSUGG;
-					user_info.lastmsg = check_res[0].USER_LASTMESS;
-					user_info.tmpSugg = check_res[0].USER_TMP_MSG;
-					user_info.lastQDate = check_res[0].USER_LASTQUERYDATE;
-					user_info.lastcheck = check_res[0].LAST_CHECK;
-					user_info.lastReview = check_res[0].LAST_REVIEW;
+				user_info.id = check_res[0].USER_ID;
+				user_info.role = check_res[0].USER_ROLE;
+				user_info.lastSugg = check_res[0].USER_LASTSUGG;
+				user_info.lastmsg = check_res[0].USER_LASTMESS;
+				user_info.tmpSugg = check_res[0].USER_TMP_MSG;
+				user_info.lastQDate = check_res[0].USER_LASTQUERYDATE;
+				user_info.lastcheck = check_res[0].LAST_CHECK;
+				user_info.lastReview = check_res[0].LAST_REVIEW;
 
 
-					return check_resolve(user_info);
-				} else if (typeof addNew == "undefined" || addNew) {
-					console.log(check_res);
-					if (check_res == false) {
-						if (manual_log) { console.log(">  L'utente non esiste: lo inserisco"); }
+				return check_resolve(user_info);
+			} else if (typeof addNew == "undefined" || addNew) {
+				if (check_res == false) {
+					if (manual_log) { console.log(">  L'utente non esiste: lo inserisco"); }
 
-						insertUser(user_id, 1).then(function (add_new_res) {
-							if (add_new_res == -1)
-								check_resolve(-1);
+					insertUser(user_id, 1).then(function (add_new_res) {
+						if (add_new_res == -1)
+							check_resolve(-1);
 
-							console.log("> Inserito un nuovo utente: " + add_new_res.USER_ID);
+						if (manual_log) { console.log("> Inserito un nuovo utente: " + add_new_res.USER_ID); }
 
-							if (add_new_res) {
-								user_info.id = add_new_res.USER_ID;
-								user_info.role = add_new_res.USER_ROLE;
-								user_info.lastmsg = add_new_res.USER_LASTMESS;
-								user_info.lastSugg = add_new_res.USER_LASTSUGG;
-								user_info.tmpSugg = add_new_res.USER_TMP_MSG;
-								user_info.lastQDate = add_new_res.USER_LASTQUERYDATE;
-								user_info.lastcheck = add_new_res.USER_LASTQUERYDATE;
-								user_info.lastReview = add_new_res.LAST_REVIEW;
+						if (add_new_res) {
+							user_info.id = add_new_res.USER_ID;
+							user_info.role = add_new_res.USER_ROLE;
+							user_info.lastmsg = add_new_res.USER_LASTMESS;
+							user_info.lastSugg = add_new_res.USER_LASTSUGG;
+							user_info.tmpSugg = add_new_res.USER_TMP_MSG;
+							user_info.lastQDate = add_new_res.USER_LASTQUERYDATE;
+							user_info.lastcheck = add_new_res.USER_LASTQUERYDATE;
+							user_info.lastReview = add_new_res.LAST_REVIEW;
 
-								check_resolve(user_info);
-							}
-						}).catch(function (catch_err) {
-							if (manual_log) {
-								console.log("> Errore durante l'aggiunta!\n");
-								console.log(catch_err);
-							}
-							return check_resolve(-1);
+							check_resolve(user_info);
+						}
+					}).catch(function (catch_err) {
+						if (manual_log) {
+							console.log("> Errore durante l'aggiunta!\n");
+							console.log(catch_err);
+						}
+						return check_resolve(-1);
 
-						});
-					} else { if (manual_log) { console.log("> Cosa impossibile, ci sono due utenti con lo stesso user id!!\n"); } check_resolve(-1); }
-				} else {
-					return check_resolve(-1);
-				}
+					});
+				} else { if (manual_log) { console.log("> Cosa impossibile, ci sono due utenti con lo stesso user id!!\n"); } check_resolve(-1); }
+			} else {
+				return check_resolve(-1);
+			}
 
-			}).catch(function (catch_err) {
-				console.log("> Errore durante il controllo!\n");
+		}).catch(function (catch_err) {
+			console.log("> Errore durante il controllo!\n");
+			console.log(catch_err);
+
+			if (manual_log) {
 				console.log(catch_err);
-
-				if (manual_log) {
-					console.log(catch_err);
-				}
-			});
+			}
+		});
 	});
 
 
@@ -1061,20 +1060,20 @@ function saveTmp_Suggestion(user_id, tmp_suggestion) {
 		if (manual_log) { console.log(">  saveTmp_Suggestion( " + user_id + ")"); }
 
 		sugg_pool.
-			query("UPDATE " + tables_names.usr + " SET USER_TMP_MSG = ? WHERE USER_ID = ?",
-				[tmp_suggestion, user_id],
-				function (error, results) {
-					if (!error) {
-						if (manual_log) { console.log("> Update del tmp_sugg -> " + !error); }
-						saveTmp_Suggestion_resolve(user_id);
+		query("UPDATE " + tables_names.usr + " SET USER_TMP_MSG = ? WHERE USER_ID = ?",
+			  [tmp_suggestion, user_id],
+			  function (error, results) {
+			if (!error) {
+				if (manual_log) { console.log("> Update del tmp_sugg -> " + !error); }
+				saveTmp_Suggestion_resolve(user_id);
 
-					}
-					else {
-						saveTmp_Suggestion_resolve(-1);
-					}
+			}
+			else {
+				saveTmp_Suggestion_resolve(-1);
+			}
 
 
-				});
+		});
 
 
 	});
@@ -1086,19 +1085,19 @@ function updateSuggestionText(sugg_id, text) {
 		if (manual_log) { console.log(">  saveTmp_Suggestion( " + sugg_id + ")"); }
 
 		sugg_pool.query("UPDATE " + tables_names.sugg + " SET STEXT = ? WHERE SUGGESTION_ID = ?",
-			[text, sugg_id],
-			function (error, results) {
-				if (!error) {
-					if (manual_log) { console.log("> Update del tmp_sugg -> " + !error); }
-					updateSuggestionText_resolve(sugg_id);
+						[text, sugg_id],
+						function (error, results) {
+			if (!error) {
+				if (manual_log) { console.log("> Update del tmp_sugg -> " + !error); }
+				updateSuggestionText_resolve(sugg_id);
 
-				}
-				else {
-					updateSuggestionText_resolve(-1);
-				}
+			}
+			else {
+				updateSuggestionText_resolve(-1);
+			}
 
 
-			});
+		});
 
 
 	});
@@ -1114,16 +1113,16 @@ function updateLast(user_id, msg_time, isSuggestion) {
 			toUpdate = "USER_LASTSUGG";
 
 		sugg_pool.query("UPDATE " + tables_names.usr + " SET " + toUpdate + " = ? WHERE USER_ID = ?",
-			[msg_time, user_id],
-			function (error, results) {
-				if (!error) {
-					if (manual_log) { console.log("> Update del'ultimo " + (isSuggestion == true ? "suggerimento di " : "messaggio di ") + user_id + " tempo -> " + msg_time); }
-					updateLastMessage_resolve(msg_time);
-				}
-				else {
-					updateLastMessage_resolve(-1);
-				}
-			});
+						[msg_time, user_id],
+						function (error, results) {
+			if (!error) {
+				if (manual_log) { console.log("> Update del'ultimo " + (isSuggestion == true ? "suggerimento di " : "messaggio di ") + user_id + " tempo -> " + msg_time); }
+				updateLastMessage_resolve(msg_time);
+			}
+			else {
+				updateLastMessage_resolve(-1);
+			}
+		});
 
 	});
 }
@@ -1134,18 +1133,18 @@ function currQueryOf(user_id, query_date) {
 		if (manual_log) { console.log(">  currQuery " + query_date + " forUser " + user_id); }
 
 		sugg_pool.query("UPDATE " + tables_names.usr + " SET USER_LASTQUERYDATE = ? WHERE USER_ID = ?",
-			[query_date, user_id],
-			function (error, results) {
-				if (!error) {
-					if (manual_log) { console.log("> MODEL: Update ultima query -> " + results[0]); }
-					currQueryOf_resolve(user_id);
-				}
-				else {
-					if (manual_log) { console.log("> Errore -> " + error); }
+						[query_date, user_id],
+						function (error, results) {
+			if (!error) {
+				if (manual_log) { console.log("> MODEL: Update ultima query -> " + results[0]); }
+				currQueryOf_resolve(user_id);
+			}
+			else {
+				if (manual_log) { console.log("> Errore -> " + error); }
 
-					currQueryOf_resolve(-1);
-				}
-			});
+				currQueryOf_resolve(-1);
+			}
+		});
 
 
 	});
@@ -1157,18 +1156,18 @@ function saveReview(user_id, review) {
 		if (manual_log) { console.log("> \saveReview " + review + " forUser " + user_id); }
 
 		sugg_pool.query("UPDATE " + tables_names.usr + " SET LAST_REVIEW = ? WHERE USER_ID = ?",
-			[review, user_id],
-			function (error, results) {
-				if (!error) {
-					if (manual_log) { console.log("> MODEL: Update ultima REVIEW -> " + results[0]); }
-					saveReview_resolve(user_id);
-				}
-				else {
-					if (manual_log) { console.log("> Errore -> " + error); }
+						[review, user_id],
+						function (error, results) {
+			if (!error) {
+				if (manual_log) { console.log("> MODEL: Update ultima REVIEW -> " + results[0]); }
+				saveReview_resolve(user_id);
+			}
+			else {
+				if (manual_log) { console.log("> Errore -> " + error); }
 
-					saveReview_resolve(-1);
-				}
-			});
+				saveReview_resolve(-1);
+			}
+		});
 
 
 	});
@@ -1181,33 +1180,33 @@ function setUserRole(user_id, role_n) {
 		if (typeof (user_id) != 'number' || typeof (role_n) != 'number')
 			role_resolve(-1);
 		queryOn(tables_names.usr, user_id).
-			then(function (user_exist) {
-				if (!user_exist) {
-					if (manual_log) { console.log("> L'utente non esiste, lo inserisco!"); }
-					insertUser(user_id, role_n).
-						then(function (res) {
-							return role_resolve(res.USER_ROLE)
-						}).
-						catch(function (err) { console.log(err); })
-				}
-				else {
-					sugg_pool.
-						query("UPDATE " + tables_names.usr + " SET USER_ROLE = ? WHERE USER_ID = ?", [role_n, user_id],
-							function (error, results, fields) {
-								if (!error) {
-									if (manual_log) { console.log("> Update dello status utente avvenuto con successo!"); }
-									return role_resolve(role_n);
+		then(function (user_exist) {
+			if (!user_exist) {
+				if (manual_log) { console.log("> L'utente non esiste, lo inserisco!"); }
+				insertUser(user_id, role_n).
+				then(function (res) {
+					return role_resolve(res.USER_ROLE)
+				}).
+				catch(function (err) { console.log(err); })
+			}
+			else {
+				sugg_pool.
+				query("UPDATE " + tables_names.usr + " SET USER_ROLE = ? WHERE USER_ID = ?", [role_n, user_id],
+					  function (error, results, fields) {
+					if (!error) {
+						if (manual_log) { console.log("> Update dello status utente avvenuto con successo!"); }
+						return role_resolve(role_n);
 
-								}
-								else {
-									return role_resolve(-1);
-								}
-							});
+					}
+					else {
+						return role_resolve(-1);
+					}
+				});
 
-				}
-			}).
-			catch(function (error) {
-			});
+			}
+		}).
+		catch(function (error) {
+		});
 	});
 }
 module.exports.setUserRole = setUserRole;
@@ -1223,20 +1222,20 @@ function insertVote(usr_id, sugg_id, vote, author) {
 		let val = [];
 		val.push([usr_id, sugg_id, vote, author]);
 		sugg_pool.query("INSERT INTO " + tables_names.votes + " (USER_ID, SUGGESTION_ID, SUVOTE, AUTHOR_ID) VALUES ?", [val],
-			function (err, count) {
-				if (!err) {
-					insertVote_resolve(count.affectedRows);
+						function (err, count) {
+			if (!err) {
+				insertVote_resolve(count.affectedRows);
+			}
+			else {
+				if (err.code == 'ER_DUP_ENTRY') {
+					removeVote(sugg_id, usr_id).
+					then(function (res) {
+						return insertVote_resolve(-1);
+					}).
+					catch(function (error) { console.log(error); });
 				}
-				else {
-					if (err.code == 'ER_DUP_ENTRY') {
-						removeVote(sugg_id, usr_id).
-							then(function (res) {
-								return insertVote_resolve(-1);
-							}).
-							catch(function (error) { console.log(error); });
-					}
-				}
-			});
+			}
+		});
 
 
 
@@ -1249,19 +1248,19 @@ function checkVoteFor(sugg_id, user_id, connection) {
 		if (manual_log) { console.log(">  checkVoteFor: " + sugg_id); }
 
 		connection.query("SELECT SUVOTE AS 'prevVote' " +
-			"FROM " + tables_names.votes +
-			" WHERE SUGGESTION_ID LIKE ?" +
-			" AND USER_ID = ?",
-			[sugg_id, user_id],
-			function (err, prevV) {
-				if (!err) {
-					checkVoteFor_resolve(prevV[0] != null ? prevV[0] : 0);
-				}
-				else {
-					console.log(err);
-					checkVoteFor_resolve(null);
-				}
-			});
+						 "FROM " + tables_names.votes +
+						 " WHERE SUGGESTION_ID LIKE ?" +
+						 " AND USER_ID = ?",
+						 [sugg_id, user_id],
+						 function (err, prevV) {
+			if (!err) {
+				checkVoteFor_resolve(prevV[0] != null ? prevV[0] : 0);
+			}
+			else {
+				console.log(err);
+				checkVoteFor_resolve(null);
+			}
+		});
 	});
 
 }
@@ -1279,18 +1278,18 @@ function getVotesOn(sugg_id, type, connection) {
 			integrateQuery = "";
 
 		connection.query("SELECT SUM(SUVOTE) AS " + type +
-			" FROM " + tables_names.votes +
-			" WHERE SUGGESTION_ID LIKE ?" + integrateQuery,
-			sugg_id,
-			function (err, count) {
-				if (!err) {
-					getVotesOn_resolve(count[0]);
-				}
-				else {
-					console.log(err);
-					getVotesOn_resolve(0);
-				}
-			});
+						 " FROM " + tables_names.votes +
+						 " WHERE SUGGESTION_ID LIKE ?" + integrateQuery,
+						 sugg_id,
+						 function (err, count) {
+			if (!err) {
+				getVotesOn_resolve(count[0]);
+			}
+			else {
+				console.log(err);
+				getVotesOn_resolve(0);
+			}
+		});
 	});
 }
 
@@ -1302,19 +1301,19 @@ function getGlobalVotesFor(user_id, type, connection) {
 			type_str = "global_downVotes";
 
 		connection.query("SELECT SUM(SUVOTE) AS " + type_str +
-			" FROM " + tables_names.votes +
-			" WHERE USER_ID = ?" +
-			" AND SUVOTE = ?",
-			[user_id, type],
-			function (err, count) {
-				if (!err) {
-					return getGlobalVotesFor_resolve(count[0]);
-				}
-				else {
-					console.log(err);
-					return getGlobalVotesFor_resolve(0);
-				}
-			});
+						 " FROM " + tables_names.votes +
+						 " WHERE USER_ID = ?" +
+						 " AND SUVOTE = ?",
+						 [user_id, type],
+						 function (err, count) {
+			if (!err) {
+				return getGlobalVotesFor_resolve(count[0]);
+			}
+			else {
+				console.log(err);
+				return getGlobalVotesFor_resolve(0);
+			}
+		});
 	});
 }
 
@@ -1367,7 +1366,7 @@ function unique_suggId(test_id, loop_n) {
 			}
 
 		}).
-			catch(function (error) { console.log(error); });
+		catch(function (error) { console.log(error); });
 	}
 }
 
@@ -1376,20 +1375,20 @@ function insertOn(table, set) {
 		if (manual_log) { console.log(">  Chiesta Insert su " + table); }
 
 		sugg_pool.
-			query("INSERT INTO " + table + " SET ?", set,
-				function (err, rows) {
-					if (manual_log) {
-						console.log("> Esito inserimento -> " + !err);
-					}
-					if (!err) {
-						return insertOn_resolve(set);
-					}
-					else {
-						if (manual_log)
-							console.log(err);
-						return insertOn_resolve(false);
-					}
-				});
+		query("INSERT INTO " + table + " SET ?", set,
+			  function (err, rows) {
+			if (manual_log) {
+				console.log("> Esito inserimento -> " + !err);
+			}
+			if (!err) {
+				return insertOn_resolve(set);
+			}
+			else {
+				if (manual_log)
+					console.log(err);
+				return insertOn_resolve(false);
+			}
+		});
 
 
 	});
@@ -1410,20 +1409,20 @@ function removeVote(sugg_id, usr_id) {
 		}
 
 		sugg_pool.
-			query(str_query, (set.length > 1 ? [set[0], set[1]] : set[0]),
-				function (err, rows) {
-					if (manual_log) {
-						console.log("> Esito rimozione -> " + !err + " [voti rimossi: " + rows.affectedRows + "]");
-					}
-					if (!err) {
-						return removeVote_resolve(rows.affectedRows);
-					}
-					else {
-						if (manual_log)
-							console.log(err);
-						return removeVote_resolve(false);
-					}
-				});
+		query(str_query, (set.length > 1 ? [set[0], set[1]] : set[0]),
+			  function (err, rows) {
+			if (manual_log) {
+				console.log("> Esito rimozione -> " + !err + " [voti rimossi: " + rows.affectedRows + "]");
+			}
+			if (!err) {
+				return removeVote_resolve(rows.affectedRows);
+			}
+			else {
+				if (manual_log)
+					console.log(err);
+				return removeVote_resolve(false);
+			}
+		});
 
 
 	});
@@ -1438,23 +1437,23 @@ function queryOn(table, id) {
 			id_name = "SUGGESTION_ID";
 
 		return sugg_pool.
-			query("SELECT * FROM " + table + " WHERE " + id_name + " =  ?", id,
-				function (err, rows) {
-					if (!err) {
-						let controll = (typeof rows != "undefined" && rows != null && rows.length != null && rows.length > 0);
-						if (manual_log) { console.log("> Esito -> " + controll); }
+		query("SELECT * FROM " + table + " WHERE " + id_name + " =  ?", id,
+			  function (err, rows) {
+			if (!err) {
+				let controll = (typeof rows != "undefined" && rows != null && rows.length != null && rows.length > 0);
+				if (manual_log) { console.log("> Esito -> " + controll); }
 
-						if (controll)
-							query_resolve(rows);
-						else {
-							query_resolve(false);
-						}
-					}
-					else {
-						if (manual_log) { console.log("> Errore nella select " + err); }
-						query_resolve(null);
-					}
-				});
+				if (controll)
+					query_resolve(rows);
+				else {
+					query_resolve(false);
+				}
+			}
+			else {
+				if (manual_log) { console.log("> Errore nella select " + err); }
+				query_resolve(null);
+			}
+		});
 
 	});
 }
@@ -1474,16 +1473,16 @@ function getLootUser(lootName, bool, usr_id) {
 					for (let i = 0; i < json.res.length; i++) {
 						if (json.res[i].nickname.toLowerCase() == lootName.toLowerCase() && json.res[i].greater_50 == 1) {
 							sugg_pool.
-								query("UPDATE " + tables_names.usr + " SET LAST_CHECK = ? WHERE USER_ID LIKE ?",
-									[(Date.now() / 1000), usr_id],
-									function (error, results) {
-										if (!error) {
-											console.log(results);
-											if (manual_log) { console.log("> Update dell'ultimo check -> " + !error); }
-										} else {
-											console.log(error);
-										}
-									});
+							query("UPDATE " + tables_names.usr + " SET LAST_CHECK = ? WHERE USER_ID LIKE ?",
+								  [(Date.now() / 1000), usr_id],
+								  function (error, results) {
+								if (!error) {
+									console.log(results);
+									if (manual_log) { console.log("> Update dell'ultimo check -> " + !error); }
+								} else {
+									console.log(error);
+								}
+							});
 							bool = true;
 							return getLootUser_resolve(info);
 							//break;
@@ -1531,40 +1530,40 @@ function initialize() {
 				reset.push(drop_table(tables_names.banditw, single_connection));
 
 				Promise.all(reset).
-					then(function (del_res, del_err) {
-						if (del_res) {
-							let create = [];
-							create.push(create_table(tables_names.sugg, tables_structs.sugg, single_connection));
-							create.push(create_table(tables_names.usr, tables_structs.usr, single_connection));
-							create.push(create_table(tables_names.votes, tables_structs.votes, single_connection));
-							create.push(create_table(tables_names.banditw, tables_structs.banditw, single_connection));
+				then(function (del_res, del_err) {
+					if (del_res) {
+						let create = [];
+						create.push(create_table(tables_names.sugg, tables_structs.sugg, single_connection));
+						create.push(create_table(tables_names.usr, tables_structs.usr, single_connection));
+						create.push(create_table(tables_names.votes, tables_structs.votes, single_connection));
+						create.push(create_table(tables_names.banditw, tables_structs.banditw, single_connection));
 
-							Promise.all(create).then(function (create_res) {
-								if (create_res) {
-									if (manual_log) { console.log("> Create tutte le tabelle senza Errori"); }
-									repopulate_BanditWords().
-										then(function (res) { init_resolve(true); }).
-										catch(function (err) { console.log(err) });
+						Promise.all(create).then(function (create_res) {
+							if (create_res) {
+								if (manual_log) { console.log("> Create tutte le tabelle senza Errori"); }
+								repopulate_BanditWords().
+								then(function (res) { init_resolve(true); }).
+								catch(function (err) { console.log(err) });
 
-								} else {
-									if (manual_log) { console.log("> Errore nella creazione delle tabelle"); }
-									init_resolve(false);
-								}
-							}).
-								catch(function (err) {
-									if (manual_log) {
-										console.log("> Errore nella creazione delle tabelle");
-										console.log(err);
-									}
-									init_resolve(null);
-								});
-						} else {
-							if (manual_log) { console.log("> Errore nella rimozione delle tabelle " + del_err); }
+							} else {
+								if (manual_log) { console.log("> Errore nella creazione delle tabelle"); }
+								init_resolve(false);
+							}
+						}).
+						catch(function (err) {
+							if (manual_log) {
+								console.log("> Errore nella creazione delle tabelle");
+								console.log(err);
+							}
 							init_resolve(null);
-						}
-						sugg_pool.releaseConnection(single_connection);
-					}).
-					catch(function (catch_err) { console.log(catch_err); });
+						});
+					} else {
+						if (manual_log) { console.log("> Errore nella rimozione delle tabelle " + del_err); }
+						init_resolve(null);
+					}
+					sugg_pool.releaseConnection(single_connection);
+				}).
+				catch(function (catch_err) { console.log(catch_err); });
 			}
 		});
 
@@ -1657,38 +1656,38 @@ module.exports.recreateAllTablesStruct = recreateAllTablesStruct
 function drop_table(string, connection) {
 	return new Promise(function (drop_resolve) {
 		connection.query("DROP TABLE IF EXISTS " + string + ";",
-			function (err, res) {
-				if (res) {
-					if (manual_log)
-						console.log("> Eliminata la tabella: " + string);
-					drop_resolve(true);
-				}
-				else {
-					if (manual_log)
-						console.log("> Errore nell'eliminazione della tabella: " + string);
-					console.log(err);
-					drop_resolve(false);
-				}
-			});
+						 function (err, res) {
+			if (res) {
+				if (manual_log)
+					console.log("> Eliminata la tabella: " + string);
+				drop_resolve(true);
+			}
+			else {
+				if (manual_log)
+					console.log("> Errore nell'eliminazione della tabella: " + string);
+				console.log(err);
+				drop_resolve(false);
+			}
+		});
 	});
 }
 
 function create_table(string, struct, connection) {
 	return new Promise(function (create_resolve) {
 		connection.query("CREATE TABLE " + string + struct,
-			function (err, res) {
-				if (res) {
-					if (manual_log)
-						console.log("> Creata la tabella: " + string);
-					create_resolve(true);
-				}
-				else {
-					if (manual_log)
-						console.log("> Errore nell'eliminazione della tabella: " + string);
-					console.log(err);
-					create_resolve(false);
-				}
-			});
+						 function (err, res) {
+			if (res) {
+				if (manual_log)
+					console.log("> Creata la tabella: " + string);
+				create_resolve(true);
+			}
+			else {
+				if (manual_log)
+					console.log("> Errore nell'eliminazione della tabella: " + string);
+				console.log(err);
+				create_resolve(false);
+			}
+		});
 	});
 }
 
@@ -1714,11 +1713,11 @@ function repopulate_BanditWords() {
 				}
 
 				return sugg_pool.query("INSERT INTO " + tables_names.banditw + " (BW_POS, B_WORD) VALUES ?", [bandit_list],
-					function (err, result) {
+									   function (err, result) {
 
-						console.log("> Parole bandite: " + rawdata.length + ", salvate su database: " + result.affectedRows);
-						repopulate_resolve(rawdata.length);
-					});
+					console.log("> Parole bandite: " + rawdata.length + ", salvate su database: " + result.affectedRows);
+					repopulate_resolve(rawdata.length);
+				});
 
 			}
 		});
@@ -1732,17 +1731,17 @@ module.exports.repopulate_BanditWords = repopulate_BanditWords;
 function getBannedWords() {
 	return new Promise(function (getBannedWords_resolve) {
 		sugg_pool.query("SELECT B_WORD AS 'banditw' FROM " + tables_names.banditw,
-			function (err, rows) {
-				if (!err) {
-					if (manual_log) {
-						console.log(">  Controllata con successo la tabella " + tables_names.banditw);
-					}
-					getBannedWords_resolve(rows);
+						function (err, rows) {
+			if (!err) {
+				if (manual_log) {
+					console.log(">  Controllata con successo la tabella " + tables_names.banditw);
 				}
-				else {
-					getBannedWords_resolve(null);
-				}
-			});
+				getBannedWords_resolve(rows);
+			}
+			else {
+				getBannedWords_resolve(null);
+			}
+		});
 
 	});
 }
@@ -1753,11 +1752,11 @@ function addBannedW(bannedw) {
 
 		return getBannedWords().then(function (bannedCount) {
 			return sugg_pool.
-				query("INSERT INTO " + tables_names.banditw + " (BW_POS, B_WORD) VALUES ?", [bannedCount, bannedw],
-					function (err, result) {
-						console.log("> Parole bandite: " + result.affectedRows);
-						repopulate_resolve(result.affectedRows);
-					});
+			query("INSERT INTO " + tables_names.banditw + " (BW_POS, B_WORD) VALUES ?", [bannedCount, bannedw],
+				  function (err, result) {
+				console.log("> Parole bandite: " + result.affectedRows);
+				repopulate_resolve(result.affectedRows);
+			});
 		}).catch(function (err) {
 			addBannedW(false);
 		});
