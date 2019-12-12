@@ -244,9 +244,9 @@ callNTimes(60000, function () { //Ogni 1 minuto
 	checkLobbyEnd();
 	checkMapSeasonEnd();
 
-	/*
 	if (checkDragonTopOn == 0)
 		checkTopSeasonStart();
+	/*
 	if (checkDragonTopOn == 1)
 		checkTopSeasonEnd();
 	*/
@@ -43832,7 +43832,8 @@ function mainMenu(message) {
 									restrict_min = "meno di 1";
 								restrict_text = " (☠️ " + restrict_min + ")";
 							}
-							msgtext += "\n🗺 Puoi esplorare le Mappe" + restrict_text;
+							if (checkDragonTopOn == 0)
+								msgtext += "\n🗺 Puoi esplorare le Mappe" + restrict_text;
 						}
 					}
 				}
