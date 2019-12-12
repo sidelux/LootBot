@@ -26708,6 +26708,14 @@ bot.onText(/Gestisci Membri/i, function (message) {
 							keyboard: [["Gestisci membri"], ["Torna al team"], ["Torna al menu"]]
 						}
 					};
+					
+					var kbYesNo = {
+						parse_mode: "HTML",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: [["Si"], ["Torna al team"], ["Torna al menu"]]
+						}
+					};
 
 					bot.sendMessage(message.chat.id, "Seleziona il membro del team da gestire", kb).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
@@ -26871,47 +26879,54 @@ bot.onText(/Gestisci Membri/i, function (message) {
 																		bot.sendMessage(message.chat.id, "Il team è pieno!", kbBack);
 																		return;
 																	}
+																	
+																	bot.sendMessage(message.chat.id, "Sei sicuro di voler spostare il membro?", kbYesNo).then(function () {
+																		answerCallbacks[message.chat.id] = function (answer) {
+																			if (answer.text.toLowerCase() == "si") {
+																				
+																				var d2 = new Date();
+																				d2.setHours(d2.getHours() + 48);
+																				var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
 
-																	var d2 = new Date();
-																	d2.setHours(d2.getHours() + 48);
-																	var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
-
-																	connection.query('UPDATE player SET boss_time = "' + long_date + '", team_mission_time = "' + long_date + '" WHERE id = ' + playerId, function (err, rows, fields) {
-																		if (err) throw err;
-																		connection.query('UPDATE team_player SET kill_streak = 0, team_id = ' + motherId + ' WHERE player_id = ' + playerId, function (err, rows, fields) {
-																			if (err) throw err;
-																			bot.sendMessage(message.chat.id, "Hai trasferito il membro nel Team Madre!", kbBack);
-																			bot.sendMessage(chat_id, "Sei stato trasferito nel Team Madre dall'amministratore");
-
-																			connection.query('UPDATE team SET players = players-1 WHERE id = ' + team_id, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																			connection.query('UPDATE team SET players = players+1 WHERE id = ' + motherId, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																			connection.query('SELECT player_id FROM team_player WHERE team_id = ' + motherId + ' AND role = 1', function (err, rows, fields) {
-																				if (err) throw err;
-																				connection.query('SELECT chat_id FROM player WHERE id = ' + rows[0].player_id, function (err, rows, fields) {
+																				connection.query('UPDATE player SET boss_time = "' + long_date + '", team_mission_time = "' + long_date + '" WHERE id = ' + playerId, function (err, rows, fields) {
 																					if (err) throw err;
-																					bot.sendMessage(rows[0].chat_id, "<b>" + nick + "</b> è stato trasferito nel tuo team", html);
+																					connection.query('UPDATE team_player SET kill_streak = 0, team_id = ' + motherId + ' WHERE player_id = ' + playerId, function (err, rows, fields) {
+																						if (err) throw err;
+																						bot.sendMessage(message.chat.id, "Hai trasferito il membro nel Team Madre!", kbBack);
+																						bot.sendMessage(chat_id, "Sei stato trasferito nel Team Madre dall'amministratore");
+
+																						connection.query('UPDATE team SET players = players-1 WHERE id = ' + team_id, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																						connection.query('UPDATE team SET players = players+1 WHERE id = ' + motherId, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																						connection.query('SELECT player_id FROM team_player WHERE team_id = ' + motherId + ' AND role = 1', function (err, rows, fields) {
+																							if (err) throw err;
+																							connection.query('SELECT chat_id FROM player WHERE id = ' + rows[0].player_id, function (err, rows, fields) {
+																								if (err) throw err;
+																								bot.sendMessage(rows[0].chat_id, "<b>" + nick + "</b> è stato trasferito nel tuo team", html);
+																							});
+																						});
+																						connection.query('DELETE FROM assault_place_player_id WHERE player_id = ' + playerId, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																						connection.query('DELETE FROM assault_place_miniboost WHERE player_id = ' + playerId, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																						connection.query('DELETE FROM assault_place_magic WHERE player_id = ' + playerId, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																						connection.query('DELETE FROM assault_place_cons WHERE player_id = ' + playerId, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																						connection.query('DELETE FROM assault_increment_history WHERE player_id = ' + playerId, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																					});
 																				});
-																			});
-																			connection.query('DELETE FROM assault_place_player_id WHERE player_id = ' + playerId, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																			connection.query('DELETE FROM assault_place_miniboost WHERE player_id = ' + playerId, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																			connection.query('DELETE FROM assault_place_magic WHERE player_id = ' + playerId, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																			connection.query('DELETE FROM assault_place_cons WHERE player_id = ' + playerId, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																			connection.query('DELETE FROM assault_increment_history WHERE player_id = ' + playerId, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																		});
+																			}
+																		}
 																	});
 																});
 															});
@@ -26989,47 +27004,54 @@ bot.onText(/Gestisci Membri/i, function (message) {
 																		bot.sendMessage(message.chat.id, "Il team è pieno!", kbBack);
 																		return;
 																	}
+																	
+																	bot.sendMessage(message.chat.id, "Sei sicuro di voler spostare il membro?", kbYesNo).then(function () {
+																		answerCallbacks[message.chat.id] = function (answer) {
+																			if (answer.text.toLowerCase() == "si") {
 
-																	var d2 = new Date();
-																	d2.setHours(d2.getHours() + 48);
-																	var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
+																				var d2 = new Date();
+																				d2.setHours(d2.getHours() + 48);
+																				var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
 
-																	connection.query('UPDATE player SET boss_time = "' + long_date + '", team_mission_time = "' + long_date + '" WHERE id = ' + playerId, function (err, rows, fields) {
-																		if (err) throw err;
-																		connection.query('UPDATE team_player SET kill_streak = 0, team_id = ' + childId + ' WHERE player_id = ' + playerId, function (err, rows, fields) {
-																			if (err) throw err;
-																			bot.sendMessage(message.chat.id, "Hai trasferito il membro in Accademia!", kbBack);
-																			bot.sendMessage(chat_id, "Sei stato trasferito in Accademia dall'amministratore");
-
-																			connection.query('UPDATE team SET players = players-1 WHERE id = ' + team_id, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																			connection.query('UPDATE team SET players = players+1 WHERE id = ' + childId, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																			connection.query('SELECT player_id FROM team_player WHERE team_id = ' + childId + ' AND role = 1', function (err, rows, fields) {
-																				if (err) throw err;
-																				connection.query('SELECT chat_id FROM player WHERE id = ' + rows[0].player_id, function (err, rows, fields) {
+																				connection.query('UPDATE player SET boss_time = "' + long_date + '", team_mission_time = "' + long_date + '" WHERE id = ' + playerId, function (err, rows, fields) {
 																					if (err) throw err;
-																					bot.sendMessage(rows[0].chat_id, "<b>" + nick + "</b> è stato trasferito nel tuo team", html);
+																					connection.query('UPDATE team_player SET kill_streak = 0, team_id = ' + childId + ' WHERE player_id = ' + playerId, function (err, rows, fields) {
+																						if (err) throw err;
+																						bot.sendMessage(message.chat.id, "Hai trasferito il membro in Accademia!", kbBack);
+																						bot.sendMessage(chat_id, "Sei stato trasferito in Accademia dall'amministratore");
+
+																						connection.query('UPDATE team SET players = players-1 WHERE id = ' + team_id, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																						connection.query('UPDATE team SET players = players+1 WHERE id = ' + childId, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																						connection.query('SELECT player_id FROM team_player WHERE team_id = ' + childId + ' AND role = 1', function (err, rows, fields) {
+																							if (err) throw err;
+																							connection.query('SELECT chat_id FROM player WHERE id = ' + rows[0].player_id, function (err, rows, fields) {
+																								if (err) throw err;
+																								bot.sendMessage(rows[0].chat_id, "<b>" + nick + "</b> è stato trasferito nel tuo team", html);
+																							});
+																						});
+																						connection.query('DELETE FROM assault_place_player_id WHERE player_id = ' + playerId, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																						connection.query('DELETE FROM assault_place_miniboost WHERE player_id = ' + playerId, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																						connection.query('DELETE FROM assault_place_magic WHERE player_id = ' + playerId, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																						connection.query('DELETE FROM assault_place_cons WHERE player_id = ' + playerId, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																						connection.query('DELETE FROM assault_increment_history WHERE player_id = ' + playerId, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																					});
 																				});
-																			});
-																			connection.query('DELETE FROM assault_place_player_id WHERE player_id = ' + playerId, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																			connection.query('DELETE FROM assault_place_miniboost WHERE player_id = ' + playerId, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																			connection.query('DELETE FROM assault_place_magic WHERE player_id = ' + playerId, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																			connection.query('DELETE FROM assault_place_cons WHERE player_id = ' + playerId, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																			connection.query('DELETE FROM assault_increment_history WHERE player_id = ' + playerId, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																		});
+																			}
+																		}
 																	});
 																});
 															});

@@ -26,7 +26,7 @@ const channel_link = "[canale](t.me/" + channel_name + ")";
 const suggestion_tag = {
 	primo: ['🗺', '#loot', '#plus', '#community', "#tools"],
 	secondo: ['👤', '#alchimia', '#drago', '#giocatore', '#imprese', '#team', '#talenti', '#vocazione'],
-	bis: ['🎮', '#assalto', '#craft', '#contrabbandiere', '#dungeon', '#figurine', '#incarichi', '#ispezioni', '#mercato', '#missioni', "#top", '#viaggi'],
+	bis: ['🎮', '#assalto', '#craft', '#contrabbandiere', '#dungeon', '#figurine', '#incarichi', '#ispezioni', '#mappe', '#mercato', '#missioni', "#top", '#viaggi'],
 	ter: ['🎭', "#eventi", '#casadeigiochi', '#vette', '#globali', '#polvere', '#miniere'],
 	terzo: ['⚙', '#estetica', '#meccaniche', '#bottoni', '#testi', '#comandi'],
 	quarto: ['⭐️', '#novità', '#revisione']
