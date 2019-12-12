@@ -1019,7 +1019,6 @@ function getUserInfo(user_id, addNew) {
 
 		}).catch(function (catch_err) {
 			console.log("> Errore durante il controllo!\n");
-			console.log(catch_err);
 
 			if (manual_log) {
 				console.log(catch_err);
@@ -1461,7 +1460,6 @@ function queryOn(table, id) {
 function getLootUser(lootName, bool, usr_id) {
 	return new Promise(function (getLootUser_resolve) {
 		if (bool) {
-			//console.log("> Controllo l'utente");
 			let info = request({
 				"method": "GET",
 				"uri": "https://fenixweb.net:6600/api/v2/GbeUaWrGXKNYUcs910310/players/" + lootName,

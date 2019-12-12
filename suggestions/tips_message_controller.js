@@ -335,7 +335,7 @@ function suggestionManager(message) {
 							if (res_message.noMessage) { suggestion_resolve({}); }
 							else if (res_message.chat_id) { suggestion_resolve({ toSend: res_message }); }
 							else if (res_message.toSend || res_message.toEdit) { suggestion_resolve(res_message) }
-							else { suggestion_resolve({ toSend: invalidMessage(user_info.id, "") }); }
+							else { return Promise.resolve(invalidMessage(user_info.id, generic_error)); }
 						}).catch(function (error) {
 							console.error(">\tErrore nella dispatch:");
 							console.error(error);
