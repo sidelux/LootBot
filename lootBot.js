@@ -7884,7 +7884,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																				var cursedText = "";
 																				var minutes = 144*this_room;
 																				var rand = Math.random()*100;
-																				if (rand <= 5) {
+																				if (rand <= 10) {
 																					isCursed = 1;
 																					minutes = Math.round(minutes/2);
 																					cursedText = "\nHai generato un Dungeon Maledetto 🧨 Alcune stanze possiedono caratteristiche diverse, i mostri sono più potenti, riceverai 2 Punti Rango al termine e ne perderai 2 in caso di sconfitta.";
@@ -15810,14 +15810,26 @@ bot.onText(/Dai un nome al drago/i, function (message) {
 									bot.sendMessage(message.chat.id, "I simboli non sono consentiti o il nome è troppo lungo (max 40 caratteri).", back);
 									return;
 								}
-
-								for (var i = 1, len = 7; i < len; i++) {
-									delItem(player_id, (67+i), 1);
-								}
-								connection.query('INSERT INTO dragon (id, player_id, name, exp, level, damage, defence, type) VALUES (DEFAULT, ' + player_id + ', "' + name + '", 70, 1, 1, 1, "' + type + '")', function (err, rows, fields) {
+								
+								name = name.trim();
+								
+								connection.query('SELECT 1 FROM dragon WHERE name = "' + name + '"', function (err, rows, fields) {
 									if (err) throw err;
-									bot.sendMessage(message.chat.id, "Complimenti, è nato *" + name + "*, puoi nutrirlo per farlo crescere e trarne vantaggi!", back);
-									checkDragon(player_id);
+
+									if (Object.keys(rows).length > 0) {
+										bot.sendMessage(message.chat.id, "Il nome del drago è già utilizzato!", back);
+										return;
+									}
+
+
+									for (var i = 1, len = 7; i < len; i++)
+										delItem(player_id, (67+i), 1);
+
+									connection.query('INSERT INTO dragon (id, player_id, name, exp, level, damage, defence, type) VALUES (DEFAULT, ' + player_id + ', "' + name + '", 70, 1, 1, 1, "' + type + '")', function (err, rows, fields) {
+										if (err) throw err;
+										bot.sendMessage(message.chat.id, "Complimenti, è nato *" + name + "*, puoi nutrirlo per farlo crescere e trarne vantaggi!", back);
+										checkDragon(player_id);
+									});
 								});
 							};
 						});
@@ -16228,21 +16240,32 @@ bot.onText(/rinomina drago/i, function (message) {
 						bot.sendMessage(message.chat.id, "I simboli non sono consentiti oppure il nome è troppo lungo (max 40 caratteri).", back);
 						return;
 					}
-
-					bot.sendMessage(message.chat.id, "Sei sicuro di voler rinominare il drago: " + newname + "?", yesno).then(function () {
-						answerCallbacks[message.chat.id] = function (answer) {
-							if (answer.text.toLowerCase() == "si") {
-								if (getItemCnt(player_id, 199) == 0) {
-									bot.sendMessage(message.chat.id, "Ti serve il Rinominatore per rinominare il drago.", back);
-									return;
-								}
-								connection.query('UPDATE dragon SET name = "' + newname.trim() + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
-									if (err) throw err;
-									delItem(player_id, 199, 1);
-									bot.sendMessage(message.chat.id, "Hai rinominato il drago!", back);
-								});
-							}
+					
+					newname = newname.trim();
+					
+					connection.query('SELECT 1 FROM dragon WHERE name = "' + newname + '"', function (err, rows, fields) {
+						if (err) throw err;
+						
+						if (Object.keys(rows).length > 0) {
+							bot.sendMessage(message.chat.id, "Il nome del drago è già utilizzato!", back);
+							return;
 						}
+
+						bot.sendMessage(message.chat.id, "Sei sicuro di voler rinominare il drago: " + newname + "?", yesno).then(function () {
+							answerCallbacks[message.chat.id] = function (answer) {
+								if (answer.text.toLowerCase() == "si") {
+									if (getItemCnt(player_id, 199) == 0) {
+										bot.sendMessage(message.chat.id, "Ti serve il Rinominatore per rinominare il drago.", back);
+										return;
+									}
+									connection.query('UPDATE dragon SET name = "' + newname + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+										delItem(player_id, 199, 1);
+										bot.sendMessage(message.chat.id, "Hai rinominato il drago!", back);
+									});
+								}
+							}
+						});
 					});
 				};
 			});
@@ -26041,7 +26064,7 @@ bot.onText(/potenziamenti anima/i, function (message) {
 						var boost_id = rows[0].boost_id;
 
 						if (isAdmin == 0) {
-							bot.sendMessage(message.chat.id, "Il team possiede *" + point + "* 🦋. Puoi ottenerne altri uccidendo i boss oppure partecipando agli eventi di team. Solo l'amministratore può procedere con i potenziamenti.\n\n" + boost_list, team)
+							bot.sendMessage(message.chat.id, "Il team possiede *" + point + "* 🦋. Puoi ottenerne altri sconfiggendo i boss oppure partecipando agli eventi di team. Solo l'amministratore può procedere con i potenziamenti.\n\n" + boost_list, team)
 							return;
 						}
 
