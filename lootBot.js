@@ -588,13 +588,13 @@ bot.on("pre_checkout_query", function (message) {
 
 var mainKeys = [];
 
-var topOpen = "Assalto 🐺";
+var topMap = "Mappe di Lootia 🗺 (Beta)";
 if (checkDragonTopOn == 1)
-	topOpen = "Vette 🐲🔥";
+	topMap = "Vette dei Draghi 🐲";
 
 mainKeys = [['⚔ Missione ⚔'],
-			['Dungeon 🛡', topOpen],
-			['Mappe di Lootia 🗺 (Beta)'],
+			['Dungeon 🛡', 'Assalto 🐺'],
+			[topMap],
 			['Alchimia ⚗️', 'Rifugio 🔦'],
 			['Zaino 🎒', 'Piazza 💰'],
 			['Giocatore 👤', 'Imprese 🏋️', 'Team ⚜️'],
@@ -20690,10 +20690,7 @@ bot.onText(/team/i, function (message) {
 											// ADMIN
 											var show_type = "Aperto";
 											var show_details = "Non Visibili";
-											if (checkDragonTopOn == 1)
-												iKeys.push(["Assalto 🐺", "Incarichi 📜"]);
-											else
-												iKeys.push(["Incarichi 📜"]);
+											iKeys.push(["Incarichi 📜"]);
 											iKeys.push(["Dettaglio Membri 👥"]);
 											iKeys.push(["Cassaforte 💰", "Magazzino 📦"]);
 											iKeys.push(["Hall of Fame 🏆", "Liste Membri 🔎"]);
@@ -20715,10 +20712,7 @@ bot.onText(/team/i, function (message) {
 											iKeys.push(["Torna al menu"]);
 										} else {
 											// UTENTE
-											if (checkDragonTopOn == 1)
-												iKeys.push(["Assalto 🐺", "Incarichi 📜"]);
-											else
-												iKeys.push(["Incarichi 📜"]);
+											iKeys.push(["Incarichi 📜"]);
 											if (team_details == 1)
 												iKeys.push(["Dettaglio Membri 👥"]);
 											iKeys.push(["Cassaforte 💰", "Magazzino 📦"]);
