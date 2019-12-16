@@ -29063,37 +29063,69 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 									});
 								} else if (answer.text == "Classifica 🔝") {
 									var text = "Classifica per Pupazzi di Neve in vita:\n";
-
-									connection.query('SELECT P.nickname, COUNT(E.id) As points FROM event_snowball_list E, player P WHERE P.id = E.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) GROUP BY E.player_id ORDER BY points DESC', function (err, rows, fields) {
+									
+									var query = 'SELECT P.id, P.nickname, COUNT(E.id) As points FROM event_snowball_list E, player P WHERE P.id = E.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) GROUP BY E.player_id ORDER BY points DESC';
+									
+									connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 										if (err) throw err;
 
-										var range = 10;
-										var nickname = [];
-										var points = [];
-										var mypos = 0;
+										if (rows[0].top_min == 1) {
+											connection.query(query, function (err, rows, fields) {
+												if (err) throw err;
+												
+												if (Object.keys(rows).length < 100) {
+													bot.sendMessage(message.chat.id, "La classifica sarà disponibile con più giocatori iscritti!", kbBack);
+													return;
+												}
 
-										if (Object.keys(rows).length < 100) {
-											bot.sendMessage(message.chat.id, "La classifica sarà disponibile con più giocatori iscritti!", kbBack);
-											return;
+												for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+													if (c < 31) {
+														if (c < size + 1)
+															text = text + c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].points) + ")\n";
+													}
+													if (rows[i].id == player_id) {
+														mypnt = rows[i].total_cnt;
+														myinfo = c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].points) + ")\n";
+													}
+													c++;
+												}
+												text = text + "\nTu:\n" + myinfo;
+
+												bot.sendMessage(message.chat.id, text, keyrank);
+											});
+										} else {
+											connection.query(query, function (err, rows, fields) {
+												if (err) throw err;
+
+												var range = 10;
+												var nickname = [];
+												var points = [];
+												var mypos = 0;
+
+												if (Object.keys(rows).length < 100) {
+													bot.sendMessage(message.chat.id, "La classifica sarà disponibile con più giocatori iscritti!", kbBack);
+													return;
+												}
+
+												for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+													nickname.push(rows[i].nickname);
+													points.push(rows[i].points);
+													if (rows[i].id == player_id)
+														mypos = i;
+												}
+
+												for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
+													if (nickname[i] != undefined) {
+														if (i == mypos)
+															text += (i + 1) + "° <b>" + nickname[i] + "</b> (" + points[i] + ")\n";
+														else
+															text += (i + 1) + "° " + nickname[i] + " (" + points[i] + ")\n";
+													}
+												}
+
+												bot.sendMessage(message.chat.id, text, kbBack);
+											});
 										}
-
-										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-											nickname.push(rows[i].nickname);
-											points.push(rows[i].points);
-											if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase())
-												mypos = i;
-										}
-
-										for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
-											if (nickname[i] != undefined) {
-												if (i == mypos)
-													text += (i + 1) + "° <b>" + nickname[i] + "</b> (" + points[i] + ")\n";
-												else
-													text += (i + 1) + "° " + nickname[i] + " (" + points[i] + ")\n";
-											}
-										}
-
-										bot.sendMessage(message.chat.id, text, kbBack);
 									});
 								}
 							};
@@ -34140,240 +34172,245 @@ bot.onText(/^Cambia Top/i, function (message) {
 });
 
 bot.onText(/^Le Mie Classifiche/i, function (message) {
-
-	var text = "La tua posizione nelle varie classifiche personali:\n";
-	var c = 1;
-	var mypnt = 0;
-	var mypos = 0;
-
-	connection.query('SELECT nickname, craft_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
-		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-			if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
-				mypnt = rows[i].points;
-				mypos = c;
-			}
-			c++;
-		}
-		text = text + "\n*Punti creazione*: " + mypos + "° con " + formatNumber(mypnt);
-		c = 1;
-		mypnt = 0;
-		mypos = 0;
 
-		connection.query('SELECT nickname, craft_week As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_week, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+		var player_id = rows[0].id;
+		
+		var text = "La tua posizione nelle varie classifiche personali:\n";
+		var c = 1;
+		var mypnt = 0;
+		var mypos = 0;
+
+		connection.query('SELECT P.id, nickname, craft_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 			if (err) throw err;
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-				if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+				if (rows[i].id == player_id) {
 					mypnt = rows[i].points;
 					mypos = c;
 				}
 				c++;
 			}
-			text = text + "\n*Punti creazione settimanali*: " + mypos + "° con " + formatNumber(mypnt) + " pnt";
+			text = text + "\n*Punti creazione*: " + mypos + "° con " + formatNumber(mypnt);
 			c = 1;
 			mypnt = 0;
 			mypos = 0;
 
-			connection.query('SELECT nickname, craft_day As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_day, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+			connection.query('SELECT P.id, nickname, craft_week As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_week, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 				if (err) throw err;
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+					if (rows[i].id == player_id) {
 						mypnt = rows[i].points;
 						mypos = c;
 					}
 					c++;
 				}
-				text = text + "\n*Punti creazione giornalieri*: " + mypos + "° con " + formatNumber(mypnt) + " pnt";
+				text = text + "\n*Punti creazione settimanali*: " + mypos + "° con " + formatNumber(mypnt) + " pnt";
 				c = 1;
 				mypnt = 0;
 				mypos = 0;
 
-				connection.query('SELECT nickname, rank As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, rank, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+				connection.query('SELECT P.id, nickname, craft_day As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_day, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 					if (err) throw err;
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-						if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+						if (rows[i].id == player_id) {
 							mypnt = rows[i].points;
 							mypos = c;
 						}
 						c++;
 					}
-					text = text + "\n*Punti rango*: " + mypos + "° con " + formatNumber(mypnt);
+					text = text + "\n*Punti creazione giornalieri*: " + mypos + "° con " + formatNumber(mypnt) + " pnt";
 					c = 1;
 					mypnt = 0;
 					mypos = 0;
 
-					connection.query('SELECT nickname, achievement_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, achievement_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+					connection.query('SELECT P.id, nickname, rank As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, rank, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 						if (err) throw err;
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-							if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+							if (rows[i].id == player_id) {
 								mypnt = rows[i].points;
 								mypos = c;
 							}
 							c++;
 						}
-						text = text + "\n*Imprese giornaliere*: " + mypos + "° con " + formatNumber(mypnt) + " pnt";
+						text = text + "\n*Punti rango*: " + mypos + "° con " + formatNumber(mypnt);
 						c = 1;
 						mypnt = 0;
 						mypos = 0;
 
-						connection.query('SELECT nickname, mission_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, mission_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+						connection.query('SELECT P.id, nickname, achievement_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, achievement_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 							if (err) throw err;
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-								if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+								if (rows[i].id == player_id) {
 									mypnt = rows[i].points;
 									mypos = c;
 								}
 								c++;
 							}
-							text = text + "\n*Missioni completate*: " + mypos + "° con " + formatNumber(mypnt);
+							text = text + "\n*Imprese giornaliere*: " + mypos + "° con " + formatNumber(mypnt) + " pnt";
 							c = 1;
 							mypnt = 0;
 							mypos = 0;
 
-							connection.query('SELECT nickname, ability As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, ability, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+							connection.query('SELECT P.id, nickname, mission_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, mission_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 								if (err) throw err;
 								for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-									if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+									if (rows[i].id == player_id) {
 										mypnt = rows[i].points;
 										mypos = c;
 									}
 									c++;
 								}
-								text = text + "\n*Abilità*: " + mypos + "° con " + formatNumber(mypnt);
+								text = text + "\n*Missioni completate*: " + mypos + "° con " + formatNumber(mypnt);
 								c = 1;
 								mypnt = 0;
 								mypos = 0;
 
-								connection.query('SELECT nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND player.id NOT IN (1,3) ORDER BY total_cnt DESC', function (err, rows, fields) {
+								connection.query('SELECT P.id, nickname, ability As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, ability, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 									if (err) throw err;
 									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-										if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+										if (rows[i].id == player_id) {
+											mypnt = rows[i].points;
 											mypos = c;
-											mypnt = rows[i].total_cnt;
 										}
 										c++;
 									}
-									text = text + "\n*Contrabbandiere*: " + mypos + "° con " + formatNumber(mypnt) + " offerte";
+									text = text + "\n*Abilità*: " + mypos + "° con " + formatNumber(mypnt);
 									c = 1;
 									mypnt = 0;
 									mypos = 0;
 
-									connection.query('SELECT nickname, SUM(value) As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
+									connection.query('SELECT P.id, nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND player.id NOT IN (1,3) ORDER BY total_cnt DESC', function (err, rows, fields) {
 										if (err) throw err;
 										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-											if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+											if (rows[i].id == player_id) {
 												mypos = c;
-												mypnt = rows[i].cnt;
+												mypnt = rows[i].total_cnt;
 											}
 											c++;
 										}
+										text = text + "\n*Contrabbandiere*: " + mypos + "° con " + formatNumber(mypnt) + " offerte";
+										c = 1;
+										mypnt = 0;
+										mypos = 0;
 
-										connection.query('SELECT global_eventwait FROM config', function (err, rows, fields) {
+										connection.query('SELECT P.id, nickname, SUM(value) As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
 											if (err) throw err;
-
-											if (rows[0].global_eventwait == 0) {
-												if (mypos > 0)
-													text = text + "\n*Impresa Globale*: " + mypos + "° con " + formatNumber(mypnt) + " punti";
+											for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+												if (rows[i].id == player_id) {
+													mypos = c;
+													mypnt = rows[i].cnt;
+												}
+												c++;
 											}
 
-											c = 1;
-											mypnt = 0;
-											mypos = 0;
-
-											connection.query('SELECT nickname, global_event As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, global_event, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+											connection.query('SELECT global_eventwait FROM config', function (err, rows, fields) {
 												if (err) throw err;
-												for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-													if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
-														mypos = c;
-														mypnt = rows[i].points;
-													}
-													c++;
+
+												if (rows[0].global_eventwait == 0) {
+													if (mypos > 0)
+														text = text + "\n*Impresa Globale*: " + mypos + "° con " + formatNumber(mypnt) + " punti";
 												}
-												text = text + "\n*Globali*: " + mypos + "° con " + mypnt;
+
 												c = 1;
 												mypnt = 0;
 												mypos = 0;
 
-												connection.query('SELECT nickname, power_used As total_cnt FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) HAVING total_cnt > 0 ORDER BY total_cnt DESC', function (err, rows, fields) {
+												connection.query('SELECT P.id, nickname, global_event As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, global_event, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 													if (err) throw err;
 													for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-														if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+														if (rows[i].id == player_id) {
 															mypos = c;
-															mypnt = rows[i].total_cnt;
+															mypnt = rows[i].points;
 														}
 														c++;
 													}
-													if (mypos != 0)
-														text = text + "\n*Potenziamenti Flaridion*: " + mypos + "° con " + formatNumber(mypnt);
+													text = text + "\n*Globali*: " + mypos + "° con " + mypnt;
 													c = 1;
 													mypnt = 0;
 													mypos = 0;
 
-													connection.query('SELECT nickname, coupon_record As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, coupon_record, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+													connection.query('SELECT P.id, nickname, power_used As total_cnt FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) HAVING total_cnt > 0 ORDER BY total_cnt DESC', function (err, rows, fields) {
 														if (err) throw err;
 														for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-															if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+															if (rows[i].id == player_id) {
 																mypos = c;
-																mypnt = rows[i].points;
+																mypnt = rows[i].total_cnt;
 															}
 															c++;
 														}
-														text = text + "\n*Utilizzi Coupon*: " + mypos + "° con " + mypnt;
+														if (mypos != 0)
+															text = text + "\n*Potenziamenti Flaridion*: " + mypos + "° con " + formatNumber(mypnt);
 														c = 1;
 														mypnt = 0;
 														mypos = 0;
 
-														connection.query('SELECT nickname, achievement_count_all As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, achievement_count_all, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+														connection.query('SELECT P.id, nickname, coupon_record As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, coupon_record, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 															if (err) throw err;
 															for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-																if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+																if (rows[i].id == player_id) {
 																	mypos = c;
 																	mypnt = rows[i].points;
 																}
 																c++;
 															}
-															text = text + "\n*Triplette*: " + mypos + "° con " + mypnt;
+															text = text + "\n*Utilizzi Coupon*: " + mypos + "° con " + mypnt;
 															c = 1;
 															mypnt = 0;
 															mypos = 0;
 
-															connection.query('SELECT nickname, COUNT(C.id) As points FROM card_inventory C, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND C.player_id = P.id AND C.quantity > 0 GROUP BY player_id ORDER BY points  DESC', function (err, rows, fields) {
+															connection.query('SELECT P.id, nickname, achievement_count_all As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, achievement_count_all, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 																if (err) throw err;
 																for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-																	if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+																	if (rows[i].id == player_id) {
 																		mypos = c;
 																		mypnt = rows[i].points;
 																	}
 																	c++;
 																}
-																text = text + "\n*Figurine diverse Collezionate*: " + mypos + "° con " + mypnt;
+																text = text + "\n*Triplette*: " + mypos + "° con " + mypnt;
 																c = 1;
 																mypnt = 0;
 																mypos = 0;
 
-																connection.query('SELECT nickname, total_trophies As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, total_trophies, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+																connection.query('SELECT P.id, nickname, COUNT(C.id) As points FROM card_inventory C, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND C.player_id = P.id AND C.quantity > 0 GROUP BY player_id ORDER BY points  DESC', function (err, rows, fields) {
 																	if (err) throw err;
 																	for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-																		if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+																		if (rows[i].id == player_id) {
 																			mypos = c;
 																			mypnt = rows[i].points;
 																		}
 																		c++;
 																	}
-																	text = text + "\n*Trofei mappe totali*: " + mypos + "° con " + mypnt;
+																	text = text + "\n*Figurine diverse Collezionate*: " + mypos + "° con " + mypnt;
 																	c = 1;
 																	mypnt = 0;
 																	mypos = 0;
 
-																	var keyrank = {
-																		parse_mode: "Markdown",
-																		reply_markup: {
-																			resize_keyboard: true,
-																			keyboard: [['Top'], ['Torna al menu']]
+																	connection.query('SELECT P.id, nickname, total_trophies As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, total_trophies, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+																		if (err) throw err;
+																		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+																			if (rows[i].id == player_id) {
+																				mypos = c;
+																				mypnt = rows[i].points;
+																			}
+																			c++;
 																		}
-																	};
+																		text = text + "\n*Trofei mappe totali*: " + mypos + "° con " + mypnt;
+																		c = 1;
+																		mypnt = 0;
+																		mypos = 0;
 
-																	bot.sendMessage(message.chat.id, text, keyrank);
+																		var keyrank = {
+																			parse_mode: "Markdown",
+																			reply_markup: {
+																				resize_keyboard: true,
+																				keyboard: [['Top'], ['Torna al menu']]
+																			}
+																		};
+
+																		bot.sendMessage(message.chat.id, text, keyrank);
+																	});
 																});
 															});
 														});
@@ -34466,7 +34503,7 @@ bot.onText(/Classifica Contrabbandiere/i, function (message) {
 	var myinfo = 0;
 	var size = 20;
 
-	var query = 'SELECT nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND player.id NOT IN (1,3) ORDER BY total_cnt DESC';
+	var query = 'SELECT P.id, nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND player.id NOT IN (1,3) ORDER BY total_cnt DESC';
 
 	connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -34480,7 +34517,7 @@ bot.onText(/Classifica Contrabbandiere/i, function (message) {
 						if (c < size + 1)
 							text = text + c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].total_cnt) + ")\n";
 					}
-					if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+					if (rows[i].id == player_id) {
 						mypnt = rows[i].total_cnt;
 						myinfo = c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].total_cnt) + ")\n";
 					}
@@ -34503,7 +34540,7 @@ bot.onText(/Classifica Contrabbandiere/i, function (message) {
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					nickname.push(rows[i].nickname);
 					total_cnt.push(rows[i].total_cnt);
-					if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase())
+					if (rows[i].id == player_id)
 						mypos = i;
 				}
 				for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
@@ -34529,7 +34566,7 @@ bot.onText(/Figurine Collezionate/i, function (message) {
 	var myinfo = 0;
 	var size = 20;
 
-	var query = 'SELECT nickname, COUNT(C.id) As total_cnt FROM card_inventory C, player P WHERE C.player_id = P.id AND account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND C.quantity > 0 GROUP BY player_id ORDER BY total_cnt DESC';
+	var query = 'SELECT P.id, nickname, COUNT(C.id) As total_cnt FROM card_inventory C, player P WHERE C.player_id = P.id AND account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND C.quantity > 0 GROUP BY player_id ORDER BY total_cnt DESC';
 	connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -34542,7 +34579,7 @@ bot.onText(/Figurine Collezionate/i, function (message) {
 						if (c < size + 1)
 							text = text + c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].total_cnt) + ")\n";
 					}
-					if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+					if (rows[i].id == player_id) {
 						mypnt = rows[i].total_cnt;
 						myinfo = c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].total_cnt) + ")\n";
 					}
@@ -34565,7 +34602,7 @@ bot.onText(/Figurine Collezionate/i, function (message) {
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					nickname.push(rows[i].nickname);
 					total_cnt.push(rows[i].total_cnt);
-					if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase())
+					if (rows[i].id == player_id)
 						mypos = i;
 				}
 				for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
