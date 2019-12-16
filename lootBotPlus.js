@@ -4427,14 +4427,14 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				bot.sendMessage(message.chat.id, "Specifica almeno un codice negozio");
 				return;
 			}
+			
+			d.setDate(d.getDate() + 3);
+			long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
 			if (elements[0] == "tutti") {
-				d.setDate(d.getDate() - 2);
-				long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-
 				connection.query('UPDATE public_shop SET time_end = "' + long_date + '", notified = 0, time_creation = NOW() WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
-					bot.sendMessage(message.chat.id, "Tutti i negozi rinnovati per 2 giorni");
+					bot.sendMessage(message.chat.id, "Tutti i negozi rinnovati per 7 giorni");
 				});
 				return;
 			}
@@ -4442,9 +4442,6 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			var code = 0;
 			for (var i = 0; i < arrLen; i++) {
 				code = elements[i];
-				
-				d.setDate(d.getDate() + 3);
-				long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 				
 				var shopQuery = connection_sync.query('SELECT 1 FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id);
 				if (Object.keys(shopQuery).length > 0) {

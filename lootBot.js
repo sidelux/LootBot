@@ -28809,8 +28809,8 @@ bot.onText(/^\/endVillaggio/i, function (message) {
 			for (var j = 0; j < qnt; j++)
 				addChest(rows[i].id, 8);
 			if (rows[i].cnt >= 2) {
-				addItem(rows[i].id, 773);
-				text += " ed un *Alberello di Natale 2018* (IN)";
+				addItem(rows[i].id, 792);
+				text += " ed un *Alberello di Natale 2019* (IN)";
 			}
 			console.log(rows[i].nickname, text);
 			bot.sendMessage(rows[i].chat_id, text + "!", mark);
@@ -28819,14 +28819,15 @@ bot.onText(/^\/endVillaggio/i, function (message) {
 });
 
 bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevato/i, function (message) {
+	// premi: /endVillaggio
 	if (snowHouseEnd == 1) {
 		bot.sendMessage(message.chat.id, "L'evento è terminato! A breve verranno distribuiti i premi, grazie per aver partecipato.", back);
 		return;
 	}
 
 	if ((snowHouse == 0) && (message.from.id != 20471035)) {
-		//bot.sendMessage(message.chat.id, "I giocatori si stanno lentamente riunendo nel villaggio innevato... Pazienta!", back);
-		bot.sendMessage(message.chat.id, "La neve lentamente si scioglie...", back);
+		bot.sendMessage(message.chat.id, "I giocatori si stanno lentamente riunendo nel villaggio innevato... Pazienta!", back);
+		// bot.sendMessage(message.chat.id, "La neve lentamente si scioglie...", back);
 		return;
 	}
 
@@ -28919,13 +28920,14 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 
 						var snowman_cnt = parseInt(rows[0].cnt);
 
-						bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella tua <b>Casa nella Neve</b> 🌨!\nDurante questa settimana si svolge una gara che premierà chi riuscirà a costruire più Pupazzi di Neve degli altri partecipanti!\nPer costruirne un altro ti servono <b>" + (10+(snowman_cnt*10)) + " Palle di Neve</b>, puoi lanciarne una per danneggiare gli avversari oppure i loro pupazzi.\n\nPossiedi <b>" + snowball + "</b> Palle di Neve ❄️ e <b>" + snowman_cnt + "</b> Pupazzi di Neve ⛄️!\nIn totale sono stati creati <b>" + snowman_cnt_tot + "</b> Pupazzi e ci sono " + snowball_tot + " Palle di Neve!\n\nC'è una probabilità di ottenerne altre tramite missioni, ispezioni o sconfiggendo mostri nel dungeon, ogni Pupazzo ti fornirà 1 Palla di Neve per ogni azione\n\nL'evento termina il 31 alle 12:00!", kb).then(function () {
+						bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella tua <b>Casa nella Neve</b> 🌨!\nDurante questa settimana si svolge una gara che premierà chi riuscirà a costruire più Pupazzi di Neve degli altri partecipanti!\nPer costruirne un altro ti servono <b>" + (10+(snowman_cnt*10)) + " Palle di Neve</b>, puoi lanciarne una per danneggiare gli avversari oppure i loro pupazzi.\n\nPossiedi <b>" + snowball + "</b> Palle di Neve ❄️ e <b>" + snowman_cnt + "</b> Pupazzi di Neve ⛄️!\nIn totale sono stati creati <b>" + snowman_cnt_tot + "</b> Pupazzi e ci sono " + snowball_tot + " Palle di Neve!\n\nC'è una probabilità di ottenerne altre tramite missioni, ispezioni o sconfiggendo mostri nel dungeon, ogni Pupazzo ti fornirà 1 Palla di Neve per ogni azione\n\nL'evento termina il 29 alle 12:00!", kb).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
 								if (answer.text == "Lancia Palla di Neve ❄️") {
 									bot.sendMessage(message.chat.id, "Puoi lanciare una Palla di Neve ad un giocatore in particolare (scrivendo il nickname) oppure ad uno casuale, nel primo caso consumerai 2 Palle di Neve.\nNel caso in cui il bersaglio avesse un Pupazzo di Neve, quest'ultimo verrà colpito al posto del giocatore e danneggiato o distrutto. Può capitare inoltre che il giocatore avversario recuperi la tua Palla di Neve!", kb2).then(function () {
 										answerCallbacks[message.chat.id] = function (answer) {
 											if (answer.text == "Torna alla Casa")
-												return;						
+												return;	
+											
 											var enemy_player_id = 0;
 											var enemy_chat_id = 0;
 											var enemy_life = 0;
@@ -47378,12 +47380,13 @@ function getRankAch(message, size) {
 			return;
 		}
 
-		connection.query('SELECT top_min, global_event, id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		connection.query('SELECT top_min, global_event, id, global_event FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 			if (err) throw err;
 
 			var global_event = rows[0].global_event;
 			var top_min = rows[0].top_min;
 			var player_id = rows[0].id;
+			var global_event = rows[0].global_event;
 
 			var kb = {
 				parse_mode: "HTML",
@@ -47409,6 +47412,9 @@ function getRankAch(message, size) {
 					connection.query('UPDATE config SET global_limitcnt = ' + global_limit, function (err, rows, fields) {
 						if (err) throw err;
 					});
+					
+					if (global_event >= 5)
+						global_limit = 100;
 
 					if (top_min == 1) {
 						connection.query('SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {

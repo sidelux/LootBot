@@ -334,9 +334,11 @@ function setMsgID(check, sugg_id, msg_id) { //0, -1, 1
 							function (error, results) {
 				if (!error) {
 					console.log("> Update del msg_id -> " + !error);
+					console.log(results);
 					setSuggestionStatus_resolve(sugg_id);
 				}
 				else {
+					console.log(error);
 					setSuggestionStatus_resolve(-1);
 				}
 
