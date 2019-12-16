@@ -34182,7 +34182,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 		var mypnt = 0;
 		var mypos = 0;
 
-		connection.query('SELECT P.id, nickname, craft_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+		connection.query('SELECT id, nickname, craft_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 			if (err) throw err;
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 				if (rows[i].id == player_id) {
@@ -34196,7 +34196,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 			mypnt = 0;
 			mypos = 0;
 
-			connection.query('SELECT P.id, nickname, craft_week As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_week, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+			connection.query('SELECT id, nickname, craft_week As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_week, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 				if (err) throw err;
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					if (rows[i].id == player_id) {
@@ -34210,7 +34210,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 				mypnt = 0;
 				mypos = 0;
 
-				connection.query('SELECT P.id, nickname, craft_day As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_day, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+				connection.query('SELECT id, nickname, craft_day As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_day, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 					if (err) throw err;
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 						if (rows[i].id == player_id) {
@@ -34224,7 +34224,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 					mypnt = 0;
 					mypos = 0;
 
-					connection.query('SELECT P.id, nickname, rank As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, rank, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+					connection.query('SELECT id, nickname, rank As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, rank, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 						if (err) throw err;
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 							if (rows[i].id == player_id) {
@@ -34238,7 +34238,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 						mypnt = 0;
 						mypos = 0;
 
-						connection.query('SELECT P.id, nickname, achievement_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, achievement_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+						connection.query('SELECT id, nickname, achievement_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, achievement_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 							if (err) throw err;
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 								if (rows[i].id == player_id) {
@@ -34252,7 +34252,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 							mypnt = 0;
 							mypos = 0;
 
-							connection.query('SELECT P.id, nickname, mission_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, mission_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+							connection.query('SELECT id, nickname, mission_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, mission_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 								if (err) throw err;
 								for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 									if (rows[i].id == player_id) {
@@ -34266,7 +34266,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 								mypnt = 0;
 								mypos = 0;
 
-								connection.query('SELECT P.id, nickname, ability As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, ability, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+								connection.query('SELECT id, nickname, ability As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, ability, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 									if (err) throw err;
 									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 										if (rows[i].id == player_id) {
@@ -34280,7 +34280,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 									mypnt = 0;
 									mypos = 0;
 
-									connection.query('SELECT P.id, nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND player.id NOT IN (1,3) ORDER BY total_cnt DESC', function (err, rows, fields) {
+									connection.query('SELECT player.id, nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND player.id NOT IN (1,3) ORDER BY total_cnt DESC', function (err, rows, fields) {
 										if (err) throw err;
 										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 											if (rows[i].id == player_id) {
@@ -34316,7 +34316,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 												mypnt = 0;
 												mypos = 0;
 
-												connection.query('SELECT P.id, nickname, global_event As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, global_event, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+												connection.query('SELECT id, nickname, global_event As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, global_event, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 													if (err) throw err;
 													for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 														if (rows[i].id == player_id) {
@@ -34330,7 +34330,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 													mypnt = 0;
 													mypos = 0;
 
-													connection.query('SELECT P.id, nickname, power_used As total_cnt FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) HAVING total_cnt > 0 ORDER BY total_cnt DESC', function (err, rows, fields) {
+													connection.query('SELECT id, nickname, power_used As total_cnt FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) HAVING total_cnt > 0 ORDER BY total_cnt DESC', function (err, rows, fields) {
 														if (err) throw err;
 														for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 															if (rows[i].id == player_id) {
@@ -34345,7 +34345,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 														mypnt = 0;
 														mypos = 0;
 
-														connection.query('SELECT P.id, nickname, coupon_record As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, coupon_record, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+														connection.query('SELECT id, nickname, coupon_record As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, coupon_record, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 															if (err) throw err;
 															for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 																if (rows[i].id == player_id) {
@@ -34359,7 +34359,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 															mypnt = 0;
 															mypos = 0;
 
-															connection.query('SELECT P.id, nickname, achievement_count_all As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, achievement_count_all, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+															connection.query('SELECT id, nickname, achievement_count_all As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, achievement_count_all, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 																if (err) throw err;
 																for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 																	if (rows[i].id == player_id) {
@@ -34387,7 +34387,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 																	mypnt = 0;
 																	mypos = 0;
 
-																	connection.query('SELECT P.id, nickname, total_trophies As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, total_trophies, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+																	connection.query('SELECT id, nickname, total_trophies As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, total_trophies, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 																		if (err) throw err;
 																		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 																			if (rows[i].id == player_id) {
@@ -47159,7 +47159,7 @@ function getRank(message, size, type) {
 	var totpnt = 0;
 	var mypos = 0;
 	
-	var query = 'SELECT nickname, IF(' + t + ' < 0, 0, ' + t + ') As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, ' + t + ', exp, weapon ORDER BY points DESC';
+	var query = 'SELECT id, nickname, IF(' + t + ' < 0, 0, ' + t + ') As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, ' + t + ', exp, weapon ORDER BY points DESC';
 
 	connection.query('SELECT id, top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -47295,7 +47295,7 @@ function getRankAt(message, size) {
 	var myinfo = 0;
 	var size = 20;
 	
-	var query = 'SELECT nickname, power_used As total_cnt FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) HAVING total_cnt > 0 ORDER BY total_cnt DESC';
+	var query = 'SELECT id, nickname, power_used As total_cnt FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) HAVING total_cnt > 0 ORDER BY total_cnt DESC';
 
 	connection.query('SELECT id, top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -47443,6 +47443,10 @@ function getRankAch(message, size) {
 					if (err) throw err;
 
 					var global_limit = Object.keys(rows).length;
+			
+					var limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>verrà considerata</b> nelle tue statistiche, insieme agli altri " + formatNumber(global_limit-1) + " avventurieri!";
+
+					var limit_msg_2 = "\nA questo punteggio la partecipazione all'impresa <b>NON verrà</b> considerata nelle tue statistiche, impegnati di più per aumentare i tuoi punti, raggiungi gli altri " + formatNumber(global_limit) + " avventurieri!";
 
 					connection.query('UPDATE config SET global_limitcnt = ' + global_limit, function (err, rows, fields) {
 						if (err) throw err;
@@ -47483,9 +47487,9 @@ function getRankAch(message, size) {
 								}
 
 								if (found == 1)
-									text += "\nA questo punteggio la partecipazione all'impresa <b>verrà considerata</b> nelle tue statistiche, insieme agli altri " + formatNumber(global_limit-1) + " avventurieri!";
+									text += limit_msg;
 								else
-									text += "\nA questo punteggio la partecipazione all'impresa <b>NON verrà</b> considerata nelle tue statistiche, impegnati di più per aumentare i tuoi punti, raggiungi gli altri " + formatNumber(global_limit) + " avventurieri!";
+									text += limit_msg_2;
 
 								bot.sendMessage(message.chat.id, text, kb);
 							});
@@ -47533,9 +47537,9 @@ function getRankAch(message, size) {
 								}
 
 								if (found == 1)
-									text += "\nA questo punteggio la partecipazione all'impresa <b>verrà considerata</b> nelle tue statistiche, insieme agli altri " + formatNumber(global_limit-1) + " avventurieri!";
+									text += limit_msg;
 								else
-									text += "\nA questo punteggio la partecipazione all'impresa <b>NON verrà</b> considerata nelle tue statistiche, impegnati di più per aumentare i tuoi punti, raggiungi gli altri " + formatNumber(global_limit) + " avventurieri!";
+									text += limit_msg_2;
 
 								bot.sendMessage(message.chat.id, text, kb);
 							});
