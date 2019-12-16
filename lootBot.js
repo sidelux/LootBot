@@ -34445,12 +34445,6 @@ bot.onText(/^Abilità$/i, function (message) {
 	getRank(message, 20, 6);
 });
 
-/*
-bot.onText(/^Draghi$/i, function(message) {
-	getRankDr(message, 20);
-});
-*/
-
 bot.onText(/^Rango$/i, function (message) {
 	getRank(message, 20, 2);
 });
@@ -34505,8 +34499,10 @@ bot.onText(/Classifica Contrabbandiere/i, function (message) {
 
 	var query = 'SELECT P.id, nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND player.id NOT IN (1,3) ORDER BY total_cnt DESC';
 
-	connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
+		
+		var player_id = rows[0].id;
 
 		if (rows[0].top_min == 1) {
 			connection.query(query, function (err, rows, fields) {
@@ -34567,8 +34563,11 @@ bot.onText(/Figurine Collezionate/i, function (message) {
 	var size = 20;
 
 	var query = 'SELECT P.id, nickname, COUNT(C.id) As total_cnt FROM card_inventory C, player P WHERE C.player_id = P.id AND account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND C.quantity > 0 GROUP BY player_id ORDER BY total_cnt DESC';
-	connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	
+	connection.query('SELECT id, top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
+		
+		var player_id = rows[0].id;
 
 		if (rows[0].top_min == 1) {
 			connection.query(query, function (err, rows, fields) {
@@ -47159,17 +47158,21 @@ function getRank(message, size, type) {
 	var mypnt = 0;
 	var totpnt = 0;
 	var mypos = 0;
+	
+	var query = 'SELECT nickname, IF(' + t + ' < 0, 0, ' + t + ') As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, ' + t + ', exp, weapon ORDER BY points DESC';
 
-	connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
+		
+		var player_id = rows[0].id;
 
 		if (rows[0].top_min == 1) {
-			connection.query('SELECT nickname, IF(' + t + ' < 0, 0, ' + t + ') As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, ' + t + ', exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+			connection.query(query, function (err, rows, fields) {
 				if (err) throw err;
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					if (c < size + 1)
 						text = text + c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].points) + " " + tval + ")\n";
-					if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+					if (rows[i].id == player_id) {
 						mypnt = rows[i].points;
 						mypos = c;
 					}
@@ -47180,7 +47183,7 @@ function getRank(message, size, type) {
 				bot.sendMessage(message.chat.id, text, keyrank);
 			});
 		} else {
-			connection.query('SELECT nickname, IF(' + t + ' < 0, 0, ' + t + ') As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, ' + t + ', exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+			connection.query(query, function (err, rows, fields) {
 				if (err) throw err;
 
 				var range = 5;
@@ -47192,7 +47195,7 @@ function getRank(message, size, type) {
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					nickname.push(rows[i].nickname);
 					points.push(rows[i].points);
-					if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase())
+					if (rows[i].id == player_id)
 						mypos = i;
 				}
 
@@ -47229,12 +47232,14 @@ function getRankTeam(message, size) {
 		var player_id = rows[0].player_id;
 		var my_team_id = rows[0].team_id;
 		var my_team_name = rows[0].name;
+		
+		var query = 'SELECT id, name, mission_time_count FROM team ORDER BY mission_time_count DESC';
 
 		connection.query('SELECT top_min FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (rows[0].top_min == 1) {
-				connection.query('SELECT id, name, mission_time_count FROM team ORDER BY mission_time_count DESC', function (err, rows, fields) {
+				connection.query(query, function (err, rows, fields) {
 					if (err) throw err;
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 						if (c < size + 1)
@@ -47250,7 +47255,7 @@ function getRankTeam(message, size) {
 					bot.sendMessage(message.chat.id, text, keyrank);
 				});
 			} else {
-				connection.query('SELECT id, name, mission_time_count FROM team ORDER BY mission_time_count DESC', function (err, rows, fields) {
+				connection.query(query, function (err, rows, fields) {
 					if (err) throw err;
 
 					var range = 5;
@@ -47289,12 +47294,16 @@ function getRankAt(message, size) {
 	var totpnt = 0;
 	var myinfo = 0;
 	var size = 20;
+	
+	var query = 'SELECT nickname, power_used As total_cnt FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) HAVING total_cnt > 0 ORDER BY total_cnt DESC';
 
-	connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
+		
+		var player_id = rows[0].id;
 
 		if (rows[0].top_min == 1) {
-			connection.query('SELECT nickname, power_used As total_cnt FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) HAVING total_cnt > 0 ORDER BY total_cnt DESC', function (err, rows, fields) {
+			connection.query(query, function (err, rows, fields) {
 				if (err) throw err;
 
 				if (Object.keys(rows).length == 0) {
@@ -47307,7 +47316,7 @@ function getRankAt(message, size) {
 						if (c < size + 1)
 							text = text + c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].total_cnt) + ")\n";
 					}
-					if (rows[i].nickname.toLowerCase() == message.from.username.toLowerCase()) {
+					if (rows[i].id == player_id) {
 						mypnt = rows[i].total_cnt;
 						myinfo = c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].total_cnt) + ")\n";
 					}
@@ -47320,7 +47329,7 @@ function getRankAt(message, size) {
 				bot.sendMessage(message.chat.id, text, keyrank);
 			});
 		} else {
-			connection.query('SELECT nickname, power_used As total_cnt FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) HAVING total_cnt > 0 ORDER BY total_cnt DESC', function (err, rows, fields) {
+			connection.query(query, function (err, rows, fields) {
 				if (err) throw err;
 
 				if (Object.keys(rows).length == 0) {
@@ -47337,7 +47346,7 @@ function getRankAt(message, size) {
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					nickname.push(rows[i].nickname);
 					total_cnt.push(rows[i].total_cnt);
-					if (message.from.username.toLowerCase() == rows[i].nickname.toLowerCase())
+					if (rows[i].id == player_id)
 						mypos = i;
 				}
 				if (mypos == -1) {
@@ -47417,6 +47426,10 @@ function getRankAch(message, size) {
 					keyboard: [['Top'], ['Imprese'], ['Torna al menu']]
 				}
 			};
+			
+			var query = '(SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY A.value DESC LIMIT 100) UNION (SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 ORDER BY A.value DESC LIMIT 100)';
+			
+			var top_query = 'SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC';
 
 			connection.query('SELECT 1 FROM achievement_global WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
 				if (err) throw err;
@@ -47426,7 +47439,7 @@ function getRankAch(message, size) {
 					return;
 				}
 
-				connection.query('(SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY A.value DESC LIMIT 100) UNION (SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 ORDER BY A.value DESC LIMIT 100)', function (err, rows, fields) {
+				connection.query(query, function (err, rows, fields) {
 					if (err) throw err;
 
 					var global_limit = Object.keys(rows).length;
@@ -47439,7 +47452,7 @@ function getRankAch(message, size) {
 						global_limit = 100;
 
 					if (top_min == 1) {
-						connection.query('SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
+						connection.query(top_query, function (err, rows, fields) {
 							if (err) throw err;
 
 							if (Object.keys(rows).length == 0) {
@@ -47458,7 +47471,7 @@ function getRankAch(message, size) {
 							}
 							text += "\nTu:\n" + mypos + "° " + message.from.username + " (" + formatNumber(mypnt) + ")";
 
-							connection.query('(SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY A.value DESC LIMIT 100) UNION (SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 ORDER BY A.value DESC LIMIT 100)', function (err, rows, fields) {
+							connection.query(query, function (err, rows, fields) {
 								if (err) throw err;
 
 								var found = 0;
@@ -47478,7 +47491,7 @@ function getRankAch(message, size) {
 							});
 						});
 					} else {
-						connection.query('SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
+						connection.query(top_query, function (err, rows, fields) {
 							if (err) throw err;
 
 							if (Object.keys(rows).length == 0) {
@@ -47508,7 +47521,7 @@ function getRankAch(message, size) {
 								}
 							}
 
-							connection.query('(SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY A.value DESC LIMIT 100) UNION (SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 ORDER BY A.value DESC LIMIT 100)', function (err, rows, fields) {
+							connection.query(query, function (err, rows, fields) {
 								if (err) throw err;
 
 								var found = 0;
