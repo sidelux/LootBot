@@ -6600,6 +6600,8 @@ bot.onText(/attacca!/i, function (message) {
 									
 									enemy_text += "\nVieni sconfitto definitivamente con un colpo mortale!";
 									mapPlayerKilled(lobby_id, enemy_id, 2, null, 1);
+									
+									getSnowball(message.chat.id, message.from.username, player_id);
 								} else
 									enemy_query += ", life = life-" + dmg;
 								
@@ -13875,28 +13877,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																						else if (chest == 0)
 																							bot.sendMessage(message.chat.id, "Hai ucciso il mostro, infliggendo " + formatNumber(danno) + " danni" + exp_text + ".\nFrugando tra le sue cose hai ottenuto *" + moneyText + "*!", dNext);
 
-																						if ((snowHouse == 1) && (snowHouseEnd == 0)) {
-																							var rand = Math.random()*100;
-																							if (rand < 5) {
-																								connection.query('SELECT COUNT(id) As cnt FROM event_snowball_status WHERE player_id = ' + player_id, function (err, rows, fields) {
-																									if (err) throw err;
-																									if (rows[0].cnt > 0) {
-																										connection.query('SELECT COUNT(id) As cnt FROM event_snowball_list WHERE player_id = ' + player_id, function (err, rows, fields) {
-																											if (err) throw err;
-																											var snowball = 1+parseInt(rows[0].cnt);
-																											connection.query('UPDATE event_snowball_status SET snowball = snowball+' + snowball + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
-																												if (err) throw err;
-																												if (snowball > 1)
-																													bot.sendMessage(message.chat.id, "Hai trovato " + snowball + " Palle di Neve!");
-																												else
-																													bot.sendMessage(message.chat.id, "Hai trovato 1 Palla di Neve!");
-																												console.log(snowball + " palle di neve a " + message.from.username);
-																											});
-																										});
-																									}
-																								});
-																							};
-																						};
+																						getSnowball(message.chat.id, message.from.username, player_id);
 
 																						setAchievement(player_id, 3, 1);
 
@@ -28898,7 +28879,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 			if (Object.keys(rows).length == 0) {
 				connection.query('INSERT INTO event_snowball_status (player_id, snowball) VALUES (' + player_id + ', 5)', function (err, rows, fields) {
 					if (err) throw err;
-					bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella <b>Casa nella Neve</b> 🌨, l'evento Natalizio! 🎄\nSi tratta in tutto per tutto di una competizione per chi riuscirà a costruire più <b>Pupazzi di Neve</b> in tutto il regno di Lootia. Con le <b>Palle di Neve</b> puoi costruirne sempre di più, oppure danneggiare quelli avversari per far perdere loro punti. Puoi accumulare la Neve attraverso Missioni, Ispezioni o nei Dungeon.\nBuona fortuna!\nHai ricevuto <b>5 Palle di Neve</b> per l'iscrizione.", kb3);
+					bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella <b>Casa nella Neve</b> 🌨, l'evento Natalizio! 🎄\nSi tratta in tutto per tutto di una competizione per chi riuscirà a costruire più <b>Pupazzi di Neve</b> in tutto il regno di Lootia. Con le <b>Palle di Neve</b> puoi costruirne sempre di più, oppure danneggiare quelli avversari per far perdere loro punti. Puoi accumulare la Neve attraverso Missioni, Ispezioni, Dungeon o dagli avversari nelle Mappe.\nBuona fortuna!\nHai ricevuto <b>5 Palle di Neve</b> per l'iscrizione.", kb3);
 				});
 				return;
 			}
@@ -28920,7 +28901,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 
 						var snowman_cnt = parseInt(rows[0].cnt);
 
-						bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella tua <b>Casa nella Neve</b> 🌨!\nDurante questa settimana si svolge una gara che premierà chi riuscirà a costruire più Pupazzi di Neve degli altri partecipanti!\nPer costruirne un altro ti servono <b>" + (10+(snowman_cnt*10)) + " Palle di Neve</b>, puoi lanciarne una per danneggiare gli avversari oppure i loro pupazzi.\n\nPossiedi <b>" + snowball + "</b> Palle di Neve ❄️ e <b>" + snowman_cnt + "</b> Pupazzi di Neve ⛄️!\nIn totale sono stati creati <b>" + snowman_cnt_tot + "</b> Pupazzi e ci sono " + snowball_tot + " Palle di Neve!\n\nC'è una probabilità di ottenerne altre tramite missioni, ispezioni o sconfiggendo mostri nel dungeon, ogni Pupazzo ti fornirà 1 Palla di Neve per ogni azione\n\nL'evento termina il 29 alle 12:00!", kb).then(function () {
+						bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella tua <b>Casa nella Neve</b> 🌨!\nDurante questa settimana si svolge una gara che premierà chi riuscirà a costruire più Pupazzi di Neve degli altri partecipanti!\nPer costruirne un altro ti servono <b>" + (10+(snowman_cnt*10)) + " Palle di Neve</b>, puoi lanciarne una per danneggiare gli avversari oppure i loro pupazzi.\n\nPossiedi <b>" + snowball + "</b> Palle di Neve ❄️ e <b>" + snowman_cnt + "</b> Pupazzi di Neve ⛄️!\nIn totale sono stati creati <b>" + snowman_cnt_tot + "</b> Pupazzi e ci sono " + snowball_tot + " Palle di Neve!\n\nC'è una probabilità di ottenerne altre tramite missioni, ispezioni, sconfiggendo mostri nel dungeon o dagli avversari nelle Mappe. Ogni Pupazzo ti fornirà 1 Palla di Neve per ogni azione\n\nL'evento termina il 29 alle 12:00!", kb).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
 								if (answer.text == "Lancia Palla di Neve ❄️") {
 									bot.sendMessage(message.chat.id, "Puoi lanciare una Palla di Neve ad un giocatore in particolare (scrivendo il nickname) oppure ad uno casuale, nel primo caso consumerai 2 Palle di Neve.\nNel caso in cui il bersaglio avesse un Pupazzo di Neve, quest'ultimo verrà colpito al posto del giocatore e danneggiato o distrutto. Può capitare inoltre che il giocatore avversario recuperi la tua Palla di Neve!", kb2).then(function () {
@@ -29055,8 +29036,8 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 													connection.query('UPDATE event_snowball_list SET life = life-2 WHERE id = ' + enemy_snowman_id, function (err, rows, fields) {
 														if (err) throw err;
 													});
-													bot.sendMessage(message.chat.id, "Hai lanciato una Palla di Neve e hai colpito il Pupazzo di Neve di <b>" + enemy_nickname + "</b> che ha perso 2 porzione di neve!" + text, kbBack);
-													bot.sendMessage(enemy_chat_id, "Il tuo Pupazzo di Neve è stato colpito dalla Palla di Neve di <b>" + message.from.username + "</b> e ha perso 2 porzione di neve!" + text2, html);
+													bot.sendMessage(message.chat.id, "Hai lanciato una Palla di Neve e hai colpito il Pupazzo di Neve di <b>" + enemy_nickname + "</b> che ha perso 2 porzioni di neve!" + text, kbBack);
+													bot.sendMessage(enemy_chat_id, "Il tuo Pupazzo di Neve è stato colpito dalla Palla di Neve di <b>" + message.from.username + "</b> e ha perso 2 porzioni di neve!" + text2, html);
 												}
 											}
 										};
@@ -40671,28 +40652,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 										if (err) throw err;
 									});
 
-									if ((snowHouse == 1) && (snowHouseEnd == 0)) {
-										var rand = Math.random()*100;
-										if (rand < 50) {
-											connection.query('SELECT COUNT(id) As cnt FROM event_snowball_status WHERE player_id = ' + player_id, function (err, rows, fields) {
-												if (err) throw err;
-												if (rows[0].cnt > 0) {
-													connection.query('SELECT COUNT(id) As cnt FROM event_snowball_list WHERE player_id = ' + player_id, function (err, rows, fields) {
-														if (err) throw err;
-														var snowball = 1+parseInt(rows[0].cnt);
-														connection.query('UPDATE event_snowball_status SET snowball = snowball+' + snowball + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
-															if (err) throw err;
-															if (snowball > 1)
-																bot.sendMessage(message.chat.id, "Hai trovato " + snowball + " Palle di Neve!");
-															else
-																bot.sendMessage(message.chat.id, "Hai trovato 1 Palla di Neve!");
-															console.log(snowball + " palle di neve a " + message.from.username);
-														});
-													});
-												}
-											});
-										};
-									};
+									getSnowball(message.chat.id, message.from.username, player_id);
 								} else {
 									var expText = "";
 									if (isMatch == 1) {
@@ -42922,6 +42882,31 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 });
 
 // FUNZIONI
+
+function getSnowball(chat_id, nickname, player_id) {
+	if ((snowHouse == 1) && (snowHouseEnd == 0)) {
+		var rand = Math.random()*100;
+		if (rand < 50) {
+			connection.query('SELECT COUNT(id) As cnt FROM event_snowball_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				if (rows[0].cnt > 0) {
+					connection.query('SELECT COUNT(id) As cnt FROM event_snowball_list WHERE player_id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+						var snowball = 1+parseInt(rows[0].cnt);
+						connection.query('UPDATE event_snowball_status SET snowball = snowball+' + snowball + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+							if (err) throw err;
+							if (snowball > 1)
+								bot.sendMessage(chat_id, "Hai trovato " + snowball + " Palle di Neve!");
+							else
+								bot.sendMessage(chat_id, "Hai trovato 1 Palla di Neve!");
+							console.log(snowball + " palle di neve a " + nickname);
+						});
+					});
+				}
+			});
+		};
+	};
+}
 
 function multiDimensionalUnique(arr) {
 	var uniques = [];
@@ -55485,28 +55470,7 @@ function setFinishedMission(element, index, array) {
 								else if ((boost_id == 4) || (boost_id == 5) || (boost_id == 7))
 									setBoost(element.id, boost_mission, boost_id);
 
-								if ((snowHouse == 1) && (snowHouseEnd == 0)) {
-									var rand = Math.random()*100;
-									if (rand < 15) {
-										connection.query('SELECT COUNT(id) As cnt FROM event_snowball_status WHERE player_id = ' + element.id, function (err, rows, fields) {
-											if (err) throw err;
-											if (rows[0].cnt > 0) {
-												connection.query('SELECT COUNT(id) As cnt FROM event_snowball_list WHERE player_id = ' + element.id, function (err, rows, fields) {
-													if (err) throw err;
-													var snowball = 1+parseInt(rows[0].cnt);
-													connection.query('UPDATE event_snowball_status SET snowball = snowball+' + snowball + ' WHERE player_id = ' + element.id, function (err, rows, fields) {
-														if (err) throw err;
-														if (snowball > 1)
-															bot.sendMessage(chat_id, "Hai trovato " + snowball + " Palle di Neve!");
-														else
-															bot.sendMessage(chat_id, "Hai trovato 1 Palla di Neve!");
-														console.log(snowball + " palle di neve a " + element.nickname);
-													});
-												});
-											}
-										});
-									};
-								};
+								getSnowball(chat_id, element.nickname, element.id);
 								setAchievement(element.id, 1, 1);
 							});
 						});
