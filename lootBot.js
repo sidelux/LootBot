@@ -769,6 +769,19 @@ bot.onText(/^\/mapstop/, function (message, match) {
 	}
 });
 
+bot.onText(/^\/checkevents/, function(message) {
+	if (message.from.id == 20471035)
+		bot.sendMessage(message.chat.id, getEvents());
+});
+
+bot.onText(/^\/reloadevents/, function(message) {
+	if (message.from.id == 20471035) {
+		reloadEvents();
+		checkKeyboard();
+		bot.sendMessage(message.chat.id, getEvents());
+	}
+});
+
 bot.onText(/^\/nextevent (.+)|^\/nextevent/, function (message, match) {
 	if (message.from.id != 20471035)
 		return;
@@ -1306,7 +1319,9 @@ bot.onText(/^\/comandi/, function (message, match) {
 						"/refill (lancia refreshLife())\n" +
 						"/assaultstop (manutenzione assalto)\n" +
 					   	"/mapstop (manutenzione mappe)\n" +
-						"/conditions num (condizioni mappe)\n");
+						"/conditions num (condizioni mappe)\n" +
+					   	"/checkevents (stato eventi)\n" +
+					   	"/reloadevents (ricarica eventi)\n");
 	} else
 		bot.sendMessage(message.chat.id, "Piacerebbe :D");
 });
@@ -44462,6 +44477,23 @@ function checkSpam(message) {
 	timevar[message.from.id] = new Date() / 1000;
 
 	return isOk;
+}
+
+function getEvents() {
+	var text = "";
+	text += "crazyMode: " + crazyMode + "\n";
+	text += "luckyMode: " + luckyMode + "\n";
+	text += "arena: " + arena + "\n";
+	text += "lootteria: " + lootteria + "\n";
+	text += "villa: " + villa + "\n";
+	text += "wanted: " + wanted + "\n";
+	text += "eventTeamStory: " + eventTeamStory + "\n";
+	text += "eventFestival: " + eventFestival + "\n";
+	text += "specialMission: " + specialMission + "\n";
+	text += "checkDragonTopOn: " + checkDragonTopOn + "\n";
+	text += "gnomorra: " + gnomorra + "\n";
+	
+	return text;
 }
 
 function reloadEvents() {
