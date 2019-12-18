@@ -18691,6 +18691,21 @@ bot.onText(/^Risorse/i, function (message) {
 											}
 										};
 									} else {
+										// Ricontrollo valori per impedire l'uso di oggetti a cavallo della sconfitta
+										var combat = connection_sync.query('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id);
+
+										inCombat = 0;
+										iscritto = Object.keys(combat).length;
+
+										if (iscritto > 0) {
+											if (combat[0].combat == 1)
+												inCombat = 1;
+										}
+										
+										var combat2 = connection_sync.query('SELECT dragon.name, dragon.type FROM dragon, dragon_top_status WHERE dragon.id = dragon_top_status.dragon_id AND enemy_dragon_id = ' + dragon_id);
+										
+										combatSubito = Object.keys(combat2).length;
+										
 										if ((inCombat == 1) || ((inCombat == 1) && (combatSubito > 0))) {
 											bot.sendMessage(message.chat.id, "Questo oggetto non può essere utilizzato se il drago si trova in combattimento nella vetta!", kbNext);
 											return;
@@ -31593,7 +31608,7 @@ bot.onText(/refreshBase (.+)|refreshBase/i, function (message, match) {
 bot.onText(/^\/refreshPrice/i, function (message, match) {
 	connection.query('UPDATE item SET pnt_sum = 0, price_sum = 0', function (err, rows, fields) {
 		if (err) throw err;
-		connection.query('SELECT id, name, rarity FROM item WHERE rarity IN ("R", "UR", "L", "E", "UE", "X", "U", "S") AND craftable = 1', function (err, rows, fields) {
+		connection.query('SELECT id, name, rarity FROM item WHERE rarity IN ("R", "UR", "L", "E", "UE", "X", "U", "S", "NC") AND craftable = 1', function (err, rows, fields) {
 			if (err) throw err;
 			var len = Object.keys(rows).length;
 			var calcVal = 0;
@@ -34497,7 +34512,7 @@ bot.onText(/Classifica Contrabbandiere/i, function (message) {
 	var myinfo = 0;
 	var size = 20;
 
-	var query = 'SELECT P.id, nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND player.id NOT IN (1,3) ORDER BY total_cnt DESC';
+	var query = 'SELECT player.id, nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND player.id NOT IN (1,3) ORDER BY total_cnt DESC';
 
 	connection.query('SELECT id, top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -40184,7 +40199,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 										if ((num[1] == num[2]) && (num[2] == num[3]) && (num[3] == num[4])) {
 											end = "Quattro di un tipo";
 											end_num = 7;
-											dquad = [0];
+											dquad = num[0];
 										}
 
 										if ((i == 0) && (end_num == 7)) {
@@ -40745,7 +40760,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 									};
 								});
 							} else if (answer.text == "Regole") {
-								bot.sendMessage(message.chat.id, "Regole dello Scontro tra Rune:\nPer vincere contro il guardiano dovrai possedere una combinazione di rune con un valore più alto delle sue, in base a questo schema:\n- Coppia (2 uguali)\n- Doppia Coppia (2 coppie)\n- Tris (tre uguali)\n- Full (coppia e tris)\n- Scala (quella da 2 a 6 batte quella da 1 a 5)\n- 4 Uguali\n- 5 Uguali\n\nInoltre in caso di parità vincerà il difensore, non c'è il concetto di Runa 'alta'\nPuoi cambiarne 1 o più inviando lo gnomo, oppure rinunciare, in questo caso verrà considerata come un'ispezione persa", rBack);
+								bot.sendMessage(message.chat.id, "Regole dello Scontro tra Rune:\nPer vincere contro il guardiano dovrai possedere una combinazione di rune con un valore più alto delle sue, in base a questo schema:\n- Coppia (2 uguali)\n- Doppia Coppia (2 coppie)\n- Tris (tre uguali)\n- Full (coppia e tris)\n- Scala (quella da 2 a 6 batte quella da 1 a 5)\n- 4 Uguali\n- 5 Uguali\n\nInoltre in caso di parità vincerà il difensore, c'è il concetto di Runa 'alta'\nPuoi cambiarne 1 o più inviando lo gnomo, oppure rinunciare, in questo caso verrà considerata come un'ispezione persa", rBack);
 							}
 						};
 					});

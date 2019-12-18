@@ -2785,7 +2785,7 @@ bot.onText(/^\/rune (.+)/i, function (message, match) {
 			if ((num[1] == num[2]) && (num[2] == num[3]) && (num[3] == num[4])) {
 				end = "Quattro di un tipo";
 				end_num = 7;
-				dquad = [0];
+				dquad = num[0];
 			}
 
 			if ((i == 0) && (end_num == 7)) {
@@ -9193,7 +9193,7 @@ bot.onText(/^\/notifiche (.+)|^\/notifiche/, function (message, match) {
 		return;
 	}
 
-	var func = match[1];
+	var func = match[1].toLowerCase();
 	var func_txt = "";
 	var type = 0;
 	if (func == "lotterie") {
