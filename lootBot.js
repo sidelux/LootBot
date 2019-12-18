@@ -5962,7 +5962,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 										if (answer.text.toLowerCase().indexOf("lobby") != -1) {
 											var d = new Date();
 											if ((d.getHours() < 9) || (d.getHours() > 22)) {
-												bot.sendMessage(message.chat.id, "Puoi accedere ad una lobby solamente di giorno, dalle 9 alle 23", kbBack);
+												bot.sendMessage(message.chat.id, "Puoi accedere ad una lobby solamente di giorno, dalle 9:00 alle 23:00", kbBack);
 												return;
 											}
 											if (checkDragonTopOn == 1) {
@@ -18089,10 +18089,10 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																		if (d.getMinutes() > 30)
 																			err = 1;
 																	}
-																	if ((d.getHours() >= 3) && (d.getHours() < 9))
+																	if ((d.getHours() < 9) || (d.getHours() > 22))
 																		err = 1;
 																	if (err == 1) {
-																		bot.sendMessage(message.chat.id, "Non puoi avviare scontri tra le 2.30 e le 9.00!", kbBack);
+																		bot.sendMessage(message.chat.id, "Puoi avviare scontri solo tra le 9:00 e le 23:00", kbBack);
 																		return;
 																	}
 
@@ -20929,7 +20929,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 								iKeys.push([rows[i].title]);
 							}
 
-							text += "La notte dura dalle 23:00 alle 9:00.";
+							text += "La notte dura dalle 23:00 alle 9:00";
 
 							if (isAdmin == 1)
 								iKeys.push(["Gestisci Party 👥", "Il mio Party 👥"], ["Torna al team", "Torna al menu"])
@@ -21125,7 +21125,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 															if (daynight == 1) {
 																var d = new Date();
 																if ((d.getHours() < 9) || (d.getHours() > 22)) {
-																	bot.sendMessage(message.chat.id, "Questo incarico è avviabile solo di giorno, dalle 9 alle 23", kbBack2);
+																	bot.sendMessage(message.chat.id, "Questo incarico è avviabile solo di giorno, dalle 9:00 alle 23:00", kbBack2);
 																	return;
 																}
 															} else if (daynight == 2) {
