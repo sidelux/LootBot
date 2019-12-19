@@ -27,6 +27,8 @@ var snowHouseEnd = 0;
 var blackfriday = 0;
 
 // Variabili globali
+var nightStart = 23;
+var nightEnd = 9;
 var assaultStop = 0;
 var mapStop = 0;
 var teamMission = 1;
@@ -5961,8 +5963,8 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 
 										if (answer.text.toLowerCase().indexOf("lobby") != -1) {
 											var d = new Date();
-											if ((d.getHours() < 9) || (d.getHours() > 22)) {
-												bot.sendMessage(message.chat.id, "Puoi accedere ad una lobby solamente di giorno, dalle 9:00 alle 23:00", kbBack);
+											if ((d.getHours() < nightEnd) || (d.getHours() >= nightStart)) {
+												bot.sendMessage(message.chat.id, "Puoi accedere ad una lobby solamente di giorno, dalle " + nightEnd + ":00 alle " + nightStart + ":00", kbBack);
 												return;
 											}
 											if (checkDragonTopOn == 1) {
@@ -18089,10 +18091,10 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																		if (d.getMinutes() > 30)
 																			err = 1;
 																	}
-																	if ((d.getHours() < 9) || (d.getHours() > 22))
+																	if ((d.getHours() < nightEnd) || (d.getHours() >= nightStart))
 																		err = 1;
 																	if (err == 1) {
-																		bot.sendMessage(message.chat.id, "Puoi avviare scontri solo tra le 9:00 e le 23:00", kbBack);
+																		bot.sendMessage(message.chat.id, "Puoi avviare scontri solo tra le " + nightEnd + ":00 e le " + nightStart + ":00", kbBack);
 																		return;
 																	}
 
@@ -20929,7 +20931,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 								iKeys.push([rows[i].title]);
 							}
 
-							text += "La notte dura dalle 23:00 alle 9:00";
+							text += "La notte dura dalle " + nightStart + ":00 alle " + nightEnd + ":00";
 
 							if (isAdmin == 1)
 								iKeys.push(["Gestisci Party 👥", "Il mio Party 👥"], ["Torna al team", "Torna al menu"])
@@ -21124,13 +21126,13 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 
 															if (daynight == 1) {
 																var d = new Date();
-																if ((d.getHours() < 9) || (d.getHours() > 22)) {
-																	bot.sendMessage(message.chat.id, "Questo incarico è avviabile solo di giorno, dalle 9:00 alle 23:00", kbBack2);
+																if ((d.getHours() < nightEnd) || (d.getHours() >= nightStart)) {
+																	bot.sendMessage(message.chat.id, "Questo incarico è avviabile solo di giorno, dalle " + nightEnd + ":00 alle " + nightStart + ":00", kbBack2);
 																	return;
 																}
 															} else if (daynight == 2) {
 																var d = new Date();
-																if ((d.getHours() > 9) && (d.getHours() < 22)) {
+																if ((d.getHours() >= nightEnd) && (d.getHours() < nightStart)) {
 																	bot.sendMessage(message.chat.id, "Questo incarico è avviabile solo di notte", kbBack2);
 																	return;
 																}
@@ -28399,7 +28401,7 @@ bot.onText(/gnomorra/i, function (message) {
 										return;
 
 									var d = new Date();
-									if ((d.getHours() < 9) || (d.getHours() > 22)) { //9-23
+									if ((d.getHours() < nightEnd) || (d.getHours() >= nightStart)) {
 										bot.sendMessage(message.chat.id, "Non è possibile avviare partite di notte!", kbBack);
 										return;
 									}
@@ -28465,7 +28467,7 @@ bot.onText(/gnomorra/i, function (message) {
 						} else if (answer.text.indexOf("precisa") != -1) {
 
 							var d = new Date();
-							if ((d.getHours() < 9) || (d.getHours() > 22)) { //9-23
+							if ((d.getHours() < nightEnd) || (d.getHours() >= nightStart)) {
 								bot.sendMessage(message.chat.id, "Non è possibile avviare partite di notte!", kbBack);
 								return;
 							}
@@ -31279,7 +31281,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 		};
 
 		var d = new Date();
-		if ((d.getHours() < 9) || (d.getHours() > 22)) { //9-23
+		if ((d.getHours() < nightEnd) || (d.getHours() >= nightStart)) {
 			bot.sendMessage(message.chat.id, "Il Contrabbandiere non è in piazza a quest'ora...", kbBack);
 			return;
 		}
@@ -31405,7 +31407,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 										if (answer.text == "Istantaneo") {
 
 											var d = new Date();
-											if ((d.getHours() < 9) || (d.getHours() > 22)) { //9-23
+											if ((d.getHours() < nightEnd) || (d.getHours() >= nightStart)) {
 												bot.sendMessage(message.chat.id, "Il Contrabbandiere non è in piazza a quest'ora...", back);
 												return;
 											}
@@ -31433,7 +31435,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 												answerCallbacks[message.chat.id] = function (answer) {
 													if (answer.text.toLowerCase() == "si") {
 														var d = new Date();
-														if ((d.getHours() < 9) || (d.getHours() > 22)) { //9-23
+														if ((d.getHours() < nightEnd) || (d.getHours() >= nightStart)) {
 															bot.sendMessage(message.chat.id, "Il Contrabbandiere non è in piazza a quest'ora...", back);
 															return;
 														}
@@ -31471,7 +31473,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 										if (answer.text.toLowerCase() == "si") {
 
 											var d = new Date();
-											if ((d.getHours() < 9) || (d.getHours() > 22)) { //9-23
+											if ((d.getHours() < nightEnd) || (d.getHours() >= nightStart)) {
 												bot.sendMessage(message.chat.id, "Il Contrabbandiere non è in piazza a quest'ora...", back);
 												return;
 											}
@@ -38514,7 +38516,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 	if (d.getDay() == 0)
 		moon = "Nera";
 
-	connection.query('SELECT id, money, holiday, account_id, exp, reborn, weapon_enchant, weapon2_enchant, weapon3_enchant, class FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, money, holiday, account_id, exp, reborn, weapon_enchant, weapon2_enchant, weapon3_enchant, class, moon_coin FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
 		var my_money = rows[0].money;
@@ -38524,6 +38526,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 		var weapon2_enchant = rows[0].weapon2_enchant;
 		var weapon3_enchant = rows[0].weapon3_enchant;
 		var class_id = rows[0].class;
+		var moon_coin = rows[0].moon_coin;
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -38552,7 +38555,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 				evolved = rows[0].evolved;
 			}
 
-			bot.sendMessage(message.chat.id, "Un raggio della *Luna " + moon + "* colpisce il luogo dove risiedi ed una ruota magica appare dinnanzi a te.\n\nNell'insenatura vi è lo spazio per un qualcosa grande come una moneta e le iscrizioni su essa recitano le seguenti parole:\n_'Tu che sei baciato dalla Luna Dorata inserisci 2 🌕; in essa e potrai ricevere Piu Forza (+1 Livello giocatore/drago), La mia Luce (💎), Più Potere Arcano dalle molteplici sfaccettature (Mana di ogni tipo), Mappe del Tesoro (Molte Monete), Oggetti Unici (Scrigno Capsula), La mia luce nella tua arma, nel tuo scudo o nella tua armatura per una settimana (Incantamento su Arma,Scudo o Armatura per 7 Giorni), una grande quantità di Polvere, il potere dell’anima per il tuo Team (🦋) od uno spirito utile nel tuo cammino (💠).'_\n\nSe ti trovi già al livello massimo, quella ricompensa non potrà essere ottenuta. Procedi?", kbYesNo).then(function () {
+			bot.sendMessage(message.chat.id, "Un raggio della *Luna " + moon + "* colpisce il luogo dove risiedi ed una ruota magica appare dinnanzi a te.\n\nNell'insenatura vi è lo spazio per un qualcosa grande come una moneta e le iscrizioni su essa recitano le seguenti parole:\n_'Tu che sei baciato dalla Luna Dorata inserisci 2 🌕; in essa e potrai ricevere Piu Forza (+1 Livello giocatore/drago), La mia Luce (💎), Più Potere Arcano dalle molteplici sfaccettature (Mana di ogni tipo), Mappe del Tesoro (Molte Monete), Oggetti Unici (Scrigno Capsula), La mia luce nella tua arma, nel tuo scudo o nella tua armatura per una settimana (Incantamento su Arma, Scudo o Armatura per 7 Giorni), una grande quantità di Polvere, il potere dell’anima per il tuo Team (🦋) od uno spirito utile nel tuo cammino (💠).'_\n\nSe ti trovi già al livello massimo, quella ricompensa non potrà essere ottenuta. Possiedi " + moon_coin + " 🌕, procedi?", kbYesNo).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if (answer.text.toLowerCase() == "si") {
 						connection.query('SELECT id, moon_coin FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -44052,11 +44055,11 @@ function mainMenu(message) {
 													if (Object.keys(rows).length > 0) {
 														if (rows[0].day_cnt < merchant_limit) {
 															var d = new Date();
-															if ((d.getHours() > 8) && (d.getHours() < 23)) {
+															if ((d.getHours() >= nightEnd) && (d.getHours() < nightStart)) {
 																if (rows[0].time_end != null) {
 																	var time_end = new Date(rows[0].time_end);
 																	var short_date = addZero(time_end.getHours()) + ":" + addZero(time_end.getMinutes());
-																	if (time_end.getHours() < 23)
+																	if (time_end.getHours() < nightStart)
 																		msgtext = msgtext + "\n💬 Contrabbandiere assente fino alle " + short_date;
 																} else
 																	msgtext = msgtext + "\n🔩 Offerta Contrabbandiere disponibile"; //per " + rows[0].name;
@@ -53736,9 +53739,8 @@ function setFinishedMerchant(element, index, array) {
 		if (err) throw err;
 		if (day_cnt < merchant_limit) {
 			var d = new Date();
-			if ((d.getHours() > 8) && (d.getHours() < 23)) {
+			if ((d.getHours() >= nightEnd) && (d.getHours() < nightStart))
 				bot.sendMessage(chat_id, "Il Contrabbandiere ha una nuova offerta per te!");
-			}
 		}
 	});
 };
