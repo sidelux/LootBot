@@ -44152,7 +44152,7 @@ function mainMenu(message) {
 																			if (d.getMinutes() > 30)
 																				err = 1;
 																		}
-																		if ((d.getHours() >= 3) && (d.getHours() < 9))
+																		if ((d.getHours() < 9) || (d.getHours() > 22))
 																			err = 1;
 																		if ((checkDragonTopOn == 1) && (err == 0)) {
 																			if (dragon_life > 0) {
