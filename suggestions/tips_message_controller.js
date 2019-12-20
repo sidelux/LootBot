@@ -1095,7 +1095,7 @@ function commandMeneger(chat_id, curr_user, fullCommand) {
 			if (curr_user.role == 5) {
 				avaible_cmds += "\n> " + "`promuovi`";
 				avaible_cmds += "\n> massimo `N` (imposta il limite)";
-				avaible_cmds += "\n> `#suggerimeno #annuncio` (per pubblicare un annuncio)";
+				avaible_cmds += "\n> `#suggerimento #annuncio` (per pubblicare un annuncio)";
 			}
 			avaible_cmds += "\n\nUsali preceduti dal comando:\n`/suggerimenti `";
 
@@ -1665,16 +1665,12 @@ function integrateMessage(chat_id, curr_user, fullCommand) {
 			}
 			if (manual_log) console.log("Dopo il parse: sugg_id -> " + sugg_id + " (" + typeof (sugg_id) + "),  number -> " + number + ", comment -> " + fullCommand.comment);
 
-
 			if (typeof (sugg_id) == 'string' && fullCommand.comment.length > 0) {
 				if (simple_log) console.log("Riconosciuto! -> Suggerimento " + sugg_id);
 				if (manual_log) console.log("Integrazione: " + fullCommand.comment);
 
-
 				tips_handler.getSuggestionInfos(sugg_id, curr_user.id).
 				then(function (sugg_infos) {
-
-
 
 					if (sugg_infos == -1) {
 						return integrateMessage_resolve(
@@ -1718,7 +1714,7 @@ function integrateMessage(chat_id, curr_user, fullCommand) {
 						msg += "\n🤖* Risposta dal bot dei Suggerimenti*";
 					}
 
-					msg += "\n" + fullCommand.comment.charAt(0).toUpperCase() + fullCommand.comment.slice(1).trim();
+					msg += "\n" + fullCommand.comment.charAt(0).toUpperCase() + fullCommand.comment.slice(1);
 
 					tips_handler.updateSuggestionText(sugg_id, msg).
 					then(function (save_res) {
@@ -2608,7 +2604,7 @@ function propouseInsert(user_info, text, entities, isQuick) {
 				let message = "";
 				if (entities.indexOf("#annuncio") >= 0) {
 					if (simple_log) { console.log("- è un annuncio"); }
-					message = "#Annuncio `della Fenice` 🔥\n\n" + text.join(" ").split("\n ").join("\n").trim()
+					message = "🔥 #Annuncio `della Fenice`\n\n" + text.join(" ").split("\n ").join("\n").trim()
 
 				} else if (entities.indexOf("#salve") >= 0) {
 					if (simple_log) console.log("- è un annuncio");

@@ -248,10 +248,8 @@ callNTimes(60000, function () { //Ogni 1 minuto
 
 	if (checkDragonTopOn == 0)
 		checkTopSeasonStart();
-	/*
 	if (checkDragonTopOn == 1)
 		checkTopSeasonEnd();
-	*/
 
 	if (crazyMode == 1)
 		merchant_limit = 8;
@@ -34168,7 +34166,7 @@ bot.onText(/^Top|Torna alle top/i, function (message) {
 	var kb = {
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [['Le Mie Classifiche'], ['Creazioni', 'Settimanale', 'Giornaliera'], ['Abilità', 'Rango'], ['Imprese Completate', 'Missioni'], ['Albo Artefatti', 'Classifica Contrabbandiere'], ['Tempo Incarichi', 'Durata Coupon'], ['Impresa Globale', 'Globali Contribuite'], ['Potenziamenti Flaridion'], ['Triplette Imprese'], ['Figurine Collezionate'], ['Trofei Mappe'], ['Cambia Top', 'Torna al menu']]
+			keyboard: [['Le Mie Classifiche'], ['Creazioni', 'Settimanale', 'Giornaliera'], ['Abilità', 'Rango'], ['Imprese Completate', 'Missioni'], ['Albo Artefatti', 'Classifica Contrabbandiere'], ['Tempo Incarichi', 'Durata Coupon'], ['Impresa Globale', 'Globali Contribuite'], ['Potenziamenti Flaridion'], ['Triplette Imprese'], ['Figurine Collezionate'], ['Ð Accumulate', 'Trofei Mappe'], ['Cambia Top', 'Torna al menu']]
 		}
 	};
 
@@ -34418,8 +34416,8 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 																	c = 1;
 																	mypnt = 0;
 																	mypos = 0;
-
-																	connection.query('SELECT id, nickname, total_trophies As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, total_trophies, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+																	
+																	connection.query('SELECT id, nickname, top_rank_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, top_rank_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
 																		if (err) throw err;
 																		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 																			if (rows[i].id == player_id) {
@@ -34428,20 +34426,35 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 																			}
 																			c++;
 																		}
-																		text = text + "\n*Trofei mappe totali*: " + mypos + "° con " + mypnt;
+																		text = text + "\n*Ð accumulate*: " + mypos + "° con " + mypnt;
 																		c = 1;
 																		mypnt = 0;
 																		mypos = 0;
 
-																		var keyrank = {
-																			parse_mode: "Markdown",
-																			reply_markup: {
-																				resize_keyboard: true,
-																				keyboard: [['Top'], ['Torna al menu']]
+																		connection.query('SELECT id, nickname, total_trophies As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, total_trophies, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+																			if (err) throw err;
+																			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+																				if (rows[i].id == player_id) {
+																					mypos = c;
+																					mypnt = rows[i].points;
+																				}
+																				c++;
 																			}
-																		};
+																			text = text + "\n*Trofei mappe totali*: " + mypos + "° con " + mypnt;
+																			c = 1;
+																			mypnt = 0;
+																			mypos = 0;
 
-																		bot.sendMessage(message.chat.id, text, keyrank);
+																			var keyrank = {
+																				parse_mode: "Markdown",
+																				reply_markup: {
+																					resize_keyboard: true,
+																					keyboard: [['Top'], ['Torna al menu']]
+																				}
+																			};
+
+																			bot.sendMessage(message.chat.id, text, keyrank);
+																		});
 																	});
 																});
 															});
@@ -34519,6 +34532,10 @@ bot.onText(/^Triplette Imprese/i, function (message) {
 
 bot.onText(/^Trofei Mappe/i, function (message) {
 	getRank(message, 20, 10);
+});
+
+bot.onText(/^Ð accumulate/i, function (message) {
+	getRank(message, 20, 11);
 });
 
 bot.onText(/Classifica Contrabbandiere/i, function (message) {
@@ -36229,7 +36246,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 							var req5 = "";
 							var req6 = "";
 
-							connection.query('SELECT achievement_count_all, global_event, power_pnt, rank, top_win FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+							connection.query('SELECT achievement_count_all, global_event, power_pnt, rank, top_win, top_rank_count FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
 
 								if (rows[0].achievement_count_all >= 300)
@@ -47201,6 +47218,9 @@ function getRank(message, size, type) {
 	} else if (type == 10) {
 		t = "total_trophies";
 		tx = "sui trofei totali ottenuti nelle mappe";
+	} else if (type == 11) {
+		t = "top_rank_count";
+		tx = "sulle Ð accumulate nelle Vette";
 	}
 
 	var text = "Classifica basata " + tx + ":\n";
@@ -54288,27 +54308,25 @@ function setSeasonEnd(element, index, array) {
 	var trophies = element.trophies;
 
 	var text = "";
-	var mana = trophies*50;
+	var mana = trophies*30;
 	var dust = trophies*2;
 	var chest = Math.round(trophies/2);
-	var chestU = 0;
-	var moon = 0;
+	var chestU = Math.floor(trophies/150);
+	var moon = Math.floor(trophies/200);
 
 	text += "\n " + formatNumber(mana) + "x Mana di ogni tipo";
 	text += "\n " + formatNumber(dust) + "x Polvere";
 	text += "\n " + formatNumber(chest) + "x Scrigni Cangianti";
 
-	if (trophies >= 100) {
-		chestU = 1;
-		text += "\n " + chestU + "x Scrigno Capsula";
-	}
-	if (trophies >= 120) {
-		moon = 2;
+	if (chestU == 1)
+		text += "\n 1x Scrigno Capsula";
+	else if (chestU > 1)
+		text += "\n " + chestU + "x Scrigni Capsula";
+	
+	if (moon == 1)
+		text += "\n 1x Moneta Lunare";
+	else if (moon > 1)
 		text += "\n " + moon + "x Monete Lunari";
-	} else if (trophies >= 110) {
-		moon = 1;
-		text += "\n " + moon + "x Moneta Lunare";
-	}
 
 	if (battle_season_test == 0) {
 		bot.sendMessage(chat_id, "Per i <b>" + trophies + "</b> 🏆 guadagnati combattendo nelle <b>Mappe di Lootia</b>, hai ottenuto:" + text + "\n\n<i>I premi sono in beta, potrebbero cambiare durante le prossime stagioni</i>", html);
@@ -54403,6 +54421,7 @@ function checkTopSeasonStart() {
 
 			updateValue("checkDragonTopOn", 1);
 			reloadEvents();
+			checkDragonTopOn = 1;	// per forzare aggiornamento tastiera
 			checkKeyboard();
 
 			console.log("Vette aperte!");
@@ -54419,14 +54438,15 @@ function checkTopSeasonEnd() {
 
 			connection.query('SELECT 1 FROM dragon_top_rank WHERE combat = 1', function (err, rows, fields) {
 				if (err) throw err;
-				if (Object.keys(rows).length == 0) {
+				var combatCnt = Object.keys(rows).length;
+				if (combatCnt == 0) {
 					var test = 0;
 
 					if (test == 1)
 						console.log("Modalità test attiva, nessun messaggio nè aggiornamento");
 
 					// terzo mercoledì di ogni mese
-					var next_season_end = moment().startOf('month').add(1, 'months').weekday('3').add(2, 'weeks').format('D-MM-YYYY') + " 12:00:00";
+					var next_season_end = moment().startOf('month').add(1, 'months').weekday('3').add(2, 'weeks').format('YYYY-MM-D') + " 12:00:00";
 					if (test == 0) {
 						connection.query('UPDATE config SET top_season_end = "' + next_season_end + '"', function (err, rows, fields) {
 							if (err) throw err;
@@ -54512,7 +54532,7 @@ function checkTopSeasonEnd() {
 											extra_text = "\n> " + moon_qnt + "x Monete Lunari";
 										}
 
-										text = "Per il tuo posizionamento nelle *Vette dei Draghi* ed il raggiungimento di *" + rows[j].rank + " Ð* (" + formatNumber(parseInt(rows[j].top_rank_count)+acc) + " totali) hai ricevuto:\n> " + formatNumber(mana) + " Mana per tipo\n> " + formatNumber(dust) + " unità di Polvere" + chestText + extra_text + "\n\nI premi durante le prossime stagioni potrebbero cambiare, grazie per aver partecipato!";
+										text = "Per il tuo posizionamento nelle *Vette dei Draghi*, hai accumulato *" + formatNumber(acc) + " Ð* (" + formatNumber(parseInt(rows[j].top_rank_count)+acc) + " totali) hai ricevuto:\n> " + formatNumber(mana) + " Mana per tipo\n> " + formatNumber(dust) + " unità di Polvere" + chestText + extra_text + "\n\nI premi durante le prossime stagioni potrebbero cambiare, grazie per aver partecipato!";
 
 										if (test == 0)
 											bot.sendMessage(rows[j].chat_id, text, mark);
@@ -54526,17 +54546,20 @@ function checkTopSeasonEnd() {
 
 										updateValue("checkDragonTopOn", 0);
 										reloadEvents();
+										checkDragonTopOn = 0;	// per forzare aggiornamento tastiera
 										checkKeyboard();
 
 										console.log("Vette chiuse!");
-									}
+									} else
+										console.log("Chiusura vette saltata");
 								}
 							}.bind({
 								top_id: top_id
 							}));
 						}
 					});
-				}
+				} else
+					console.log("Salto per " + combatCnt + " draghi ancora in combattimento");
 			});
 		}
 	});
