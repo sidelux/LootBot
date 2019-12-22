@@ -22,7 +22,7 @@ var eventDust = 0;
 // Festività o disattivati
 var eventStory = 0;
 var halloween = 0;
-var snowHouse = 0;
+var snowHouse = 1;
 var snowHouseEnd = 0;
 var blackfriday = 0;
 
@@ -51,6 +51,7 @@ var battle_timeout_limit_min = 20;
 var battle_timeout_elapsed = 600;
 var battle_season_test = 0;
 var dragon_limit_search = 15;
+var map_condition_max = 7;
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
 var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750, 2500, 3000, 3750];
 var progLevRew = [50000, 100000, 125000, 150000, 250000, 1000000, 2500000, 5000000, 5000000, 10000000, 20000000];
@@ -136,6 +137,7 @@ var j = Schedule.scheduleJob('00 3 * * *', function () { //3 notte
 var j1 = Schedule.scheduleJob('00 8 * * *', function () { //8 di mattina
 	if (checkDragonTopOn == 1)
 		cleanDragon();
+	setMapCondition();
 });
 
 var j2 = Schedule.scheduleJob('59 23 * * *', function () { //23:59 notte
@@ -829,13 +831,12 @@ bot.onText(/^\/conditions (.+)|^\/conditions/, function (message, match) {
 		}
 
 		var cond = match[1];
-		var maxVal = 7;
-		if ((cond < 0) || (cond > maxVal)) {
-			bot.sendMessage(message.chat.id, "Valore non valido, 0-" + maxVal);
+		if ((cond < 0) || (cond > map_condition_max)) {
+			bot.sendMessage(message.chat.id, "Valore non valido, 0-" + map_condition_max);
 			return;
 		}
 
-		connection.query('UPDATE config SET map_conditions = "' + cond + '"', function (err, rows, fields) {
+		connection.query('UPDATE config SET map_conditions = ' + cond, function (err, rows, fields) {
 			if (err) throw err;
 			bot.sendMessage(message.chat.id, "Salvato!\nCondizioni mappe impostate a " + cond);
 		});
@@ -29096,7 +29097,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 									
 									var query = 'SELECT P.id, P.nickname, COUNT(E.id) As points FROM event_snowball_list E, player P WHERE P.id = E.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) GROUP BY E.player_id ORDER BY points DESC';
 									
-									connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+									connection.query('SELECT top_min FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 
 										if (rows[0].top_min == 1) {
@@ -29107,7 +29108,13 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 													bot.sendMessage(message.chat.id, "La classifica sarà disponibile con più giocatori iscritti!", kbBack);
 													return;
 												}
-
+												
+												var c = 1;
+												var mypnt = 0;
+												var totpnt = 0;
+												var myinfo = 0;
+												var size = 20;
+												
 												for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 													if (c < 31) {
 														if (c < size + 1)
@@ -29121,7 +29128,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 												}
 												text = text + "\nTu:\n" + myinfo;
 
-												bot.sendMessage(message.chat.id, text, keyrank);
+												bot.sendMessage(message.chat.id, text, kbBack);
 											});
 										} else {
 											connection.query(query, function (err, rows, fields) {
@@ -31779,7 +31786,7 @@ bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
 
 				bot.sendMessage(message.chat.id, price_drop_msg + "Il *Mercante Pazzo* oggi offre alcuni pacchetti dall'aspetto interessante, selezionali per vedere il loro contenuto, ma attenzione, puoi acquistare solamente un pacchetto al giorno!\nFiducia del Mercante: " + trust + " " + market_pack_perc + "%\nAumentando la fiducia riduci il costo dei pacchetti (-" + trust_discount + "% attuale) ed avrai accesso ad un pacchetto speciale quando raggiungerà il 100%!" + allowBuyText, kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
-						if (answer.text == "Torna al menu")
+						if ((answer.text == "Torna al menu") || (answer.text == "Torna alla piazza"))
 							return;
 
 						if (allowBuy == 0) {
@@ -42968,6 +42975,18 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 });
 
 // FUNZIONI
+
+function setMapCondition() {
+	var randCond = Math.random()*100;
+	var cond = 0;
+	if (randCond > 50)
+		cond = Math.round(getRandomArbitrary(1, 7));
+	
+	connection.query('UPDATE config SET map_conditions = ' + cond, function (err, rows, fields) {
+		if (err) throw err;
+		console.log("Condizione mappe impostate a " + cond)
+	});
+}
 
 function getSnowball(chat_id, nickname, player_id) {
 	if ((snowHouse == 1) && (snowHouseEnd == 0)) {
