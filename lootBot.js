@@ -91,6 +91,7 @@ var fs = require('fs');
 var bodyParser = require('body-parser');
 var iniBuilder = require('ini-builder');
 var moment = require('moment');
+var PDFDocument = require('./pdfkit-tables.js');
 
 // Eventi
 var crazyMode;					// nulla
@@ -6699,7 +6700,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Si"], ["No"], ["Torna al menu"]]
+				keyboard: [["Si", "No"], ["🛠 Sacca"], ["Torna al menu"]]
 			}
 		};
 		
@@ -7150,31 +7151,8 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									return;
 								}
 
-								if (answer.text.toLowerCase().indexOf("sacca") != -1) {
-									var weapon_desc = "🗡 ";
-									var weapon2_desc = "🥋 ";
-									var weapon3_desc = "🛡 ";
-									var money_desc = "💰 " + formatNumber(money);
-									var scrap_desc = "🔩 " + formatNumber(scrap);
-									if (weapon_id != null) {
-										var weapon = connection_sync.query("SELECT name, power FROM item WHERE id = " + weapon_id);
-										weapon_desc += weapon[0].name + " (" + weapon[0].power + ")";
-									} else
-										weapon_desc += "-";
-									if (weapon2_id != null) {
-										var weapon2 = connection_sync.query("SELECT name, power_armor FROM item WHERE id = " + weapon2_id);
-										weapon2_desc += weapon2[0].name + " (" + weapon2[0].power_armor + ")";
-									} else
-										weapon2_desc += "-";
-									if (weapon3_id != null) {
-										var weapon3 = connection_sync.query("SELECT name, power_shield FROM item WHERE id = " + weapon3_id);
-										weapon3_desc += weapon3[0].name + " (" + weapon3[0].power_shield + ")";
-									} else
-										weapon3_desc += "-";
-
-									bot.sendMessage(message.chat.id, "Equipaggiamento attuale:\n" + weapon_desc + "\n" + weapon2_desc + "\n" + weapon3_desc + "\n" + money_desc + "\n" + scrap_desc, kbBack);
+								if (answer.text.toLowerCase().indexOf("sacca") != -1)
 									return;
-								}
 
 								var time = connection_sync.query("SELECT wait_time FROM map_lobby WHERE player_id = " + player_id);
 								if (time[0].wait_time != null) {
@@ -7551,6 +7529,71 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 					});
 				});
 			});
+		});
+	});
+});
+
+bot.onText(/sacca$/i, function (message) {
+	connection.query('SELECT id, holiday, account_id, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+		if (rows[0].holiday == 1) {
+			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back)
+			return;
+		}
+
+		var player_id = rows[0].id;
+		
+		var kbBack = {
+			parse_mode: "HTML",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Torna alla mappa"], ["Torna al menu"]]
+			}
+		};
+
+		connection.query('SELECT * FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Accedi ad una lobby per visualizzare la Sacca", kbBack);
+				return;
+			}
+
+			var weapon_id = rows[0].weapon_id;
+			var weapon2_id = rows[0].weapon2_id;
+			var weapon3_id = rows[0].weapon3_id;
+			var money = rows[0].money;
+			var scrap = rows[0].scrap;
+			
+			var weapon_desc = "🗡 ";
+			var weapon2_desc = "🥋 ";
+			var weapon3_desc = "🛡 ";
+			var money_desc = "💰 " + formatNumber(money);
+			var scrap_desc = "🔩 " + formatNumber(scrap);
+			if (weapon_id != null) {
+				var weapon = connection_sync.query("SELECT name, power FROM item WHERE id = " + weapon_id);
+				weapon_desc += weapon[0].name + " (" + weapon[0].power + ")";
+			} else
+				weapon_desc += "-";
+			if (weapon2_id != null) {
+				var weapon2 = connection_sync.query("SELECT name, power_armor FROM item WHERE id = " + weapon2_id);
+				weapon2_desc += weapon2[0].name + " (" + weapon2[0].power_armor + ")";
+			} else
+				weapon2_desc += "-";
+			if (weapon3_id != null) {
+				var weapon3 = connection_sync.query("SELECT name, power_shield FROM item WHERE id = " + weapon3_id);
+				weapon3_desc += weapon3[0].name + " (" + weapon3[0].power_shield + ")";
+			} else
+				weapon3_desc += "-";
+
+			bot.sendMessage(message.chat.id, "Equipaggiamento attuale:\n" + weapon_desc + "\n" + weapon2_desc + "\n" + weapon3_desc + "\n" + money_desc + "\n" + scrap_desc, kbBack);
 		});
 	});
 });
@@ -17790,7 +17833,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 
 					var top = "";
 					if (Object.keys(rows).length > 0) {
-						top = "\n\nClassifica della stagione precedente:\n";
+						top = "\n\n<b>Classifica della stagione precedente:</b>\n";
 						var c = 0;
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 							c++;
@@ -17798,12 +17841,25 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 						}
 					}
 
-					if (player_id != 1) {
+					// if (player_id != 1) {
 						if (checkDragonTopOn == 0) {
-							bot.sendMessage(message.chat.id, "\nProssima stagione: " + start_date_f + " - " + finish_date_f + "\nSe hai partecipato alla stagione precedente, riceverai i premi a breve!" + top, back_html);
+							var kb = {
+								parse_mode: "HTML",
+								reply_markup: {
+									resize_keyboard: true,
+									keyboard: [['Scarica PDF'], ['Torna al menu']]
+								}
+							};
+							
+							bot.sendMessage(message.chat.id, "\n<b>Prossima stagione</b>: " + start_date_f + " - " + finish_date_f + "\nSe hai partecipato alla stagione precedente, riceverai i premi a breve!" + top, kb).then(function () {
+								answerCallbacks[message.chat.id] = function (answer) {
+									if (answer.text.indexOf("Scarica PDF") != -1)
+										getTopPDF(message);
+								}
+							});
 							return;
 						}
-					}
+					// }
 
 					var kb2 = {
 						parse_mode: "HTML",
@@ -42976,10 +43032,48 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 
 // FUNZIONI
 
+function getTopPDF(message) {
+	connection.query('SELECT nickname As Nome_Utente, CONCAT(name, " ", type) As Drago, top_id As Vetta, dragon_top_rank.rank As Punti FROM dragon_top_rank, dragon, player WHERE dragon_top_rank.dragon_id = dragon.id AND player.id = dragon_top_rank.player_id ORDER BY dragon_top_rank.top_id DESC, dragon_top_rank.rank DESC', function (err, rows, fields) {
+		if (err) throw err;
+		
+		var doc = new PDFDocument ({
+			margin: 25
+		})
+		var fileName = "Vette.pdf";
+		var writeStream = fs.createWriteStream(fileName);
+		doc.pipe(writeStream);
+		var c = 1;
+		var tableRows = [];
+		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+			tableRows.push([c + "°", rows[i].Nome_Utente, rows[i].Drago, rows[i].Vetta, rows[i].Punti])
+			c++;
+		}
+		
+		var table = {
+			headers: ['Posizione', 'Nome Utente', 'Drago', 'Vetta', 'Punti'],
+			rows: tableRows
+		};
+		
+		doc.table(table, {
+			prepareHeader: () => doc.font('Helvetica-Bold'),
+			prepareRow: (row, i) => doc.font('Helvetica').fontSize(12)
+		});
+		
+		doc.end();
+		writeStream.on('finish', function () {
+			bot.sendDocument(message.chat.id, fileName, back).then(function (data) {
+				fs.unlink(fileName, function (err) {
+					if (err) throw err;
+				});
+			});
+		});
+	});
+}
+
 function setMapCondition() {
 	var randCond = Math.random()*100;
 	var cond = 0;
-	if (randCond > 50)
+	if (randCond <= 25)
 		cond = Math.round(getRandomArbitrary(1, 7));
 	
 	connection.query('UPDATE config SET map_conditions = ' + cond, function (err, rows, fields) {
@@ -52905,7 +52999,7 @@ function regenItems(team_id, place_id, level) {
 		var items;
 		var quantity = 0;
 		for (var k = 0; k < rarityQuantity.length; k++) {
-			items = connection_sync.query("SELECT id FROM item WHERE rarity = '" + rarityName[k] + "' AND craftable = 1 AND ((power > 0 OR power_armor < 0 OR power_shield < 0) AND dragon_power = 0) AND cons = 0 AND id NOT IN (SELECT item_id FROM assault_place_item WHERE team_id = " + team_id + " AND place_id = " + place_id + ") ORDER BY RAND() LIMIT " + rarityQuantity[k]);
+			items = connection_sync.query("SELECT id FROM item WHERE rarity = '" + rarityName[k] + "' AND cons = 0 AND craftable = 1 AND ((power > 0 OR power_armor < 0 OR power_shield < 0) AND dragon_power = 0) AND cons = 0 AND id NOT IN (SELECT item_id FROM assault_place_item WHERE team_id = " + team_id + " AND place_id = " + place_id + ") ORDER BY RAND() LIMIT " + rarityQuantity[k]);
 			//quantity = Math.round(((rarityQuantity.length+1)-i)/2)+player_num; // ipoteticamente max 6, min 3
 			quantity = Math.round(Math.random()*2+2);
 			for (var j = 0; j < Object.keys(items).length; j++)
@@ -52938,7 +53032,7 @@ function regenItems(team_id, place_id, level) {
 		var items;
 		var quantity = 0;
 		for (var k = 0; k < rarityQuantity.length; k++) {
-			items = connection_sync.query("SELECT id FROM item WHERE rarity = '" + rarityName[k] + "' AND craftable = 1 AND power = 0 AND power_armor = 0 AND power_shield = 0 AND dragon_power = 0 AND name NOT LIKE 'Talismano%' AND id NOT IN (SELECT item_id FROM assault_place_item WHERE team_id = " + team_id + " AND place_id = " + place_id + ") ORDER BY RAND() LIMIT " + rarityQuantity[k]);
+			items = connection_sync.query("SELECT id FROM item WHERE rarity = '" + rarityName[k] + "' AND cons = 0 AND craftable = 1 AND power = 0 AND power_armor = 0 AND power_shield = 0 AND dragon_power = 0 AND name NOT LIKE 'Talismano%' AND id NOT IN (SELECT item_id FROM assault_place_item WHERE team_id = " + team_id + " AND place_id = " + place_id + ") ORDER BY RAND() LIMIT " + rarityQuantity[k]);
 			//quantity = Math.round(((rarityQuantity.length+1)-i)/2)+player_num; // ipoteticamente max 6, min 3
 			quantity = Math.round(Math.random()*2+2);
 			for (var j = 0; j < Object.keys(items).length; j++)
@@ -52971,7 +53065,7 @@ function regenItems(team_id, place_id, level) {
 		var items;
 		var quantity = 0;
 		for (var k = 0; k < rarityQuantity.length; k++) {
-			items = connection_sync.query("SELECT id FROM item WHERE rarity = '" + rarityName[k] + "' AND craftable = 1 AND power = 0 AND power_armor = 0 AND power_shield = 0 AND dragon_power = 0 AND name NOT LIKE 'Talismano%' AND id NOT IN (SELECT item_id FROM assault_place_item WHERE team_id = " + team_id + " AND place_id = " + place_id + ") ORDER BY RAND() LIMIT " + rarityQuantity[k]);
+			items = connection_sync.query("SELECT id FROM item WHERE rarity = '" + rarityName[k] + "' AND cons = 0 AND craftable = 1 AND power = 0 AND power_armor = 0 AND power_shield = 0 AND dragon_power = 0 AND name NOT LIKE 'Talismano%' AND id NOT IN (SELECT item_id FROM assault_place_item WHERE team_id = " + team_id + " AND place_id = " + place_id + ") ORDER BY RAND() LIMIT " + rarityQuantity[k]);
 			//quantity = Math.round(((rarityQuantity.length+1)-i)/2)+player_num; // ipoteticamente max 6, min 3
 			quantity = Math.round(Math.random()*2+2);
 			for (var j = 0; j < Object.keys(items).length; j++)
