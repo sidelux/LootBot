@@ -27582,10 +27582,12 @@ bot.onText(/^Sciogli/i, function (message) {
 							if (action == "Conferma") {
 								connection.query('SELECT 1 FROM team_player WHERE team_id = ' + team_id, function (err, rows, fields) {
 									if (err) throw err;
+									/*
 									if (Object.keys(rows).length > 1) {
 										bot.sendMessage(message.chat.id, "Devi prima espellere tutti i membri del team!", team);
 										return;	
 									}
+									*/
 									connection.query('DELETE FROM team_player WHERE team_id = ' + team_id, function (err, rows, fields) {
 										if (err) throw err;
 										connection.query('DELETE FROM team WHERE id = ' + team_id, function (err, rows, fields) {
