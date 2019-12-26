@@ -6017,15 +6017,15 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 													
 													lobby_id = lobbies[index];
 													var members_cnt = members[index];
+													
+													if (members_cnt == (lobby_total_space-1)) {
+														connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
+															if (err) throw err;
 
-													/*
-													connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
-														if (err) throw err;
-
-														for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-															bot.sendMessage(rows[i].chat_id, "Un giocatore si è unito alla tua lobby! Ci sono " + (members_cnt+1) + " su " + lobby_total_space + " giocatori in attesa...");
-													});
-													*/
+															for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+																bot.sendMessage(rows[i].chat_id, "L'ultimo giocatore si è unito alla tua lobby! La partita inizierà a breve!");
+														});
+													}
 
 													var members = " insieme ad altri " + members_cnt + " partecipanti";
 													var wait = ", attendi che altri giocatori si uniscano o interrompi la ricerca...";
@@ -28934,7 +28934,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Lancia Palla di Neve ❄️"], ["Costruisci un Pupazzo ⛄️"], ["Classifica 🔝", "Torna al menu"]]
+				keyboard: [["Lancia Palla di Neve ❄️"], ["Costruisci un Pupazzo ⛄️"], ["I miei Pupazzi ⛄️"], ["Classifica 🔝", "Torna al menu"]]
 			}
 		};
 
@@ -29149,6 +29149,20 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 												});
 											}
 										};
+									});
+								} else if (answer.text == "I miei Pupazzi ⛄️") {
+									connection.query('SELECT life, creation_date FROM event_snowball_list WHERE player_id = ' + player_id + " ORDER BY id DESC", function (err, rows, fields) {
+										if (err) throw err;
+										
+										var text;
+										if (Object.keys(rows).length > 0) {
+											text = "Possiedi " + Object.keys(rows).length + " Pupazzi:\n";
+											for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+												text += "Creato il " + toDate("it", rows[i].creation_date) + " (" + rows[i].life + "/10 salute)\n";
+										} else
+											text = "Non possiedi ancora alcun Pupazzo!";
+										
+										bot.sendMessage(message.chat.id, text, kbBack);
 									});
 								} else if (answer.text == "Classifica 🔝") {
 									var text = "Classifica per Pupazzi di Neve in vita:\n";
@@ -32004,7 +32018,13 @@ bot.onText(/^Poste/, function (message) {
 		connection.query('SELECT time FROM market_gift WHERE player_id = ' + player_id + ' ORDER BY time DESC', function (err, rows, fields) {
 			if (err) throw err;
 
-			if (Object.keys(rows).length > 0) {
+			var fest_d = new Date();
+			var day = fest_d.getDate();
+			var month = fest_d.getMonth();
+			var isChristmas = 0;
+			if ((day == 25) && (month == 11))
+				isChristmas = 1;
+			if ((Object.keys(rows).length > 0) && (isChristmas == 0)) {
 				var d = new Date(rows[0].time);
 				var now = new Date();
 				var diff = Math.round(((now - d) / 1000) / 60 / 60); //in ore
@@ -32019,7 +32039,7 @@ bot.onText(/^Poste/, function (message) {
 				}
 			}
 
-			bot.sendMessage(message.chat.id, "Inserisci il nickname del giocatore al quale spedire l'oggetto, puoi farlo solamente una volta ogni 2 giorni", kb).then(function () {
+			bot.sendMessage(message.chat.id, "Inserisci il nickname del giocatore al quale spedire l'oggetto, puoi farlo solamente una volta ogni 2 giorni, ad eccezione di alcune festività", kb).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if ((answer.text == "Torna al menu") || (answer.text == "Torna alla piazza"))
 						return;
@@ -43075,7 +43095,7 @@ function getTopPDF(message) {
 function setMapCondition() {
 	var randCond = Math.random()*100;
 	var cond = 0;
-	if (randCond <= 25)
+	if (randCond <= 50)
 		cond = Math.round(getRandomArbitrary(1, 7));
 	
 	connection.query('UPDATE config SET map_conditions = ' + cond, function (err, rows, fields) {

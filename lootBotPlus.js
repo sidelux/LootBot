@@ -4188,6 +4188,12 @@ bot.onText(/^\/negoziodesc (.+),(.+)|^\/negoziodesc/, function (message, match) 
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
+		
+		if (message.reply_to_message != undefined) {
+			var cod = message.reply_to_message.text.match(/[0-9]{7,11}/g);
+			if (cod != undefined)
+				code = cod[0];
+		}
 
 		if ((code == undefined) || (code == "")) {
 			bot.sendMessage(message.chat.id, "La sintassi è: '/negoziodesc CODICE,Descrizione'. Scrivi svuota al posto della descrizione per rimuoverla");
