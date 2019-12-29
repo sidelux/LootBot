@@ -22,7 +22,7 @@ var eventDust = 0;
 // Festività o disattivati
 var eventStory = 0;
 var halloween = 0;
-var snowHouse = 1;
+var snowHouse = 0;
 var snowHouseEnd = 0;
 var blackfriday = 0;
 
@@ -6804,29 +6804,68 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									});
 								}
 							})
-						} else {
-							bot.sendMessage(message.chat.id, "Puoi recuperare tutta la salute al costo di <b>" + formatNumber(price) + "</b> §, al momento possiedi " + formatNumber(money) + " §, procedi?", kbYesNo).then(function () {
+						} else if (money == 0) {
+							bot.sendMessage(message.chat.id, "Non hai monete per le cure, procedi?", kbYes).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text == "Torna al menu")
 										return;
 
-									if (answer.text.toLowerCase().indexOf("si") != -1) {
-										if (money < price) {
-											bot.sendMessage(message.chat.id, "Non hai abbastanza monete nella sacca!", kbBack);
+									connection.query('UPDATE map_lobby SET last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+										bot.sendMessage(message.chat.id, "Esci dalla farmacia guardandoti intorno...!", kbBack);
+									});
+								}
+							})
+						} else {
+							if (money >= price) {
+								bot.sendMessage(message.chat.id, "Puoi recuperare tutta la salute al costo di <b>" + formatNumber(price) + "</b> §, al momento possiedi " + formatNumber(money) + " §, procedi?", kbYesNo).then(function () {
+									answerCallbacks[message.chat.id] = function (answer) {
+										if (answer.text == "Torna al menu")
 											return;
+
+										if (answer.text.toLowerCase().indexOf("si") != -1) {
+											if (money < price) {
+												bot.sendMessage(message.chat.id, "Non hai abbastanza monete nella sacca!", kbBack);
+												return;
+											}
+											connection.query('UPDATE map_lobby SET life = total_life, money = money-' + price + ', last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+												bot.sendMessage(message.chat.id, "Hai recuperato tutta la salute!", kbBack);
+											});
+										} else {
+											connection.query('UPDATE map_lobby SET last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+												bot.sendMessage(message.chat.id, "Hai rinunciato a recuperare la salute", kbBack);
+											});
 										}
-										connection.query('UPDATE map_lobby SET life = total_life, money = money-' + price + ', last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-											if (err) throw err;
-											bot.sendMessage(message.chat.id, "Hai recuperato tutta la salute!", kbBack);
-										});
-									} else {
-										connection.query('UPDATE map_lobby SET last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-											if (err) throw err;
-											bot.sendMessage(message.chat.id, "Hai rinunciato a recuperare la salute", kbBack);
-										});
-									}
-								};
-							});
+									};
+								});
+							} else {
+								var perc = Math.floor(money/100);
+								var price = Math.round(perc*100);
+								bot.sendMessage(message.chat.id, "Puoi recuperare il " + perc + "% di salute al costo di <b>" + formatNumber(price) + "</b> §, procedi?", kbYesNo).then(function () {
+									answerCallbacks[message.chat.id] = function (answer) {
+										if (answer.text == "Torna al menu")
+											return;
+
+										if (answer.text.toLowerCase().indexOf("si") != -1) {
+											if (money < price) {
+												bot.sendMessage(message.chat.id, "Non hai abbastanza monete nella sacca!", kbBack);
+												return;
+											}
+											connection.query('UPDATE map_lobby SET life = total_life, money = money-' + price + ', last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+												bot.sendMessage(message.chat.id, "Hai recuperato tutta la salute!", kbBack);
+											});
+										} else {
+											connection.query('UPDATE map_lobby SET last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+												bot.sendMessage(message.chat.id, "Hai rinunciato a recuperare la salute", kbBack);
+											});
+										}
+									};
+								});
+							}
 						}
 						return;
 					} else if (last_obj == 5) {
@@ -28870,14 +28909,13 @@ bot.onText(/^\/endVillaggio/i, function (message) {
 			text = "Al termine dell'*Evento Natalizio* ti sono rimasti *" + rows[i].cnt + "* Pupazzi di Neve e hai ottenuto ";
 
 			var qnt = rows[i].cnt*3;	// scrigni
-			var key = qnt*10;			// chiavi
+			var key = qnt*5;			// chiavi
 
 			text += qnt + "x *Scrigni Mistici* (con " + key + " 🗝 per aprirli)";
 			connection.query('UPDATE player SET mkeys = mkeys+' + key + ' WHERE id = ' + rows[i].id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			for (var j = 0; j < qnt; j++)
-				addChest(rows[i].id, 8);
+			addChest(rows[i].id, 8, qnt);
 			if (rows[i].cnt >= 2) {
 				addItem(rows[i].id, 792);
 				text += " ed un *Alberello di Natale 2019* (IN)";
@@ -28990,7 +29028,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 
 						var snowman_cnt = parseInt(rows[0].cnt);
 
-						bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella tua <b>Casa nella Neve</b> 🌨!\nDurante questa settimana si svolge una gara che premierà chi riuscirà a costruire più Pupazzi di Neve degli altri partecipanti!\nPer costruirne un altro ti servono <b>" + (10+(snowman_cnt*10)) + " Palle di Neve</b>, puoi lanciarne una per danneggiare gli avversari oppure i loro pupazzi.\n\nPossiedi <b>" + snowball + "</b> Palle di Neve ❄️ e <b>" + snowman_cnt + "</b> Pupazzi di Neve ⛄️!\nIn totale sono stati creati <b>" + snowman_cnt_tot + "</b> Pupazzi e ci sono " + snowball_tot + " Palle di Neve!\n\nC'è una probabilità di ottenerne altre tramite Missioni, Ispezioni, Dungeon e Mappe. Ogni Pupazzo ti fornirà 1 Palla di Neve per ogni azione.\n\nL'evento termina il 29 alle 12:00!", kb).then(function () {
+						bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella tua <b>Casa nella Neve</b> 🌨!\nDurante questa settimana si svolge una gara che premierà chi riuscirà a costruire più Pupazzi di Neve degli altri partecipanti!\nPer costruirne un altro ti servono <b>" + (10+(snowman_cnt*10)) + " Palle di Neve</b>, puoi lanciarne una per danneggiare gli avversari oppure i loro pupazzi.\n\nPossiedi <b>" + snowball + "</b> Palle di Neve ❄️ e <b>" + formatNumber(snowman_cnt) + "</b> Pupazzi di Neve ⛄️!\nIn totale sono stati creati <b>" + formatNumber(snowman_cnt_tot) + "</b> Pupazzi e ci sono " + snowball_tot + " Palle di Neve!\n\nC'è una probabilità di ottenerne altre tramite Missioni, Ispezioni, Dungeon e Mappe. Ogni Pupazzo ti fornirà 1 Palla di Neve per ogni azione.\n\nL'evento termina il 29 alle 12:00!", kb).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
 								if (answer.text == "Lancia Palla di Neve ❄️") {
 									bot.sendMessage(message.chat.id, "Puoi lanciare una Palla di Neve ad un giocatore in particolare (scrivendo il nickname) oppure ad uno casuale, nel primo caso consumerai 2 Palle di Neve.\nNel caso in cui il bersaglio avesse un Pupazzo di Neve, quest'ultimo verrà colpito al posto del giocatore e danneggiato o distrutto. Può capitare inoltre che il giocatore avversario recuperi la tua Palla di Neve!", kb2).then(function () {
@@ -34409,7 +34447,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 										mypnt = 0;
 										mypos = 0;
 
-										connection.query('SELECT P.id, nickname, SUM(value) As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
+										connection.query('SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
 											if (err) throw err;
 											for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 												if (rows[i].id == player_id) {
@@ -54306,15 +54344,17 @@ function setFinishedLobbyEnd(element, index, array) {
 		var map_lobby_id = rows[0].id;
 		var conditions = rows[0].conditions;
 
-		connection.query('SELECT M.player_id, P.nickname, M.match_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND M.lobby_id = ' + lobby_id,  function (err, rows, fields) {
+		connection.query('SELECT M.player_id, P.nickname, P.gender, M.match_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND M.lobby_id = ' + lobby_id,  function (err, rows, fields) {
 			if (err) throw err;
 
+			var winner_gender = "";
 			var winner_nickname = "";
 			var winner_player_id = -1;
 			var winner_match_kills = -1;
 
 			if (Object.keys(rows).length <= 1) {
 				if (Object.keys(rows).length == 1) {
+					winner_gender = rows[0].gender;
 					winner_nickname = rows[0].nickname;
 					winner_player_id = rows[0].player_id;
 					winner_match_kills = rows[0].match_kills;
@@ -54377,12 +54417,13 @@ function setFinishedLobbyEnd(element, index, array) {
 						setAchievement(rows[i].id, 88, 1);
 					}
 
-					connection.query('SELECT P.id, P.nickname FROM map_history M, player P WHERE M.player_id = P.id AND M.position = 1 AND M.map_lobby_id = ' + map_lobby_id, function (err, rows, fields) {
+					connection.query('SELECT P.id, P.nickname, P.gender FROM map_history M, player P WHERE M.player_id = P.id AND M.position = 1 AND M.map_lobby_id = ' + map_lobby_id, function (err, rows, fields) {
 						if (err) throw err;
 
 						// prende solo il primo se non ci sono stati pari merito
 						if (winner_player_id == -1) {
 							if (Object.keys(rows).length == 1) {
+								winner_gender = rows[0].gender;
 								winner_nickname = rows[0].nickname;
 								winner_player_id = rows[0].id;
 							}
@@ -54392,8 +54433,12 @@ function setFinishedLobbyEnd(element, index, array) {
 							if (err) throw err;
 
 							var msg = "La partita è terminata!";
-							if (winner_player_id != -1)
-								msg += "\n🎉 Il vincitore è <b>" + winner_nickname + "</b>! 🎉";
+							var gender = "Il vincitore";
+							if (winner_player_id != -1) {
+								if (winner_gender == "F")
+									gender = "La vincitrice";
+								msg += "\n🎉 " + gender + " è <b>" + winner_nickname + "</b>! 🎉";
+							}
 							msg += "\n\n" + list;
 
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++)

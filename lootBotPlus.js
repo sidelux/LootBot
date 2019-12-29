@@ -121,56 +121,58 @@ bot.on('message', function (message, match) {
 		
 		// Suggestions
 		
-		if (message.entities != undefined) {
-			var entities = message.entities;
-			let is_suggestion;
-			if (typeof entities != "undefined" && entities != null && entities.length != null && entities.length > 0) {
-				let first_string = message.text.substr(entities[0].offset + 1, (entities[0].length) - 2).toLowerCase();
-				if (first_string.indexOf("suggeriment") >= 0 || first_string == "sug")
-					is_suggestion = true;
-			}
+		if (message.chat.id > 0) {
+			if (message.entities != undefined) {
+				var entities = message.entities;
+				let is_suggestion;
+				if (typeof entities != "undefined" && entities != null && entities.length != null && entities.length > 0) {
+					let first_string = message.text.substr(entities[0].offset + 1, (entities[0].length) - 2).toLowerCase();
+					if (first_string.indexOf("suggeriment") >= 0 || first_string == "sug")
+						is_suggestion = true;
+				}
 
-			if (is_suggestion) {
-				// console.log("> Sugg. da parte di " + message.from.username);
-				tips_controller.suggestionManager(message).then(function (res_mess) {
-					if (typeof (res_mess) != "undefined") {
-						//se c'è da editare qualche cosa...
-						if (typeof (res_mess.toEdit) != "undefined") {
-							bot.editMessageText(
-								res_mess.toEdit.message_txt, {
-									chat_id: res_mess.toEdit.chat_id,
-									message_id: res_mess.toEdit.mess_id,
-									parse_mode: res_mess.toEdit.options.parse_mode,
-									disable_web_page_preview: true,
-									reply_markup: res_mess.toEdit.options.reply_markup
-								}).catch(function (err) {
-									bot.sendMessage(
-										16964514,
-										"👮Hey:\nC'è stato un problema!\n" + err.response.body.description +
-										"\nNella chat: " + res_mess.toSend.chat_id + "\n" + err.response.body
-									);
-								});
-						}
-						if (typeof (res_mess.toSend) != "undefined") {
-							bot.sendMessage(
-								res_mess.toSend.chat_id,
-								res_mess.toSend.message_txt,
-								res_mess.toSend.options
-							).catch(function (err) {
+				if (is_suggestion) {
+					// console.log("> Sugg. da parte di " + message.from.username);
+					tips_controller.suggestionManager(message).then(function (res_mess) {
+						if (typeof (res_mess) != "undefined") {
+							//se c'è da editare qualche cosa...
+							if (typeof (res_mess.toEdit) != "undefined") {
+								bot.editMessageText(
+									res_mess.toEdit.message_txt, {
+										chat_id: res_mess.toEdit.chat_id,
+										message_id: res_mess.toEdit.mess_id,
+										parse_mode: res_mess.toEdit.options.parse_mode,
+										disable_web_page_preview: true,
+										reply_markup: res_mess.toEdit.options.reply_markup
+									}).catch(function (err) {
+										bot.sendMessage(
+											16964514,
+											"👮Hey:\nC'è stato un problema!\n" + err.response.body.description +
+											"\nNella chat: " + res_mess.toSend.chat_id + "\n" + err.response.body
+										);
+									});
+							}
+							if (typeof (res_mess.toSend) != "undefined") {
 								bot.sendMessage(
 									res_mess.toSend.chat_id,
-									"Upps!\n" +
-									"Sembra tu stia usando uno dei caratteri markdown non correttamente...\n" +
-									"O comunque, questo è quello che dice Telegram:\n\n```" + err.response.body.description + "\n```"
-								);
-							});
+									res_mess.toSend.message_txt,
+									res_mess.toSend.options
+								).catch(function (err) {
+									bot.sendMessage(
+										res_mess.toSend.chat_id,
+										"Upps!\n" +
+										"Sembra tu stia usando uno dei caratteri markdown non correttamente...\n" +
+										"O comunque, questo è quello che dice Telegram:\n\n```" + err.response.body.description + "\n```"
+									);
+								});
+							}
 						}
-					}
-				}).catch(function (err) { console.log(err); });
+					}).catch(function (err) { console.log(err); });
+				}
 			}
-		}
 
-		// End suggestions
+			// End suggestions
+		}
 		
 		if (message.text.startsWith("/") && !(message.text.startsWith("//"))) {
 			if (message.text.indexOf("@") == -1)
