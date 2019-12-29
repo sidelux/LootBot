@@ -2099,6 +2099,7 @@ CREATE TABLE `map_lobby` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
   `lobby_id` int(11) DEFAULT NULL,
+  `lobby_wait_end` timestamp NULL DEFAULT NULL,
   `match_kills` int(11) NOT NULL DEFAULT '0',
   `global_kills` int(11) NOT NULL DEFAULT '0',
   `posX` int(11) DEFAULT NULL,

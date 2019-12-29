@@ -248,6 +248,7 @@ callNTimes(60000, function () { //Ogni 1 minuto
 	checkRestrictMap();
 	checkLobbyEnd();
 	checkMapSeasonEnd();
+	checkLobbyLeave();
 
 	if (checkDragonTopOn == 0)
 		checkTopSeasonStart();
@@ -6069,23 +6070,80 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 												bot.sendMessage(message.chat.id, text, kbBack);
 											});
 										} else if (answer.text.toLowerCase().indexOf("stagione") != -1) {
-											connection.query('SELECT P.nickname, M.global_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND global_kills > 0 ORDER BY M.global_kills DESC LIMIT 25', function (err, rows, fields) {
+											var text = "Classifica per uccisioni:\n";
+											var query = "SELECT P.nickname, M.global_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND global_kills > 0 ORDER BY M.global_kills DESC";
+											connection.query('SELECT top_min FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 
-												if (Object.keys(rows).length > 0) {
-													var text = "<b>Top 25 uccisioni della stagione:</b>";
-													var c = 1;
-													for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-														var kills = "uccisioni";
-														if (rows[i].kills == 1)
-															kills = "uccisione";
-														text += "\n" + c + "° " + rows[i].nickname + " con " + rows[i].global_kills + " " + kills;
-														c++;
-													}
-												} else
-													text = "Ancora nessuna uccisione in questa stagione.";
+												if (rows[0].top_min == 1) {
+													connection.query(query, function (err, rows, fields) {
+														if (err) throw err;
 
-												bot.sendMessage(message.chat.id, text, kbBack);
+														if (Object.keys(rows).length < 100) {
+															bot.sendMessage(message.chat.id, "Ancora nessuna uccisione in questa stagione", kbBack);
+															return;
+														}
+
+														var c = 1;
+														var mypnt = 0;
+														var totpnt = 0;
+														var myinfo = 0;
+														var size = 20;
+
+														for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+															var kills = " uccisioni";
+															if (rows[i].kills == 1)
+																kills = " uccisione";
+															if (c < 31) {
+																if (c < size + 1)
+																	text = text + c + "° " + rows[i].nickname + " con " + formatNumber(rows[i].global_kills) + kills + "\n";
+															}
+															if (rows[i].id == player_id) {
+																mypnt = rows[i].total_cnt;
+																myinfo = c + "° " + rows[i].nickname + " con " + formatNumber(rows[i].global_kills) + kills + "\n";
+															}
+															c++;
+														}
+														text = text + "\nTu:\n" + myinfo;
+
+														bot.sendMessage(message.chat.id, text, kbBack);
+													});
+												} else {
+													connection.query(query, function (err, rows, fields) {
+														if (err) throw err;
+
+														var range = 10;
+														var nickname = [];
+														var points = [];
+														var mypos = 0;
+
+														if (Object.keys(rows).length < 100) {
+															bot.sendMessage(message.chat.id, "Ancora nessuna uccisione in questa stagione", kbBack);
+															return;
+														}
+
+														for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+															nickname.push(rows[i].nickname);
+															points.push(rows[i].global_kills);
+															if (rows[i].id == player_id)
+																mypos = i;
+														}
+
+														for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
+															if (nickname[i] != undefined) {
+																var kills = " uccisioni";
+																if (rows[i].kills == 1)
+																	kills = " uccisione";
+																if (i == mypos)
+																	text += (i + 1) + "° <b>" + nickname[i] + "</b> con " + points[i] + kills + "\n";
+																else
+																	text += (i + 1) + "° " + nickname[i] + " con " + points[i] + kills + "\n";
+															}
+														}
+
+														bot.sendMessage(message.chat.id, text, kbBack);
+													});
+												}
 											});
 										} else if (answer.text.toLowerCase().indexOf("guida") != -1) {
 											bot.sendMessage(message.chat.id, "<b>Legenda simboli sulla mappa</b>\n\n" +
@@ -6173,7 +6231,7 @@ bot.onText(/esci dalla lobby/i, function (message) {
 					var d = new Date();
 					d.setMinutes(d.getMinutes() + 15);
 					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-					connection.query('UPDATE map_lobby SET lobby_id = NULL, lobby_wait_end = ' + long_date + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+					connection.query('UPDATE map_lobby SET lobby_id = NULL, lobby_wait_end = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Sei uscito dalla lobby!\nDovrai attendere un po' di tempo prima di accedere ad una nuova lobby", kbBack);
 
