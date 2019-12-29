@@ -28901,6 +28901,10 @@ bot.onText(/^\/gnomorra/i, function (message) {
 	});
 });
 
+bot.onText(/^\/getSnowPDF/i, function (message) {
+	getSnowPDF(message);
+});
+
 bot.onText(/^\/endVillaggio/i, function (message) {
 	connection.query('SELECT player.id, nickname, chat_id, COUNT(L.id) As cnt FROM event_snowball_list L, player WHERE player.id = L.player_id GROUP BY L.player_id ORDER BY cnt DESC', function (err, rows, fields) {
 		if (err) throw err;
@@ -43091,6 +43095,44 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 });
 
 // FUNZIONI
+
+function getSnowPDF(message) {
+	connection.query('SELECT P.nickname As Nome_Utente, S.snowball As Palle_di_Neve, COUNT(L.id) As Pupazzi FROM event_snowball_status S, event_snowball_list L, player P WHERE S.player_id = L.player_id AND L.player_id = P.id GROUP BY L.player_id ORDER BY Pupazzi DESC', function (err, rows, fields) {
+		if (err) throw err;
+		
+		var doc = new PDFDocument ({
+			margin: 25
+		})
+		var fileName = "Evento.pdf";
+		var writeStream = fs.createWriteStream(fileName);
+		doc.pipe(writeStream);
+		var c = 1;
+		var tableRows = [];
+		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+			tableRows.push([c + "°", rows[i].Nome_Utente, rows[i].Palle_di_Neve, rows[i].Pupazzi])
+			c++;
+		}
+		
+		var table = {
+			headers: ['Posizione', 'Nome Utente', 'Palle di Neve', 'Pupazzi'],
+			rows: tableRows
+		};
+		
+		doc.table(table, {
+			prepareHeader: () => doc.font('Helvetica-Bold'),
+			prepareRow: (row, i) => doc.font('Helvetica').fontSize(12)
+		});
+		
+		doc.end();
+		writeStream.on('finish', function () {
+			bot.sendDocument(message.chat.id, fileName, back).then(function (data) {
+				fs.unlink(fileName, function (err) {
+					if (err) throw err;
+				});
+			});
+		});
+	});
+}
 
 function getTopPDF(message) {
 	connection.query('SELECT nickname As Nome_Utente, CONCAT(name, " ", type) As Drago, top_id As Vetta, dragon_top_rank.rank As Punti FROM dragon_top_rank, dragon, player WHERE dragon_top_rank.dragon_id = dragon.id AND player.id = dragon_top_rank.player_id ORDER BY dragon_top_rank.top_id DESC, dragon_top_rank.rank DESC', function (err, rows, fields) {
