@@ -5901,7 +5901,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 			if (diff_m > 60*24)
 				diff = Math.round(diff_m/(60*24)) + " giorni";
 
-			connection.query('SELECT lobby_id FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
+			connection.query('SELECT lobby_id, lobby_wait_end FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				if (Object.keys(rows).length == 0) {
@@ -5911,6 +5911,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 					});
 					console.log("Registrazione alle mappe di " + message.from.username);
 				} else {
+					var lobby_wait_end = rows[0].lobby_wait_end;
 					var lobby_id = rows[0].lobby_id;
 					if (lobby_id != null) {
 						connection.query('SELECT 1 FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
@@ -5977,6 +5978,12 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 											}
 											if (map_daily_diff <= 0) {
 												bot.sendMessage(message.chat.id, "Hai già giocato il numero massimo di partite oggi", kbStop);
+												return;
+											}
+											if (lobby_wait_end != null) {
+												var d = new Date(lobby_wait_end);
+												var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
+												bot.sendMessage(message.chat.id, "Devi attendere fino alle " + short_date + " per accedere ad una nuova lobby", kbStop);
 												return;
 											}
 											
@@ -6163,9 +6170,12 @@ bot.onText(/esci dalla lobby/i, function (message) {
 			connection.query('SELECT 1 FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
-					connection.query('UPDATE map_lobby SET lobby_id = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+					var d = new Date();
+					d.setMinutes(d.getMinutes() + 15);
+					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+					connection.query('UPDATE map_lobby SET lobby_id = NULL, lobby_wait_end = ' + long_date + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Sei uscito dalla lobby!", kbBack);
+						bot.sendMessage(message.chat.id, "Sei uscito dalla lobby!\nDovrai attendere un po' di tempo prima di accedere ad una nuova lobby", kbBack);
 
 						/*
 						connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
@@ -50173,8 +50183,8 @@ function getRandomPosEnemy(mapMatrix, checkEnemy) {
 		for(j = 0; j < mapMatrix[i].length; j++) {
 			for (var k = 0, len = Object.keys(checkEnemy).length; k < len; k++) {
 				if ((checkEnemy[k].posY == i) && (checkEnemy[k].posX == j)) {
-					randomPosX.push(i);
-					randomPosY.push(j);
+					randomPosX.push(j);
+					randomPosY.push(i);
 				}
 			}
 		}
@@ -50335,7 +50345,7 @@ function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnem
 					isEnemy = 0;
 					if (Object.keys(checkEnemy).length > 0) {
 						for (var k = 0, len = Object.keys(checkEnemy).length; k < len; k++) {
-							if ((checkEnemy[k].posX == i) && (checkEnemy[k].posY == j)) {
+							if ((checkEnemy[k].posX == j) && (checkEnemy[k].posY == i)) {
 								text += mapIdToSym(8) + " ";
 								isEnemy = 1;
 							}
@@ -54181,6 +54191,27 @@ function setLobbyTime(element, index, array) {
 		if (err) throw err;
 		if (enemy_id == null)
 			bot.sendMessage(chat_id, "Puoi procedere all'esplorazione della mappa!", kbBack);
+	});
+}
+
+function checkLobbyLeave() {
+	connection.query('SELECT id FROM map_lobby WHERE lobby_wait_end < NOW() AND lobby_wait_end IS NOT NULL', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length == 1)
+				console.log(getNow("it") + "\x1b[32m 1 tempo attesa lobby lasciata\x1b[0m");
+			else
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " tempo attesa lobby lasciata\x1b[0m");
+			rows.forEach(setLobbyLeave);
+		}
+	});
+};
+
+function setLobbyLeave(element, index, array) {
+	var map_lobby_id = element.id;
+
+	connection.query('UPDATE map_lobby SET lobby_wait_end = NULL WHERE id = ' + map_lobby_id, function (err, rows, fields) {
+		if (err) throw err;
 	});
 }
 
