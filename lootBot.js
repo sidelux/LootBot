@@ -6071,7 +6071,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 											});
 										} else if (answer.text.toLowerCase().indexOf("stagione") != -1) {
 											var text = "Classifica per uccisioni:\n";
-											var query = "SELECT P.nickname, M.global_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND global_kills > 0 ORDER BY M.global_kills DESC";
+											var query = "SELECT P.id, P.nickname, M.global_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND global_kills > 0 ORDER BY M.global_kills DESC";
 											connection.query('SELECT top_min FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 
@@ -6951,18 +6951,22 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 							var item_type = 0;
 							var item_power = 0;
+							var item_icon = "";
 							if (rows[0].power > 0) {
 								item_type = 1;
 								item_power = rows[0].power;
+								item_icon = " 🗡";
 							} else if (rows[0].power_armor < 0) {
 								item_type = 2;
 								item_power = rows[0].power_armor;
+								item_icon = " 🥋";
 							} else if (rows[0].power_shield < 0) {
 								item_type = 3;
 								item_power = rows[0].power_shield;
+								item_icon = " 🛡";
 							}
 
-							bot.sendMessage(message.chat.id, "Puoi scambiare " + price + " 🔩 Rottam" + plur + " per <b>" + item_name + "</b> (" + item_power + "), al momento ne possiedi " + scrap + ", procedi?", kbYesNo).then(function () {
+							bot.sendMessage(message.chat.id, "Puoi scambiare " + price + " 🔩 Rottam" + plur + " per <b>" + item_name + "</b> (" + item_power + item_icon + "), al momento ne possiedi " + scrap + ", procedi?", kbYesNo).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text == "Torna al menu")
 										return;
@@ -7044,18 +7048,22 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 							var item_type = 0;
 							var item_power = 0;
+							var item_icon = "";
 							if (rows[0].power > 0) {
 								item_type = 1;
 								item_power = rows[0].power;
+								item_icon = " 🗡";
 							} else if (rows[0].power_armor < 0) {
 								item_type = 2;
 								item_power = rows[0].power_armor;
+								item_icon = " 🥋";
 							} else if (rows[0].power_shield < 0) {
 								item_type = 3;
 								item_power = rows[0].power_shield;
+								item_icon = " 🛡";
 							}
 
-							bot.sendMessage(message.chat.id, "Puoi acquistare <b>" + item_name + "</b> (" + item_power + ") per " + formatNumber(price) + " §, al momento possiedi " + formatNumber(money) + " §, procedi?", kbYesNo).then(function () {
+							bot.sendMessage(message.chat.id, "Puoi acquistare <b>" + item_name + "</b> (" + item_power + item_icon + ") per " + formatNumber(price) + " §, al momento possiedi " + formatNumber(money) + " §, procedi?", kbYesNo).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text == "Torna al menu")
 										return;
@@ -38304,55 +38312,104 @@ bot.onText(/^apri/i, function (message) {
 							keyboard: [["Si"], ["Torna agli scrigni"], ["Torna al menu"]]
 						}
 					};
+					
+					var maxQnt = getChestCnt(player_id, 8);
+					
+					if (maxQnt != 1) {
+						var chestNum = {
+							parse_mode: "Markdown",
+							reply_markup: {
+								resize_keyboard: true,
+								keyboard: [["1"], [maxQnt.toString()], ["Torna agli scrigni"], ["Torna al menu"]]
+							}
+						};
+					} else {
+						var chestNum = {
+							parse_mode: "Markdown",
+							reply_markup: {
+								resize_keyboard: true,
+								keyboard: [["1"], ["Torna agli scrigni"], ["Torna al menu"]]
+							}
+						};
+					}
 
 					var keys = 5;
 
-					bot.sendMessage(message.chat.id, "Vuoi aprire lo Scrigno Mistico? Conterrà una certa quantità di copie di un oggetto Base (R-E) di alto valore ed una 💎. Ti costerà " + keys + " 🗝, ne possiedi " + mkeys + ".", chestYesNo).then(function () {
+					bot.sendMessage(message.chat.id, "Quanti Scrigno Mistici vuoi aprire? Conterranno una certa quantità di copie di un oggetto Base (R-E) di alto valore ed una 💎. Ogni scrigno ti costerà " + keys + " 🗝, ne possiedi " + mkeys + ".", chestNum).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							var resp = answer.text;
 							if ((resp == "Torna al menu") || (resp == "Torna agli scrigni"))
 								return;
+							
+							var chestQnt = parseInt(answer.text);
+							
+							if (isNaN(chestQnt)) {
+								bot.sendMessage(message.chat.id, "Quantità non valida", chestMore);
+								return;
+							}
+							
+							if ((chestQnt < 1) || (chestQnt > getChestCnt(player_id, 8))) {
+								bot.sendMessage(message.chat.id, "Quantità non valida", chestMore);
+								return;
+							}
+							
+							keys = keys*chestQnt;
 
-							if (answer.text.toLowerCase() == "si") {
-								connection.query('SELECT mkeys FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+							connection.query('SELECT mkeys FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+								if (rows[0].mkeys < keys) {
+									bot.sendMessage(message.chat.id, "Non hai abbastanza Chiavi Mistiche, te ne servono " + keys, chestMore);
+									return;
+								}
+								
+								setAchievement(player_id, 5, chestQnt);
+								delChest(player_id, 8, chestQnt);
+								
+								connection.query('UPDATE player SET mkeys = mkeys-' + keys + ' WHERE id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
-									if (rows[0].mkeys < keys) {
-										bot.sendMessage(message.chat.id, "Non hai abbastanza Chiavi Mistiche, te ne servono " + keys, chestMore);
-										return;
-									}
-
-									delChest(player_id, 8, 1);
-
-									connection.query('UPDATE player SET mkeys = mkeys-' + keys + ' WHERE id = ' + player_id, function (err, rows, fields) {
-										if (err) throw err;
-										connection.query('SELECT shortname FROM rarity WHERE id > 2 AND id < 7 ORDER BY RAND()', function (err, rows, fields) {
-											if (err) throw err;
-											var rarity = rows[0].shortname;
-											connection.query('SELECT I.name, I.id, I.estimate FROM item I INNER JOIN (SELECT id FROM item WHERE craftable = 0 AND rarity = "' + rarity + '" ORDER BY estimate DESC LIMIT 10) I2 ON I.id = I2.id ORDER BY RAND()', function (err, rows, fields) {
-												if (err) throw err;
-												var qnt = 0;
-												if (rarity == "R")
-													qnt = 20;
-												else if (rarity == "UR")
-													qnt = 15;
-												else if (rarity == "L")
-													qnt = 10;
-												else if (rarity == "E")
-													qnt = 5;
-
-												addItem(player_id, rows[0].id, qnt);
-
-												bot.sendMessage(message.chat.id, "Nello Scrigno Mistico hai trovato " + qnt + "x *" + rows[0].name + "* ed una 💎!", chestMore);
-												connection.query('UPDATE player SET gems = gems+1 WHERE id = ' + player_id, function (err, rows, fields) {
-													if (err) throw err;
-												});
-
-												setAchievement(player_id, 5, 1);
-											});
-										});
-									});
 								});
-							};
+								
+								var text = "Negli Scrigni Mistici hai trovato:";
+								
+								var itemList = [];
+								var itemQnt = [];
+
+								for (i = 0; i < chestQnt; i++) {
+									var rows = connection_sync.query('SELECT shortname FROM rarity WHERE id > 2 AND id < 7 ORDER BY RAND()');
+									var rarity = rows[0].shortname;
+									var rows = connection_sync.query('SELECT I.name, I.id, I.estimate FROM item I INNER JOIN (SELECT id FROM item WHERE craftable = 0 AND rarity = "' + rarity + '" ORDER BY estimate DESC LIMIT 10) I2 ON I.id = I2.id ORDER BY RAND()');
+									var qnt = 0;
+									if (rarity == "R")
+										qnt = 20;
+									else if (rarity == "UR")
+										qnt = 15;
+									else if (rarity == "L")
+										qnt = 10;
+									else if (rarity == "E")
+										qnt = 5;
+
+									addItem(player_id, rows[0].id, qnt);
+
+									var idx = itemList.indexOf(rows[0].name);
+									if (idx != -1)
+										itemQnt[idx] += qnt;
+									else {
+										itemList.push(rows[0].name);
+										itemQnt.push(qnt);
+									}
+								}
+								
+								for (i = 0; i < itemList.length; i++)
+									text += "\n> " + itemQnt[i] + "x *" + itemList[i] + "*";
+								
+								connection.query('UPDATE player SET gems = gems+' + chestQnt + ' WHERE id = ' + player_id, function (err, rows, fields) {
+									if (err) throw err;
+								});
+								
+								text += "\n\nE " + chestQnt + " 💎!";
+								
+								bot.sendMessage(message.chat.id, text, chestMore);
+							});
 						};
 					});
 					return;
