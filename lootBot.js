@@ -27822,7 +27822,7 @@ bot.onText(/cambia admin/i, function (message) {
 							iKeysChild.push(["Torna al team"]);
 
 							var kbChild = {
-								parse_mode: "Markdown",
+								parse_mode: "HTML",
 								reply_markup: {
 									resize_keyboard: true,
 									keyboard: iKeysChild
