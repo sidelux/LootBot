@@ -1032,7 +1032,7 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 										if (err) throw err;
 
 										var minValue = 100;
-										var bonusText = "+7 PA alla sconfitta dei mob/boss";
+										var bonusText = "+1 Pietra del Drago al completamento della Cava";
 
 										var text = "";
 
@@ -1086,6 +1086,8 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 									});
 
 									bot.sendMessage(message.chat.id, "Fatto!", back);
+									
+									getGlobalPDF(message);
 								});
 							}
 						}
@@ -1130,6 +1132,8 @@ bot.onText(/^\/failglobal/, function (message, match) {
 								connection.query('UPDATE config SET global_eventon = 0, global_eventwait = 1', function (err, rows, fields) {
 									if (err) throw err;
 									bot.sendMessage(message.chat.id, "Fatto!");
+									
+									getGlobalPDF(message);
 								});
 							});
 						}
@@ -28981,6 +28985,10 @@ bot.onText(/^\/getSnowPDF/i, function (message) {
 	getSnowPDF(message);
 });
 
+bot.onText(/^\/getGlobalPDF/i, function (message) {
+	getGlobalPDF(message);
+});
+
 bot.onText(/^\/endVillaggio/i, function (message) {
 	connection.query('SELECT player.id, nickname, chat_id, COUNT(L.id) As cnt FROM event_snowball_list L, player WHERE player.id = L.player_id GROUP BY L.player_id ORDER BY cnt DESC', function (err, rows, fields) {
 		if (err) throw err;
@@ -40951,6 +40959,9 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 														bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è migliore di quella del guardiano (" + combi + ")!\nIn una stanzetta all'interno del rifugio hai trovato un sacchettino contenente " + moneytxt + expText + extra, kbBack);
 
 														bot.sendMessage(toChat, message.from.username + " è riuscito a sconfiggere il guardiano del tuo rifugio, purtroppo avendo lasciato incustodito un sacchettino, hai perso " + moneytxt + extra2, html);
+														
+														if (isMatch == 1)
+															globalAchievement(player_id, 1);
 													});
 
 													if (travel <= 2)
@@ -41009,6 +41020,9 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 										bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è peggiore di quella del guardiano (" + combi + ")! Il portone del rifugio si blocca ed il tuo gnomo è costretto a tornare indietro" + expText, kbBack);
 
 										bot.sendMessage(toChat, "Lo gnomo di <b>" + message.from.username + "</b> non è riuscito a sconfiggere il guardiano del tuo portone, così è stato respinto", html);
+										
+										if (isMatch == 1)
+											globalAchievement(toId, 1);
 									});
 
 									var d = new Date();
@@ -43221,8 +43235,46 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 
 // FUNZIONI
 
+function getGlobalPDF(message) {
+	connection.query('SELECT P.nickname As Nome_Utente, A.value As Punti FROM achievement_global A, player P WHERE A.player_id = P.id AND P.id != 1 ORDER BY Punti DESC', function (err, rows, fields) {
+		if (err) throw err;
+		
+		var doc = new PDFDocument ({
+			margin: 25
+		})
+		var fileName = "Globale.pdf";
+		var writeStream = fs.createWriteStream(fileName);
+		doc.pipe(writeStream);
+		var c = 1;
+		var tableRows = [];
+		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+			tableRows.push([c + "°", rows[i].Nome_Utente, formatNumber(rows[i].Punti)])
+			c++;
+		}
+		
+		var table = {
+			headers: ['Posizione', 'Nome Utente', 'Punti'],
+			rows: tableRows
+		};
+		
+		doc.table(table, {
+			prepareHeader: () => doc.font('Helvetica-Bold'),
+			prepareRow: (row, i) => doc.font('Helvetica').fontSize(12)
+		});
+		
+		doc.end();
+		writeStream.on('finish', function () {
+			bot.sendDocument(message.chat.id, fileName, back).then(function (data) {
+				fs.unlink(fileName, function (err) {
+					if (err) throw err;
+				});
+			});
+		});
+	});
+}
+
 function getSnowPDF(message) {
-	connection.query('SELECT P.nickname As Nome_Utente, S.snowball As Palle_di_Neve, COUNT(L.id) As Pupazzi FROM event_snowball_status S, event_snowball_list L, player P WHERE S.player_id = L.player_id AND L.player_id = P.id GROUP BY L.player_id ORDER BY Pupazzi DESC', function (err, rows, fields) {
+	connection.query('SELECT P.nickname As Nome_Utente, S.snowball As Palle_di_Neve, COUNT(L.id) As Pupazzi FROM event_snowball_status S, event_snowball_list L, player P WHERE S.player_id = L.player_id AND L.player_id = P.id AND P.id != 1 GROUP BY L.player_id ORDER BY Pupazzi DESC', function (err, rows, fields) {
 		if (err) throw err;
 		
 		var doc = new PDFDocument ({
@@ -43260,7 +43312,7 @@ function getSnowPDF(message) {
 }
 
 function getTopPDF(message) {
-	connection.query('SELECT nickname As Nome_Utente, CONCAT(name, " ", type) As Drago, top_id As Vetta, dragon_top_rank.rank As Punti FROM dragon_top_rank, dragon, player WHERE dragon_top_rank.dragon_id = dragon.id AND player.id = dragon_top_rank.player_id ORDER BY dragon_top_rank.top_id DESC, dragon_top_rank.rank DESC', function (err, rows, fields) {
+	connection.query('SELECT nickname As Nome_Utente, CONCAT(name, " ", type) As Drago, top_id As Vetta, dragon_top_rank.rank As Punti FROM dragon_top_rank, dragon, player WHERE dragon_top_rank.dragon_id = dragon.id AND player.id = dragon_top_rank.player_id AND P.id != 1 ORDER BY dragon_top_rank.top_id DESC, dragon_top_rank.rank DESC', function (err, rows, fields) {
 		if (err) throw err;
 		
 		var doc = new PDFDocument ({
@@ -49035,10 +49087,12 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								chest5 = Math.round(chest5);
 								chest6 = Math.round(chest6);
 
+								/*
 								if (rows[i].global_end == 1) {
 									paUpd += 7;
 									paView += 7;
 								}
+								*/
 
 								if (is_boss == 1) {
 									randProb = Math.random()*100;
@@ -55911,9 +55965,6 @@ function setFinishedMission(element, index, array) {
 								*/
 
 								exp = Math.round(exp);
-								
-								if (mission_gem == 0)
-									globalAchievement(element.id, 1);
 
 								bot.sendMessage(chat_id, "Missione completata! Hai ottenuto:\n" + crazyText + "*" + rows[0].name + "* (" + rows[0].rarity_shortname + ")" + evolved_text + ", *" + formatNumber(money) + "* § e *" + exp + "* exp " + extra + "!" + rarity_miss, mark);
 
@@ -56358,6 +56409,9 @@ function setFinishedHeist(element, index, array) {
 										heist_description = "\nLeggi malinconicamente un cartello affisso su un albero con su scritto: <i>" + rows[0].heist_description + "</i>";
 									bot.sendMessage(fromChat, "Il tuo gnomo non è riuscito a raggiungere il rifugio nemico, dannazione!", kb2);
 									bot.sendMessage(rows[0].chat_id, "Lo gnomo di <b>" + fromNick + "</b> è stato respinto dal tuo guardiano del cancello!", html);
+									
+									if (isMatch == 1)
+										globalAchievement(toId, 1);
 								});
 
 								var d = new Date();
@@ -56472,10 +56526,8 @@ function setFinishedCave(element, index, array) {
 
 		var caveid = parseInt(element.cave_id) + 2;
 
-		/*
 		if (global_end == 1)
-			caveid = Math.round(caveid/2);
-		*/
+			caveid++;
 
 		if (charm_id == 603)
 			caveid += 2;
