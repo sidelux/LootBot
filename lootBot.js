@@ -6074,7 +6074,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 												bot.sendMessage(message.chat.id, text, kbBack);
 											});
 										} else if (answer.text.toLowerCase().indexOf("stagione") != -1) {
-											var text = "Classifica per uccisioni:\n";
+											var text = "<b>Classifica per uccisioni nella stagione attuale:</b>\n";
 											var query = "SELECT P.id, P.nickname, M.global_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND global_kills > 0 ORDER BY M.global_kills DESC";
 											connection.query('SELECT top_min FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
@@ -14775,7 +14775,7 @@ bot.onText(/Ritorna/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Torna ai viaggi"], ["Torna al menu"]]
+				keyboard: [["Torna alle esplorazioni"], ["Torna al menu"]]
 			}
 		};
 
@@ -43103,7 +43103,7 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 											parse_mode: "Markdown",
 											reply_markup: {
 												resize_keyboard: true,
-												keyboard: [["Si"],["Torna ai viaggi"],["Torna al menu"]]
+												keyboard: [["Si"],["Torna alle esplorazioni"],["Torna al menu"]]
 											}
 										};
 
@@ -54627,10 +54627,12 @@ function setFinishedLobbyEnd(element, index, array) {
 							kill_text = rows[i].kills + " uccisioni, ";
 						
 						trophies_count = ((lobby_total_space-pos+1)+parseInt(rows[i].kills))*multiplier;
+						/*
 						if (pos > Math.ceil(lobby_total_space/2)) {
 							trophies_count = (-negpos)+parseInt(rows[i].kills);
 							negpos++;
 						}
+						*/
 						if (rows[i].map_count >= lobby_daily_limit)
 							trophies_count = 0;
 						
@@ -56526,8 +56528,11 @@ function setFinishedCave(element, index, array) {
 
 		var caveid = parseInt(element.cave_id) + 2;
 
-		if (global_end == 1)
-			caveid++;
+		var extra = "";
+		if (global_end == 1) {
+			caveid += 1;
+			extra = " (aumentate grazie al bonus globale!)";
+		}
 
 		if (charm_id == 603)
 			caveid += 2;
@@ -56685,7 +56690,7 @@ function setFinishedCave(element, index, array) {
 						if (stone6e > 0)
 							msg += " (di cui " + stone6e + " evolute)";
 					}
-					msg += "\n\n" + caveid + " pietre per un totale di " + totPnt + " punti";
+					msg += "\n\n" + caveid + " pietre per un totale di " + totPnt + " punti" + extra;
 
 					bot.sendMessage(chat_id, "Hai completato l'esplorazione della cava e hai ottenuto:" + msg + boost_text);
 					setAchievement(element.id, 54, (stone1e+stone2e+stone3e+stone4e+stone5e+stone6e));
