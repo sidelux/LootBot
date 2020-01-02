@@ -991,11 +991,51 @@ bot.onText(/^\/updateSpecial/, function (message, match) {
 	}
 });
 
-bot.onText(/^\/stopglobal$/, function (message, match) {
+bot.onText(/^\/setglobal (.+)|^\/setglobal/, function (message, match) {
 	if (message.from.id == 20471035) {
-		connection.query('UPDATE config SET global_eventon = 0', function (err, rows, fields) {
+		if (match[1] == undefined) {
+			bot.sendMessage(message.chat.id, "0 = raccolta dati\n1 = rendi visibile descrizione\n2 = rendi visibile cap");
+			return;
+		}
+		if (match[1] == 0) {
+			connection.query('UPDATE config SET global_eventon = 0, global_eventwait = 1, global_eventhide = 1', function (err, rows, fields) {
 			if (err) throw err;
+				bot.sendMessage(message.chat.id, "Ok");
+			});
+		} else if (match[1] == 1) {
+			connection.query('UPDATE config SET global_eventon = 1, global_eventwait = 0, global_eventhide = 1', function (err, rows, fields) {
+			if (err) throw err;
+				bot.sendMessage(message.chat.id, "Ok");
+			});
+		} else if (match[1] == 2) {
+			connection.query('UPDATE config SET global_eventon = 1, global_eventwait = 0, global_eventhide = 0', function (err, rows, fields) {
+			if (err) throw err;
+				bot.sendMessage(message.chat.id, "Ok");
+			});
+		} else
+			bot.sendMessage(message.chat.id, "Valore non valido");
+	}
+});
+
+bot.onText(/^\/globaldesc (.+)|^\/globaldesc/, function (message, match) {
+	if (message.from.id == 20471035) {
+		if (match[1] == undefined) {
+			bot.sendMessage(message.chat.id, "Specifica la descrizione per la globale");
+			return;
+		}
+		connection.query('UPDATE config SET global_desc = "' + match[1] + '"', function (err, rows, fields) {
+		if (err) throw err;
 			bot.sendMessage(message.chat.id, "Ok");
+		});
+	}
+});
+
+bot.onText(/^\/incremglobal/, function (message, match) {
+	if (message.from.id == 20471035) {
+		var next_global_end = moment().startOf('month').add(1, 'months').format('YYYY-MM-DD') + " 12:00:00";
+		connection.query('UPDATE config SET global_date = "' + next_global_end + '"', function (err, rows, fields) {
+		if (err) throw err;
+			bot.sendMessage(message.chat.id, "Ok - " + next_global_end);
 		});
 	}
 });
@@ -1328,7 +1368,10 @@ bot.onText(/^\/comandi/, function (message, match) {
 					   	"/mapstop (manutenzione mappe)\n" +
 						"/conditions num (condizioni mappe)\n" +
 					   	"/checkevents (stato eventi)\n" +
-					   	"/reloadevents (ricarica eventi)\n");
+					   	"/reloadevents (ricarica eventi)\n" +
+					    "/setglobal (imposta stato globale)\n" +
+					   	"/globaldesc (imposta descrizione globale)\n" +
+					    "/incremglobal (sposta fine globale di un mese)\n");
 	} else
 		bot.sendMessage(message.chat.id, "Piacerebbe :D");
 });
@@ -6078,6 +6121,14 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 											var query = "SELECT P.id, P.nickname, M.global_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND global_kills > 0 ORDER BY M.global_kills DESC";
 											connection.query('SELECT top_min FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
+												
+												var kbLast = {
+													parse_mode: "HTML",
+													reply_markup: {
+														resize_keyboard: true,
+														keyboard: [["Classifica ultima stagione"], ["Torna alla mappa"], ["Torna al menu"]]
+													}
+												};
 
 												if (rows[0].top_min == 1) {
 													connection.query(query, function (err, rows, fields) {
@@ -6110,7 +6161,12 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 														}
 														text = text + "\nTu:\n" + myinfo;
 
-														bot.sendMessage(message.chat.id, text, kbBack);
+														bot.sendMessage(message.chat.id, text, kbLast).then(function () {
+															answerCallbacks[message.chat.id] = function (answer) {
+																if (answer.text == "Classifica ultima stagione")
+																	getMapPDF(message);
+															}
+														});
 													});
 												} else {
 													connection.query(query, function (err, rows, fields) {
@@ -6145,7 +6201,12 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 															}
 														}
 
-														bot.sendMessage(message.chat.id, text, kbBack);
+														bot.sendMessage(message.chat.id, text, kbLast).then(function () {
+															answerCallbacks[message.chat.id] = function (answer) {
+																if (answer.text == "Classifica ultima stagione")
+																	getMapPDF(message);
+															}
+														});
 													});
 												}
 											});
@@ -6213,6 +6274,14 @@ bot.onText(/esci dalla lobby/i, function (message) {
 				keyboard: [["Torna alla mappa"], ["Torna al menu"]]
 			}
 		};
+		
+		var kbYesNo = {
+			parse_mode: "HTML",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Si"], ["Torna alla mappa"], ["Torna al menu"]]
+			}
+		};
 
 		connection.query('SELECT lobby_id FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -6228,28 +6297,34 @@ bot.onText(/esci dalla lobby/i, function (message) {
 				bot.sendMessage(message.chat.id, "Accedi ad una lobby prima di poterne uscire", kbBack);
 				return;
 			}
-
-			connection.query('SELECT 1 FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
-				if (err) throw err;
-				if (Object.keys(rows).length == 0) {
-					var d = new Date();
-					d.setMinutes(d.getMinutes() + 15);
-					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-					connection.query('UPDATE map_lobby SET lobby_id = NULL, lobby_wait_end = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
-						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Sei uscito dalla lobby!\nDovrai attendere un po' di tempo prima di accedere ad una nuova lobby", kbBack);
-
-						/*
-						connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
+			
+			bot.sendMessage(message.chat.id, "Sei sicuro di voler uscire dalla lobby? Dovrai attendere un po' di tempo per rientrare", kbYesNo).then(function () {
+				answerCallbacks[message.chat.id] = function (answer) {
+					if (answer.text.toLowerCase() == "si") {
+						connection.query('SELECT 1 FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 							if (err) throw err;
+							if (Object.keys(rows).length == 0) {
+								var d = new Date();
+								d.setMinutes(d.getMinutes() + 15);
+								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+								connection.query('UPDATE map_lobby SET lobby_id = NULL, lobby_wait_end = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+									if (err) throw err;
+									bot.sendMessage(message.chat.id, "Sei uscito dalla lobby!\nDovrai attendere un po' di tempo prima di accedere ad una nuova lobby", kbBack);
 
-							for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-								bot.sendMessage(rows[i].chat_id, "Un giocatore è uscito dalla lobby!");
+									/*
+									connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
+										if (err) throw err;
+
+										for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+											bot.sendMessage(rows[i].chat_id, "Un giocatore è uscito dalla lobby!");
+									});
+									*/
+								});
+							} else {
+								bot.sendMessage(message.chat.id, "Non puoi uscire dalla lobby finchè sei in partita!", kbBack);
+							}
 						});
-						*/
-					});
-				} else {
-					bot.sendMessage(message.chat.id, "Non puoi uscire dalla lobby finchè sei in partita!", kbBack);
+					}
 				}
 			});
 		});
@@ -6364,7 +6439,7 @@ bot.onText(/attacca!/i, function (message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					keyboard: [["🗡 Attacco"], ["⚔️ Attacco caricato"], ["🛡 Difendi"], ["Torna al menu"]]
+					keyboard: [["🗡 Attacco"], ["⚔️ Attacco caricato"], ["🛡 Difendi"], ["🏳 Scappa"], ["Torna al menu"]]
 				}
 			};
 
@@ -6393,6 +6468,14 @@ bot.onText(/attacca!/i, function (message) {
 				reply_markup: {
 					resize_keyboard: true,
 					keyboard: [["Torna alla mappa"], ["Torna al menu"]]
+				}
+			};
+			
+			var kbEscape = {
+				parse_mode: "HTML",
+				reply_markup: {
+					resize_keyboard: true,
+					keyboard: [["Si"], ["Torna alla mappa"], ["Torna al menu"]]
 				}
 			};
 
@@ -6520,11 +6603,13 @@ bot.onText(/attacca!/i, function (message) {
 								var text = "";
 								var enemy_text = "";
 								var dmg = 0;	// si riempie solo ad attacco andato a segno
+								var my_dmg = 0;	// si riempie solo ad attacco andato a segno
 								
 								var set_battle_shield = -1;
 								var set_enemy_battle_shield = -1;
 								var set_battle_stunned = -1;
 								var set_enemy_battle_stunned = -1;
+								var leaveMatch = 0;
 
 								if (battle_shield == 1)
 									set_battle_shield = 0;
@@ -6619,6 +6704,37 @@ bot.onText(/attacca!/i, function (message) {
 									text += "Ti metti in posizione difensiva in attesa dell'avversario!";
 									enemy_text += "L'avversario si mette in posizione difensiva con lo scudo pronto!";
 									set_battle_shield = 1;
+								} else if (answer.text.toLowerCase().indexOf("scappa") != -1) {
+									if (battle_shield == 2) {
+										bot.sendMessage(message.chat.id, "Non puoi scappare in queste condizioni!", kbFight);
+										return;
+									} else if (battle_stunned == 1) {
+										bot.sendMessage(message.chat.id, "Non puoi scappare in queste condizioni!", kbFight);
+										return;
+									}
+									
+									var randProd = Math.random()*100;
+									if (randProd >= 50) {
+										var randDamage = Math.random()*100;
+										var extra = "";
+										var enemy_extra = "";
+										if (randDamage >= 50) {
+											my_dmg = Math.round(getRandomArbitrary(1000, 2500));
+											extra = " Ma durante la fuga l'avversario ti colpisce alle spalle e perdi " + formatNumber(my_dmg) + " hp!";
+											enemy_extra = " Ma durante la fuga riesci a colpirlo alle spalle e perde " + formatNumber(my_dmg) + " hp!";
+										}
+
+										text += "Decidi di scappare dallo scontro!" + extra;
+										enemy_text += "L'avversario scappa dallo scontro!" + enemy_extra;
+										leaveMatch = 1;
+									} else {
+										var extra = "";
+										var enemy_extra = "";
+										my_dmg = Math.round(getRandomArbitrary(1000, 2500));
+
+										text += "Tenti di scappare dallo scontro senza successo! Ma durante il tentativo l'avversario ti colpisce alle spalle e perdi <b>" + formatNumber(my_dmg) + "</b> hp!";
+										enemy_text += "L'avversario tenta di scappare dallo scontro senza successo! Ma durante il tentativo riesci a colpirlo alle spalle e perde <b>" + formatNumber(my_dmg) + "</b> hp!";
+									}
 								} else
 									return;
 
@@ -6694,6 +6810,17 @@ bot.onText(/attacca!/i, function (message) {
 								} else
 									enemy_query += ", life = life-" + dmg;
 								
+								if (life - my_dmg <= 0) {
+									text += "\nVenendo sconfitto definitivamente con un colpo mortale!";
+									enemy_text += "\nSconfiggendolo definitivamente con un colpo mortale!";
+									mapPlayerKilled(lobby_id, player_id, 2, null, 1);
+									
+									connection.query('UPDATE map_lobby SET match_kills = match_kills+1, global_kills = global_kills+1 WHERE player_id = ' + enemy_id, function (err, rows, fields) {
+										if (err) throw err;
+									});
+								} else
+									query += ", life = life-" + my_dmg;
+								
 								if (set_battle_shield != -1)
 									query += ", battle_shield = " + set_battle_shield;
 								if (set_enemy_battle_shield != -1)
@@ -6703,6 +6830,9 @@ bot.onText(/attacca!/i, function (message) {
 									query += ", battle_stunned = " + set_battle_stunned;
 								if (set_enemy_battle_stunned != -1)
 									enemy_query += ", battle_stunned = " + set_enemy_battle_stunned;
+
+								bot.sendMessage(message.chat.id, text, kbFightWait);
+								bot.sendMessage(enemy_chat_id, enemy_text, kbFightEnemy);
 								
 								// calcola tempo trascorso in secondi
 								var d = new Date(battle_turn_start);
@@ -6719,9 +6849,15 @@ bot.onText(/attacca!/i, function (message) {
 								connection.query('UPDATE map_lobby SET ' + enemy_query + ' WHERE player_id = ' + enemy_id, function (err, rows, fields) {
 									if (err) throw err;
 								});
-
-								bot.sendMessage(message.chat.id, text, kbFightWait);
-								bot.sendMessage(enemy_chat_id, enemy_text, kbFightEnemy);
+								
+								if (leaveMatch == 1) {
+									connection.query('UPDATE map_lobby SET my_turn = 0, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_turn_start = NULL, battle_time_elapsed = 0, battle_turn_lost = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+									});
+									connection.query('UPDATE map_lobby SET my_turn = 0, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_turn_start = NULL, battle_time_elapsed = 0, battle_turn_lost = 0 WHERE player_id = ' + enemy_id, function (err, rows, fields) {
+										if (err) throw err;
+									});
+								}
 							});
 						}
 					});
@@ -6925,7 +7061,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												bot.sendMessage(message.chat.id, "Non hai abbastanza monete nella sacca!", kbBack);
 												return;
 											}
-											connection.query('UPDATE map_lobby SET life = total_life, money = money-' + price + ', last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+											connection.query('UPDATE map_lobby SET life = life+(life*' + Math.round(perc/100) + '), money = money-' + price + ', last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 												bot.sendMessage(message.chat.id, "Hai recuperato tutta la salute!", kbBack);
 											});
@@ -12931,9 +13067,12 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 		var boost_id = rows[0].boost_id;
 		var boost_mission = rows[0].boost_mission;
 
-		critical += power_weapon;
-		critical_armor += power_armor;
-		critical_shield += power_shield;
+		if (rows[0].weapon_id != null)
+			critical += power_weapon;
+		if (rows[0].weapon2_id != null)
+			critical_armor += power_armor;
+		if (rows[0].weapon3_id != null)
+			critical_shield += power_shield;
 
 		if ((boost_mission == 0) && (boost_id != 0)) {
 			connection.query('UPDATE player SET boost_id = 0 WHERE id = ' + player_id, function (err, rows, fields) {
@@ -13023,8 +13162,10 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 			rows[0].weapon += rows[0].weapon * 0.40;
 
 		var danno = Math.round(Math.random() * (rows[0].exp / 15 + rows[0].weapon) + rows[0].weapon);
-		danno += rows[0].weapon_enchant;
-		danno += power_dmg;
+		if (rows[0].weapon_id != null) {
+			danno += rows[0].weapon_enchant;
+			danno += power_dmg;
+		}
 
 		var charm_id = rows[0].charm_id;
 		var player_exp = rows[0].exp;
@@ -13052,10 +13193,15 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 		var bonus = 0;
 		if (rows[0].weapon2 < 0) {
-			var bonus = Math.abs(rows[0].weapon2) + Math.abs(rows[0].weapon3) + rows[0].weapon3_enchant + rows[0].weapon2_enchant;
+			var bonus = Math.abs(rows[0].weapon2) + Math.abs(rows[0].weapon3);
+			if (rows[0].weapon2_id != null)
+				bonus += rows[0].weapon2_enchant;
+			if (rows[0].weapon3_id != null)
+				bonus += rows[0].weapon3_enchant;
 			bonus += Math.round(Math.random() * ((rows[0].exp / 10 + bonus) / 2));
 		}
-		bonus += power_def;
+		if ((rows[0].weapon2_id != null) || (rows[0].weapon3_id != null))
+			bonus += power_def;
 		danno = parseInt(danno);
 		bonus = parseInt(bonus);
 
@@ -43235,6 +43381,44 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 
 // FUNZIONI
 
+function getMapPDF(message) {
+	connection.query('SELECT nickname As Nome_Utente, last_season_trophies As Trofei FROM player P WHERE id != 1 AND last_season_trophies > 0 ORDER BY Trofei DESC', function (err, rows, fields) {
+		if (err) throw err;
+		
+		var doc = new PDFDocument ({
+			margin: 25
+		})
+		var fileName = "Mappe.pdf";
+		var writeStream = fs.createWriteStream(fileName);
+		doc.pipe(writeStream);
+		var c = 1;
+		var tableRows = [];
+		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+			tableRows.push([c + "°", rows[i].Nome_Utente, formatNumber(rows[i].Punti)])
+			c++;
+		}
+		
+		var table = {
+			headers: ['Posizione', 'Nome Utente', 'Trofei Scorsa Stagione'],
+			rows: tableRows
+		};
+		
+		doc.table(table, {
+			prepareHeader: () => doc.font('Helvetica-Bold'),
+			prepareRow: (row, i) => doc.font('Helvetica').fontSize(12)
+		});
+		
+		doc.end();
+		writeStream.on('finish', function () {
+			bot.sendDocument(message.chat.id, fileName, back).then(function (data) {
+				fs.unlink(fileName, function (err) {
+					if (err) throw err;
+				});
+			});
+		});
+	});
+}
+
 function getGlobalPDF(message) {
 	connection.query('SELECT P.nickname As Nome_Utente, A.value As Punti FROM achievement_global A, player P WHERE A.player_id = P.id AND P.id != 1 ORDER BY Punti DESC', function (err, rows, fields) {
 		if (err) throw err;
@@ -49437,7 +49621,9 @@ function getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class
 	else if ((class_id == 8) && (reborn == 6))
 		weapon += weapon * 0.40;
 	
-	var danno = Math.round((exp/30) + (Math.random() * (exp / 30)) + (weapon * 2)) + weapon_enchant + power_dmg;
+	var danno = Math.round((exp/30) + (Math.random() * (exp / 30)) + (weapon * 2));
+	if (weapon > 0)
+		danno += weapon_enchant + power_dmg;
 
 	if (charm_id == 62)
 		danno += 10;
@@ -49460,8 +49646,14 @@ function getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, wea
 	var defence = 0;
 	if (weapon2 < 0) {
 		var defence = Math.abs(weapon2) + Math.abs(weapon3) + weapon2_enchant + weapon3_enchant;
+		if (weapon2 > 0)
+			defence += weapon2_enchant;
+		if (weapon3 > 0)
+			defence += weapon3_enchant;
 		defence += Math.round(Math.random() * ((exp / 10) / 2)) + defence;
 	}
+	if ((weapon2 > 0) || (weapon3 > 0))
+		defence += power_def;
 	defence = parseInt(defence+power_def);
 
 	return defence;
@@ -49472,9 +49664,12 @@ function getPlayerCritics(player_id, weapon_crit, weapon2_crit, weapon3_crit, ch
 	var critical_armor = parseInt(weapon2_crit);
 	var critical_shield = parseInt(weapon3_crit);
 
-	critical += power_weapon;
-	critical_armor += power_armor;
-	critical_shield += power_shield;
+	if (weapon_crit > 0)
+		critical += power_weapon;
+	if (weapon2_crit > 0)
+		critical_armor += power_armor;
+	if (weapon3_crit > 0)
+		critical_shield += power_shield;
 
 	if (charm_id == 404)
 		critical += 6;
@@ -54711,6 +54906,9 @@ function checkMapSeasonEnd() {
 				connection.query('UPDATE config SET map_season_end = DATE_ADD(map_season_end, INTERVAL 30 DAY)', function (err, rows, fields) {
 					if (err) throw err;
 				});
+				connection.query('UPDATE player SET last_season_trophies = 0', function (err, rows, fields) {
+					if (err) throw err;
+				});
 			}
 			connection.query('SELECT id, chat_id, trophies FROM player WHERE trophies > 0', function (err, rows, fields) {
 				if (err) throw err;
@@ -54766,7 +54964,7 @@ function setSeasonEnd(element, index, array) {
 		if (chestU > 0)
 			addChest(player_id, 7, chestU);
 
-		connection.query('UPDATE player SET trophies = 0, total_trophies = total_trophies+' + trophies + ', moon_coin = moon_coin+' + moon + ' WHERE id = ' + player_id, function (err, rows, fields) {
+		connection.query('UPDATE player SET trophies = 0, total_trophies = total_trophies+' + trophies + ', moon_coin = moon_coin+' + moon + ', last_season_trophies = ' + trophies + ' WHERE id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
 
@@ -54870,7 +55068,7 @@ function checkTopSeasonEnd() {
 						console.log("Modalità test attiva, nessun messaggio nè aggiornamento");
 
 					// terzo mercoledì di ogni mese
-					var next_season_end = moment().startOf('month').add(1, 'months').weekday('3').add(2, 'weeks').format('YYYY-MM-D') + " 12:00:00";
+					var next_season_end = moment().startOf('month').add(1, 'months').weekday('3').add(2, 'weeks').format('YYYY-MM-DD') + " 12:00:00";
 					if (test == 0) {
 						connection.query('UPDATE config SET top_season_end = "' + next_season_end + '"', function (err, rows, fields) {
 							if (err) throw err;

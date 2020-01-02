@@ -2610,7 +2610,7 @@ CREATE TABLE `mission_team_report` (
   `pnt` int(11) NOT NULL DEFAULT '0',
   `text` varchar(512) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `no_duplicate` (`report_id`,`party_id`,`team_id`,`part_id`),
+  UNIQUE KEY `team_report_no_duplicate` (`report_id`,`party_id`,`team_id`,`part_id`) USING BTREE,
   KEY `report_id` (`report_id`),
   KEY `team_id` (`team_id`),
   CONSTRAINT `Report_Team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
@@ -2914,6 +2914,7 @@ CREATE TABLE `player` (
   `top_rank_count` int(11) NOT NULL DEFAULT '0',
   `trophies` int(11) NOT NULL DEFAULT '0',
   `total_trophies` int(11) NOT NULL DEFAULT '0',
+  `last_season_trophies` int(11) NOT NULL DEFAULT '0',
   `map_count` int(11) NOT NULL DEFAULT '0',
   `coupon_count` int(11) NOT NULL DEFAULT '0',
   `coupon_record` int(11) NOT NULL DEFAULT '0',
