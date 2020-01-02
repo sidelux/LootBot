@@ -5461,7 +5461,6 @@ bot.onText(/vedi la carta/i, function (message) {
 });
 
 bot.onText(/$vocazioni|vocazione|torna alle vocazioni/i, function (message) {
-
 	if (message.text.toLowerCase() == "cambia vocazione")
 		return;
 
@@ -14739,7 +14738,6 @@ bot.onText(/rinasci/i, function (message) {
 											});
 										}
 									});
-
 								} else if (reborn == 2) {
 									var money = 500000;
 									var reborn_val = 3;
@@ -14847,9 +14845,29 @@ bot.onText(/rinasci/i, function (message) {
 									addChest(player_id, 5, chest5);
 									addChest(player_id, 6, chest6);
 									addChest(player_id, 7, chest7);
+									
+									var unlock = "";
+									if (reborn == 1) {
+										unlock = 	"Hai sbloccato le seguenti funzioni:\n" +
+													"> Vocazioni\n" +
+													"> Vette dei Draghi\n" +
+													"> Bevande del Drago\n" +
+													"> Ruota della Luna";
+									} else if (reborn == 2) {
+										unlock = 	"Hai sbloccato le seguenti funzioni:\n" +
+													"> Reset rango dungeon";
+									} else if (reborn == 3) {
+										unlock = 	"Hai sbloccato le seguenti funzioni:\n" +
+													"> Scaglia Evolutiva\n" +
+													"> Artefatti";
+									} else if (reborn == 4) {
+										unlock = 	"Hai sbloccato le seguenti funzioni:\n" +
+													"> Necro del Destino\n" +
+													"> Cambio Vocazione";
+									}
 
 									bot.sendMessage(message.chat.id, "Complimenti, " + message.from.username + "!\n" +
-													"Hai completato la rinascita " + reborn + " e hai ottenuto:\n" +
+													"Hai completato la rinascita <b>" + reborn + "</b> e hai ottenuto:\n" +
 													chest1 + " Scrigni di Legno\n" +
 													chest2 + " Scrigni di Ferro\n" +
 													chest3 + " Scrigni Preziosi\n" +
@@ -14858,6 +14876,7 @@ bot.onText(/rinasci/i, function (message) {
 													chest6 + " Scrigni Epici\n" +
 													chest7 + " Scrigni Capsula\n" +
 													"Oltre a " + money + " §\n" +
+													unlock +
 													"Ed ora continua la tua incredibile avventura! Buon game!", back_html);
 									console.log("Rinascita " + reborn + " per " + message.from.username + " completata");
 									calcLife(message);
@@ -18018,7 +18037,6 @@ bot.onText(/^\/pagateam (.+)|^\/pagateam/i, function (message, match) {
 });
 
 bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
-
 	if (message.text.toLowerCase().indexOf("vetta delle anime") != -1)
 		return;
 
@@ -38902,7 +38920,6 @@ bot.onText(/evento della luna/i, function (message) {
 });
 
 bot.onText(/ruota della luna|ruota/i, function (message) {
-
 	var kb = {
 		parse_mode: "Markdown",
 		reply_markup: {
