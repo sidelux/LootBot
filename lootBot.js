@@ -5920,7 +5920,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Accedi alla Lobby 🏹"], ["Guida 💬", "Vittorie 🎉", "Stagione 🏆"], ["Torna al menu"]]
+				keyboard: [["Accedi alla Lobby 🏹"], ["Guida 💬", "Vittorie 🎉", "Stagione 💀"], ["Torna al menu"]]
 			}
 		};
 
@@ -7060,9 +7060,9 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												bot.sendMessage(message.chat.id, "Non hai abbastanza monete nella sacca!", kbBack);
 												return;
 											}
-											connection.query('UPDATE map_lobby SET life = life+(life*' + Math.round(perc/100) + '), money = money-' + price + ', last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+											connection.query('UPDATE map_lobby SET life = life+ROUND(life*' + (perc/100) + '), money = money-' + price + ', last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
-												bot.sendMessage(message.chat.id, "Hai recuperato tutta la salute!", kbBack);
+												bot.sendMessage(message.chat.id, "Hai recuperato il " + perc +"% della salute!", kbBack);
 											});
 										} else {
 											connection.query('UPDATE map_lobby SET last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -43513,7 +43513,7 @@ function getSnowPDF(message) {
 }
 
 function getTopPDF(message) {
-	connection.query('SELECT nickname As Nome_Utente, CONCAT(name, " ", type) As Drago, top_id As Vetta, dragon_top_rank.rank As Punti FROM dragon_top_rank, dragon, player WHERE dragon_top_rank.dragon_id = dragon.id AND player.id = dragon_top_rank.player_id AND P.id != 1 ORDER BY dragon_top_rank.top_id DESC, dragon_top_rank.rank DESC', function (err, rows, fields) {
+	connection.query('SELECT nickname As Nome_Utente, CONCAT(name, " ", type) As Drago, top_id As Vetta, dragon_top_rank.rank As Punti FROM dragon_top_rank, dragon, player P WHERE dragon_top_rank.dragon_id = dragon.id AND P.id = dragon_top_rank.player_id AND P.id != 1 ORDER BY dragon_top_rank.top_id DESC, dragon_top_rank.rank DESC', function (err, rows, fields) {
 		if (err) throw err;
 		
 		var doc = new PDFDocument ({
@@ -50423,7 +50423,7 @@ function generateMap(width, height, players, conditions) {
 	}
 
 	var totalRate = chestRate+chestEpicRate+trapRate+pulseRate+scrapRate+teleportRate+paralyzeRate;
-	console.log("Generazione mappa da " + width + "x" + height + " ticks con il " + totalRate + "% di oggetti e " + buildQnt + " costruzioni");
+	console.log("Generazione mappa da " + width + "x" + height + " ticks con il " + totalRate + "% di oggetti e " + buildQnt + " costruzioni con condizioni " + conditions);
 
 	/* LEGENDA
 
