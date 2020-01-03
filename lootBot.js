@@ -6545,7 +6545,7 @@ bot.onText(/attacca!/i, function (message) {
 					var enemy_boost_mission = null;
 					var enemy_boost_id = null;
 
-					bot.sendMessage(message.chat.id, "Stai combattendo contro <b>" + rows[0].nickname + "</b>\n❤️ " + formatNumber(rows[0].life) + " hp\nLa tua salute: " + formatNumber(life) + " hp\n\nCosa vuoi fare?", kbFight).then(function () {
+					bot.sendMessage(message.chat.id, "Stai combattendo contro <b>" + rows[0].nickname + "</b> " + classSym(enemy_class_id) + "\n❤️ " + formatNumber(rows[0].life) + " hp\nLa tua salute: " + formatNumber(life) + " hp\n\nCosa vuoi fare?", kbFight).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							if (answer.text == "Torna al menu")
 								return;
@@ -38382,7 +38382,7 @@ bot.onText(/^scrigni|torna agli scrigni|vai agli scrigni/i, function (message) {
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						keyboard: [["Vai all'emporio", "Torna al menu"]]
+						keyboard: [["Torna allo Zaino"], ["Vai all'emporio", "Torna al menu"]]
 					}
 				};
 
@@ -38396,6 +38396,7 @@ bot.onText(/^scrigni|torna agli scrigni|vai agli scrigni/i, function (message) {
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 				iKeys.push(["Apri " + rows[i].name + " (" + formatNumber(rows[i].num) + ")"]);
 
+			iKeys.push(["Torna allo Zaino"]);
 			iKeys.push(["Vai all'emporio", "Torna al menu"]);
 
 			var kb = {
