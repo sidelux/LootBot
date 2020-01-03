@@ -8382,9 +8382,12 @@ bot.onText(/^\/statistiche/, function (message) {
 													var birthday = "";
 													if (rows[0].birthday > 0){
 														var plur = "e";
-														if (rows[0].birthday > 1)
+														var fplur = "compie";
+														if (rows[0].birthday > 1) {
 															plur = "i";
-														birthday = "Oggi compiono gli anni *" + rows[0].birthday + "* giocator" + plur + "! 🎉\n";
+															fplur = "compiono";
+														}
+														birthday = "Oggi " + fplur + " gli anni *" + rows[0].birthday + "* giocator" + plur + "! 🎉\n";
 													}
 
 													connection.query('SELECT birth_date FROM player WHERE birth_date IS NOT NUlL', function (err, rows, fields) {
