@@ -7030,7 +7030,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										if (answer.text == "Torna al menu")
 											return;
 
-										if (answer.text.toLowerCase().indexOf("si") != -1) {
+										if (answer.text.toLowerCase() == "si") {
 											if (money < price) {
 												bot.sendMessage(message.chat.id, "Non hai abbastanza monete nella sacca!", kbBack);
 												return;
@@ -7039,7 +7039,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												if (err) throw err;
 												bot.sendMessage(message.chat.id, "Hai recuperato tutta la salute!", kbBack);
 											});
-										} else {
+										} else if (answer.text.toLowerCase() == "no") {
 											connection.query('UPDATE map_lobby SET last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 												bot.sendMessage(message.chat.id, "Hai rinunciato a recuperare la salute", kbBack);
@@ -7050,12 +7050,12 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 							} else {
 								var perc = Math.floor(money/100);
 								var price = Math.round(perc*100);
-								bot.sendMessage(message.chat.id, "Puoi recuperare il " + perc + "% di salute al costo di <b>" + formatNumber(price) + "</b> §, procedi?", kbYesNo).then(function () {
+								bot.sendMessage(message.chat.id, "Puoi recuperare il " + perc + "% di salute al costo di <b>" + formatNumber(price) + "</b> §, al momento possiedi " + formatNumber(money) + " §, procedi?", kbYesNo).then(function () {
 									answerCallbacks[message.chat.id] = function (answer) {
 										if (answer.text == "Torna al menu")
 											return;
 
-										if (answer.text.toLowerCase().indexOf("si") != -1) {
+										if (answer.text.toLowerCase() == "si") {
 											if (money < price) {
 												bot.sendMessage(message.chat.id, "Non hai abbastanza monete nella sacca!", kbBack);
 												return;
@@ -7064,7 +7064,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												if (err) throw err;
 												bot.sendMessage(message.chat.id, "Hai recuperato il " + perc +"% della salute!", kbBack);
 											});
-										} else {
+										} else if (answer.text.toLowerCase() == "no") {
 											connection.query('UPDATE map_lobby SET last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 												bot.sendMessage(message.chat.id, "Hai rinunciato a recuperare la salute", kbBack);
