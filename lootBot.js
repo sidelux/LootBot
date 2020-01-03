@@ -5924,16 +5924,6 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 			}
 		};
 
-		/*
-		if (message.from.id != 20471035) {
-			var team = connection_sync.query("SELECT 1 FROM team_player WHERE player_id = " + player_id + " AND team_id IN (3, 277, 225)");
-			if (Object.keys(team).length == 0) {
-				bot.sendMessage(message.chat.id, "Le Mappe saranno disponibile a breve!\nAllenati e preparati a sfidare i migliori combattenti di Lootia!", back)
-				return;
-			}
-		}
-		*/
-
 		connection.query('SELECT map_season_end FROM config', function (err, rows, fields) {
 			if (err) throw err;
 
@@ -44466,7 +44456,7 @@ function mainMenu(message) {
 				}
 			}
 
-			connection.query("SELECT M.lobby_id, M.wait_time, M.enemy_id, M.my_turn, L.next_restrict_time FROM map_lobby M LEFT JOIN map_lobby_list L ON M.lobby_id = L.lobby_id WHERE M.player_id = " + player_id, function (err, rows, fields) {
+			connection.query("SELECT M.lobby_id, M.wait_time, M.enemy_id, M.my_turn, L.next_restrict_time, M.lobby_wait_end FROM map_lobby M LEFT JOIN map_lobby_list L ON M.lobby_id = L.lobby_id WHERE M.player_id = " + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length > 0) {
 					if (rows[0].wait_time != null) {
@@ -44501,6 +44491,16 @@ function mainMenu(message) {
 							var wait = connection_sync.query('SELECT COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id = ' + rows[0].lobby_id);
 							msgtext += "\n🗺 Lobby in attesa... " + wait[0].cnt + "/" + lobby_total_space + " giocatori";
 						}
+					} else if (rows[0].lobby_wait_end != null) {
+						var lobby_wait = new Date(rows[0].lobby_wait_end);
+						var now = new Date();
+						var lobby_wait_min = Math.round(((lobby_wait - now) / 1000) / 60);
+						var lobby_wait_plur = "i";
+						if (lobby_wait_min <= 1)
+							lobby_wait_plur = "o";
+						if (lobby_wait_min < 1)
+							lobby_wait_min = "meno di 1";
+						msgtext += "\n🗺 Attesa rientro lobby " + lobby_wait_min + " minut" + lobby_wait_plur;
 					} else {
 						var d = new Date();
 						var map_daily_diff = lobby_daily_limit-map_count;
@@ -44508,13 +44508,14 @@ function mainMenu(message) {
 							var restrict_text = "";
 							if (rows[0].next_restrict_time != null) {
 								var restrict_time = new Date(rows[0].next_restrict_time);
+								var now = new Date();
 								var restrict_min = Math.round(((restrict_time - now) / 1000) / 60);
 								var restrict_plur = "i";
 								if (restrict_min <= 1)
 									restrict_plur = "o";
 								if (restrict_min < 1)
 									restrict_min = "meno di 1";
-								restrict_text = " (☠️ " + restrict_min + ")";
+								restrict_text = " (☠️ " + restrict_min + " minut" + restrict_plur + ")";
 							}
 							if (checkDragonTopOn == 0)
 								msgtext += "\n🗺 Puoi esplorare le Mappe" + restrict_text;
