@@ -326,7 +326,7 @@ module.exports.setSuggestionStatus = setSuggestionStatus;
 
 function setMsgID(check, sugg_id, msg_id) { //0, -1, 1
 	return new Promise(function (setSuggestionStatus_resolve) {
-		if (check != null || check > 0) {
+		if (check != 0) {
 			setSuggestionStatus_resolve(sugg_id);
 		} else {
 			sugg_pool.query("UPDATE " + tables_names.sugg + " SET MSG_ID = ? WHERE SUGGESTION_ID LIKE ?",
@@ -334,7 +334,7 @@ function setMsgID(check, sugg_id, msg_id) { //0, -1, 1
 							function (error, results) {
 				if (!error) {
 					console.log("> Update del msg_id -> " + !error);
-					console.log(results);
+					console.log("> Id per "+sugg_id+" ->"+msg_id);
 					setSuggestionStatus_resolve(sugg_id);
 				}
 				else {

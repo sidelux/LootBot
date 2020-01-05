@@ -1356,7 +1356,6 @@ bot.onText(/^\/comandi/, function (message, match) {
 						"/dai_gemme nick,qnt\n" +
 						"/dai_moon nick,qnt\n" +
 						"/key (aggiorna tastiere)\n" +
-						"/eventon /eventoff\n" +
 						"/cmd backuplist/backup/reboot\n" +
 						"/accountid nick\n" +
 						"/genmarket (rigenera mercante pazzo)\n" +
@@ -5971,6 +5970,8 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 								if (err) throw err;
 
 								var lobby_players = rows[0].cnt;
+								if (crazyMode == 1)
+									lobby_daily_limit = 7;
 								var map_daily_diff = lobby_daily_limit-map_count;
 								
 								if (map_daily_diff < 0)
@@ -6287,34 +6288,43 @@ bot.onText(/esci dalla lobby/i, function (message) {
 				return;
 			}
 			
-			bot.sendMessage(message.chat.id, "Sei sicuro di voler uscire dalla lobby? Dovrai attendere un po' di tempo per rientrare", kbYesNo).then(function () {
-				answerCallbacks[message.chat.id] = function (answer) {
-					if (answer.text.toLowerCase() == "si") {
-						connection.query('SELECT 1 FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
-							if (err) throw err;
-							if (Object.keys(rows).length == 0) {
-								var d = new Date();
-								d.setMinutes(d.getMinutes() + 15);
-								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-								connection.query('UPDATE map_lobby SET lobby_id = NULL, lobby_wait_end = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
-									if (err) throw err;
-									bot.sendMessage(message.chat.id, "Sei uscito dalla lobby!\nDovrai attendere un po' di tempo prima di accedere ad una nuova lobby", kbBack);
-
-									/*
-									connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
-										if (err) throw err;
-
-										for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-											bot.sendMessage(rows[i].chat_id, "Un giocatore è uscito dalla lobby!");
-									});
-									*/
-								});
-							} else {
-								bot.sendMessage(message.chat.id, "Non puoi uscire dalla lobby finchè sei in partita!", kbBack);
-							}
-						});
-					}
+			connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+				if (err) throw err;
+			
+				if (lobby_total_space == rows[0].cnt) {
+					bot.sendMessage(message.chat.id, "Non puoi abbandonare la lobby se è completa, a breve inizierà la partita", kbBack);
+					return;
 				}
+
+				bot.sendMessage(message.chat.id, "Sei sicuro di voler uscire dalla lobby? Dovrai attendere un po' di tempo per rientrare", kbYesNo).then(function () {
+					answerCallbacks[message.chat.id] = function (answer) {
+						if (answer.text.toLowerCase() == "si") {
+							connection.query('SELECT 1 FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+								if (err) throw err;
+								if (Object.keys(rows).length == 0) {
+									var d = new Date();
+									d.setMinutes(d.getMinutes() + 15);
+									var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+									connection.query('UPDATE map_lobby SET lobby_id = NULL, lobby_wait_end = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+										bot.sendMessage(message.chat.id, "Sei uscito dalla lobby!\nDovrai attendere un po' di tempo prima di accedere ad una nuova lobby", kbBack);
+
+										/*
+										connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
+											if (err) throw err;
+
+											for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+												bot.sendMessage(rows[i].chat_id, "Un giocatore è uscito dalla lobby!");
+										});
+										*/
+									});
+								} else {
+									bot.sendMessage(message.chat.id, "Non puoi uscire dalla lobby finchè sei in partita!", kbBack);
+								}
+							});
+						}
+					}
+				});
 			});
 		});
 	});
@@ -7053,7 +7063,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												bot.sendMessage(message.chat.id, "Non hai abbastanza monete nella sacca!", kbBack);
 												return;
 											}
-											connection.query('UPDATE map_lobby SET life = life+ROUND(life*' + (perc/100) + '), money = money-' + price + ', last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+											connection.query('UPDATE map_lobby SET life = life+ROUND(total_life*' + (perc/100) + '), money = money-' + price + ', last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 												bot.sendMessage(message.chat.id, "Hai recuperato il " + perc +"% della salute!", kbBack);
 											});
@@ -16304,7 +16314,7 @@ bot.onText(/^bevande|torna alle bevande/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					keyboard: [["Inizia Produzione"], ["Torna al menu"]]
+					keyboard: [["Inizia Produzione"], ["Torna al drago"], ["Torna al menu"]]
 				}
 			};
 
@@ -34582,7 +34592,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 		var mypnt = 0;
 		var mypos = 0;
 
-		connection.query('SELECT id, nickname, craft_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+		connection.query('SELECT id, nickname, craft_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_count, exp, weapon ORDER BY points DESC, nickname', function (err, rows, fields) {
 			if (err) throw err;
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 				if (rows[i].id == player_id) {
@@ -34596,7 +34606,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 			mypnt = 0;
 			mypos = 0;
 
-			connection.query('SELECT id, nickname, craft_week As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_week, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+			connection.query('SELECT id, nickname, craft_week As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_week, exp, weapon ORDER BY points DESC, nickname', function (err, rows, fields) {
 				if (err) throw err;
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					if (rows[i].id == player_id) {
@@ -34610,7 +34620,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 				mypnt = 0;
 				mypos = 0;
 
-				connection.query('SELECT id, nickname, craft_day As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_day, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+				connection.query('SELECT id, nickname, craft_day As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, craft_day, exp, weapon ORDER BY points DESC, nickname', function (err, rows, fields) {
 					if (err) throw err;
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 						if (rows[i].id == player_id) {
@@ -34624,7 +34634,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 					mypnt = 0;
 					mypos = 0;
 
-					connection.query('SELECT id, nickname, rank As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, rank, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+					connection.query('SELECT id, nickname, rank As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, rank, exp, weapon ORDER BY points DESC, nickname', function (err, rows, fields) {
 						if (err) throw err;
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 							if (rows[i].id == player_id) {
@@ -34638,7 +34648,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 						mypnt = 0;
 						mypos = 0;
 
-						connection.query('SELECT id, nickname, achievement_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, achievement_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+						connection.query('SELECT id, nickname, achievement_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, achievement_count, exp, weapon ORDER BY points DESC, nickname', function (err, rows, fields) {
 							if (err) throw err;
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 								if (rows[i].id == player_id) {
@@ -34652,7 +34662,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 							mypnt = 0;
 							mypos = 0;
 
-							connection.query('SELECT id, nickname, mission_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, mission_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+							connection.query('SELECT id, nickname, mission_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, mission_count, exp, weapon ORDER BY points DESC, nickname', function (err, rows, fields) {
 								if (err) throw err;
 								for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 									if (rows[i].id == player_id) {
@@ -34666,7 +34676,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 								mypnt = 0;
 								mypos = 0;
 
-								connection.query('SELECT id, nickname, ability As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, ability, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+								connection.query('SELECT id, nickname, ability As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, ability, exp, weapon ORDER BY points DESC, nickname', function (err, rows, fields) {
 									if (err) throw err;
 									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 										if (rows[i].id == player_id) {
@@ -34680,7 +34690,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 									mypnt = 0;
 									mypos = 0;
 
-									connection.query('SELECT player.id, nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND player.id NOT IN (1,3) ORDER BY total_cnt DESC', function (err, rows, fields) {
+									connection.query('SELECT player.id, nickname, total_cnt As points FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND player.id NOT IN (1,3) ORDER BY points DESC, nickname', function (err, rows, fields) {
 										if (err) throw err;
 										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 											if (rows[i].id == player_id) {
@@ -34694,7 +34704,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 										mypnt = 0;
 										mypos = 0;
 
-										connection.query('SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
+										connection.query('SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC, nickname', function (err, rows, fields) {
 											if (err) throw err;
 											for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 												if (rows[i].id == player_id) {
@@ -34716,7 +34726,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 												mypnt = 0;
 												mypos = 0;
 
-												connection.query('SELECT id, nickname, global_event As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, global_event, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+												connection.query('SELECT id, nickname, global_event As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, global_event, exp, weapon ORDER BY points DESC, nickname', function (err, rows, fields) {
 													if (err) throw err;
 													for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 														if (rows[i].id == player_id) {
@@ -34730,7 +34740,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 													mypnt = 0;
 													mypos = 0;
 
-													connection.query('SELECT id, nickname, power_used As total_cnt FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) HAVING total_cnt > 0 ORDER BY total_cnt DESC', function (err, rows, fields) {
+													connection.query('SELECT id, nickname, power_used As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) HAVING points > 0 ORDER BY points DESC, nickname', function (err, rows, fields) {
 														if (err) throw err;
 														for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 															if (rows[i].id == player_id) {
@@ -34745,7 +34755,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 														mypnt = 0;
 														mypos = 0;
 
-														connection.query('SELECT id, nickname, coupon_record As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, coupon_record, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+														connection.query('SELECT id, nickname, coupon_record As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, coupon_record, exp, weapon ORDER BY points DESC, nickname', function (err, rows, fields) {
 															if (err) throw err;
 															for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 																if (rows[i].id == player_id) {
@@ -34759,7 +34769,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 															mypnt = 0;
 															mypos = 0;
 
-															connection.query('SELECT id, nickname, achievement_count_all As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, achievement_count_all, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+															connection.query('SELECT id, nickname, achievement_count_all As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, achievement_count_all, exp, weapon ORDER BY points DESC, nickname', function (err, rows, fields) {
 																if (err) throw err;
 																for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 																	if (rows[i].id == player_id) {
@@ -34773,7 +34783,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 																mypnt = 0;
 																mypos = 0;
 
-																connection.query('SELECT P.id, nickname, COUNT(C.id) As points FROM card_inventory C, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND C.player_id = P.id AND C.quantity > 0 GROUP BY player_id ORDER BY points  DESC', function (err, rows, fields) {
+																connection.query('SELECT P.id, nickname, COUNT(C.id) As points FROM card_inventory C, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND C.player_id = P.id AND C.quantity > 0 GROUP BY player_id ORDER BY points DESC, nickname', function (err, rows, fields) {
 																	if (err) throw err;
 																	for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 																		if (rows[i].id == player_id) {
@@ -34787,7 +34797,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 																	mypnt = 0;
 																	mypos = 0;
 																	
-																	connection.query('SELECT id, nickname, top_rank_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, top_rank_count, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+																	connection.query('SELECT id, nickname, top_rank_count As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, top_rank_count, exp, weapon ORDER BY points DESC, nickname', function (err, rows, fields) {
 																		if (err) throw err;
 																		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 																			if (rows[i].id == player_id) {
@@ -34801,7 +34811,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 																		mypnt = 0;
 																		mypos = 0;
 
-																		connection.query('SELECT id, nickname, total_trophies As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, total_trophies, exp, weapon ORDER BY points DESC', function (err, rows, fields) {
+																		connection.query('SELECT id, nickname, total_trophies As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, total_trophies, exp, weapon ORDER BY points DESC, nickname', function (err, rows, fields) {
 																			if (err) throw err;
 																			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 																				if (rows[i].id == player_id) {
@@ -34916,7 +34926,7 @@ bot.onText(/Classifica Contrabbandiere/i, function (message) {
 	var myinfo = 0;
 	var size = 20;
 
-	var query = 'SELECT player.id, nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND player.id NOT IN (1,3) ORDER BY total_cnt DESC';
+	var query = 'SELECT player.id, nickname, total_cnt FROM merchant_offer, player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND merchant_offer.player_id = player.id AND player.id NOT IN (1,3) ORDER BY total_cnt DESC, nickname';
 
 	connection.query('SELECT id, top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -34981,7 +34991,7 @@ bot.onText(/Figurine Collezionate/i, function (message) {
 	var myinfo = 0;
 	var size = 20;
 
-	var query = 'SELECT P.id, nickname, COUNT(C.id) As total_cnt FROM card_inventory C, player P WHERE C.player_id = P.id AND account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND C.quantity > 0 GROUP BY player_id ORDER BY total_cnt DESC';
+	var query = 'SELECT P.id, nickname, COUNT(C.id) As total_cnt FROM card_inventory C, player P WHERE C.player_id = P.id AND account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND C.quantity > 0 GROUP BY player_id ORDER BY total_cnt DESC, nickname';
 	
 	connection.query('SELECT id, top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -35571,9 +35581,8 @@ bot.onText(/^vendi/i, function (message) {
 
 											total = parseInt(rows[0].total);
 
-											if (crazyMode == 1) {
+											if (crazyMode == 1)
 												total = total * 3;
-											}
 
 											total = Math.round(total);
 
@@ -38811,6 +38820,7 @@ bot.onText(/weekend della follia/i, function (message) {
 		"> Gli incantamenti iniziati nel folle durano 1 settimana\n" +
 		"> Possono essere acquistati 3 pacchetti delle Offerte Giornaliere\n" +
 		"> Le ricompense degli incarichi sono aumentate del 50%\n" +
+		"> E' possibile giocare 2 partite in più nelle Mappe\n" +
 
 		"\nI bonus possono cambiare di volta in volta!";
 
@@ -40596,6 +40606,8 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 								var dcoupled2 = 0;
 								var dcoupleSolo1 = 0;
 								var dcoupleSolo2 = 0;
+								var coupSolo1 = 0;
+								var coupSolo2 = 0;
 
 								var triple1 = 0;
 								var triple2 = 0;
@@ -40884,21 +40896,45 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 											end = "Coppia";
 											end_num = 1;
 											coup = num[0];
+
+											var others = [num[2], num[3], num[4]];
+											if (i == 0)
+												coupSolo1 = others;
+											else
+												coupSolo2 = others;
 										}
 										if (num[1] == num[2]) {
 											end = "Coppia";
 											end_num = 1;
 											coup = num[1];
+
+											var others = [num[0], num[3], num[4]];
+											if (i == 0)
+												coupSolo1 = others;
+											else
+												coupSolo2 = others;
 										}
 										if (num[2] == num[3]) {
 											end = "Coppia";
 											end_num = 1;
 											coup = num[2];
+
+											var others = [num[0], num[1], num[4]];
+											if (i == 0)
+												coupSolo1 = others;
+											else
+												coupSolo2 = others;
 										}
 										if (num[3] == num[4]) {
 											end = "Coppia";
 											end_num = 1;
 											coup = num[3];
+
+											var others = [num[0], num[1], num[2]];
+											if (i == 0)
+												coupSolo1 = others;
+											else
+												coupSolo2 = others;
 										}
 
 										if ((i == 0) && (end_num == 1))
@@ -40920,7 +40956,16 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 								//console.log(text);
 
 								if ((final1 == 1) && (final2 == 1)) { //Coppia
-									if (couple1 > couple2)
+									if (couple1 == couple2) {
+										for (k = 0; k < coupSolo1.length; k++) {
+											if (coupSolo1[k] != coupSolo2[k]) {
+												if (coupSolo1[k] > coupSolo2[k])
+													final1++;
+												else
+													final2++;
+											}
+										}
+									} else if (couple1 > couple2)
 										final1++;
 									else
 										final2++;
@@ -47829,7 +47874,7 @@ function getRank(message, size, type) {
 	var totpnt = 0;
 	var mypos = 0;
 	
-	var query = 'SELECT id, nickname, IF(' + t + ' < 0, 0, ' + t + ') As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, ' + t + ', exp, weapon ORDER BY points DESC';
+	var query = 'SELECT id, nickname, IF(' + t + ' < 0, 0, ' + t + ') As points FROM player WHERE account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) GROUP BY nickname, ' + t + ', exp, weapon ORDER BY points DESC, nickname';
 
 	connection.query('SELECT id, top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -50312,11 +50357,15 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 		if (Object.keys(enemy).length > 0) {
 			// sync perchè sotto viene reinterrogato
 			// Assegno uccisione all'enemy
-			connection_sync.query('UPDATE map_lobby SET match_kills = match_kills+1, global_kills = global_kills+1, enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_turn_start = NULL, battle_time_elapsed = 0, battle_turn_lost = 0, battle_shield = 0, battle_heavy = 0, battle_stunned = 0 WHERE player_id = ' + enemy[0].player_id);
+			connection_sync.query('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_turn_start = NULL, battle_time_elapsed = 0, battle_turn_lost = 0, battle_shield = 0, battle_heavy = 0, battle_stunned = 0 WHERE player_id = ' + enemy[0].player_id);
 			enemy_pos_x = enemy[0].posX;
 			enemy_pos_y = enemy[0].posY;
 			enemy_id = enemy[0].player_id;
 			enemy_chat_id = enemy[0].chat_id;
+			
+			if (cause == 2) {
+				connection_sync.query('UPDATE map_lobby SET match_kills = match_kills+1, global_kills = global_kills+1 WHERE player_id = ' + enemy_id);
+			}
 			
 			setAchievement(enemy_id, 90, 1);
 		}

@@ -576,6 +576,7 @@ bot.onText(/^\/comandigiocatore/, function (message) {
 					"/valorezainob - Mostra il valore complessivo degli oggetti base posseduti (specifica anche la rarità)\n" +
 					"/valorezainoc - Mostra il valore complessivo degli oggetti creati posseduti (specifica anche la rarità)\n" +
 					"/gruzzolo - Mostra le monete possedute\n" +
+					"/trofei - Mostra i trofei nella stagione in corso delle Mappe\n" +
 					"/creazioni - Mostra i punti creazione ottenuti\n" +
 					"/spia - Spia un giocatore mostrando la scheda giocatore\n" +
 					"/ispeziona - Ispeziona un giocatore, puoi anche specificare il nome dello gnomo da inviare\n" +
@@ -2730,6 +2731,8 @@ bot.onText(/^\/rune (.+)/i, function (message, match) {
 	var dcoupled2 = 0;
 	var dcoupleSolo1 = 0;
 	var dcoupleSolo2 = 0;
+	var coupSolo1 = 0;
+	var coupSolo2 = 0;
 
 	var triple1 = 0;
 	var triple2 = 0;
@@ -3018,21 +3021,45 @@ bot.onText(/^\/rune (.+)/i, function (message, match) {
 				end = "Coppia";
 				end_num = 1;
 				coup = num[0];
+				
+				var others = [num[2], num[3], num[4]];
+				if (i == 0)
+					coupSolo1 = others;
+				else
+					coupSolo2 = others;
 			}
 			if (num[1] == num[2]) {
 				end = "Coppia";
 				end_num = 1;
 				coup = num[1];
+				
+				var others = [num[0], num[3], num[4]];
+				if (i == 0)
+					coupSolo1 = others;
+				else
+					coupSolo2 = others;
 			}
 			if (num[2] == num[3]) {
 				end = "Coppia";
 				end_num = 1;
 				coup = num[2];
+				
+				var others = [num[0], num[1], num[4]];
+				if (i == 0)
+					coupSolo1 = others;
+				else
+					coupSolo2 = others;
 			}
 			if (num[3] == num[4]) {
 				end = "Coppia";
 				end_num = 1;
 				coup = num[3];
+				
+				var others = [num[0], num[1], num[2]];
+				if (i == 0)
+					coupSolo1 = others;
+				else
+					coupSolo2 = others;
 			}
 
 			if ((i == 0) && (end_num == 1))
@@ -3054,7 +3081,16 @@ bot.onText(/^\/rune (.+)/i, function (message, match) {
 	console.log(text);
 
 	if ((final1 == 1) && (final2 == 1)) { //Coppia
-		if (couple1 > couple2)
+		if (couple1 == couple2) {
+			for (k = 0; k < coupSolo1.length; k++) {
+				if (coupSolo1[k] != coupSolo2[k]) {
+					if (coupSolo1[k] > coupSolo2[k])
+						final1++;
+					else
+						final2++;
+				}
+			}
+		} else if (couple1 > couple2)
 			final1++;
 		else
 			final2++;
@@ -6507,6 +6543,10 @@ bot.onText(/^\/offri/i, function (message) {
 
 	item = elements[0].trim();
 	price = parseInt(elements[1].replace(/[^\w\s]/gi, '').trim().replaceAll(/\./, "").replaceAll(/\k/, "000"));
+	if (elements[2] == undefined) {
+		bot.sendMessage(message.from.id, "Errore parametro");
+		return;
+	}
 	buyer = elements[2].replace('@', '').trim();
 
 	if (item == "") {
@@ -8899,6 +8939,20 @@ bot.onText(/^\/gruzzolo/, function (message) {
 		if (message.reply_to_message != undefined)
 			options = {parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id};
 		bot.sendMessage(message.chat.id, message.from.username + ", possiedi <b>" + formatNumber(rows[0].money) + "</b> §", options);
+	});
+});
+
+bot.onText(/^\/trofei/, function (message) {
+	connection.query('SELECT trophies FROM player WHERE id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0)
+			return;
+
+		var options = {parse_mode: 'HTML'};
+		if (message.reply_to_message != undefined)
+			options = {parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id};
+		bot.sendMessage(message.chat.id, message.from.username + ", hai accumulato <b>" + formatNumber(rows[0].money) + "</b> 🏆 in questa stagione", options);
 	});
 });
 
