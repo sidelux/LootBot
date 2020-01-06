@@ -8952,7 +8952,7 @@ bot.onText(/^\/trofei/, function (message) {
 		var options = {parse_mode: 'HTML'};
 		if (message.reply_to_message != undefined)
 			options = {parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id};
-		bot.sendMessage(message.chat.id, message.from.username + ", hai accumulato <b>" + formatNumber(rows[0].money) + "</b> 🏆 in questa stagione", options);
+		bot.sendMessage(message.chat.id, message.from.username + ", hai accumulato <b>" + formatNumber(rows[0].trophies) + "</b> 🏆 in questa stagione", options);
 	});
 });
 

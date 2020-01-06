@@ -262,8 +262,10 @@ callNTimes(60000, function () { //Ogni 1 minuto
 	var d = new Date();
 	if ((d.getDay() != 6) && (d.getDay() != 0) && (luckyMode == 1))
 		luckyMode = 0;
+	/*
 	if ((d.getDay() != 6) && (d.getDay() != 0) && (crazyMode == 1))
 		crazyMode = 0;
+	*/
 	if ((d.getDay() != 6) && (d.getDay() != 0) && (wanted == 1))
 		wanted = 0;
 	if ((d.getDay() > 3) && (d.getDay() < 6) && (villa == 1))
@@ -31705,6 +31707,15 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 				var qnt = getItemCnt(player_id, item_id);
 				if (qnt > 0)
 					poss = " ✅";
+				else {
+					var material_result = connection_sync.query('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item_id);
+
+					if (getItemCnt(player_id, material_result[0].material_1) > 0 &&
+						getItemCnt(player_id, material_result[0].material_2) > 0 &&
+						getItemCnt(player_id, material_result[0].material_3) > 0) {
+						poss = " ☑️";
+					}
+				}
 
 				connection.query('SELECT name, rarity FROM item WHERE id = ' + item_id, function (err, rows, fields) {
 					if (err) throw err;
@@ -50878,11 +50889,9 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 			if (err) throw err;
 		});
 	} else {
-		if (conditions != 7) {
-			connection.query('UPDATE map_lobby_list SET next_restrict_time = DATE_ADD(next_restrict_time, INTERVAL ' + lobby_restric_min + ' MINUTE) WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
-				if (err) throw err;
-			});
-		}
+		connection.query('UPDATE map_lobby_list SET next_restrict_time = DATE_ADD(next_restrict_time, INTERVAL ' + lobby_restric_min + ' MINUTE) WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
 	}
 }
 
@@ -54800,8 +54809,13 @@ function setFullLobby(element, index, array) {
 		
 		var size = Math.round(players*2-1);	// sempre dispari
 		var mapMatrix = generateMap(size, size, players, map_conditions);
+		
+		var next_restrict = "DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE)";
+		
+		if (map_conditions == 7)
+			next_restrict = "NULL";
 
-		connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, turn_number, next_restrict_time, conditions) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE), ' + map_conditions + ')', function (err, rows, fields) {
+		connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, turn_number, next_restrict_time, conditions) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", 0, ' + next_restrict + ', ' + map_conditions + ')', function (err, rows, fields) {
 			if (err) throw err;
 
 			connection.query('SELECT P.id, P.chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
