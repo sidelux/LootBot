@@ -34626,7 +34626,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 					}
 					c++;
 				}
-				text = text + "\n*Punti creazione settimanali*: " + mypos + "° con " + formatNumber(mypnt) + " pnt";
+				text = text + "\n*Punti creazione settimanali*: " + mypos + "° con " + formatNumber(mypnt);
 				c = 1;
 				mypnt = 0;
 				mypos = 0;
@@ -34640,7 +34640,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 						}
 						c++;
 					}
-					text = text + "\n*Punti creazione giornalieri*: " + mypos + "° con " + formatNumber(mypnt) + " pnt";
+					text = text + "\n*Punti creazione giornalieri*: " + mypos + "° con " + formatNumber(mypnt);
 					c = 1;
 					mypnt = 0;
 					mypos = 0;
@@ -34668,7 +34668,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 								}
 								c++;
 							}
-							text = text + "\n*Imprese giornaliere*: " + mypos + "° con " + formatNumber(mypnt) + " pnt";
+							text = text + "\n*Imprese giornaliere*: " + mypos + "° con " + formatNumber(mypnt);
 							c = 1;
 							mypnt = 0;
 							mypos = 0;
@@ -34706,11 +34706,11 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 											if (rows[i].id == player_id) {
 												mypos = c;
-												mypnt = rows[i].total_cnt;
+												mypnt = rows[i].points;
 											}
 											c++;
 										}
-										text = text + "\n*Contrabbandiere*: " + mypos + "° con " + formatNumber(mypnt) + " offerte";
+										text = text + "\n*Offerte Contrabbandiere*: " + mypos + "° con " + formatNumber(mypnt);
 										c = 1;
 										mypnt = 0;
 										mypos = 0;
@@ -34730,7 +34730,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 
 												if (rows[0].global_eventwait == 0) {
 													if (mypos > 0)
-														text = text + "\n*Impresa Globale*: " + mypos + "° con " + formatNumber(mypnt) + " punti";
+														text = text + "\n*Impresa Globale*: " + mypos + "° con " + formatNumber(mypnt);
 												}
 
 												c = 1;
@@ -34756,7 +34756,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 														for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 															if (rows[i].id == player_id) {
 																mypos = c;
-																mypnt = rows[i].total_cnt;
+																mypnt = rows[i].points;
 															}
 															c++;
 														}
