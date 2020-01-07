@@ -262,10 +262,8 @@ callNTimes(60000, function () { //Ogni 1 minuto
 	var d = new Date();
 	if ((d.getDay() != 6) && (d.getDay() != 0) && (luckyMode == 1))
 		luckyMode = 0;
-	/*
 	if ((d.getDay() != 6) && (d.getDay() != 0) && (crazyMode == 1))
 		crazyMode = 0;
-	*/
 	if ((d.getDay() != 6) && (d.getDay() != 0) && (wanted == 1))
 		wanted = 0;
 	if ((d.getDay() > 3) && (d.getDay() < 6) && (villa == 1))
@@ -23825,6 +23823,8 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 									keyboard: [["Torna al team"], ["Torna al menu"]]
 								}
 							};
+							
+							setAchievement(player_id, 44, 999);
 
 							bot.sendMessage(message.chat.id, "Il <b>Giorno dell'Assalto " + (boss_num-1) + "</b> è stato completato, attendi ancora " + toTime(diff) + "!", kb);
 						}
@@ -31697,9 +31697,9 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 					var short_date = addZero(time_end.getHours()) + ":" + addZero(time_end.getMinutes());
 
 					if ((time_end.getHours() > 22) || (day_cnt >= merchant_limit))
-						bot.sendMessage(message.chat.id, "Al momento il Contrabbandiere non ha offerte per te, torna domani", back);
+						bot.sendMessage(message.chat.id, "Al momento il Contrabbandiere non ha offerte per te, torna domani", kbBack);
 					else
-						bot.sendMessage(message.chat.id, "Al momento il Contrabbandiere non ha offerte per te, torna alle *" + short_date + "*, puoi ancora accettare *" + offers + "* offerte", back);
+						bot.sendMessage(message.chat.id, "Al momento il Contrabbandiere non ha offerte per te, torna alle *" + short_date + "*, puoi ancora accettare *" + offers + "* offerte", kbBack);
 					return;
 				}
 
@@ -50882,6 +50882,9 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 
 	if (conditions == 1)
 		time = Math.round(time/2);
+	
+	if (conditions == 7)
+		time = time*2;
 
 	if (turnNumber+1 == middleX) {
 		// se raggiunge l'1x1, non restringe più
@@ -50889,7 +50892,7 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 			if (err) throw err;
 		});
 	} else {
-		connection.query('UPDATE map_lobby_list SET next_restrict_time = DATE_ADD(next_restrict_time, INTERVAL ' + lobby_restric_min + ' MINUTE) WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+		connection.query('UPDATE map_lobby_list SET next_restrict_time = DATE_ADD(next_restrict_time, INTERVAL ' + time + ' MINUTE) WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
 	}
@@ -54809,13 +54812,8 @@ function setFullLobby(element, index, array) {
 		
 		var size = Math.round(players*2-1);	// sempre dispari
 		var mapMatrix = generateMap(size, size, players, map_conditions);
-		
-		var next_restrict = "DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE)";
-		
-		if (map_conditions == 7)
-			next_restrict = "NULL";
 
-		connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, turn_number, next_restrict_time, conditions) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", 0, ' + next_restrict + ', ' + map_conditions + ')', function (err, rows, fields) {
+		connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, turn_number, next_restrict_time, conditions) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE), ' + map_conditions + ')', function (err, rows, fields) {
 			if (err) throw err;
 
 			connection.query('SELECT P.id, P.chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
