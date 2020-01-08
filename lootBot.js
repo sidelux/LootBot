@@ -183,7 +183,6 @@ var j4 = Schedule.scheduleJob('05 00 * * *', function () { //00:05 notte
 	deleteSearch();
 	resetDragonReject();
 	deleteHistory();
-	resetMapCount();
 });
 
 var j5 = Schedule.scheduleJob('00 15 * * *', function () { //15:00
@@ -204,6 +203,10 @@ var j7 = Schedule.scheduleJob('00 10 * * 1', function () { //10:00
 
 var j8 = Schedule.scheduleJob('0 * * * *', function () { //ogni ora
 	saveHourGlobal();
+});
+
+var j9 = Schedule.scheduleJob('00 01 * * *', function () { //1 notte
+	resetMapCount();
 });
 
 callNTimes(20000, function () { //20 secondi
@@ -13087,7 +13090,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 		}
 
 		if (player_charm_id == 404)
-			critical += 6;
+			critical += 4;
 		if (player_charm_id == 493)
 			critical += 2;
 		if (player_charm_id == 494)
@@ -13876,7 +13879,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																				damage = damage*2;
 
 																			if (charm_id == 404)
-																				en_crit += 6;
+																				en_crit += 4;
 																			if (charm_id == 493)
 																				en_crit += 2;
 																			if (charm_id == 494)
@@ -44057,7 +44060,7 @@ function getInfo(message, player, myhouse_id) {
 																							if (charm_id == 188)
 																								weapon += 30;
 																							if (charm_id == 404)
-																								weapon_crit += 6;
+																								weapon_crit += 4;
 																							if (charm_id == 493)
 																								weapon_crit += 2;
 																							if (charm_id == 494)
@@ -49752,7 +49755,7 @@ function getPlayerCritics(player_id, weapon_crit, weapon2_crit, weapon3_crit, ch
 		critical_shield += power_shield;
 
 	if (charm_id == 404)
-		critical += 6;
+		critical += 4;
 	if (charm_id == 493)
 		critical += 2;
 	if (charm_id == 494)

@@ -581,6 +581,7 @@ bot.onText(/^\/comandigiocatore/, function (message) {
 					"/spia - Spia un giocatore mostrando la scheda giocatore\n" +
 					"/ispeziona - Ispeziona un giocatore, puoi anche specificare il nome dello gnomo da inviare\n" +
 					"/rango - Visualizza informazioni sul rango del giocatore\n" +
+					"/imprese - Visualizza lo stato delle imprese giornaliere\n" +
 					"/abilità - Visualizza informazioni sull'abilità del giocatore\n" +
 					"/posizione - Indica la posizione in classifica globale e se si otterrà il relativo punto partecipazione\n" +
 					"/figurine - Visualizza le figurine possedute (specifica anche la rarità, il nome parziale, 'doppie', rarità o raritàinv)\n" +
@@ -8953,6 +8954,42 @@ bot.onText(/^\/trofei/, function (message) {
 		if (message.reply_to_message != undefined)
 			options = {parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id};
 		bot.sendMessage(message.chat.id, message.from.username + ", hai accumulato <b>" + formatNumber(rows[0].trophies) + "</b> 🏆 in questa stagione", options);
+	});
+});
+
+bot.onText(/^\/imprese/, function (message) {
+	connection.query('SELECT id FROM player WHERE id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0)
+			return;
+		
+		var player_id = rows[0].id;
+		
+		connection.query('SELECT D.achievement_id, L.name FROM achievement_daily D, achievement_list L WHERE D.achievement_id = L.id ORDER BY D.id', function (err, rows, fields) {
+			if (err) throw err;
+
+			var achievement = "";
+			if (Object.keys(rows).length > 0) {
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+					achievement += "<b>" + rows[i].name + "</b>:";
+					var ach = connection_sync.query('SELECT completed FROM achievement_status WHERE player_id = ' + player_id + ' AND achievement_id = ' + rows[i].achievement_id);
+					if (Object.keys(ach).length > 0) {
+						if (ach[0].completed == 1)
+							achievement += " ✅";
+						else
+							achievement += " ❌";
+					} else
+						achievement += " ❌";
+					achievement += "\n";
+				}
+				
+				var options = {parse_mode: 'HTML'};
+				if (message.reply_to_message != undefined)
+					options = {parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id};
+				bot.sendMessage(message.chat.id, message.from.username + ", ecco il tuo progresso nelle imprese di oggi:\n" + achievement, options);
+			};
+		});
 	});
 });
 
