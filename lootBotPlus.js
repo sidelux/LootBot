@@ -8958,27 +8958,28 @@ bot.onText(/^\/trofei/, function (message) {
 });
 
 bot.onText(/^\/imprese/, function (message) {
-	connection.query('SELECT id FROM player WHERE id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+	connection.query('SELECT id, reborn FROM player WHERE id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0)
 			return;
 		
 		var player_id = rows[0].id;
+		var reborn = rows[0].reborn;
 		
-		connection.query('SELECT D.achievement_id, L.name FROM achievement_daily D, achievement_list L WHERE D.achievement_id = L.id ORDER BY D.id', function (err, rows, fields) {
+		connection.query('SELECT D.achievement_id, L.name, IF(L.multiply=1,L.value*' + reborn + ',L.value) As tot_value FROM achievement_daily D, achievement_list L WHERE D.achievement_id = L.id ORDER BY D.id', function (err, rows, fields) {
 			if (err) throw err;
 
 			var achievement = "";
 			if (Object.keys(rows).length > 0) {
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					achievement += "<b>" + rows[i].name + "</b>:";
-					var ach = connection_sync.query('SELECT completed FROM achievement_status WHERE player_id = ' + player_id + ' AND achievement_id = ' + rows[i].achievement_id);
+					var ach = connection_sync.query('SELECT completed, progress FROM achievement_status WHERE player_id = ' + player_id + ' AND achievement_id = ' + rows[i].achievement_id);
 					if (Object.keys(ach).length > 0) {
 						if (ach[0].completed == 1)
 							achievement += " ✅";
 						else
-							achievement += " ❌";
+							achievement += " ❌ " + ach[0].progress + "/" + rows[i].tot_value;
 					} else
 						achievement += " ❌";
 					achievement += "\n";

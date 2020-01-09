@@ -594,23 +594,7 @@ bot.on("pre_checkout_query", function (message) {
 });
 
 var mainKeys = [];
-
-var topMap = "Mappe di Lootia 🗺 (Beta)";
-if (checkDragonTopOn == 1)
-	topMap = "Vette dei Draghi 🐲";
-
-mainKeys = [['⚔ Missione ⚔'],
-			['Dungeon 🛡', 'Assalto 🐺'],
-			[topMap],
-			['Alchimia ⚗️', 'Rifugio 🔦'],
-			['Zaino 🎒', 'Piazza 💰'],
-			['Giocatore 👤', 'Imprese 🏋️', 'Team ⚜️'],
-			['Eventi 🎯', 'Esplorazioni 🧗‍♀'],
-			['Destino 🔮', 'Top 🔝', 'Lunari 🌕'],
-			['Info 📖']]
-
-var defaultKeys = [];
-defaultKeys = mainKeys.slice();
+mainKeys = getDefaultKeyboard();
 
 var resp = {
 	reply_markup: JSON.stringify({
@@ -1033,6 +1017,19 @@ bot.onText(/^\/globaldesc (.+)|^\/globaldesc/, function (message, match) {
 	}
 });
 
+bot.onText(/^\/globalcap (.+)|^\/globalcap/, function (message, match) {
+	if (message.from.id == 20471035) {
+		if (match[1] == undefined) {
+			bot.sendMessage(message.chat.id, "Specifica il cap per la globale");
+			return;
+		}
+		connection.query('UPDATE config SET global_cap = "' + match[1] + '"', function (err, rows, fields) {
+		if (err) throw err;
+			bot.sendMessage(message.chat.id, "Ok");
+		});
+	}
+});
+
 bot.onText(/^\/incremglobal/, function (message, match) {
 	if (message.from.id == 20471035) {
 		var next_global_end = moment().startOf('month').add(1, 'months').format('YYYY-MM-DD') + " 12:00:00";
@@ -1373,6 +1370,7 @@ bot.onText(/^\/comandi/, function (message, match) {
 					   	"/reloadevents (ricarica eventi)\n" +
 					    "/setglobal (imposta stato globale)\n" +
 					   	"/globaldesc (imposta descrizione globale)\n" +
+					   	"/globalcap (imposta cap)\n" +
 					    "/incremglobal (sposta fine globale di un mese)\n");
 	} else
 		bot.sendMessage(message.chat.id, "Piacerebbe :D");
@@ -4706,6 +4704,10 @@ bot.onText(/lancia il dado/i, function (message) {
 				}
 
 				var mana = answer.text.trim().split(" ");
+				if (mana[2] == undefined) {
+					bot.sendMessage(message.chat.id, "Specifica il colore del mana", kbBack);
+					return;
+				}
 				var color = mana[2].trim().toLowerCase();
 				var qnt = parseInt(mana[0].trim());
 
@@ -31650,7 +31652,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 		var my_money = rows[0].money;
 
 		var kbBack = {
-			parse_mode: "HTML",
+			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
 				keyboard: [["Torna alla piazza"], ["Torna al menu"]]
@@ -31767,7 +31769,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 					};
 
 					if (day_cnt == merchant_limit) {
-						bot.sendMessage(message.chat.id, "Il Contrabbandiere non ha più bisogno di nulla per oggi", back);
+						bot.sendMessage(message.chat.id, "Il Contrabbandiere non ha più bisogno di nulla per oggi", kbBack);
 						return;
 					}
 
@@ -31794,7 +31796,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 
 											var d = new Date();
 											if ((d.getHours() < nightEnd) || (d.getHours() >= nightStart)) {
-												bot.sendMessage(message.chat.id, "Il Contrabbandiere non è in piazza a quest'ora...", back);
+												bot.sendMessage(message.chat.id, "Il Contrabbandiere non è in piazza a quest'ora...", kbBack);
 												return;
 											}
 
@@ -31804,7 +31806,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 														connection.query('SELECT gems FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 															if (rows[0].gems < 1) {
-																bot.sendMessage(message.chat.id, "Non hai abbastanza 💎", back);
+																bot.sendMessage(message.chat.id, "Non hai abbastanza 💎", kbBack);
 																return;
 															}
 															connection.query('UPDATE player SET gems = gems-1 WHERE id = ' + player_id, function (err, rows, fields) {
@@ -31822,7 +31824,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 													if (answer.text.toLowerCase() == "si") {
 														var d = new Date();
 														if ((d.getHours() < nightEnd) || (d.getHours() >= nightStart)) {
-															bot.sendMessage(message.chat.id, "Il Contrabbandiere non è in piazza a quest'ora...", back);
+															bot.sendMessage(message.chat.id, "Il Contrabbandiere non è in piazza a quest'ora...", kbBack);
 															return;
 														}
 
@@ -31840,7 +31842,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 															if (err) throw err;
 
 															refreshMerchant(player_id);
-															bot.sendMessage(message.chat.id, "Hai chiesto una nuova offerta, dovrai attendere fino alle " + short_date + "!", back);
+															bot.sendMessage(message.chat.id, "Hai chiesto una nuova offerta, dovrai attendere fino alle " + short_date + "!", kbBack);
 														});
 													}
 												}
@@ -40461,7 +40463,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						keyboard: [["1", "2", "3"], ["4", "5"], ["1,2,3,4,5"], ["Torna dallo gnomo"]]
+						keyboard: [["1", "2", "3", "4", "5"], ["1,2", "1,3", "1,4", "1,5", "2,3"], ["2,4", "2,5", "3,4", "3,5", "4,5"], ["1,2,3,4,5"], ["Torna dallo gnomo"]]
 					}
 				};
 
@@ -45003,8 +45005,33 @@ function printStart(message) {
 	});
 }
 
-function checkKeyboard() {
-	mainKeys = defaultKeys.slice();
+function getDefaultKeyboard() {
+	var topMap = "Mappe di Lootia 🗺 (Beta)";
+	if (checkDragonTopOn == 1)
+		topMap = "Vette dei Draghi 🐲";
+
+	var kb = 	[['⚔ Missione ⚔'],
+				['Dungeon 🛡', 'Assalto 🐺'],
+				[topMap],
+				['Alchimia ⚗️', 'Rifugio 🔦'],
+				['Zaino 🎒', 'Piazza 💰'],
+				['Giocatore 👤', 'Imprese 🏋️', 'Team ⚜️'],
+				['Eventi 🎯', 'Esplorazioni 🧗‍♀'],
+				['Destino 🔮', 'Top 🔝', 'Lunari 🌕'],
+				['Info 📖']]
+	
+	return kb;
+}
+
+function checkKeyboard() {	
+	var topMap = "Mappe di Lootia 🗺 (Beta)";
+	if (checkDragonTopOn == 1)
+		topMap = "Vette dei Draghi 🐲";
+
+	mainKeys = getDefaultKeyboard();
+
+	var defaultKeys = [];
+	defaultKeys = mainKeys.slice();
 
 	if (eventMana == 1)
 		mainKeys.splice(0, 0, ['⛏ Miniere di Mana (Evento) ⛰ ']);
