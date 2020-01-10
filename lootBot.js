@@ -18657,11 +18657,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																	};
 																});
 															} else if (answer.text.indexOf("Scruta") != -1) {
-																if (inCombat == 0) {
-																	bot.sendMessage(message.chat.id, "Puoi visualizzare info sul drago avversario solo mentre sei in combattimento", kbBack);
-																	return;
-																}
-																bot.sendMessage(message.chat.id, "<b>Informazioni sul drago avversario:</b>\nSalute: " + progressBar(enemy_dragon_life, enemy_dragon_total_life) + " " + formatNumber(enemy_dragon_life) + "/" + formatNumber(enemy_dragon_total_life) + "\nNome: " + enemy_dragon_name + " " + enemy_dragon_type + " " + dragonSym(enemy_dragon_type) + "\nLivello: " + enemy_dragon_level + "\nVocazione: " + enemy_class, kbBack_html);
+																// fuori
 																return;
 															} else if (answer.text.indexOf("Monti") != -1) {
 																connection.query('SELECT L.name, COUNT(R.top_id) As cnt FROM dragon_top_rank R, dragon_top_list L WHERE L.id = R.top_id GROUP BY R.top_id ORDER BY top_id', function (err, rows, fields) {
@@ -18744,6 +18740,136 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 								});
 							};
 						};
+					});
+				});
+			});
+		});
+	});
+});
+
+bot.onText(/scruta/i, function (message) {
+	connection.query('SELECT id, account_id, class FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+
+		var player_id = rows[0].id;
+		var class_id = rows[0].class;
+		
+		connection.query('SELECT id, life, total_life FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Non possiedi il drago.", back);
+				return;
+			}
+
+			var dragon_id = rows[0].id;
+			var dragon_life = rows[0].life;
+			var dragon_total_life = rows[0].total_life;
+		
+			connection.query('SELECT id, is_dummy, top_id, enemy_dragon_id FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				
+				var kbBack = {
+					parse_mode: "Markdown",
+					reply_markup: {
+						resize_keyboard: true,
+						keyboard: [['Torna alla vetta'], ['Torna al menu']]
+					}
+				};
+
+				var kbBack_html = {
+					parse_mode: "HTML",
+					reply_markup: {
+						resize_keyboard: true,
+						keyboard: [['Scruta ancora'], ['Torna alla vetta'], ['Torna al menu']]
+					}
+				};
+
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Non sei iscritto alla vetta", kbBack);
+					return;
+				}
+
+				/*
+				if (rows[0].enemy_dragon_id == null) {
+					bot.sendMessage(message.chat.id, "Non sei più in combattimento", kbBack);
+					return;
+				}
+				*/
+
+				var enemy_dragon_id = rows[0].enemy_dragon_id;
+
+				var is_dummy = rows[0].is_dummy;
+				var target_table_status = "dragon_top_status";
+				var target_table_dragon = "dragon";
+				if (is_dummy == 1) {
+					target_table_status = "dragon_top_dummy";
+					target_table_dragon = "dragon_dummy";
+				}
+				
+				if (enemy_dragon_id == null) {
+					var another = connection_sync.query("SELECT dragon_id FROM dragon_top_status WHERE enemy_dragon_id = " + dragon_id);
+					if (Object.keys(another).length == 0) {
+						bot.sendMessage(message.chat.id, "Errore id drago avversario (" + dragon_id + ")", kbBack);
+						return;
+					}
+					enemy_dragon_id = another[0].dragon_id;
+				}
+
+				connection.query('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
+					if (err) throw err;
+
+					var inCombat = 0;
+					if (rows[0].combat == 1)
+						inCombat = 1;
+
+					if (inCombat == 0) {
+						bot.sendMessage(message.chat.id, "Puoi visualizzare info sul drago avversario solo mentre sei in combattimento", kbBack);
+						return;
+					}
+					
+					connection.query('SELECT player.class, class.name As class_name FROM player, dragon, class WHERE class.id = player.class AND player.id = dragon.player_id AND dragon.id = ' + enemy_dragon_id, function (err, rows, fields) {
+						if (err) throw err;
+						
+						var enemy_class = "";
+						if (is_dummy == 0)
+							enemy_class = rows[0].class_name + " " + classSym(rows[0].class_name);
+						else {
+							if (class_id == 7) {
+								var classRow = connection_sync.query('SELECT name FROM class WHERE id = 7');
+								enemy_class = classRow[0].name + " " + classSym(classRow[0].name);
+							} else
+								enemy_class = "-";
+						}
+
+						connection.query('SELECT * FROM ' + target_table_dragon + ' WHERE id = ' + enemy_dragon_id, function (err, rows, fields) {
+							if (err) throw err;
+							
+							if (Object.keys(rows).length == 0) {
+								bot.sendMessage(message.chat.id, "Drago avversario non trovato", kbBack);
+								return;
+							}
+
+							var enemy_dragon_name = rows[0].name;
+							var enemy_dragon_level = rows[0].level;
+							var enemy_dragon_type = rows[0].type;
+							var enemy_dragon_life = rows[0].life;
+							var enemy_dragon_total_life = rows[0].total_life;
+
+							bot.sendMessage(message.chat.id, "<b>Il drago avversario:</b>\n" +
+											"Salute: " + progressBar(enemy_dragon_life, enemy_dragon_total_life) + " " + formatNumber(enemy_dragon_life) + "/" + formatNumber(enemy_dragon_total_life) + "\n" + 
+											"Nome: " + enemy_dragon_name + " " + enemy_dragon_type + " " + dragonSym(enemy_dragon_type) + "\n" + 
+											"Livello: " + enemy_dragon_level + "\n" + 
+											"Vocazione: " + enemy_class + "\n\n" +
+											"<b>Il tuo drago:</b>\n" +
+											"Salute: " + progressBar(dragon_life, dragon_total_life) + " " + formatNumber(dragon_life) + "/" + formatNumber(dragon_total_life), kbBack_html);
+						});
 					});
 				});
 			});
@@ -19542,7 +19668,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 													return;
 
 												if (answer.text.indexOf("Scruta") != -1) {
-													bot.sendMessage(message.chat.id, "<b>Informazioni sul drago avversario:</b>\n" + "Nome: " + enemy_dragon_name + " " + enemy_dragon_type + " " + dragonSym(enemy_dragon_type) + "\nLivello: " + enemy_dragon_level + "\nVocazione: " + enemy_class, kbNext);
+													// fuori
 													return;
 												}
 
