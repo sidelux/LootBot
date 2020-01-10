@@ -18055,6 +18055,9 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 
 	connection.query('SELECT id, account_id, reborn, top_first, gender, holiday, top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
+		
+		if (Object.keys(rows).length == 0)
+			return;
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -26358,11 +26361,11 @@ bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^❤️$|^cc$|^cp$/i, fu
 
 			var text = "";
 			if (pot1 > 0)
-				text += "\n> *" + pot1 + "*x Pozione Piccola";
+				text += "\n> *" + pot1 + "*x Pozione Piccola (" + (pot1bag-pot1) + " rimanenti)";
 			if (pot2 > 0)
-				text += "\n> *" + pot2 + "*x Pozione Media";
+				text += "\n> *" + pot2 + "*x Pozione Media (" + (pot2bag-pot2) + " rimanenti)";
 			if (pot3 > 0)
-				text += "\n> *" + pot3 + "*x Pozione Grande";
+				text += "\n> *" + pot3 + "*x Pozione Grande (" + (pot3bag-pot3) + " rimanenti)"	;
 
 			delItem(player_id, 92, pot1);
 			delItem(player_id, 93, pot2);
