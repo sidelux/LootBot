@@ -18089,7 +18089,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 
 			var top_season_end = rows[0].top_season_end;
 
-			connection.query('SELECT id, name, type, level, life, total_life, arms_id, sleep_time_end FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
+			connection.query('SELECT id, name, type, level, life, total_life, arms_id, sleep_time_end, sleep_h FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, "Non possiedi il drago.", back);
@@ -18204,6 +18204,14 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 							keyboard: [['Entra in combattimento'], ['Torna al menu']]
 						}
 					};
+					
+					var kbYesNoBack = {
+						parse_mode: "HTML",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: [['Si'], ['Torna al menu']]
+						}
+					};
 
 					var kbYesNo = {
 						parse_mode: "HTML",
@@ -18237,10 +18245,16 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 								bot.sendMessage(message.chat.id, "Non puoi accedere alle vette l'ultimo giorno.", back);
 								return;
 							}
-
-							connection.query('INSERT INTO dragon_top_status (player_id, dragon_id) VALUES (' + player_id + ',' + dragon_id + ')', function (err, rows, fields) {
-								if (err) throw err;
-								bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nelle <b>Vette dei Draghi</b> 🐲!\nIn questo luoghi dovrai sottoporre il tuo <i>" + dragon_name + "</i> all'ardua sfida di raggiungere le cime dei monti più alti di Lootia! Durante questa sfida incontrerai altri draghi, dovrai sfidarli ed essere un bravo domatore per salire fino alla vetta. Le battaglie si svolgono in diversi Monti, tutti iniziano dal primo e man mano che si ottengono vittorie si passa al successivo!\nRicorda che quando il drago combatte, non ti potrà aiutare nelle battaglie al di fuori della vetta.\n\n<b>Funzionamento</b>:\n\n- Il drago da sfidare verrà scelto casualmente in base al Monte in cui si viene inseriti\n- Una volta sconfitto si ottiene 1 Ð o più, se si viene sconfitti lo si perde\n- Al termine della giornata per avanzare di Monte è necessario raggiungere almeno 12 Ð, mentre se ne possiedi 2 o meno tornerai al precedente, inoltre spostandoti di monte le Ð si resettano\n- Ogni mossa consuma un certo numero di Scaglie ⚜️ e ne ottieni una alla fine di ogni turno, per un massimo di 5, puoi ottenerne una anche solo Saltando il turno\n- Riceverai un premio in base al posizionamento ottenuto alla fine della stagione.\n- Al primo accesso otterrai Ð in base al livello del tuo drago\n\nLa stagione attuale scadrà alle " + finish_date, kb2);
+							
+							bot.sendMessage(message.chat.id, "Sei veramente sicur" + gender_text + " di voler accedere alle Vette?", kbYesNoBack).then(function () {
+								answerCallbacks[message.chat.id] = function (answer) {
+									if (answer.text.toLowerCase() == "si") {
+										connection.query('INSERT INTO dragon_top_status (player_id, dragon_id) VALUES (' + player_id + ',' + dragon_id + ')', function (err, rows, fields) {
+											if (err) throw err;
+											bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nelle <b>Vette dei Draghi</b> 🐲!\nIn questo luoghi dovrai sottoporre il tuo <i>" + dragon_name + "</i> all'ardua sfida di raggiungere le cime dei monti più alti di Lootia! Durante questa sfida incontrerai altri draghi, dovrai sfidarli ed essere un bravo domatore per salire fino alla vetta. Le battaglie si svolgono in diversi Monti, tutti iniziano dal primo e man mano che si ottengono vittorie si passa al successivo!\nRicorda che quando il drago combatte, non ti potrà aiutare nelle battaglie al di fuori della vetta.\n\n<b>Funzionamento</b>:\n\n- Il drago da sfidare verrà scelto casualmente in base al Monte in cui si viene inseriti\n- Una volta sconfitto si ottiene 1 Ð o più, se si viene sconfitti lo si perde\n- Al termine della giornata per avanzare di Monte è necessario raggiungere almeno 12 Ð, mentre se ne possiedi 2 o meno tornerai al precedente, inoltre spostandoti di monte le Ð si resettano\n- Ogni mossa consuma un certo numero di Scaglie ⚜️ e ne ottieni una alla fine di ogni turno, per un massimo di 5, puoi ottenerne una anche solo Saltando il turno\n- Riceverai un premio in base al posizionamento ottenuto alla fine della stagione.\n- Al primo accesso otterrai Ð in base al livello del tuo drago\n\nLa stagione attuale scadrà alle " + finish_date, kb2);
+										});
+									}
+								};
 							});
 						} else {
 							var top_id = rows[0].top_id;
@@ -18414,8 +18428,9 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 														};
 													}
 
-													var status = "<i>" + dragon_name + " " + my_dragon_type + " " + dragonSym(my_dragon_type) +
-														"</i>\nSalute: |" + progressBar(dragon_life, dragon_total_life) + "| " + formatNumber(dragon_life) + " 🔺\nStato: " + dragon_status + "\n";
+													var status = "<i>" + dragon_name + " " + my_dragon_type + " " + dragonSym(my_dragon_type) + 
+														"</i>\nSalute: |" + progressBar(dragon_life, dragon_total_life) + "| " + formatNumber(dragon_life) + " 🔺\n" +
+														"Stato: " + dragon_status + "\n";
 
 													var toptext = "";
 													if (top_id == 1)
@@ -18837,18 +18852,21 @@ bot.onText(/scruta/i, function (message) {
 						return;
 					}
 					
-					connection.query('SELECT player.class, class.name As class_name FROM player, dragon, class WHERE class.id = player.class AND player.id = dragon.player_id AND dragon.id = ' + enemy_dragon_id, function (err, rows, fields) {
+					connection.query('SELECT player.nickname, player.class, class.name As class_name FROM player, dragon, class WHERE class.id = player.class AND player.id = dragon.player_id AND dragon.id = ' + enemy_dragon_id, function (err, rows, fields) {
 						if (err) throw err;
 						
 						var enemy_class = "";
-						if (is_dummy == 0)
+						var enemy_nickname = "";
+						if (is_dummy == 0) {
 							enemy_class = rows[0].class_name + " " + classSym(rows[0].class_name);
-						else {
+							enemy_nickname = rows[0].nickname;
+						} else {
 							if (class_id == 7) {
 								var classRow = connection_sync.query('SELECT name FROM class WHERE id = 7');
 								enemy_class = classRow[0].name + " " + classSym(classRow[0].name);
 							} else
 								enemy_class = "-";
+							enemy_nickname = "-";
 						}
 
 						connection.query('SELECT * FROM ' + target_table_dragon + ' WHERE id = ' + enemy_dragon_id, function (err, rows, fields) {
@@ -18869,7 +18887,8 @@ bot.onText(/scruta/i, function (message) {
 											"Salute: " + progressBar(enemy_dragon_life, enemy_dragon_total_life) + " " + formatNumber(enemy_dragon_life) + "/" + formatNumber(enemy_dragon_total_life) + "\n" + 
 											"Nome: " + enemy_dragon_name + " " + enemy_dragon_type + " " + dragonSym(enemy_dragon_type) + "\n" + 
 											"Livello: " + enemy_dragon_level + "\n" + 
-											"Vocazione: " + enemy_class + "\n\n" +
+											"Vocazione: " + enemy_class + "\n" +
+											"Proprietario: " + enemy_nickname + "\n\n" +
 											"<b>Il tuo drago:</b>\n" +
 											"Salute: " + progressBar(dragon_life, dragon_total_life) + " " + formatNumber(dragon_life) + "/" + formatNumber(dragon_total_life), kbBack_html);
 						});
@@ -31838,6 +31857,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 				}
 
 				var poss = "";
+				var addCreate = 0;
 				var qnt = getItemCnt(player_id, item_id);
 				if (qnt > 0)
 					poss = " ✅";
@@ -31848,6 +31868,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 						getItemCnt(player_id, material_result[0].material_2) > 0 &&
 						getItemCnt(player_id, material_result[0].material_3) > 0) {
 						poss = " ☑️";
+						addCreate = 1;
 					}
 				}
 
@@ -31856,12 +31877,17 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 
 					var name = rows[0].name;
 					var rarity = rows[0].rarity;
-
+					
+					var iKeys = [["Accetta Vendita di " + name + " (" + qnt + ")"], ["Cerca *" + name], ["Cambia offerta"], ["Torna alla piazza", "Torna al menu"]];
+					
+					if (addCreate == 1)
+						iKeys.splice(1, 0, ["Crea " + name]);
+					
 					var kb = {
 						parse_mode: "HTML",
 						reply_markup: {
 							resize_keyboard: true,
-							keyboard: [["Accetta Vendita di " + name + " (" + qnt + ")"], ["Cerca *" + name], ["Cambia offerta"], ["Torna alla piazza", "Torna al menu"]]
+							keyboard: iKeys
 						}
 					};
 
@@ -51351,7 +51377,11 @@ function resetGnomorra() {
 }
 
 function reloadAchievement() {
-	connection.query('SELECT id, name, item_rarity, type FROM (SELECT * FROM achievement_list WHERE enabled = 1 ORDER BY RAND()) as t WHERE id NOT IN (SELECT achievement_id FROM achievement_daily) GROUP BY type ORDER BY RAND() LIMIT 3', function (err, rows, fields) {
+	var map_query = "(0, 1)";
+	if (checkDragonTopOn == 1)
+		map_query = "(0)";
+	
+	connection.query('SELECT id, name, item_rarity, type FROM (SELECT * FROM achievement_list WHERE enabled = 1 AND only_map IN ' + only_map + ' ORDER BY RAND()) as t WHERE id NOT IN (SELECT achievement_id FROM achievement_daily) GROUP BY type ORDER BY RAND() LIMIT 3', function (err, rows, fields) {
 		if (err) throw err;
 
 		connection.query('DELETE FROM achievement_daily', function (err, rows, fields) {

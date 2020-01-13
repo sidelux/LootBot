@@ -577,6 +577,7 @@ bot.onText(/^\/comandigiocatore/, function (message) {
 					"/valorezainoc - Mostra il valore complessivo degli oggetti creati posseduti (specifica anche la rarità)\n" +
 					"/gruzzolo - Mostra le monete possedute\n" +
 					"/trofei - Mostra i trofei nella stagione in corso delle Mappe\n" +
+					"/vette - Mostra il monete e le Ð raggiunte nelle Vette in corso\n" +
 					"/creazioni - Mostra i punti creazione ottenuti\n" +
 					"/spia - Spia un giocatore mostrando la scheda giocatore\n" +
 					"/ispeziona - Ispeziona un giocatore, puoi anche specificare il nome dello gnomo da inviare\n" +
@@ -8954,6 +8955,50 @@ bot.onText(/^\/trofei/, function (message) {
 		if (message.reply_to_message != undefined)
 			options = {parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id};
 		bot.sendMessage(message.chat.id, message.from.username + ", hai accumulato <b>" + formatNumber(rows[0].trophies) + "</b> 🏆 in questa stagione", options);
+	});
+});
+
+bot.onText(/^\/vette/, function (message) {
+	connection.query('SELECT id FROM player WHERE id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0)
+			return;
+		
+		var player_id = rows[0].id;
+		
+		connection.query('SELECT id FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Non possiedi il drago.", back);
+				return;
+			}
+			
+			connection.query('SELECT top_id FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Non hai effettuato l'accesso alle Vette.", back);
+					return;
+				}
+				
+				var top_id = rows[0].top_id;
+				
+				connection.query('SELECT name FROM dragon_top_list WHERE id = ' + top_id, function (err, rows, fields) {
+					if (err) throw err;
+					
+					var top_name = rows[0].name;
+					
+					connection.query('SELECT rank FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+
+						var options = {parse_mode: 'HTML'};
+						if (message.reply_to_message != undefined)
+							options = {parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id};
+						bot.sendMessage(message.chat.id, message.from.username + ", hai raggiunto il <b>" + top_name + "</b> con <b>" + rows[0].rank + "</b> Ð", options);
+					});
+				});
+			});
+		});
 	});
 });
 
