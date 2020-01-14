@@ -944,9 +944,8 @@ bot.onText(/^\/cleanInactive6$/, function (message, match) {
 					if (answer.text.toLowerCase() == "si") {
 						connection.query("SELECT P.id, P.nickname, L.time FROM last_command L RIGHT JOIN player P ON L.account_id = P.account_id WHERE time < NOW() - INTERVAL 6 MONTH", function (err, rows, fields) {
 							if (err) throw err;
-							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+							for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 								console.log(rows[i].id + "  - " + rows[i].nickname + " inattivo dal " + rows[i].time);
-							}
 							bot.sendMessage(message.chat.id, "Continuare con la cancellazione?", yesno).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text.toLowerCase() == "si") {
@@ -12756,13 +12755,13 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														keyboard: [["Spolvera"], ["Ignora"], ["Torna al menu"]]
+														keyboard: [["Raccogli"], ["Ignora"], ["Torna al menu"]]
 													}
 												};
 
 												bot.sendMessage(message.chat.id, "Entri in una stanza completamente piena di polvere, così fitta da neanche riuscire a vederne l'uscita, cosa vuoi fare?", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = function (answer) {
-														if (answer.text == "Spolvera") {
+														if (answer.text == "Raccogli") {
 
 															var dust = 50;
 															if (cursed == 1)
@@ -29919,7 +29918,7 @@ bot.onText(/^scava!|^scava$/i, function (message) {
 	});
 });
 
-bot.onText(/^spolvera!/i, function (message) {
+bot.onText(/^spolvera/i, function (message) {
 
 	if (message.from.id != 20471035) {
 		if (eventDust == 0) {
@@ -51381,7 +51380,7 @@ function reloadAchievement() {
 	if (checkDragonTopOn == 1)
 		map_query = "(0)";
 	
-	connection.query('SELECT id, name, item_rarity, type FROM (SELECT * FROM achievement_list WHERE enabled = 1 AND only_map IN ' + only_map + ' ORDER BY RAND()) as t WHERE id NOT IN (SELECT achievement_id FROM achievement_daily) GROUP BY type ORDER BY RAND() LIMIT 3', function (err, rows, fields) {
+	connection.query('SELECT id, name, item_rarity, type FROM (SELECT * FROM achievement_list WHERE enabled = 1 AND only_map IN ' + map_query + ' ORDER BY RAND()) as t WHERE id NOT IN (SELECT achievement_id FROM achievement_daily) GROUP BY type ORDER BY RAND() LIMIT 3', function (err, rows, fields) {
 		if (err) throw err;
 
 		connection.query('DELETE FROM achievement_daily', function (err, rows, fields) {
@@ -53415,7 +53414,7 @@ function setExtraDust(element, index, array) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Spolvera!"], ["Torna al menu"]]
+				keyboard: [["Spolvera"], ["Torna al menu"]]
 			}
 		};
 

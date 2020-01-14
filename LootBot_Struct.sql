@@ -1791,7 +1791,7 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 /*!50001 CREATE TABLE `heist_public` (
   `id` tinyint NOT NULL,
-  `fom_nick` tinyint NOT NULL,
+  `from_nick` tinyint NOT NULL,
   `to_nick` tinyint NOT NULL,
   `fail` tinyint NOT NULL,
   `time` tinyint NOT NULL,
@@ -3645,7 +3645,7 @@ CREATE TABLE `travel` (
 /*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `heist_public` AS select `H`.`id` AS `id`,`P1`.`nickname` AS `fom_nick`,`P2`.`nickname` AS `to_nick`,`H`.`fail` AS `fail`,`H`.`time` AS `time`,`H`.`matchmaking` AS `matchmaking` from ((`heist_history` `H` join `player` `P1` on((`H`.`from_id` = `P1`.`id`))) join `player` `P2` on((`H`.`to_id` = `P2`.`id`))) */;
+/*!50001 VIEW `heist_public` AS select `H`.`id` AS `id`,`P1`.`nickname` AS `from_nick`,`P2`.`nickname` AS `to_nick`,`H`.`fail` AS `fail`,`H`.`time` AS `time`,`H`.`matchmaking` AS `matchmaking` from ((`heist_history` `H` join `player` `P1` on((`H`.`from_id` = `P1`.`id`))) join `player` `P2` on((`H`.`to_id` = `P2`.`id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
