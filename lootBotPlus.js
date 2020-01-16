@@ -9003,7 +9003,7 @@ bot.onText(/^\/vette/, function (message) {
 });
 
 bot.onText(/^\/imprese/, function (message) {
-	connection.query('SELECT id, reborn FROM player WHERE id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+	connection.query('SELECT id, reborn, achievement_count, achievement_count_all FROM player WHERE id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0)
@@ -9011,6 +9011,8 @@ bot.onText(/^\/imprese/, function (message) {
 		
 		var player_id = rows[0].id;
 		var reborn = rows[0].reborn;
+		var daily = rows[0].achievement_count;
+		var triplet = rows[0].achievement_count_all;
 		
 		connection.query('SELECT D.achievement_id, L.name, IF(L.multiply=1,L.value*' + reborn + ',L.value) As tot_value FROM achievement_daily D, achievement_list L WHERE D.achievement_id = L.id ORDER BY D.id', function (err, rows, fields) {
 			if (err) throw err;
@@ -9033,7 +9035,7 @@ bot.onText(/^\/imprese/, function (message) {
 				var options = {parse_mode: 'HTML'};
 				if (message.reply_to_message != undefined)
 					options = {parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id};
-				bot.sendMessage(message.chat.id, message.from.username + ", ecco il tuo progresso nelle imprese di oggi:\n" + achievement, options);
+				bot.sendMessage(message.chat.id, message.from.username + ", ecco il tuo progresso nelle imprese di oggi:\n" + achievement + "Hai completato " + formatNumber(daily) + " imprese giornaliere e ottenuto " + formatNumber(triplet) + " triplette", options);
 			};
 		});
 	});
