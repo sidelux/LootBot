@@ -50833,6 +50833,23 @@ function generateMap(width, height, players, conditions) {
 		for(j = 0; j < width; j++)
 			matrix[i][j] = 0;
 	}
+	
+	// calcolo partenze possibili giocatori (strato più esterno della mappa)
+	
+	var playerPoss = [];
+	for(i = 0; i < matrix.length; i++) {
+		for(j = 0; j < matrix[i].length; j++) {
+			if ((j == 0) || (i == height-1) || (i == 0) || (j == width-1)){
+				// console.log("poss", i, j);
+				playerPoss.push([i, j]);
+			}
+		}
+	}
+	
+	playerPoss = shuffle(playerPoss);
+	
+	for(p = 0; p < players; p++)
+		matrix[playerPoss[p][0]][playerPoss[p][1]] = 8;
 
 	// genera costruzioni
 
@@ -50844,12 +50861,6 @@ function generateMap(width, height, players, conditions) {
 	}
 
 	var totTicks = height*width;
-
-	// genera giocatori
-
-	console.log("Generazione " + players + " giocatori...");
-	for(i = 0; i < players; i++)
-		matrix = insertRandomPos(matrix, 8, 2);
 
 	// genera scrigni
 
