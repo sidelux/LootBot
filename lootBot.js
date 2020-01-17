@@ -50771,7 +50771,7 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 	});
 }
 
-function generateMap(width, height, players, conditions) {
+function generateMap(lobby_id, width, height, players, conditions) {
 	var build = [4, 5, 6];
 	var buildQnt = [2, 2, 2];
 	var chestRate = 20;
@@ -50804,7 +50804,7 @@ function generateMap(width, height, players, conditions) {
 	}
 
 	var totalRate = chestRate+chestEpicRate+trapRate+pulseRate+scrapRate+teleportRate+paralyzeRate+boostRate;
-	console.log("Generazione mappa da " + width + "x" + height + " ticks con il " + totalRate + "% di oggetti e " + buildQnt + " costruzioni con condizioni " + conditions);
+	console.log("Generazione mappa lobby " + lobby_id + " da " + width + "x" + height + " ticks con il " + totalRate + "% di oggetti e " + buildQnt + " costruzioni con condizioni " + conditions);
 
 	/* LEGENDA
 
@@ -55143,7 +55143,7 @@ function setFullLobby(element, index, array) {
 		var map_conditions = rows[0].map_conditions;
 		
 		var size = Math.round(players*2-1);	// sempre dispari
-		var mapMatrix = generateMap(size, size, players, map_conditions);
+		var mapMatrix = generateMap(lobby_id, size, size, players, map_conditions);
 
 		connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, turn_number, next_restrict_time, conditions) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE), ' + map_conditions + ')', function (err, rows, fields) {
 			if (err) throw err;
