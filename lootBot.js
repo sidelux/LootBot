@@ -45,7 +45,8 @@ var max_top_id = 6;
 var rank_cap = 15;
 var lobby_total_space = 5;
 var lobby_restric_min = 10;
-var lobby_daily_limit = 5;
+var lobby_daily_limit_default = 5;
+var lobby_daily_limit = lobby_daily_limit_default;
 var battle_timeout_turn = 2;
 var battle_timeout_limit_min = 20;
 var battle_timeout_elapsed = 600;
@@ -5976,6 +5977,8 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 								var lobby_players = rows[0].cnt;
 								if (crazyMode == 1)
 									lobby_daily_limit = 7;
+								else
+									lobby_daily_limit = lobby_daily_limit_default;
 								var map_daily_diff = lobby_daily_limit-map_count;
 								
 								if (map_daily_diff < 0)
@@ -7663,7 +7666,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												item_power = item[0].power_shield;
 											}
 											item_id = item[0].id;
-											text += "> " + item[0].name + " (" + item[0].rarity + ")";
+											text += "> " + item[0].name + " (" + item[0].rarity + ", " + item_power + ")";
 										}
 										toClear = 1;
 										setAchievement(player_id, 89, 1);
@@ -7694,7 +7697,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												item_power = item[0].power_shield;
 											}
 											item_id = item[0].id;
-											text += "> " + item[0].name + " (" + item[0].rarity + ")";
+											text += "> " + item[0].name + " (" + item[0].rarity + ", " + item_power + ")";
 										}
 										toClear = 1;
 										setAchievement(player_id, 89, 1);
@@ -50836,12 +50839,17 @@ function generateMap(width, height, players, conditions) {
 	console.log("Generazione " + buildQnt.reduce((a, b) => a + b, 0) + " costruzioni...");
 	var index = 0;
 	for(i = 0; i < build.length; i++) {
-		for(k = 0; k < buildQnt[i]; k++) {
+		for(k = 0; k < buildQnt[i]; k++)
 			matrix = insertRandomPos(matrix, build[i], 2);
-		}
 	}
 
 	var totTicks = height*width;
+
+	// genera giocatori
+
+	console.log("Generazione " + players + " giocatori...");
+	for(i = 0; i < players; i++)
+		matrix = insertRandomPos(matrix, 8, 2);
 
 	// genera scrigni
 
@@ -50870,12 +50878,6 @@ function generateMap(width, height, players, conditions) {
 	console.log("Generazione " + pulseTicks + " impulsi...");
 	for(i = 0; i < pulseTicks; i++)
 		matrix = insertRandomPos(matrix, 7, 0);
-
-	// genera giocatori
-
-	console.log("Generazione " + players + " giocatori...");
-	for(i = 0; i < players; i++)
-		matrix = insertRandomPos(matrix, 8, 2);
 
 	// genera rottami
 
@@ -50981,7 +50983,7 @@ function insertRandomPos(matrix, objId, distanceValue) {
 		randY = Math.round(getRandomArbitrary(0, heightLen));
 		randX = Math.round(getRandomArbitrary(0, widthLen));
 
-		distance = checkDistance(matrix, objId, randX, randY, distanceValue);
+		distance = checkDistance(matrix, objId, randY, randX, distanceValue);
 		if ((matrix[randY][randX] == 0) && (distance == 1))
 			isValid = 1;
 		else
@@ -51000,8 +51002,8 @@ function insertRandomPos(matrix, objId, distanceValue) {
 	return matrix;
 }
 
-function checkDistance(matrix, objId, posY, posX, distance) {
-	if (distance == 1) {
+function checkDistance(matrix, objId, posX, posY, distance) {
+	if (distance >= 1) {
 		if (isUndefined(matrix, posX-1, posY-1) == false)
 			if (matrix[posX-1][posY-1] == objId)
 				return 0;
@@ -51028,8 +51030,7 @@ function checkDistance(matrix, objId, posY, posX, distance) {
 		if (isUndefined(matrix, posX+1, posY+1) == false)
 			if (matrix[posX+1][posY+1] == objId)
 				return 0;
-	}
-	if (distance == 2) {
+	} else if (distance == 2) {
 		if (isUndefined(matrix, posX-2, posY-2) == false)
 			if (matrix[posX-2][posY-2] == objId)
 				return 0;
@@ -55400,9 +55401,9 @@ function checkRestrictMap() {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
-				console.log(getNow("it") + "\x1b[32m 1 restrizione mappa avviata\x1b[0m");
+				console.log(getNow("it") + "\x1b[32m 1 restringimento mappa avviata\x1b[0m");
 			else
-				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " restrizioni mappe avviate\x1b[0m");
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " restringimenti mappe avviati\x1b[0m");
 			rows.forEach(setRestrictMap);
 		}
 	});
