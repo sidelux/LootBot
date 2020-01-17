@@ -2116,6 +2116,7 @@ CREATE TABLE `map_lobby` (
   `scrap` int(11) NOT NULL DEFAULT '0',
   `pulsePosX` int(11) DEFAULT NULL,
   `pulsePosY` int(11) DEFAULT NULL,
+  `boost_turn` int(11) NOT NULL DEFAULT '0',
   `last_obj` int(11) DEFAULT NULL,
   `last_obj_val` varchar(32) DEFAULT NULL,
   `enemy_id` int(11) DEFAULT NULL,
@@ -2158,6 +2159,7 @@ CREATE TABLE `map_lobby_list` (
   `turn_number` int(11) NOT NULL,
   `next_restrict_time` timestamp NULL DEFAULT NULL,
   `conditions` int(11) NOT NULL,
+  `restrict_end` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `map_lobby_list_lobby_id` (`lobby_id`),
   CONSTRAINT `map_lobby_list_lobby_id` FOREIGN KEY (`lobby_id`) REFERENCES `map_lobby` (`lobby_id`)

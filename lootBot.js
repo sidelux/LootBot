@@ -51,7 +51,7 @@ var battle_timeout_limit_min = 20;
 var battle_timeout_elapsed = 600;
 var battle_season_test = 0;
 var dragon_limit_search = 15;
-var map_condition_max = 7;
+var map_condition_max = 8;
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
 var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750, 2500, 3000, 3750];
 var progLevRew = [50000, 100000, 125000, 150000, 250000, 1000000, 2500000, 5000000, 5000000, 10000000, 20000000];
@@ -5998,6 +5998,8 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 									conditions += "⚡️ Corsa contro il tempo";
 								else if (map_conditions == 7)
 									conditions += "🖐 Senza fretta";
+								else if (map_conditions == 8)
+									conditions += "🔋 Veloce come il vento";
 
 								bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\n\n<b>" + lobby_players + "</b> ⚔️ combattenti dentro una lobby\n<b>" + trophies + "</b> 🏆 in questa stagione (terminerà tra " + diff + ")\n<b>" + map_daily_diff + "</b> 💥 partite avviabili oggi" + conditions, kbMain).then(function () {
 									answerCallbacks[message.chat.id] = function (answer) {
@@ -6230,6 +6232,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 															mapIdToSym(10) + " Mappa bruciata - Se si capita in una casella bruciata, si viene sconfitti\n" +
 															mapIdToSym(11) + " Teletrasporto - Teletrasporta il giocatore in una casella casuale non bruciata, senza attivarne la funzione\n" +
 															mapIdToSym(12) + " Campo Paralizzante - Paralizza il giocatore costringendogli a ritardare la continuazione dell'esplorazione\n" +
+															mapIdToSym(13) + " Bevanda Boost - Riduce il tempo di attesa per il movimento per 3 turni\n" +
 															"\n<b>Istruzioni base</b>" +
 															"\n> Di notte e durante le Vette non è possibile accedere a nuove Lobby." +
 															"\n> Il personaggio inizierà la partita con un equip base, zero monete e zero rottami." +
@@ -6249,7 +6252,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 															"\n> Il comando Difendi, nel caso di successo obbliga a saltare il turno successivo del nemico, nel caso di fallimento il turno lo salta l'utilizzatore, può effettuare una parata parziale o totale del colpo subito." +
 															"\n> Ogni turno scade dopo un breve tempo, quando scade tocca all'avversario, se scade per troppe volte la vittoria dell'avversario è automatica." +
 															"\n\n<b>Stagione</b>" +
-															"\n> Le stagioni durano circa un mese, la data precisa è indicata nel messaggio principale." +
+															"\n> Le stagioni durano circa tre settimane, la data precisa è indicata nel messaggio principale." +
 															"\n> Alla fine di ogni partita vengono forniti dei trofei in base alla posizione conclusiva ed alle uccisioni dei nemici." +
 															"\n> Alla fine della stagione si ottiene un premio in base ai trofei accumulati e questi ultimi, insieme alle uccisioni totali, vengono resettati." +
 															"\n> Alla fine della stagione viene anche accumulato un totale globale dei trofei accumulati che non viene mai resettato.", kbBack);
@@ -6372,7 +6375,7 @@ bot.onText(/attacca!/i, function (message) {
 			}
 		};
 
-		connection.query('SELECT lobby_id, enemy_id, my_turn, life, total_life, weapon_id, weapon2_id, weapon3_id, battle_heavy, battle_shield, battle_stunned, battle_turn_start FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT lobby_id, enemy_id, my_turn, life, total_life, weapon_id, weapon2_id, weapon3_id, battle_heavy, battle_shield, battle_stunned, battle_turn_start, money, scrap FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
@@ -6403,6 +6406,8 @@ bot.onText(/attacca!/i, function (message) {
 
 			var life = rows[0].life;
 			var total_life = rows[0].total_life;
+			var money = rows[0].money;
+			var scrap = rows[0].scrap;
 			var battle_heavy = rows[0].battle_heavy;
 			var battle_shield = rows[0].battle_shield;
 			var battle_stunned = rows[0].battle_stunned;
@@ -6567,7 +6572,7 @@ bot.onText(/attacca!/i, function (message) {
 					var enemy_boost_id = null;
 					
 					var equip = "🗡 " + enemy_weapon_name + "\n" +
-								"🥋 " + enemy_weapon3_name + "\n" +
+								"🥋 " + enemy_weapon2_name + "\n" +
 								"🛡 " + enemy_weapon3_name + "\n";
 
 					bot.sendMessage(message.chat.id, "Stai combattendo contro <b>" + rows[0].nickname + "</b> " + classSym(enemy_class_id) + "\n❤️ " + formatNumber(rows[0].life) + " hp\n" + equip + "\nLa tua salute: " + formatNumber(life) + " hp\n\nCosa vuoi fare?", kbFight).then(function () {
@@ -6839,6 +6844,70 @@ bot.onText(/attacca!/i, function (message) {
 									enemy_query += ", life = life-" + dmg;
 								
 								if (life - my_dmg <= 0) {
+									// controlli invertiti
+									if ((money > 0) || (scrap > 0)) {
+										enemy_text += "\nFrugando nella sua sacca ottieni ";
+										if ((money > 0) && (scrap > 0))
+											enemy_text += "<b>" + formatNumber(money) + "</b> § e <b>" + scrap + "</b> 🔩!";
+										else {
+											if (money > 0)
+												enemy_text += "<b>" + formatNumber(money) + "</b> §";
+											if (scrap > 0)
+												enemy_text += "<b>" + scrap + "</b> 🔩!";
+										}
+									}
+									
+									enemy_text += "\n";
+									
+									// Modifica anche gli altri due
+									var item_query = "";
+									var enemy_item_query = "";
+									
+									var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + weapon_id);
+									var weapon_name = weaponQuery[0].name;
+									if (enemy_weapon_id != null) {
+										if (weapon > enemy_weapon) {
+											enemy_text += "\nArma <b>" + weapon_name + "</b> sgraffignata e sostituita!";
+											enemy_item_query += ", weapon_id = " + weapon_id;
+											item_query += ", weapon_id = NULL";
+										}
+									} else {
+										enemy_text += "\nArma <b>" + weapon_name + "</b> sgraffignata ed equipaggiata!";
+										enemy_item_query += ", weapon_id = " + weapon_id;
+										item_query += ", weapon_id = NULL";
+									}
+										
+									var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + weapon2_id);
+									var weapon_name = weaponQuery[0].name;
+									if (enemy_weapon2_id != null) {
+										if (weapon2 < enemy_weapon2) {
+											enemy_text += "\nArmatura <b>" + weapon_name + "</b> sgraffignata e sostituita!";
+											enemy_item_query += ", weapon2_id = " + weapon2_id;
+											item_query += ", weapon2_id = NULL";
+										}
+									} else {
+										enemy_text += "\nArmatura <b>" + weapon_name + "</b> sgraffignata ed equipaggiata!";
+										enemy_item_query += ", weapon2_id = " + weapon2_id;
+										item_query += ", weapon2_id = NULL";
+									}
+										
+									var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + weapon3_id);
+									var weapon_name = weaponQuery[0].name;
+									if (enemy_weapon3_id != null) {
+										if (weapon3 < enemy_weapon3) {
+											enemy_text += "\nScudo <b>" + weapon_name + "</b> sgraffignato e sostituito!";
+											enemy_item_query += ", weapon3_id = " + weapon3_id;
+											item_query += ", weapon3_id = NULL";
+										}
+									} else {
+										enemy_text += "\nScudo <b>" + weapon_name + "</b> sgraffignato ed equipaggiato!";
+										enemy_item_query += ", weapon3_id = " + weapon3_id;
+										item_query += ", weapon3_id = NULL";
+									}
+									
+									enemy_query += ", money = money+" + money + ", scrap = scrap+" + scrap + enemy_item_query;
+									query += ", life = 0, money = money-" + money + ", scrap = scrap-" + scrap + item_query;
+									
 									text += "\nVenendo sconfitto definitivamente con un colpo mortale!";
 									enemy_text += "\nSconfiggendolo definitivamente con un colpo mortale!";
 									mapPlayerKilled(lobby_id, player_id, 2, null, 1);
@@ -7002,6 +7071,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 			var last_obj_val = rows[0].last_obj_val;
 			var pulsePosX = rows[0].pulsePosX;
 			var pulsePosY = rows[0].pulsePosY;
+			var boost_turn = rows[0].boost_turn;
 			var enemy_id = rows[0].enemy_id;
 			var killed = rows[0].killed;
 
@@ -7422,8 +7492,12 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 						bot.sendMessage(message.chat.id, "Sei stato sconfitto.\nCi sono ancora " + total_players_alive + " sopravvissuti\n" + map, kbBack);
 						return;
 					}
+					
+					var boost_text = "";
+					if (boost_turn > 0)
+						boost_text = "\n" + mapIdToSym(13) + " " + boost_turn;
 
-					bot.sendMessage(message.chat.id, "👥 " + total_players_alive + " su " + lobby_total_space + " sopravvissuti\n❤️ " + formatNumber(life) + wait_text + restrict_text + "\n" + map, kbSel).then(function () {
+					bot.sendMessage(message.chat.id, "👥 " + total_players_alive + " su " + lobby_total_space + " sopravvissuti\n❤️ " + formatNumber(life) + wait_text + restrict_text + boost_text + "\n" + map, kbSel).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							if ((answer.text == "Torna al menu") || (answer.text.toLowerCase().indexOf("aggiorna") != -1))
 								return;
@@ -7508,6 +7582,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									var last_obj_query = "";
 									var scrap_query = "";
 									var pulse_query = "";
+									var boost_query = "";
 									var enemy_query = "";
 									var isBuild = 0;
 									var isEnemy = 0;
@@ -7717,6 +7792,16 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										wait_time = 6;
 										text += "Cadi in un " + mapIdToSym(12) + " Campo Paralizzante e vieni immobilizzato! Dovrai attendere più tempo per continuare\n";
 										toClear = 1;
+									} else if (objId == 13) {		// bevanda boost
+										wait_time = 1;
+										boost_query = ", boost_turn = boost_turn+3";
+										text += "Trovi e raccogli una " + mapIdToSym(13) + " Bevanda Boost, per i prossimi 3 turni il tempo di attesa per i movimenti è ridotto\n";
+										toClear = 1;
+									}
+									
+									if (boost_turn > 0) {
+										wait_time = 1;
+										boost_query = ", boost_turn = boost_turn-1";
 									}
 
 									// svuota la risorsa
@@ -7796,7 +7881,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									else if (life_gain > 0)
 										life_query = ', life = life+' + life_gain;
 
-									connection.query('UPDATE map_lobby SET battle_turn_start = NOW(), wait_time = "' + long_date + '", battle_timeout = "' + long_date_turn + '", battle_timeout_limit = "' + long_date_battle + '", posX = ' + posX + ', posY = ' + posY + item_query + last_obj_query + scrap_query + enemy_query + pulse_query + life_query + ', money = money+' + money + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+									connection.query('UPDATE map_lobby SET battle_turn_start = NOW(), wait_time = "' + long_date + '", battle_timeout = "' + long_date_turn + '", battle_timeout_limit = "' + long_date_battle + '", posX = ' + posX + ', posY = ' + posY + item_query + last_obj_query + scrap_query + enemy_query + pulse_query + life_query + boost_query + ', money = money+' + money + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 
 										if (isBuild)
@@ -17590,7 +17675,7 @@ bot.onText(/cassaforte/i, function (message, match) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						keyboard: [['Deposita'], ['Torna al team']]
+						keyboard: [['Deposita'], ['Torna al team'], ['Torna al menu']]
 					}
 				};
 			} else {
@@ -17598,7 +17683,7 @@ bot.onText(/cassaforte/i, function (message, match) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						keyboard: [['Deposita', 'Ritira'], ['Log'], ['Torna al team']]
+						keyboard: [['Deposita', 'Ritira'], ['Log'], ['Torna al team'], ['Torna al menu']]
 					}
 				};
 			}
@@ -29855,7 +29940,7 @@ bot.onText(/festival/i, function (message) {
 	});
 });
 
-bot.onText(/^scava!|^scava$/i, function (message) {
+bot.onText(/^scava$/i, function (message) {
 
 	if (message.from.id != 20471035) {
 		if (eventMana == 0) {
@@ -50692,7 +50777,8 @@ function generateMap(width, height, players, conditions) {
 	var pulseRate = 7;
 	var scrapRate = 20;
 	var teleportRate = 3;
-	var paralyzeRate = 5;
+	var paralyzeRate = 2;
+	var boostRate = 3;
 	
 	if (conditions == 6) {
 		chestRate = 0;
@@ -50702,9 +50788,19 @@ function generateMap(width, height, players, conditions) {
 		scrapRate = 0;
 		teleportRate = 10;
 		paralyzeRate = 50;
+		boostRate = 0;
+	} else if (conditions == 8) {
+		chestRate = 0;
+		chestEpicRate = 0;
+		trapRate = 10;
+		pulseRate = 10;
+		scrapRate = 0;
+		teleportRate = 10;
+		paralyzeRate = 0;
+		boostRate = 50;
 	}
 
-	var totalRate = chestRate+chestEpicRate+trapRate+pulseRate+scrapRate+teleportRate+paralyzeRate;
+	var totalRate = chestRate+chestEpicRate+trapRate+pulseRate+scrapRate+teleportRate+paralyzeRate+boostRate;
 	console.log("Generazione mappa da " + width + "x" + height + " ticks con il " + totalRate + "% di oggetti e " + buildQnt + " costruzioni con condizioni " + conditions);
 
 	/* LEGENDA
@@ -50722,6 +50818,7 @@ function generateMap(width, height, players, conditions) {
 	10 = mappa bruciata
 	11 = teletrasporto
 	12 = paralisi
+	13 = bevanda boost
 
 	*/
 
@@ -50800,6 +50897,13 @@ function generateMap(width, height, players, conditions) {
 	console.log("Generazione " + paralyzeTicks + " campi paralizzanti...");
 	for(i = 0; i < paralyzeTicks; i++)
 		matrix = insertRandomPos(matrix, 12, 0);
+	
+	// genera bevande boost
+
+	var boostTicks = Math.round(totTicks*(boostRate/100));
+	console.log("Generazione " + boostTicks + " bevande boost...");
+	for(i = 0; i < boostTicks; i++)
+		matrix = insertRandomPos(matrix, 13, 0);
 
 	console.log("Generazione completata");
 
@@ -51111,7 +51215,7 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 }
 
 function mapIdToSym(objId) {
-	var symArr = ["◻️", "💰", "💰", "🕳", "💊", "🔁", "💸", "✨", "👣", "🔩", "☠️", "💨", "⚡️"];
+	var symArr = ["◻️", "💰", "💰", "🕳", "💊", "🔁", "💸", "✨", "👣", "🔩", "☠️", "💨", "⚡️", "🔋"];
 	if (symArr[objId] == undefined)
 		console.log("mapIdToSym undefined: " + objId);
 	return symArr[objId];
@@ -53402,7 +53506,7 @@ function setMana(element, index, array) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Scava!"], ["Torna al menu"]]
+				keyboard: [["Scava"], ["Torna al menu"]]
 			}
 		};
 
@@ -55194,7 +55298,7 @@ function setFinishedLobbyEnd(element, index, array) {
 							// pulizia
 							connection.query('DELETE FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 								if (err) throw err;
-								connection.query('UPDATE map_lobby SET lobby_id = NULL, my_turn = 0, match_kills = 0, posX = NULL, posY = NULL, life = NULL, total_life = NULL, killed = 0, wait_time = NULL, weapon_id = NULL, weapon2_id = NULL, weapon3_id = NULL, money = 0, scrap = 0, pulsePosX = NULL, pulsePosY = NULL, last_obj = NULL, last_obj_val = NULL, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_turn_start = NULL, battle_time_elapsed = 0, battle_turn_lost = 0 WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+								connection.query('UPDATE map_lobby SET lobby_id = NULL, my_turn = 0, match_kills = 0, posX = NULL, posY = NULL, life = NULL, total_life = NULL, killed = 0, wait_time = NULL, weapon_id = NULL, weapon2_id = NULL, weapon3_id = NULL, money = 0, scrap = 0, pulsePosX = NULL, pulsePosY = NULL, boost_turn = 0, last_obj = NULL, last_obj_val = NULL, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_turn_start = NULL, battle_time_elapsed = 0, battle_turn_lost = 0 WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 									if (err) throw err;
 								});
 							});
@@ -55211,7 +55315,13 @@ function checkMapSeasonEnd() {
 		if (err) throw err;
 		if (Object.keys(rows).length == 1) {
 			if (battle_season_test == 0) {
+				/*
 				connection.query('UPDATE config SET map_season_end = DATE_ADD(map_season_end, INTERVAL 30 DAY)', function (err, rows, fields) {
+					if (err) throw err;
+				});
+				*/
+				var next_season_end = moment().startOf('month').add(1, 'months').weekday('3').add(2, 'weeks').format('YYYY-MM-DD') + " 12:00:00";
+				connection.query('UPDATE config SET map_season_end = DATE_SUB("' + next_season_end + '", INTERVAL 7 DAY)', function (err, rows, fields) {
 					if (err) throw err;
 				});
 				connection.query('UPDATE player SET last_season_trophies = 0', function (err, rows, fields) {
