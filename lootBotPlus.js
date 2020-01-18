@@ -17,6 +17,7 @@ var ms = require("ms");
 var mysql = require('mysql');
 var mysql_sync = require('sync-mysql');
 var readline = require('readline');
+var stringSimilarity = require('string-similarity');
 
 var { create, all } = require('mathjs');
 var math = create(all);
@@ -565,7 +566,7 @@ bot.onText(/^\/start$|^\/start@lootplusbot$/, function (message) {
 bot.onText(/^\/comandigiocatore/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per il giocatore*\n" +
 					"/giocatore o /giocatrice - Mostra la scheda giocatore\n" +
-					"/drago - Mostra la scheda drago (specifica il nome completo di un drago per spiarlo)\n" +
+					"/drago - Mostra la scheda drago (specifica 'nome_parziale, tipo' di un drago per spiarlo)\n" +
 					"/zaino - Mostra gli oggetti contenuti nello zaino (specifica anche rarità separate da virgola o 'consumabili' o 'completo')\n" +
 					"/zainoc/b - Mostra gli oggetti creati/base contenuti nello zaino (specifica anche la rarità)\n" +
 					"/zainor - Mostra gli oggetti speciali posseduti (polvere, monete lunari, ecc.)\n" +
@@ -9521,7 +9522,7 @@ bot.onText(/^\/giocatore|^\/giocatrice/, function (message) {
 	getInfo(message, player, 6, 0, account_id);
 });
 
-bot.onText(/^\/drago (.+)|^\/drago/, function (message, match) {
+bot.onText(/^\/drago (.+),(.+)|^\/drago/, function (message, match) {
 	connection.query('SELECT id, money, power_dragon_dmg, power_dragon_def, power_dragon_crit FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0) {
@@ -9536,39 +9537,24 @@ bot.onText(/^\/drago (.+)|^\/drago/, function (message, match) {
 		var power_dragon_crit = rows[0].power_dragon_crit;
 
 		var isSpy = 0;
-		if (match[1] != undefined) {
-			var name;
+		if ((match[1] != undefined) && (match[2] != undefined)) {
+			var name = match[1].toLowerCase();
+			var typeArray = ["delle montagne", "dei Cieli", "Infernale", "dell'Oscurità", "dei Mari", "dei Ghiacci"];
 			var type;
-			match[1] = match[1].toLowerCase();
-			if ((match[1].indexOf("delle montagne") > -1) && (match[1].indexOf("delle montagne") >= match[1].length-14)) {
-				type = "delle Montagne";
-				name = match[1].replace(new RegExp("delle montagne$"), "").trim();
-			} else if ((match[1].indexOf("dei cieli") > -1) && (match[1].indexOf("dei cieli") >= match[1].length-9)) {
-				type = "dei Cieli";
-				name = match[1].replace(new RegExp("dei cieli$"), "").trim();
-			} else if ((match[1].indexOf("infernale") > -1) && (match[1].indexOf("infernale") >= match[1].length-9)) {
-				type = "Infernale";
-				name = match[1].replace(new RegExp("infernale$"), "").trim();
-			} else if ((match[1].indexOf("dell'oscurità") > -1) && (match[1].indexOf("dell'oscurità") >= match[1].length-13)) {
-				type = "dell'Oscurità";
-				name = match[1].replace(new RegExp("dell'oscurità$"), "").trim();
-			} else if ((match[1].indexOf("dei mari") > -1) && (match[1].indexOf("dei mari") >= match[1].length-8)) {
-				type = "dei Mari";
-				name = match[1].replace(new RegExp("dei mari$"), "").trim();
-			} else if ((match[1].indexOf("dei ghiacci") > -1) && (match[1].indexOf("dei ghiacci") >= match[1].length-11)) {
-				type = "dei Ghiacci";
-				name = match[1].replace(new RegExp("dei ghiacci$"), "").trim();
-			} else {
-				bot.sendMessage(message.chat.id, "Tipo del drago non riconosciuto");
+			var sim = stringSimilarity.findBestMatch(match[2], typeArray);
+			if (sim.bestMatch.rating >= 0.6)
+				type = sim.bestMatch.target;
+			else {
+				bot.sendMessage(message.chat.id, "Tipo del drago non riconosciuto (" + sim.bestMatch.rating + ")");
 				return;
 			}
-
+			
 			if (money < 50000) {
 				bot.sendMessage(message.chat.id, "Non hai abbastanza monete, ne servono 50.000!");
 				return;
 			}
 
-			var dragon = connection_sync.query('SELECT player_id FROM dragon WHERE name = "' + name + '" AND type = "' + type + '"');
+			var dragon = connection_sync.query('SELECT player_id FROM dragon WHERE name LIKE "%' + name + '%" AND type = "' + type + '"');
 			if (Object.keys(dragon).length == 0) {
 				bot.sendMessage(message.from.id, "Il drago cercato non esiste!");
 				return;
@@ -9576,6 +9562,11 @@ bot.onText(/^\/drago (.+)|^\/drago/, function (message, match) {
 			connection.query('UPDATE player SET money = money-50000 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
+			
+			if (Object.keys(dragon).length > 10) {
+				bot.sendMessage(message.chat.id, "Troppi risultati, riprova con un nome più preciso");
+				return;
+			}
 
 			player_id = [];
 			for (i = 0, len = Object.keys(dragon).length; i < len; i++)

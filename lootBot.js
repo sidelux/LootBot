@@ -6574,9 +6574,9 @@ bot.onText(/attacca!/i, function (message) {
 					var enemy_boost_mission = null;
 					var enemy_boost_id = null;
 					
-					var equip = "🗡 " + enemy_weapon_name + "\n" +
-								"🥋 " + enemy_weapon2_name + "\n" +
-								"🛡 " + enemy_weapon3_name + "\n";
+					var equip = "🗡 " + enemy_weapon_name + " (" + enemy_weapon + ")\n" +
+								"🥋 " + enemy_weapon2_name + " (" + enemy_weapon2 + ")\n" +
+								"🛡 " + enemy_weapon3_name + " (" + enemy_weapon3 + ")\n";
 
 					bot.sendMessage(message.chat.id, "Stai combattendo contro <b>" + rows[0].nickname + "</b> " + classSym(enemy_class_id) + "\n❤️ " + formatNumber(rows[0].life) + " hp\n" + equip + "\nLa tua salute: " + formatNumber(life) + " hp\n\nCosa vuoi fare?", kbFight).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
@@ -44826,6 +44826,21 @@ function mainMenu(message) {
 						if (Object.keys(lobby).length == 0) {
 							var wait = connection_sync.query('SELECT COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id = ' + rows[0].lobby_id);
 							msgtext += "\n🗺 Lobby in attesa... " + wait[0].cnt + "/" + lobby_total_space + " giocatori";
+						} else {
+							var restrict_text = "";
+							if (rows[0].next_restrict_time != null) {
+								var restrict_time = new Date(rows[0].next_restrict_time);
+								var now = new Date();
+								var restrict_min = Math.round(((restrict_time - now) / 1000) / 60);
+								var restrict_plur = "i";
+								if (restrict_min <= 1)
+									restrict_plur = "o";
+								if (restrict_min < 1)
+									restrict_min = "meno di 1";
+								restrict_text = " (☠️ " + restrict_min + " minut" + restrict_plur + ")";
+							}
+							if (checkDragonTopOn == 0)
+								msgtext += "\n🗺 Puoi esplorare le Mappe" + restrict_text;
 						}
 					} else if (rows[0].lobby_wait_end != null) {
 						var lobby_wait = new Date(rows[0].lobby_wait_end);
@@ -50835,6 +50850,7 @@ function generateMap(lobby_id, width, height, players, conditions) {
 	}
 	
 	// calcolo partenze possibili giocatori (strato più esterno della mappa)
+	// ricorda che i = Y, j = X
 	
 	var playerPoss = [];
 	for(i = 0; i < matrix.length; i++) {
