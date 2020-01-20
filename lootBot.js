@@ -6192,9 +6192,6 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 												}
 											});
 										} else if (answer.text.toLowerCase().indexOf("trofei") != -1) {
-											bot.sendMessage(message.chat.id, "Coming soon...", kbBack);
-											return;
-											
 											var text = "<b>Classifica per trofei nella stagione attuale:</b>\n";
 											var query = "SELECT P.id, P.nickname, P.trophies FROM player P WHERE trophies > 0 ORDER BY trophies DESC";
 											connection.query('SELECT top_min FROM player WHERE id = ' + player_id, function (err, rows, fields) {
@@ -6275,10 +6272,12 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 														}
 
 														for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
-															if (i == mypos)
-																text += (i + 1) + "° <b>" + nickname[i] + "</b> con " + points[i] + " 🏆\n";
-															else
-																text += (i + 1) + "° " + nickname[i] + " con " + points[i] + " 🏆\n";
+															if (nickname[i] != undefined) {
+																if (i == mypos)
+																	text += (i + 1) + "° <b>" + nickname[i] + "</b> con " + points[i] + " 🏆\n";
+																else
+																	text += (i + 1) + "° " + nickname[i] + " con " + points[i] + " 🏆\n";
+															}
 														}
 
 														bot.sendMessage(message.chat.id, text, kbLast).then(function () {
