@@ -267,18 +267,18 @@ function getSuggestionStatus(sugg_id, connection) { //0, -1, 1
 	});
 }
 
-function setSuggestionLimit(newLimit) {
+function setSuggestionLimit(newLimit) { 
 	return new Promise(function (setSuggestionStatus_resolve) {
-		sugg_pool.query("UPDATE " + tables_names.usr + " SET WARN = ? WHERE USER_ID LIKE 20471035"
-						, newLimit,
-						function (error, results) {
-			if (!error) {
-				setSuggestionStatus_resolve(newLimit);
-			}
-			else {
-				setSuggestionStatus_resolve(-1);
-			}
-		});
+		sugg_pool.query("UPDATE " + tables_names.usr + " SET WARN = ? WHERE USER_ID = 20471035"
+			, newLimit,
+			function (error, results) {
+				if (!error) {
+					setSuggestionStatus_resolve(newLimit);
+				}
+				else {
+					setSuggestionStatus_resolve(-1);
+				}
+			});
 	});
 }
 module.exports.setSuggestionLimit = setSuggestionLimit;
@@ -981,7 +981,7 @@ function getUserInfo(user_id, addNew) {
 				user_info.lastQDate = check_res[0].USER_LASTQUERYDATE;
 				user_info.lastcheck = check_res[0].LAST_CHECK;
 				user_info.lastReview = check_res[0].LAST_REVIEW;
-
+				user_info.last_discussion_date = check_res[0].USER_LAST_DISCUSSION;
 
 				return check_resolve(user_info);
 			} else if (typeof addNew == "undefined" || addNew) {
@@ -1003,6 +1003,7 @@ function getUserInfo(user_id, addNew) {
 							user_info.lastQDate = add_new_res.USER_LASTQUERYDATE;
 							user_info.lastcheck = add_new_res.USER_LASTQUERYDATE;
 							user_info.lastReview = add_new_res.LAST_REVIEW;
+							user_info.last_discussion_date = add_new_res.USER_LAST_DISCUSSION;
 
 							check_resolve(user_info);
 						}
@@ -1340,9 +1341,15 @@ function suggestionID_builder() {
 
 function isValidID(to_test) {
 	let string = (to_test + "").toUpperCase();
-	//console.log("> numeri: "+string.slice(0, 3));
-	//console.log("> caratteri: "+string[3]+", "+string[4]);
-	return (!isNaN(parseInt(string.slice(0, 4))) && idPossible_char.indexOf(string.charAt(3)) > 0 && idPossible_char.indexOf(string.charAt(4)) > 0);
+	let idPossible_char = "ABCDEFGHIJKLMNOPQRSTQVXYWZ";
+
+	if (!isNaN(parseInt(string.slice(0, 2))) ){
+		if (idPossible_char.indexOf(string.charAt(2)) > 0 && idPossible_char.indexOf(string.charAt(3)) > 0 && idPossible_char.indexOf(string.charAt(4))> 0){
+			return true;
+		}
+
+	}
+	return (false)
 }
 module.exports.isValidID = isValidID;
 
@@ -1762,3 +1769,47 @@ function addBannedW(bannedw) {
 		});
 	});
 }
+
+function updateUserLastDiscussion(userId, updated_time, suggestion_txt) {
+	return new Promise(function (setSuggestionStatus_resolve) {
+		sugg_pool.query("UPDATE " + tables_names.usr + " SET USER_LAST_DISCUSSION = ? WHERE USER_ID = ?"
+			, [updated_time, userId],
+			function (error, results) {
+				if (!error) {
+					// let new_discussion = {
+					// 	SUSER_ID: user_id,
+					// 	STEXT: suggestion_txt,
+					// 	SDATE: updated_time
+					// };
+					// setSuggestionStatus_resolve(insertOn(tables_names.discussion, new_suggestion));
+					setSuggestionStatus_resolve(updated_time);
+				}
+				else {
+					setSuggestionStatus_resolve(-1);
+				}
+			});
+	});
+}
+module.exports.updateUserLastDiscussion = updateUserLastDiscussion;
+
+function getUserFromDiscussionDate(discussion_date) {
+	return new Promise(function (getUserFromDiscussionDate_resolve) {
+		sugg_pool.query("SELECT USER_ID AS 'user_id' FROM " + tables_names.usr + " WHERE USER_LAST_DISCUSSION = ?",
+			discussion_date, 
+			function (error, results) {
+				if (!error) {
+					if (results.length > 0) {
+						getUserFromDiscussionDate_resolve(results[0]);
+					} else {
+						console.log(results);
+						getUserFromDiscussionDate_resolve(-1);
+					}
+				}
+				else {
+					console.log(error);
+					getUserFromDiscussionDate_resolve(-2);
+				}
+			});
+	});
+}
+module.exports.getUserFromDiscussionDate = getUserFromDiscussionDate;

@@ -29,7 +29,8 @@ const suggestion_tag = {
 	bis: ['🎮', '#assalto', '#craft', '#contrabbandiere', '#dungeon', '#figurine', '#incarichi', '#ispezioni', '#mappe', '#mercato', '#missioni', "#top", '#viaggi'],
 	ter: ['🎭', "#eventi", '#casadeigiochi', '#vette', '#globali', '#polvere', '#miniere'],
 	terzo: ['⚙', '#estetica', '#meccaniche', '#bottoni', '#testi', '#comandi'],
-	quarto: ['⭐️', '#novità', '#revisione']
+	quarto: ['⭐️', '#novità', '#revisione'],
+	quinto: ['👥', '#discussione']
 };
 
 //___________________________________________________________//
@@ -150,6 +151,10 @@ function manageCallBack(query) {
 								}
 								case "FORGET": {
 									queryMenager = manageForget(query, user_info);
+									break;
+								}
+								case "DISCUSSION_PUBLISH": { 
+									queryMenager = manageDiscussionPublish(query, user_info);
 									break;
 								}
 							}
@@ -368,43 +373,17 @@ module.exports.suggestionManager = suggestionManager;
 function suggestionDispatch(user_info, message) {
 	let entities = message.entities;
 	let trigger = message.text.substr(entities[0].offset, entities[0].length).toLowerCase();
-	let chat_id = message.chat.id;
 	if (manual_log) { console.log("> Dispatch, TRIGGER: " + trigger); }
 
 	if (message.text.length > 3500) {
 		return Promise.resolve(invalidMessage(user_info.id, "Non è un po troppo lungo, questo suggerimento? 🤔"));
-	} else if (message.text == trigger) {
-		return mainMenu(user_info);
-	} else if (trigger == sugg_triggers.tag) {
-		let paragraph_array = message.text.substr(entities[0].offset + entities[0].length).trim().split("\n");
-		let text_array = [];
-		paragraph_array.forEach(function (par) {
-			let array = par.split(" ");
-			array.forEach(function (single) {
-				text_array.push(single);
-			})
-			text_array.push("\n");
-		});
-		let tags_array = [];
-		if (entities.length > 0) {
-			entities.forEach(function (ent) {
-				if (ent.type == 'hashtag') {
-					let curr_tag = message.text.substr(ent.offset, ent.length);
-					tags_array.push(curr_tag.toLowerCase());
-					text_array.splice(text_array.indexOf(curr_tag), 1);
-				}
-			});
-		}
-
-		return propouseInsert(user_info, text_array, tags_array, (user_info.id != message.chat.id));
-	} else if (trigger == sugg_triggers.cmd || trigger == "/sugg") {
+	} else if (trigger.charAt(0) == "/" && message.text.trim().length > trigger.length ) { // comando 
 		let text_array = message.text.substr(entities[0].offset + entities[0].length).trim().replace('\n', ' ').split(" ");
 		let cmd_msg = { command: text_array, target: "", comment: "" };
 
-
 		if (cmd_msg.command.length == 1 && cmd_msg.command[0].length == 5 && tips_handler.isValidID(cmd_msg.command[0])) {
-			if (simple_log) console.error("Casca l'asino!!");
-			return ([]);
+			cmd_msg.target = cmd_msg.command[0];
+			cmd_msg.command = "sugg_info";
 		} if (text_array[0] == "integra" || text_array[0].indexOf("revision") >= 0) {
 			cmd_msg.command = text_array[0];
 
@@ -420,7 +399,10 @@ function suggestionDispatch(user_info, message) {
 			}
 			if (simple_log) console.log(cmd_msg);
 		} else if (typeof (message.reply_to_message) != "undefined") {
-			if (typeof (message.reply_to_message.forward_from) != "undefined") {
+			if(message.text.charAt(0) == "💡"){
+				let text_array = message.text.split("\n");
+				cmd_msg.target = resolveDiscussionCode(text_array[text_array.length-1]);
+			} else if (typeof (message.reply_to_message.forward_from) != "undefined") {
 				if (message.reply_to_message.text.indexOf(suggestionCode_msg) >= 0) {
 					cmd_msg.target = resolveCode(message.reply_to_message.text);
 					if (manual_log) { console.log("> Messaggio inoltrato, codice: " + cmd_msg.target); }
@@ -431,7 +413,7 @@ function suggestionDispatch(user_info, message) {
 			} else {
 				if (message.reply_to_message.text.indexOf(suggestionCode_msg) >= 0) {
 					cmd_msg.target = resolveCode(message.reply_to_message.text);
-					if (manual_log) { console.log("> Messaggio inoltrato, codice: " + cmd_msg.target); }
+					if (manual_log) { console.log("> Messaggio in risposta, codice: " + cmd_msg.target); }
 
 				} else {
 					cmd_msg.target = message.reply_to_message.from.id;
@@ -445,11 +427,41 @@ function suggestionDispatch(user_info, message) {
 				cmd_msg.target = text_array[1];
 			}
 		}
+
 		if (simple_log) console.log("Parsato il comando: " + cmd_msg.command + "\nTarget: " + cmd_msg.target)
 		return commandMeneger(message.chat.id, user_info, cmd_msg);
+	} else if (message.chat.type == "private") {
+		if (message.text == trigger) {
+			return mainMenu(user_info);
+		} else if (trigger == sugg_triggers.tag) { // tag #suggerimento
+			let paragraph_array = message.text.substr(entities[0].offset + entities[0].length).trim().split("\n");
+			let text_array = [];
+			paragraph_array.forEach(function (par) {
+				let array = par.split(" ");
+				array.forEach(function (single) {
+					text_array.push(single);
+				})
+				text_array.push("\n");
+			});
+			let tags_array = [];
+			if (entities.length > 0) {
+				entities.forEach(function (ent) {
+					if (ent.type == 'hashtag') {
+						let curr_tag = message.text.substr(ent.offset, ent.length);
+						tags_array.push(curr_tag.toLowerCase());
+						text_array.splice(text_array.indexOf(curr_tag), 1);
+					}
+				});
+			}
+	
+			return propouseInsert(user_info, text_array, tags_array, true);
+		} else {
+			let generic_error = "Cerchi di dirmi qualche cosa?\n\nManda `/suggerimenti` per il menù, o proponi un suggerimento includendo il tag `#suggerimento`";
+			return Promise.resolve(invalidMessage(user_info.id, generic_error));
+		}
 	} else {
-		const generic_error = "Cerchi di dirmi qualche cosa?\n\nManda `/suggerimenti` per il menù, o proponi un suggerimento includendo il tag `#suggerimento`";
-		return Promise.resolve(invalidMessage(chat_id, generic_error));
+		let res = {noMessage:true};
+		return Promise.resolve(res);
 	}
 }
 
@@ -2397,11 +2409,7 @@ function resetCmd(user_info) {
 //________________________//
 
 const voteButton = { up: '🌕', down: '🌑', up_moji: "️👍", down_moji: "👎", hot: "🔥" };
-const quickInsert_firstLine = "📝*Controlla il tuo suggerimento*\n\n";
-const simpleInsert_firstLine = "👁‍🗨*Anteprima del suggerimento*\n\n";
 const suggestionCode_msg = "🌀 ";
-const unableToInsert_msg = "🤭\n*Devi aver fatto qualche cosa di grave,*\n_t'è stato impedito di inserire nuovi suggerimenti..._";
-
 
 const private_tags = ["#approvato", "#chiuso"];
 const private_moji = ["🌪", "⚡️", "🌀"];
@@ -2424,12 +2432,8 @@ function reviewInsert(suggestion_text, entities) {
 		if (censure) {
 			if (suggestion_text.length < 3) {
 				return reviewInsert_resolve(-3);
-			}
-			// else if (entities.indexOf("#tools") >= 0) {
-			// 	return reviewInsert_resolve(-4);
-			// } 
-			else {
-				//if (manual_log) { console.log("Testo: (" + suggestion_text.length + " parole)\n" + suggestion_text.join(" ")); console.log("Entità: \n" + entities); }
+			} else {
+				let private_tags = ["#approvato", "#chiuso"];
 				private_tags.forEach(function (tag) {
 					if (manual_log) { console.log(">\t\t\t Tag: " + tag + " -> " + (entities.indexOf(tag))); }
 					if (entities.indexOf(tag) >= 0) {
@@ -2440,16 +2444,21 @@ function reviewInsert(suggestion_text, entities) {
 						return reviewInsert_resolve(res);
 					}
 				})
-				entities.splice(0, 1);
+				entities.splice(0, 1); //toglie il tag 0 (#suggerimento)
+
+				let discussione_bool = false;
 
 				if (entities.length >= 1) {
-					if (entities.length > 4)
-						return reviewInsert_resolve(-2);
+					if (entities.length > 5){ //troppi tag
+						return reviewInsert_resolve(-2); 
+					}
 
 					let tags_array = getTagsArray();
 					let out_tags = [];
 					entities.forEach(function (used_tag) {
-						if (tags_array.indexOf(used_tag) < 0) {
+						if (used_tag == "#discussione"){
+							discussione_bool = true;
+						} else if (tags_array.indexOf(used_tag) < 0) {
 							out_tags.push(used_tag);
 						}
 					});
@@ -2480,7 +2489,7 @@ function reviewInsert(suggestion_text, entities) {
 					}
 				}
 
-				tips_handler.getBannedWords().then(function (bannedArray) { //to do *** array di sugg_id e index (nel model)
+				return tips_handler.getBannedWords().then(function (bannedArray) { //to do *** array di sugg_id e index (nel model) per autocomplete
 					let sugg_id = "nrc";
 					let index = -1;
 					if (manual_log) { console.log(">\tOttenuta la lista delle parole bandite [" + bannedArray.length + "]"); }
@@ -2490,15 +2499,14 @@ function reviewInsert(suggestion_text, entities) {
 						if (suggestion_text[text_count].length <= 0) {
 							console.log("Scarto: " + suggestion_text[text_count]);
 							suggestion_text.splice(text_count, 1);
-						} else if (text_count < (suggestion_text.length - 2) && suggestion_text[text_count].toLowerCase() == "suggerimento") {
+						} else if (text_count < (suggestion_text.length - 2) && suggestion_text[text_count].toLowerCase() == "suggerimento") { // preparo per autocomplete del link. Funziona solo per un suggerimento (l'ultimo)
 							if (suggestion_text[text_count + 1].length >= 5 && !isNaN(parseInt(suggestion_text[text_count + 1].substring(0, 3)))) {
 								sugg_id = suggestion_text[text_count + 1].substring(0, 5);
 								index = text_count;
 							}
 						} else if (suggestion_text[text_count].length >= 3) {
 							for (var banned_count = 0; banned_count < bannedArray.length; banned_count++) {
-								// qui si potrebbe mettere l'autocompleate del link suggerimento
-								//console.log("- comparo: "+suggestion_text[text_count].toLowerCase()+" e "+ bannedArray[banned_count].banditw+" ["+suggestion_text[text_count].toLowerCase().indexOf(bannedArray[banned_count].banditw)+"]");
+								// qui si potrebbe mettere l'autocompleate del link suggerimento... ma è difficile
 								if (suggestion_text[text_count].toLowerCase() != "flaridion" && suggestion_text[text_count].toLowerCase().indexOf(bannedArray[banned_count].banditw) >= 0) {
 									return reviewInsert_resolve(["!", suggestion_text[text_count]]);
 								}
@@ -2506,28 +2514,32 @@ function reviewInsert(suggestion_text, entities) {
 
 						}
 					}
-					tips_handler.getIDOf(sugg_id).then(function (sugg_messID) {
-						if (sugg_messID.length == 1) {
-							let finalText = "[suggerimento]";
+					return tips_handler.getIDOf(sugg_id).then(function (sugg_messID) {
+						let final_text;
+						if (sugg_messID.length == 1) { // autocomplete di UN link
+							let autocomplete = "[suggerimento]";
 							if (sugg_messID[0].id > 0) {
-								finalText += "(" + channel_link_no_parse + "/" + sugg_messID[0].id + ")";
+								autocomplete += "(" + channel_link_no_parse + "/" + sugg_messID[0].id + ")";
 							}
-							finalText += " `" + sugg_id + "`";
+							autocomplete += " `" + sugg_id + "`";
 
-							suggestion_text[index] = finalText;
+							suggestion_text[index] = autocomplete;
 							suggestion_text.splice(index + 1, 1);
-							return reviewInsert_resolve(entities.join(" ") + "\n" + suggestion_text.join(" ").split("\n ").join("\n").trim());
 						} else {
 							if (simple_log) console.log(sugg_messID);
 							if (index > 0) {
 								suggestion_text[index + 1] = "`" + suggestion_text[index + 1] + "` (❗️)";
 							}
-							return reviewInsert_resolve(entities.join(" ") + "\n" + suggestion_text.join(" ").split("\n ").join("\n").trim());
 						}
+						final_text = entities.join(" ") + "\n\n" + suggestion_text.join(" ").split("\n ").join("\n").trim();
+						let type = "suggestion";
+						if (discussione_bool){
+							type = "discussion";
+						}
+						return reviewInsert_resolve([type, final_text]);
 					})
 				}).catch(function (err) { console.log(err); return reviewInsert_resolve(false); });
 			}
-			//return reviewInsert_resolve(entities);
 		}
 	});
 }
@@ -2591,41 +2603,38 @@ function propouseInsert(user_info, text, entities, isQuick) {
 	if (manual_log) { console.log(">\tpropouseInsert"); }
 	if (simple_log) { console.log("- Richiesta inserimento: -> tags:" + entities.join(" ")); }
 
-	return new Promise(function (propouseInsert_resolve, propouseInsert_reject) {
-		let condition_urgent = entities.indexOf("#manutenzione");
-		if (condition_urgent >= 0 && user_info.id == theCreator) {
-			return propouseInsert_resolve(insertMessage(user_info.id, text.join(" ")));
-		}
-		else {
+	return new Promise(function (propouseInsert_resolve) {
+		if (entities.indexOf("#manutenzione") >= 0 && user_info.id == theCreator) {
+			return propouseInsert_resolve(insertMessage(user_info.id, text.join(" "), false));
+		} else { // Annunci (gestione)
 			if (simple_log) { console.log("- Controllo annuncio"); }
 
-			condition_urgent = (user_info.id == phenix_id) || (user_info.id == theCreator);
-			if (condition_urgent) {
+			if (entities.indexOf("#annuncio")) {
 				let message = "";
-				if (entities.indexOf("#annuncio") >= 0) {
+				if (user_info.id == phenix_id) {
 					if (simple_log) { console.log("- è un annuncio"); }
-					message = "🔥 #Annuncio `della Fenice`\n\n" + text.join(" ").split("\n ").join("\n").trim()
-
-				} else if (entities.indexOf("#salve") >= 0) {
-					if (simple_log) console.log("- è un annuncio");
-					message = "#Annuncio `dal Bot` 🤖\n\n" + text.join(" ").split("\n ").join("\n").trim();
+					message = "🔥 #Annuncio `della Fenice` \n\n";
+					message += " "+ text.join(" ").split("\n ").join("\n");
+				} else if (user_info.id == theCreator) {
+					if (simple_log) console.log("- è un annuncio del bot");
+					message = "🤖 #Annuncio `dal Bot` \n\n" + text.join(" ").split("\n ").join("\n");
 				}
 				if (message.length > 0) {
-					return tips_handler.saveTmp_Suggestion(user_info.id, message).
-					then(function (res) {
-						return propouseInsert_resolve(insertMessage(user_info.id, message));
-					});
+					return tips_handler.saveTmp_Suggestion(user_info.id, message).then(function (res) {
+							return propouseInsert_resolve(insertMessage(user_info.id, message, false));
+						});
 				}
 			}
 		}
 		if (simple_log) { console.log("- NON è un annuncio"); }
 
-		if (user_info.role < 1) {
+		if (user_info.role < 1) { // Utenti limitati
+			let unableToInsert_msg = "🤭\n*Devi aver fatto qualche cosa di grave,*\n_t'è stato impedito di inserire nuovi suggerimenti..._";
 			return propouseInsert_resolve(simpleDeletableMessage(user_info.id, unableToInsert_msg + "😶\nNope!\nManda `/suggerimenti` per maggiori informazioni..."));
 		}
 		if (manual_log) { console.log(">\t\tUltimo suggerimento: " + user_info.lastSugg + ", check: " + (user_info.lastSugg != 0 && user_info.role < 5)); }
 
-		userRushManager(user_info).then(function (rus_res) {
+		return userRushManager(user_info).then(function (rus_res) {
 			if (rus_res != true) { // ******+ to do -> bottone tags
 				return propouseInsert_resolve(simpleDeletableMessage(user_info.id, rus_res));
 			}
@@ -2634,57 +2643,71 @@ function propouseInsert(user_info, text, entities, isQuick) {
 				console.log(">\tQuickInsert -> " + isQuick);
 				console.log(">\tIl messaggio ha " + text.length + " parole");
 			}
-			reviewInsert(text, entities).then(function (review_res) {
-				if (review_res == -3) {
+			return reviewInsert(text, entities).then(function (review_res) {
+				//
+				if (review_res == false){
+					return propouseInsert_resolve(invalidMessage(user_info.id, "C'è stato un errore nell'elaborazione.\nSe puoi, contatta @nrc382"));
+				} else if (review_res == -2) {
+					if (entities.length < 2)
+						return propouseInsert_resolve(invalidMessage(user_info.id, "Per rendere piu comoda a tutti la consultazione dei suggerimenti sul " + channel_link + ",\n " + generateTagString()));
+					return propouseInsert_resolve(invalidMessage(user_info.id,"🙄\nPer favore,\nCerca di usare piu di un tag ed in maniera coerente al tuo messaggio"));
+				} else if (review_res == -3) {
 					return propouseInsert_resolve(invalidMessage(user_info.id, "Un po corto per essere un suggerimento...\nIntendevi ...cosa?"));
 				} else if (review_res == -4) {
 					return propouseInsert_resolve(invalidMessage(user_info.id, "Deloo e gli altri stanno lavorando ad una soluzione che riporti il tools.\nPer il momento i suggerimenti su questo bot sono sospesi."));
 				} else if (review_res == -5) {
-					return propouseInsert_resolve(invalidMessage(user_info.id, "Sembrerebbe quasi tu sia a caccia di bug!\nNon noscondere i tags tra i marcatori di stile..."));
+					return propouseInsert_resolve(invalidMessage(user_info.id, "🕵️ _Sembrerebbe quasi tu sia a caccia di bug!_\n\nPer favore, non noscondere i tags tra i marcatori di stile..."));
 				} else {
 					if (simple_log) { console.log("- Risultato review: -> " + review_res + " [" + (typeof review_res) + "]"); }
 					if (manual_log) {
 						console.log(typeof review_res);
 						console.log(typeof (review_res) == 'string');
 					}
+
 					if (typeof (review_res) == 'object' && review_res.length > 0) {
 						if (review_res[0] == "!") {
 							return propouseInsert_resolve(simpleDeletableMessage(
 								user_info.id,
 								"😱 *Cattivo!*\n\n\"\`" + review_res[1] + "\`\"?\n_...non si dicono le parolacce!_"
 							)
-														 );
+							);
+						} else if (review_res[0] == "suggestion") {
+							return tips_handler.saveTmp_Suggestion(user_info.id, review_res[1]).then(function (res) {
+								let res_tex = "";
+								if (isQuick) {
+									res_tex = "📝*Controlla il tuo suggerimento*\n\n";
+								} else {
+									res_tex = "👁‍🗨*Anteprima del suggerimento*\n\n";
+								}
+								res_tex += review_res[1];
+
+								return propouseInsert_resolve(insertMessage(user_info.id, res_tex, false));
+							});
+						} else if (review_res[0] == "discussion") {
+							return tips_handler.saveTmp_Suggestion(user_info.id, review_res[1]).then(function (res) {
+								let res_tex = "📝*Ricontrolla la forma*\n\n"+review_res[1];
+								return propouseInsert_resolve(insertMessage(user_info.id, res_tex, true));
+							});
 						} else if (review_res[review_res.length - 1] == "»") {
 							return propouseInsert_resolve(
 								invalidMessage(
 									user_info.id,
-									"🙄\nPer evitare confusione, non posso farti usare _"
+									"\n🙄 Per evitare confusione, non posso farti usare _"
 									+ review_res.join(" ") + "_ nel tuo suggerimento...\n\nManda: " +
 									"`/suggerimenti tags` per una lista dei tag in uso nel " +
 									channel_link + "")
 							);
-						} else if (entities.length == 2) {
-							return propouseInsert_resolve(
-								invalidMessage(
-									user_info.id,
-									"🙄\nPer favore,\nCerca di usare piu di un tag ed in maniera coerente. ")
-							);
-						}
+						} 
 					} else {
 						if (review_res == 'emoji') {
 							return propouseInsert_resolve(invalidMessage(user_info.id, "Sicurmente _in buona fede_,\nMa hai usato delle emoji riservate nel tuo messaggio.\nCosì non può essere pubblicato...  😔"));
-						} else if (review_res == -2) {
-							return propouseInsert_resolve(invalidMessage(user_info.id, "Per rendere piu comoda a tutti la consultazione dei suggerimenti sul " + channel_link + ",\n " + generateTagString()));
-						} else if (typeof (review_res) == 'string') {
-							//res_text[0] = res_text[0].charAt(0).toUpperCase() + res_text[0].slice(1);
-							tips_handler.saveTmp_Suggestion(user_info.id, review_res).
-							then(function (res) { return propouseInsert_resolve(insertMessage(user_info.id, (isQuick == true ? quickInsert_firstLine : simpleInsert_firstLine) + review_res)); });
+						} else{
+							return propouseInsert_resolve(invalidMessage(user_info.id, "Per favore, contatta @nrc382\n\nErrore 42 😱"));
 						}
 
 					}
 				}
-			}).
-			catch(function (err) { console.log(err); });
+			}).catch(function (err) { console.log(err); });
 		});
 	});
 }
@@ -3615,19 +3638,27 @@ function simpleMessage(mess_id, text) {
 	return simple_msg;
 }
 
-function insertMessage(mess_id, text) {
+function insertMessage(mess_id, text, is_a_discusssion) {
 	if (manual_log) { console.log(">\t\tinsertMessage"); }
 
 	let insert_button = [];
-	insert_button.push([{
-		text: 'Pubblica!',
-		callback_data: 'SUGGESTION:PUBLISH'
-	}]);
+	if (typeof is_a_discusssion === "undefined" || !is_a_discusssion){
+		insert_button.push([{
+			text: 'Pubblica!',
+			callback_data: 'SUGGESTION:PUBLISH'
+		}]);
+	} else {
+		insert_button.push([{
+			text: 'Pubblica in Taverna 🍺',
+			callback_data: 'SUGGESTION:DISCUSSION_PUBLISH'
+		}]);
+	}
+
 	insert_button.push([{
 		text: "Annulla",
 		callback_data: 'SUGGESTION:FORGET'
 	}]);
-
+	
 	let insert_options = {
 		parse_mode: "Markdown",
 		disable_web_page_preview: true,
@@ -4018,6 +4049,120 @@ function invalidMessage(mess_id, res_message) {
 		options: standard_options
 	};
 	return invalid_mess;
+}
+
+function manageDiscussionPublish(in_query, user_info){
+	return new Promise(function (manageDiscussionPublish_resolve) {
+		if (typeof user_info.tmpSugg != "string" || user_info.tmpSugg.length <= 0) {
+			return manageDiscussionPublish_resolve({
+				query: { id: in_query.id, options: { text: "Woops!", cache_time: 2, show_alert: true } },
+				toSend: simpleMessage(user_info.id, "Mi spiace, ma c'è stato un qualche errore...\nRimandami il messaggio per una nuova anteprima (:"),
+				toEdit: simpleToEditMessage(in_query.message.chat.id, in_query.message.message_id, "*SCADUTO!*\n\n" + in_query.query)
+			});
+
+		} else if (user_info.role < 0){
+			return manageDiscussionPublish_resolve({ query: { id: in_query.id, options: { text: "🤡\nCi hai provato!", cache_time: 2, show_alert: true } } });
+		} else {
+			let nowDate = Date.now()/100;
+			if (( nowDate - user_info.last_discussion_date) < (60*60*8)*10){
+				let rush_text =  "👮🏿 *Quanto entusiasmo!*\n\nPer evitare lo spam in Taverna, non posso farti pubblicare più d'un messaggio anonimo ogni otto ore...";
+				return manageDiscussionPublish_resolve({
+					query: { id: in_query.id, options: { text: "Woops!", cache_time: 2, show_alert: true } },
+					toSend: simpleMessage(user_info.id, rush_text),
+					toDelete: {chat_id: in_query.message.chat.id, mess_id: in_query.message.message_id}
+				});
+			} else{
+				return tips_handler.updateUserLastDiscussion(user_info.id, nowDate, user_info.tmpSugg).then(function (updated_discussion_date){
+					let to_return = {};
+
+					if (updated_discussion_date > 0){
+						let taverna_id = -1001069842056;
+
+						let pub_res = "💡 *Proposta di Discussione*\n_da un anonimo Giocatore_\n\n";
+						pub_res += user_info.tmpSugg +"\n\n"+"᳀ `"+nowDate.toString().split("").reverse().join("")+"`";
+
+						to_return.query = { id: in_query.id, options: { text: "Pubblico...", cache_time: 1, show_alert: false }};
+						to_return.toSend = simpleMessage(taverna_id, pub_res);
+						to_return.toEdit =   simpleToEditMessage(in_query.message.chat.id, in_query.message.message_id, "*Pubblicato in Taverna!*\n\n" + user_info.tmpSugg);
+					} else{
+						to_return.query = { id: in_query.id, options: { text: "Woops!", cache_time: 1, show_alert: false }};
+						to_return.toSend = simpleMessage(user_info.id, "Mi spiace, non posso pubblicare la discussione al momento.\n");
+						to_return.toDelete = {chat_id: in_query.message.chat.id, mess_id: in_query.message.message_id}
+					}
+					return manageDiscussionPublish_resolve(to_return);
+				});
+			}
+		}
+		
+	});
+}
+
+function getSuggestionLinkCmd(user_info, fullCmd, chat_id){
+	return new Promise(function (getSuggestionLinkCmd_resolve) {
+		if (simple_log) { console.log(">\t\tComando getSuggestionLinkCmd -> " + fullCmd.command+", "+fullCmd.target); }
+
+		return tips_handler.getSuggestionInfos(fullCmd.target, user_info.id).then(function (sugg_infos){
+			if (sugg_infos == -1) {
+				return getSuggestionLinkCmd_resolve(
+					simpleMessage(user_info.id, "😕\nNon ho trovato il suggerimento `" + fullCmd.target + "` nel database...")
+				);
+			} else if (sugg_infos.author == "NOAUTHOR") {
+				return integrateMessage_resolve(
+					simpleDeletableMessage(
+						user_info.id,
+						"😕\nProva a controllare l'imput...\nNon ho trovato il suggerimento `" + fullCmd.target + "` nel database...")
+				);
+			} else {
+				let res_text = "ⓘ *Informazioni sul suggerimento* "+suggestionCode_msg+fullCmd.target+"\n\n";
+				res_text += "\"" + generatePartialString(sugg_infos.sugg_text) + " /.../ \"\n[\[continua a leggere\]](" + channel_link_no_parse + "/" + sugg_infos.msg_id + ")\n";
+				res_text += "\nStato: ";
+				if (sugg_infos.status == 0){
+					res_text += "Aperto ♻️";
+				} else if (sugg_infos.status == 1){
+					res_text += "Approvato ⚡️";
+				} else {
+					res_text += "Scartato 🌪";
+				}
+				res_text += "\nVoti positivi: "+sugg_infos.upVotes;
+				res_text += "\nVoti negativi: "+sugg_infos.downVotes;
+				return getSuggestionLinkCmd_resolve(simpleMessage(chat_id, res_text));
+
+			} 
+
+		});
+
+	});
+}
+
+function limitAuthorOfDiscussion(curr_user, fullCommand){
+	return new Promise(function (limitAuthorOfDiscussion_resolve) {
+		if (curr_user.role < 3){
+			let avaible_cmds = "Hai disponibili i comandi:\n\n🌐\n> " +
+						"`tags`\n> " +
+						"`aperti `\n> " +
+						"`recenti `\n> " +
+						"`statistiche `\n> " +
+						"`albo `\n" +
+						"`\n👤`\n> " +
+						"`miei `\n> " +
+						"`approvati`\n> " +
+						"`scartati`\n> " +
+						"`curiosità`\n";
+			return limitAuthorOfDiscussion_resolve(invalidMessage(curr_user.id, avaible_cmds));
+		}
+		return tips_handler.getUserFromDiscussionDate(fullCommand.target).then(function (targhet_UserId){
+			if (simple_log){console.log("> Chiedo che l'utente "+targhet_UserId+" sia limitato per una discussione pubblicata in taverna "+fullCommand.target)}
+			return tips_handler.setUserRole(fullCmd.target, 0).then(function (new_role_set){
+				if (new_role_set >= 0) {
+					return manageUserCmd_resolve(simpleDeletableMessage(chat_id,  "Limitato l'autore della discussione "+fullCommand.target+"\n> ID utente: `" + targhet_UserId + "`"));
+				} else {					
+					return manageUserCmd_resolve(simpleDeletableMessage(chat_id, "Non sono riuscito a limitare l'aurore della discussione.\n\n"+"> N. discussione: `"+fullCommand.target+"`\n> ID utente: `" + targhet_UserId + "`"));
+
+				}
+			});
+		});
+		//limitAuthorOfDiscussion_resolve()
+	});
 }
 
 // (:

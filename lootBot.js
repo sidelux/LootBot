@@ -5924,7 +5924,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Accedi alla Lobby 🏹"], ["Guida 💬", "Vittorie 🎉", "Stagione 💀"], ["Torna al menu"]]
+				keyboard: [["Accedi alla Lobby 🏹"], ["Trofei 🏆", "Vittorie 🎉", "Uccisioni 💀"], ["Guida 💬", "Torna al menu"]]
 			}
 		};
 
@@ -6115,31 +6115,18 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 
 												bot.sendMessage(message.chat.id, text, kbBack);
 											});
-										} else if (answer.text.toLowerCase().indexOf("stagione") != -1) {
+										} else if (answer.text.toLowerCase().indexOf("uccisioni") != -1) {
 											var text = "<b>Classifica per uccisioni nella stagione attuale:</b>\n";
 											var query = "SELECT P.id, P.nickname, M.global_kills FROM map_lobby M, player P WHERE M.player_id = P.id AND global_kills > 0 ORDER BY M.global_kills DESC";
 											connection.query('SELECT top_min FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
-												
-												var kbLast = {
-													parse_mode: "HTML",
-													reply_markup: {
-														resize_keyboard: true,
-														keyboard: [["Classifica ultima stagione"], ["Torna alla mappa"], ["Torna al menu"]]
-													}
-												};
 
 												if (rows[0].top_min == 1) {
 													connection.query(query, function (err, rows, fields) {
 														if (err) throw err;
 
 														if (Object.keys(rows).length < 50) {
-															bot.sendMessage(message.chat.id, "Ci sono ancora poche uccisioni per poterne visualizzare una valida classifica...", kbLast).then(function () {
-																answerCallbacks[message.chat.id] = function (answer) {
-																	if (answer.text == "Classifica ultima stagione")
-																		getMapPDF(message);
-																}
-															});
+															bot.sendMessage(message.chat.id, "Ci sono ancora poche uccisioni per poterne visualizzare una valida classifica...", kbBack);
 															return;
 														}
 
@@ -6165,12 +6152,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 														}
 														text = text + "\nTu:\n" + myinfo;
 
-														bot.sendMessage(message.chat.id, text, kbLast).then(function () {
-															answerCallbacks[message.chat.id] = function (answer) {
-																if (answer.text == "Classifica ultima stagione")
-																	getMapPDF(message);
-															}
-														});
+														bot.sendMessage(message.chat.id, text, kbBack);
 													});
 												} else {
 													connection.query(query, function (err, rows, fields) {
@@ -6182,12 +6164,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 														var mypos = 0;
 
 														if (Object.keys(rows).length < 50) {
-															bot.sendMessage(message.chat.id, "Ci sono ancora poche uccisioni per poterne visualizzare una valida classifica...", kbLast).then(function () {
-																answerCallbacks[message.chat.id] = function (answer) {
-																	if (answer.text == "Classifica ultima stagione")
-																		getMapPDF(message);
-																}
-															});
+															bot.sendMessage(message.chat.id, "Ci sono ancora poche uccisioni per poterne visualizzare una valida classifica...", kbBack);
 															return;
 														}
 
@@ -6208,6 +6185,100 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 																else
 																	text += (i + 1) + "° " + nickname[i] + " con " + points[i] + kills + "\n";
 															}
+														}
+
+														bot.sendMessage(message.chat.id, text, kbBack);
+													});
+												}
+											});
+										} else if (answer.text.toLowerCase().indexOf("trofei") != -1) {
+											bot.sendMessage(message.chat.id, "Coming soon...", kbBack);
+											return;
+											
+											var text = "<b>Classifica per trofei nella stagione attuale:</b>\n";
+											var query = "SELECT P.id, P.nickname, P.trophies FROM player P WHERE trophies > 0 ORDER BY trophies DESC";
+											connection.query('SELECT top_min FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+												
+												var kbLast = {
+													parse_mode: "HTML",
+													reply_markup: {
+														resize_keyboard: true,
+														keyboard: [["Classifica ultima stagione"], ["Torna alla mappa"], ["Torna al menu"]]
+													}
+												};
+
+												if (rows[0].top_min == 1) {
+													connection.query(query, function (err, rows, fields) {
+														if (err) throw err;
+
+														if (Object.keys(rows).length < 50) {
+															bot.sendMessage(message.chat.id, "Ci sono ancora pochi trofei per poterne visualizzare una valida classifica...", kbLast).then(function () {
+																answerCallbacks[message.chat.id] = function (answer) {
+																	if (answer.text == "Classifica ultima stagione")
+																		getMapPDF(message);
+																}
+															});
+															return;
+														}
+
+														var c = 1;
+														var mypnt = 0;
+														var totpnt = 0;
+														var myinfo = 0;
+														var size = 20;
+
+														for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+															if (c < 31) {
+																if (c < size + 1)
+																	text = text + c + "° " + rows[i].nickname + " con " + formatNumber(rows[i].trophies) + " 🏆\n";
+															}
+															if (rows[i].id == player_id) {
+																mypnt = rows[i].trophies;
+																myinfo = c + "° " + rows[i].nickname + " con " + formatNumber(rows[i].trophies) + " 🏆\n";
+															}
+															c++;
+														}
+														text = text + "\nTu:\n" + myinfo;
+
+														bot.sendMessage(message.chat.id, text, kbLast).then(function () {
+															answerCallbacks[message.chat.id] = function (answer) {
+																if (answer.text == "Classifica ultima stagione")
+																	getMapPDF(message);
+															}
+														});
+													});
+												} else {
+													connection.query(query, function (err, rows, fields) {
+														if (err) throw err;
+
+														var range = 10;
+														var nickname = [];
+														var points = [];
+														var mypos = 0;
+
+														if (Object.keys(rows).length < 50) {
+															bot.sendMessage(message.chat.id, "Ci sono ancora pochi trofei per poterne visualizzare una valida classifica...", kbLast).then(function () {
+																answerCallbacks[message.chat.id] = function (answer) {
+																	if (answer.text == "Classifica ultima stagione")
+																		getMapPDF(message);
+																}
+															});
+															return;
+														}
+
+														for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+															nickname.push(rows[i].nickname);
+															points.push(rows[i].trophies);
+															if (rows[i].id == player_id)
+																mypos = i;
+														}
+
+														for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
+															if (i == mypos)
+																text += (i + 1) + "° <b>" + nickname[i] + "</b> con " + points[i] + " 🏆\n";
+															else
+																text += (i + 1) + "° " + nickname[i] + " con " + points[i] + " 🏆\n";
 														}
 
 														bot.sendMessage(message.chat.id, text, kbLast).then(function () {
@@ -7384,7 +7455,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 						});
 						return;
 					} else if (last_obj == 11) {
-						bot.sendMessage(message.chat.id, "In questo luogo puoi scegliere se utilizzare il teletrasporto, rischiando di ritrovarti in un luogo pericoloso o di fronte ad un nemico, oppure non rieschiare e riprendere la tua esplorazione. In entrambi i casi non dovrai aspettare per proseguire.", kbTeleport).then(function () {
+						bot.sendMessage(message.chat.id, "In questo luogo puoi scegliere se utilizzare il teletrasporto, rischiando di ritrovarti in un luogo pericoloso o di fronte ad un nemico, oppure non rischiare e riprendere la tua esplorazione. In entrambi i casi non dovrai aspettare per proseguire.", kbTeleport).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
 								if (answer.text == "Torna al menu")
 									return;
@@ -22290,7 +22361,7 @@ bot.onText(/^party$|gestisci party|torna ai party/i, function (message) {
 										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 											text += "> " + rows[i].nickname + "\n";
 											if (rows[i].player_id != player_id)
-												iKeys.push(["Spia: " + rows[i].nickname]);
+												iKeys.push(["Spia " + rows[i].nickname]);
 											iKeys.push(["Escludi: " + rows[i].nickname]);
 										}
 
@@ -31453,7 +31524,7 @@ bot.onText(/ricercato/i, function (message) {
 							parse_mode: "HTML",
 							reply_markup: {
 								resize_keyboard: true,
-								keyboard: [["Ispeziona: " + nick], ["I più pericolosi"], ["Torna al menu"]]
+								keyboard: [["Ispeziona " + nick], ["I più pericolosi"], ["Torna al menu"]]
 							}
 						};
 						bot.sendMessage(message.chat.id, text, kb2).then(function () {
@@ -40011,7 +40082,7 @@ bot.onText(/Torna in Vita/i, function (message) {
 	});
 });
 
-bot.onText(/spia (.+)|spia:|^\/spia/i, function (message, match) {
+bot.onText(/spia (.+)|^\/spia/i, function (message, match) {
 
 	var test = 0;
 
@@ -40139,7 +40210,7 @@ bot.onText(/spia (.+)|spia:|^\/spia/i, function (message, match) {
 			return;
 		}
 
-		bot.sendMessage(message.chat.id, "Puoi spiare un rifugio inserendo il nickname del giocatore, dovrai pagare 500 §!\nInserisci il nickname del giocatore oppure scrivi *Spia: Nomegiocatore*", spy_null).then(function () {
+		bot.sendMessage(message.chat.id, "Puoi spiare un rifugio inserendo il nickname del giocatore, dovrai pagare 500 §!\nInserisci il nickname del giocatore oppure scrivi *Spia Nomegiocatore*", spy_null).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				var player = answer.text;
 				if ((player == "Nessuno") || (player == "Torna al rifugio"))
@@ -41903,7 +41974,7 @@ bot.onText(/matchmaking|^mm$/i, function (message) {
 	});
 });
 
-bot.onText(/inserisci il nickname|ispeziona: /i, function (message) {
+bot.onText(/inserisci il nickname|ispeziona (.+)/i, function (message, match) {
 	connection.query('SELECT account_id, holiday, heist_protection, exp, reborn, id, weapon, life, house_id, money, heist_count, global_end, boost_id, boost_mission, travel_id, cave_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -41994,8 +42065,8 @@ bot.onText(/inserisci il nickname|ispeziona: /i, function (message) {
 						return;
 					}
 
-					if (message.text.indexOf(":") != -1) {
-						var usr = message.text.substring(message.text.indexOf(":") + 2).replace("@", "").trim();
+					if (match[1] != undefined) {
+						var usr = match[1].replace("@", "").trim();
 						//console.log(usr);
 
 						if (message.from.username.toLowerCase() == usr.toLowerCase()) {
@@ -42055,7 +42126,7 @@ bot.onText(/inserisci il nickname|ispeziona: /i, function (message) {
 						return;
 					}
 
-					bot.sendMessage(message.chat.id, "Inserisci il nickname del giocatore da sfidare.\n*OPPURE* puoi ispezionare un giocatore scrivendo *Ispeziona: Nomeutente*", kbBack).then(function () {
+					bot.sendMessage(message.chat.id, "Inserisci il nickname del giocatore da sfidare.\n*OPPURE* puoi ispezionare un giocatore scrivendo *Ispeziona Nomeutente*", kbBack).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							if (answer.text.indexOf(":") != -1)
 								return;

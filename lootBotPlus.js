@@ -122,58 +122,56 @@ bot.on('message', function (message, match) {
 		
 		// Suggestions
 		
-		if (message.chat.id > 0) {
-			if (message.entities != undefined) {
-				var entities = message.entities;
-				let is_suggestion;
-				if (typeof entities != "undefined" && entities != null && entities.length != null && entities.length > 0) {
-					let first_string = message.text.substr(entities[0].offset + 1, (entities[0].length) - 2).toLowerCase();
-					if (first_string.indexOf("suggeriment") >= 0 || first_string == "sug")
-						is_suggestion = true;
-				}
-
-				if (is_suggestion) {
-					// console.log("> Sugg. da parte di " + message.from.username);
-					tips_controller.suggestionManager(message).then(function (res_mess) {
-						if (typeof (res_mess) != "undefined") {
-							//se c'è da editare qualche cosa...
-							if (typeof (res_mess.toEdit) != "undefined") {
-								bot.editMessageText(
-									res_mess.toEdit.message_txt, {
-										chat_id: res_mess.toEdit.chat_id,
-										message_id: res_mess.toEdit.mess_id,
-										parse_mode: res_mess.toEdit.options.parse_mode,
-										disable_web_page_preview: true,
-										reply_markup: res_mess.toEdit.options.reply_markup
-									}).catch(function (err) {
-										bot.sendMessage(
-											16964514,
-											"👮Hey:\nC'è stato un problema!\n" + err.response.body.description +
-											"\nNella chat: " + res_mess.toSend.chat_id + "\n" + err.response.body
-										);
-									});
-							}
-							if (typeof (res_mess.toSend) != "undefined") {
-								bot.sendMessage(
-									res_mess.toSend.chat_id,
-									res_mess.toSend.message_txt,
-									res_mess.toSend.options
-								).catch(function (err) {
-									bot.sendMessage(
-										res_mess.toSend.chat_id,
-										"Upps!\n" +
-										"Sembra tu stia usando uno dei caratteri markdown non correttamente...\n" +
-										"O comunque, questo è quello che dice Telegram:\n\n```" + err.response.body.description + "\n```"
-									);
-								});
-							}
-						}
-					}).catch(function (err) { console.log(err); });
-				}
+		if (message.entities != undefined) {
+			var entities = message.entities;
+			let is_suggestion;
+			if (typeof entities != "undefined" && entities != null && entities.length != null && entities.length > 0) {
+				let first_string = message.text.substr(entities[0].offset + 1, (entities[0].length) - 2).toLowerCase();
+				if (first_string.indexOf("suggeriment") >= 0 || first_string == "sug")
+					is_suggestion = true;
 			}
 
-			// End suggestions
+			if (is_suggestion) {
+				// console.log("> Sugg. da parte di " + message.from.username);
+				tips_controller.suggestionManager(message).then(function (res_mess) {
+					if (typeof (res_mess) != "undefined") {
+						//se c'è da editare qualche cosa...
+						if (typeof (res_mess.toEdit) != "undefined") {
+							bot.editMessageText(
+								res_mess.toEdit.message_txt, {
+									chat_id: res_mess.toEdit.chat_id,
+									message_id: res_mess.toEdit.mess_id,
+									parse_mode: res_mess.toEdit.options.parse_mode,
+									disable_web_page_preview: true,
+									reply_markup: res_mess.toEdit.options.reply_markup
+								}).catch(function (err) {
+									bot.sendMessage(
+										16964514,
+										"👮Hey:\nC'è stato un problema!\n" + err.response.body.description +
+										"\nNella chat: " + res_mess.toSend.chat_id + "\n" + err.response.body
+									);
+								});
+						}
+						if (typeof (res_mess.toSend) != "undefined") {
+							bot.sendMessage(
+								res_mess.toSend.chat_id,
+								res_mess.toSend.message_txt,
+								res_mess.toSend.options
+							).catch(function (err) {
+								bot.sendMessage(
+									res_mess.toSend.chat_id,
+									"Upps!\n" +
+									"Sembra tu stia usando uno dei caratteri markdown non correttamente...\n" +
+									"O comunque, questo è quello che dice Telegram:\n\n```" + err.response.body.description + "\n```"
+								);
+							});
+						}
+					}
+				}).catch(function (err) { console.log(err); });
+			}
 		}
+
+		// End suggestions
 		
 		if (message.text.startsWith("/") && !(message.text.startsWith("//"))) {
 			if (message.text.indexOf("@") == -1)
@@ -566,7 +564,7 @@ bot.onText(/^\/start$|^\/start@lootplusbot$/, function (message) {
 bot.onText(/^\/comandigiocatore/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per il giocatore*\n" +
 					"/giocatore o /giocatrice - Mostra la scheda giocatore\n" +
-					"/drago - Mostra la scheda drago (specifica 'nome_parziale, tipo' di un drago per spiarlo)\n" +
+					"/drago - Mostra la scheda drago (specifica 'nome parziale, tipo' di un drago per spiarlo)\n" +
 					"/zaino - Mostra gli oggetti contenuti nello zaino (specifica anche rarità separate da virgola o 'consumabili' o 'completo')\n" +
 					"/zainoc/b - Mostra gli oggetti creati/base contenuti nello zaino (specifica anche la rarità)\n" +
 					"/zainor - Mostra gli oggetti speciali posseduti (polvere, monete lunari, ecc.)\n" +
@@ -1508,55 +1506,50 @@ bot.onText(/^\/gruppi/, function (message) {
 																		var c21 = data; //uno scommesse
 																		console.log("Next Edicola");
 
-																		bot.getChatMembersCount(-1001177786583).then(function (data) {
-																			var c22 = data; //edicola
+																		if (message.chat.id < 0)
+																			bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
 
-																			if (message.chat.id < 0)
-																				bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
+																		bot.sendMessage(message.from.id, "<b>Ufficiali</b>\n" +
+																						"Canale principale per aggiornamenti: @LootBotAvvisi\n" +
 
-																			bot.sendMessage(message.from.id, "<b>Ufficiali</b>\n" +
-																							"Canale principale per aggiornamenti: @LootBotAvvisi\n" +
+																						"\n<b>Bot</b>\n" +
+																						"Liste oggetti e alberi automatici: @craftlootbot\n" +
+																						"Qualcuno sempre a disposizione: @OracoloLootBot\n" +
+																						"Calcolo Loot Combat Rating: @lootcrbot\n" +
+																						"Tool per mercato e cronologie: @ToolsForLootBot\n" +
+																						"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
+																						"Tastiera per inviare facilmente i comandi del plus: @LootPlusKeyboardBot\n" +
 
-																							"\n<b>Bot</b>\n" +
-																							"Liste oggetti e alberi automatici: @craftlootbot\n" +
-																							"Qualcuno sempre a disposizione: @OracoloLootBot\n" +
-																							"Calcolo Loot Combat Rating: @lootcrbot\n" +
-																							"Tool per mercato e cronologie: @ToolsForLootBot\n" +
-																							"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
-																							"Tastiera per inviare facilmente i comandi del plus: @LootPlusKeyboardBot\n" +
+																						"\n<b>Altro</b>\n" +
+																						"<a href='https://telegra.ph/Guida-alle-LootBot-API-04-06'>LootBot Api v2</a>\n" +
 
-																							"\n<b>Altro</b>\n" +
-																							"<a href='https://telegra.ph/Guida-alle-LootBot-API-04-06'>LootBot Api v2</a>\n" +
+																						"\n<b>Gruppi</b>\n" +
+																						"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
+																						"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
+																						"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
+																						"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
+																						"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
+																						"<a href='https://t.me/joinchat/AVqFykBMfmvrULAUQv-MmQ'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
+																						"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
+																						"<a href='https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
+																						"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
+																						"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
+																						"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
+																						"<a href='https://t.me/joinchat/I-b0dhM-eO3tmxrz9rtMrg'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
+																						"@Adesmappers (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
+																						"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ") - La musica ed il diverimento di Lootia!\n" +
+																						"<a href='https://t.me/joinchat/B8_tHk9nThsWfDL-k-Fazw'>Loot Nabbi</a> (" + c19 + ") - Dedicato ai nabbi di Lootia!\n" +
+																						"<a href='https://t.me/joinchat/ByIyqhPdW14SZX4y7PiRbw'>Loot Gheims</a> (" + c20 + ") - Gruppo OT con giochi per tutti i gusti, specie giochi di ruolo\n" +
+																						"<a href='https://t.me/joinchat/HOnifBab5PT-2Qj2Lq0ZkQ'>Uno Scommesse</a> (" + c21 + ") - Vieni a scommettere o semplicemente giocare al famosissimo gioco Uno insieme a noi!\n" +
 
-																							"\n<b>Gruppi</b>\n" +
-																							"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
-																							"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
-																							"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
-																							"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
-																							"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
-																							"<a href='https://t.me/joinchat/AVqFykBMfmvrULAUQv-MmQ'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
-																							"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
-																							"<a href='https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
-																							"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
-																							"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
-																							"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
-																							"<a href='https://t.me/joinchat/I-b0dhM-eO3tmxrz9rtMrg'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
-																							"@Adesmappers (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
-																							"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ") - La musica ed il diverimento di Lootia!\n" +
-																							"<a href='https://t.me/joinchat/B8_tHk9nThsWfDL-k-Fazw'>Loot Nabbi</a> (" + c19 + ") - Dedicato ai nabbi di Lootia!\n" +
-																							"<a href='https://t.me/joinchat/ByIyqhPdW14SZX4y7PiRbw'>Loot Gheims</a> (" + c20 + ") - Gruppo OT con giochi per tutti i gusti, specie giochi di ruolo\n" +
-																							"<a href='https://t.me/joinchat/HOnifBab5PT-2Qj2Lq0ZkQ'>Uno Scommesse</a> (" + c21 + ") - Vieni a scommettere o semplicemente giocare al famosissimo gioco Uno insieme a noi!\n" +
-																							"<a href='https://t.me/joinchat/H6WbjRaNMcik1RmX_rR-ng'>EdiCola</a> (" + c22 + ") - Scambia le tue figurine!\n" +
+																						"\n<b>Canali</b>\n" +
+																						"@lootstatistiche - Statistiche dettagliate di Loot!\n" +
+																						"@Suggerimenti_per_LootBot - Gruppo dove i suggerimenti vengono postati e votati dagli utenti\n" +
+																						"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
+																						"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
+																						"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
 
-																							"\n<b>Canali</b>\n" +
-																							"@lootstatistiche - Statistiche dettagliate di Loot!\n" +
-																							"@Suggerimenti_per_LootBot - Gruppo dove i suggerimenti vengono postati e votati dagli utenti\n" +
-																							"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
-																							"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
-																							"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
-
-																							"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
-																		});
+																						"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
 																	});
 																});
 															});
@@ -9539,7 +9532,7 @@ bot.onText(/^\/drago (.+),(.+)|^\/drago/, function (message, match) {
 		var isSpy = 0;
 		if ((match[1] != undefined) && (match[2] != undefined)) {
 			var name = match[1].toLowerCase();
-			var typeArray = ["delle montagne", "dei Cieli", "Infernale", "dell'Oscurità", "dei Mari", "dei Ghiacci"];
+			var typeArray = ["delle montagne", "dei cieli", "infernale", "dell'oscurità", "dei mari", "dei ghiacci"];
 			var type;
 			var sim = stringSimilarity.findBestMatch(match[2], typeArray);
 			if (sim.bestMatch.rating >= 0.6)
@@ -9563,7 +9556,7 @@ bot.onText(/^\/drago (.+),(.+)|^\/drago/, function (message, match) {
 				if (err) throw err;
 			});
 			
-			if (Object.keys(dragon).length > 10) {
+			if (Object.keys(dragon).length > 25) {
 				bot.sendMessage(message.chat.id, "Troppi risultati, riprova con un nome più preciso");
 				return;
 			}
