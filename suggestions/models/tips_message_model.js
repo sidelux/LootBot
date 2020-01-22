@@ -83,7 +83,7 @@ function getBestSuggestions() {
 				array.push(getBestSuggestionsFrom(audaci_query, single_connection, null));
 				array.push(getBestSuggestionsFrom(notAppreciated_query, single_connection, null));
 
-				Promise.all(array).then(function (res) {
+				return Promise.all(array).then(function (res) {
 					sugg_pool.releaseConnection(single_connection);
 
 					if (typeof res != 'undefined') {
@@ -97,10 +97,9 @@ function getBestSuggestions() {
 						return getBestSuggestions_resolve(null);
 					}
 				});
-
-
+			} else {
+				sugg_pool.releaseConnection(single_connection);
 			}
-			sugg_pool.releaseConnection(single_connection);
 		});
 	});
 

@@ -3397,6 +3397,21 @@ CREATE TABLE `team_player` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Temporary table structure for view `team_player_public`
+--
+
+DROP TABLE IF EXISTS `team_player_public`;
+/*!50001 DROP VIEW IF EXISTS `team_player_public`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `team_player_public` (
+  `team_id` tinyint NOT NULL,
+  `nickname` tinyint NOT NULL,
+  `role` tinyint NOT NULL
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
 -- Temporary table structure for view `team_public`
 --
 
@@ -3407,8 +3422,7 @@ SET character_set_client = utf8;
 /*!50001 CREATE TABLE `team_public` (
   `team_id` tinyint NOT NULL,
   `name` tinyint NOT NULL,
-  `nickname` tinyint NOT NULL,
-  `role` tinyint NOT NULL
+  `child_team` tinyint NOT NULL
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
@@ -3786,6 +3800,25 @@ CREATE TABLE `travel` (
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
+-- Final view structure for view `team_player_public`
+--
+
+/*!50001 DROP TABLE IF EXISTS `team_player_public`*/;
+/*!50001 DROP VIEW IF EXISTS `team_player_public`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `team_player_public` AS select `team`.`id` AS `team_id`,`player`.`nickname` AS `nickname`,`team_player`.`role` AS `role` from ((`team` join `team_player`) join `player`) where ((`team`.`id` = `team_player`.`team_id`) and (`player`.`id` = `team_player`.`player_id`)) */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
 -- Final view structure for view `team_public`
 --
 
@@ -3799,7 +3832,7 @@ CREATE TABLE `travel` (
 /*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `team_public` AS select `team`.`id` AS `team_id`,`team`.`name` AS `name`,`player`.`nickname` AS `nickname`,`team_player`.`role` AS `role` from ((`team` join `team_player`) join `player`) where ((`team`.`id` = `team_player`.`team_id`) and (`player`.`id` = `team_player`.`player_id`)) */;
+/*!50001 VIEW `team_public` AS select `team`.`id` AS `team_id`,`team`.`name` AS `name`,`team`.`child_team` AS `child_team` from `team` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;

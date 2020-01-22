@@ -52,7 +52,7 @@ var battle_timeout_limit_min = 20;
 var battle_timeout_elapsed = 600;
 var battle_season_test = 0;
 var dragon_limit_search = 15;
-var map_condition_max = 8;
+var map_condition_max = 9;
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
 var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750, 2500, 3000, 3750];
 var progLevRew = [50000, 100000, 125000, 150000, 250000, 1000000, 2500000, 5000000, 5000000, 10000000, 20000000];
@@ -5985,26 +5985,39 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 									map_daily_diff = 0;
 
 								var conditions = "\n\nCondizioni mappa: ";
+								var conditions_desc = "";
 								if (map_conditions == 0)
 									conditions += "✅ Normali";
-								else if (map_conditions == 1)
+								else if (map_conditions == 1) {
 									conditions += "☠️ Restringimento veloce";
-								else if (map_conditions == 2)
+									conditions_desc = "Il tempo di restringimento è dimezzato";
+								} else if (map_conditions == 2) {
 									conditions += "🕳 Trappole pericolose";
-								else if (map_conditions == 3)
-									conditions += "⚔️ Danni raddoppiati";
-								else if (map_conditions == 4)
-									conditions += "🏆 Trofei raddoppiati";
-								else if (map_conditions == 5)
-									conditions += "💰 Risorse raddoppiate";
-								else if (map_conditions == 6)
+									conditions_desc = "Il danno causato dalle trappole è raddoppiato";
+								} else if (map_conditions == 3) {
+									conditions += "⚔️ Danni pesanti";
+									conditions_desc = "Il danno in combattimento è raddoppiato";
+								} else if (map_conditions == 4) {
+									conditions += "🏆 Trofei preziosi";
+									conditions_desc = "I trofei ottenuti a fine partita sono raddoppiati";
+								} else if (map_conditions == 5) {
+									conditions += "💰 Risorse abbondanti";
+									conditions_desc = "Le monete e i rottami ottenuti sono raddoppiati";
+								} else if (map_conditions == 6) {
 									conditions += "⚡️ Corsa contro il tempo";
-								else if (map_conditions == 7)
+									conditions_desc = "Gran parte della mappa è disseminata di campi paralizzanti";
+								} else if (map_conditions == 7) {
 									conditions += "🖐 Senza fretta";
-								else if (map_conditions == 8)
+									conditions_desc = "Il tempo di restringimento è raddoppiato";
+								} else if (map_conditions == 8) {
 									conditions += "🔋 Veloce come il vento";
+									conditions_desc = "Gran parte della mappa è disseminata di bevande boost";
+								} else if (map_conditions == 9) {
+									conditions += "👊 Tutti uguali";
+									conditions_desc = "Il livello dei giocatori non influisce sui combattimenti";
+								}
 
-								bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\n\n<b>" + lobby_players + "</b> ⚔️ combattenti dentro una lobby\n<b>" + trophies + "</b> 🏆 in questa stagione (terminerà tra " + diff + ")\n<b>" + map_daily_diff + "</b> 💥 partite avviabili oggi" + conditions, kbMain).then(function () {
+								bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\n\n<b>" + lobby_players + "</b> ⚔️ combattenti dentro una lobby\n<b>" + trophies + "</b> 🏆 in questa stagione (terminerà tra " + diff + ")\n<b>" + map_daily_diff + "</b> 💥 partite avviabili oggi" + conditions + "\n<i>" + conditions_desc + "</i>", kbMain).then(function () {
 									answerCallbacks[message.chat.id] = function (answer) {
 										if (answer.text == "Torna al menu")
 											return;
@@ -6303,7 +6316,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 															mapIdToSym(8) + " Altro giocatore - Ingaggia una battaglia con un altro giocatore\n" +
 															mapIdToSym(9) + " Rottame - Valuta utile per gli scambi, si ottiene anche in caso gli equip trovati non siano più forti di quelli indossati\n" +
 															mapIdToSym(10) + " Mappa bruciata - Se si capita in una casella bruciata, si viene sconfitti\n" +
-															mapIdToSym(11) + " Teletrasporto - Teletrasporta il giocatore in una casella casuale non bruciata, senza attivarne la funzione\n" +
+															mapIdToSym(11) + " Stanza Teletrasporto - Fornisce la scelta al giocatore se teletrasportarsi in un luogo casuale della mappa o su un giocatore avversario\n" +
 															mapIdToSym(12) + " Campo Paralizzante - Paralizza il giocatore costringendogli a ritardare la continuazione dell'esplorazione\n" +
 															mapIdToSym(13) + " Bevanda Boost - Riduce il tempo di attesa per il movimento per 3 turni\n" +
 															"\n<b>Istruzioni base</b>" +
@@ -6659,6 +6672,11 @@ bot.onText(/attacca!/i, function (message) {
 								if (rows[0].enemy_id == null) {
 									bot.sendMessage(message.chat.id, "Non sei più in combattimento", kbBack);
 									return;
+								}
+								
+								if (conditions == 9) {
+									exp = 0;
+									enemy_exp = 0;
 								}
 
 								var damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn);
@@ -7860,7 +7878,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									} else if (objId == 11) {		// teletrasporto
 										last_obj_query = ", last_obj = 11";
 										isBuild = 1;
-										text += "Raggiungi un luogo che emana una luce accecante, entri per scoprire i suoi segreti.";
+										text += "Raggiungi un " + mapIdToSym(11) + " luogo che emana una luce accecante, entri per scoprire i suoi segreti.";
 									} else if (objId == 12) {		// campo paralizzante
 										wait_time = 6;
 										text += "Cadi in un " + mapIdToSym(12) + " Campo Paralizzante e vieni immobilizzato! Dovrai attendere più tempo per continuare\n";
@@ -40490,78 +40508,229 @@ bot.onText(/necro del destino/i, function (message) {
 				});
 			} else
 				step = rows[0].step;
+			
+			connection.query('SELECT SUM(inventory.quantity) As cnt FROM inventory, item WHERE inventory.item_id = item.id AND item.rarity = "U" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
+				if (err) throw err;
+				
+				var u_qnt = rows[0].cnt;
 
-			bot.sendMessage(message.chat.id, "Benvenuto nella Necro del Destino 🔮\nPuoi accumulare Necrospiriti 💠 scambiandoli per oggetti U, e successivamente richiedere un premio, puoi ottenerli anche dalla Ruota della Luna. Cosa vuoi fare?\n\nAttualmente possiedi *" + necro_pnt + "* 💠", kb).then(function () {
-				answerCallbacks[message.chat.id] = function (answer) {
-					if (answer.text.toLowerCase().indexOf("scambia") != -1) {
-						connection.query('SELECT item.name, inventory.quantity As cnt FROM inventory, item WHERE inventory.item_id = item.id AND item.rarity = "U" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
-							if (err) throw err;
-							if (Object.keys(rows).length == 0) {
-								bot.sendMessage(message.chat.id, "Non hai alcun oggetto U da poter scambiare!", kbBack);
-								return;
-							}
+				bot.sendMessage(message.chat.id, "Benvenuto nella Necro del Destino 🔮\nPuoi accumulare Necrospiriti 💠 scambiandoli per oggetti U, e successivamente richiedere un premio, puoi ottenerli anche dalla Ruota della Luna. Cosa vuoi fare?\n\nAttualmente possiedi *" + necro_pnt + "* 💠 e *" + u_qnt + "* oggetti U", kb).then(function () {
+					answerCallbacks[message.chat.id] = function (answer) {
+						if (answer.text.toLowerCase().indexOf("scambia") != -1) {
+							connection.query('SELECT item.name, inventory.quantity As cnt FROM inventory, item WHERE inventory.item_id = item.id AND item.rarity = "U" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
+								if (err) throw err;
+								if (Object.keys(rows).length == 0) {
+									bot.sendMessage(message.chat.id, "Non hai alcun oggetto U da poter scambiare!", kbBack);
+									return;
+								}
 
-							var iKeys = [];
-							for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-								iKeys.push([rows[i].name + " (" + rows[i].cnt + ")"]);
+								var iKeys = [];
+								for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+									iKeys.push([rows[i].name + " (" + rows[i].cnt + ")"]);
 
-							iKeys.push(["Torna al menu"]);
+								iKeys.push(["Torna al menu"]);
 
-							var itemList = {
-								parse_mode: "Markdown",
+								var itemList = {
+									parse_mode: "Markdown",
+									reply_markup: {
+										resize_keyboard: true,
+										keyboard: iKeys
+									}
+								};
+
+								var itemQnt = {
+									parse_mode: "Markdown",
+									reply_markup: {
+										resize_keyboard: true,
+										keyboard: [["1","5","10"], ["Torna alla Necro del Destino"]]
+									}
+								};
+
+								bot.sendMessage(message.chat.id, "Seleziona l'oggetto U da scambiare", itemList).then(function () {
+									answerCallbacks[message.chat.id] = function (answer) {
+										if (answer.text == "Torna al menu")
+											return;
+										else {
+											var itemName = answer.text.substr(0, answer.text.indexOf("(")-1);
+
+											bot.sendMessage(message.chat.id, "Inserisci la quantità di copie dell'oggetto da scambiare", itemQnt).then(function () {
+												answerCallbacks[message.chat.id] = function (answer) {
+													if (answer.text == "Torna al menu")
+														return;
+													else {
+														var qnt = parseInt(answer.text);
+														if (isNaN(qnt)) {
+															bot.sendMessage(message.chat.id, "Quantità non valida", kbBack);
+															return;
+														}
+														if ((qnt < 1) || (qnt > 10)) {
+															bot.sendMessage(message.chat.id, "Quantità non valida, minimo 1 e massimo 10 copie", kbBack);
+															return;
+														}
+
+														connection.query('SELECT item.id, inventory.quantity As cnt FROM inventory, item WHERE inventory.item_id = item.id AND item.rarity = "U" AND inventory.player_id = ' + player_id + ' AND item.name = "' + itemName  + '"', function (err, rows, fields) {
+															if (err) throw err;
+
+															if (Object.keys(rows).length == 0) {
+																bot.sendMessage(message.chat.id, "Non possiedi l'oggetto specificato!", kbBack);
+																return;
+															}
+
+															if (rows[0].cnt < qnt) {
+																bot.sendMessage(message.chat.id, "Non possiedi abbastanza copie dell'oggetto specificato!", kbBack);
+																return;
+															}
+
+															delItem(player_id, rows[0].id, qnt);
+															connection.query('UPDATE player SET necro_pnt = necro_pnt+' + qnt + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+																bot.sendMessage(message.chat.id, "Hai consumato gli oggetti e ottenuto " + qnt + " Necrospiriti 💠!", kbBack);
+															});
+														});
+													}
+												}
+											});
+										}
+									}
+								});
+							});
+						} else if (answer.text.toLowerCase().indexOf("ottieni") != -1) {
+							var prizeList = {
+								parse_mode: "HTML",
 								reply_markup: {
 									resize_keyboard: true,
-									keyboard: iKeys
+									keyboard: [["Ricompensa 1", "Ricompensa 2"], ["Ricompensa 3", "Ricompensa 4"], ["Ricompensa 5", "Ricompensa 6"], ["Ricompensa 7", "Ricompensa 8"],["Torna alla Necro del Destino"]]
 								}
 							};
 
-							var itemQnt = {
+							var dYesNo = {
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									keyboard: [["1","5","10"], ["Torna alla Necro del Destino"]]
+									keyboard: [["Si"], ["Torna alla Necro del Destino"]]
 								}
 							};
 
-							bot.sendMessage(message.chat.id, "Seleziona l'oggetto U da scambiare", itemList).then(function () {
+							bot.sendMessage(message.chat.id, "Con i Necrospiriti 💠 puoi acquistare diversi oggetti:" +
+											"\n> 2 Oggetti Casuali (fino a UE inclusa Runa Necro) (1)" + (step >= 1 ? " ✅" : "") +
+											"\n> 50 💎 (5)" + (step >= 2 ? " ✅" : "") +
+											"\n> Amuleto del Necrospirito (10)" + (step >= 3 ? " ✅" : "") +
+											"\n> 1 Frutto del Set Frutta (S) (15)" + (step >= 4 ? " ✅" : "") +
+											"\n> Salmone (S) (25)" + (step >= 5 ? " ✅" : "") +
+											"\n> Trasmogrificazione in Necrolama di Phoenix (50)" + (step >= 6 ? " ✅" : "") +
+											"\n> Trasmogrificazione in Corazza Necro di Phoenix (50)" + (step >= 7 ? " ✅" : "") +
+											"\n> Trasmogrificazione in Scudo Necro di Phoenix (50)" + (step >= 8 ? " ✅" : "") +
+											"\n\nOgni ricompensa può essere riscattata solo una volta ma devono essere riscattate in ordine. La prima può essere riscattata più volte dopo averle ottenute tutte.\n\n" +
+											"Attualmente possiedi <b>" + necro_pnt + "</b> 💠", prizeList).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
-									if (answer.text == "Torna al menu")
-										return;
-									else {
-										var itemName = answer.text.substr(0, answer.text.indexOf("(")-1);
+									if (answer.text.toLowerCase().indexOf("ricompensa") != -1) {
 
-										bot.sendMessage(message.chat.id, "Inserisci la quantità di copie dell'oggetto da scambiare", itemQnt).then(function () {
+										var num = parseInt(answer.text.split(" ")[1]);
+
+										if (isNaN(num)) {
+											bot.sendMessage(message.chat.id, "Ricompensa non valida", kbBack);
+											return;
+										}
+										if ((num < 1) || (num > 8)) {
+											bot.sendMessage(message.chat.id, "Ricompensa non valida, minimo 1 massimo 6", kbBack);
+											return;
+										}
+
+										if ((num == 6) || (num == 7) || (num == 8)) {
+											var necro_lock = connection_sync.query('SELECT 1 FROM necro_change WHERE player_id = ' + player_id);
+											if (Object.keys(necro_lock).length == 0) {
+												bot.sendMessage(message.chat.id, "Puoi riscattare questa ricompensa solo dopo aver sbloccato la Trasmogrificazione", kbBack);
+												return;
+											}
+										}
+
+										var ok = 0;
+										if ((num == 1) && (step == 8))
+											ok = 1;
+
+										if (ok == 0) {
+											if (step < num-1) {
+												bot.sendMessage(message.chat.id, "Devi prima riscattare le ricompense precedenti!", kbBack);
+												return;
+											}
+											if (step >= num) {
+												bot.sendMessage(message.chat.id, "Hai già riscattato questa ricompensa!", kbBack);
+												return;
+											}
+										}
+
+										var cost = 0;
+										if (num == 1)
+											cost = 1;
+										else if (num == 2)
+											cost = 5;
+										else if (num == 3)
+											cost = 10;
+										else if (num == 4)
+											cost = 15;
+										else if (num == 5)
+											cost = 25;
+										else if ((num == 6) || (num == 7) || (num == 8))
+											cost = 50;
+										else {
+											bot.sendMessage(message.chat.id, "Ricompensa non valida", kbBack);
+											return;
+										}
+
+										bot.sendMessage(message.chat.id, "Sei sicuro di voler spendere " + cost + " 💠?", dYesNo).then(function () {
 											answerCallbacks[message.chat.id] = function (answer) {
-												if (answer.text == "Torna al menu")
-													return;
-												else {
-													var qnt = parseInt(answer.text);
-													if (isNaN(qnt)) {
-														bot.sendMessage(message.chat.id, "Quantità non valida", kbBack);
-														return;
-													}
-													if ((qnt < 1) || (qnt > 10)) {
-														bot.sendMessage(message.chat.id, "Quantità non valida, minimo 1 e massimo 10 copie", kbBack);
-														return;
-													}
-
-													connection.query('SELECT item.id, inventory.quantity As cnt FROM inventory, item WHERE inventory.item_id = item.id AND item.rarity = "U" AND inventory.player_id = ' + player_id + ' AND item.name = "' + itemName  + '"', function (err, rows, fields) {
+												if (answer.text.toLowerCase() == "si") {
+													connection.query('SELECT necro_pnt FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 														if (err) throw err;
 
-														if (Object.keys(rows).length == 0) {
-															bot.sendMessage(message.chat.id, "Non possiedi l'oggetto specificato!", kbBack);
+														if (rows[0].necro_pnt < cost) {
+															bot.sendMessage(message.chat.id, "Non hai abbastanza 💠", kbBack);
 															return;
 														}
 
-														if (rows[0].cnt < qnt) {
-															bot.sendMessage(message.chat.id, "Non possiedi abbastanza copie dell'oggetto specificato!", kbBack);
-															return;
-														}
-
-														delItem(player_id, rows[0].id, qnt);
-														connection.query('UPDATE player SET necro_pnt = necro_pnt+' + qnt + ' WHERE id = ' + player_id, function (err, rows, fields) {
+														connection.query('UPDATE player SET necro_pnt = necro_pnt-' + cost + ' WHERE id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
-															bot.sendMessage(message.chat.id, "Hai consumato gli oggetti e ottenuto " + qnt + " Necrospiriti 💠!", kbBack);
+
+															var text = "Hai speso " + cost + " 💠 ed ottenuto:\n";
+															if (num == 1) {
+																var rows = connection_sync.query('SELECT id, name, rarity FROM item WHERE rarity NOT IN ("C","NC","X","S","IN","A","U") OR id = 764 ORDER BY RAND()');
+																addItem(player_id, rows[0].id);
+																addItem(player_id, rows[1].id);
+																text += "> " + rows[0].name + " (" + rows[0].rarity + ")\n";
+																text += "> " + rows[1].name + " (" + rows[1].rarity + ")";
+															} else if (num == 2) {
+																connection.query('UPDATE player SET gems = gems+50 WHERE id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+																text += "> 50 💎";
+															} else if (num == 3) {
+																addItem(player_id, 753);
+																text += "> Amuleto del Necrospirito (IN)";
+															} else if (num == 4) {
+																var rows = connection_sync.query('SELECT id, name FROM item WHERE id IN (264, 266, 272) ORDER BY RAND()');
+																addItem(player_id, rows[0].id);
+																text += "> " + rows[0].name + " (S)\n";
+															} else if (num == 5) {
+																addItem(player_id, 651);
+																text += "> Salmone (S)";
+															} else if (num == 6)
+																text += "> Possibilità di Trasmogrificazione in Necrolama di Phoenix (X)";
+															else if (num == 7)
+																text += "> Possibilità di Trasmogrificazione in Corazza Necro di Phoenix (X)";
+															else if (num == 8)
+																text += "> Possibilità di Trasmogrificazione in Scudo Necro di Phoenix (X)";
+
+															if ((step == 8) && (num == 1)) {
+																connection.query('UPDATE necro_game SET step = 6 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+															} else {
+																connection.query('UPDATE necro_game SET step = ' + num + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+															}
+
+															bot.sendMessage(message.chat.id, text, kbBack);
 														});
 													});
 												}
@@ -40570,154 +40739,9 @@ bot.onText(/necro del destino/i, function (message) {
 									}
 								}
 							});
-						});
-					} else if (answer.text.toLowerCase().indexOf("ottieni") != -1) {
-						var prizeList = {
-							parse_mode: "HTML",
-							reply_markup: {
-								resize_keyboard: true,
-								keyboard: [["Ricompensa 1", "Ricompensa 2"], ["Ricompensa 3", "Ricompensa 4"], ["Ricompensa 5", "Ricompensa 6"], ["Ricompensa 7", "Ricompensa 8"],["Torna alla Necro del Destino"]]
-							}
-						};
-
-						var dYesNo = {
-							parse_mode: "Markdown",
-							reply_markup: {
-								resize_keyboard: true,
-								keyboard: [["Si"], ["Torna alla Necro del Destino"]]
-							}
-						};
-
-						bot.sendMessage(message.chat.id, "Con i Necrospiriti 💠 puoi acquistare diversi oggetti:" +
-										"\n> 2 Oggetti Casuali (fino a UE inclusa Runa Necro) (1)" + (step >= 1 ? " ✅" : "") +
-										"\n> 50 💎 (5)" + (step >= 2 ? " ✅" : "") +
-										"\n> Amuleto del Necrospirito (10)" + (step >= 3 ? " ✅" : "") +
-										"\n> 1 Frutto del Set Frutta (S) (15)" + (step >= 4 ? " ✅" : "") +
-										"\n> Salmone (S) (25)" + (step >= 5 ? " ✅" : "") +
-										"\n> Trasmogrificazione in Necrolama di Phoenix (50)" + (step >= 6 ? " ✅" : "") +
-										"\n> Trasmogrificazione in Corazza Necro di Phoenix (50)" + (step >= 7 ? " ✅" : "") +
-										"\n> Trasmogrificazione in Scudo Necro di Phoenix (50)" + (step >= 8 ? " ✅" : "") +
-										"\n\nOgni ricompensa può essere riscattata solo una volta ma devono essere riscattate in ordine. La prima può essere riscattata più volte dopo averle ottenute tutte.\n\n" +
-										"Attualmente possiedi <b>" + necro_pnt + "</b> 💠", prizeList).then(function () {
-							answerCallbacks[message.chat.id] = function (answer) {
-								if (answer.text.toLowerCase().indexOf("ricompensa") != -1) {
-
-									var num = parseInt(answer.text.split(" ")[1]);
-
-									if (isNaN(num)) {
-										bot.sendMessage(message.chat.id, "Ricompensa non valida", kbBack);
-										return;
-									}
-									if ((num < 1) || (num > 8)) {
-										bot.sendMessage(message.chat.id, "Ricompensa non valida, minimo 1 massimo 6", kbBack);
-										return;
-									}
-
-									if ((num == 6) || (num == 7) || (num == 8)) {
-										var necro_lock = connection_sync.query('SELECT 1 FROM necro_change WHERE player_id = ' + player_id);
-										if (Object.keys(necro_lock).length == 0) {
-											bot.sendMessage(message.chat.id, "Puoi riscattare questa ricompensa solo dopo aver sbloccato la Trasmogrificazione", kbBack);
-											return;
-										}
-									}
-
-									var ok = 0;
-									if ((num == 1) && (step == 8))
-										ok = 1;
-
-									if (ok == 0) {
-										if (step < num-1) {
-											bot.sendMessage(message.chat.id, "Devi prima riscattare le ricompense precedenti!", kbBack);
-											return;
-										}
-										if (step >= num) {
-											bot.sendMessage(message.chat.id, "Hai già riscattato questa ricompensa!", kbBack);
-											return;
-										}
-									}
-
-									var cost = 0;
-									if (num == 1)
-										cost = 1;
-									else if (num == 2)
-										cost = 5;
-									else if (num == 3)
-										cost = 10;
-									else if (num == 4)
-										cost = 15;
-									else if (num == 5)
-										cost = 25;
-									else if ((num == 6) || (num == 7) || (num == 8))
-										cost = 50;
-									else {
-										bot.sendMessage(message.chat.id, "Ricompensa non valida", kbBack);
-										return;
-									}
-
-									bot.sendMessage(message.chat.id, "Sei sicuro di voler spendere " + cost + " 💠?", dYesNo).then(function () {
-										answerCallbacks[message.chat.id] = function (answer) {
-											if (answer.text.toLowerCase() == "si") {
-												connection.query('SELECT necro_pnt FROM player WHERE id = ' + player_id, function (err, rows, fields) {
-													if (err) throw err;
-
-													if (rows[0].necro_pnt < cost) {
-														bot.sendMessage(message.chat.id, "Non hai abbastanza 💠", kbBack);
-														return;
-													}
-
-													connection.query('UPDATE player SET necro_pnt = necro_pnt-' + cost + ' WHERE id = ' + player_id, function (err, rows, fields) {
-														if (err) throw err;
-
-														var text = "Hai speso " + cost + " 💠 ed ottenuto:\n";
-														if (num == 1) {
-															var rows = connection_sync.query('SELECT id, name, rarity FROM item WHERE rarity NOT IN ("C","NC","X","S","IN","A","U") OR id = 764 ORDER BY RAND()');
-															addItem(player_id, rows[0].id);
-															addItem(player_id, rows[1].id);
-															text += "> " + rows[0].name + " (" + rows[0].rarity + ")\n";
-															text += "> " + rows[1].name + " (" + rows[1].rarity + ")";
-														} else if (num == 2) {
-															connection.query('UPDATE player SET gems = gems+50 WHERE id = ' + player_id, function (err, rows, fields) {
-																if (err) throw err;
-															});
-															text += "> 50 💎";
-														} else if (num == 3) {
-															addItem(player_id, 753);
-															text += "> Amuleto del Necrospirito (IN)";
-														} else if (num == 4) {
-															var rows = connection_sync.query('SELECT id, name FROM item WHERE id IN (264, 266, 272) ORDER BY RAND()');
-															addItem(player_id, rows[0].id);
-															text += "> " + rows[0].name + " (S)\n";
-														} else if (num == 5) {
-															addItem(player_id, 651);
-															text += "> Salmone (S)";
-														} else if (num == 6)
-															text += "> Possibilità di Trasmogrificazione in Necrolama di Phoenix (X)";
-														else if (num == 7)
-															text += "> Possibilità di Trasmogrificazione in Corazza Necro di Phoenix (X)";
-														else if (num == 8)
-															text += "> Possibilità di Trasmogrificazione in Scudo Necro di Phoenix (X)";
-
-														if ((step == 8) && (num == 1)) {
-															connection.query('UPDATE necro_game SET step = 6 WHERE player_id = ' + player_id, function (err, rows, fields) {
-																if (err) throw err;
-															});
-														} else {
-															connection.query('UPDATE necro_game SET step = ' + num + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
-																if (err) throw err;
-															});
-														}
-
-														bot.sendMessage(message.chat.id, text, kbBack);
-													});
-												});
-											}
-										}
-									});
-								}
-							}
-						});
-					}
-				};
+						}
+					};
+				});
 			});
 		});
 	});
@@ -43951,7 +43975,7 @@ function setMapCondition() {
 	var randCond = Math.random()*100;
 	var cond = 0;
 	if (randCond <= 50)
-		cond = Math.round(getRandomArbitrary(1, 7));
+		cond = Math.round(getRandomArbitrary(1, map_condition_max));
 	
 	connection.query('UPDATE config SET map_conditions = ' + cond, function (err, rows, fields) {
 		if (err) throw err;
@@ -44080,10 +44104,15 @@ function getInfo(message, player, myhouse_id) {
 			var boost_id = rows[0].boost_id;
 			var creation_date = rows[0].creation_date;
 			var top_win = rows[0].top_win;
+			var total_trophies = rows[0].total_trophies;
 
 			var top_win_text = "";
 			if (top_win > 0)
 				top_win_text = "Vittorie Vette: " + top_win + "\n";
+			
+			var trophies_text = "";
+			if (total_trophies > 0)
+				trophies_text = "Trofei Mappe: " + total_trophies + "\n";
 
 			if (mission_team_count > 0)
 				mission_team_count = "Incarichi: " + formatNumber(mission_team_count) + "\n";
@@ -44653,6 +44682,7 @@ function getInfo(message, player, myhouse_id) {
 																											rank +
 																											mission_team_count +
 																											top_win_text +
+																											trophies_text +
 																											(player_description != null ? "\n<i>" + player_description + "</i>" : ""), kb);
 																						});
 																					});
@@ -50933,8 +50963,31 @@ function generateMap(lobby_id, width, height, players, conditions) {
 	}
 	
 	playerPoss = shuffle(playerPoss);
+
+	var extracted = [];
+
+	for(p = 0; p < playerPoss.length; p++) {
+		var x = playerPoss[p][0];
+		var y = playerPoss[p][1];
+
+		err = 0;
+		for(e = 0; e < extracted.length; e++) {
+			var diffX = Math.abs(x-extracted[e][0]);
+			var diffY = Math.abs(y-extracted[e][1]);
+			var dist = diffX+diffY;
+			if (dist < 2)
+				err++;
+		}
+		if (err == 0)
+			extracted.push([x, y]);
+
+		if (extracted.length == players)
+			break;
+	}
 	
-	for(p = 0; p < players; p++)
+	// console.log("extracted", extracted);
+
+	for(p = 0; p < extracted.length; p++)
 		matrix[playerPoss[p][0]][playerPoss[p][1]] = 8;
 
 	// genera costruzioni
@@ -56048,7 +56101,7 @@ function resetMapCount() {
 	connection.query('UPDATE player SET map_count = 0 WHERE map_count != 0', function (err, rows, fields) {
 		if (err) throw err;
 	});
-	connection.query('UPDATE map_lobby SET lobby_id = NULL WHERE lobby_id != NULL', function (err, rows, fields) {
+	connection.query('UPDATE map_lobby SET lobby_id = NULL WHERE lobby_id IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 	});
 };

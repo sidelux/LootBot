@@ -381,10 +381,10 @@ function suggestionDispatch(user_info, message) {
 		let text_array = message.text.substr(entities[0].offset + entities[0].length).trim().replace('\n', ' ').split(" ");
 		let cmd_msg = { command: text_array, target: "", comment: "" };
 
-		if (cmd_msg.command.length == 1 && cmd_msg.command[0].length == 5 && tips_handler.isValidID(cmd_msg.command[0])) {
+		if (cmd_msg.command[0].length == 5 && tips_handler.isValidID(cmd_msg.command[0])) {
 			cmd_msg.target = cmd_msg.command[0];
 			cmd_msg.command = "sugg_info";
-		} if (text_array[0] == "integra" || text_array[0].indexOf("revision") >= 0) {
+		} else if (text_array[0] == "integra" || text_array[0].indexOf("revision") >= 0) {
 			cmd_msg.command = text_array[0];
 
 			if (typeof (message.reply_to_message) != "undefined") {
@@ -429,7 +429,7 @@ function suggestionDispatch(user_info, message) {
 		}
 
 		if (simple_log) console.log("Parsato il comando: " + cmd_msg.command + "\nTarget: " + cmd_msg.target)
-		return commandMeneger(message.chat.id, user_info, cmd_msg);
+		return commandMeneger(message.chat.id, user_info, cmd_msg, (message.chat.type == "private"));
 	} else if (message.chat.type == "private") {
 		if (message.text == trigger) {
 			return mainMenu(user_info);
@@ -1034,86 +1034,101 @@ function generateTagString() {
 //COMMAND MANAGER *********
 //________________________//
 
-function commandMeneger(chat_id, curr_user, fullCommand) {
-	if (simple_log) { console.log(">commandMeneger: “" + fullCommand.command + "“ " + fullCommand.target); }
+function commandMeneger(chat_id, curr_user, fullCommand, is_private_chat) {
+	if (simple_log) { console.log(">commandMeneger: “" + fullCommand.command + "“ " + fullCommand.target+", chat privata: "+is_private_chat); }
 
 	return new Promise(function (command_resolve) {
 		let toAnalize;
-		if (Array.isArray(fullCommand.command.length)) {
+		if (Array.isArray(fullCommand.command)) {
 			toAnalize = fullCommand.command.join(" ");
-			if (simple_log) console.log(toAnalize);
+			if (simple_log) console.log("Il comando era un array");
 		} else {
 			toAnalize = String(fullCommand.command);
 		}
 		if (simple_log) { console.log("> toAnalize: “" + toAnalize); }
 
-		if (curr_user.id == phenix_id && (fullCommand.command == "massimo" || fullCommand.command == "max")) {
-			command_resolve(setMaximumAllowed(chat_id, fullCommand.target));
-		} else if (toAnalize.match("recent")) {
-			command_resolve(getRecentlyApproved(curr_user.id, curr_user, fullCommand));
-		} else if (toAnalize.match("scartati")) {
-			command_resolve(getRefusedOf(curr_user.id, curr_user, fullCommand));
-		} else if (toAnalize.match("approvati")) {
+		if (is_private_chat){ // comandi in sola privata
+			if (curr_user.id == phenix_id && (fullCommand.command == "massimo" || fullCommand.command == "max")) {
+				command_resolve(setMaximumAllowed(chat_id, fullCommand.target));
+			} else if (toAnalize == "recenti") {
+				command_resolve(getRecentlyApproved(curr_user.id, curr_user, fullCommand));
+			} else if (toAnalize == "scartati") {
+				command_resolve(getRefusedOf(curr_user.id, curr_user, fullCommand));
+			} else if (toAnalize == "albo") {
+				command_resolve(getBestOf(curr_user.id));
+			} else if (toAnalize == "aperti") {
+				command_resolve(getOpens(curr_user.id, false));
+			} else if (toAnalize == "miei") {
+				command_resolve(getOpensFor(curr_user.id));
+			} else if (toAnalize == "markdown" || toAnalize == "stile") {
+				command_resolve(simpleDeletableMessage(curr_user.id, generateMarkdownString()));
+			} else if (toAnalize == "inizializza") {
+				command_resolve(resetCmd(curr_user));
+			} else if (toAnalize.match("tag")) {
+				command_resolve(simpleDeletableMessage(curr_user.id, generateTagString()));
+			}
+		}
+
+		// to do: dovrebbero ritornare tutte simpleMessage (e non simpleDeletableMessage)
+		if (toAnalize == "sugg_info"){
+			command_resolve(getSuggestionLinkCmd(curr_user, fullCommand, chat_id));
+		}else if (toAnalize == "escludi"){
+			command_resolve(limitAuthorOfDiscussion(curr_user, fullCommand));
+		} else if (toAnalize == "limita" || toAnalize == "dimentica") {
+			command_resolve(manageUserCmd(chat_id, curr_user, fullCommand));
+		} else if (toAnalize == "recluta") {
+			command_resolve(manageUserCmd(chat_id, curr_user, fullCommand));
+		} else if (toAnalize == "promuovi") {
+			command_resolve(manageUserCmd(chat_id, curr_user, fullCommand));
+		} else if (toAnalize == "approvati") {
 			command_resolve(getApprovedOf(curr_user.id, curr_user, fullCommand));
-		} else if (toAnalize.match("albo")) {
-			command_resolve(getBestOf(curr_user.id));
-		} else if (toAnalize.match("revision")) {
-			command_resolve(askReview(curr_user.id, curr_user, fullCommand));
-		} else if (toAnalize.match("aperti")) {
-			command_resolve(getOpens(curr_user.id, false));
-		} else if (toAnalize.match("miei")) {
-			command_resolve(getOpensFor(curr_user.id));
-		} else if (toAnalize.match("integra")) {
+		} else if (toAnalize == "integra") {
 			command_resolve(integrateMessage(curr_user.id, curr_user, fullCommand));
-		} else if (toAnalize.match("gestisci")) {
+		} else if (toAnalize == "gestisci") {
 			command_resolve(changeOpinion(chat_id, curr_user, fullCommand));
-		} else if (toAnalize.match("autore")) {
+		} else if (toAnalize == "autore") {
 			command_resolve(getAuthorMsg(chat_id, curr_user, fullCommand));
-		} else if (toAnalize.match("tag")) {
-			command_resolve(simpleDeletableMessage(curr_user.id, generateTagString()));
-		} else if (toAnalize.match("markdown") || toAnalize.match("stile")) {
-			command_resolve(simpleDeletableMessage(curr_user.id, generateMarkdownString()));
-		} else if (toAnalize.match("stat")) {
+		} else if (toAnalize.match("stat") ) {
 			command_resolve(getSuggestionInfoCmd(curr_user, fullCommand));
-		} else if (toAnalize.match("recluta")) {
-			command_resolve(manageUserCmd(chat_id, curr_user, fullCommand));
-		} else if (toAnalize.match("promuovi")) {
-			command_resolve(manageUserCmd(chat_id, curr_user, fullCommand));
 		} else if (toAnalize.match("curiosit")) {
 			command_resolve(curiosityCmd(chat_id, curr_user, fullCommand));
-		} else if (toAnalize.match("inizializza")) {
-			command_resolve(resetCmd(curr_user));
-		} else if (toAnalize.match("limit") || toAnalize.match("dimentica")) {
-			command_resolve(manageUserCmd(chat_id, curr_user, fullCommand));
+		} else if (toAnalize.match("revision")) {
+			command_resolve(askReview(curr_user.id, curr_user, fullCommand));
 		} else {
-			let avaible_cmds = "Hai disponibili i comandi:\n\n🌐\n> " +
-				"`tags`\n> " +
-				"`aperti `\n> " +
-				"`recenti `\n> " +
-				"`statistiche `\n> " +
-				"`albo `\n" +
-				"`\n👤`\n> " +
-				"`miei `\n> " +
-				"`approvati`\n> " +
-				"`scartati`\n> " +
-				"`curiosità`\n";
-			if (curr_user.role > 1)
-				avaible_cmds += "\n📄\n> `revisione`";
-			if (curr_user.role > 2)
-				avaible_cmds += "\n> `integra`\n\n👥\n> "
-					+ "`recluta`\n> "
-					+ "`limita`\n> "
-					+ "`dimentica`";
-			if (curr_user.role == 5) {
-				avaible_cmds += "\n> " + "`promuovi`";
-				avaible_cmds += "\n> massimo `N` (imposta il limite)";
-				avaible_cmds += "\n> `#suggerimento #annuncio` (per pubblicare un annuncio)";
+			if (is_private_chat){
+					let avaible_cmds = "Hai disponibili i comandi:\n\n🌐\n> " +
+						"`tags`\n> " +
+						"`aperti `\n> " +
+						"`recenti `\n> " +
+						"`statistiche `\n> " +
+						"`albo `\n" +
+						"`\n👤`\n> " +
+						"`miei `\n> " +
+						"`approvati`\n> " +
+						"`scartati`\n> " +
+						"`curiosità`\n";
+					if (curr_user.role > 1)
+						avaible_cmds += "\n📄\n> `revisione`";
+					if (curr_user.role > 2)
+						avaible_cmds += "\n> `integra`\n\n👥\n> "
+							+ "`recluta`\n> "
+							+ "`limita`\n> "
+							+ "`dimentica`";
+					if (curr_user.role == 5) {
+						avaible_cmds += "\n> " + "`promuovi`";
+						avaible_cmds += "\n> " + "`escludi`";
+						avaible_cmds += "\n> massimo `N` (imposta il limite)";
+						avaible_cmds += "\n> `#suggerimeno #annuncio` (per pubblicare un annuncio)";
+					}
+					avaible_cmds += "\n\nUsali preceduti dal comando:\n`/suggerimenti `";
+		
+					if (curr_user.role <= 0)
+						avaible_cmds += "\n\n>😟\n *Sei stato limitato all'utilizzo di questo modulo!*";
+					return command_resolve(simpleDeletableMessage(curr_user.id, avaible_cmds));
+				
+			} else {
+				command_resolve({noMessage: true});
 			}
-			avaible_cmds += "\n\nUsali preceduti dal comando:\n`/suggerimenti `";
-
-			if (curr_user.role <= 0)
-				avaible_cmds += "\n\n>😟\n *Sei stato limitato all'utilizzo di questo modulo!*";
-			return command_resolve(simpleDeletableMessage(curr_user.id, avaible_cmds));
 		}
 	});
 
@@ -2609,7 +2624,7 @@ function propouseInsert(user_info, text, entities, isQuick) {
 		} else { // Annunci (gestione)
 			if (simple_log) { console.log("- Controllo annuncio"); }
 
-			if (entities.indexOf("#annuncio")) {
+			if (entities.indexOf("#annuncio") > 0) {
 				let message = "";
 				if (user_info.id == phenix_id) {
 					if (simple_log) { console.log("- è un annuncio"); }
@@ -4099,22 +4114,23 @@ function manageDiscussionPublish(in_query, user_info){
 
 function getSuggestionLinkCmd(user_info, fullCmd, chat_id){
 	return new Promise(function (getSuggestionLinkCmd_resolve) {
-		if (simple_log) { console.log(">\t\tComando getSuggestionLinkCmd -> " + fullCmd.command+", "+fullCmd.target); }
+		let sugg_id = fullCmd.target.toUpperCase();
+		if (simple_log) { console.log(">\t\tComando getSuggestionLinkCmd -> " + fullCmd.command+", "+sugg_id); }
 
-		return tips_handler.getSuggestionInfos(fullCmd.target, user_info.id).then(function (sugg_infos){
+		return tips_handler.getSuggestionInfos(sugg_id, user_info.id).then(function (sugg_infos){
 			if (sugg_infos == -1) {
 				return getSuggestionLinkCmd_resolve(
-					simpleMessage(user_info.id, "😕\nNon ho trovato il suggerimento `" + fullCmd.target + "` nel database...")
+					simpleMessage(user_info.id, "😕\nNon ho trovato il suggerimento `" + sugg_id + "` nel database...")
 				);
 			} else if (sugg_infos.author == "NOAUTHOR") {
 				return integrateMessage_resolve(
 					simpleDeletableMessage(
 						user_info.id,
-						"😕\nProva a controllare l'imput...\nNon ho trovato il suggerimento `" + fullCmd.target + "` nel database...")
+						"😕\nProva a controllare l'imput...\nNon ho trovato il suggerimento `" + sugg_id + "` nel database...")
 				);
 			} else {
-				let res_text = "ⓘ *Informazioni sul suggerimento* "+suggestionCode_msg+fullCmd.target+"\n\n";
-				res_text += "\"" + generatePartialString(sugg_infos.sugg_text) + " /.../ \"\n[\[continua a leggere\]](" + channel_link_no_parse + "/" + sugg_infos.msg_id + ")\n";
+				let res_text = "ⓘ *Suggerimento* "+"`"+sugg_id+"`\n\n";
+				res_text += "\"" + generatePartialString(sugg_infos.sugg_text) + " /.../ \"\n[[continua a leggere](" + channel_link_no_parse + "/" + sugg_infos.msg_id + ")]\n";
 				res_text += "\nStato: ";
 				if (sugg_infos.status == 0){
 					res_text += "Aperto ♻️";
@@ -4123,14 +4139,17 @@ function getSuggestionLinkCmd(user_info, fullCmd, chat_id){
 				} else {
 					res_text += "Scartato 🌪";
 				}
-				res_text += "\nVoti positivi: "+sugg_infos.upVotes;
-				res_text += "\nVoti negativi: "+sugg_infos.downVotes;
+				if (sugg_infos.status == 0){
+					res_text += "\n"+sugg_infos.upVotes+" "+voteButton.up;
+					res_text += "\n"+sugg_infos.downVotes+" "+voteButton.down;
+				} else{
+					res_text += "\n"+sugg_infos.upOnClose+" "+voteButton.up;
+					res_text += "\n"+sugg_infos.downOnClose+" "+voteButton.down;
+				}
+				
 				return getSuggestionLinkCmd_resolve(simpleMessage(chat_id, res_text));
-
 			} 
-
 		});
-
 	});
 }
 

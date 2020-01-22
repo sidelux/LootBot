@@ -672,7 +672,8 @@ bot.onText(/^\/comandigenerali/, function (message) {
 					"/comandigruppo - Mostra i comandi per gestire gli utenti nei gruppi\n" +
 					"/token - Permette di ottenere un token per accedere alle Loot Bot API\n" +
 					"/notifiche - Permette di disattivare le notifiche di una particolare sezione del bot\n" +
-					"/calcola - Gestisce calcoli anche avanzati utilizzando funzioni (in inglese)", mark);
+					"/calcola - Gestisce calcoli anche avanzati utilizzando funzioni (in inglese)\n" +
+					"/suggerimenti comandi - Visualizza la lista dei comandi disponibili per effettuare suggerimenti", mark);
 });
 
 bot.onText(/^\/calcola (.+)|^\/calcola/, function (message, match) {
@@ -9729,6 +9730,11 @@ bot.onText(/^\/figurine (.+)|^\/figurine/, function (message, match) {
 				var text = message.from.username + ", possiedi " + have + " figurine" + filterName + ":\n";
 				for (i = 0, len = Object.keys(rows).length; i < len; i++)
 					text += "> " + rows[i].name + " (" + rows[i].rarity + ", " + rows[i].quantity + ")\n";
+				
+				if (text.length >= 3500) {
+					bot.sendMessage(message.chat.id, message.from.username + ", il messaggio è troppo lungo, riprova con un filtro", html);
+					return;
+				}
 
 				bot.sendMessage(message.chat.id, text, html);
 			});
@@ -10255,15 +10261,15 @@ bot.onText(/^\/zainob (.+)|^\/zainoc (.+)|^\/zainob|^\/zainoc/, function (messag
 		var rarity = "";
 		var desc = "";
 		if (match[1] != undefined){
-			rarity = " AND rarity.shortname = '" + match[1] + "'";
+			rarity = " AND rarity.shortname IN ('" + match[1].split(",").map(Function.prototype.call, String.prototype.trim).join("','") + "')";
 			desc = " - " + match[1].toUpperCase();
 		} else if (match[2] != undefined){
-			rarity = " AND rarity.shortname = '" + match[2] + "'";
+			rarity = " AND rarity.shortname IN ('" + match[2].split(",").map(Function.prototype.call, String.prototype.trim).join("','") + "')";
 			desc = " - " + match[2].toUpperCase();
 		}
 
 		var bottext = "<b>" + message.from.username + "</b> possiedi (" + craftTxt + desc + "):\n";
-
+		
 		connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.shortname As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND item.craftable = ' + craftable + ' AND inventory.quantity > 0' + rarity + ' ORDER BY item.name ASC', function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
@@ -10629,10 +10635,15 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 			var boost_id = rows[0].boost_id;
 			var creation_date = rows[0].creation_date;
 			var top_win = rows[0].top_win;
+			var total_trophies = rows[0].total_trophies;
 
 			var top_win_text = "";
 			if (top_win > 0)
 				top_win_text = "Vittorie Vette: " + top_win + "\n";
+			
+			var trophies_text = "";
+			if (total_trophies > 0)
+				trophies_text = "Trofei Mappe: " + total_trophies + "\n";
 
 			if (mission_team_count > 0)
 				mission_team_count = "Incarichi: " + formatNumber(mission_team_count) + "\n";
@@ -11164,6 +11175,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																											rank +
 																											mission_team_count +
 																											top_win_text +
+																											trophies_text +
 																											(player_description != null ? "\n<i>" + player_description + "</i>" : ""), html);
 																						});
 																					});
