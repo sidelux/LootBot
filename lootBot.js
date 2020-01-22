@@ -7822,7 +7822,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											rarity = "R";
 											price = 1;
 										}
-										var bag = connection_sync.query("SELECT I1.power, I2.power_armor, I3.power_shield FROM map_lobby M LEFT JOIN item I1 ON M.weapon_id = I1.id LEFT JOIN item I2 ON M.weapon_id = I2.id LEFT JOIN item I3 ON M.weapon_id = I3.id WHERE player_id = " + player_id);
+										var bag = connection_sync.query("SELECT I1.power, I2.power_armor, I3.power_shield FROM map_lobby M LEFT JOIN item I1 ON M.weapon_id = I1.id LEFT JOIN item I2 ON M.weapon2_id = I2.id LEFT JOIN item I3 ON M.weapon3_id = I3.id WHERE player_id = " + player_id);
 										var weapon_power = (bag[0].power == null ? "1" : bag[0].power);
 										var weapon2_power = (bag[0].power_armor == null ? "-1" : bag[0].power_armor);
 										var weapon3_power = (bag[0].power_shield == null ? "-1" : bag[0].power_shield);
@@ -7849,7 +7849,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											rarity = "R";
 											price = 1000;
 										}
-										var bag = connection_sync.query("SELECT I1.power, I2.power_armor, I3.power_shield FROM map_lobby M LEFT JOIN item I1 ON M.weapon_id = I1.id LEFT JOIN item I2 ON M.weapon_id = I2.id LEFT JOIN item I3 ON M.weapon_id = I3.id WHERE player_id = " + player_id);
+										var bag = connection_sync.query("SELECT I1.power, I2.power_armor, I3.power_shield FROM map_lobby M LEFT JOIN item I1 ON M.weapon_id = I1.id LEFT JOIN item I2 ON M.weapon2_id = I2.id LEFT JOIN item I3 ON M.weapon3_id = I3.id WHERE player_id = " + player_id);
 										var weapon_power = (bag[0].power == null ? "1" : bag[0].power);
 										var weapon2_power = (bag[0].power_armor == null ? "-1" : bag[0].power_armor);
 										var weapon3_power = (bag[0].power_shield == null ? "-1" : bag[0].power_shield);
