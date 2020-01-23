@@ -52,7 +52,7 @@ var battle_timeout_limit_min = 20;
 var battle_timeout_elapsed = 600;
 var battle_season_test = 0;
 var dragon_limit_search = 15;
-var map_condition_max = 9;
+var map_condition_max = 10;
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
 var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750, 2500, 3000, 3750];
 var progLevRew = [50000, 100000, 125000, 150000, 250000, 1000000, 2500000, 5000000, 5000000, 10000000, 20000000];
@@ -6015,6 +6015,9 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 								} else if (map_conditions == 9) {
 									conditions += "👊 Tutti uguali";
 									conditions_desc = "Il livello dei giocatori non influisce sui combattimenti";
+								} else if (map_conditions == 10) {
+									conditions += "👀 Tutto chiaro";
+									conditions_desc = "La mappa è sempre completamente visibile";
 								}
 
 								bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\n\n<b>" + lobby_players + "</b> ⚔️ combattenti dentro una lobby\n<b>" + trophies + "</b> 🏆 in questa stagione (terminerà tra " + diff + ")\n<b>" + map_daily_diff + "</b> 💥 partite avviabili oggi" + conditions + "\n<i>" + conditions_desc + "</i>", kbMain).then(function () {
@@ -7181,9 +7184,9 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 				var next_restrict_time = rows[0].next_restrict_time;
 				var mapMatrix = JSON.parse(rows[0].map_json);
-				var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id, posX, posY FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND enemy_id IS NULL AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
-				var map = printMap(mapMatrix, posX, posY, pulsePosX, pulsePosY, killed, checkEnemy);
 				var conditions = rows[0].conditions;
+				var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id, posX, posY FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND enemy_id IS NULL AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
+				var map = printMap(mapMatrix, posX, posY, pulsePosX, pulsePosY, killed, checkEnemy, conditions);
 
 				connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 					if (err) throw err;
@@ -21498,6 +21501,8 @@ bot.onText(/team/i, function (message) {
 											if (childName == "")
 												text += "\n";
 											text += "\nTeam Madre " + motherName;
+											if (childName == "")
+												text += " (+5 🦋/boss)";
 										}
 
 										if ((isAdmin == 1) || (isViceAdmin == 1) || (team_details == 1))
@@ -50921,6 +50926,9 @@ function generateMap(lobby_id, width, height, players, conditions) {
 		teleportRate = 10;
 		paralyzeRate = 0;
 		boostRate = 50;
+	} else if (conditions == 10) {
+		pulseRate = 0;
+		boostRate += 7;
 	}
 
 	var totalRate = chestRate+chestEpicRate+trapRate+pulseRate+scrapRate+teleportRate+paralyzeRate+boostRate;
@@ -51241,7 +51249,7 @@ function checkDistance(matrix, objId, posX, posY, distance) {
 	return 1;
 }
 
-function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnemy) {
+function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnemy, conditions) {
 	var text = "";
 	var isEnemy = 0;
 	for(i = 0; i < mapMatrix.length; i++) {
@@ -51253,7 +51261,9 @@ function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnem
 				else
 					text += "⚰️ ";
 			} else {
-				if (mapMatrix[i][j] == 10)	// mappa bruciata
+				if (conditions == 10)
+					text += mapIdToSym(mapMatrix[i][j]) + " ";
+				else if (mapMatrix[i][j] == 10)	// mappa bruciata
 					text += mapIdToSym(mapMatrix[i][j]) + " ";
 				else if ((pulsePosX != null && pulsePosY != null) && (
 					((i == pulsePosX-1) && (j == pulsePosY-1)) ||

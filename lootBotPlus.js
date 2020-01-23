@@ -584,7 +584,8 @@ bot.onText(/^\/comandigiocatore/, function (message) {
 					"/imprese - Visualizza lo stato delle imprese giornaliere\n" +
 					"/abilità - Visualizza informazioni sull'abilità del giocatore\n" +
 					"/posizione - Indica la posizione in classifica globale e se si otterrà il relativo punto partecipazione\n" +
-					"/figurine - Visualizza le figurine possedute (specifica anche la rarità, il nome parziale, 'doppie', rarità o raritàinv)\n" +
+					"/figurine - Visualizza un riassunto delle figurine possedute raggruppate per rarità\n" +
+					"/figurinel - Visualizza le figurine possedute (specifica anche la rarità, il nome parziale, 'doppie', rarità o raritàinv)\n" +
 					"/figurina - Visualizza i dettagli delle figurine", mark);
 });
 
@@ -9676,7 +9677,44 @@ bot.onText(/^\/drago (.+),(.+)|^\/drago/, function (message, match) {
 	});
 });
 
-bot.onText(/^\/figurine (.+)|^\/figurine/, function (message, match) {
+bot.onText(/^\/figurine$/, function (message, match) {
+	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length == 0) {
+			bot.sendMessage(message.chat.id, "Non sei registrato!");
+			return;
+		}
+
+		var player_id = rows[0].id;
+		
+		connection.query('SELECT COUNT(I.id) As cnt FROM card_inventory I, card_list L WHERE I.card_id = L.id AND quantity > 0 AND player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+			var have = rows[0].cnt;
+
+			connection.query('SELECT rarity, COUNT(I.id) As cnt FROM card_inventory I, card_list L WHERE I.card_id = L.id AND quantity > 0 AND player_id = ' + player_id + ' GROUP BY rarity', function (err, rows, fields) {
+				if (err) throw err;
+
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, message.from.username + ", non possiedi alcuna figurina con i filtri selezionati!", html);
+					return;
+				}
+
+				var text = message.from.username + ", possiedi " + formatNumber(have) + " figurine suddivise per rarità:\n";
+				for (i = 0, len = Object.keys(rows).length; i < len; i++)
+					text += "> Rarità " + rows[i].rarity + ": " + rows[i].cnt + "\n";
+
+				if (text.length >= 3500) {
+					bot.sendMessage(message.chat.id, message.from.username + ", il messaggio è troppo lungo, riprova con /figurinel", html);
+					return;
+				}
+
+				bot.sendMessage(message.chat.id, text, html);
+			});
+		});
+	});
+});
+
+bot.onText(/^\/figurinel (.+)|^\/figurinel/, function (message, match) {
 	var rarityFilter = "";
 	var nameFilter = "";
 	var quantityFilter = "";
@@ -9727,7 +9765,7 @@ bot.onText(/^\/figurine (.+)|^\/figurine/, function (message, match) {
 					return;
 				}
 
-				var text = message.from.username + ", possiedi " + have + " figurine" + filterName + ":\n";
+				var text = message.from.username + ", possiedi " + formatNumber(have) + " figurine" + filterName + ":\n";
 				for (i = 0, len = Object.keys(rows).length; i < len; i++)
 					text += "> " + rows[i].name + " (" + rows[i].rarity + ", " + rows[i].quantity + ")\n";
 				
