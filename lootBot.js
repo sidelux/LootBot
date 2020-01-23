@@ -7614,7 +7614,9 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										plur = "o";
 									if (min < 1)
 										min = "meno di 1";
-									bot.sendMessage(message.chat.id, "Ti stai riposando!\nPrima di procedere dovrai attendere ancora " + min + " minut" + plur + "!", kbBack);
+									else
+										min = "ancora " + min;
+									bot.sendMessage(message.chat.id, "Ti stai riposando!\nPrima di procedere dovrai attendere " + min + " minut" + plur + "!", kbBack);
 									return;
 								}
 
@@ -25746,7 +25748,10 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				player_life = 0;
 																				var placeDestroyed = playerKilled(team_id, playerid, player[i].place_id, is_boss);
 																				epic_var++;
-																				status_text = ", viene ferito gravemente e accompagnato in infermeria 💉";
+																				var gender_text = "o";
+																				if (player[i].gender == "F")
+																					gender_text = "a";
+																				status_text = ", viene ferit" + gender_text + " gravemente e accompagnat" + gender_text + " in infermeria 💉";
 																				status_text += placeDestroyed;
 
 																				// riverso
