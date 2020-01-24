@@ -34109,15 +34109,19 @@ bot.onText(/Bacheca IN/i, function (message) {
 			
 			var tot = rows[0].tot;
 
-			connection.query('SELECT inventory.player_id, item.name, item.craftable, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND rarity = "IN" AND inventory.quantity > 0 ORDER BY rarity.id DESC, item.name ASC', function (err, rows, fields) {
+			connection.query('SELECT I.name, IFNULL(IV.quantity, 0) as quantity FROM item I LEFT JOIN inventory IV ON I.id = IV.item_id AND IV.player_id = ' + player_id + ' WHERE rarity = "IN" ORDER BY name', function (err, rows, fields) {
 				if (err) throw err;
 				var poss = 0;
 				if (Object.keys(rows).length > 0) {
 					text = "*Bacheca dei tuoi oggetti Inestimabili*:\n\n";
 
 					for (i = 0, len = Object.keys(rows).length; i < len; i++) {
-						text = text + "> " + rows[i].name + " (" + rows[i].num + ")\n";
-						poss++;
+						var poss_icon = " ⛔️";
+						if (rows[i].quantity > 0) {
+							poss++;
+							poss_icon = " ✅";
+						}
+						text = text + "> " + rows[i].name + " (" + rows[i].quantity + ")" + poss_icon + "\n";
 					}
 				} else
 					text += "Nessun oggetto inestimabile disponibile\n";
