@@ -40606,7 +40606,7 @@ bot.onText(/necro del destino/i, function (message) {
 			} else
 				step = rows[0].step;
 			
-			connection.query('SELECT SUM(inventory.quantity) As cnt FROM inventory, item WHERE inventory.item_id = item.id AND item.rarity = "U" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
+			connection.query('SELECT IFNULL(SUM(inventory.quantity), 0) As cnt FROM inventory, item WHERE inventory.item_id = item.id AND item.rarity = "U" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
 				if (err) throw err;
 				
 				var u_qnt = rows[0].cnt;
