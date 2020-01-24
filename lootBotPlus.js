@@ -10951,10 +10951,10 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																					if (my_player_id == player_id)
 																						relation = "";
 
-																					connection.query('SELECT COUNT(inventory.item_id) As cnt FROM inventory, item WHERE inventory.item_id = item.id AND player_id = ' + player_id + ' AND rarity = "IN" AND inventory.quantity > 0', function (err, rows, fields) {
+																					connection.query('SELECT COUNT(inventory.item_id) As cnt, (SELECT COUNT(id) As tot FROM item WHERE rarity = "IN") As tot FROM inventory, item WHERE inventory.item_id = item.id AND player_id = ' + player_id + ' AND rarity = "IN" AND inventory.quantity > 0', function (err, rows, fields) {
 																						if (err) throw err;
 
-																						var inest = rows[0].cnt;
+																						var inest = rows[0].cnt + "/" + rows[0].tot;
 
 																						connection.query('SELECT name FROM class WHERE id = ' + class_id, function (err, rows, fields) {
 																							if (err) throw err;

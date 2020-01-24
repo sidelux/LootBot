@@ -5924,7 +5924,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Accedi alla Lobby 🏹"], ["Trofei 🏆", "Vittorie 🎉", "Uccisioni 💀"], ["Guida 💬", "Torna al menu"]]
+				keyboard: [["Accedi alla Lobby 🏹"], ["Trofei 🏆", "Vittorie 🎉", "Uccisioni 💀"], ["Guida 💬", "Stato 📜"], ["Torna al menu"]]
 			}
 		};
 
@@ -6345,6 +6345,25 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 															"\n> Alla fine di ogni partita vengono forniti dei trofei in base alla posizione conclusiva ed alle uccisioni dei nemici." +
 															"\n> Alla fine della stagione si ottiene un premio in base ai trofei accumulati e questi ultimi, insieme alle uccisioni totali, vengono resettati." +
 															"\n> Alla fine della stagione viene anche accumulato un totale globale dei trofei accumulati che non viene mai resettato.", kbBack);
+										} else if (answer.text.toLowerCase().indexOf("stato") != -1) {
+											connection.query("SELECT position, COUNT(id) As cnt FROM map_history WHERE player_id = " + player_id + " GROUP BY position ORDER BY position", function (err, rows, fields) {
+												if (err) throw err;
+												
+												if (Object.keys(rows).length == 0) {
+													bot.sendMessage(message.chat.id, "Non hai ancora completato alcuna partita...", kbBack);
+													return;
+												}
+												
+												var text = "<b>Posizionamenti raggiunti nelle Mappe:</b>\n";
+												for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+													var plur = "e";
+													if (rows[i].cnt == 1)
+														plur = "a";
+													text += "> " + rows[i].position + "°: " + rows[i].cnt + " volt" + plur;
+												}
+												
+												bot.sendMessage(message.chat.id, text, kbBack);
+											});
 										}
 									}
 								});
@@ -6740,11 +6759,14 @@ bot.onText(/attacca!/i, function (message) {
 									set_enemy_battle_shield = 0;
 
 								if (answer.text.toLowerCase().indexOf("riprenditi") != -1) {
+									/*
 									if (battle_shield == 2) {
 										text += "Ti riprendi barcollando dall'ultima parata...";
 										enemy_text += "L'avversario barcolla riprendendosi dall'ultimo attacco...";
 										set_battle_shield = 0;
-									} else if (battle_stunned == 1) {
+									} else 
+									*/
+									if (battle_stunned == 1) {
 										text += "Ti riprendi barcollando dall'ultimo contraccolpo...";
 										enemy_text += "L'avversario barcolla riprendendosi dall'ultimo contraccolpo...";
 										set_battle_stunned = 0;
@@ -6787,7 +6809,8 @@ bot.onText(/attacca!/i, function (message) {
 											set_battle_stunned = 1;
 										} else {
 											partialProtected = 1;
-											set_enemy_battle_shield = 2;
+											// set_enemy_battle_shield = 2;
+											set_enemy_battle_shield = 0;
 										}
 									}
 									if (fullProtected == 0) {
@@ -34067,11 +34090,10 @@ bot.onText(/^\/rifiutaf/i, function (message) {
 });
 
 bot.onText(/Bacheca IN/i, function (message) {
-	connection.query('SELECT id, global_event FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
-		var pnt = rows[0].global_event;
 		var text = "";
 
 		var backPack = {
@@ -34081,23 +34103,27 @@ bot.onText(/Bacheca IN/i, function (message) {
 				keyboard: [["Torna allo Zaino"], ["Torna al menu"]]
 			}
 		};
-
-		connection.query('SELECT inventory.player_id, item.name, item.craftable, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND rarity = "IN" AND inventory.quantity > 0 ORDER BY rarity.id DESC, item.name ASC', function (err, rows, fields) {
+		
+		connection.query('SELECT COUNT(id) As tot FROM item WHERE rarity = "IN"', function (err, rows, fields) {
 			if (err) throw err;
-			if (Object.keys(rows).length > 0) {
-				text = "*" + rows[0].rname + "*:\n\n";
+			
+			var tot = rows[0].tot;
 
-				for (i = 0, len = Object.keys(rows).length; i < len; i++) {
-					if (rows[i].craftable == 0)
-						rows[i].name = "*" + rows[i].name + "*";
-					text = text + "> " + rows[i].name + " (" + rows[i].num + ")\n";
-				}
-			} else
-				text += "Nessun oggetto inestimabile disponibile\n";
+			connection.query('SELECT inventory.player_id, item.name, item.craftable, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND rarity = "IN" AND inventory.quantity > 0 ORDER BY rarity.id DESC, item.name ASC', function (err, rows, fields) {
+				if (err) throw err;
+				var poss = 0;
+				if (Object.keys(rows).length > 0) {
+					text = "*Bacheca dei tuoi oggetti Inestimabili*:\n\n";
 
-			text += "\nPunti Imprese Globali con alta partecipazione: " + pnt;
+					for (i = 0, len = Object.keys(rows).length; i < len; i++) {
+						text = text + "> " + rows[i].name + " (" + rows[i].num + ")\n";
+						poss++;
+					}
+				} else
+					text += "Nessun oggetto inestimabile disponibile\n";
 
-			bot.sendMessage(message.chat.id, text + "\nQuesti oggetti sono unici e vengono ottenuti solamente al termine delle imprese globali!", backPack);
+				bot.sendMessage(message.chat.id, text + "\nPossiedi *" + poss + "* inestimabili su un totale di *" + tot + "* presenti nel gioco\nQuesti oggetti sono unici e vengono ottenuti al termine delle imprese globali ed in altri casi estremamente particolari!", backPack);
+			});
 		});
 	});
 });
@@ -40670,7 +40696,7 @@ bot.onText(/necro del destino/i, function (message) {
 								parse_mode: "HTML",
 								reply_markup: {
 									resize_keyboard: true,
-									keyboard: [["Ricompensa 1", "Ricompensa 2"], ["Ricompensa 3", "Ricompensa 4"], ["Ricompensa 5", "Ricompensa 6"], ["Ricompensa 7", "Ricompensa 8"],["Torna alla Necro del Destino"]]
+									keyboard: [["Ricompensa 1", "Ricompensa 2"], ["Ricompensa 3", "Ricompensa 4"], ["Ricompensa 5", "Ricompensa 6"], ["Ricompensa 7", "Ricompensa 8"], ["Ricompensa 9", "Ricompensa 10"], ["Torna alla Necro del Destino"]]
 								}
 							};
 
@@ -40681,17 +40707,30 @@ bot.onText(/necro del destino/i, function (message) {
 									keyboard: [["Si"], ["Torna alla Necro del Destino"]]
 								}
 							};
+							
+							var last_step = 10;
+							
+							var done = 0;
+							var multiplier = 1;
+							var alert = "";
+							if (step == last_step) {
+								done = 1;
+								multiplier = 2;
+								alert = " ⚠️";
+							}
 
 							bot.sendMessage(message.chat.id, "Con i Necrospiriti 💠 puoi acquistare diversi oggetti:" +
-											"\n> 2 Oggetti Casuali (fino a UE inclusa Runa Necro) (1)" + (step >= 1 ? " ✅" : "") +
-											"\n> 50 💎 (5)" + (step >= 2 ? " ✅" : "") +
-											"\n> Amuleto del Necrospirito (10)" + (step >= 3 ? " ✅" : "") +
-											"\n> 1 Frutto del Set Frutta (S) (15)" + (step >= 4 ? " ✅" : "") +
-											"\n> Salmone (S) (25)" + (step >= 5 ? " ✅" : "") +
-											"\n> Trasmogrificazione in Necrolama di Phoenix (50)" + (step >= 6 ? " ✅" : "") +
-											"\n> Trasmogrificazione in Corazza Necro di Phoenix (50)" + (step >= 7 ? " ✅" : "") +
-											"\n> Trasmogrificazione in Scudo Necro di Phoenix (50)" + (step >= 8 ? " ✅" : "") +
-											"\n\nOgni ricompensa può essere riscattata solo una volta ma devono essere riscattate in ordine. La prima può essere riscattata più volte dopo averle ottenute tutte.\n\n" +
+											"\n1 -> 2 Oggetti Casuali (fino a UE inclusa Runa Necro) (" + (1*multiplier) + ")" + (step >= 1 ? " ✅" + alert : "") +
+											"\n2 -> 50 💎 (5)" + (step >= 2 ? " ✅" : "") +
+											"\n3 -> Amuleto del Necrospirito (10)" + (step >= 3 ? " ✅" : "") +
+											"\n4 -> 1 Frutto del Set Frutta (S) (" + (15*multiplier) + ")" + (step >= 4 ? " ✅" + alert: "") +
+											"\n5 -> Salmone (S) (25)" + (step >= 5 ? " ✅" : "") +
+											"\n6 -> Trasmogrificazione in Necrolama di Phoenix (50)" + (step >= 6 ? " ✅" : "") +
+											"\n7 -> Trasmogrificazione in Corazza Necro di Phoenix (50)" + (step >= 7 ? " ✅" : "") +
+											"\n8 -> Trasmogrificazione in Scudo Necro di Phoenix (50)" + (step >= 8 ? " ✅" : "") +
+											"\n9 -> 25 🌕 (" + (25*multiplier) + ")" + (step >= 9 ? " ✅" + alert : "") +
+											"\n10 -> Re delle U (IN) (100)" + (step >= 10 ? " ✅" : "") +
+											"\n\nOgni ricompensa può essere riscattata solo una volta ma devono essere riscattate in ordine. Le ricompense con il ⚠️ possono essere riscattate più volte dopo averle ottenute tutte.\n\n" +
 											"Attualmente possiedi <b>" + necro_pnt + "</b> 💠", prizeList).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text.toLowerCase().indexOf("ricompensa") != -1) {
@@ -40702,7 +40741,7 @@ bot.onText(/necro del destino/i, function (message) {
 											bot.sendMessage(message.chat.id, "Ricompensa non valida", kbBack);
 											return;
 										}
-										if ((num < 1) || (num > 8)) {
+										if ((num < 1) || (num > last_step)) {
 											bot.sendMessage(message.chat.id, "Ricompensa non valida, minimo 1 massimo 6", kbBack);
 											return;
 										}
@@ -40716,7 +40755,7 @@ bot.onText(/necro del destino/i, function (message) {
 										}
 
 										var ok = 0;
-										if ((num == 1) && (step == 8))
+										if (((num == 1) || (num == 4)) && (done == 1))
 											ok = 1;
 
 										if (ok == 0) {
@@ -40732,17 +40771,21 @@ bot.onText(/necro del destino/i, function (message) {
 
 										var cost = 0;
 										if (num == 1)
-											cost = 1;
+											cost = 1*multiplier;
 										else if (num == 2)
 											cost = 5;
 										else if (num == 3)
 											cost = 10;
 										else if (num == 4)
-											cost = 15;
+											cost = 15*multiplier;
 										else if (num == 5)
 											cost = 25;
 										else if ((num == 6) || (num == 7) || (num == 8))
 											cost = 50;
+										else if (num == 9)
+											cost = 25*multiplier;
+										else if (num == 10)
+											cost = 100;
 										else {
 											bot.sendMessage(message.chat.id, "Ricompensa non valida", kbBack);
 											return;
@@ -40790,9 +40833,18 @@ bot.onText(/necro del destino/i, function (message) {
 																text += "> Possibilità di Trasmogrificazione in Corazza Necro di Phoenix (X)";
 															else if (num == 8)
 																text += "> Possibilità di Trasmogrificazione in Scudo Necro di Phoenix (X)";
+															else if (num == 9) {
+																connection.query('UPDATE player SET moon_coin = moon_coin+25 WHERE id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+																text += "> 25 🌕";
+															} else if (num == 10) {
+																addItem(player_id, 793);
+																text += "> Re delle U (IN)";
+															}
 
-															if ((step == 8) && (num == 1)) {
-																connection.query('UPDATE necro_game SET step = 6 WHERE player_id = ' + player_id, function (err, rows, fields) {
+															if (((num == 1) || (num == 4)) && (done == 1)) {
+																connection.query('UPDATE necro_game SET step = ' + last_step + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 															} else {
@@ -44463,10 +44515,10 @@ function getInfo(message, player, myhouse_id) {
 																					if (my_player_id == player_id)
 																						relation = "";
 
-																					connection.query('SELECT COUNT(inventory.item_id) As cnt FROM inventory, item WHERE inventory.item_id = item.id AND player_id = ' + player_id + ' AND rarity = "IN" AND inventory.quantity > 0', function (err, rows, fields) {
+																					connection.query('SELECT COUNT(inventory.item_id) As cnt, (SELECT COUNT(id) As tot FROM item WHERE rarity = "IN") As tot FROM inventory, item WHERE inventory.item_id = item.id AND player_id = ' + player_id + ' AND rarity = "IN" AND inventory.quantity > 0', function (err, rows, fields) {
 																						if (err) throw err;
 
-																						var inest = rows[0].cnt;
+																						var inest = rows[0].cnt + "/" + rows[0].tot;
 
 																						connection.query('SELECT name FROM class WHERE id = ' + class_id, function (err, rows, fields) {
 																							if (err) throw err;
