@@ -7060,6 +7060,26 @@ bot.onText(/attacca!/i, function (message) {
 	});
 });
 
+bot.onText(/printMap (.+)/i, function (message, match) {
+	if (message.from.id == 20471035) {
+		var lobby_id = match[1];
+		connection.query('SELECT map_json FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+			if (err) throw err;
+			
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "La lobby inserita non esiste", mark);
+				return;
+			}
+
+			var mapMatrix = JSON.parse(rows[0].map_json);
+			var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id, posX, posY FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND enemy_id IS NULL AND lobby_id = ' + lobby_id);
+			var map = printMap(mapMatrix, 0, 0, 0, 0, 0, checkEnemy, 10, 1);
+			
+			bot.sendMessage(message.chat.id, map, mark);
+		});
+	}
+})
+
 bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna mappa|^mappa$/i, function (message) {	
 	connection.query('SELECT id, holiday, account_id, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -7186,7 +7206,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 				var mapMatrix = JSON.parse(rows[0].map_json);
 				var conditions = rows[0].conditions;
 				var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id, posX, posY FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND enemy_id IS NULL AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
-				var map = printMap(mapMatrix, posX, posY, pulsePosX, pulsePosY, killed, checkEnemy, conditions);
+				var map = printMap(mapMatrix, posX, posY, pulsePosX, pulsePosY, killed, checkEnemy, conditions, 0);
 
 				connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 					if (err) throw err;
@@ -42028,8 +42048,8 @@ bot.onText(/matchmaking|^mm$/i, function (message) {
 								var rows = connection_sync.query("SELECT nickname, exp, team_player.team_id FROM player, team_player WHERE player.heist_limit+(SELECT COUNT(id) FROM heist WHERE to_id = player.id) < " + heist_limit + " AND player.account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) AND team_player.player_id = player.id AND team_player.team_id NOT IN (" + team_id + ") AND heist_protection IS NULL AND ability BETWEEN " + (myab - offset) + " AND " + (myab + offset2) + " AND player.id != " + from_id + " AND money > 0 AND exp > " + minexp + " AND holiday = 0 AND player.id != " + last_mm + " ORDER BY ability DESC, heist_limit ASC, RAND() LIMIT " + limit);
 
 								if (Object.keys(rows).length < 10) {
-									offset += i*20;
-									offset2 += i*20;
+									offset += i*100;
+									offset2 += i*100;
 								} else {
 									rand = Math.floor(Math.random() * Object.keys(rows).length);
 									attack(rows[rand].nickname, message, from_id, weapon_bonus, 2000, 1, global_end, boost_id, boost_mission);
@@ -49952,8 +49972,8 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											var card_rarity = generateCardRarity();
 											var max = connection_sync.query('SELECT MAX(id) As mx FROM card_list');
 											var new_id = (max[0].mx+1);
-											if (max == 4500)
-												console.log("Limite 4500 figurine raggiunto, salto la creazione di nuove");
+											if (new_id >= 5000)
+												console.log("Limite 5000 figurine raggiunto, salto la creazione di nuove");
 											else {
 												connection_sync.query('INSERT INTO card_list (id, name, rarity) VALUES (' + new_id + ', "' + mob_name + '", ' + card_rarity + ')');
 												console.log("Figurina creata: " + mob_name + " (" + card_rarity + ") [" + new_id + "] da utente " + rows[i].id);
@@ -51020,15 +51040,14 @@ function generateMap(lobby_id, width, height, players, conditions) {
 	var playerPoss = [];
 	for(i = 0; i < matrix.length; i++) {
 		for(j = 0; j < matrix[i].length; j++) {
-			if ((j == 0) || (i == height-1) || (i == 0) || (j == width-1)){
-				// console.log("poss", i, j);
+			if ((j == 0) || (i == height-1) || (i == 0) || (j == width-1))
 				playerPoss.push([i, j]);
-			}
 		}
 	}
 	
 	playerPoss = shuffle(playerPoss);
 
+	var needed_distance = 2;
 	var extracted = [];
 
 	for(p = 0; p < playerPoss.length; p++) {
@@ -51040,7 +51059,7 @@ function generateMap(lobby_id, width, height, players, conditions) {
 			var diffX = Math.abs(x-extracted[e][0]);
 			var diffY = Math.abs(y-extracted[e][1]);
 			var dist = diffX+diffY;
-			if (dist < 2)
+			if (dist <= needed_distance)
 				err++;
 		}
 		if (err == 0)
@@ -51053,7 +51072,7 @@ function generateMap(lobby_id, width, height, players, conditions) {
 	// console.log("extracted", extracted);
 
 	for(p = 0; p < extracted.length; p++)
-		matrix[playerPoss[p][0]][playerPoss[p][1]] = 8;
+		matrix[extracted[p][0]][extracted[p][1]] = 8;
 
 	// genera costruzioni
 
@@ -51301,7 +51320,7 @@ function checkDistance(matrix, objId, posX, posY, distance) {
 	return 1;
 }
 
-function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnemy, conditions) {
+function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnemy, conditions, showStarts) {
 	var text = "";
 	var isEnemy = 0;
 	for(i = 0; i < mapMatrix.length; i++) {
@@ -51313,9 +51332,12 @@ function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnem
 				else
 					text += "⚰️ ";
 			} else {
-				if (conditions == 10)
-					text += mapIdToSym(mapMatrix[i][j]) + " ";
-				else if (mapMatrix[i][j] == 10)	// mappa bruciata
+				if (conditions == 10) {
+					if ((mapMatrix[i][j] == 8) && (showStarts == 0))
+						text += mapIdToSym(0) + " ";
+					else
+						text += mapIdToSym(mapMatrix[i][j]) + " ";
+				} else if (mapMatrix[i][j] == 10)	// mappa bruciata
 					text += mapIdToSym(mapMatrix[i][j]) + " ";
 				else if ((pulsePosX != null && pulsePosY != null) && (
 					((i == pulsePosX-1) && (j == pulsePosY-1)) ||
@@ -55375,6 +55397,8 @@ function setFullLobby(element, index, array) {
 							posArr.push([i, j]);
 					}
 				}
+				
+				// console.log("posArr", posArr);
 
 				var life = 5000;
 
