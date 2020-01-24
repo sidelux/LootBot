@@ -6359,7 +6359,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 													var plur = "e";
 													if (rows[i].cnt == 1)
 														plur = "a";
-													text += "> " + rows[i].position + "°: " + rows[i].cnt + " volt" + plur;
+													text += "> " + rows[i].position + "°: " + rows[i].cnt + " volt" + plur + "\n";
 												}
 												
 												bot.sendMessage(message.chat.id, text, kbBack);
@@ -40716,23 +40716,21 @@ bot.onText(/necro del destino/i, function (message) {
 							
 							var done = 0;
 							var multiplier = 1;
-							var alert = "";
 							if (step == last_step) {
 								done = 1;
 								multiplier = 2;
-								alert = " ⚠️";
 							}
 
 							bot.sendMessage(message.chat.id, "Con i Necrospiriti 💠 puoi acquistare diversi oggetti:" +
-											"\n1 -> 2 Oggetti Casuali (fino a UE inclusa Runa Necro) (" + (1*multiplier) + ")" + (step >= 1 ? " ✅" + alert : "") +
+											"\n1 -> 2 Oggetti Casuali (fino a UE inclusa Runa Necro) (" + (1*multiplier) + ")" + (step >= 1 ? " ✅ ⚠️" : "") +
 											"\n2 -> 50 💎 (5)" + (step >= 2 ? " ✅" : "") +
 											"\n3 -> Amuleto del Necrospirito (10)" + (step >= 3 ? " ✅" : "") +
-											"\n4 -> 1 Frutto del Set Frutta (S) (" + (15*multiplier) + ")" + (step >= 4 ? " ✅" + alert: "") +
+											"\n4 -> 1 Frutto del Set Frutta (S) (" + (15*multiplier) + ")" + (step >= 4 ? " ✅ ⚠️": "") +
 											"\n5 -> Salmone (S) (25)" + (step >= 5 ? " ✅" : "") +
 											"\n6 -> Trasmogrificazione in Necrolama di Phoenix (50)" + (step >= 6 ? " ✅" : "") +
 											"\n7 -> Trasmogrificazione in Corazza Necro di Phoenix (50)" + (step >= 7 ? " ✅" : "") +
 											"\n8 -> Trasmogrificazione in Scudo Necro di Phoenix (50)" + (step >= 8 ? " ✅" : "") +
-											"\n9 -> 25 🌕 (" + (25*multiplier) + ")" + (step >= 9 ? " ✅" + alert : "") +
+											"\n9 -> 25 🌕 (" + (25*multiplier) + ")" + (step >= 9 ? " ✅ ⚠️" : "") +
 											"\n10 -> Re delle U (IN) (100)" + (step >= 10 ? " ✅" : "") +
 											"\n\nOgni ricompensa può essere riscattata solo una volta ma devono essere riscattate in ordine. Le ricompense con il ⚠️ possono essere riscattate più volte dopo averle ottenute tutte.\n\n" +
 											"Attualmente possiedi <b>" + necro_pnt + "</b> 💠", prizeList).then(function () {
