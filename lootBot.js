@@ -9265,28 +9265,44 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												});
 												return;
 											} else if (answer.text == "Scappa") {
-												bot.sendMessage(message.chat.id, "Sicuro di voler uscire dal dungeon? Se possiedi un Kit Fuga lo consumerai e non dovrai attendere prima di rientrare. Non perderai punti rango.", dYesNo).then(function () {
+												var dUseKit = {
+													parse_mode: "Markdown",
+													reply_markup: {
+														resize_keyboard: true,
+														keyboard: [["Usa Kit Fuga"], ["Non usare"], ["Torna al dungeon"]]
+													}
+												};
+
+												bot.sendMessage(message.chat.id, "Sicuro di voler uscire dal dungeon? Se utilizzi un Kit fuga non dovrai attendere prima di rientrare. Non perderai punti rango.", dUseKit).then(function () {
 													answerCallbacks[message.chat.id] = function (answer) {
-														if (answer.text.toLowerCase() == "si") {
-															setAchievement(player_id, 51, 1);
+														if (answer.text == "Usa Kit Fuga") {
 															var extra = "";
-															if (getItemCnt(player_id, 616) > 0) {
-																delItem(player_id, 616, 1);
-																extra = " scappando con un Kit Fuga!";
-															} else {
-																var d = new Date();
-																d.setHours(d.getHours() + wait_dungeon_long);
-																var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
-																	if (err) throw err;
-																});
+															if (getItemCnt(player_id, 616) == 0) {
+																bot.sendMessage(message.chat.id, "Non possiedi alcun Kit Fuga", dBack);
+																return;
 															}
+
+															delItem(player_id, 616, 1);
 															connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 															connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
-																bot.sendMessage(message.chat.id, "Hai deciso di rinunciare al dungeon" + extra, back);
+																bot.sendMessage(message.chat.id, "Hai deciso di rinunciare al dungeon scappando con un Kit Fuga!", back);
+															});
+														} else if (answer.text == "Non usare") {
+															var d = new Date();
+															d.setHours(d.getHours() + wait_dungeon_long);
+															var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+															connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
+															connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
+															connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+																bot.sendMessage(message.chat.id, "Hai deciso di rinunciare al dungeon", back);
 															});
 														}
 													}
@@ -10197,30 +10213,46 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 														if ((answer.text == "Torna al menu") || (answer.text == "❣️") || (answer.text == "❤️"))
 															return;
+														
+														var dUseKit = {
+															parse_mode: "Markdown",
+															reply_markup: {
+																resize_keyboard: true,
+																keyboard: [["Usa Kit Fuga"], ["Non usare"], ["Torna al dungeon"]]
+															}
+														};
 
 														if (answer.text == "Scappa") {
-															bot.sendMessage(message.chat.id, "Sicuro di voler uscire dal dungeon? Se possiedi un Kit Fuga lo consumerai e non dovrai attendere prima di rientrare. Non perderai punti rango.", dYesNo).then(function () {
+															bot.sendMessage(message.chat.id, "Sicuro di voler uscire dal dungeon? Se utilizzi un Kit fuga non dovrai attendere prima di rientrare. Non perderai punti rango.", dUseKit).then(function () {
 																answerCallbacks[message.chat.id] = function (answer) {
-																	if (answer.text.toLowerCase() == "si") {
-
+																	if (answer.text == "Usa Kit Fuga") {
 																		var extra = "";
-																		if (getItemCnt(player_id, 616) > 0) {
-																			delItem(player_id, 616, 1);
-																			extra = " scappando con un Kit Fuga!";
-																		} else {
-																			var d = new Date();
-																			d.setHours(d.getHours() + wait_dungeon_long);
-																			var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																			connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
+																		if (getItemCnt(player_id, 616) == 0) {
+																			bot.sendMessage(message.chat.id, "Non possiedi alcun Kit Fuga", dBack);
+																			return;
 																		}
+																		
+																		delItem(player_id, 616, 1);
 																		connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
 																		connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
-																			bot.sendMessage(message.chat.id, "Hai deciso di rinunciare al dungeon" + extra, back);
+																			bot.sendMessage(message.chat.id, "Hai deciso di rinunciare al dungeon scappando con un Kit Fuga!", back);
+																		});
+																	} else if (answer.text == "Non usare") {
+																		var d = new Date();
+																		d.setHours(d.getHours() + wait_dungeon_long);
+																		var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+																		connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																			if (err) throw err;
+																		});
+																		connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
+																			if (err) throw err;
+																		});
+																		connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+																			if (err) throw err;
+																			bot.sendMessage(message.chat.id, "Hai deciso di rinunciare al dungeon", back);
 																		});
 																	}
 																}
@@ -12477,6 +12509,15 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													var item_poss = "";
 													if (item1qnt > 0)
 														item_poss = " ✅";
+													else {
+														var material_result = connection_sync.query('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item1);
+
+														if (getItemCnt(player_id, material_result[0].material_1) > 0 &&
+															getItemCnt(player_id, material_result[0].material_2) > 0 &&
+															getItemCnt(player_id, material_result[0].material_3) > 0) {
+															item_poss = " ☑️";
+														}
+													}
 
 													connection.query('SELECT name FROM item WHERE id = ' + item1, function (err, rows, fields) {
 														if (err) throw err;
@@ -43982,14 +44023,25 @@ function getTopPDF(message) {
 }
 
 function setMapCondition() {
-	var randCond = Math.random()*100;
-	var cond = 0;
-	if (randCond <= 50)
-		cond = Math.round(getRandomArbitrary(1, map_condition_max));
-	
-	connection.query('UPDATE config SET map_conditions = ' + cond, function (err, rows, fields) {
+	connection.query('SELECT map_conditions FROM config', function (err, rows, fields) {
 		if (err) throw err;
-		console.log("Condizione mappe impostate a " + cond)
+		
+		if (rows[0].map_conditions != 0) {
+			connection.query('UPDATE config SET map_conditions = 0', function (err, rows, fields) {
+			if (err) throw err;
+				console.log("Condizione mappe resettate");
+			});
+		} else {
+			var randCond = Math.random()*100;
+			var cond = 0;
+			if (randCond <= 50)
+				cond = Math.round(getRandomArbitrary(1, map_condition_max));
+
+			connection.query('UPDATE config SET map_conditions = ' + cond, function (err, rows, fields) {
+				if (err) throw err;
+				console.log("Condizione mappe impostate a " + cond)
+			});
+		}		
 	});
 }
 
