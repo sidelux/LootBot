@@ -592,7 +592,7 @@ bot.onText(/^\/comandigiocatore/, function (message) {
 bot.onText(/^\/comandioggetto/, function (message) {
 	bot.sendMessage(message.chat.id, 	"*Comandi disponibili per gestire gli oggetti*\n" +
 					"/necessari - Mostra gli oggetti necessari alla creazione di un creabile\n" +
-					"/prezzo - Mostra gli ultimi prezzi di vendita di un oggetto\n" +
+					"/prezzo - Mostra gli ultimi prezzi di vendita di un oggetto escludendo quelli a prezzo base\n" +
 					"/totale - Mostra gli ultimi prezzi utilizzando i prezzi degli oggetti utilizzati per crearlo\n" +
 					"/ricerca - Cerca l'oggetto nei canali di vendita, puoi cercare fino a 3 oggetti separati da virgola", mark);
 });
@@ -8370,7 +8370,7 @@ bot.onText(/^\/scuola/, function (message) {
 	bot.sendMessage(message.chat.id, "Entra nella scuola per giovani avventurieri: https://t.me/joinchat/AThc-0DH8FaFEpYpLg-rOA", html);
 });
 
-bot.onText(/^\/statistiche/, function (message) {
+bot.onText(/^\/statistiche|^\/stats$/, function (message) {
 	connection.query('SELECT MAX(id) As tot, SUM(achievement_count) As achievement, SUM(dungeon_count) As dungeon_tot, SUM(money) As money, SUM(craft_count) As craft, SUM(mission_count) As miss2 FROM player', function (err, rows, fields) {
 		if (err) throw err;
 		var tot = rows[0].tot;
@@ -9402,39 +9402,46 @@ bot.onText(/^\/prezzo (.+)|^\/prezzo/, function (message, match) {
 
 	if (message.chat.id < 0)
 		bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
-
-	connection.query('SELECT quantity, price, (SELECT nickname FROM market_direct_history, player WHERE player.id = from_id AND item_id = (SELECT id FROM item WHERE name = "' + oggetto + '") LIMIT 1) As fromId, (SELECT nickname FROM market_direct_history, player WHERE player.id = to_id AND item_id = (SELECT id FROM item WHERE name = "' + oggetto + '") LIMIT 1) As toId, (SELECT SUM(quantity) FROM market_direct_history WHERE item_id = (SELECT id FROM item WHERE name = "' + oggetto + '")) As cnt, market_direct_history.time FROM market_direct_history WHERE item_id = (SELECT id FROM item WHERE name = "' + oggetto + '") ORDER BY id DESC', function (err, rows, fields) {
+	
+	connection.query('SELECT id, value FROM item WHERE name = "' + oggetto + '"', function (err, rows, fields) {
 		if (err) throw err;
-		if (Object.keys(rows).length > 0) {
-			var text = "Ultimi prezzi trovati per " + oggetto + ":";
+		
+		var item_id = rows[0].id;
+		var value = rows[0].value;
 
-			var len = 25;
-			if (Object.keys(rows).length < len)
-				len = Object.keys(rows).length;
+		connection.query('SELECT quantity, price, (SELECT nickname FROM market_direct_history, player WHERE player.id = from_id AND item_id = ' + item_id + ' LIMIT 1) As fromId, (SELECT nickname FROM market_direct_history, player WHERE player.id = to_id AND item_id = ' + item_id + ' LIMIT 1) As toId, (SELECT SUM(quantity) FROM market_direct_history WHERE item_id = ' + item_id + ') As cnt, market_direct_history.time FROM market_direct_history WHERE item_id = ' + item_id + ' AND price != ' + value + ' ORDER BY id DESC', function (err, rows, fields) {
+			if (err) throw err;
+			if (Object.keys(rows).length > 0) {
+				var text = "Ultimi prezzi trovati per " + oggetto + ":";
 
-			var long_date = "";
-			var d = new Date();
-			var last_row = "";
-			var this_row = "";
-			var row_cnt = 0;
-			var this_qnt = 0;
-			for (var i = 0; i < Object.keys(rows).length; i++) {
-				d = new Date(rows[i].time);
-				long_date = " alle " + addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-				this_row = "\n> " + formatNumber(Math.round(rows[i].price)) + " § ";
-				if (this_row != last_row) {
-					text += this_row + long_date;
-					last_row = this_row;
-					row_cnt++;
+				var len = 25;
+				if (Object.keys(rows).length < len)
+					len = Object.keys(rows).length;
+
+				var long_date = "";
+				var d = new Date();
+				var last_row = "";
+				var this_row = "";
+				var row_cnt = 0;
+				var this_qnt = 0;
+				for (var i = 0; i < Object.keys(rows).length; i++) {
+					d = new Date(rows[i].time);
+					long_date = " alle " + addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+					this_row = "\n> " + formatNumber(Math.round(rows[i].price)) + " § ";
+					if (this_row != last_row) {
+						text += this_row + long_date;
+						last_row = this_row;
+						row_cnt++;
+					}
+
+					if (row_cnt >= len)
+						break;
 				}
-				
-				if (row_cnt >= len)
-					break;
+				bot.sendMessage(message.from.id, text + "\nVenduto " + rows[0].cnt + " volte");
+			} else {
+				bot.sendMessage(message.from.id, "Non ho trovato l'ultimo prezzo dell'oggetto specificato");
 			}
-			bot.sendMessage(message.from.id, text + "\nVenduto " + rows[0].cnt + " volte");
-		} else {
-			bot.sendMessage(message.from.id, "Non ho trovato l'ultimo prezzo dell'oggetto specificato");
-		}
+		});
 	});
 });
 
@@ -11004,7 +11011,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																							if (charm_id == 493)
 																								weapon_crit += 2;
 																							if (charm_id == 494)
-																								weapon_crit += 4;
+																								weapon_crit += 3;
 																							if (charm_id == 495)
 																								weapon2_crit += 3;
 																							if (charm_id == 496)

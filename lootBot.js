@@ -13384,7 +13384,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 		if (player_charm_id == 493)
 			critical += 2;
 		if (player_charm_id == 494)
-			critical += 4;
+			critical += 3;
 		if (player_charm_id == 495)
 			critical_armor += 3;
 		if (player_charm_id == 496)
@@ -14173,7 +14173,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																			if (charm_id == 493)
 																				en_crit += 2;
 																			if (charm_id == 494)
-																				en_crit += 4;
+																				en_crit += 3;
 																			if (charm_id == 495)
 																				en_crit2 += 3;
 																			if (charm_id == 496)
@@ -44571,7 +44571,7 @@ function getInfo(message, player, myhouse_id) {
 																							if (charm_id == 493)
 																								weapon_crit += 2;
 																							if (charm_id == 494)
-																								weapon_crit += 4;
+																								weapon_crit += 3;
 																							if (charm_id == 495)
 																								weapon2_crit += 3;
 																							if (charm_id == 496)
@@ -50307,7 +50307,7 @@ function getPlayerCritics(player_id, weapon_crit, weapon2_crit, weapon3_crit, ch
 	if (charm_id == 493)
 		critical += 2;
 	if (charm_id == 494)
-		critical += 4;
+		critical += 3;
 	if (charm_id == 495)
 		critical_armor += 3;
 	if (charm_id == 496)
