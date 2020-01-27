@@ -51035,6 +51035,7 @@ function generateMap(lobby_id, width, height, players, conditions) {
 	var boostRate = 3;
 	
 	if (conditions == 6) {
+		build = [];
 		chestRate = 0;
 		chestEpicRate = 0;
 		trapRate = 10;
@@ -51044,6 +51045,7 @@ function generateMap(lobby_id, width, height, players, conditions) {
 		paralyzeRate = 50;
 		boostRate = 0;
 	} else if (conditions == 8) {
+		build = [];
 		chestRate = 0;
 		chestEpicRate = 0;
 		trapRate = 10;
