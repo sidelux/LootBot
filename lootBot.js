@@ -1264,6 +1264,61 @@ bot.onText(/^\/refreshEstimate/i, function (message) {
 	};
 });
 
+bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
+	if ((message.from.id != 20471035) && (message.from.id != 138671537) && (message.from.id != 57314672)) {
+		bot.sendMessage(message.chat.id, "Presto disponibile");
+		return;
+	}
+	
+	connection.query('SELECT id, token_last_use FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+		
+		var player_id = rows[0].id;
+		var token = makeid(64);
+		
+		var now = new Date();
+		var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate());
+		
+		var last_use = new Date(rows[0].token_last_use);
+		var last_use_date = last_use.getFullYear() + "-" + addZero(last_use.getMonth() + 1) + "-" + addZero(last_use.getDate());
+		
+		if (long_date <= last_use_date) {
+			bot.sendMessage(message.chat.id, "Hai già richiesto una ricompensa oggi, torna domani!", back);
+			return;
+		}
+		
+		connection.query('UPDATE player SET token = "' + token + '", token_used = 0, token_last_use = CURDATE() WHERE id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+	
+			request.put({
+				uri: 'https://api.shorte.st/v1/data/url',
+				headers: {
+					'public-api-token': config.shorttoken
+				},
+				method: 'PUT',
+				body: {urlToShorten: 'https://telegram.me/lootgamebot?start=' + token},
+				json: true
+			}, function(err, res, body) {
+				if (err) throw err;
+				
+				var iKeys = [];
+				iKeys.push([{
+					text: "Ottieni ricompensa!",
+					url: body.shortenedUrl
+				}]);
+
+				bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente.\n\nLink ricompensa: <code>" + body.shortenedUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>", {
+					parse_mode: 'HTML',
+					disable_web_page_preview: true,
+					reply_markup: {
+						inline_keyboard: iKeys
+					}
+				});
+			});
+		});
+	});
+});
+
 bot.onText(/^\/miner/, function (message, match) {
 
 	if (!checkSpam(message))
@@ -1613,10 +1668,75 @@ bot.onText(/\/start (.+)|\/start/i, function (message, match) {
 		bot.sendMessage(message.chat.id, "Devi impostare un username su Telegram per poter giocare, puoi farlo tramite le *impostazioni* dell'applicazione. Una volta impostato, usa di nuovo il comando /start, oppure /start CODICEINVITO nel caso di un link invito, altrimenti non riceverai il bonus invito.", mark);
 		return;
 	}
-
-	var invite = match[1];
-	if (invite != undefined)
-		console.log("Codice invito: " + invite);
+	
+	var token = null;
+	var invite = null;
+	var start = match[1];
+	if (start != undefined) {
+		if (start.length == 64) {
+			token = match[1];
+			console.log("Codice ricompensa: " + token);
+		} else {
+			invite = match[1];
+			console.log("Codice invito: " + invite);
+		}
+	}
+	
+	if (token != null) {
+		connection.query('SELECT id, token, token_used, token_streak FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Registrati per utilizzare questa funzione", back);
+				return;
+			}
+			
+			var player_id = rows[0].id;
+			
+			if (rows[0].token != token) {
+				bot.sendMessage(message.chat.id, "Non puoi riscattare questa ricompensa", back);
+				return;
+			}
+			
+			if (rows[0].token_used == 1) {
+				bot.sendMessage(message.chat.id, "Hai già riscattato questa ricompensa", back);
+				return;
+			}
+			
+			var token_streak = parseInt(rows[0].token_streak);
+			var text = "";
+			var query = "";
+			
+			token_streak++;
+			
+			if (token_streak <= 10) {
+				var qnt = token_streak*2;
+				addChest(player_id, 10, qnt);
+				text = "\n> " + qnt + "x Scrigni Cangianti";
+			} else if (token_streak <= 20) {
+				var qnt = 1;
+				query = ", gems = gems+" + qnt;
+				text = "\n> " + qnt + "x 💎";
+			} else if (token_streak <= 30) {
+				var qnt = 1;
+				query = ", moon_coin = moon_coin+" + qnt;
+				text = "\n> " + qnt + "x 🌕";
+			} else {
+				var qnt = 1;
+				addChest(player_id, 7, qnt);
+				text = "\n> " + qnt + "x Scrigni Capsula";
+				
+				token_streak = 0;	// azzera quando ha finito il ciclo dei 31 giorni
+			}
+			
+			console.log("Ricompensa: " + text + " per player " + player_id);
+			
+			connection.query('UPDATE player SET token_used = 1, token_streak = ' + token_streak + ' WHERE id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				bot.sendMessage(message.chat.id, "Hai ottenuto la ricompensa giornaliera:" + text, back);
+			});
+		});
+		return;
+	}
 
 	var code = "Non disponibile";
 
@@ -1636,7 +1756,7 @@ bot.onText(/\/start (.+)|\/start/i, function (message, match) {
 				return;
 			}
 
-			var rnd_code = makeid();
+			var rnd_code = makeid(10);
 			connection.query('SELECT nickname, id, chat_id FROM player WHERE invite_code = "' + invite + '"', function (err, rows, fields) {
 				if (err) throw err;
 
@@ -28993,7 +29113,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 				var gift = Math.floor(rows[0].points / 5);
 				var bonusText = "";
 
-				var text = "Benvenut" + gender_text + " nella *Villa di LastSoldier95* 🏰!\nSvolgi missioni e incarichi da questo momento ed ogni 5 punti otterrai la possibilità di inviare una *Cassa Misteriosa* 📦 ad un altro avventuriero (compresi gli oggetti U)!\n\nHai a disposizione *" + gift + "* Casse da inviare (" + rows[0].points + " punti)\nFin ora sono state inviate *" + count + "* Casse, *" + mycount + "* da parte tua\n\nNota: Se non invierai tutte le casse entro la fine dell'evento, il padrone di casa se le riprenderà scontento del tuo operato" + bonusText;
+				var text = "Benvenut" + gender_text + " nella *Villa di LastSoldier95* 🏰!\nSvolgi missioni e incarichi da questo momento ed ogni 5 punti otterrai la possibilità di inviare una *Cassa Misteriosa* 📦 ad un altro avventuriero (compresi gli oggetti U)!\n\nHai a disposizione *" + gift + "* Casse da inviare (" + rows[0].points + " punti)\nFin ora sono state inviate *" + formatNumber(count) + "* Casse, *" + mycount + "* da parte tua\n\nNota: Se non invierai tutte le casse entro martedì sera, il padrone di casa se le riprenderà scontento del tuo operato" + bonusText;
 				bot.sendMessage(message.chat.id, text, kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text.indexOf("Cassa") != -1) {
@@ -45539,7 +45659,8 @@ function getDefaultKeyboard() {
 				['Giocatore 👤', 'Imprese 🏋️', 'Team ⚜️'],
 				['Eventi 🎯', 'Esplorazioni 🧗‍♀'],
 				['Destino 🔮', 'Top 🔝', 'Lunari 🌕'],
-				['Info 📖']]
+				['Info 📖'],
+				['💎 Ricompensa Giornaliera 💎']]
 	
 	return kb;
 }
@@ -51765,14 +51886,13 @@ function autoDust() {
 	});
 };
 
-function makeid() {
-	var text = "";
-	var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-	for (var i = 0; i < 10; i++)
-		text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-	return text;
+function makeid(length) {
+	var result = '';
+   	var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+   	var charactersLength = characters.length;
+   	for (var i = 0; i < length; i++)
+    	result += characters.charAt(Math.floor(Math.random() * charactersLength));
+   	return result;
 }
 
 function resetAchievement() {
