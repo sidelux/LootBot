@@ -2928,6 +2928,10 @@ CREATE TABLE `player` (
   `show_time` tinyint(1) NOT NULL DEFAULT '0',
   `birth_date` date DEFAULT NULL,
   `creation_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `token` varchar(128) DEFAULT NULL,
+  `token_used` tinyint(1) NOT NULL DEFAULT '0',
+  `token_last_use` date DEFAULT NULL,
+  `token_streak` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `nickname` (`nickname`),
   UNIQUE KEY `account_id` (`account_id`),
@@ -3832,7 +3836,7 @@ CREATE TABLE `travel` (
 /*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `team_public` AS select `team`.`id` AS `team_id`,`team`.`name` AS `name`,`team`.`child_team` AS `child_team` from `team` */;
+/*!50001 VIEW `team_public` AS select `t1`.`id` AS `team_id`,`t1`.`name` AS `name`,(select `team`.`name` from `team` where (`team`.`id` = `t1`.`child_team`)) AS `child_team` from `team` `t1` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;

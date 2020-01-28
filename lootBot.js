@@ -1265,10 +1265,12 @@ bot.onText(/^\/refreshEstimate/i, function (message) {
 });
 
 bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
-	if ((message.from.id != 20471035) && (message.from.id != 138671537) && (message.from.id != 57314672)) {
-		bot.sendMessage(message.chat.id, "Presto disponibile");
+	/*
+	if (message.from.id != 20471035) {
+		bot.sendMessage(message.chat.id, "Manutenzione");
 		return;
 	}
+	*/
 	
 	connection.query('SELECT id, token_last_use FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -1287,7 +1289,7 @@ bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
 			return;
 		}
 		
-		connection.query('UPDATE player SET token = "' + token + '", token_used = 0, token_last_use = CURDATE() WHERE id = ' + player_id, function (err, rows, fields) {
+		connection.query('UPDATE player SET token = "' + token + '", token_used = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 	
 			request.put({
@@ -1307,7 +1309,7 @@ bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
 					url: body.shortenedUrl
 				}]);
 
-				bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente.\n\nLink ricompensa: <code>" + body.shortenedUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>", {
+				bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente.\n\nLink ricompensa: <code>" + body.shortenedUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>", {
 					parse_mode: 'HTML',
 					disable_web_page_preview: true,
 					reply_markup: {
@@ -1709,7 +1711,7 @@ bot.onText(/\/start (.+)|\/start/i, function (message, match) {
 			token_streak++;
 			
 			if (token_streak <= 10) {
-				var qnt = token_streak*2;
+				var qnt = token_streak;
 				addChest(player_id, 10, qnt);
 				text = "\n> " + qnt + "x Scrigni Cangianti";
 			} else if (token_streak <= 20) {
@@ -1730,7 +1732,7 @@ bot.onText(/\/start (.+)|\/start/i, function (message, match) {
 			
 			console.log("Ricompensa: " + text + " per player " + player_id);
 			
-			connection.query('UPDATE player SET token_used = 1, token_streak = ' + token_streak + ' WHERE id = ' + player_id, function (err, rows, fields) {
+			connection.query('UPDATE player SET token_used = 1, token_streak = ' + token_streak + ', token_last_use = CURDATE() WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				bot.sendMessage(message.chat.id, "Hai ottenuto la ricompensa giornaliera:" + text, back);
 			});
@@ -3201,7 +3203,7 @@ bot.onText(/Sesso ⚤/i, function (message) {
 					if (answer.text == "Torna al menu")
 						return;
 					else {
-						request('https://gender-api.com/get?name=' + answer.text + '&key=xTZExqbJQfWzdGPzcP&country=IT', function (error, response, body) {
+						request('https://gender-api.com/get?name=' + answer.text + '&key=' + config.gendertoken + '&country=IT', function (error, response, body) {
 							if (response.statusCode == 200) {
 								var json = JSON.parse(body);
 
@@ -9468,6 +9470,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																bot.sendMessage(message.chat.id, "Hai deciso di rinunciare al dungeon", back);
 															});
 														}
+														setAchievement(player_id, 51, 1);
 													}
 												});
 												return;
@@ -10418,6 +10421,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			bot.sendMessage(message.chat.id, "Hai deciso di rinunciare al dungeon", back);
 																		});
 																	}
+																	setAchievement(player_id, 51, 1);
 																}
 															});
 															return;
@@ -28131,24 +28135,22 @@ bot.onText(/^accademia/i, function (message) {
 					if (err) throw err;
 
 					var motherId = 0;
+					var iKeys = [];
 					if (Object.keys(rows).length > 0) {
 						motherId = rows[0].id;
-						var kb = {
-							parse_mode: "Markdown",
-							reply_markup: {
-								resize_keyboard: true,
-								keyboard: [["Scollegati dal Madre"], ["Annulla"]]
-							}
-						};
-					} else {
-						var kb = {
-							parse_mode: "Markdown",
-							reply_markup: {
-								resize_keyboard: true,
-								keyboard: [["Annulla"]]
-							}
-						};
-					}
+						iKeys = [["Scollegati dal Madre"], ["Scollega Accademia"], ["Annulla"]];
+					} else
+						iKeys = [["Scollega Accademia"], ["Annulla"]];
+					
+					
+					iKeys.splice(0, 0, ["Scollega Accademia"]);
+					var kb = {
+						parse_mode: "Markdown",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: iKeys
+						}
+					};
 
 					connection.query('SELECT name, child_time, child_team FROM team WHERE id = ' + team_id, function (err, rows, fields) {
 						if (err) throw err;
@@ -28178,6 +28180,22 @@ bot.onText(/^accademia/i, function (message) {
 										connection.query('UPDATE team SET child_team = NULL WHERE child_team = ' + team_id, function (err, rows, fields) {
 											if (err) throw err;
 											bot.sendMessage(message.chat.id, "Il tuo team non è più un'accademia", team);
+										});
+										return;
+									} else if (answer.text == "Scollega Accademia") {
+										if (child_time != null) {
+											var d = new Date(child_time);
+											if (d > now) {
+												var long_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " alle " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+												bot.sendMessage(message.chat.id, "Prima di scollegare l'accademia devi aspettare fino al " + long_date, team);
+												return;
+											}
+										}
+										
+										connection.query('UPDATE team SET child_team = NULL WHERE id = ' + team_id, function (err, rows, fields) {
+											if (err) throw err;
+											bot.sendMessage(message.chat.id, "L'accademia è stata scollegata", team);
 										});
 										return;
 									}
@@ -45001,7 +45019,7 @@ function mainMenu(message) {
 	else if ((n > 19) && (n < 23))
 		time = "🌙 Buonasera";
 
-	connection.query('SELECT id, account_id, mission_id, mission_special_id, travel_id, cave_id, exp, life, total_life, reborn, money, holiday, boost_id, market_pack, heist_protection, mission_time_end, mission_special_time_end, travel_time_end, cave_time_end, dungeon_time, boost_mission, paralyzed, mission_party, gender, show_time, map_count FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT * FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0)
@@ -45073,6 +45091,8 @@ function mainMenu(message) {
 		var boost_end = rows[0].boost_mission;
 		var mission_party = rows[0].mission_party;
 		var map_count = rows[0].map_count;
+		
+		var token_last_use = rows[0].token_last_use;
 
 		checkAllProgress(player_id);
 
@@ -45080,7 +45100,7 @@ function mainMenu(message) {
 			var plur = "i";
 			if (rows[0].paralyzed == 1)
 				plur = "o";
-			msgtext = msgtext + "\n⚡️ Sei paralizzat" + gender_text + " ancora per <b>" + rows[0].paralyzed + " turn" + plur + "</b>";
+			msgtext += "\n⚡️ Sei paralizzat" + gender_text + " ancora per <b>" + rows[0].paralyzed + " turn" + plur + "</b>";
 		}
 
 		var global = connection_sync.query('SELECT global_cap FROM config WHERE global_eventon = 1 AND global_eventhide = 0');
@@ -45563,6 +45583,15 @@ function mainMenu(message) {
 														}
 														if (holiday > 0)
 															msgtext = msgtext + "\n⛱ Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!";
+		
+														var now = new Date();
+														var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate());
+
+														var last_use = new Date(token_last_use);
+														var last_use_date = last_use.getFullYear() + "-" + addZero(last_use.getMonth() + 1) + "-" + addZero(last_use.getDate());
+
+														if (long_date > last_use_date)
+															msgtext += "\n💎 Ricompensa giornaliera disponibile!";
 
 														if (achievement != "")
 															msgtext += achievement;
@@ -49718,6 +49747,11 @@ function assaultIncrement(message, player_id, team_id) {
 
 				connection.query('SELECT level, max_level FROM assault_place_team, assault_place WHERE assault_place.id = assault_place_team.place_id AND team_id = ' + team_id + ' AND place_id = ' + my_place_id, function (err, rows, fields) {
 					if (err) throw err;
+					
+					if (Object.keys(rows).length == 0) {
+						bot.sendMessage(message.chat.id, "Errore incremento, contatta l'amministratore", kbBack);
+						return;
+					}
 
 					var val = Math.round(rows[0].level*10/rows[0].max_level);
 				});
