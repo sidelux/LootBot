@@ -6273,7 +6273,8 @@ bot.onText(/^\/lotterie/, function (message) {
 
 				text += "\nPer iscriverti ad una lotteria usa /lotteria o /lotteriap";
 				bot.sendMessage(message.chat.id, text, html);
-			}
+			} else
+				bot.sendMessage(message.chat.id, "Nessuna lotteria disponibile", html);
 		});
 	});
 });

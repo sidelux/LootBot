@@ -1677,7 +1677,7 @@ bot.onText(/\/start (.+)|\/start/i, function (message, match) {
 	if (start != undefined) {
 		if (start.length == 64) {
 			token = match[1];
-			console.log("Codice ricompensa: " + token);
+			// console.log("Codice ricompensa: " + token);
 		} else {
 			invite = match[1];
 			console.log("Codice invito: " + invite);
