@@ -10784,7 +10784,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 										if (err) throw err;
 										var cards_txt = "";
 										if (rows[0].cnt > 0)
-											cards_txt = "Figurine: " + formatNumber(rows[0].cnt) + "/" + formatNumber(rows[0].tot) + "\n";
+											cards_txt = "Figurine diverse: " + formatNumber(rows[0].cnt) + "/" + formatNumber(rows[0].tot) + "\n";
 
 										connection.query('SELECT name FROM house WHERE id = ' + house_id, function (err, rows, fields) {
 											if (err) throw err;
