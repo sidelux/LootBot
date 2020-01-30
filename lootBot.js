@@ -6443,7 +6443,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 															mapIdToSym(10) + " Mappa bruciata - Se si capita in una casella bruciata, si viene sconfitti\n" +
 															mapIdToSym(11) + " Stanza Teletrasporto - Fornisce la scelta al giocatore se teletrasportarsi in un luogo casuale della mappa o su un giocatore avversario\n" +
 															mapIdToSym(12) + " Campo Paralizzante - Paralizza il giocatore costringendogli a ritardare la continuazione dell'esplorazione\n" +
-															mapIdToSym(13) + " Bevanda Boost - Riduce il tempo di attesa per il movimento per 3 turni\n" +
+															mapIdToSym(13) + " Bevanda Boost - Riduce il tempo di attesa per il movimento per 3 turni, nel caso in cui si incontrasse un Campo Paralizzante la bevanda non avrà effetto e non ne sarà scalato un utilizzo\n" +
 															"\n<b>Istruzioni base</b>" +
 															"\n> Di notte e durante le Vette non è possibile accedere a nuove Lobby." +
 															"\n> Il personaggio inizierà la partita con un equip base, zero monete e zero rottami." +
@@ -6460,6 +6460,7 @@ bot.onText(/^map$|mappe di lootia|entra nella mappa|torna alla mappa/i, function
 															"\n> Il drago non accompagna il giocatore all'interno della mappa." +
 															"\n> Il comando Attacco infligge un danno base al nemico." +
 															"\n> Il comando Attacco Caricato obbliga a saltare il primo turno successivo all'utilizzo, infligge più danni rispetto all'attacco normale." +
+															"\n> Il comando Rottame infligge più danni rispetto all'attacco normale consumando un Rottame dalla Sacca." +
 															"\n> Il comando Difendi, nel caso di successo obbliga a saltare il turno successivo del nemico, nel caso di fallimento il turno lo salta l'utilizzatore, può effettuare una parata parziale o totale del colpo subito." +
 															"\n> Ogni turno scade dopo un breve tempo, quando scade tocca all'avversario, se scade per troppe volte la vittoria dell'avversario è automatica." +
 															"\n\n<b>Stagione</b>" +
@@ -6687,7 +6688,7 @@ bot.onText(/attacca!/i, function (message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					keyboard: [["🗡 Attacco"], ["⚔️ Attacco caricato"], ["🛡 Difendi"], ["🏳 Scappa"], ["Torna al menu"]]
+					keyboard: [["🗡 Attacco", "⚔️ Caricato"], ["🔩 Rottame", "🛡 Difendi"], ["🏳 Scappa"], ["Torna al menu"]]
 				}
 			};
 
@@ -6908,10 +6909,24 @@ bot.onText(/attacca!/i, function (message) {
 									text += "Carichi l'attacco che verrà sferrato al turno successivo!";
 									enemy_text += "L'avversario inizia a caricare l'attacco!";
 									query += ", battle_heavy = 1";
-								} else if (answer.text.toLowerCase().indexOf("attacco") != -1) {
+								} else if (	(answer.text.toLowerCase().indexOf("attacco") != -1) ||
+											(answer.text.toLowerCase().indexOf("rottame") != -1)) {
 									if ((battle_shield == 2) || (battle_stunned == 1)) {
 										bot.sendMessage(message.chat.id, "Devi riprenderti prima di sferrare un altro attacco!", kbFight);
 										return;
+									}
+									if (answer.text.toLowerCase().indexOf("rottame") != -1) {
+										if (battle_heavy == 1) {
+											bot.sendMessage(message.chat.id, "Devi sferrare prima l'attacco caricato!", kbFight);
+											return;
+										}
+										if (scrap == 0) {
+											bot.sendMessage(message.chat.id, "Non hai alcun rottame da lanciare!", kbFight);
+											return;
+										}
+										full_damage = full_damage*2;
+										heavyText = " con un rottame";
+										query += ", scrap = scrap-1";
 									}
 									var heavyText = "";
 									if (battle_heavy == 1) {
@@ -7857,6 +7872,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									var money = 0;
 									
 									var wait_time = 3;
+									var isParalyzed = 0;
 
 									var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id, enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + posX + ' AND posY = ' + posY + ' AND killed = 0 AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
 									if (Object.keys(checkEnemy).length > 0) {
@@ -8053,6 +8069,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										wait_time = 6;
 										text += "Cadi in un " + mapIdToSym(12) + " Campo Paralizzante e vieni immobilizzato! Dovrai attendere più tempo per continuare\n";
 										toClear = 1;
+										isParalyzed = 1;
 									} else if (objId == 13) {		// bevanda boost
 										wait_time = 1;
 										boost_query = ", boost_turn = boost_turn+3";
@@ -8060,7 +8077,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										toClear = 1;
 									}
 									
-									if (boost_turn > 0) {
+									if ((boost_turn > 0) && (isParalyzed == 0)) {
 										wait_time = 1;
 										boost_query = ", boost_turn = boost_turn-1";
 									}
@@ -34281,15 +34298,20 @@ bot.onText(/Bacheca IN/i, function (message) {
 					}
 				} else
 					text += "Nessun oggetto inestimabile disponibile\n";
-				
-				console.log(items);
 
 				bot.sendMessage(message.chat.id, text + "\nPossiedi *" + poss + "* inestimabili su un totale di *" + tot + "* presenti nel gioco\nQuesti oggetti sono unici e vengono ottenuti al termine delle imprese globali ed in altri casi estremamente particolari!\n\nPuoi acquistare alcune IN mancanti in cambio di Necrospriti 💠 solo dall'anno successivo che sono state rese disponibili", backPack).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text.toLowerCase() == "acquista in") {
 							
+							/*
 							if (player_id != 1) {
 								bot.sendMessage(message.chat.id, "Disponibile a breve", kbBack);
+								return;
+							}
+							*/
+							
+							if (items.length == 0) {
+								bot.sendMessage(message.chat.id, "Non è disponibile alcuna IN da acquistare", kbBack);
 								return;
 							}
 							
