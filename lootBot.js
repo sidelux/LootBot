@@ -10537,6 +10537,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														keyboard: [["Più Raro", "Meno Raro"], ["Ignora"], ["Torna al menu"]]
 													}
 												};
+												
+												setAchievement(player_id, 50, 1);
 
 												var rand = Math.random() * 100;
 
@@ -43791,7 +43793,14 @@ bot.onText(/^vacanza/i, function (message) {
 });
 
 bot.onText(/^orario/i, function (message) {
-	var iKeys = [];
+	var kb = {
+		parse_mode: "Markdown",
+		reply_markup: {
+			resize_keyboard: true,
+			keyboard: [["Torna al giocatore"],["Torna al menu"]]
+		}
+	};
+	
 	connection.query('SELECT id, show_time FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -43801,12 +43810,12 @@ bot.onText(/^orario/i, function (message) {
 		if (show_time == 0) {
 			connection.query('UPDATE player SET show_time = 1 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
-				bot.sendMessage(message.chat.id, "Hai attivato la visualizzazione dell'orario nel menù principale!", back);
+				bot.sendMessage(message.chat.id, "Hai attivato la visualizzazione dell'orario nel menù principale!", kb);
 			});
 		} else {
 			connection.query('UPDATE player SET show_time = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
-				bot.sendMessage(message.chat.id, "Hai disattivato la visualizzazione dell'orario nel menù principale!", back);
+				bot.sendMessage(message.chat.id, "Hai disattivato la visualizzazione dell'orario nel menù principale!", kb);
 			});
 		}
 	});
@@ -43818,9 +43827,8 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 	connection.query('SELECT mission_special_id, mission_special_time_end, mission_id, id, reborn, exp, life, account_id, global_end, mission_party, holiday, class, travel_limit, cave_limit FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		if (Object.keys(rows).length == 0) {
+		if (Object.keys(rows).length == 0)
 			return;
-		}
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -45656,7 +45664,7 @@ function printStart(message) {
 						'<b>Per iniziare</b> 🗡\n' +
 						'- Leggi i <a href="http://telegra.ph/Introduzione-a-Loot-Bot-12-15">Suggerimenti per i nuovi avventurieri</a>\n' +
 						'- Segui il canale @wikilootbot\n' +
-						'- Visualizza i /gruppi e le /faq avviando l\'importantissimo bot di supporto @lootplusbot\n' +
+						'- Visualizza i /gruppi e tutti i comandi avviando l\'importantissimo bot di supporto @lootplusbot\n' +
 						'- Entra nella <a href="https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg">Lootbot School</a> per imparare le basi\n' +
 						'- Cerca un team per imparare e collaborare, visita la <a href="https://t.me/LaBachecaDiLootia">Bacheca di Lootia</a>\n\n' +
 						'<b>Regolamento</b> 🚫\n' +
@@ -45688,8 +45696,8 @@ function getDefaultKeyboard() {
 				['Giocatore 👤', 'Imprese 🏋️', 'Team ⚜️'],
 				['Eventi 🎯', 'Esplorazioni 🧗‍♀'],
 				['Destino 🔮', 'Top 🔝', 'Lunari 🌕'],
-				['Info 📖'],
-				['💎 Ricompensa Giornaliera 💎']]
+				['💎 Ricompensa Giornaliera 💎'],
+				['Info 📖']]
 	
 	return kb;
 }
