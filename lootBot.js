@@ -1730,7 +1730,7 @@ bot.onText(/\/start (.+)|\/start/i, function (message, match) {
 				token_streak = 0;	// azzera quando ha finito il ciclo dei 31 giorni
 			}
 			
-			console.log("Ricompensa: " + text + " per player " + player_id);
+			// console.log("Ricompensa: " + text + " per player " + player_id);
 			
 			connection.query('UPDATE player SET token_used = 1, token_streak = ' + token_streak + ', token_last_use = CURDATE() WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -34230,17 +34230,18 @@ bot.onText(/^\/rifiutaf/i, function (message) {
 });
 
 bot.onText(/Bacheca IN/i, function (message) {
-	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, necro_pnt FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
+		var necro_pnt = rows[0].necro_pnt;
 		var text = "";
 
 		var backPack = {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Torna allo Zaino"], ["Torna al menu"]]
+				keyboard: [["Acquista IN"], ["Torna allo Zaino"], ["Torna al menu"]]
 			}
 		};
 		
@@ -34249,9 +34250,13 @@ bot.onText(/Bacheca IN/i, function (message) {
 			
 			var tot = rows[0].tot;
 
-			connection.query('SELECT I.name, IFNULL(IV.quantity, 0) as quantity FROM item I LEFT JOIN inventory IV ON I.id = IV.item_id AND IV.player_id = ' + player_id + ' WHERE rarity = "IN" ORDER BY name', function (err, rows, fields) {
+			connection.query('SELECT I.id, I.name, IFNULL(IV.quantity, 0) as quantity FROM item I LEFT JOIN inventory IV ON I.id = IV.item_id AND IV.player_id = ' + player_id + ' WHERE rarity = "IN" ORDER BY name', function (err, rows, fields) {
 				if (err) throw err;
 				var poss = 0;
+				var ids = [];
+				var items = [];
+				var prices = [];
+						
 				if (Object.keys(rows).length > 0) {
 					text = "*Bacheca dei tuoi oggetti Inestimabili*:\n\n";
 
@@ -34262,11 +34267,109 @@ bot.onText(/Bacheca IN/i, function (message) {
 							poss_icon = " ✅";
 						}
 						text = text + "> " + rows[i].name + " (" + rows[i].quantity + ")" + poss_icon + "\n";
+						
+						var startYear = 2016;
+						var now = new Date();
+						var lastYear = now.getFullYear()-1;
+						for (year = startYear; year < lastYear; year++) {
+							if ((rows[i].quantity == 0) && (rows[i].name.indexOf(year) != -1)) {
+								ids.push(rows[i].id);
+								items.push(rows[i].name);
+								prices.push((lastYear-year)*100);
+							}
+						}
 					}
 				} else
 					text += "Nessun oggetto inestimabile disponibile\n";
+				
+				console.log(items);
 
-				bot.sendMessage(message.chat.id, text + "\nPossiedi *" + poss + "* inestimabili su un totale di *" + tot + "* presenti nel gioco\nQuesti oggetti sono unici e vengono ottenuti al termine delle imprese globali ed in altri casi estremamente particolari!", backPack);
+				bot.sendMessage(message.chat.id, text + "\nPossiedi *" + poss + "* inestimabili su un totale di *" + tot + "* presenti nel gioco\nQuesti oggetti sono unici e vengono ottenuti al termine delle imprese globali ed in altri casi estremamente particolari!\n\nPuoi acquistare alcune IN mancanti in cambio di Necrospriti 💠 solo dall'anno successivo che sono state rese disponibili", backPack).then(function () {
+					answerCallbacks[message.chat.id] = function (answer) {
+						if (answer.text.toLowerCase() == "acquista in") {
+							
+							if (player_id != 1) {
+								bot.sendMessage(message.chat.id, "Disponibile a breve", kbBack);
+								return;
+							}
+							
+							var iKeys = [];
+							
+							var text = "Puoi acquistare le seguenti IN:";
+							for (i = 0; i < items.length; i++) {
+								text += "\n> " + items[i] + " (" + prices[i] + " 💠)";
+								iKeys.push([items[i]]);
+							}
+							
+							iKeys.push(["Torna alla Bacheca IN"]);
+							iKeys.push(["Torna allo zaino"]);
+							
+							var shop = {
+								parse_mode: "Markdown",
+								reply_markup: {
+									resize_keyboard: true,
+									keyboard: iKeys
+								}
+							};
+							
+							var kbBack = {
+								parse_mode: "Markdown",
+								reply_markup: {
+									resize_keyboard: true,
+									keyboard: [["Torna alla Bacheca IN"], ["Torna allo zaino"]]
+								}
+							};
+							
+							bot.sendMessage(message.chat.id, text + "\n\nAttualmente possiedi " + necro_pnt + " 💠", shop).then(function () {
+								answerCallbacks[message.chat.id] = function (answer) {
+									if ((answer.text == "Torna allo zaino") || (answer.text == "Torna alla Bacheca IN"))
+										return;
+									
+									var index = items.indexOf(answer.text);
+									if (index == -1) {
+										bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", kbBack);
+										return;
+									}
+									
+									var name = items[index];
+									var cost = prices[index];
+									var id = ids[index];
+									
+									var kbYesNo = {
+										parse_mode: "Markdown",
+										reply_markup: {
+											resize_keyboard: true,
+											keyboard: [["Si"], ["Torna alla Bacheca IN"], ["Torna allo zaino"]]
+										}
+									};
+									
+									bot.sendMessage(message.chat.id, "Sei sicuro di voler acquistare " + name + " per " + cost + " 💠?", kbYesNo).then(function () {
+										answerCallbacks[message.chat.id] = function (answer) {
+											if (answer.text.toLowerCase() == "si") {
+												connection.query('SELECT necro_pnt FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+
+													if (rows[0].necro_pnt < cost) {
+														bot.sendMessage(message.chat.id, "Non hai abbastanza 💠", kbBack);
+														return;
+													}
+
+													connection.query('UPDATE player SET necro_pnt = necro_pnt-' + cost + ' WHERE id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+
+														addItem(player_id, id);
+
+														bot.sendMessage(message.chat.id, "Hai acquistato con successo *" + name + "* al costo di *" + cost + "* 💠!", kbBack);
+													});
+												});
+											}
+										}
+									});
+								}
+							});
+						}
+					}
+				});
 			});
 		});
 	});
