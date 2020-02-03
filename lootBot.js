@@ -51496,22 +51496,22 @@ function generateMap(lobby_id, width, height, players, conditions) {
 	
 	if (conditions == 6) {
 		build = [];
-		chestRate = 0;
-		chestEpicRate = 0;
+		chestRate = 10;
+		chestEpicRate = 10;
 		trapRate = 10;
-		pulseRate = 10;
+		pulseRate = 0;
 		scrapRate = 0;
-		teleportRate = 10;
+		teleportRate = 0;
 		paralyzeRate = 50;
 		boostRate = 0;
 	} else if (conditions == 8) {
 		build = [];
-		chestRate = 0;
-		chestEpicRate = 0;
+		chestRate = 10;
+		chestEpicRate = 10;
 		trapRate = 10;
-		pulseRate = 10;
+		pulseRate = 0;
 		scrapRate = 0;
-		teleportRate = 10;
+		teleportRate = 0;
 		paralyzeRate = 0;
 		boostRate = 50;
 	} else if (conditions == 10) {
