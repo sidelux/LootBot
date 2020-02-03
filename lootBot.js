@@ -37311,23 +37311,23 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 								connection.query('SELECT from_id, COUNT(from_id) As cnt FROM heist_history WHERE from_id = ' + player_id + ' AND fail = 0', function (err, rows, fields) {
 									if (err) throw err;
 
-									var cnt = 0;
-									cnt = parseInt(rows[0].cnt);
+									var totalCount = 0;
+									totalCount = parseInt(rows[0].cnt);
 
 									connection.query('SELECT to_id, COUNT(to_id) As cnt FROM heist_history WHERE to_id = ' + player_id + ' AND fail > 0', function (err, rows, fields) {
 										if (err) throw err;
 
-										cnt += parseInt(rows[0].cnt);
-										if (cnt >= 500)
+										totalCount += parseInt(rows[0].cnt);
+										if (totalCount >= 500)
 											req2 = " ✅";
 										else
-											req2 = " (" + cnt + "/500)";
+											req2 = " (" + totalCount + "/500)";
 
-										var cnt = getItemCnt(player_id, 646);
-										if (cnt >= 2000)
+										var itemCnt = getItemCnt(player_id, 646);
+										if (itemCnt >= 2000)
 											req3 = " ✅";
 										else
-											req3 = " (" + formatNumber(cnt) + "/2.000)";
+											req3 = " (" + formatNumber(itemCnt) + "/2.000)";
 
 										bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
 														"> Aver completato almeno 2.000 missioni" + req1 + "\n" +
