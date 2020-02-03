@@ -56010,7 +56010,7 @@ function setFinishedLobbyEnd(element, index, array) {
 							var randGlobal = Math.random()*100;
 							if (randGlobal < 33) {
 								trophies_count++;
-								bonus = " aumentati per bonus globale";
+								bonus = " 🌍";
 							}
 						}
 						
