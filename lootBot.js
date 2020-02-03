@@ -7021,9 +7021,20 @@ bot.onText(/attacca!/i, function (message) {
 										var extra = "";
 										var enemy_extra = "";
 										my_dmg = Math.round(getRandomArbitrary(1000, 2500));
+										var lost_money = Math.round(getRandomArbitrary(200, 500));
+										var extra_lost_money = "";
+										
+										if (lost_money > money)
+											lost_money = money;
+										
+										if ((lost_money > 0) && (life-my_dmg > 0)) {	// se non perdo monete e sono ancora vivo
+											extra_lost_money = " oltre a " + formatNumber(lost_money) + " §";
+											query = ", money = money-" + lost_money;
+											enemy_query = ", money = money+" + lost_money;
+										}
 
-										text += "Tenti di scappare dallo scontro senza successo! Ma durante il tentativo l'avversario ti colpisce alle spalle e perdi <b>" + formatNumber(my_dmg) + "</b> hp!";
-										enemy_text += "L'avversario tenta di scappare dallo scontro senza successo! Ma durante il tentativo riesci a colpirlo alle spalle e perde <b>" + formatNumber(my_dmg) + "</b> hp!";
+										text += "Tenti di scappare dallo scontro senza successo! Ma durante il tentativo l'avversario ti colpisce alle spalle e perdi <b>" + formatNumber(my_dmg) + "</b> hp" + extra_lost_money + "!";
+										enemy_text += "L'avversario tenta di scappare dallo scontro senza successo! Ma durante il tentativo riesci a colpirlo alle spalle e perde <b>" + formatNumber(my_dmg) + "</b> hp" + extra_lost_money + "!";
 									}
 								} else
 									return;
@@ -8063,8 +8074,10 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										text += "Hai trovato uno <b>Strano Congegno</b> con al suo interno un " + mapIdToSym(9) + " <b>Rottame</b>, utile per gli scambi!";
 										toClear = 1;
 									} else if (objId == 10) {		// zona bruciata
-										text += "Decidi di gettarti verso la tua sconfitta nell'area bruciata...";
-										mapPlayerKilled(lobby_id, player_id, 3, null, 0);
+										bot.sendMessage(message.chat.id, "Non puoi gettarti nell'area bruciata!", kbBack);
+										return;
+										// text += "Decidi di gettarti verso la tua sconfitta nell'area bruciata...";
+										// mapPlayerKilled(lobby_id, player_id, 3, null, 0);
 									} else if (objId == 11) {		// teletrasporto
 										last_obj_query = ", last_obj = 11";
 										isBuild = 1;
