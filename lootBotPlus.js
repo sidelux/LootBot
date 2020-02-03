@@ -576,7 +576,7 @@ bot.onText(/^\/comandigiocatore/, function (message) {
 					"/valorezainoc - Mostra il valore complessivo degli oggetti creati posseduti (specifica anche la rarità)\n" +
 					"/gruzzolo - Mostra le monete possedute\n" +
 					"/trofei - Mostra i trofei nella stagione in corso delle Mappe\n" +
-					"/vette - Mostra il monete e le Ð raggiunte nelle Vette in corso\n" +
+					"/vette - Mostra il monte e le Ð raggiunte nelle Vette in corso\n" +
 					"/creazioni - Mostra i punti creazione ottenuti\n" +
 					"/spia - Spia un giocatore mostrando la scheda giocatore\n" +
 					"/ispeziona - Ispeziona un giocatore, puoi anche specificare il nome dello gnomo da inviare\n" +
@@ -8967,14 +8967,14 @@ bot.onText(/^\/vette/, function (message) {
 		connection.query('SELECT id FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length == 0) {
-				bot.sendMessage(message.chat.id, "Non possiedi il drago.", back);
+				bot.sendMessage(message.chat.id, "Non possiedi il drago.");
 				return;
 			}
 			
 			connection.query('SELECT top_id FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
-					bot.sendMessage(message.chat.id, "Non hai effettuato l'accesso alle Vette.", back);
+					bot.sendMessage(message.chat.id, "Non hai effettuato l'accesso alle Vette.");
 					return;
 				}
 				
