@@ -1309,7 +1309,7 @@ bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
 					url: body.shortenedUrl
 				}]);
 
-				bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente.\n\nLink ricompensa: <code>" + body.shortenedUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>", {
+				bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente.\n\nLink ricompensa: <code>" + body.shortenedUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>\n\nLista ricompense:\n> Più Scrigni Cangianti ogni giorno fino al 10°\n> Monete Lunari ogni giorno fino al 20°\n> Gemme ogni giorno fino al 30°\n> Scrigno Capsula il 31° giorno", {
 					parse_mode: 'HTML',
 					disable_web_page_preview: true,
 					reply_markup: {
@@ -7029,8 +7029,8 @@ bot.onText(/attacca!/i, function (message) {
 										
 										if ((lost_money > 0) && (life-my_dmg > 0)) {	// se non perdo monete e sono ancora vivo
 											extra_lost_money = " oltre a " + formatNumber(lost_money) + " §";
-											query = ", money = money-" + lost_money;
-											enemy_query = ", money = money+" + lost_money;
+											query += ", money = money-" + lost_money;
+											enemy_query += ", money = money+" + lost_money;
 										}
 
 										text += "Tenti di scappare dallo scontro senza successo! Ma durante il tentativo l'avversario ti colpisce alle spalle e perdi <b>" + formatNumber(my_dmg) + "</b> hp" + extra_lost_money + "!";
@@ -46771,7 +46771,7 @@ function cercaTermine(message, param, player_id) {
 								connection.query('SELECT id FROM item WHERE name = "' + name + '"', function (err, rows, fields) {
 									if (err) throw err;
 									result = rows[0].id;
-									connection.query('SELECT craft.*, item.name, item.rarity FROM `craft`, item where material_result = item.id AND ((material_1 = ' + result + ' AND material_2 = ' + result + ' AND material_3 = ' + result + ') OR (material_1 = ' + result + ' AND material_2 = ' + result + ') OR (material_1 = ' + result + ' AND material_3 = ' + result + ') OR (material_2 = ' + result + ' AND material_3 = ' + result + ') OR material_1 = ' + result + ' OR material_2 = ' + result + ' OR material_3 = ' + result + ')', function (err, rows, fields) {
+									connection.query('SELECT craft.*, item.name, item.rarity, item.id As item_id FROM `craft`, item where material_result = item.id AND ((material_1 = ' + result + ' AND material_2 = ' + result + ' AND material_3 = ' + result + ') OR (material_1 = ' + result + ' AND material_2 = ' + result + ') OR (material_1 = ' + result + ' AND material_3 = ' + result + ') OR (material_2 = ' + result + ' AND material_3 = ' + result + ') OR material_1 = ' + result + ' OR material_2 = ' + result + ' OR material_3 = ' + result + ')', function (err, rows, fields) {
 										if (err) throw err;
 										if (Object.keys(rows).length > 0) {
 											bottext = bottext + "\n\nCon questo oggetto puoi creare:\n";
@@ -46788,7 +46788,7 @@ function cercaTermine(message, param, player_id) {
 
 											for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 												if (rows[i].name != "") {
-													bottext = bottext + "> " + rows[i].name + " (" + rows[i].rarity + ")\n";
+													bottext = bottext + "> " + rows[i].name + " (" + rows[i].rarity + ", " + getItemCnt(player_id, rows[i].item_id) + ")\n";
 													iKeys2.push(["Cerca *" + rows[i].name]);
 												}
 											}
@@ -46912,7 +46912,7 @@ function cercaTermine(message, param, player_id) {
 
 											bottext = bottext + "\n\nMateriali necessari:\n> " + mat1p + " (" + mat1r + ", " + formatNumber(mat1q) + ") " + mat1ex + "\n> " + mat2p + " (" + mat2r + ", " + formatNumber(mat2q) + ") " + mat2ex + "\n> " + mat3p + " (" + mat3r + ", " + formatNumber(mat3q) + ") " + mat3ex;
 
-											connection.query('SELECT craft.*, item.name, item.rarity FROM craft, item where material_result = item.id AND ((material_1 = ' + result + ' AND material_2 = ' + result + ' AND material_3 = ' + result + ') OR (material_1 = ' + result + ' AND material_2 = ' + result + ') OR (material_1 = ' + result + ' AND material_3 = ' + result + ') OR (material_2 = ' + result + ' AND material_3 = ' + result + ') OR material_1 = ' + result + ' OR material_2 = ' + result + ' OR material_3 = ' + result + ')', function (err, rows, fields) {
+											connection.query('SELECT craft.*, item.name, item.rarity, item.id As item_id FROM craft, item where material_result = item.id AND ((material_1 = ' + result + ' AND material_2 = ' + result + ' AND material_3 = ' + result + ') OR (material_1 = ' + result + ' AND material_2 = ' + result + ') OR (material_1 = ' + result + ' AND material_3 = ' + result + ') OR (material_2 = ' + result + ' AND material_3 = ' + result + ') OR material_1 = ' + result + ' OR material_2 = ' + result + ' OR material_3 = ' + result + ')', function (err, rows, fields) {
 												if (err) throw err;
 
 												var iKeys3 = [];
@@ -46936,7 +46936,7 @@ function cercaTermine(message, param, player_id) {
 												if (Object.keys(rows).length > 0) {
 													bottext = bottext + "\n\nCon questo oggetto puoi creare:\n";
 													for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-														bottext = bottext + "> " + rows[i].name + " (" + rows[i].rarity + ")\n";
+														bottext = bottext + "> " + rows[i].name + " (" + rows[i].rarity + ", " + getItemCnt(player_id, rows[i].item_id) + ")\n";
 														iKeys3.push(["Cerca *" + rows[i].name]);
 													}
 
