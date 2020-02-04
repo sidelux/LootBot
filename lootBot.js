@@ -6692,7 +6692,7 @@ bot.onText(/attacca!/i, function (message) {
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					keyboard: [["🗡 Attacco", "⚔️ Caricato"], ["🔩 Rottame (" + scrap + ")", "🛡 Difendi"], ["🏳 Scappa"], ["Torna al menu"]]
+					keyboard: [["🗡 Attacco", "⚔️ Caricato"], ["🔩 Rottame (" + scrap + ")", "🛡 Difendi"], ["🏳 Scappa", "Torna al menu"]]
 				}
 			};
 
