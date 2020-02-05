@@ -18401,22 +18401,20 @@ bot.onText(/magazzino/i, function (message, match) {
 	});
 });
 
-bot.onText(/^\/deposita (.+),(.+)/i, function (message, match) {
+bot.onText(/^\/deposita (.+),(.+)|^\/deposita/i, function (message, match) {
 	if (!checkSpam(message))
 		return;
 	
 	if (message.text == undefined)
 		return;
 	
-	var elements = message.text.split(",");
-
-	if (Object.keys(elements).length != 2) {
-		bot.sendMessage(message.from.id, "Numero parametri errato: " + Object.keys(elements).length + " su 2\nSintassi: '/deposita oggetto,quantita'");
+	if ((match[1] == undefined) || (match[2] == undefined)) {
+		bot.sendMessage(message.from.id, "Numero parametri errato\nSintassi: '/deposita oggetto,quantita'");
 		return;
 	}
 	
-	var itemName = elements[0];
-	var itemQnt = elements[1];
+	var itemName = match[1];
+	var itemQnt = match[2];
 	
 	if (isNaN(parseInt(itemQnt))) {
 		bot.sendMessage(message.from.id, "Quantità non valida");
@@ -18462,12 +18460,12 @@ bot.onText(/^\/deposita (.+),(.+)/i, function (message, match) {
 
 				var quantity = parseInt(itemQnt);
 				if (quantity < 1) {
-					bot.sendMessage(message.from.id, "Inserisci una quantità maggiore di zero", kbBack);
+					bot.sendMessage(message.from.id, "Inserisci una quantità maggiore di zero", back);
 					return;
 				}
 
 				if (getItemCnt(player_id, item_id) < quantity) {
-					bot.sendMessage(message.from.id, "Non hai abbastanza copie dell'oggetto specificato", kbBack);
+					bot.sendMessage(message.from.id, "Non hai abbastanza copie dell'oggetto specificato", back);
 					return;
 				}
 
@@ -18487,7 +18485,7 @@ bot.onText(/^\/deposita (.+),(.+)/i, function (message, match) {
 					}
 				});
 
-				bot.sendMessage(message.from.id, "Hai depositato correttamente " + quantity + "x " + item_name + "!", kbBack);
+				bot.sendMessage(message.from.id, "Hai depositato correttamente " + quantity + "x " + item_name + "!", back);
 
 				connection.query('INSERT INTO team_store_log (team_id, player_id, item_id, quantity) VALUES (' + team_id + ',' + player_id + ',' + item_id + ', ' + quantity + ')', function (err, rows, fields) {
 					if (err) throw err;
@@ -56099,6 +56097,7 @@ function checkMapSeasonEnd() {
 		if (err) throw err;
 		if (Object.keys(rows).length == 1) {
 			if (battle_season_test == 0) {
+				console.log("Conclusione stagione mappe in corso...");
 				/*
 				connection.query('UPDATE config SET map_season_end = DATE_ADD(map_season_end, INTERVAL 30 DAY)', function (err, rows, fields) {
 					if (err) throw err;
