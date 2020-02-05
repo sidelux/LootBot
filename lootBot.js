@@ -51498,6 +51498,7 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 }
 
 function generateMap(lobby_id, width, height, players, conditions) {
+	var detailedLog = 0;
 	var build = [4, 5, 6];
 	var buildQnt = [2, 2, 2];
 	var chestRate = 20;
@@ -51619,60 +51620,69 @@ function generateMap(lobby_id, width, height, players, conditions) {
 	// genera scrigni
 
 	var chestTicks = Math.round(totTicks*(chestRate/100));
-	console.log("Generazione " + chestTicks + " scrigni...");
+	if (detailedLog == 1) 
+		console.log("Generazione " + chestTicks + " scrigni...");
 	for(i = 0; i < chestTicks; i++)
 		matrix = insertRandomPos(matrix, 1, 0);
 
 	// genera scrigni epici
 
 	var chestEpicTicks = Math.round(totTicks*(chestEpicRate/100));
-	console.log("Generazione " + chestEpicTicks + " scrigni epici...");
+	if (detailedLog == 1) 
+		console.log("Generazione " + chestEpicTicks + " scrigni epici...");
 	for(i = 0; i < chestEpicTicks; i++)
 		matrix = insertRandomPos(matrix, 2, 0);
 
 	// genera trappole
 
 	var trapTicks = Math.round(totTicks*(trapRate/100));
-	console.log("Generazione " + trapTicks + " trappole...");
+	if (detailedLog == 1) 
+		console.log("Generazione " + trapTicks + " trappole...");
 	for(i = 0; i < trapTicks; i++)
 		matrix = insertRandomPos(matrix, 3, 0);
 
 	// genera impulsi
 
 	var pulseTicks = Math.round(totTicks*(pulseRate/100));
-	console.log("Generazione " + pulseTicks + " impulsi...");
+	if (detailedLog == 1) 
+		console.log("Generazione " + pulseTicks + " impulsi...");
 	for(i = 0; i < pulseTicks; i++)
 		matrix = insertRandomPos(matrix, 7, 0);
 
 	// genera rottami
 
 	var scrapTicks = Math.round(totTicks*(scrapRate/100));
-	console.log("Generazione " + scrapTicks + " rottami...");
+	if (detailedLog == 1) 
+		console.log("Generazione " + scrapTicks + " rottami...");
 	for(i = 0; i < scrapTicks; i++)
 		matrix = insertRandomPos(matrix, 9, 0);
 	
 	// genera teletrasporti
 
 	var teleportTicks = Math.round(totTicks*(teleportRate/100));
-	console.log("Generazione " + teleportTicks + " teletrasporti...");
+	if (detailedLog == 1) 
+		console.log("Generazione " + teleportTicks + " teletrasporti...");
 	for(i = 0; i < teleportTicks; i++)
 		matrix = insertRandomPos(matrix, 11, 0);
 	
 	// genera campi paralizzanti
 
 	var paralyzeTicks = Math.round(totTicks*(paralyzeRate/100));
-	console.log("Generazione " + paralyzeTicks + " campi paralizzanti...");
+	if (detailedLog == 1) 
+		console.log("Generazione " + paralyzeTicks + " campi paralizzanti...");
 	for(i = 0; i < paralyzeTicks; i++)
 		matrix = insertRandomPos(matrix, 12, 0);
 	
 	// genera bevande boost
 
 	var boostTicks = Math.round(totTicks*(boostRate/100));
-	console.log("Generazione " + boostTicks + " bevande boost...");
+	if (detailedLog == 1) 
+		console.log("Generazione " + boostTicks + " bevande boost...");
 	for(i = 0; i < boostTicks; i++)
 		matrix = insertRandomPos(matrix, 13, 0);
 
-	console.log("Generazione completata");
+	if (detailedLog == 1) 
+		console.log("Generazione completata");
 
 	return matrix;
 }
