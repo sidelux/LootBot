@@ -18811,12 +18811,12 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 								return;
 							}
 							
-							bot.sendMessage(message.chat.id, "Sei veramente sicur" + gender_text + " di voler accedere alle Vette?", kbYesNoBack).then(function () {
+							bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nelle <b>Vette dei Draghi</b> 🐲!\nIn questo luoghi dovrai sottoporre il tuo <i>" + dragon_name + "</i> all'ardua sfida di raggiungere le cime dei monti più alti di Lootia! Durante questa sfida incontrerai altri draghi, dovrai sfidarli ed essere un bravo domatore per salire fino alla vetta. Le battaglie si svolgono in diversi Monti, tutti iniziano dal primo e man mano che si ottengono vittorie si passa al successivo!\nRicorda che quando il drago combatte, non ti potrà aiutare nelle battaglie al di fuori della vetta.\n\n<b>Funzionamento</b>:\n\n- Il drago da sfidare verrà scelto casualmente in base al Monte in cui si viene inseriti\n- Una volta sconfitto si ottiene 1 Ð o più, se si viene sconfitti lo si perde\n- Al termine della giornata per avanzare di Monte è necessario raggiungere almeno 12 Ð, mentre se ne possiedi 2 o meno tornerai al precedente, inoltre spostandoti di monte le Ð si resettano\n- Ogni mossa consuma un certo numero di Scaglie ⚜️ e ne ottieni una alla fine di ogni turno, per un massimo di 5, puoi ottenerne una anche solo Saltando il turno\n- Riceverai un premio in base al posizionamento ottenuto alla fine della stagione.\n- Al primo accesso otterrai Ð in base al livello del tuo drago\n\nLa stagione attuale scadrà alle " + finish_date + "\n\nSei veramente sicur" + gender_text + " di voler accedere alle Vette?", kbYesNoBack).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text.toLowerCase() == "si") {
 										connection.query('INSERT INTO dragon_top_status (player_id, dragon_id) VALUES (' + player_id + ',' + dragon_id + ')', function (err, rows, fields) {
 											if (err) throw err;
-											bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nelle <b>Vette dei Draghi</b> 🐲!\nIn questo luoghi dovrai sottoporre il tuo <i>" + dragon_name + "</i> all'ardua sfida di raggiungere le cime dei monti più alti di Lootia! Durante questa sfida incontrerai altri draghi, dovrai sfidarli ed essere un bravo domatore per salire fino alla vetta. Le battaglie si svolgono in diversi Monti, tutti iniziano dal primo e man mano che si ottengono vittorie si passa al successivo!\nRicorda che quando il drago combatte, non ti potrà aiutare nelle battaglie al di fuori della vetta.\n\n<b>Funzionamento</b>:\n\n- Il drago da sfidare verrà scelto casualmente in base al Monte in cui si viene inseriti\n- Una volta sconfitto si ottiene 1 Ð o più, se si viene sconfitti lo si perde\n- Al termine della giornata per avanzare di Monte è necessario raggiungere almeno 12 Ð, mentre se ne possiedi 2 o meno tornerai al precedente, inoltre spostandoti di monte le Ð si resettano\n- Ogni mossa consuma un certo numero di Scaglie ⚜️ e ne ottieni una alla fine di ogni turno, per un massimo di 5, puoi ottenerne una anche solo Saltando il turno\n- Riceverai un premio in base al posizionamento ottenuto alla fine della stagione.\n- Al primo accesso otterrai Ð in base al livello del tuo drago\n\nLa stagione attuale scadrà alle " + finish_date, kb2);
+											bot.sendMessage(message.chat.id, "Hai accettato l'invito nelle <b>Vette dei Draghi</b> 🐲!\nScala la classifica e ottieni la gloria!\n\nLa stagione attuale scadrà alle " + finish_date, kb2);
 										});
 									}
 								};
@@ -55372,54 +55372,65 @@ bot.onText(/^\/incarico/, function (message, match) {
 			return;
 		}
 
-		connection.query('SELECT party_id, assigned_to, part_id, team_id, report_id FROM mission_team_party T WHERE T.party_id = ' + party_id + ' AND T.team_id = ' + team_id + ' AND wait = 1', function (err, rows, fields) {
+		connection.query('SELECT party_id, assigned_to, part_id, team_id, report_id, wait, mission_time_end FROM mission_team_party T WHERE T.party_id = ' + party_id + ' AND T.team_id = ' + team_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
 				bot.sendMessage(message.chat.id, "Nessun incarico valido da richiamare", back);
 				return;
 			}
-
+			
 			var assigned_to = rows[0].assigned_to;
 			var part_id = rows[0].part_id;
 			var report_id = rows[0].report_id;
+			var mission_time_end = new Date(rows[0].mission_time_end);
+			var short_date = mission_time_end.getHours() + ":" + mission_time_end.getMinutes();
+			
+			if (rows[0].wait == 0) {
+				connection.query('SELECT COUNT(id) As cnt FROM mission_team_party_player T WHERE T.party_id = ' + party_id + ' AND T.team_id = ' + team_id + ' AND answ_id = 0', function (err, rows, fields) {
+					if (err) throw err;
+					var num = rows[0].cnt;
+					
+					bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nHai già votato per questo incarico\nMancano ancora <b>" + num + "</b> compagni che devono votare, siete alla <b>" + part_id + "</b> scelta ed il tempo scadrà alle <i>" + short_date + "</i>!", back);
+				});
+			} else if (rows[0].wait == 1) {
+				//console.log("Richiamo manuale incarico per party " + party_id + " e team " + team_id);
 
-			//console.log("Richiamo manuale incarico per party " + party_id + " e team " + team_id);
-
-			connection.query('SELECT question, answ1, answ2, answ3 FROM mission_team_list_part WHERE list_id = ' + assigned_to + ' AND part_id = ' + part_id, function (err, rows, fields) {
-				if (err) throw err;
-
-				var question = rows[0].question;
-				var answ1 = rows[0].answ1;
-				var answ2 = rows[0].answ2;
-				var answ3 = rows[0].answ3;
-
-				connection.query('SELECT text FROM mission_team_report WHERE report_id = ' + report_id + ' ORDER BY id DESC', function (err, rows, fields) {
+				connection.query('SELECT question, answ1, answ2, answ3 FROM mission_team_list_part WHERE list_id = ' + assigned_to + ' AND part_id = ' + part_id, function (err, rows, fields) {
 					if (err) throw err;
 
-					var last_answer = "";
-					if (Object.keys(rows).length > 0)
-						last_answer = capitalizeFirstLetter(rows[0].text);
+					var question = rows[0].question;
+					var answ1 = rows[0].answ1;
+					var answ2 = rows[0].answ2;
+					var answ3 = rows[0].answ3;
 
-					var iKeys = [];
-					iKeys.push([{
-						text: answ1,
-						callback_data: "team_miss:1:" + part_id
-					}]);
-					iKeys.push([{
-						text: answ2,
-						callback_data: "team_miss:2:" + part_id
-					}]);
-					iKeys.push([{
-						text: answ3,
-						callback_data: "team_miss:3:" + part_id
-					}]);
+					connection.query('SELECT text FROM mission_team_report WHERE report_id = ' + report_id + ' ORDER BY id DESC', function (err, rows, fields) {
+						if (err) throw err;
 
-					question = question.replace("%casuale%", "qualcuno");
+						var last_answer = "";
+						if (Object.keys(rows).length > 0)
+							last_answer = capitalizeFirstLetter(rows[0].text);
 
-					bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\n" + last_answer + question + "\n", {parse_mode: 'HTML', reply_markup: {inline_keyboard: iKeys}});
+						var iKeys = [];
+						iKeys.push([{
+							text: answ1,
+							callback_data: "team_miss:1:" + part_id
+						}]);
+						iKeys.push([{
+							text: answ2,
+							callback_data: "team_miss:2:" + part_id
+						}]);
+						iKeys.push([{
+							text: answ3,
+							callback_data: "team_miss:3:" + part_id
+						}]);
+
+						question = question.replace("%casuale%", "qualcuno");
+
+						bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\n" + last_answer + question + "\n", {parse_mode: 'HTML', reply_markup: {inline_keyboard: iKeys}});
+					});
 				});
-			});
+			};
 		});
 	});
 });
