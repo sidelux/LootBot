@@ -39638,6 +39638,7 @@ bot.onText(/^apri/i, function (message) {
 
 								chest_rarity = rows[j].rarity_shortname;
 								chest_id = rows[j].chest_id;
+								
 								if (chest_id == 10)	// cangiante
 									itemSql = connection_sync.query('SELECT id, name, rarity FROM item WHERE rarity IN ("C", "NC", "R", "UR", "L", "E", "D", "U") AND id NOT IN (92, 93, 94) AND craftable = 0');
 								else
@@ -39655,16 +39656,19 @@ bot.onText(/^apri/i, function (message) {
 									item_id = itemSql[0].id;
 
 									if (item_rarity == "U") {
-										var randU = Math.random() * 100;
-										var perc = 0;
-										if (reborn <= 2)
-											perc = 5;
-										else if (reborn == 3)
-											perc = 10;
-										else if (reborn == 4)
-											perc = 15;
-										else if (reborn == 5)
-											perc = 20;
+										if (chest_id != 10) {
+											var randU = Math.random() * 100;
+											var perc = 0;
+											if (reborn <= 2)
+												perc = 5;
+											else if (reborn == 3)
+												perc = 10;
+											else if (reborn == 4)
+												perc = 15;
+											else if (reborn == 5)
+												perc = 20;
+										} else
+											perc = 60;
 
 										if (perc >= randU) {
 											item_name = "Gemma";
@@ -55225,9 +55229,8 @@ function setFinishedTeamMission(element, index, array) {
 			if (err) throw err;
 
 			var last_answer = "";
-			if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length > 0)
 				last_answer = capitalizeFirstLetter(rows[0].text);
-			}
 
 			connection.query('UPDATE mission_team_party_player SET answ_id = 0 WHERE party_id = ' + party_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -55258,9 +55261,8 @@ function setFinishedTeamMission(element, index, array) {
 						if (text_user == null) {
 							// order by rand per %casuale%
 							question = question.replace("%casuale%", rows[0].nickname);
-						} else {
+						} else
 							question = question.replace("%casuale%", text_user);
-						}
 
 						var team = connection_sync.query('SELECT name FROM team WHERE id = ' + team_id);
 						question = question.replace(new RegExp("%team%", "g"), team[0].name);
@@ -55391,7 +55393,7 @@ bot.onText(/^\/incarico/, function (message, match) {
 					if (err) throw err;
 					var num = rows[0].cnt;
 					
-					bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nHai già votato per questo incarico\nMancano ancora <b>" + num + "</b> compagni che devono votare, siete alla <b>" + part_id + "</b> scelta ed il tempo scadrà alle <i>" + short_date + "</i>!", back);
+					bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nHai già votato per questo incarico\nMancano ancora <b>" + num + "</b> compagni che devono votare, siete alla <b>" + (part_id+1) + "</b> scelta ed il tempo scadrà alle <i>" + short_date + "</i>!", back_html);
 				});
 			} else if (rows[0].wait == 1) {
 				//console.log("Richiamo manuale incarico per party " + party_id + " e team " + team_id);
