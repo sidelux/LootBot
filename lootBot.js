@@ -18401,23 +18401,15 @@ bot.onText(/magazzino/i, function (message, match) {
 	});
 });
 
-bot.onText(/^\/deposita (.+),(.+)|^\/deposita/i, function (message, match) {
+bot.onText(/^\/deposita (.+)|^\/deposita/i, function (message, match) {
 	if (!checkSpam(message))
 		return;
 	
 	if (message.text == undefined)
 		return;
 	
-	if ((match[1] == undefined) || (match[2] == undefined)) {
-		bot.sendMessage(message.from.id, "Numero parametri errato\nSintassi: '/deposita oggetto,quantita'");
-		return;
-	}
-	
-	var itemName = match[1];
-	var itemQnt = match[2];
-	
-	if (isNaN(parseInt(itemQnt))) {
-		bot.sendMessage(message.from.id, "Quantità non valida");
+	if (match[1] == undefined) {
+		bot.sendMessage(message.from.id, "Numero parametri errato\nSintassi: '/deposita oggetto:quantita,oggetto:quantita,...'");
 		return;
 	}
 	
@@ -18447,50 +18439,67 @@ bot.onText(/^\/deposita (.+),(.+)|^\/deposita/i, function (message, match) {
 			
 			var team_id = rows[0].team_id;
 	
-			connection.query('SELECT id, name FROM item WHERE ((craftable = 1 AND rarity IN ("NC", "R", "UR", "L", "E")) OR (name LIKE "Pietra%" AND rarity = "D")) AND name = "' + itemName + '" AND cons = 0', function (err, rows, fields) {
-				if (err) throw err;
+			var elements = match[1].split(",");
+			var splitted = [];
+			var itemName;
+			var itemQnt;
 
-				if (Object.keys(rows).length == 0) {
-					bot.sendMessage(message.from.id, "L'oggetto specificato non esiste o non è consentito, sono consentiti solo i creabili di rarità NC -> E, Pietre del Drago ma non consumabili", back);
-					return;
+			var text = "*Risultato deposito:*\n";
+			
+			for (var i = 0; i < elements.length; i++) {
+				splitted = elements[i].split(":");
+
+				itemName = splitted[0];
+				itemQnt = splitted[1];
+
+				if (isNaN(parseInt(itemQnt))) {
+					text += "*" + itemName + "*: Quantità " + itemQnt + " non valida\n";
+					continue;
+				}
+				
+				var item = connection_sync.query('SELECT id, name FROM item WHERE ((craftable = 1 AND rarity IN ("NC", "R", "UR", "L", "E")) OR (name LIKE "Pietra%" AND rarity = "D")) AND name = "' + itemName + '" AND cons = 0');
+
+				if (Object.keys(item).length == 0) {
+					text += "*" + itemName + "*: Non consentito\n";
+					continue;
 				}
 
-				var item_id = rows[0].id;
-				var item_name = rows[0].name;
+				var item_id = item[0].id;
+				var item_name = item[0].name;
 
 				var quantity = parseInt(itemQnt);
 				if (quantity < 1) {
-					bot.sendMessage(message.from.id, "Inserisci una quantità maggiore di zero", back);
-					return;
+					text += "*" + itemName + "*: Quantità " + itemQnt + " non valida\n";
+					continue;
 				}
 
 				if (getItemCnt(player_id, item_id) < quantity) {
-					bot.sendMessage(message.from.id, "Non hai abbastanza copie dell'oggetto specificato", back);
-					return;
+					text += "*" + itemName + "*: Non hai abbastanza copie\n";
+					continue;
 				}
 
-				delItem(player_id, item_id, quantity);
+				delItem(player_id, item_id, quantity, 1);
 
-				connection.query('SELECT 1 FROM team_store WHERE item_id = ' + item_id + ' AND team_id = ' + team_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
-					if (err) throw err;
+				var deposit = connection_sync.query('SELECT 1 FROM team_store WHERE item_id = ' + item_id + ' AND team_id = ' + team_id + ' AND player_id = ' + player_id);
 
-					if (Object.keys(rows).length == 0) {
-						connection.query('INSERT INTO team_store (team_id, player_id, item_id, quantity) VALUES (' + team_id + ',' + player_id + ',' + item_id + ', ' + quantity + ')', function (err, rows, fields) {
-							if (err) throw err;
-						});
-					} else {
-						connection.query('UPDATE team_store SET quantity = quantity+' + quantity + ' WHERE team_id = ' + team_id + ' AND player_id = ' + player_id + ' AND item_id = ' + item_id, function (err, rows, fields) {
-							if (err) throw err;
-						});
-					}
-				});
+				if (Object.keys(deposit).length == 0) {
+					connection.query('INSERT INTO team_store (team_id, player_id, item_id, quantity) VALUES (' + team_id + ',' + player_id + ',' + item_id + ', ' + quantity + ')', function (err, rows, fields) {
+						if (err) throw err;
+					});
+				} else {
+					connection.query('UPDATE team_store SET quantity = quantity+' + quantity + ' WHERE team_id = ' + team_id + ' AND player_id = ' + player_id + ' AND item_id = ' + item_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
+				}
 
-				bot.sendMessage(message.from.id, "Hai depositato correttamente " + quantity + "x " + item_name + "!", back);
+				text += "*" + itemName + "*: Depositato correttamente " + quantity + " unità\n";
 
 				connection.query('INSERT INTO team_store_log (team_id, player_id, item_id, quantity) VALUES (' + team_id + ',' + player_id + ',' + item_id + ', ' + quantity + ')', function (err, rows, fields) {
 					if (err) throw err;
 				});
-			});
+			}
+			
+			bot.sendMessage(message.from.id, text, back);
 		});
 	});
 });
@@ -58417,16 +58426,20 @@ function addItem(player_id, item_id, qnt = 1) {
 	}
 }
 
-function delItem(player_id, item_id, qnt = 1) {
+function delItem(player_id, item_id, qnt = 1, sync = 0) {
 	qnt = parseInt(qnt);
 	if (isNaN(qnt)) {
 		console.log("ERRORE! delItem di " + qnt + "x " + item_id + " per player " + player_id);
 		return;
 	}
 
-	connection.query('UPDATE inventory SET quantity = quantity-' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id, function (err, rows, fields) {
-		if (err) throw err;
-	});
+	if (sync == 0) {
+		connection.query('UPDATE inventory SET quantity = quantity-' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
+	} else {
+		connection_sync.query('UPDATE inventory SET quantity = quantity-' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
+	}
 }
 
 function delAllItem(player_id, item_id) {
