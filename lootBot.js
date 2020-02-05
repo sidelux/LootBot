@@ -1272,10 +1272,11 @@ bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
 	}
 	*/
 	
-	connection.query('SELECT id, token_last_use FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, token_last_use, token_streak FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		
 		var player_id = rows[0].id;
+		var token_streak = rows[0].token_streak;
 		var token = makeid(64);
 		
 		var now = new Date();
@@ -1309,7 +1310,7 @@ bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
 					url: body.shortenedUrl
 				}]);
 
-				bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente.\n\nLink ricompensa: <code>" + body.shortenedUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>\n\nLista ricompense:\n> Più Scrigni Cangianti ogni giorno fino al 10°\n> Monete Lunari ogni giorno fino al 20°\n> Gemme ogni giorno fino al 30°\n> Scrigno Capsula il 31° giorno", {
+				bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente, sei al giorno " + token_streak + ".\n\nLink ricompensa: <code>" + body.shortenedUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>\n\nLista ricompense:\n> Più Scrigni Cangianti ogni giorno fino al 10°\n> Monete Lunari ogni giorno fino al 20°\n> Gemme ogni giorno fino al 30°\n> Scrigno Capsula il 31° giorno", {
 					parse_mode: 'HTML',
 					disable_web_page_preview: true,
 					reply_markup: {
@@ -18404,7 +18405,10 @@ bot.onText(/^\/deposita (.+),(.+)/i, function (message, match) {
 	if (!checkSpam(message))
 		return;
 	
-	var elements = text.split(",");
+	if (message.text == undefined)
+		return;
+	
+	var elements = message.text.split(",");
 
 	if (Object.keys(elements).length != 2) {
 		bot.sendMessage(message.from.id, "Numero parametri errato: " + Object.keys(elements).length + " su 2\nSintassi: '/deposita oggetto,quantita'");
@@ -56101,6 +56105,7 @@ function checkMapSeasonEnd() {
 				});
 				*/
 				var next_season_end = moment().startOf('month').add(1, 'months').weekday('3').add(2, 'weeks').format('YYYY-MM-DD') + " 12:00:00";
+				console.log("next_season_end", next_season_end);
 				connection.query('UPDATE config SET map_season_end = DATE_SUB("' + next_season_end + '", INTERVAL 7 DAY)', function (err, rows, fields) {
 					if (err) throw err;
 				});
