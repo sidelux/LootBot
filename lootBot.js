@@ -1292,30 +1292,40 @@ bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
 		
 		connection.query('UPDATE player SET token = "' + token + '", token_used = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
-	
-			request.put({
-				uri: 'https://api.shorte.st/v1/data/url',
-				headers: {
-					'public-api-token': config.shorttoken
-				},
-				method: 'PUT',
-				body: {urlToShorten: 'https://telegram.me/lootgamebot?start=' + token},
+			
+			var finalUrl = 'https://telegram.me/lootgamebot?start=' + token;
+			
+			request.get({
+				uri: 'https://short.pe/api?api=' + config.shortpetoken + '&url=' + finalUrl,
+				method: 'GET',
 				json: true
 			}, function(err, res, body) {
 				if (err) throw err;
 				
-				var iKeys = [];
-				iKeys.push([{
-					text: "Ottieni ricompensa!",
-					url: body.shortenedUrl
-				}]);
+				request.put({
+					uri: 'https://api.shorte.st/v1/data/url',
+					headers: {
+						'public-api-token': config.shorttoken
+					},
+					method: 'PUT',
+					body: {urlToShorten: body.shortenedUrl},
+					json: true
+				}, function(err, res, body) {
+					if (err) throw err;
 
-				bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente, sei al giorno " + token_streak + ".\n\nLink ricompensa: <code>" + body.shortenedUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>\n\nLista ricompense:\n> Più Scrigni Cangianti ogni giorno fino al 10°\n> Gemma ogni giorno fino al 20°\n> Moneta Lunare o più Gemme ogni giorno fino al 30°\n> Scrigno Capsula il 31° giorno", {
-					parse_mode: 'HTML',
-					disable_web_page_preview: true,
-					reply_markup: {
-						inline_keyboard: iKeys
-					}
+					var iKeys = [];
+					iKeys.push([{
+						text: "Ottieni ricompensa!",
+						url: body.shortenedUrl
+					}]);
+
+					bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente, sei al giorno " + token_streak + ".\n\nLink ricompensa: <code>" + body.shortenedUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>\n\nLista ricompense:\n> Più Scrigni Cangianti ogni giorno fino al 10°\n> Gemma ogni giorno fino al 20°\n> Moneta Lunare o più Gemme ogni giorno fino al 30°\n> Scrigno Capsula il 31° giorno", {
+						parse_mode: 'HTML',
+						disable_web_page_preview: true,
+						reply_markup: {
+							inline_keyboard: iKeys
+						}
+					});
 				});
 			});
 		});
