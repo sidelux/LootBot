@@ -55386,6 +55386,12 @@ bot.onText(/^\/incarico/, function (message, match) {
 			}
 			
 			var assigned_to = rows[0].assigned_to;
+			
+			if (assigned_to == null) {
+				bot.sendMessage(message.chat.id, "Non stai svolgendo un incarico", back);
+				return;
+			}
+			
 			var part_id = rows[0].part_id;
 			var report_id = rows[0].report_id;
 			var mission_time_end = new Date(rows[0].mission_time_end);
