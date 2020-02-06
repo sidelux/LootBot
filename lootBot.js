@@ -1740,7 +1740,7 @@ bot.onText(/\/start (.+)|\/start/i, function (message, match) {
 			
 			// console.log("Ricompensa: " + text + " per player " + player_id);
 			
-			connection.query('UPDATE player SET token_used = 1, token_streak = ' + token_streak + ', token_last_use = CURDATE() WHERE id = ' + player_id, function (err, rows, fields) {
+			connection.query('UPDATE player SET token_used = 1, token_streak = ' + token_streak + ', token_last_use = CURDATE()' + query + ' WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				bot.sendMessage(message.chat.id, "Hai ottenuto la ricompensa giornaliera:" + text, back);
 			});
@@ -12081,11 +12081,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													var text = "";
 													if (stored_money == 0)
 														text = "_Neanche l'ombra di una monetina..._";
-													else if (stored_money < 100000)
+													else if (stored_money < 1000000)
 														text = "_Una piccola quantità di monetine..._";
-													else if (stored_money < 500000)
+													else if (stored_money < 5000000)
 														text = "_Alcune monetine..._";
-													else if (stored_money < 10000000)
+													else if (stored_money < 100000000)
 														text = "_Un bel gruzzolo..._";
 													else
 														text = "_Un ottimo malloppo..._";

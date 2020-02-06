@@ -1686,6 +1686,7 @@ DROP TABLE IF EXISTS `global_hourly`;
 CREATE TABLE `global_hourly` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `value` int(11) NOT NULL,
+  `players` int(11) NOT NULL,
   `insert_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
