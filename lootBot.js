@@ -55375,11 +55375,7 @@ bot.onText(/^\/incarico/, function (message, match) {
 
 		var party_id = rows[0].party_id;
 		var team_id = rows[0].team_id;
-
-		if (rows[0].answ_id > 0) {
-			bot.sendMessage(message.chat.id, "Hai già votato per questa parte di incarico", back);
-			return;
-		}
+		var answ_id = rows[0].answ_id;
 
 		connection.query('SELECT party_id, assigned_to, part_id, team_id, report_id, wait, mission_time_end FROM mission_team_party T WHERE T.party_id = ' + party_id + ' AND T.team_id = ' + team_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -55396,14 +55392,19 @@ bot.onText(/^\/incarico/, function (message, match) {
 			var short_date = mission_time_end.getHours() + ":" + mission_time_end.getMinutes();
 			
 			if (rows[0].wait == 0) {
-				connection.query('SELECT COUNT(id) As cnt FROM mission_team_party_player T WHERE T.party_id = ' + party_id + ' AND T.team_id = ' + team_id + ' AND answ_id = 0', function (err, rows, fields) {
-					if (err) throw err;
-					var num = rows[0].cnt;
-					
-					bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nMancano ancora <b>" + num + "</b> compagni che devono votare, siete alla <b>" + (part_id+1) + "</b> scelta ed il tempo scadrà alle <i>" + short_date + "</i>!", back_html);
-				});
+				bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nSiete alla <b>" + (part_id+1) + "</b> scelta e la prossima inizierà alle alle <i>" + short_date + "</i>!", back_html);
 			} else if (rows[0].wait == 1) {
 				//console.log("Richiamo manuale incarico per party " + party_id + " e team " + team_id);
+
+				if (rows[0].answ_id > 0) {
+					connection.query('SELECT COUNT(id) As cnt FROM mission_team_party_player T WHERE T.party_id = ' + party_id + ' AND T.team_id = ' + team_id + ' AND answ_id = 0', function (err, rows, fields) {
+						if (err) throw err;
+						var num = rows[0].cnt;
+
+						bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nHai già votato per questa scelta!\nMancano ancora <b>" + num + "</b> compagni che devono votare, siete alla <b>" + (part_id+1) + "</b> scelta ed il tempo scadrà alle <i>" + short_date + "</i>!", back_html);
+					});
+					return;
+				}
 
 				connection.query('SELECT question, answ1, answ2, answ3 FROM mission_team_list_part WHERE list_id = ' + assigned_to + ' AND part_id = ' + part_id, function (err, rows, fields) {
 					if (err) throw err;
