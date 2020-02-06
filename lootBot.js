@@ -1310,7 +1310,7 @@ bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
 					url: body.shortenedUrl
 				}]);
 
-				bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente, sei al giorno " + token_streak + ".\n\nLink ricompensa: <code>" + body.shortenedUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>\n\nLista ricompense:\n> Più Scrigni Cangianti ogni giorno fino al 10°\n> Monete Lunari ogni giorno fino al 20°\n> Gemme ogni giorno fino al 30°\n> Scrigno Capsula il 31° giorno", {
+				bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente, sei al giorno " + token_streak + ".\n\nLink ricompensa: <code>" + body.shortenedUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>\n\nLista ricompense:\n> Più Scrigni Cangianti ogni giorno fino al 10°\n> Gemma ogni giorno fino al 20°\n> Moneta Lunare o più Gemme ogni giorno fino al 30°\n> Scrigno Capsula il 31° giorno", {
 					parse_mode: 'HTML',
 					disable_web_page_preview: true,
 					reply_markup: {
@@ -1720,9 +1720,16 @@ bot.onText(/\/start (.+)|\/start/i, function (message, match) {
 				query = ", gems = gems+" + qnt;
 				text = "\n> " + qnt + "x 💎";
 			} else if (token_streak <= 30) {
-				var qnt = 1;
-				query = ", moon_coin = moon_coin+" + qnt;
-				text = "\n> " + qnt + "x 🌕";
+				var qnt;
+				if (token_streak % 2 == 0) {
+					qnt = 1;
+					query = ", moon_coin = moon_coin+" + qnt;
+					text = "\n> " + qnt + "x 🌕";
+				} else {
+					qnt = 2;
+					query = ", gems = gems+" + qnt;
+					text = "\n> " + qnt + "x 💎";
+				}
 			} else {
 				var qnt = 1;
 				addChest(player_id, 7, qnt);
@@ -18449,8 +18456,8 @@ bot.onText(/^\/deposita (.+)|^\/deposita/i, function (message, match) {
 			for (var i = 0; i < elements.length; i++) {
 				splitted = elements[i].split(":");
 
-				itemName = splitted[0];
-				itemQnt = splitted[1];
+				itemName = splitted[0].trim();
+				itemQnt = splitted[1].trim();
 
 				if (isNaN(parseInt(itemQnt))) {
 					text += "*" + itemName + "*: Quantità " + itemQnt + " non valida\n";
@@ -55393,7 +55400,7 @@ bot.onText(/^\/incarico/, function (message, match) {
 					if (err) throw err;
 					var num = rows[0].cnt;
 					
-					bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nHai già votato per questo incarico\nMancano ancora <b>" + num + "</b> compagni che devono votare, siete alla <b>" + (part_id+1) + "</b> scelta ed il tempo scadrà alle <i>" + short_date + "</i>!", back_html);
+					bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nMancano ancora <b>" + num + "</b> compagni che devono votare, siete alla <b>" + (part_id+1) + "</b> scelta ed il tempo scadrà alle <i>" + short_date + "</i>!", back_html);
 				});
 			} else if (rows[0].wait == 1) {
 				//console.log("Richiamo manuale incarico per party " + party_id + " e team " + team_id);
@@ -58246,7 +58253,7 @@ function resetSpecialItem() {
 }
 
 function saveHourGlobal() {
-	connection.query('INSERT INTO global_hourly (value) SELECT SUM(value) As tot FROM achievement_global', function (err, rows, fields) {
+	connection.query('INSERT INTO global_hourly (value, players) SELECT SUM(value) As tot, COUNT(id) As num FROM achievement_global', function (err, rows, fields) {
 		if (err) throw err;
 	});
 }
