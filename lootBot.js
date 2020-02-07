@@ -485,12 +485,13 @@ bot.on('message', function (message) {
 			});
 		}
 
+		/*
 		if (status != null) {
 			connection.query('UPDATE player SET status = NULL, status_cnt = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
 
-			if (message.text.toLocaleLowerCase() != "interrompi") {
+			if (message.text.toLowerCase() != "interrompi") {
 				var d = new Date();
 				d.setMinutes(d.getMinutes() + 5);
 				var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
@@ -500,6 +501,7 @@ bot.on('message', function (message) {
 				});
 			}
 		}
+		*/
 
 		if (rows[0].account_id != message.from.id) {
 			if (rows[0].market_ban == 0) {
@@ -6209,7 +6211,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 													else 
 														lobby_id = max_lobby[0].mx+1;
 
-													text = "Sei stato aggiunto ad una nuova lobby, attendi che altri giocatori si uniscano o interrompi la ricerca...";
+													text = "Sei stato aggiunto ad una nuova lobby, attendi che altri giocatori si uniscano...";
 												} else {
 													var counts = [];
 													var lobbies = [];
@@ -6242,7 +6244,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 													}
 
 													var members = " insieme ad altri " + members_cnt + " partecipanti";
-													var wait = ", attendi che altri giocatori si uniscano o interrompi la ricerca...";
+													var wait = ", attendi che altri giocatori si uniscano...";
 													if (members_cnt == 1)
 														members = " insieme ad un altro partecipante";
 													else if (members_cnt == 0)
@@ -18635,7 +18637,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 	if (Object.keys(message.text).length > 30)
 		return;
 
-	connection.query('SELECT id, account_id, reborn, top_first, gender, holiday, top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, account_id, reborn, top_first, gender, holiday, top_min, status FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		
 		if (Object.keys(rows).length == 0)
@@ -18656,6 +18658,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 		var reborn = rows[0].reborn;
 		var top_first = rows[0].top_first;
 		var top_min = rows[0].top_min;
+		var dragon_status = rows[0].status;
 
 		var gender_text = "a";
 		if (rows[0].gender == "M")
@@ -18686,7 +18689,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				var dragon_total_life = rows[0].total_life;
 				var dragon_arms_id = rows[0].arms_id;
 				var sleep_time = rows[0].sleep_time_end;
-				var dragon_status = "In salute";
+				var dragon_search_status = "In salute";
 
 				if (dragon_life <= 0)
 					dragon_status = "Esausto";
@@ -19045,6 +19048,27 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																		bot.sendMessage(message.chat.id, "Puoi avviare scontri solo tra le " + nightEnd + ":00 e le " + nightStart + ":00", kbBack);
 																		return;
 																	}
+																	
+																	if (dragon_search_status != null) {
+																		var kbStop = {
+																			parse_mode: "HTML",
+																			reply_markup: {
+																				resize_keyboard: true,
+																				keyboard: [['Interrompi'], ['Torna alla vetta']]
+																			}
+																		};
+																		bot.sendMessage(message.chat.id, "Stai cercando uno scontro...", kbStop).then(function () {
+																			answerCallbacks[message.chat.id] = function (answer) {
+																				if (answer.text.toLowerCase() == "interrompi") {
+																					connection.query('UPDATE player SET status = NULL, status_cnt = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+																						if (err) throw err;
+																					});
+																					bot.sendMessage(message.chat.id, "Hai interrotto la ricerca nelle Vette", kbBack);
+																				}
+																			}
+																		});
+																		return;
+																	}
 
 																	bot.sendMessage(message.chat.id, "Cercare un drago avversario? Durante la battaglia il tuo drago non potrà accompagnarti nelle tue avventure", kbYesNo).then(function () {
 																		answerCallbacks[message.chat.id] = function (answer) {
@@ -19108,14 +19132,6 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																									return;
 																								}
 
-																								var kbStop = {
-																									parse_mode: "HTML",
-																									reply_markup: {
-																										resize_keyboard: true,
-																										keyboard: [['Interrompi']]
-																									}
-																								};
-
 																								connection.query('SELECT COUNT(*) As cnt FROM player, dragon_top_rank d WHERE player.id = d.player_id AND status > 0 AND d.top_id = ' + top_id, function (err, rows, fields) {
 																									if (err) throw err;
 
@@ -19129,7 +19145,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																										else if (cnt == 0)
 																											queue = "Nessun drago in coda";
 
-																										bot.sendMessage(message.chat.id, "Ricerca avversario in corso... Scrivendo qualsiasi cosa la ricerca sarà interrotta. Nel caso non vi fossero draghi in coda, scadrà tra 5 minuti.\n" + queue, kbStop);
+																										bot.sendMessage(message.chat.id, "Ricerca avversario in corso... Scrivendo qualsiasi cosa la ricerca sarà interrotta. Nel caso non vi fossero draghi in coda, scadrà tra 5 minuti.\n" + queue, kbBack);
 																									});
 																								});
 																							});
@@ -45439,6 +45455,8 @@ function mainMenu(message) {
 		var mission_party = rows[0].mission_party;
 		var map_count = rows[0].map_count;
 		
+		var dragon_status = rows[0].status;
+		
 		var token_last_use = rows[0].token_last_use;
 
 		checkAllProgress(player_id);
@@ -45852,7 +45870,9 @@ function mainMenu(message) {
 																				if (dragon_status[0].wait_time != null) {
 																					var dragon_status_time = new Date(dragon_status[0].wait_time);
 																					msgtext = msgtext + "\n💤 Il drago riposa dopo uno scontro fino alle " + addZero(dragon_status_time.getHours()) + ":" + addZero(dragon_status_time.getMinutes());
-																				} else
+																				} else if (dragon_status != null)
+																					msgtext = msgtext + "\n🐉 Drago in ricerca nella Vetta";
+																				else
 																					msgtext = msgtext + "\n🐉 Drago in attesa nella Vetta";
 																			} else
 																				msgtext = msgtext + "\n🐉 Drago esausto, fallo riposare!";
