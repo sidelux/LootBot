@@ -1321,7 +1321,7 @@ bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
 						url: body.shortenedUrl
 					}]);
 
-					bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente, sei al giorno " + token_streak + ".\n\nLink ricompensa: <code>" + body.shortenedUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>\n\nLista ricompense:\n> Più Scrigni Cangianti ogni giorno fino al 10°\n> Gemma ogni giorno fino al 20°\n> Moneta Lunare o più Gemme ogni giorno fino al 30°\n> Scrigno Capsula il 31° giorno", {
+					bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente, sei al giorno " + token_streak + ".\n\nLink ricompensa: <code>" + body.shortenedUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>\n\nLista ricompense:\n> Più <b>Scrigni Cangianti</b> ogni giorno fino al 10°\n> <b>💎</b> ogni giorno fino al 20°\n> <b>🌕 o più 💎</b> ogni giorno fino al 30°\n> <b>Oggetto U assicurato</b> il 31° giorno", {
 						parse_mode: 'HTML',
 						disable_web_page_preview: true,
 						reply_markup: {
@@ -1744,8 +1744,9 @@ bot.onText(/\/start (.+)|\/start/i, function (message, match) {
 				}
 			} else {
 				var qnt = 1;
-				addChest(player_id, 7, qnt);
-				text = "\n> " + qnt + "x Scrigni Capsula";
+				var item = connection_sync.query('SELECT id, name FROM item WHERE rarity = "U" AND craftable = 0 ORDER BY RAND()');
+				addItem(player_id, item[0].id, qnt);
+				text = "\n> " + qnt + "x " + item[0].name;
 				
 				token_streak = 0;	// azzera quando ha finito il ciclo dei 31 giorni
 			}
@@ -18658,7 +18659,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 		var reborn = rows[0].reborn;
 		var top_first = rows[0].top_first;
 		var top_min = rows[0].top_min;
-		var dragon_status = rows[0].status;
+		var dragon_search_status = rows[0].status;
 
 		var gender_text = "a";
 		if (rows[0].gender == "M")
@@ -18689,7 +18690,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				var dragon_total_life = rows[0].total_life;
 				var dragon_arms_id = rows[0].arms_id;
 				var sleep_time = rows[0].sleep_time_end;
-				var dragon_search_status = "In salute";
+				var dragon_status = "In salute";
 
 				if (dragon_life <= 0)
 					dragon_status = "Esausto";
@@ -19145,7 +19146,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																										else if (cnt == 0)
 																											queue = "Nessun drago in coda";
 
-																										bot.sendMessage(message.chat.id, "Ricerca avversario in corso... Scrivendo qualsiasi cosa la ricerca sarà interrotta. Nel caso non vi fossero draghi in coda, scadrà tra 5 minuti.\n" + queue, kbBack);
+																										bot.sendMessage(message.chat.id, "Ricerca avversario in corso... Nel caso non vi fossero draghi in coda, scadrà tra 5 minuti.\n" + queue, kbBack);
 																									});
 																								});
 																							});
@@ -45455,7 +45456,7 @@ function mainMenu(message) {
 		var mission_party = rows[0].mission_party;
 		var map_count = rows[0].map_count;
 		
-		var dragon_status = rows[0].status;
+		var dragon_search_status = rows[0].status;
 		
 		var token_last_use = rows[0].token_last_use;
 
@@ -45870,7 +45871,7 @@ function mainMenu(message) {
 																				if (dragon_status[0].wait_time != null) {
 																					var dragon_status_time = new Date(dragon_status[0].wait_time);
 																					msgtext = msgtext + "\n💤 Il drago riposa dopo uno scontro fino alle " + addZero(dragon_status_time.getHours()) + ":" + addZero(dragon_status_time.getMinutes());
-																				} else if (dragon_status != null)
+																				} else if (dragon_search_status != null)
 																					msgtext = msgtext + "\n🐉 Drago in ricerca nella Vetta";
 																				else
 																					msgtext = msgtext + "\n🐉 Drago in attesa nella Vetta";
