@@ -3204,7 +3204,7 @@ bot.onText(/Descrizioni/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [["Soprannome"], ["Descrizione personale"], ["Descrizione rifugio"], ["Descrizione spia"], ["Torna al menu"]]
+			keyboard: [["Soprannome"], ["Descrizione personale"], ["Descrizione drago"], ["Descrizione rifugio"], ["Descrizione spia"], ["Torna al menu"]]
 		}
 	};
 
@@ -3775,6 +3775,44 @@ bot.onText(/descrizione personale/i, function (message) {
 					}
 					bot.sendMessage(message.chat.id, "Descrizione personaggio impostata:\n\n_" + resp + "_", back);
 					connection.query('UPDATE player SET player_description = "' + resp + '" WHERE id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
+				}
+			}
+		});
+	});
+});
+
+bot.onText(/descrizione drago/i, function (message) {
+	connection.query('SELECT id, dragon_description FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		var player_id = rows[0].id;
+
+		var text = "";
+		if (rows[0].dragon_description != null)
+			text = "\nLa descrizione personale attuale impostata è: " + rows[0].dragon_description;
+
+		bot.sendMessage(message.chat.id, "Inserisci la descrizione del tuo drago, comparirà quando altri giocatori ti spiano.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti (solo a-zA-Z0-9àèìòùé.,?!'@ e spazi). Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
+			answerCallbacks[message.chat.id] = function (answer) {
+				if (answer.text != "Torna al menu") {
+					var resp = answer.text;
+
+					if (resp.toLowerCase() == "cancella") {
+						bot.sendMessage(message.chat.id, "Descrizione drago rimossa", back);
+						connection.query('UPDATE player SET dragon_description = NULL WHERE id = ' + player_id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+						return;
+					}
+
+					var reg = new RegExp("^[a-zA-Z0-9àèìòùé.,\\\?\!\'\@\(\) ]{1,500}$");
+					if (reg.test(resp) == false) {
+						bot.sendMessage(message.chat.id, "Descrizione non valida, riprova", back);
+						return;
+					}
+					bot.sendMessage(message.chat.id, "Descrizione drago impostata:\n\n_" + resp + "_", back);
+					connection.query('UPDATE player SET dragon_description = "' + resp + '" WHERE id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 					});
 				}
@@ -6474,7 +6512,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 															mapIdToSym(12) + " Campo Paralizzante - Paralizza il giocatore costringendogli a ritardare la continuazione dell'esplorazione\n" +
 															mapIdToSym(13) + " Bevanda Boost - Riduce il tempo di attesa per il movimento per 3 turni, nel caso in cui si incontrasse un Campo Paralizzante la bevanda non avrà effetto e non ne sarà scalato un utilizzo\n" +
 															"\n<b>Istruzioni base</b>" +
-															"\n> Di notte e durante le Vette non è possibile accedere a nuove Lobby." +
+															"\n> Di notte, la domenica e durante le Vette non è possibile accedere a nuove Lobby." +
 															"\n> Il personaggio inizierà la partita con un equip base, zero monete e zero rottami." +
 															"\n> Ogni " + lobby_restric_min + " minuti (" + (lobby_restric_min*2) + " appena avviata la partita) la mappa si restringe bruciando uno strato esterno fino a che rimane solo un quadratino centrale." +
 															"\n> Quando un giocatore incontra un altro giocatore, ha inizio una battaglia dove lo sconfitto uscirà dalla partita." +
@@ -39180,9 +39218,8 @@ bot.onText(/^rimuovi$|rimuovi 🚫|rimuovi tutto|rimuovi arma|rimuovi armatura|r
 							bot.sendMessage(message.chat.id, "Confermi la rimozione" + desc + "?", yesno).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									var resp = answer.text;
-									if (resp.toLowerCase() != "si") {
+									if (resp.toLowerCase() != "si")
 										return;
-									}
 
 									if (oggetto == "arma") {
 										if (weapon_id != 0) {
@@ -39256,11 +39293,11 @@ bot.onText(/^rimuovi$|rimuovi 🚫|rimuovi tutto|rimuovi arma|rimuovi armatura|r
 										}
 
 										if (text == "")
-											bot.sendMessage(message.chat.id, "Non hai alcun oggetto equipaggiato", back);
+											bot.sendMessage(message.chat.id, "Non hai alcun oggetto equipaggiato", kbEquip);
 										else
-											bot.sendMessage(message.chat.id, text + "\nRimossi e reinseriti nello zaino", back);
+											bot.sendMessage(message.chat.id, text + "\nRimossi e reinseriti nello zaino", kbEquip);
 									} else {
-										bot.sendMessage(message.chat.id, "Equipaggiamento non valido.", back);
+										bot.sendMessage(message.chat.id, "Equipaggiamento non valido.", kbEquip);
 										return;
 									}
 								};
@@ -44710,6 +44747,7 @@ function getInfo(message, player, myhouse_id) {
 			var ability = rows[0].ability;
 			var mission_team_count = rows[0].mission_team_count;
 			var player_description = rows[0].player_description;
+			var dragon_description = rows[0].dragon_description;
 			var player_custom_nickname = rows[0].player_custom_nickname;
 			var life = rows[0].life;
 			var total_life = rows[0].total_life;
@@ -45319,6 +45357,7 @@ function getInfo(message, player, myhouse_id) {
 																											(dragon ? dragon_saddle_n + " (" + dragon_defence + ")\n" : "") +
 																											(dragon ? dragon_arms_n + "\n" : "") +
 																											(dragon ? "Critico (" + dragon_critical + "%)\n" : "") +
+																											(dragon_description != null ? "\n<i>" + dragon_description + "</i>" : "") +
 
 																											relation +
 

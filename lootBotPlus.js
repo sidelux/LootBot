@@ -9586,7 +9586,7 @@ bot.onText(/^\/drago (.+),(.+)|^\/drago/, function (message, match) {
 
 		var text = "";
 		for (i = 0; i < player_id.length; i++) {
-			var rows = connection_sync.query('SELECT dragon.*, nickname, class, charm_id, reborn FROM player, dragon WHERE player.id = dragon.player_id AND player.id = ' + player_id[i]);
+			var rows = connection_sync.query('SELECT dragon.*, nickname, class, charm_id, reborn, dragon_description FROM player, dragon WHERE player.id = dragon.player_id AND player.id = ' + player_id[i]);
 
 			if (Object.keys(rows).length == 0) {
 				bot.sendMessage(message.from.id, "Non possiedi ancora un drago!");
@@ -9596,6 +9596,7 @@ bot.onText(/^\/drago (.+),(.+)|^\/drago/, function (message, match) {
 			var charm_id = rows[0].charm_id;
 			var class_id = rows[0].class;
 			var reborn = rows[0].reborn;
+			var dragon_description = rows[0].dragon_description;
 
 			var dragon_name = "-";
 			var dragon_level = "-";
@@ -9686,7 +9687,8 @@ bot.onText(/^\/drago (.+),(.+)|^\/drago/, function (message, match) {
 				(dragon ? dragon_claws_n + " (" + dragon_damage + ")\n" : "") +
 				(dragon ? dragon_saddle_n + " (" + dragon_defence + ")\n" : "") +
 				(dragon ? dragon_arms_n + "\n" : "") +
-				(dragon ? "Critico (" + dragon_critical + "%)\n" : "");
+				(dragon ? "Critico (" + dragon_critical + "%)\n" : "") +
+				(dragon_description != null ? "<i>" + dragon_description + "</i>" : "");
 		};
 
 		bot.sendMessage(message.chat.id, text, html);
@@ -10651,6 +10653,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 			var ability = rows[0].ability;
 			var mission_team_count = rows[0].mission_team_count;
 			var player_description = rows[0].player_description;
+			var dragon_description = rows[0].dragon_description;
 			var player_custom_nickname = rows[0].player_custom_nickname;
 			var life = rows[0].life;
 			var total_life = rows[0].total_life;
@@ -11222,6 +11225,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																											(dragon ? dragon_saddle_n + " (" + dragon_defence + ")\n" : "") +
 																											(dragon ? dragon_arms_n + "\n" : "") +
 																											(dragon ? "Critico (" + dragon_critical + "%)\n" : "") +
+																											(dragon_description != null ? "\n<i>" + dragon_description + "</i>" : "") +
 
 																											relation +
 
