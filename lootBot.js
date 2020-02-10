@@ -5813,7 +5813,7 @@ bot.onText(/cambia vocazione/i, function (message) {
 });
 
 bot.onText(/statistiche/i, function (message) {
-	connection.query('SELECT id, mission_count, achievement_count, dungeon_count, cave_count, travel_count, global_event, kill_streak_ok, gain_exp, mission_team_count, creation_date, top_rank_count, total_trophies FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, mission_count, achievement_count, achievement_count_all, dungeon_count, cave_count, travel_count, global_event, kill_streak_ok, gain_exp, mission_team_count, creation_date, top_rank_count, total_trophies, power_used FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
 		var missioni = rows[0].mission_count;
@@ -5827,6 +5827,8 @@ bot.onText(/statistiche/i, function (message) {
 		var travel_count = rows[0].travel_count;
 		var top_rank_count = rows[0].top_rank_count;
 		var total_trophies = rows[0].total_trophies;
+		var triplet = rows[0].achievement_count_all;
+		var power_used = rows[0].power_used;
 
 		var registrazione = "";
 		if (rows[0].creation_date != null)
@@ -5946,6 +5948,8 @@ bot.onText(/statistiche/i, function (message) {
 																											"*Offerte contrabbandiere accettate*: " + formatNumber(contrabbandiere) + "\n" +
 																											"*Livelli Talenti raggiunti*: " + talenti + "\n" +
 																											"*Ð accumulate*: " + formatNumber(top_rank_count) + "\n" +
+																											"*Triplette*: " + formatNumber(triplet) + "\n" +
+																											"*Flaridion utilizzati*: " + formatNumber(power_used) + "\n" +
 
 																											"\n⚔️ *Hai completato*:\n" +
 																											"*Missioni*: " + formatNumber(missioni) + "\n" +
@@ -12969,7 +12973,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			var rand = Math.random()*100;
 																			if (rand < 3) {
 																				addItem(player_id, 220);
-																				bot.sendMessage(message.chat.id, "Per ringraziarti dello scambo il Mercante ti regala anche una *Capsula Prelevazione*!", mark);
+																				bot.sendMessage(message.chat.id, "Per ringraziarti dello scambio il Mercante ti regala anche una *Capsula Prelevazione*!", mark);
 																			}
 
 																			if (boost_id == 8)
@@ -15739,7 +15743,7 @@ bot.onText(/scomponi/i, function (message) {
 						"UE-U: 2 💎 + 50-70 Punti Creazione\n\n" +
 						"I punti vengono controllati sulle creazioni settimanali. Scrivi il nome completo dell'oggetto da scomporre.", kb).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
-				if (answer.text == "Niente")
+				if ((answer.text == "Niente") || (answer.text == "Torna all'alchimia"))
 					return;
 				else {
 					var ogg = answer.text.trim();
@@ -19542,7 +19546,7 @@ bot.onText(/mostra log vecchi|nascondi log vecchi/i, function (message) {
 });
 
 bot.onText(/riposa/i, function (message) {
-	connection.query('SELECT account_id, holiday, id, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, holiday, id, reborn, status FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -19558,6 +19562,12 @@ bot.onText(/riposa/i, function (message) {
 
 		var player_id = rows[0].id;
 		var reborn = rows[0].reborn;
+		var dragon_search_status = rows[0].status;
+		
+		if (dragon_search_status != null) {
+			bot.sendMessage(message.chat.id, "Non puoi far riposare il drago mentre stai cercando uno scontro!", back)
+			return;
+		}
 
 		if (reborn < 2) {
 			bot.sendMessage(message.chat.id, "Accedi alle Vette dei Draghi per sbloccare questa funzione!", back);
@@ -55408,7 +55418,7 @@ bot.onText(/^\/incarico/, function (message, match) {
 		var team_id = rows[0].team_id;
 		var answ_id = rows[0].answ_id;
 
-		connection.query('SELECT party_id, assigned_to, part_id, team_id, report_id, wait, mission_time_end FROM mission_team_party T WHERE T.party_id = ' + party_id + ' AND T.team_id = ' + team_id, function (err, rows, fields) {
+		connection.query('SELECT party_id, assigned_to, part_id, team_id, report_id, wait, mission_time_end, mission_time_limit FROM mission_team_party T WHERE T.party_id = ' + party_id + ' AND T.team_id = ' + team_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
@@ -55426,19 +55436,30 @@ bot.onText(/^\/incarico/, function (message, match) {
 			var part_id = rows[0].part_id;
 			var report_id = rows[0].report_id;
 			var mission_time_end = new Date(rows[0].mission_time_end);
-			var short_date = mission_time_end.getHours() + ":" + mission_time_end.getMinutes();
+			var short_date = addZero(mission_time_end.getHours()) + ":" + addZero(mission_time_end.getMinutes());
+			var mission_time_limit = new Date(rows[0].mission_time_limit);
+			var short_date_limit = addZero(mission_time_limit.getHours()) + ":" + addZero(mission_time_limit.getMinutes());
 			
 			if (rows[0].wait == 0) {
-				bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nSiete alla <b>" + (part_id+1) + "</b> scelta e la prossima inizierà alle alle <i>" + short_date + "</i>!", back_html);
+				bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nSiete alla <b>" + (part_id+1) + "</b> scelta e la prossima inizierà alle alle <i>" + short_date + "</i>!\nL'incarico scadrà alle " + short_date_limit, back_html);
 			} else if (rows[0].wait == 1) {
 				//console.log("Richiamo manuale incarico per party " + party_id + " e team " + team_id);
 
-				if (rows[0].answ_id > 0) {
+				if (answ_id > 0) {
 					connection.query('SELECT COUNT(id) As cnt FROM mission_team_party_player T WHERE T.party_id = ' + party_id + ' AND T.team_id = ' + team_id + ' AND answ_id = 0', function (err, rows, fields) {
 						if (err) throw err;
 						var num = rows[0].cnt;
+						
+						var plur = "Mancano";
+						var plur2 = "compagni";
+						var plur3 = "devono";
+						if (num == 1) {
+							plur = "Manca";
+							plur2 = "compagno";
+							plur3 = "deve";
+						}
 
-						bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nHai già votato per questa scelta!\nMancano ancora <b>" + num + "</b> compagni che devono votare, siete alla <b>" + (part_id+1) + "</b> scelta ed il tempo scadrà alle <i>" + short_date + "</i>!", back_html);
+						bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nHai già votato per questa scelta!\n" + plur + " ancora <b>" + num + "</b> " + plur2 + " che " + plur3 + " votare, siete alla <b>" + (part_id+1) + "</b> scelta ed il tempo scadrà alle <i>" + short_date + "</i>!", back_html);
 					});
 					return;
 				}

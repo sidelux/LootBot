@@ -109,7 +109,7 @@ bot.on('edited_message', function (message) {
 					if (mergeMessages[message.chat.id].split(";")[0] == message.from.id){
 						var lastIdx = mergeMessages[message.chat.id].lastIndexOf(";");
 						mergeMessages[message.chat.id] = mergeMessages[message.chat.id].substr(0, lastIdx+1);
-						mergeMessages[message.chat.id] += message.text;
+						mergeMessages[message.chat.id] += cleanForMerge(message.text);
 					}
 				}
 			}
@@ -181,7 +181,45 @@ bot.on('message', function (message, match) {
 		}
 
 		if ((message.from.id != 20471035) && (message.chat.id == -1001097316494)){
-			if (!message.text.startsWith("Negozio di")) {
+			var banFromGroup = 0;
+			if (message.text != undefined) {
+				if (!message.text.startsWith("Negozio di"))
+					banFromGroup = 1;
+				else if (message.text.startsWith("@lootplusbot")){
+					bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
+						if (result != true)
+							console.log("Errore cancellazione messaggio " + message.chat.id + " " + message.message_id);
+					})
+				} else {
+					connection.query('INSERT INTO plus_history (account_id) VALUES (' + message.from.id + ')', function (err, rows, fields) {
+						if (err) throw err;
+						connection.query('SELECT id FROM plus_history WHERE account_id = ' + message.from.id + " ORDER BY id DESC LIMIT 2", function (err, rows, fields) {
+							if (err) throw err;
+
+							if (Object.keys(rows).length > 1) {
+								if (rows[0].id-rows[1].id < 5){
+									bot.kickChatMember(message.chat.id, message.from.id).then(function (result) {
+										bot.sendMessage(message.chat.id, message.from.username + ", hai postato un negozio troppo vicino all'ultimo, sei stato kickato.");
+										bot.sendMessage(message.from.id, "Sei stato kickato dal gruppo Loot Negozi perchè hai postato un negozio troppo vicino all'ultimo");
+										bot.unbanChatMember(message.chat.id, message.from.id);
+									});
+									bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
+										if (result != true)
+											console.log("Errore cancellazione messaggio " + message.chat.id + " " + message.message_id);
+									});
+								} else {
+									connection.query('DELETE FROM plus_history WHERE account_id = ' + message.from.id + ' AND id != ' + rows[0].id, function (err, rows, fields) {
+										if (err) throw err;
+									});
+								}
+							}
+						});
+					});
+				}
+			} else
+				banFromGroup = 1;
+			
+			if (banFromGroup == 1) {
 				var time = Math.round((Date.now()+ms("3 days"))/1000);
 				bot.kickChatMember(message.chat.id, message.from.id, {until_date: time}).then(function (result) {
 					bot.sendMessage(message.chat.id, message.from.username + ", non puoi scrivere in questo gruppo, sei stato bannato per 3 giorni.");
@@ -191,36 +229,6 @@ bot.on('message', function (message, match) {
 					if (result != true)
 						console.log("Errore cancellazione messaggio " + message.chat.id + " " + message.message_id);
 				})
-			} else if (message.text.startsWith("@lootplusbot")){
-				bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
-					if (result != true)
-						console.log("Errore cancellazione messaggio " + message.chat.id + " " + message.message_id);
-				})
-			} else {
-				connection.query('INSERT INTO plus_history (account_id) VALUES (' + message.from.id + ')', function (err, rows, fields) {
-					if (err) throw err;
-					connection.query('SELECT id FROM plus_history WHERE account_id = ' + message.from.id + " ORDER BY id DESC LIMIT 2", function (err, rows, fields) {
-						if (err) throw err;
-
-						if (Object.keys(rows).length > 1) {
-							if (rows[0].id-rows[1].id < 5){
-								bot.kickChatMember(message.chat.id, message.from.id).then(function (result) {
-									bot.sendMessage(message.chat.id, message.from.username + ", hai postato un negozio troppo vicino all'ultimo, sei stato kickato.");
-									bot.sendMessage(message.from.id, "Sei stato kickato dal gruppo Loot Negozi perchè hai postato un negozio troppo vicino all'ultimo");
-									bot.unbanChatMember(message.chat.id, message.from.id);
-								});
-								bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
-									if (result != true)
-										console.log("Errore cancellazione messaggio " + message.chat.id + " " + message.message_id);
-								});
-							} else {
-								connection.query('DELETE FROM plus_history WHERE account_id = ' + message.from.id + ' AND id != ' + rows[0].id, function (err, rows, fields) {
-									if (err) throw err;
-								});
-							}
-						}
-					});
-				});
 			}
 		}
 		if (message.text.toLowerCase().indexOf("errore:") != -1){
@@ -271,14 +279,14 @@ bot.on('message', function (message, match) {
 									if (mergeMessages[message.chat.id].split(";")[0] == message.from.id){
 										bot.deleteMessage(message.chat.id, mergeMessages[message.chat.id].split(";")[1]);
 										bot.deleteMessage(message.chat.id, message.message_id);
-										var newText = mergeMessages[message.chat.id].split(";")[2] + "\n~\n" + message.text;
+										var newText = mergeMessages[message.chat.id].split(";")[2] + "\n~\n" + cleanForMerge(message.text);
 										bot.sendMessage(message.chat.id, "@" + message.from.username + " <i>scrive</i>:\n" + newText, html).then(function (data) {
 											mergeMessages[message.chat.id] = message.from.id + ";" + data.message_id + ";" + newText;
 										});
 									} else
-										mergeMessages[message.chat.id] = message.from.id + ";" + message.message_id + ";" + message.text;
+										mergeMessages[message.chat.id] = message.from.id + ";" + message.message_id + ";" + cleanForMerge(message.text);
 								} else
-									mergeMessages[message.chat.id] = message.from.id + ";" + message.message_id + ";" + message.text;
+									mergeMessages[message.chat.id] = message.from.id + ";" + message.message_id + ";" + cleanForMerge(message.text);
 							}else
 								mergeMessages[message.chat.id] = "";	// ignora le risposte, i comandi e gli inoltri
 						}else
@@ -10392,6 +10400,10 @@ bot.onText(/^\/zainor/, function (message, match) {
 });
 
 // Funzioni
+
+function cleanForMerge(text) {
+	return text.replaceAll(/<[^>]*>/, "");
+}
 
 function getRankName(rank) {
 	var text = "";
