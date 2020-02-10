@@ -50017,7 +50017,7 @@ function getTeamMembers(answerText) {
 		query = '= "' + answerText + '"';
 	}
 
-	var rows = connection_sync.query('SELECT id, name, players, max_players, slogan, boss_count, kill_num FROM team WHERE name ' + query);
+	var rows = connection_sync.query('SELECT id, name, players, max_players, slogan, boss_count, kill_num, child_team FROM team WHERE name ' + query);
 	var search1 = Object.keys(rows).length;
 	var res1 = rows;
 
@@ -50028,7 +50028,7 @@ function getTeamMembers(answerText) {
 			terms += rows[i].name + "\n";
 	}
 
-	var rows = connection_sync.query('SELECT id, name, players, max_players, slogan, boss_count, kill_num, story FROM team WHERE name LIKE "' + answerText + '"');
+	var rows = connection_sync.query('SELECT id, name, players, max_players, slogan, boss_count, kill_num, story, child_team FROM team WHERE name LIKE "' + answerText + '"');
 
 	var search2 = Object.keys(rows).length;
 	var res2 = rows;
@@ -50049,12 +50049,18 @@ function getTeamMembers(answerText) {
 	var slogan = "";
 	if (rows[0].slogan != null)
 		slogan = "Slogan: <i>" + rows[0].slogan + "</i>\n";
+	
+	var child_team = "";
+	if (rows[0].child_team != null) {
+		var child = connection_sync.query("SELECT name FROM team WHERE id = " + rows[0].child_team);
+		child_team = "Accademia: " + child[0].name + "\n";
+	}
 
 	var story = "";
 	if (rows[0].story != null)
 		story = "\n\nPergamena: <i>" + rows[0].story + "</i>\n";
 
-	var text = "Il team <b>" + rows[0].name + "</b>:\n" + slogan + "Boss uccisi: " + formatNumber(rows[0].boss_count) + "\nAssalti: " + rows[0].kill_num + "\nMembri: " + rows[0].players + "/" + rows[0].max_players + "\n\n";
+	var text = "Il team <b>" + rows[0].name + "</b>:\n" + slogan + child_team + "Boss uccisi: " + formatNumber(rows[0].boss_count) + "\nAssalti: " + rows[0].kill_num + "\nMembri: " + rows[0].players + "/" + rows[0].max_players + "\n\n";
 
 	var rows = connection_sync.query('SELECT player.nickname, player.reborn, player.exp, team_player.role FROM team_player, player WHERE player.id = team_player.player_id AND team_id = ' + rows[0].id + ' ORDER BY team_player.role = 0, team_player.role, player.reborn DESC, player.exp DESC');
 	var stars = "";
