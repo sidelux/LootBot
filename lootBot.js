@@ -12780,7 +12780,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												if (cursed == 1)
 													qnt = 2;
 
-												connection.query('SELECT id FROM item WHERE estimate BETWEEN 50000 AND 250000 AND rarity IN ("E","L") ORDER BY RAND()', function (err, rows, fields) {
+												connection.query('SELECT id FROM item WHERE estimate BETWEEN 50000 AND 250000 AND rarity IN ("E","L") AND craftable = 1 ORDER BY RAND()', function (err, rows, fields) {
 													if (err) throw err;
 
 													var itemid = rows[0].id;
@@ -12799,12 +12799,15 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														item_poss = " ✅";
 													else {
 														var material_result = connection_sync.query('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item1);
-
-														if (getItemCnt(player_id, material_result[0].material_1) > 0 &&
-															getItemCnt(player_id, material_result[0].material_2) > 0 &&
-															getItemCnt(player_id, material_result[0].material_3) > 0) {
-															item_poss = " ☑️";
-														}
+														
+														if (Object.keys(material_result).length > 0) {
+															if (getItemCnt(player_id, material_result[0].material_1) > 0 &&
+																getItemCnt(player_id, material_result[0].material_2) > 0 &&
+																getItemCnt(player_id, material_result[0].material_3) > 0) {
+																item_poss = " ☑️";
+															}
+														} else
+															console.log("item1", item1);
 													}
 
 													connection.query('SELECT name FROM item WHERE id = ' + item1, function (err, rows, fields) {
