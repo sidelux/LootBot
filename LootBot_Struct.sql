@@ -2895,6 +2895,7 @@ CREATE TABLE `player` (
   `custom_name3` varchar(32) DEFAULT NULL,
   `custom_name_h` varchar(32) DEFAULT NULL,
   `player_description` varchar(512) DEFAULT NULL,
+  `dragon_description` varchar(512) DEFAULT NULL,
   `heist_description` varchar(512) DEFAULT NULL,
   `spy_description` varchar(512) DEFAULT NULL,
   `player_custom_nickname` varchar(32) DEFAULT NULL,

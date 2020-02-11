@@ -1292,41 +1292,54 @@ bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
 			return;
 		}
 		
-		connection.query('UPDATE player SET token = "' + token + '", token_used = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT SUM(amount) as tot FROM donation_history WHERE YEAR(NOW()) = YEAR(time) AND MONTH(NOW()) = MONTH(time) AND player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			
-			var finalUrl = 'https://telegram.me/lootgamebot?start=' + token;
-			
-			request.get({
-				uri: 'https://short.pe/api?api=' + config.shortpetoken + '&url=' + finalUrl,
-				method: 'GET',
-				json: true
-			}, function(err, res, body) {
+			var donation = rows[0].tot;
+			var unlocked = 0;
+			if (donation >= 10)
+				unlocked = 1;
+		
+			connection.query('UPDATE player SET token = "' + token + '", token_used = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
-				
-				request.put({
-					uri: 'https://api.shorte.st/v1/data/url',
-					headers: {
-						'public-api-token': config.shorttoken
-					},
-					method: 'PUT',
-					body: {urlToShorten: body.shortenedUrl},
+
+				var finalUrl = 'https://telegram.me/lootgamebot?start=' + token;
+
+				request.get({
+					uri: 'https://short.pe/api?api=' + config.shortpetoken + '&url=' + finalUrl,
+					method: 'GET',
 					json: true
 				}, function(err, res, body) {
 					if (err) throw err;
 
-					var iKeys = [];
-					iKeys.push([{
-						text: "Ottieni ricompensa!",
-						url: body.shortenedUrl
-					}]);
+					request.put({
+						uri: 'https://api.shorte.st/v1/data/url',
+						headers: {
+							'public-api-token': config.shorttoken
+						},
+						method: 'PUT',
+						body: {urlToShorten: body.shortenedUrl},
+						json: true
+					}, function(err, res, body) {
+						if (err) throw err;
+						
+						var rewardUrl = body.shortenedUrl;
+						if (unlocked == 1)
+							rewardUrl = finalUrl;
 
-					bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente, sei al giorno " + token_streak + ".\n\nLink ricompensa: <code>" + body.shortenedUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>\n\nLista ricompense:\n> Più <b>Scrigni Cangianti</b> ogni giorno fino al 10°\n> <b>💎</b> ogni giorno fino al 20°\n> <b>🌕 o più 💎</b> ogni giorno fino al 30°\n> <b>Oggetto U assicurato</b> il 31° giorno", {
-						parse_mode: 'HTML',
-						disable_web_page_preview: true,
-						reply_markup: {
-							inline_keyboard: iKeys
-						}
+						var iKeys = [];
+						iKeys.push([{
+							text: "Ottieni ricompensa!",
+							url: rewardUrl
+						}]);
+
+						bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente, sei al giorno " + token_streak + ".\n\nLink ricompensa: <code>" + rewardUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>\n\nLista ricompense:\n> Più <b>Scrigni Cangianti</b> ogni giorno fino al 10°\n> <b>💎</b> ogni giorno fino al 20°\n> <b>🌕 o più 💎</b> ogni giorno fino al 30°\n> <b>Oggetto U assicurato</b> il 31° giorno\n\nSe doni almeno 10€ nel mese corrente, puoi ottenere tutte le ricompense del mese senza guardare la pubblicità", {
+							parse_mode: 'HTML',
+							disable_web_page_preview: true,
+							reply_markup: {
+								inline_keyboard: iKeys
+							}
+						});
 					});
 				});
 			});
@@ -3792,31 +3805,40 @@ bot.onText(/descrizione drago/i, function (message) {
 		var text = "";
 		if (rows[0].dragon_description != null)
 			text = "\nLa descrizione personale attuale impostata è: " + rows[0].dragon_description;
+		
+		connection.query('SELECT 1 FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+			
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "La descrizione drago può essere impostata solo se possiedi un drago", back);
+				return;
+			}
 
-		bot.sendMessage(message.chat.id, "Inserisci la descrizione del tuo drago, comparirà quando altri giocatori ti spiano.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti (solo a-zA-Z0-9àèìòùé.,?!'@ e spazi). Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
-			answerCallbacks[message.chat.id] = function (answer) {
-				if (answer.text != "Torna al menu") {
-					var resp = answer.text;
+			bot.sendMessage(message.chat.id, "Inserisci la descrizione del tuo drago, comparirà quando altri giocatori ti spiano.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti (solo a-zA-Z0-9àèìòùé.,?!'@ e spazi). Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
+				answerCallbacks[message.chat.id] = function (answer) {
+					if (answer.text != "Torna al menu") {
+						var resp = answer.text;
 
-					if (resp.toLowerCase() == "cancella") {
-						bot.sendMessage(message.chat.id, "Descrizione drago rimossa", back);
-						connection.query('UPDATE player SET dragon_description = NULL WHERE id = ' + player_id, function (err, rows, fields) {
+						if (resp.toLowerCase() == "cancella") {
+							bot.sendMessage(message.chat.id, "Descrizione drago rimossa", back);
+							connection.query('UPDATE player SET dragon_description = NULL WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+							});
+							return;
+						}
+
+						var reg = new RegExp("^[a-zA-Z0-9àèìòùé.,\\\?\!\'\@\(\) ]{1,500}$");
+						if (reg.test(resp) == false) {
+							bot.sendMessage(message.chat.id, "Descrizione non valida, riprova", back);
+							return;
+						}
+						bot.sendMessage(message.chat.id, "Descrizione drago impostata:\n\n_" + resp + "_", back);
+						connection.query('UPDATE player SET dragon_description = "' + resp + '" WHERE id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 						});
-						return;
 					}
-
-					var reg = new RegExp("^[a-zA-Z0-9àèìòùé.,\\\?\!\'\@\(\) ]{1,500}$");
-					if (reg.test(resp) == false) {
-						bot.sendMessage(message.chat.id, "Descrizione non valida, riprova", back);
-						return;
-					}
-					bot.sendMessage(message.chat.id, "Descrizione drago impostata:\n\n_" + resp + "_", back);
-					connection.query('UPDATE player SET dragon_description = "' + resp + '" WHERE id = ' + player_id, function (err, rows, fields) {
-						if (err) throw err;
-					});
 				}
-			}
+			});
 		});
 	});
 });
@@ -45357,7 +45379,7 @@ function getInfo(message, player, myhouse_id) {
 																											(dragon ? dragon_saddle_n + " (" + dragon_defence + ")\n" : "") +
 																											(dragon ? dragon_arms_n + "\n" : "") +
 																											(dragon ? "Critico (" + dragon_critical + "%)\n" : "") +
-																											(dragon_description != null ? "\n<i>" + dragon_description + "</i>" : "") +
+																											(dragon_description != null ? "\n<i>" + dragon_description + "</i>\n" : "") +
 
 																											relation +
 
@@ -50175,7 +50197,7 @@ function assaultIncrement(message, player_id, team_id) {
 					if (err) throw err;
 					
 					if (Object.keys(rows).length == 0) {
-						bot.sendMessage(message.chat.id, "Errore incremento, contatta l'amministratore", kbBack);
+						bot.sendMessage(message.chat.id, "La postazione dove ti trovi è stata distrutta o non è stata costruita, non puoi incrementare", kbBack);
 						return;
 					}
 
@@ -55503,8 +55525,12 @@ bot.onText(/^\/incarico/, function (message, match) {
 							plur2 = "compagno";
 							plur3 = "deve";
 						}
+						
+						var choice = "alla <b>" + part_id + "</b> scelta";
+						if (part_id == 0)
+							choice = "in attesa della scelta";
 
-						bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nHai già votato per questa scelta!\n" + plur + " ancora <b>" + num + "</b> " + plur2 + " che " + plur3 + " votare, siete alla <b>" + (part_id+1) + "</b> scelta ed il tempo scadrà alle <i>" + short_date + "</i>!", back_html);
+						bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nHai già votato per questa scelta!\n" + plur + " ancora <b>" + num + "</b> " + plur2 + " che " + plur3 + " votare, siete " + choice + " ed il tempo scadrà alle <i>" + short_date_limit + "</i>!", back_html);
 					});
 					return;
 				}

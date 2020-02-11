@@ -9190,7 +9190,7 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, function (message, match) {
 
 	var oggetto = match[1];
 	if (oggetto == undefined) {
-		bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto (es. /ricerca Spada Antimateria) per cercare in tutte le vendite e scambi, puoi specificarne fino a 3 separati da virgola");
+		bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto (es. /ricerca Spada Antimateria) per cercare in tutte le vendite e scambi, puoi specificarne fino a 3 separati da virgola, anche parziali");
 		return;
 	}
 
@@ -9222,7 +9222,7 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, function (message, match) {
 
 	for (var i = 0; i < len; i++) {
 		ogg = oggetti[i].trim();
-		connection.query('SELECT id, name FROM item WHERE name = "' + ogg + '"', function (err, rows, fields) {
+		connection.query('SELECT id, name FROM item WHERE name LIKE "%' + ogg + '%"', function (err, rows, fields) {
 			if (err) throw err;
 
 			var itemId = 0;
@@ -11225,7 +11225,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																											(dragon ? dragon_saddle_n + " (" + dragon_defence + ")\n" : "") +
 																											(dragon ? dragon_arms_n + "\n" : "") +
 																											(dragon ? "Critico (" + dragon_critical + "%)\n" : "") +
-																											(dragon_description != null ? "\n<i>" + dragon_description + "</i>" : "") +
+																											(dragon_description != null ? "\n<i>" + dragon_description + "</i>\n" : "") +
 
 																											relation +
 
