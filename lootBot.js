@@ -51739,7 +51739,8 @@ function generateMap(lobby_id, width, height, players, conditions) {
 
 	// genera costruzioni
 
-	console.log("Generazione " + buildQnt.reduce((a, b) => a + b, 0) + " costruzioni...");
+	if (detailedLog == 1) 
+		console.log("Generazione " + buildQnt.reduce((a, b) => a + b, 0) + " costruzioni...");
 	var index = 0;
 	for(i = 0; i < build.length; i++) {
 		for(k = 0; k < buildQnt[i]; k++)
@@ -56472,7 +56473,7 @@ function checkTopSeasonEnd() {
 									var acc = 0;
 									for (var j = 0, len = Object.keys(rows).length; j < len; j++) {
 										acc = ((10*this.top_id)+rows[j].rank);
-										console.log("Accumulati: " + acc + " per " + rows[j].player_id);
+										// console.log("Accumulati: " + acc + " per " + rows[j].player_id);
 										if (test == 0) {
 											connection.query('UPDATE player SET top_rank_count = top_rank_count+' + acc + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
 												if (err) throw err;
@@ -56503,7 +56504,7 @@ function checkTopSeasonEnd() {
 											});
 										}
 
-										console.log(rows[j].player_id, mana, chest, dust, moon_qnt);
+										// console.log(rows[j].player_id, mana, chest, dust, moon_qnt);
 
 										if (test == 0) {
 											connection.query('UPDATE event_mana_status SET mana_1 = mana_1+' + mana + ', mana_2 = mana_2+' + mana + ', mana_3 = mana_3+' + mana + ' WHERE player_id = ' + rows[j].player_id, function (err, rows, fields) {
