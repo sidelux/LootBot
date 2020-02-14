@@ -1799,6 +1799,7 @@ bot.onText(/\/start (.+)|\/start/i, function (message, match) {
 				var invite = "";
 				var money = 10000;	// Nuovo utente
 				var gems = 1;
+				var gems = 1;
 				if (Object.keys(rows).length > 0) {
 					var d = new Date();
 					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
@@ -6221,7 +6222,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 									conditions_desc = "Gran parte della mappa è disseminata di bevande boost";
 								} else if (map_conditions == 9) {
 									conditions += "👊 Tutti uguali";
-									conditions_desc = "Il livello dei giocatori non influisce sui combattimenti";
+									conditions_desc = "Il livello dei giocatori nei combattimenti è uguale per tutti";
 								} else if (map_conditions == 10) {
 									conditions += "👀 Tutto chiaro";
 									conditions_desc = "La mappa è sempre completamente visibile";
@@ -6909,8 +6910,10 @@ bot.onText(/attacca!/i, function (message) {
 								}
 								
 								if (conditions == 9) {
-									exp = 0;
-									enemy_exp = 0;
+									exp = 5000;
+									reborn = 2;
+									enemy_exp = 5000;
+									enemy_reborn = 2;
 								}
 
 								var damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn);
@@ -8156,7 +8159,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											scrap_query = ", scrap = scrap+2";
 										else
 											scrap_query = ", scrap = scrap+1";
-										text += "Hai trovato uno <b>Strano Congegno</b> con al suo interno un " + mapIdToSym(9) + " <b>Rottame</b>, utile per gli scambi!";
+										text += "Hai trovato uno <b>Strano Congegno</b> con al suo interno un " + mapIdToSym(9) + " <b>Rottame</b>, utile per gli scambi e per i combattimenti!";
 										toClear = 1;
 									} else if (objId == 10) {		// zona bruciata
 										bot.sendMessage(message.chat.id, "Non puoi gettarti nell'area bruciata!", kbBack);
@@ -44815,6 +44818,7 @@ function getInfo(message, player, myhouse_id) {
 			var boost_id = rows[0].boost_id;
 			var creation_date = rows[0].creation_date;
 			var top_win = rows[0].top_win;
+			var trophies = rows[0].trophies;
 			var total_trophies = rows[0].total_trophies;
 
 			var top_win_text = "";
@@ -44823,7 +44827,7 @@ function getInfo(message, player, myhouse_id) {
 			
 			var trophies_text = "";
 			if (total_trophies > 0)
-				trophies_text = "Trofei Mappe: " + total_trophies + "\n";
+				trophies_text = "Trofei Mappe: " + trophies + " / " + total_trophies + "\n";
 
 			if (mission_team_count > 0)
 				mission_team_count = "Incarichi: " + formatNumber(mission_team_count) + "\n";
@@ -56512,7 +56516,7 @@ function checkTopSeasonEnd() {
 											});
 											addItem(rows[j].player_id, 646, dust);
 											addChest(rows[j].player_id, 9, chest);
-											setAchievement(rows[j].player_id, 81, mana);
+											setAchievement(rows[j].player_id, 81, (mana*3));
 										}
 
 										chestText = "";
@@ -57372,11 +57376,11 @@ function setFinishedMission(element, index, array) {
 					}
 
 					if (chest8 == 1) {
-						if (getChestCnt(element.id, 8) == 0) {
+						// if (getChestCnt(element.id, 8) == 0) {
 							addChest(element.id, 8);
 							bot.sendMessage(chat_id, "Hai trovato uno Scrigno Mistico! Che fortuna!");
 							achPnt++;
-						}
+						// }
 					}
 
 					var gem = 0;

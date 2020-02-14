@@ -10696,6 +10696,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 			var boost_id = rows[0].boost_id;
 			var creation_date = rows[0].creation_date;
 			var top_win = rows[0].top_win;
+			var trophies = rows[0].trophies;
 			var total_trophies = rows[0].total_trophies;
 
 			var top_win_text = "";
@@ -10704,7 +10705,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 			
 			var trophies_text = "";
 			if (total_trophies > 0)
-				trophies_text = "Trofei Mappe: " + total_trophies + "\n";
+				trophies_text = "Trofei Mappe: " + trophies + " / " + total_trophies + "\n";
 
 			if (mission_team_count > 0)
 				mission_team_count = "Incarichi: " + formatNumber(mission_team_count) + "\n";
