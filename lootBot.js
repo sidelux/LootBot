@@ -214,10 +214,10 @@ callNTimes(20000, function () { //20 secondi
 	if (checkDragonTopOn == 1)
 		checkDragonSearch();
 	checkBattleTimeElapsed();
+	checkLobbyTime();
 });
 
 callNTimes(40000, function () { //40 secondi
-	checkLobbyTime();
 	checkDungeonRoom();
 });
 
@@ -7420,6 +7420,14 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 				keyboard: [["Attacca!"], ["Torna al menu"]]
 			}
 		};
+		
+		var kbLeave = {
+			parse_mode: "HTML",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Esci"], ["Torna al menu"]]
+			}
+		};
 
 		connection.query('SELECT * FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -7480,7 +7488,8 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 				var checkEnemy = connection_sync.query('SELECT player_id, nickname, chat_id, posX, posY FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND enemy_id IS NULL AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
 				var map = printMap(mapMatrix, posX, posY, pulsePosX, pulsePosY, killed, checkEnemy, conditions, 0);
 
-				connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+				connection.query('SELECT COUNT(H.player_id) As cnt FROM map_lobby_list L, map_history H WHERE L.id = H.map_lobby_id AND L.lobby_id = ' + lobby_id, function (err, rows, fields) {
+				// connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 					if (err) throw err;
 
 					if (last_obj == 4) {
@@ -7805,7 +7814,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 						return;
 					}
 
-					var total_players_alive = rows[0].cnt;
+					var total_players_alive = (lobby_total_space-rows[0].cnt);
 					var iKeys = [];
 					var btnSx = 0;
 					var btnDx = 0;
@@ -7875,7 +7884,23 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 					}
 
 					if (killed == 1) {
-						bot.sendMessage(message.chat.id, "Sei stato sconfitto.\nCi sono ancora " + total_players_alive + " sopravvissuti\n" + map, kbBack);
+						bot.sendMessage(message.chat.id, "Sei stato sconfitto.\nCi sono ancora " + total_players_alive + " sopravvissuti\n" + map, kbLeave).then(function () {
+							answerCallbacks[message.chat.id] = function (answer) {
+								if (answer.text == "Esci") {
+									bot.sendMessage(message.chat.id, "Sei sicuro di voler uscire dall'osservazione della Mappa?", kbYes).then(function () {
+										answerCallbacks[message.chat.id] = function (answer) {
+											if (answer.text.toLowerCase() == "si") {
+												connection.query('UPDATE map_lobby SET lobby_id = NULL, my_turn = 0, match_kills = 0, posX = NULL, posY = NULL, life = NULL, total_life = NULL, killed = 0, wait_time = NULL, weapon_id = NULL, weapon2_id = NULL, weapon3_id = NULL, money = 0, scrap = 0, pulsePosX = NULL, pulsePosY = NULL, boost_turn = 0, last_obj = NULL, last_obj_val = NULL, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_turn_start = NULL, battle_time_elapsed = 0, battle_turn_lost = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+													bot.sendMessage(message.chat.id, "Ti avvicini verso l'uscita della Mappa...\nOra puoi cercare una nuova partita!", kbBack);
+													return;
+												});
+											}
+										}
+									});
+								}
+							}
+						});
 						return;
 					}
 					
@@ -22080,7 +22105,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 						if (Object.keys(rows).length > 0)
 							my_assigned_to = rows[0].assigned_to;
 
-						connection.query('SELECT T.id, T.parts, T.title, T.description, T.duration, M.party_id, T.requirement_id, M.part_id, T.mandator, T.daynight, M.mission_time_end FROM mission_team_list T LEFT JOIN mission_team_party M ON T.id = M.assigned_to AND M.team_id = ' + team_id + ' WHERE T.ready = 1 ORDER BY T.progress_num ASC, T.duration ASC', function (err, rows, fields) {
+						connection.query('SELECT T.id, T.parts, T.title, T.description, T.duration, M.party_id, T.requirement_id, M.part_id, T.mandator, T.daynight, M.mission_time_end, M.mission_time_limit FROM mission_team_list T LEFT JOIN mission_team_party M ON T.id = M.assigned_to AND M.team_id = ' + team_id + ' WHERE T.ready = 1 ORDER BY T.progress_num ASC, T.duration ASC', function (err, rows, fields) {
 							if (err) throw err;
 
 							var iKeys = [];
@@ -22097,14 +22122,20 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 
 								if (rows[i].party_id != null) {
 									assigned = " ✅ (Assegnato al Party " + rows[i].party_id + ") " + my_assigned;
-									progress = "\nProgresso: " + rows[i].part_id + "/" + rows[i].parts;
+									progress = "\nProgresso: " + rows[i].part_id + "/" + rows[i].parts + " 🗺";
 									
-									var d = new Date(rows[i].mission_time_end);
-									var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
+									var now = new Date();
+									var d1 = new Date(rows[i].mission_time_limit);
+									var d2 = new Date(rows[i].mission_time_end);
+									var short_date;
+									if (d1.getTime()-now.getTime() < d2.getTime()-now.getTime())
+										short_date = addZero(d1.getHours()) + ':' + addZero(d1.getMinutes());
+									else
+										short_date = addZero(d2.getHours()) + ':' + addZero(d2.getMinutes());
 									progress += "\nProssimo evento: " + short_date + " ⏱";
 								} else {
 									assigned = " 🚫 (Non assegnato)";
-									progress = "\nScelte: " + rows[i].parts;
+									progress = "\nScelte: " + rows[i].parts + " 🗺";
 								}
 
 								if (rows[i].daynight == 1)
@@ -22115,7 +22146,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 									daynight = "";
 
 								var rowsCnt = connection_sync.query('SELECT AVG(complex) As cnt FROM mission_team_requirement WHERE requirement_id = ' + rows[i].requirement_id);
-								text += "<b>" + rows[i].title + "</b>" + assigned + "\nMandante: " + rows[i].mandator + "\n<i>" + truncate(rows[i].description, 100) + "</i>\nDurata: " + toTime(rows[i].duration*(rows[i].parts+1)) + " (" + toTime(rows[i].duration) + "/scelta) ⏳\nDifficoltà: " + Math.round(rowsCnt[0].cnt*10)/10 + "/10 📈" + daynight + progress + " 🗺\n\n";
+								text += "<b>" + rows[i].title + "</b>" + assigned + "\nMandante: " + rows[i].mandator + "\n<i>" + truncate(rows[i].description, 100) + "</i>\nDurata: " + toTime(rows[i].duration*(rows[i].parts+1)) + " (" + toTime(rows[i].duration) + "/scelta) ⏳\nDifficoltà: " + Math.round(rowsCnt[0].cnt*10)/10 + "/10 📈" + daynight + progress + "\n\n";
 								iKeys.push([rows[i].title]);
 							}
 
@@ -56168,7 +56199,8 @@ function setFullLobby(element, index, array) {
 };
 
 function checkLobbyEnd() {
-	connection.query('SELECT lobby_id, COUNT(id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL AND killed = 1 GROUP BY lobby_id HAVING cnt >= ' + (lobby_total_space-1), function (err, rows, fields) {
+	// connection.query('SELECT lobby_id, COUNT(id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL AND killed = 1 GROUP BY lobby_id HAVING cnt >= ' + (lobby_total_space-1), function (err, rows, fields) {
+	connection.query('SELECT L.lobby_id, COUNT(H.player_id) As cnt FROM map_lobby_list L, map_history H WHERE L.id = H.map_lobby_id GROUP BY L.id HAVING cnt >= ' + (lobby_total_space-1), function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
@@ -56285,7 +56317,7 @@ function setFinishedLobbyEnd(element, index, array) {
 							}
 						}
 
-						connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+						connection.query('SELECT chat_id FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id, function (err, rows, fields) {
 							if (err) throw err;
 
 							var msg = "La partita è terminata!";
