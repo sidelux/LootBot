@@ -2086,6 +2086,7 @@ CREATE TABLE `map_history` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `map_history_no_duplicate` (`map_lobby_id`,`player_id`),
   KEY `map_history_player_id` (`player_id`),
+  KEY `map_lobby_id` (`map_lobby_id`),
   CONSTRAINT `map_history_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -2162,8 +2163,7 @@ CREATE TABLE `map_lobby_list` (
   `conditions` int(11) NOT NULL,
   `restrict_end` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  KEY `map_lobby_list_lobby_id` (`lobby_id`),
-  CONSTRAINT `map_lobby_list_lobby_id` FOREIGN KEY (`lobby_id`) REFERENCES `map_lobby` (`lobby_id`)
+  KEY `map_lobby_list_lobby_id` (`lobby_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
