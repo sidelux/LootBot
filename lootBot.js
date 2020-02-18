@@ -163,8 +163,6 @@ var j3 = Schedule.scheduleJob('01 00 * * *', function () { //00:01 notte
 		reloadAchievement();
 	else
 		resetAchievement();
-	if (d.getDay() == 1)
-		craftWeek();
 	craftDay();
 	resetTeamMission();
 	resetGnomorra();
@@ -172,8 +170,11 @@ var j3 = Schedule.scheduleJob('01 00 * * *', function () { //00:01 notte
 	refreshLife();
 	refreshManaBoost();
 	refreshDustBoost();
-	if (d.getDay() == 1)
+	if (d.getDay() == 1) {
+		craftWeek();
 		resetTeamWeekly();
+		cleanInactive6();
+	}
 });
 
 var j4 = Schedule.scheduleJob('05 00 * * *', function () { //00:05 notte
@@ -910,13 +911,12 @@ bot.onText(/^\/cleanInactive$/, function (message, match) {
 					if (answer.text.toLowerCase() == "si") {
 						connection.query("SELECT P.id, P.nickname, P.account_id, L.time FROM last_command L RIGHT JOIN player P ON L.account_id = P.account_id WHERE time IS NULL AND P.id < (SELECT MAX(id)-5000 FROM player)", function (err, rows, fields) {
 							if (err) throw err;
-							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+							for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 								console.log(rows[i].id + "  - " + rows[i].nickname + " inattivo dal " + rows[i].time);
-							}
 							bot.sendMessage(message.chat.id, "Continuare con la cancellazione?", yesno).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text.toLowerCase() == "si") {
-										connection.query("SELECT P.id, P.nickname, P.account_id, L.time FROM last_command L RIGHT JOIN player P ON L.account_id = P.account_id WHERE time IS NULL AND P.id < (SELECT MAX(id)-5000 FROM player) LIMIT 1000", function (err, rows, fields) {
+										connection.query("SELECT P.id, P.nickname, P.account_id, L.time FROM last_command L RIGHT JOIN player P ON L.account_id = P.account_id WHERE time IS NULL AND P.id < (SELECT MAX(id)-5000 FROM player)", function (err, rows, fields) {
 											if (err) throw err;
 											for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 												console.log("Eliminato: " + rows[i].id + "  - " + rows[i].nickname + " inattivo dal " + rows[i].time);
@@ -941,7 +941,6 @@ bot.onText(/^\/cleanInactive6$/, function (message, match) {
 	if (message.from.id == 20471035) {
 		connection.query("SELECT COUNT(P.nickname) As cnt FROM last_command L RIGHT JOIN player P ON L.account_id = P.account_id WHERE time < NOW() - INTERVAL 6 MONTH", function (err, rows, fields) {
 			if (err) throw err;
-
 			bot.sendMessage(message.chat.id, "Inattivi da + di 6 mesi: " + rows[0].cnt + "\nContinuo?", yesno).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if (answer.text.toLowerCase() == "si") {
@@ -952,16 +951,8 @@ bot.onText(/^\/cleanInactive6$/, function (message, match) {
 							bot.sendMessage(message.chat.id, "Continuare con la cancellazione?", yesno).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text.toLowerCase() == "si") {
-										connection.query("SELECT P.id, P.nickname, L.time FROM last_command L RIGHT JOIN player P ON L.account_id = P.account_id WHERE time < NOW() - INTERVAL 6 MONTH LIMIT 1000", function (err, rows, fields) {
-											if (err) throw err;
-											for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-												console.log("Eliminato: " + rows[i].id + "  - " + rows[i].nickname + " inattivo dal " + rows[i].time);
-												connection.query("DELETE FROM player WHERE id = " + rows[i].id + " LIMIT 1", function (err, rows, fields) {
-													if (err) throw err;
-												});
-											}
-											bot.sendMessage(message.chat.id, "Fin.", back);
-										});
+										cleanInactive6();
+										bot.sendMessage(message.chat.id, "Fin.", back);
 									};
 								};
 							});
@@ -8208,7 +8199,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										isBuild = 1;
 										text += "Raggiungi un " + mapIdToSym(11) + " luogo che emana una luce accecante, entri per scoprire i suoi segreti.";
 									} else if (objId == 12) {		// campo paralizzante
-										wait_time = 6;
+										wait_time = 4;
 										text += "Cadi in un " + mapIdToSym(12) + " Campo Paralizzante e vieni immobilizzato! Dovrai attendere più tempo per continuare\n";
 										toClear = 1;
 										isParalyzed = 1;
@@ -44593,6 +44584,20 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 
 // FUNZIONI
 
+function cleanInactive6() {
+	connection.query("SELECT P.id, P.nickname, L.time FROM last_command L RIGHT JOIN player P ON L.account_id = P.account_id WHERE time < NOW() - INTERVAL 6 MONTH", function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length > 0) {
+			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+				console.log("Eliminato: " + rows[i].id + "  - " + rows[i].nickname + " inattivo dal " + rows[i].time);
+				connection.query("DELETE FROM player WHERE id = " + rows[i].id + " LIMIT 1", function (err, rows, fields) {
+					if (err) throw err;
+				});
+			}
+		}
+	});
+}
+
 function getMapPDF(message) {
 	connection.query('SELECT nickname As Nome_Utente, last_season_trophies As Trofei FROM player P WHERE id != 1 AND last_season_trophies > 0 ORDER BY Trofei DESC', function (err, rows, fields) {
 		if (err) throw err;
@@ -45690,6 +45695,11 @@ function mainMenu(message) {
 					if (rows[0].killed == 1) {
 						var players = connection_sync.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE killed = 0 AND lobby_id = ' + rows[0].lobby_id);
 						msgtext += "\n🗺 Partita terminata ⚰️ " + players[0].cnt + "/" + lobby_total_space;
+					} else if (rows[0].enemy_id != null) {
+						var turn = "a te!";
+						if (rows[0].my_turn == 0)
+							turn = "all'avversario!";
+						msgtext += "\n🗺 In combattimento... tocca " + turn;
 					} else if (rows[0].wait_time != null) {
 						var now = new Date();
 						var wait_time = new Date(rows[0].wait_time);
@@ -45711,11 +45721,6 @@ function mainMenu(message) {
 							restrict_text = " (☠️ " + restrict_min + " minut" + restrict_plur + ")";
 						}
 						msgtext += "\n🗺 Attesa mappa " + min + " minut" + plur + restrict_text;
-					}  else if (rows[0].enemy_id != null) {
-						var turn = "a te!";
-						if (rows[0].my_turn == 0)
-							turn = "all'avversario!";
-						msgtext += "\n🗺 In combattimento... tocca " + turn;
 					} else if (rows[0].lobby_id != null) {
 						var lobby = connection_sync.query('SELECT 1 FROM map_lobby_list WHERE lobby_id = ' + rows[0].lobby_id);
 						if (Object.keys(lobby).length == 0) {
