@@ -56189,13 +56189,11 @@ function setFullLobby(element, index, array) {
 							posArr.push([i, j]);
 					}
 				}
-				
-				// console.log("posArr", posArr);
 
 				var life = 5000;
 
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					connection.query('UPDATE map_lobby SET weapon_id = 13, weapon2_id = 56, weapon3_id = 26, posX = ' + posArr[i][0] + ', posY = ' + posArr[i][1] + ', life = ' + life + ', total_life = ' + life + ' WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
+					connection.query('UPDATE map_lobby SET weapon_id = 13, weapon2_id = 56, weapon3_id = 26, posX = ' + posArr[i][0] + ', posY = ' + posArr[i][1] + ', life = ' + life + ', total_life = ' + life + ', money = 0, scrap = 0 WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
 						if (err) throw err;
 					});
 
