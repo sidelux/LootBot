@@ -1870,7 +1870,7 @@ bot.onText(/Donazioni|Lunari/i, function (message) {
 		if (luckyMode == 1)
 			extra = "<b>Oggi le monete ottenute sono raddoppiate!</b>\n";
 
-		bot.sendMessage(message.chat.id, "<b>Donazioni</b>\n\n<i>Magari non tutti voi sapete che mantenere il server di Loot Bot ha un costo che deve essere saldato ogni mese, non ci sono pubblicità, nè acquisti pay2win, nè sponsorizzazioni che contribuiscono al sostentamento. Perciò tu nel tuo piccolo puoi aiutare donando attraverso il link sotto, qualsiasi cifra può aiutare. Per motivarti un po' (lo so che ti stai chiedendo: 'e io che ci guadagno?') oltre al fatto che saprai che hai aiutato ad estendere di un mese questo passatempo, riceverai anche una Moneta Lunare per ogni euro donato.\nNon è niente di obbligatorio e niente di troppo vantaggioso, anzi. Però purtroppo non sempre si riesce a mantenere tutto in modo gratuito. A me personalmente farebbe molto piacere la cosa, pensaci!</i>\n\nLink PayPal: https://www.paypal.me/EdoardoCortese\nIndirizzo Bitcoin: <code>3ChwKyXG4fo8NDAdQwJERUty78qumeyn91</code>\n\nRicordati di specificare il nickname, se hai problemi contattami in privato (@fenix45).\nIn caso di abbandono del gioco o casi simili, la donazione <i>non verrà</i> rimborsata.\n" + extra + "\nProgresso per il mese attuale: " + progress + " " + att + " € / " + max + " €", kb);
+		bot.sendMessage(message.chat.id, "<b>Donazioni</b>\n\n<i>Magari non tutti voi sapete che mantenere il server di Loot Bot ha un costo che deve essere saldato ogni mese, non ci sono pubblicità, nè acquisti pay2win, nè sponsorizzazioni che contribuiscono al sostentamento. Perciò tu nel tuo piccolo puoi aiutare donando attraverso il link sotto, qualsiasi cifra può aiutare. Per motivarti un po' (lo so che ti stai chiedendo: 'e io che ci guadagno?') oltre al fatto che saprai che hai aiutato ad estendere di un mese questo passatempo, riceverai anche una Moneta Lunare per ogni euro donato.\nNon è niente di obbligatorio e niente di troppo vantaggioso, anzi. Però purtroppo non sempre si riesce a mantenere tutto in modo gratuito. A me personalmente farebbe molto piacere la cosa, pensaci!</i>\n\nLink PayPal: https://www.paypal.me/EdoardoCortese\nIndirizzo Bitcoin: <code>3Pc3UJ2APj2NMzqwSnXXnKHcJVr7PSermE</code>\n\nRicordati di specificare il nickname, se hai problemi contattami in privato (@fenix45).\nIn caso di abbandono del gioco o casi simili, la donazione <i>non verrà</i> rimborsata.\n" + extra + "\nProgresso per il mese attuale: " + progress + " " + att + " € / " + max + " €", kb);
 	});
 });
 
@@ -7881,9 +7881,6 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									bot.sendMessage(message.chat.id, "Sei sicuro di voler uscire dall'osservazione della Mappa?", kbYes).then(function () {
 										answerCallbacks[message.chat.id] = function (answer) {
 											if (answer.text.toLowerCase() == "si") {
-												bot.sendMessage(message.chat.id, "Manutenzione", kbBack);
-												return;
-												
 												connection.query('UPDATE map_lobby SET lobby_id = NULL, my_turn = 0, match_kills = 0, posX = NULL, posY = NULL, life = NULL, total_life = NULL, killed = 0, wait_time = NULL, weapon_id = NULL, weapon2_id = NULL, weapon3_id = NULL, money = 0, scrap = 0, pulsePosX = NULL, pulsePosY = NULL, boost_turn = 0, last_obj = NULL, last_obj_val = NULL, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_turn_start = NULL, battle_time_elapsed = 0, battle_turn_lost = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
 													bot.sendMessage(message.chat.id, "Ti avvicini verso l'uscita della Mappa...\nOra puoi cercare una nuova partita!", kbBack);
@@ -43190,32 +43187,26 @@ bot.onText(/^prelevazione/i, function (message) {
 									var money = 0;
 									if ((reborn == 1) || (reborn == 2)) {
 										var rand = Math.round(Math.random());
-										if (rand == 1) {
+										if (rand == 1)
 											chest = 1;
-											money = 1200;
-										} else {
+										else
 											chest = 2;
-											money = 2400;
-										}
 									} else if (reborn == 3) {
 										var rand = Math.round(Math.random());
-										if (rand == 1) {
+										if (rand == 1)
 											chest = 3;
-											money = 4800;
-										} else {
+										else
 											chest = 4;
-											money = 7200;
-										}
 									} else if ((reborn == 4) || (reborn == 5)) {
 										var rand = Math.round(Math.random());
-										if (rand == 1) {
+										if (rand == 1)
 											chest = 5;
-											money = 14000;
-										} else {
+										else
 											chest = 6;
-											money = 30000;
-										}
 									}
+									
+									var chestQuery = connection_sync.query("SELECT value FROM chest WHERE id = " + chest);
+									money = chestQuery[0].value;
 
 									connection.query("SELECT player.id, nickname, house_id, chat_id FROM player, team_player WHERE team_player.player_id = player.id AND reborn >= " + reborn + " AND market_ban = 0 AND capsule_limit < 5 AND heist_protection IS NULL AND money > " + money + " AND player.id != 3 AND player.id != " + from_id + " AND team_player.team_id != " + team_id + " ORDER BY RAND() LIMIT 1", function (err, rows, fields) {
 										if (err) throw err;
@@ -56196,6 +56187,10 @@ function setFullLobby(element, index, array) {
 					connection.query('UPDATE map_lobby SET weapon_id = 13, weapon2_id = 56, weapon3_id = 26, posX = ' + posArr[i][0] + ', posY = ' + posArr[i][1] + ', life = ' + life + ', total_life = ' + life + ', money = 0, scrap = 0 WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
 						if (err) throw err;
 					});
+					
+					connection.query('UPDATE player SET map_count = map_count+1 WHERE id = ' + rows[i].id, function (err, rows, fields) {
+						if (err) throw err;
+					});
 
 					bot.sendMessage(rows[i].chat_id, "La mappa è stata generata!\nEntra in battaglia e conquista la vittoria!", kb);
 				}
@@ -56303,7 +56298,7 @@ function setFinishedLobbyEnd(element, index, array) {
 						connection.query('UPDATE map_history SET position = ' + pos + ' WHERE id = ' + rows[i].mapId, function (err, rows, fields) {
 							if (err) throw err;
 						});
-						connection.query('UPDATE player SET trophies = trophies' + trophies_query + ', map_count = map_count+1 WHERE id = ' + rows[i].id, function (err, rows, fields) {
+						connection.query('UPDATE player SET trophies = trophies' + trophies_query + ' WHERE id = ' + rows[i].id, function (err, rows, fields) {
 							if (err) throw err;
 						});
 						pos++;
