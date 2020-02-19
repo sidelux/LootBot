@@ -56278,7 +56278,7 @@ function setFinishedLobbyEnd(element, index, array) {
 							negpos++;
 						}
 						*/
-						if (rows[i].map_count >= lobby_daily_limit)
+						if (rows[i].map_count > lobby_daily_limit)
 							trophies_count = 0;
 						
 						if (trophies_count >= 0)
