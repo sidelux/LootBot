@@ -42338,8 +42338,8 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 									var d = new Date();
 									var history_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-									connection.query('INSERT INTO heist_history (from_id, to_id, rate1, fail, time, matchmaking) VALUES ' +
-													 '(' + player_id + ', ' + toId + ', 0, 0, "' + history_date + '", ' + isMatch + ')',
+									connection.query('INSERT INTO heist_history (from_id, to_id, fail, time, matchmaking) VALUES ' +
+													 '(' + player_id + ', ' + toId + ', 0, "' + history_date + '", ' + isMatch + ')',
 													 function (err, rows, fields) {
 										if (err) throw err;
 									});
@@ -42368,8 +42368,8 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 									var d = new Date();
 									var history_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-									connection.query('INSERT INTO heist_history (from_id, to_id, rate1, fail, time, matchmaking) VALUES ' +
-													 '(' + player_id + ', ' + toId + ', 0, 1, "' + history_date + '", ' + isMatch + ')',
+									connection.query('INSERT INTO heist_history (from_id, to_id, fail, time, matchmaking) VALUES ' +
+													 '(' + player_id + ', ' + toId + ', 1, "' + history_date + '", ' + isMatch + ')',
 													 function (err, rows, fields) {
 										if (err) throw err;
 									});
@@ -42394,7 +42394,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 											var d = new Date();
 											var history_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-											connection.query('INSERT INTO heist_history (from_id, to_id, rate1, fail, time, matchmaking) VALUES (' + player_id + ', ' + toId + ', 0, 1, "' + history_date + '", ' + isMatch + ')', function (err, rows, fields) {
+											connection.query('INSERT INTO heist_history (from_id, to_id, fail, time, matchmaking) VALUES (' + player_id + ', ' + toId + ', 1, "' + history_date + '", ' + isMatch + ')', function (err, rows, fields) {
 												if (err) throw err;
 											});
 										}
@@ -47579,7 +47579,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 										var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
 										var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
 
-										connection.query('INSERT INTO heist (from_id, to_id, datetime, rate1, grade, matchmaking) ' +
+										connection.query('INSERT INTO heist (from_id, to_id, datetime, rate, grade, matchmaking) ' +
 														 'VALUES (' + from_id + ',' + to_id + ',"' + long_date + '",' + rate + ',' + grade + ',' + isMatch + ')',
 														 function (err, rows, fields) {
 											if (err) throw err;
@@ -57875,7 +57875,7 @@ function setFinishedHeistProgress(element, index, array) {
 };
 
 function setFinishedHeist(element, index, array) {
-	connection.query('SELECT player.nickname, player.exp, player.heist_streak, player.ability, player.money, player.id, player.chat_id, heist.grade, heist.rate1, heist.to_id, heist.matchmaking FROM player, heist WHERE heist.from_id = player.id AND heist.id = ' + element.id, function (err, rows, fields) {
+	connection.query('SELECT player.nickname, player.exp, player.heist_streak, player.ability, player.money, player.id, player.chat_id, heist.grade, heist.rate, heist.to_id, heist.matchmaking FROM player, heist WHERE heist.from_id = player.id AND heist.id = ' + element.id, function (err, rows, fields) {
 		if (err) throw err;
 		var fromNick = rows[0].nickname;
 		var fromId = rows[0].id;
@@ -57886,7 +57886,7 @@ function setFinishedHeist(element, index, array) {
 		var fromLevel = Math.floor(rows[0].exp / 10);
 		var streak = parseInt(rows[0].heist_streak);
 		var isMatch = rows[0].matchmaking;
-		var rate = rows[0].rate1; //Probabilità di successo
+		var rate = rows[0].rate; //Probabilità di successo
 		var grade = rows[0].grade;
 
 		connection.query('SELECT level, name, type FROM dragon WHERE player_id = ' + toId, function (err, rows, fields) {
@@ -58070,7 +58070,7 @@ function setFinishedHeist(element, index, array) {
 								var d = new Date();
 								var history_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-								connection.query('INSERT INTO heist_history (from_id, to_id, rate1, fail, time, matchmaking) VALUES (' + fromId + ', ' + toId + ', 0, 1, "' + history_date + '", ' + isMatch + ')', function (err, rows, fields) {
+								connection.query('INSERT INTO heist_history (from_id, to_id, fail, time, matchmaking) VALUES (' + fromId + ', ' + toId + ', 1, "' + history_date + '", ' + isMatch + ')', function (err, rows, fields) {
 									if (err) throw err;
 								});
 							} else {
