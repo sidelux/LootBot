@@ -1718,7 +1718,7 @@ CREATE TABLE `heist` (
   `from_id` int(3) NOT NULL DEFAULT '0',
   `to_id` int(3) NOT NULL DEFAULT '0',
   `datetime` timestamp NULL DEFAULT NULL,
-  `rate1` int(8) NOT NULL DEFAULT '0',
+  `rate` int(8) NOT NULL DEFAULT '0',
   `grade` int(3) NOT NULL DEFAULT '0',
   `matchmaking` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
@@ -1741,12 +1741,10 @@ CREATE TABLE `heist_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `from_id` int(11) NOT NULL,
   `to_id` int(11) NOT NULL,
-  `rate1` int(11) NOT NULL DEFAULT '0',
-  `rate2` int(11) NOT NULL DEFAULT '0',
-  `rate3` int(11) NOT NULL DEFAULT '0',
   `fail` int(11) NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `matchmaking` tinyint(1) DEFAULT NULL,
+  `after_rune` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `heist_history_from_id` (`from_id`),
   KEY `heist_history_to_id` (`to_id`),
@@ -1796,7 +1794,8 @@ SET character_set_client = utf8;
   `to_nick` tinyint NOT NULL,
   `fail` tinyint NOT NULL,
   `time` tinyint NOT NULL,
-  `matchmaking` tinyint NOT NULL
+  `matchmaking` tinyint NOT NULL,
+  `after_rune` tinyint NOT NULL
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
@@ -2131,6 +2130,7 @@ CREATE TABLE `map_lobby` (
   `battle_turn_start` timestamp NULL DEFAULT NULL,
   `battle_time_elapsed` int(11) DEFAULT '0',
   `battle_turn_lost` int(11) NOT NULL DEFAULT '0',
+  `battle_turn_active` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `map_lobby_player_id` (`player_id`),
   KEY `map_lobby_lobby_id` (`lobby_id`),
@@ -3667,7 +3667,7 @@ CREATE TABLE `travel` (
 /*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `heist_public` AS select `H`.`id` AS `id`,`P1`.`nickname` AS `from_nick`,`P2`.`nickname` AS `to_nick`,`H`.`fail` AS `fail`,`H`.`time` AS `time`,`H`.`matchmaking` AS `matchmaking` from ((`heist_history` `H` join `player` `P1` on((`H`.`from_id` = `P1`.`id`))) join `player` `P2` on((`H`.`to_id` = `P2`.`id`))) */;
+/*!50001 VIEW `heist_public` AS select `H`.`id` AS `id`,`P1`.`nickname` AS `from_nick`,`P2`.`nickname` AS `to_nick`,`H`.`fail` AS `fail`,`H`.`time` AS `time`,`H`.`matchmaking` AS `matchmaking`,`H`.`after_rune` AS `after_rune` from ((`heist_history` `H` join `player` `P1` on((`H`.`from_id` = `P1`.`id`))) join `player` `P2` on((`H`.`to_id` = `P2`.`id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
