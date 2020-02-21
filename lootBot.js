@@ -7143,7 +7143,7 @@ bot.onText(/attacca!/i, function (message) {
 									
 									text += "\n";
 									
-									// Modifica anche gli altri due
+									// Modifica anche gli altri
 									var item_query = "";
 									var enemy_item_query = "";
 									
@@ -7216,7 +7216,7 @@ bot.onText(/attacca!/i, function (message) {
 									
 									enemy_text += "\n";
 									
-									// Modifica anche gli altri due
+									// Modifica anche gli altri
 									var item_query = "";
 									var enemy_item_query = "";
 									
@@ -56007,7 +56007,7 @@ function setLobbyLeave(element, index, array) {
 }
 
 function checkBattleTimeElapsed() {
-	connection.query('SELECT M.lobby_id, P.id As player_id, P.chat_id, M.enemy_id, M.battle_turn_start, M.battle_time_elapsed, M.battle_shield, M.battle_turn_lost, M.weapon_id, M.weapon2_id, M.weapon3_id FROM map_lobby M, player P WHERE M.player_id = P.id AND battle_turn_start IS NOT NULL AND battle_time_elapsed IS NOT NULL AND enemy_id IS NOT NULL AND my_turn = 1', function (err, rows, fields) {
+	connection.query('SELECT M.lobby_id, P.id As player_id, P.chat_id, M.enemy_id, M.battle_turn_start, M.battle_time_elapsed, M.battle_shield, M.battle_turn_lost, M.money, M.scrap, M.weapon_id, M.weapon2_id, M.weapon3_id FROM map_lobby M, player P WHERE M.player_id = P.id AND battle_turn_start IS NOT NULL AND battle_time_elapsed IS NOT NULL AND enemy_id IS NOT NULL AND my_turn = 1', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
@@ -56028,6 +56028,8 @@ function setBattleTimeElapsed(element, index, array) {
 	var battle_time_elapsed = element.battle_time_elapsed;
 	var battle_shield = element.battle_shield;
 	var battle_turn_lost = element.battle_turn_lost;
+	var money = element.money;
+	var scrap = element.scrap;
 	
 	var weapon_id = element.weapon_id;
 	var weapon2_id = element.weapon2_id;
@@ -56076,13 +56078,11 @@ function setBattleTimeElapsed(element, index, array) {
 			var diff = Math.round(((now - d) / 1000));	// secondi
 			diff = Math.abs(diff);
 			
-			connection.query('SELECT M.battle_shield, P.chat_id, M.money, M.scrap, M.weapon_id, M.weapon2_id, M.weapon3_id, M.battle_turn_active FROM map_lobby M, player P WHERE M.player_id = P.id AND M.player_id = ' + enemy_id, function (err, rows, fields) {
+			connection.query('SELECT M.battle_shield, P.chat_id, M.weapon_id, M.weapon2_id, M.weapon3_id, M.battle_turn_active FROM map_lobby M, player P WHERE M.player_id = P.id AND M.player_id = ' + enemy_id, function (err, rows, fields) {
 				if (err) throw err;
 				
 				var enemy_battle_shield = rows[0].battle_shield;
 				var enemy_chat_id = rows[0].chat_id;
-				var enemy_money = rows[0].money;
-				var enemy_scrap = rows[0].scrap;
 				var enemy_weapon_id = rows[0].weapon_id;
 				var enemy_weapon2_id = rows[0].weapon2_id;
 				var enemy_weapon3_id = rows[0].weapon3_id;
@@ -56119,79 +56119,79 @@ function setBattleTimeElapsed(element, index, array) {
 				if (battle_turn_lost+1 >= 5) {
 					mapPlayerKilled(lobby_id, player_id, 2, null, 1);
 					
-					var text = "";
+					var enemy_text = "";
 					var rand = Math.random()*100;
 					var prob = (battle_turn_active+1)*10;
 					if (prob >= 80)
 						prob = 80;
-					// console.log("battle_turn_active", battle_turn_active);
+					
 					if (prob >= rand) {
-						if ((enemy_money > 0) || (enemy_scrap > 0)) {
-							text += "\nFrugando nella sua sacca ottieni ";
-							if ((enemy_money > 0) && (enemy_scrap > 0))
-								text += "<b>" + formatNumber(enemy_money) + "</b> § e <b>" + enemy_scrap + "</b> 🔩!";
+						if ((money > 0) || (scrap > 0)) {
+							enemy_text += "\nFrugando nella sua sacca ottieni ";
+							if ((money > 0) && (scrap > 0))
+								enemy_text += "<b>" + formatNumber(money) + "</b> § e <b>" + scrap + "</b> 🔩!";
 							else {
-								if (enemy_money > 0)
-									text += "<b>" + formatNumber(enemy_money) + "</b> §";
-								if (enemy_scrap > 0)
-									text += "<b>" + enemy_scrap + "</b> 🔩!";
+								if (money > 0)
+									enemy_text += "<b>" + formatNumber(money) + "</b> §";
+								if (scrap > 0)
+									enemy_text += "<b>" + scrap + "</b> 🔩!";
 							}
 						}
 
-						text += "\n";
+						enemy_text += "\n";
 
 						// Modifica anche gli altri
 						var item_query = "";
 						var enemy_item_query = "";
 
-						var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + enemy_weapon_id);
+						var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + weapon_id);
 						var weapon_name = weaponQuery[0].name;
-						if (weapon_id != null) {
-							if (enemy_weapon > weapon) {
-								text += "\nArma <b>" + weapon_name + "</b> sgraffignata e sostituita!";
-								item_query += ", weapon_id = " + enemy_weapon_id;
-								enemy_item_query += ", weapon_id = NULL";
+						if (enemy_weapon_id != null) {
+							if (weapon > enemy_weapon) {
+								enemy_text += "\nArma <b>" + weapon_name + "</b> sgraffignata e sostituita!";
+								enemy_item_query += ", weapon_id = " + weapon_id;
+								item_query += ", weapon_id = NULL";
 							}
 						} else {
-							text += "\nArma <b>" + weapon_name + "</b> sgraffignata ed equipaggiata!";
-							item_query += ", weapon_id = " + enemy_weapon_id;
-							enemy_item_query += ", weapon_id = NULL";
+							enemy_text += "\nArma <b>" + weapon_name + "</b> sgraffignata ed equipaggiata!";
+							enemy_item_query += ", weapon_id = " + weapon_id;
+							item_query += ", weapon_id = NULL";
 						}
 
-						var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + enemy_weapon2_id);
+						var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + weapon2_id);
 						var weapon_name = weaponQuery[0].name;
-						if (weapon2_id != null) {
-							if (enemy_weapon2 < weapon2) {
-								text += "\nArmatura <b>" + weapon_name + "</b> sgraffignata e sostituita!";
-								item_query += ", weapon2_id = " + enemy_weapon2_id;
-								enemy_item_query += ", weapon2_id = NULL";
+						if (enemy_weapon2_id != null) {
+							if (weapon2 < enemy_weapon2) {
+								enemy_text += "\nArmatura <b>" + weapon_name + "</b> sgraffignata e sostituita!";
+								enemy_item_query += ", weapon2_id = " + weapon2_id;
+								item_query += ", weapon2_id = NULL";
 							}
 						} else {
-							text += "\nArmatura <b>" + weapon_name + "</b> sgraffignata ed equipaggiata!";
-							item_query += ", weapon2_id = " + enemy_weapon2_id;
-							enemy_item_query += ", weapon2_id = NULL";
+							enemy_text += "\nArmatura <b>" + weapon_name + "</b> sgraffignata ed equipaggiata!";
+							enemy_item_query += ", weapon2_id = " + weapon2_id;
+							item_query += ", weapon2_id = NULL";
 						}
 
-						var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + enemy_weapon3_id);
+						var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + weapon3_id);
 						var weapon_name = weaponQuery[0].name;
-						if (weapon3_id != null) {
-							if (enemy_weapon3 < weapon3) {
-								text += "\nScudo <b>" + weapon_name + "</b> sgraffignato e sostituito!";
-								item_query += ", weapon3_id = " + enemy_weapon3_id;
-								enemy_item_query += ", weapon3_id = NULL";
+						if (enemy_weapon3_id != null) {
+							if (weapon3 < enemy_weapon3) {
+								enemy_text += "\nScudo <b>" + weapon_name + "</b> sgraffignato e sostituito!";
+								enemy_item_query += ", weapon3_id = " + weapon3_id;
+								item_query += ", weapon3_id = NULL";
 							}
 						} else {
-							text += "\nScudo <b>" + weapon_name + "</b> sgraffignato ed equipaggiato!";
-							item_query += ", weapon3_id = " + enemy_weapon3_id;
-							enemy_item_query += ", weapon3_id = NULL";
+							enemy_text += "\nScudo <b>" + weapon_name + "</b> sgraffignato ed equipaggiato!";
+							enemy_item_query += ", weapon3_id = " + weapon3_id;
+							item_query += ", weapon3_id = NULL";
 						}
 
-						query += ", money = money+" + enemy_money + ", scrap = scrap+" + enemy_scrap + item_query;
-						enemy_query += ", life = 0, money = money-" + enemy_money + ", scrap = scrap-" + enemy_scrap + enemy_item_query;
+						enemy_query += ", money = money+" + money + ", scrap = scrap+" + scrap + enemy_item_query;
+						query += ", life = 0, money = money-" + money + ", scrap = scrap-" + scrap + item_query;
 					}
 
 					bot.sendMessage(chat_id, "Troppi turni sono scaduti!\nDal nulla arriva una freccia a gran velocità e decreta il tuo avversario come vincitore dello scontro!");
-					bot.sendMessage(enemy_chat_id, "L'avversario ha perso troppi turni!\nHai vinto lo scontro!" + text, html);
+					bot.sendMessage(enemy_chat_id, "L'avversario ha perso troppi turni!\nHai vinto lo scontro!" + enemy_text, html);
 					
 					connection.query('UPDATE map_lobby SET my_turn = 0, battle_timeout = NULL, battle_turn_lost = battle_turn_lost + 1, battle_time_elapsed = battle_time_elapsed + ' + diff + query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;

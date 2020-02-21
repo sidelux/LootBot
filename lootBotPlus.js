@@ -10563,7 +10563,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, account_
 					var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
 					var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
 
-					connection.query('INSERT INTO heist (from_id, to_id, datetime, rate1, grade, matchmaking) ' +
+					connection.query('INSERT INTO heist (from_id, to_id, datetime, rate, grade, matchmaking) ' +
 									 'VALUES (' + from_id + ',' + to_id + ',"' + long_date + '",' + rate + ',' + grade + ',' + isMatch + ')',
 									 function (err, rows, fields) {
 						if (err) throw err;
