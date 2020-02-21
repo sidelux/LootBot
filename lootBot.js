@@ -56029,9 +56029,9 @@ function setBattleTimeElapsed(element, index, array) {
 	var battle_shield = element.battle_shield;
 	var battle_turn_lost = element.battle_turn_lost;
 	
-	var weapon_id = rows[0].weapon_id;
-	var weapon2_id = rows[0].weapon2_id;
-	var weapon3_id = rows[0].weapon3_id;
+	var weapon_id = element.weapon_id;
+	var weapon2_id = element.weapon2_id;
+	var weapon3_id = element.weapon3_id;
 	
 	var weapon = 0;
 	var weapon2 = 0;
@@ -56088,6 +56088,19 @@ function setBattleTimeElapsed(element, index, array) {
 				var enemy_weapon3_id = rows[0].weapon3_id;
 				var battle_turn_active = rows[0].battle_turn_active;
 				
+				if (enemy_weapon_id != null) {
+					var weapon_info = connection_sync.query("SELECT power, critical FROM item WHERE id = " + enemy_weapon_id);
+					enemy_weapon = weapon_info[0].power;
+				}
+				if (enemy_weapon2_id != null) {
+					var weapon2_info = connection_sync.query("SELECT power_armor, critical FROM item WHERE id = " + enemy_weapon2_id);
+					enemy_weapon2 = weapon2_info[0].power_armor;
+				}
+				if (enemy_weapon3_id != null) {
+					var weapon3_info = connection_sync.query("SELECT power_shield, critical FROM item WHERE id = " + enemy_weapon3_id);
+					enemy_weapon3 = weapon3_info[0].power_shield;
+				}
+				
 				var query = "";
 				var enemy_query = "";
 				var set_battle_shield = -1;
@@ -56111,6 +56124,7 @@ function setBattleTimeElapsed(element, index, array) {
 					var prob = (battle_turn_active+1)*10;
 					if (prob >= 80)
 						prob = 80;
+					console.log("battle_turn_active", battle_turn_active);
 					if (prob >= rand) {
 						if ((enemy_money > 0) || (enemy_scrap > 0)) {
 							text += "\nFrugando nella sua sacca ottieni ";
