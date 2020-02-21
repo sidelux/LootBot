@@ -56124,7 +56124,7 @@ function setBattleTimeElapsed(element, index, array) {
 					var prob = (battle_turn_active+1)*10;
 					if (prob >= 80)
 						prob = 80;
-					console.log("battle_turn_active", battle_turn_active);
+					// console.log("battle_turn_active", battle_turn_active);
 					if (prob >= rand) {
 						if ((enemy_money > 0) || (enemy_scrap > 0)) {
 							text += "\nFrugando nella sua sacca ottieni ";
@@ -56191,7 +56191,7 @@ function setBattleTimeElapsed(element, index, array) {
 					}
 
 					bot.sendMessage(chat_id, "Troppi turni sono scaduti!\nDal nulla arriva una freccia a gran velocità e decreta il tuo avversario come vincitore dello scontro!");
-					bot.sendMessage(enemy_chat_id, "L'avversario ha perso troppi turni!\nHai vinto lo scontro!" + text);
+					bot.sendMessage(enemy_chat_id, "L'avversario ha perso troppi turni!\nHai vinto lo scontro!" + text, html);
 					
 					connection.query('UPDATE map_lobby SET my_turn = 0, battle_timeout = NULL, battle_turn_lost = battle_turn_lost + 1, battle_time_elapsed = battle_time_elapsed + ' + diff + query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
