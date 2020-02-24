@@ -6166,6 +6166,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 							} else if (message.text.toLowerCase() != "torna alla mappa")
 								bot.sendMessage(message.chat.id, "Esplorazione mappa in corso!", kbBack);
 						});
+						return;
 					} else {
 						connection.query('SELECT map_conditions FROM config', function (err, rows, fields) {
 							if (err) throw err;
@@ -7435,20 +7436,8 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 			var posX = rows[0].posX;
 			var posY = rows[0].posY;
-
-			if ((posX == null) || (posY == null)) {
-				bot.sendMessage(message.chat.id, "La posizione di partenza non è stata caricata correttamente", kbBack);
-				return;
-			}
-
 			var life = rows[0].life;
 			var total_life = rows[0].total_life;
-
-			if ((life == null) || (total_life == null)) {
-				bot.sendMessage(message.chat.id, "La salute di partenza non è stata caricata correttamente", kbBack);
-				return;
-			}
-
 			var weapon_id = rows[0].weapon_id;
 			var weapon2_id = rows[0].weapon2_id;
 			var weapon3_id = rows[0].weapon3_id;
@@ -7466,7 +7455,19 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 				if (err) throw err;
 
 				if (Object.keys(rows).length == 0) {
+					if (message.text.toLowerCase() == "torna alla mappa")
+						return;
 					bot.sendMessage(message.chat.id, "La battaglia non è ancora iniziata! Torna nella lobby e attendi altri giocatori", kbBack);
+					return;
+				}
+
+				if ((posX == null) || (posY == null)) {
+					bot.sendMessage(message.chat.id, "La posizione di partenza non è stata caricata correttamente", kbBack);
+					return;
+				}
+
+				if ((life == null) || (total_life == null)) {
+					bot.sendMessage(message.chat.id, "La salute di partenza non è stata caricata correttamente", kbBack);
 					return;
 				}
 

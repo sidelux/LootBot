@@ -2806,6 +2806,7 @@ CREATE TABLE `player` (
   `rank` int(8) NOT NULL DEFAULT '0',
   `life` int(32) NOT NULL DEFAULT '0',
   `total_life` int(32) NOT NULL DEFAULT '0',
+  `death_count` int(11) NOT NULL DEFAULT '0',
   `money` int(16) NOT NULL DEFAULT '100',
   `magic_active` int(11) NOT NULL DEFAULT '0',
   `dragon_to` int(11) NOT NULL DEFAULT '0',
