@@ -5865,7 +5865,7 @@ bot.onText(/cambia vocazione/i, function (message) {
 });
 
 bot.onText(/statistiche/i, function (message) {
-	connection.query('SELECT id, mission_count, achievement_count, achievement_count_all, dungeon_count, cave_count, travel_count, global_event, kill_streak_ok, gain_exp, mission_team_count, creation_date, top_rank_count, total_trophies, power_used FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, mission_count, achievement_count, achievement_count_all, dungeon_count, cave_count, travel_count, global_event, kill_streak_ok, gain_exp, mission_team_count, creation_date, top_rank_count, total_trophies, power_used, death_count FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
 		var missioni = rows[0].mission_count;
@@ -5881,6 +5881,7 @@ bot.onText(/statistiche/i, function (message) {
 		var total_trophies = rows[0].total_trophies;
 		var triplet = rows[0].achievement_count_all;
 		var power_used = rows[0].power_used;
+		var death_count = rows[0].death_count;
 
 		var registrazione = "";
 		if (rows[0].creation_date != null)
@@ -6002,6 +6003,7 @@ bot.onText(/statistiche/i, function (message) {
 																											"*Ð accumulate*: " + formatNumber(top_rank_count) + "\n" +
 																											"*Triplette*: " + formatNumber(triplet) + "\n" +
 																											"*Flaridion utilizzati*: " + formatNumber(power_used) + "\n" +
+																											"*Uccisioni subite*: " + formatNumber(death_count) + "\n"
 
 																											"\n⚔️ *Hai completato*:\n" +
 																											"*Missioni*: " + formatNumber(missioni) + "\n" +
@@ -9244,7 +9246,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	var d = new Date();
 																	d.setHours(d.getHours() + wait_dungeon_long);
 																	var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																	connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE player SET death_count = death_count+1, dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 																	connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -9368,7 +9370,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			var d = new Date();
 																			d.setHours(d.getHours() + wait_dungeon_long);
 																			var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																			connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																			connection.query('UPDATE player SET death_count = death_count+1, dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
 																			connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -9891,7 +9893,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																						var d = new Date();
 																						d.setHours(d.getHours() + wait_dungeon_long);
 																						var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																						connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																						connection.query('UPDATE player SET death_count = death_count+1, dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																							if (err) throw err;
 																						});
 																						connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -10015,7 +10017,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																								var d = new Date();
 																								d.setHours(d.getHours() + wait_dungeon_long);
 																								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																								connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																								connection.query('UPDATE player SET death_count = death_count+1, dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
 																								connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -10376,7 +10378,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																								var d = new Date();
 																								d.setHours(d.getHours() + wait_dungeon_long);
 																								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																								connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																								connection.query('UPDATE player SET death_count = death_count+1, dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
 																								connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -10623,7 +10625,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		var d = new Date();
 																		d.setHours(d.getHours() + wait_dungeon_long);
 																		var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																		connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																		connection.query('UPDATE player SET death_count = death_count+1, dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
 																		connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -10761,7 +10763,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																								var d = new Date();
 																								d.setHours(d.getHours() + wait_dungeon_long);
 																								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																								connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																								connection.query('UPDATE player SET death_count = death_count+1, dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
 																								connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -11048,7 +11050,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																									var d = new Date();
 																									d.setHours(d.getHours() + wait_dungeon_long);
 																									var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																									connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																									connection.query('UPDATE player SET death_count = death_count+1, dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																										if (err) throw err;
 																									});
 																									connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -14232,7 +14234,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							var d = new Date();
 																							d.setHours(d.getHours() + wait_dungeon_long);
 																							var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																							connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																							connection.query('UPDATE player SET death_count = death_count+1, dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
 																							connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -15030,7 +15032,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
-																							connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																							connection.query('UPDATE player SET death_count = death_count+1, dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
 
@@ -50835,6 +50837,9 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 }
 
 function playerKilled(team_id, player_id, place_id, is_boss) {
+	connection.query("UPDATE player SET death_count = death_count+1 WHERE id = " + player_id, function (err, rows, fields) {
+		if (err) throw err;
+	});
 	connection_sync.query("UPDATE assault_place_player_id SET killed = 1 WHERE player_id = " + player_id);
 	var rand = Math.random()*100;
 	var prob = 20;
@@ -51657,6 +51662,9 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 						// if (err) throw err; // per errore duplicazione righe
 
 						// concludi
+						connection.query("UPDATE player SET death_count = death_count+1 WHERE id = " + player_id, function (err, rows, fields) {
+							if (err) throw err;
+						});
 						connection.query('UPDATE map_lobby SET killed = 1, my_turn = 0, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_turn_start = NULL, battle_time_elapsed = 0, battle_turn_lost = 0, battle_turn_active = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 

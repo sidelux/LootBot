@@ -8534,6 +8534,12 @@ bot.onText(/^\/statistiche|^\/stats$/, function (message) {
 																																							var map_kills = 0;
 																																							if (rows[0].cnt != null)
 																																								map_kills = rows[0].cnt;
+																																								
+																																							connection.query('SELECT SUM(death_count) As cnt FROM player', function (err, rows, fields) {
+																																							if (err) throw err;
+																																								var death_count = 0;
+																																								if (rows[0].cnt != null)
+																																									death_count = rows[0].cnt;
 
 																																							bot.sendMessage(message.chat.id, "*Statistiche:*\n\n" +
 																																										"*Giocatori registrati:* " + formatNumber(tot) + "\n" +
@@ -8575,10 +8581,12 @@ bot.onText(/^\/statistiche|^\/stats$/, function (message) {
 																																										"*Figurine:* " + formatNumber(cards) + "\n" +
 																																										"*Partite giocate nelle Mappe:* " + formatNumber(map_plays) + "\n" +
 																																										"*Uccisioni nelle Mappe:* " + formatNumber(map_kills) + "\n" +
+																																										"*Uccisioni giocatori:* " + formatNumber(death_count) + "\n" +
 																																										"\n*Gruppi attivi (4):* " + formatNumber(groups) + "\n" +
 																																										"*Membri nei gruppi attivi (4):* " + formatNumber(members) + "\n" +
 
 																																										"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti che hanno inviato un comando negli ultimi 30 giorni\n(3) Utenti che hanno inviato un comando negli ultimi 7 giorni\n(4) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark);
+																																							});
 																																						});
 																																					});
 																																				});
@@ -9221,8 +9229,6 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, function (message, match) {
 	}
 
 	for (var m = 0; m < Object.keys(oggetti).length; m++) {
-		if (oggetti[m] == undefined)
-			continue;
 		ogg = oggetti[m].trim();
 		var items = connection_sync.query('SELECT id, name FROM item WHERE name LIKE "%' + ogg + '%"');
 		
