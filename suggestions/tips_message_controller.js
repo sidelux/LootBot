@@ -21,7 +21,6 @@ const loot_link = "[LootBot](https://telegram.me/lootgamebot/)";
 const channel_link_no_parse = "https://t.me/" + channel_name;
 const channel_link = "[canale](t.me/" + channel_name + ")";
 
-
 //MENU 
 const suggestion_tag = {
 	primo: ['🗺', '#loot', '#plus', '#community', "#tools"],
@@ -44,7 +43,7 @@ function manageCallBack(query) {
 			console.log("> Orario di inizio gestione:\t" + Date.now() / 1000);
 		}
 		if (maintenance && query.from.id != theCreator)
-			return callBack_resolve({ query: { id: query.id, options: { text: "Bot in manutenzione straordinaria..." } } });
+			return callBack_resolve({ query: { id: query.id, options: { text: "Modulo in manutenzione straordinaria..." } } });
 
 		let date = Date.now() / 1000;
 
@@ -52,7 +51,7 @@ function manageCallBack(query) {
 			if (manual_log) { console.log(">\t\tUltima query: " + user_info.lastQDate); }
 
 			if (user_info == -1) {
-				return callBack_resolve({ query: { id: query.id, options: { text: "Uups! Il Bot ha qualche problema..." } } });
+				return callBack_resolve({ query: { id: query.id, options: { text: "Uups! Il Modulo ha qualche problema..." } } });
 			}
 			let controll = true;
 			if (user_info.lastcheck > 0) {
@@ -89,12 +88,12 @@ function manageCallBack(query) {
 					if (isAPlayer == false) {
 						if (manual_log) { console.log(">\t\t" + query.from.username + " non è un giocatore di loot!\n"); }
 						return callBack_resolve({
-							toSend: invalidMessage(query.from.id, "Devi essere un utente di " + loot_link + " per usare questo bot..."),
+							toSend: invalidMessage(query.from.id, "Devi essere un utente di " + loot_link + " per usare questo modulo..."),
 							query: { id: query.id, options: { text: "Whoops!" } }
 						});
 					} else if (isTooYoung == true) {
 						return callBack_resolve({
-							toSend: invalidMessage(query.from.id, "Sei troppo giovane per usare questo bot.\nAumenta prima la tua esperienza su @lootgamebot!"),
+							toSend: invalidMessage(query.from.id, "Sei troppo giovane per usare questo modulo.\nAumenta prima la tua esperienza su @lootgamebot!"),
 							query: { id: query.id, options: { text: "Whoops!" } }
 						});
 					}
@@ -210,8 +209,7 @@ function suggestionManager(message) {
 		let text = message.text.toString();
 
 		if (maintenance && message.from.id != theCreator)
-			return suggestion_resolve({ toSend: invalidMessage(message.chat.id, "🤖 ❓\nBot in manutenzione straordinaria...") });
-
+			return suggestion_resolve({ toSend: invalidMessage(message.chat.id, "🤖 ❓\nModulo in manutenzione straordinaria...") });
 
 		if (message.from.id == theCreator) { //else	
 			if (manual_log) { console.log("_______CREATORE!__________"); }
@@ -305,7 +303,7 @@ function suggestionManager(message) {
 						isAPlayer = true;
 
 					if (user_info == -1) {
-						return suggestion_resolve({ toSend: { id: message.id, options: { text: "*Whoops!* 🤯\n_Il Bot ha qualche problema..._\n\nSe puoi, scrivi a @nrc382" } } });
+						return suggestion_resolve({ toSend: { id: message.id, options: { text: "*Whoops!* 🤯\n_Il Modulo ha qualche problema..._\n\nSe puoi, scrivi a @nrc382" } } });
 					} else if (loot_user != true) {
 						if (loot_user.res) {
 							loot_user.res.forEach(function (user) {
@@ -315,7 +313,7 @@ function suggestionManager(message) {
 									if (user.greater_50 == 0 && message.from.id != phenix_id) {
 										isAPlayer = false;
 										return suggestion_resolve({
-											toSend: invalidMessage(message.from.id, "Sei troppo giovane per usare questo bot.\nAumenta prima la tua esperienza su @lootgamebot!"),
+											toSend: invalidMessage(message.from.id, "Sei troppo giovane per usare questo modulo.\nAumenta prima la tua esperienza su @lootgamebot!"),
 										});
 									}
 								}
@@ -325,7 +323,7 @@ function suggestionManager(message) {
 								isAPlayer = true;
 							} else if (isAPlayer == false) {
 								if (manual_log) { console.log(">\t\t" + message.from.username + " non è un giocatore di lootia"); }
-								return suggestion_resolve({ toSend: invalidMessage(message.chat.id, "Devi essere un utente di " + loot_link + " per usare questo bot...") });
+								return suggestion_resolve({ toSend: invalidMessage(message.chat.id, "Devi essere un utente di " + loot_link + " per usare questo modulo...") });
 							}
 						}
 					}
@@ -588,14 +586,14 @@ function mainMenu(user_info) {
 					let to_wait;
 					if (rest_time > 3600) {
 						let time_toWait = Math.floor(rest_time / 3600);
-						to_wait = "\n\n⏳\nDovrai aspettare almeno " + (time_toWait == 1 ? "un ora " : time_toWait + " ore") + " prima di poter riutilizzare questo bot.";
+						to_wait = "\n\n⏳\nDovrai aspettare almeno " + (time_toWait == 1 ? "un ora " : time_toWait + " ore") + " prima di poter riutilizzare questo modulo.";
 					}
 					else if (rest_time > 60) {
 						let time_toWait = Math.floor(rest_time / 60);
-						to_wait = "\n\n⏳\nDovrai aspettare " + (time_toWait == 1 ? "circa un minuto " : "almeno" + time_toWait + " minuti") + " prima di poter riutilizzare questo bot.";
+						to_wait = "\n\n⏳\nDovrai aspettare " + (time_toWait == 1 ? "circa un minuto " : "almeno" + time_toWait + " minuti") + " prima di poter riutilizzare questo modulo.";
 					}
 					else
-						to_wait = "\n\n⌛️\nDovrai aspettare ancora qualche secondo prima di poter riutilizzare questo bot.";
+						to_wait = "\n\n⌛️\nDovrai aspettare ancora qualche secondo prima di poter riutilizzare questo modulo.";
 
 					let toDate = new Date((user_info.lastSugg * 1000) + (43200000));
 					//let lastSuggDate = new Date(user_info.lastSugg * 1000);
@@ -871,7 +869,7 @@ function personalMsgForOpens(u_role, sugg_count) {
 					if (total_recived > 0)
 						menu_text += "\nL'unico che hai proposto è stato apprezzato dalla Fenice e dalla comunità!";
 					else
-						menu_text += "\nL'unico che hai proposto non è stato capito dalla comunità, ma la fenice ha apprezzato il consiglio!";
+						menu_text += "\nL'unico che hai proposto non è stato capito dalla comunità, ma la Fenice ha apprezzato il consiglio!";
 
 				} else {
 					if (total_recived > 0)
@@ -1430,7 +1428,7 @@ function curiosityCmd(chat_id, user_info, fullCmd) {
 				let usrCountPartial = sugg_usrInfo.usr_total + sugg_usrInfo.usr_upVotes + sugg_usrInfo.usr_downVotes;
 				if (manual_log) { console.log(usrCountPartial); }
 				if (usrCountPartial == 0 || isNaN(usrCountPartial)) {
-					curiosity_msg = "🙃\nL'utente non ha avviato il bot!";
+					curiosity_msg = "🙃\nL'utente non ha avviato il modulo!";
 					if (user_info.id == theCreator) {
 						curiosity_msg += "\n> ID: " + fullCmd.target;
 					}
@@ -2996,7 +2994,7 @@ function manageVote(query, user_info, vote) {
 
 				if (infos.status != 0) {
 					if (infos.status == 1) {
-						final_text += "#piaciuto alla fenice ⚡";
+						final_text += "#piaciuto alla Fenice ⚡";
 					} else {
 						final_text += "#chiuso";
 					}
@@ -3050,7 +3048,7 @@ function manageVote(query, user_info, vote) {
 
 								let totalCountedVotes = (infos.upVotes + (-1) * infos.downVotes);
 								if (vote == 1) {
-									final_text += "\n#piaciuto alla fenice ⚡";
+									final_text += "\n#piaciuto alla Fenice ⚡";
 
 									author_msg = "😊 Wow!\nUn tuo [suggerimento](" + channel_link_no_parse + "/" +
 										query.message.message_id + ") è stato *approvato* dalla Fenice ⚡";
@@ -3074,7 +3072,7 @@ function manageVote(query, user_info, vote) {
 										query.message.message_id + ") è stato scartato dalla Fenice...\n";
 									if (infos.totalVotes > 0) {
 										author_msg += "Nel complesso è piaciuto agli altri utenti, ma probabilmente è stato considerato difficilmente realizzabile o sbilanciato.\n" +
-											"\nPiuttosto che tentare di recriminare _chissa cosa,_ cerca di capire MA soprattutto ricorda:\n*L'ultima parola spetta alla fenice!* ⚡️";
+											"\nPiuttosto che tentare di recriminare _chissa cosa,_ cerca di capire MA soprattutto ricorda:\n*L'ultima parola spetta alla Fenice!* ⚡️";
 									} else {
 										author_msg += "Considerando che nel complesso non è piaciuto nemmeno agli altri utenti, forse faresti meglio a valutare bene le meccaniche del gioco _prima di proporre il prossimo_";
 									}

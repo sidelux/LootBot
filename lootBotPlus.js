@@ -9393,7 +9393,7 @@ bot.onText(/^\/prezzo (.+)|^\/prezzo/, function (message, match) {
 	connection.query('SELECT id, value FROM item WHERE name = "' + oggetto + '"', function (err, rows, fields) {
 		if (err) throw err;
 		
-		if (Object.keys(rows).length > 0) {
+		if (Object.keys(rows).length == 0) {
 			bot.sendMessage(message.chat.id, "L'oggetto inserito non esiste");
 			return;
 		}
