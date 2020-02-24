@@ -13570,7 +13570,7 @@ bot.onText(/usa varco/i, function (message) {
 					delItem(player_id, 645, 1);
 					connection.query('UPDATE player SET dungeon_time = NULL, dungeon_skip = dungeon_skip+1 WHERE id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Entri in un varco che ti permette di avanzare nel tempo e farti entrare nuovamente del dungeon!", dBack);
+						bot.sendMessage(message.chat.id, "Entri in un varco che ti permette di avanzare nel tempo e farti entrare nuovamente nel dungeon!", dBack);
 						setAchievement(player_id, 41, 1);
 					});
 				}
@@ -39971,7 +39971,7 @@ bot.onText(/evento della luna/i, function (message) {
 			"> La luce della Luna Dorata dona ai viaggiatori di *Dungeon* la possibilità di raddoppiare il loro Rango\n" +
 			"> Il *Contrabbandiere* ama molto la Luce della Luna Dorata e questo evento raro, in vista dell’aumento degli avventurieri, lo porta a valutare, in alcuni momenti, le sue offerte al doppio del prezzo\n" +
 			"> I mandanti degli Incarichi, se si sentono ispirati dalla Luna Dorata, possono raddoppiare la ricompensa di Punti Anima al suo completamento\n" +
-			"> Inoltre solo durante il weekend della luna, le Monete Lunari ottenute grazie alle donazioni sono raddoppiate!\n" +
+			"> Inoltre solo durante il weekend della luna, le Monete Lunari ottenute grazie alle donazioni sono raddoppiate e quelle ricchieste per fare il giro della Ruota sono dimezzate!\n" +
 			"> *Ruota* della Luna Dorata\n" +
 			"\n*Vuoi accedere alla Ruota?*";
 	} else if (mode == 2) {
@@ -39982,7 +39982,7 @@ bot.onText(/evento della luna/i, function (message) {
 			"> La Luna Nera può dare consigli corretti o sbagliati ai viaggiatori di Dungeon che concludono le loro avventure sotto la sua influenza. Vi è possibilità di raddoppiare i loro *Punti Rango* al completamento di essi o di Annullarli\n" +
 			"> Il *Contrabbandiere* adora la Luce della Luna Nera e aumenta notevolmente rispetto alla Luna Dorata la probabilità di raddoppiare i soldi dati per un oggetto, ma a volte può essere più guardingo e conclude in fretta le sue transazioni dimezzando il guadagno\n" +
 			"> I mandanti degli Incarichi, spaventati dalla luce della Luna Nera, possono triplicare la ricompensa di Punti Anima oppure rifiutarsi di fornirne\n" +
-			"> Inoltre solo durante il weekend della luna, le Monete Lunari ottenute grazie alle donazioni sono raddoppiate!\n" +
+			"> Inoltre solo durante il weekend della luna, le Monete Lunari ottenute grazie alle donazioni sono raddoppiate e quelle ricchieste per fare il giro della Ruota sono dimezzate!\n" +
 			"> *Ruota* della Luna Nera\n" +
 			"\n*Vuoi accedere alla Ruota?*";
 	}
@@ -40095,15 +40095,20 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 				dragon_lev = rows[0].level;
 				evolved = rows[0].evolved;
 			}
+			
+			var price = 2;
+			
+			if (luckyMode == 1)
+				price = 1;
 
-			bot.sendMessage(message.chat.id, "Un raggio della *Luna " + moon + "* colpisce il luogo dove risiedi ed una ruota magica appare dinnanzi a te.\n\nNell'insenatura vi è lo spazio per un qualcosa grande come una moneta e le iscrizioni su essa recitano le seguenti parole:\n_'Tu che sei baciato dalla Luna Dorata inserisci 2 🌕; in essa e potrai ricevere Piu Forza (+1 Livello giocatore/drago), La mia Luce (💎), Più Potere Arcano dalle molteplici sfaccettature (Mana di ogni tipo), Mappe del Tesoro (Molte Monete), Oggetti Unici (Scrigno Capsula), La mia luce nella tua arma, nel tuo scudo o nella tua armatura per una settimana (Incantamento su Arma, Scudo o Armatura per 7 Giorni), una grande quantità di Polvere, il potere dell’anima per il tuo Team (🦋) od uno spirito utile nel tuo cammino (💠).'_\n\nSe ti trovi già al livello massimo, quella ricompensa non potrà essere ottenuta. Possiedi " + moon_coin + " 🌕, procedi?", kbYesNo).then(function () {
+			bot.sendMessage(message.chat.id, "Un raggio della *Luna " + moon + "* colpisce il luogo dove risiedi ed una ruota magica appare dinnanzi a te.\n\nNell'insenatura vi è lo spazio per un qualcosa grande come una moneta e le iscrizioni su essa recitano le seguenti parole:\n_'Tu che sei baciato dalla Luna Dorata inserisci " + price + " 🌕; in essa e potrai ricevere Piu Forza (+1 Livello giocatore/drago), La mia Luce (💎), Più Potere Arcano dalle molteplici sfaccettature (Mana di ogni tipo), Mappe del Tesoro (Molte Monete), Oggetti Unici (Scrigno Capsula), La mia luce nella tua arma, nel tuo scudo o nella tua armatura per una settimana (Incantamento su Arma, Scudo o Armatura per 7 Giorni), una grande quantità di Polvere, il potere dell’anima per il tuo Team (🦋) od uno spirito utile nel tuo cammino (💠).'_\n\nSe ti trovi già al livello massimo, quella ricompensa non potrà essere ottenuta. Possiedi " + moon_coin + " 🌕, procedi?", kbYesNo).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if (answer.text.toLowerCase() == "si") {
 						connection.query('SELECT id, moon_coin FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 							if (err) throw err;
 
-							if (rows[0].moon_coin < 2) {
-								bot.sendMessage(message.chat.id, "Non hai abbastanza 🌕, te ne servono 2 per girare la ruota, al momento ne possiedi " + rows[0].moon_coin + " ma puoi trovarle durante le missioni o ottenerle attraverso le donazioni!", kbBack);
+							if (rows[0].moon_coin < price) {
+								bot.sendMessage(message.chat.id, "Non hai abbastanza 🌕, te ne servono " + price + " per girare la ruota, al momento ne possiedi " + rows[0].moon_coin + " ma puoi trovarle durante le missioni o ottenerle attraverso le donazioni!", kbBack);
 								return;
 							}
 
@@ -40144,11 +40149,11 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 								if (rows[0].cnt > 0)
 									skip1 == 2;
 
-								connection.query('UPDATE player SET moon_coin = moon_coin-2 WHERE id = ' + player_id, function (err, rows, fields) {
+								connection.query('UPDATE player SET moon_coin = moon_coin-' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
 									if (rand <= 1) {									
 										if (skip1 == 1) {
-											connection.query('UPDATE player SET moon_coin = moon_coin+2 WHERE id = ' + player_id, function (err, rows, fields) {
+											connection.query('UPDATE player SET moon_coin = moon_coin+' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 											});
 											bot.sendMessage(message.chat.id, "Avresti ottenuto 1 livello, ma hai raggiunto il cap, ritira!", kbBack);
@@ -40163,7 +40168,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 										setAchievement(player_id, 21, 1);
 									} else if ((rand >= 2) && (rand <= 3)) {
 										if (skip2 == 1) {
-											connection.query('UPDATE player SET moon_coin = moon_coin+2 WHERE id = ' + player_id, function (err, rows, fields) {
+											connection.query('UPDATE player SET moon_coin = moon_coin+' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 											});
 											bot.sendMessage(message.chat.id, "Avresti ottenuto 1 livello drago, ma hai raggiunto il cap, ritira!", kbBack);
@@ -40198,7 +40203,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 									} else if (rand == 11) {
 										var money = 5000000*reborn;
 										if (money + my_money >= 1000000000) {
-											connection.query('UPDATE player SET moon_coin = moon_coin+2 WHERE id = ' + player_id, function (err, rows, fields) {
+											connection.query('UPDATE player SET moon_coin = moon_coin+' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 											});
 											bot.sendMessage(message.chat.id, "Avresti ottenuto monete, ma avresti raggiunto il cap, ritira!", kbBack);
@@ -40215,7 +40220,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 										setAchievement(player_id, 21, 1);
 									} else if (rand == 13) {
 										if (weapon_enchant != 0) {
-											connection.query('UPDATE player SET moon_coin = moon_coin+2 WHERE id = ' + player_id, function (err, rows, fields) {
+											connection.query('UPDATE player SET moon_coin = moon_coin+' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 											});
 											bot.sendMessage(message.chat.id, "Avresti ottenuto un incantamento arma, ma l'arma è già incantata, ritira!", kbBack);
@@ -40226,7 +40231,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 										setAchievement(player_id, 21, 1);
 									} else if (rand == 14) {
 										if (weapon2_enchant != 0) {
-											connection.query('UPDATE player SET moon_coin = moon_coin+2 WHERE id = ' + player_id, function (err, rows, fields) {
+											connection.query('UPDATE player SET moon_coin = moon_coin+' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 											});
 											bot.sendMessage(message.chat.id, "Avresti ottenuto un incantamento armatura, ma l'armatura è già incantata, ritira!", kbBack);
@@ -40237,7 +40242,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 										setAchievement(player_id, 21, 1);
 									} else if (rand == 15) {
 										if (weapon3_enchant != 0) {
-											connection.query('UPDATE player SET moon_coin = moon_coin+2 WHERE id = ' + player_id, function (err, rows, fields) {
+											connection.query('UPDATE player SET moon_coin = moon_coin+' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 											});
 											bot.sendMessage(message.chat.id, "Avresti ottenuto un incantamento scudo, ma lo scudo è già incantato, ritira!", kbBack);
@@ -44506,8 +44511,10 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 																var exp = 1;
 
 																bot.sendMessage(message.chat.id, "<b>" + rows[0].name + "</b>\n" + message.from.username + ", ti aspetta un'esplorazione nella " + viaggio + " che terminerà il " + short_date + time + " (+" + exp + " exp)", abort_travel_2);
+																
+																setExp(player_id, exp);
 
-																connection.query('UPDATE player SET exp = exp+' + exp + ', cave_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', cave_time_end = "' + long_date + '", cave_gem = 0 WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+																connection.query('UPDATE player SET cave_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', cave_time_end = "' + long_date + '", cave_gem = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 															}
@@ -44537,8 +44544,10 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 																var exp = 1;
 
 																bot.sendMessage(message.chat.id, "<b>" + rows[0].name + "</b>\n" + message.from.username + ", ti aspetta un incredibile viaggio, " + rows[0].description + " " + short_date + time + " (+" + exp + " exp)", abort_travel);
+																
+																setExp(player_id, exp);
 
-																connection.query('UPDATE player SET exp = exp+' + exp + ', travel_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', travel_time_end = "' + long_date + '" WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+																connection.query('UPDATE player SET travel_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', travel_time_end = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 															}

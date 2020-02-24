@@ -9220,82 +9220,54 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, function (message, match) {
 		return;
 	}
 
-	for (var i = 0; i < len; i++) {
-		ogg = oggetti[i].trim();
-		connection.query('SELECT id, name FROM item WHERE name LIKE "%' + ogg + '%"', function (err, rows, fields) {
-			if (err) throw err;
+	for (var m = 0; m < Object.keys(oggetti).length; m++) {
+		if (oggetti[m] == undefined)
+			continue;
+		ogg = oggetti[m].trim();
+		var items = connection_sync.query('SELECT id, name FROM item WHERE name LIKE "%' + ogg + '%"');
+		
+		for (var i = 0; i < Object.keys(items).length; i++) {	
+			var itemId = items[i].id;
+			var itemName = items[i].name;
+			
+			var lottery = connection_sync.query('SELECT player.nickname, public_lottery.price FROM public_lottery, player WHERE player.id = public_lottery.creator_id AND item_id = ' + itemId);
 
-			var itemId = 0;
-			var itemName = "";
-
-			if (Object.keys(rows).length > 0) {
-				itemId = rows[0].id;
-				itemName = rows[0].name;
+			if (Object.keys(lottery).length > 0) {
+				text += "\n<b>Lotterie</b> per " + itemName + ":\n";
+				for (var j = 0; j < Object.keys(lottery).length; j++) {
+					if (lottery[j].price == 0)
+						lottery[j].price = "Gratis";
+					else
+						lottery[j].price = formatNumber(lottery[j].price) + " §";
+					text += "> " + lottery[j].nickname + " (" + formatNumber(lottery[j].price) + " - Lotteria)\n";
+				}
 			}
 
-			connection.query('SELECT player.nickname, public_lottery.price FROM public_lottery, player WHERE player.id = public_lottery.creator_id AND item_id = ' + itemId, function (err, rows, fields) {
-				if (err) throw err;
+			var market_pack = connection_sync.query('SELECT price FROM market_pack WHERE pack_id != 9 AND item_id = ' + itemId);
 
-				if (Object.keys(rows).length > 0) {
-					text += "\n<b>Lotterie</b> per " + this.itemName + ":\n";
-					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-						if (rows[i].price == 0)
-							rows[i].price = "Gratis";
-						else
-							rows[i].price = formatNumber(rows[i].price) + " §";
-						text += "> " + rows[i].nickname + " (" + formatNumber(rows[i].price) + " - Lotteria)\n";
-					}
-				}
+			if (Object.keys(market_pack).length > 0) {
+				text += "\n<b>Pacchetti</b> per " + itemName + ":\n";
+				for (var k = 0; k < Object.keys(market_pack).length; k++)
+					text += "> Mercante Pazzo (" + formatNumber(market_pack[k].price) + " § - Pacchetto)\n";
+			}
 
-				connection.query('SELECT price FROM market_pack WHERE pack_id != 9 AND item_id = ' + this.itemId, function (err, rows, fields) {
-					if (err) throw err;
+			var public_shop = connection_sync.query('SELECT player.nickname, public_shop.code, public_shop.price FROM public_shop JOIN ( SELECT public_shop.code, MIN(public_shop.price) As minPrice, player.nickname FROM public_shop, player, inventory WHERE inventory.player_id = player.id AND inventory.item_id = ' + itemId + ' AND inventory.quantity > 0 AND public_shop.public = 1 AND public_shop.quantity > 0 AND player.id = public_shop.player_id AND public_shop.item_id = ' + itemId + ' GROUP BY nickname ) As t2, player, inventory WHERE inventory.player_id = player.id AND inventory.item_id = ' + itemId + ' AND inventory.quantity > 0 AND public_shop.public = 1 AND public_shop.quantity > 0 AND player.id = public_shop.player_id AND public_shop.item_id = ' + itemId + ' AND public_shop.price = t2.minPrice AND player.nickname = t2.nickname ORDER BY public_shop.price ASC, time_creation ASC');
 
-					if (Object.keys(rows).length > 0) {
-						text += "\n<b>Pacchetti</b> per " + this.itemName + ":\n";
-						for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-							text += "> Mercante Pazzo (" + formatNumber(rows[i].price) + " § - Pacchetto)\n";
-					}
-
-					connection.query('SELECT player.nickname, public_shop.code, public_shop.price FROM public_shop JOIN ( SELECT public_shop.code, MIN(public_shop.price) As minPrice, player.nickname FROM public_shop, player, inventory WHERE inventory.player_id = player.id AND inventory.item_id = ' + itemId + ' AND inventory.quantity > 0 AND public_shop.public = 1 AND public_shop.quantity > 0 AND player.id = public_shop.player_id AND public_shop.item_id = ' + itemId + ' GROUP BY nickname ) As t2, player, inventory WHERE inventory.player_id = player.id AND inventory.item_id = ' + itemId + ' AND inventory.quantity > 0 AND public_shop.public = 1 AND public_shop.quantity > 0 AND player.id = public_shop.player_id AND public_shop.item_id = ' + itemId + ' AND public_shop.price = t2.minPrice AND player.nickname = t2.nickname ORDER BY public_shop.price ASC, time_creation ASC', function (err, rows, fields) {
-						if (err) throw err;
-						if (Object.keys(rows).length > 0) {
-							text += "\n<b>Negozi</b> per " + this.itemName + ":\n";
-							for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-								text += "> " + rows[i].nickname + " (" + formatNumber(rows[i].price) + " § - <code>" + rows[i].code + "</code>)\n";
-						}
-
-						if (this.i + 1 == this.len) {
-							if (Object.keys(text).length > 50) {
-								if (Object.keys(text).length < 4000)
-									bot.sendMessage(message.chat.id, text, html);
-								else
-									bot.sendMessage(message.chat.id, "Troppi risultati, prova con un filtro più limitato");
-							} else
-								bot.sendMessage(message.chat.id, "Non ho trovato nessun offerta in corso per gli oggetti specificati");
-						}
-					}.bind({
-						i: this.i,
-						len: this.len,
-						itemId: this.itemId,
-						itemName: this.itemName
-					}));
-				}.bind({
-					i: this.i,
-					len: this.len,
-					itemId: this.itemId,
-					itemName: this.itemName
-				}));
-			}.bind({
-				i: this.i,
-				len: this.len,
-				itemId: itemId,
-				itemName: itemName
-			}));
-		}.bind({
-			i: i,
-			len: len
-		}));
+			if (Object.keys(public_shop).length > 0) {
+				text += "\n<b>Negozi</b> per " + itemName + ":\n";
+				for (var l = 0; l < Object.keys(public_shop).length; l++)
+					text += "> " + public_shop[l].nickname + " (" + formatNumber(public_shop[l].price) + " § - <code>" + public_shop[l].code + "</code>)\n";
+			}
+		}
 	};
+		
+	if (Object.keys(text).length > 50) {
+		if (Object.keys(text).length < 4000)
+			bot.sendMessage(message.chat.id, text, html);
+		else
+			bot.sendMessage(message.chat.id, "Troppi risultati, prova con un filtro più limitato");
+	} else
+		bot.sendMessage(message.chat.id, "Non ho trovato nessun offerta in corso per gli oggetti specificati");
 });
 
 bot.onText(/^\/necessari (.+)|^\/necessari/, function (message, match) {
@@ -9414,6 +9386,11 @@ bot.onText(/^\/prezzo (.+)|^\/prezzo/, function (message, match) {
 	
 	connection.query('SELECT id, value FROM item WHERE name = "' + oggetto + '"', function (err, rows, fields) {
 		if (err) throw err;
+		
+		if (Object.keys(rows).length > 0) {
+			bot.sendMessage(message.chat.id, "L'oggetto inserito non esiste");
+			return;
+		}
 		
 		var item_id = rows[0].id;
 		var value = rows[0].value;
