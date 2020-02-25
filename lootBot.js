@@ -50288,7 +50288,8 @@ function assaultIncrement(message, player_id, team_id) {
 					if (err) throw err;
 					
 					if (Object.keys(rows).length == 0) {
-						bot.sendMessage(message.chat.id, "La postazione dove ti trovi è stata distrutta o non è stata costruita, non puoi incrementare", kbBack);
+						if (message != undefined)
+							bot.sendMessage(message.chat.id, "La postazione dove ti trovi è stata distrutta o non è stata costruita, non puoi incrementare", kbBack);
 						return;
 					}
 
