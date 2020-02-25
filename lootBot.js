@@ -6003,7 +6003,7 @@ bot.onText(/statistiche/i, function (message) {
 																											"*Ð accumulate*: " + formatNumber(top_rank_count) + "\n" +
 																											"*Triplette*: " + formatNumber(triplet) + "\n" +
 																											"*Flaridion utilizzati*: " + formatNumber(power_used) + "\n" +
-																											"*Uccisioni subite*: " + formatNumber(death_count) + "\n"
+																											"*Uccisioni subite*: " + formatNumber(death_count) + "\n" +
 
 																											"\n⚔️ *Hai completato*:\n" +
 																											"*Missioni*: " + formatNumber(missioni) + "\n" +
