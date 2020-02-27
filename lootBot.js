@@ -1324,7 +1324,7 @@ bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
 							url: rewardUrl
 						}]);
 
-						bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente, sei al giorno " + token_streak + ".\n\nLink ricompensa: <code>" + rewardUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>\n\nLista ricompense:\n> Più <b>Scrigni Cangianti</b> ogni giorno fino al 10°\n> <b>💎</b> ogni giorno fino al 20°\n> <b>🌕 o più 💎</b> ogni giorno fino al 30°\n> <b>Oggetto U assicurato</b> il 31° giorno\n\nSe doni almeno 10€ nel mese corrente, puoi ottenere tutte le ricompense del mese senza guardare la pubblicità", {
+						bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente, sei al giorno " + (token_streak+1) + ".\n\nLink ricompensa: <code>" + rewardUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>\n\nLista ricompense:\n> Più <b>Scrigni Cangianti</b> ogni giorno fino al 10°\n> <b>💎</b> ogni giorno fino al 20°\n> <b>🌕 o più 💎</b> ogni giorno fino al 30°\n> <b>Oggetto U assicurato</b> il 31° giorno\n\nSe doni almeno 10€ nel mese corrente, puoi ottenere tutte le ricompense del mese senza guardare la pubblicità", {
 							parse_mode: 'HTML',
 							disable_web_page_preview: true,
 							reply_markup: {
@@ -50721,9 +50721,9 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											var card_rarity = generateCardRarity();
 											var max = connection_sync.query('SELECT MAX(id) As mx FROM card_list');
 											var new_id = (max[0].mx+1);
-											if (new_id > 5000)
-												console.log("Limite 5000 figurine raggiunto, salto la creazione di nuove");
-											else {
+											if (new_id > 5000) {
+												// console.log("Limite 5000 figurine raggiunto, salto la creazione di nuove");
+											} else {
 												connection_sync.query('INSERT INTO card_list (id, name, rarity) VALUES (' + new_id + ', "' + mob_name + '", ' + card_rarity + ')');
 												console.log("Figurina creata: " + mob_name + " (" + card_rarity + ") [" + new_id + "] da utente " + rows[i].id);
 
@@ -51762,7 +51762,8 @@ function generateMap(lobby_id, width, height, players, conditions) {
 	}
 
 	var totalRate = chestRate+chestEpicRate+trapRate+pulseRate+scrapRate+teleportRate+paralyzeRate+boostRate;
-	console.log("Generazione mappa lobby " + lobby_id + " da " + width + "x" + height + " ticks con il " + totalRate + "% di oggetti e " + buildQnt + " costruzioni con condizioni " + conditions);
+	if (detailedLog == 1)
+		console.log("Generazione mappa lobby " + lobby_id + " da " + width + "x" + height + " ticks con il " + totalRate + "% di oggetti e " + buildQnt + " costruzioni con condizioni " + conditions);
 
 	/* LEGENDA
 
