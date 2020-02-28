@@ -6989,16 +6989,16 @@ bot.onText(/attacca!/i, function (message) {
 										enemy_text += "L'avversario barcolla riprendendosi dall'ultimo contraccolpo...";
 										set_battle_stunned = 0;
 									} else {
-										bot.sendMessage(message.chat.id, "Non puoi riprenderti in queste condizioni!", kbFight);
+										bot.sendMessage(message.chat.id, "Non puoi riprenderti in queste condizioni!", kbBack);
 										return;
 									}
 								} else if (answer.text.toLowerCase().indexOf("caricato") != -1) {
 									if (battle_heavy == 1) {
-										bot.sendMessage(message.chat.id, "Non puoi caricare un'altro attacco!", kbFight);
+										bot.sendMessage(message.chat.id, "Non puoi caricare un'altro attacco!", kbBack);
 										return;
 									}
 									if ((battle_shield == 2) || (battle_stunned == 1)) {
-										bot.sendMessage(message.chat.id, "Devi riprenderti prima di sferrare un altro attacco!", kbFight);
+										bot.sendMessage(message.chat.id, "Devi riprenderti prima di sferrare un altro attacco!", kbBack);
 										return;
 									}
 									text += "Carichi l'attacco che verrà sferrato al turno successivo!";
@@ -7007,16 +7007,16 @@ bot.onText(/attacca!/i, function (message) {
 								} else if (	(answer.text.toLowerCase().indexOf("attacco") != -1) ||
 											(answer.text.toLowerCase().indexOf("rottame") != -1)) {
 									if ((battle_shield == 2) || (battle_stunned == 1)) {
-										bot.sendMessage(message.chat.id, "Devi riprenderti prima di sferrare un altro attacco!", kbFight);
+										bot.sendMessage(message.chat.id, "Devi riprenderti prima di sferrare un altro attacco!", kbBack);
 										return;
 									}
 									if (answer.text.toLowerCase().indexOf("rottame") != -1) {
 										if (battle_heavy == 1) {
-											bot.sendMessage(message.chat.id, "Devi sferrare prima l'attacco caricato!", kbFight);
+											bot.sendMessage(message.chat.id, "Devi sferrare prima l'attacco caricato!", kbBack);
 											return;
 										}
 										if (scrap == 0) {
-											bot.sendMessage(message.chat.id, "Non hai alcun rottame da lanciare!", kbFight);
+											bot.sendMessage(message.chat.id, "Non hai alcun rottame da lanciare!", kbBack);
 											return;
 										}
 										full_damage = full_damage*2;
@@ -7072,11 +7072,11 @@ bot.onText(/attacca!/i, function (message) {
 									}
 								} else if (answer.text.toLowerCase().indexOf("difendi") != -1) {
 									if (battle_heavy == 1) {
-										bot.sendMessage(message.chat.id, "Non puoi difenderti se stai caricando un attacco!", kbFight);
+										bot.sendMessage(message.chat.id, "Non puoi difenderti se stai caricando un attacco!", kbBack);
 										return;
 									}
 									if ((battle_shield == 2) || (battle_stunned == 1)) {
-										bot.sendMessage(message.chat.id, "Devi riprenderti prima di difenderti nuovamente!", kbFight);
+										bot.sendMessage(message.chat.id, "Devi riprenderti prima di difenderti nuovamente!", kbBack);
 										return;
 									}
 									text += "Ti metti in posizione difensiva in attesa dell'avversario!";
@@ -7084,13 +7084,13 @@ bot.onText(/attacca!/i, function (message) {
 									set_battle_shield = 1;
 								} else if (answer.text.toLowerCase().indexOf("scappa") != -1) {
 									if (battle_shield == 2) {
-										bot.sendMessage(message.chat.id, "Non puoi scappare in queste condizioni!", kbFight);
+										bot.sendMessage(message.chat.id, "Non puoi scappare in queste condizioni!", kbBack);
 										return;
 									} else if (battle_stunned == 1) {
-										bot.sendMessage(message.chat.id, "Non puoi scappare in queste condizioni!", kbFight);
+										bot.sendMessage(message.chat.id, "Non puoi scappare in queste condizioni!", kbBack);
 										return;
 									} else if (restrict_end == 1) {
-										bot.sendMessage(message.chat.id, "Non puoi scappare se rimane solo una casella!", kbFight);
+										bot.sendMessage(message.chat.id, "Non puoi scappare se rimane solo una casella!", kbBack);
 										return;
 									}
 									
@@ -36518,6 +36518,377 @@ bot.onText(/ricicla/i, function (message) {
 	});
 });
 
+bot.onText(/riciclav2/i, function (message) {
+	if (message.from.username != "fenix45")
+		return;
+	connection.query('SELECT id, holiday, money, account_id, mission_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+		if (rows[0].holiday == 1) {
+			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back)
+			return;
+		}
+
+		var player_id = rows[0].id;
+		var money = rows[0].money;
+
+		var kbR = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["C", "NC", "R"], ["UR", "L", "E"], ["D"], ["Torna all'emporio"], ["Torna al menu"]]
+			}
+		};
+
+		var kb2 = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Ricicla Ancora"], ["Torna al menu"]]
+			}
+		};
+
+		var kbC = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Stessa Rarità"], ["Rarità Superiore"], ["Torna al menu"]]
+			}
+		};
+
+		if (message.text.indexOf("Ricicla:") != -1) {
+			bot.sendMessage(message.chat.id, "Usa la sintassi: /ricicla nome,quantità", back);
+			return;
+		}
+
+		if (message.text.indexOf("/") != -1) {
+			message.text = message.text.toLowerCase().replace("/ricicla ", "");
+			var oggetto = message.text.split(",")[0].trim();
+			if (message.text.indexOf(",") == -1) {
+				bot.sendMessage(message.chat.id, "Sintassi non valida: /ricicla oggetto_da_riciclare,quantità,oggetto_risultato", back);
+				return;
+			}
+			var qnt = parseInt(message.text.split(",")[1].trim());
+
+			if (isNaN(qnt)) {
+				bot.sendMessage(message.chat.id, "Quantità non valida.", back);
+				return;
+			}
+
+			if ((qnt < 5) || (qnt > 500)) {
+				bot.sendMessage(message.chat.id, "Quantità non valida: minimo 5, massimo 500.", back);
+				return;
+			}
+
+			if (qnt % 5 !== 0) {
+				bot.sendMessage(message.chat.id, "Quantità non valida: inserisci un multiplo di 5.", back);
+				return;
+			}
+
+			var calc_qnt = Math.floor(qnt/5);
+
+			bot.sendMessage(message.chat.id, "Con quale modalità vuoi riciclare " + qnt + "x " + oggetto + "?", kbC).then(function () {
+				answerCallbacks[message.chat.id] = function (answer) {
+					bot.sendMessage(message.chat.id, "Quale oggetto vuoi ottenere?", kb2).then(function () {
+						answerCallbacks[message.chat.id] = function (answer) {
+							if ((answer.text == "Ricicla Ancora") || (answer.text == "Torna al menu"))
+								return;
+
+							connection.query('SELECT id, rarity, name FROM item WHERE name = "' + answer.text + '"', function (err, rows, fields) {
+								if (err) throw err;
+
+								if (Object.keys(rows).length == 0) {
+									bot.sendMessage(message.chat.id, "L'oggetto inserito non esiste.", back);
+									return;
+								}
+
+								var item_result_id = rows[0].id;
+								var item_result_rarity = rows[0].rarity;
+								var item_result_name = rows[0].name;
+
+								if ((item_result_rarity != "C") && (item_result_rarity != "NC") && (item_result_rarity != "R") && (item_result_rarity != "UR") && (item_result_rarity != "L") && (item_result_rarity != "E") && (item_result_rarity != "D")) {
+									bot.sendMessage(message.chat.id, "Non puoi ottenere un oggetto di questa rarità!", back);
+									return;
+								}
+
+								connection.query('SELECT inventory.item_id, item.name, inventory.quantity, item.rarity FROM inventory, item WHERE inventory.item_id = item.id AND player_id = ' + player_id + ' AND item.name = "' + oggetto + '"', function (err, rows, fields) {
+									if (err) throw err;
+
+									if (Object.keys(rows).length == 0) {
+										bot.sendMessage(message.chat.id, "L'oggetto non esiste.", back);
+										return;
+									}
+
+									if (rows[0].quantity < qnt) {
+										bot.sendMessage(message.chat.id, "Non possiedi abbastanza oggetti, ne servono " + qnt + ".", back);
+										return;
+									}
+
+									var rarity = rows[0].rarity;
+									var nRarity = rarity;
+									var item_id = rows[0].id;
+
+									var price = 0;
+									var prob = 0;
+
+									if (nRarity == item_result_rarity) {
+										// stessa rarità
+										prob = 80;
+									} else if ((nRarity == "C") && (item_result_rarity == "NC")) {
+										nRarity = "NC";
+										price = 10000;
+										prob = 80;
+									} else if ((nRarity == "NC") && (item_result_rarity == "R")) {
+										nRarity = "R";
+										price = 15000;
+										prob = 70;
+									} else if ((nRarity == "R") && (item_result_rarity == "UR")) {
+										nRarity = "UR";
+										price = 20000;
+										prob = 60;
+									} else if ((nRarity == "UR") && (item_result_rarity == "L")) {
+										nRarity = "L";
+										price = 25000;
+										prob = 50;
+									} else if ((nRarity == "L") && (item_result_rarity == "E")) {
+										nRarity = "E";
+										price = 30000;
+										prob = 40;
+									} else {
+										bot.sendMessage(message.chat.id, "Non puoi riciclare questa combinazione di rarità!", back);
+										return;
+									}
+
+									price = price*calc_qnt;
+
+									if (money < price) {
+										bot.sendMessage(message.chat.id, "Non hai abbastanza monete (" + price + " §)", back);
+										return;
+									}
+
+									connection.query('UPDATE player SET money = money-' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+									});
+
+									delItem(player_id, item_id, qnt);
+
+									setAchievement(player_id, 15, calc_qnt);
+
+									var text = "Hai riciclato " + qnt + "x " + oggetto + " ed hai ottenuto:\n";
+									var achQnt = 0;
+
+									var itemsArray = [];
+									var broken = 0;
+
+									for (var i = 0; i < calc_qnt; i++) {
+										var rand = Math.random()*100;
+										if (prob >= rand) {
+											broken++;
+											continue;
+										}
+
+										var rows = connection_sync.query('SELECT id, name FROM item WHERE rarity = "' + nRarity + '" AND name != "' + oggetto + '" AND craftable = 0 ORDER BY RAND()');
+
+										addItem(player_id, rows[0].id);
+
+										itemsArray.push(rows[0].name + " (" + nRarity + ")");
+
+										if ((nRarity == "D") && (item_id >= 68) && (item_id <= 73) && 
+											((item_result_id == 705) || (item_result_id == 703) || (item_result_id == 704) ||
+											 (item_result_id == 700) || (item_result_id == 701) || (item_result_id == 702) ||
+											 (item_result_id == 785) || (item_result_id == 786)))
+											achQnt++;
+									};
+
+									itemsArray = itemsArray.sort();
+
+									if (achQnt > 0)
+										setAchievement(player_id, 72, achQnt);
+
+									var kb3 = {
+										parse_mode: "Markdown",
+										reply_markup: {
+											resize_keyboard: true,
+											keyboard: [["/ricicla " + oggetto + "," + qnt], ["Ricicla Ancora"], ["Torna al menu"]]
+										}
+									};
+
+									var itemsGrouped = compressArray(itemsArray);
+									for (i = 0; i < Object.keys(itemsGrouped).length; i++)
+										text += "> " + itemsGrouped[i].count + "x " + itemsGrouped[i].value + "\n";
+
+									if (broken > 0)
+										text += "\nTuttavia si è inceppata durante il riciclo di " + broken + " oggetti!";
+
+									bot.sendMessage(message.chat.id, text, kb3);
+								});
+							});
+						};
+					});
+				};
+			});
+			return;
+		}
+
+		var iKeys = [];
+
+		bot.sendMessage(message.chat.id, "Seleziona la rarità dell'oggetto da riciclare, puoi anche usare /ricicla\nIn caso di rarità D, c'è una possibilità che il riciclo fallisca, questa probabilità dipende dalla rarità della Pietra utilizzata", kbR).then(function () {
+			answerCallbacks[message.chat.id] = function (answer) {
+				var r = answer.text;
+
+				if ((r == "Torna al menu") || (r == "Torna all'emporio"))
+					return;
+
+				if ((r != "C") && (r != "NC") && (r != "R") && (r != "UR") && (r != "L") && (r != "E") && (r != "D")) {
+					bot.sendMessage(message.chat.id, "Rarità non valida", back);
+					return;
+				}
+
+				connection.query('SELECT item.name, inventory.quantity, item.rarity FROM inventory, item WHERE item.id = inventory.item_id AND item.rarity = "' + r + '" AND player_id = ' + player_id + ' AND inventory.quantity >= 5', function (err, rows, fields) {
+					if (err) throw err;
+					if (Object.keys(rows).length == 0) {
+						bot.sendMessage(message.chat.id, "Non hai oggetti di rarità " + r + " riciclabili.", back);
+						return;
+					}
+					for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+						iKeys.push([rows[i].name + " (" + rows[i].rarity + ", " + rows[i].quantity + ")"]);
+
+					iKeys.push(["Torna all'emporio"]);
+					iKeys.push(["Torna al menu"]);
+
+					var kb = {
+						parse_mode: "Markdown",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: iKeys
+						}
+					};
+
+					bot.sendMessage(message.chat.id, "Seleziona gli oggetti da riciclare, consumandone 5 riceverai l'oggetto che verrà specificato della stessa rarità, o immediatamente superiore (in questo caso ti costerà C -> NC: 10.000 §, NC -> R: 15.000 §, R -> UR: 20.000 §, UR -> L: 25.000 §, L -> E: 30.000 §).", kb).then(function () {
+						answerCallbacks[message.chat.id] = function (answer) {
+							var oggetto = answer.text;
+
+							if ((oggetto == "Torna al menu") || (oggetto == "Torna all'emporio"))
+								return;
+
+							var pos = oggetto.indexOf("(");
+							oggetto = oggetto.substr(0, pos - 1);
+
+							bot.sendMessage(message.chat.id, "Quale oggetto vuoi ottenere?", kb2).then(function () {
+								answerCallbacks[message.chat.id] = function (answer) {
+									if ((answer.text == "Ricicla Ancora") || (answer.text == "Torna al menu"))
+										return;
+									
+									connection.query('SELECT id, rarity, name FROM item WHERE name = "' + answer.text + '"', function (err, rows, fields) {
+										if (err) throw err;
+										
+										if (Object.keys(rows).length == 0) {
+											bot.sendMessage(message.chat.id, "L'oggetto inserito non esiste.", back);
+											return;
+										}
+										
+										var item_result_id = rows[0].id;
+										var item_result_rarity = rows[0].rarity;
+										var item_result_name = rows[0].name;
+										
+										if ((item_result_rarity != "C") && (item_result_rarity != "NC") && (item_result_rarity != "R") && (item_result_rarity != "UR") && (item_result_rarity != "L") && (item_result_rarity != "E") && (item_result_rarity != "D")) {
+											bot.sendMessage(message.chat.id, "Non puoi ottenere un oggetto di questa rarità!", back);
+											return;
+										}
+									
+										connection.query('SELECT money FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+
+											connection.query('SELECT item.name, inventory.quantity, item.rarity, item.id FROM inventory, item WHERE item.id = inventory.item_id AND item.rarity = "' + r + '" AND player_id = ' + player_id + ' AND inventory.quantity >= 5 AND item.name = "' + oggetto + '"', function (err, rows, fields) {
+												if (err) throw err;
+												if (Object.keys(rows).length == 0) {
+													bot.sendMessage(message.chat.id, "Non possiedi l'oggetto specificato.", back);
+													return;
+												}
+
+												var rarity = rows[0].rarity;
+												var nRarity = rarity;
+												var item_id = rows[0].id;
+
+												var price = 0;
+												var prob = 0;
+												
+												if (nRarity == item_result_rarity) {
+													// stessa rarità
+													prob = 80;
+												} else if ((nRarity == "C") && (item_result_rarity == "NC")) {
+													nRarity = "NC";
+													price = 10000;
+													prob = 80;
+												} else if ((nRarity == "NC") && (item_result_rarity == "R")) {
+													nRarity = "R";
+													price = 15000;
+													prob = 70;
+												} else if ((nRarity == "R") && (item_result_rarity == "UR")) {
+													nRarity = "UR";
+													price = 20000;
+													prob = 60;
+												} else if ((nRarity == "UR") && (item_result_rarity == "L")) {
+													nRarity = "L";
+													price = 25000;
+													prob = 50;
+												} else if ((nRarity == "L") && (item_result_rarity == "E")) {
+													nRarity = "E";
+													price = 30000;
+													prob = 40;
+												} else {
+													bot.sendMessage(message.chat.id, "Non puoi riciclare questa combinazione di rarità!", back);
+													return;
+												}
+
+												if (money < price) {
+													bot.sendMessage(message.chat.id, "Non hai abbastanza monete (" + price + " §)", back);
+													return;
+												}
+
+												connection.query('UPDATE player SET money = money-' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+												});
+
+												delItem(player_id, item_id, 5);
+
+												var rand = Math.random()*100;
+
+												if (prob >= rand) {
+													bot.sendMessage(message.chat.id, "La macchina di riciclo si è inceppata e non è stato possibile produrre alcun oggetto!", kb2);
+													return;
+												}
+
+												setAchievement(player_id, 15, 1);
+
+												addItem(player_id, item_result_id);
+
+												if ((nRarity == "D") && (item_id >= 68) && (item_id <= 73) && 
+													((item_result_id == 705) || (item_result_id == 703) || (item_result_id == 704) ||
+													 (item_result_id == 700) || (item_result_id == 701) || (item_result_id == 702) ||
+													 (item_result_id == 785) || (item_result_id == 786)))
+													setAchievement(player_id, 72, 1);
+
+												bot.sendMessage(message.chat.id, "Hai riciclato gli oggetti e ricevuto *" + item_result_name + "* (" + nRarity + ")!", kb2);
+											});
+										});
+									});
+								};
+							});
+						};
+					});
+				});
+			};
+		});
+	});
+});
+
 bot.onText(/^vendi/i, function (message) {
 	var oggetto = message.text.substring(message.text.indexOf(" ") + 1);
 
@@ -57581,10 +57952,10 @@ function setFinishedMission(element, index, array) {
 
 					var chest8 = 0;
 					if (boost_id == 5) {
-						if ((rand > 2) && (rand < 5))
+						if ((rand == 3) || (rand == 4))
 							chest8 = 1;
 					} else {
-						if ((rand > 2) && (rand < 8))
+						if (rand == 3)
 							chest8 = 1;
 					}
 
