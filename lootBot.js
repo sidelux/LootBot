@@ -171,6 +171,7 @@ var j3 = Schedule.scheduleJob('01 00 * * *', function () { //00:01 notte
 	refreshLife();
 	refreshManaBoost();
 	refreshDustBoost();
+	resetShopLimit();
 	if (d.getDay() == 1) {
 		craftWeek();
 		resetTeamWeekly();
@@ -36208,7 +36209,7 @@ bot.onText(/emporio/i, function (message) {
 	});
 });
 
-bot.onText(/ricicla/i, function (message) {
+bot.onText(/ricicla$|^\/ricicla (.+)/i, function (message) {
 	connection.query('SELECT id, holiday, money, account_id, mission_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -36249,11 +36250,6 @@ bot.onText(/ricicla/i, function (message) {
 				keyboard: [["Stessa Rarità"], ["Rarità Superiore"], ["Torna al menu"]]
 			}
 		};
-
-		if (message.text.indexOf("Ricicla:") != -1) {
-			bot.sendMessage(message.chat.id, "Usa la sintassi: /ricicla nome,quantità", back);
-			return;
-		}
 
 		if (message.text.indexOf("/") != -1) {
 			message.text = message.text.toLowerCase().replace("/ricicla ", "");
@@ -36548,8 +36544,14 @@ bot.onText(/ricicla/i, function (message) {
 });
 
 bot.onText(/riciclav2/i, function (message) {
-	if (message.from.username != "fenix45")
+	if ((message.from.id != 20471035) &&
+		(message.from.id != 340271798) &&
+		(message.from.id != 138671537) &&
+		(message.from.id != 62162452) &&
+		(message.from.id != 57314672)) {
 		return;
+	}
+		
 	connection.query('SELECT id, holiday, money, account_id, mission_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -36767,7 +36769,7 @@ bot.onText(/riciclav2/i, function (message) {
 
 		var iKeys = [];
 
-		bot.sendMessage(message.chat.id, "Seleziona la rarità dell'oggetto da riciclare, puoi anche usare /ricicla\nIn caso di rarità D, c'è una possibilità che il riciclo fallisca, questa probabilità dipende dalla rarità della Pietra utilizzata", kbR).then(function () {
+		bot.sendMessage(message.chat.id, "Seleziona la rarità dell'oggetto da riciclare, puoi anche usare il comando /ricicla", kbR).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				var r = answer.text;
 
@@ -37266,6 +37268,12 @@ bot.onText(/compra/i, function (message) {
 					}
 				});
 			} else if (oggetto.indexOf("Scrigno") != -1) {
+						
+				if (message.from.id != 20471035) {
+					bot.sendMessage(message.chat.id, "Manutenzione in corso, riprova tra poco", back);
+					return;
+				}
+				
 				connection.query('SELECT value, id FROM chest WHERE name = "' + oggetto + '" AND id < 7', function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length == 0) {
@@ -37273,66 +37281,102 @@ bot.onText(/compra/i, function (message) {
 						return;
 					}
 					var chest_id = rows[0].id;
+					var price = rows[0].value;
 
-					var kb = {
-						parse_mode: "Markdown",
-						reply_markup: {
-							resize_keyboard: true,
-							keyboard: [["1"], ["10"], ["100"], ["200"], ["500"], ["1000"], ["Torna all'emporio"], ["Torna al menu"]]
-						}
-					};
-
-					var price_view = rows[0].value;
+					var price_view = price;
 					if (price_drop == 1)
-						price_view -= Math.round((rows[0].value / 100) * sconto);
-
-					bot.sendMessage(message.chat.id, "Seleziona la quantità di scrigni da acquistare, ogni scrigno costa " + formatNumber(price_view) + " §", kb).then(function () {
-						answerCallbacks[message.chat.id] = function (answer) {
-							var quantity = answer.text;
-							if ((quantity == "Torna al menu") || (quantity == "Torna all'emporio"))
-								return;
-							if ((quantity < 1) || (re.test(quantity) == false)) {
-								bot.sendMessage(message.chat.id, "Quantità non valida", store);
-								return;
-							}
-
-							var price = rows[0].value;
-
-							if (price_drop == 1)
-								price -= Math.round((rows[0].value / 100) * sconto);
-
-							quantity = Math.floor(quantity);
-							price = price * parseInt(quantity);
+						price_view -= Math.round((price / 100) * sconto);
 							
-							bot.sendMessage(message.chat.id, "Sei sicuro di voler acquistare gli scrigni per " + formatNumber(price) + "§ ?", storeYesNo).then(function () {
-								answerCallbacks[message.chat.id] = function (answer) {
-									if (answer.text.toLowerCase() == "si") {
-										connection.query('SELECT money FROM player WHERE id = ' + player_id, function (err, rows, fields) {
-											if (err) throw err;
+					connection.query('SELECT quantity FROM shop_limit WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id, function (err, rows, fields) {
+						if (err) throw err;
 
-											if (rows[0].money - price < 0) {
-												bot.sendMessage(message.chat.id, "Non hai abbastanza credito a disposizione (" + formatNumber(rows[0].money) + "/" + formatNumber(price) + ")", store);
-												return;
-											}
-
-											var bonus_text = "";
-											if (abBonus == 1) {
-												price = Math.round(price / 2);
-												bonus_text = " dimezzati grazie al tuo talento!";
-											}
-
-											setAchievement(player_id, 14, quantity, chest_id);
-
-											connection.query('UPDATE player SET money = money-' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
-												if (err) throw err;
-												addChest(player_id, chest_id, quantity);
-												bot.sendMessage(message.chat.id, "Acquisto completato con successo! Hai speso " + formatNumber(price) + " §" + bonus_text, chest);
-											});
-										});
-									}
-								}
-							});
+						var max_quantity = ((7-chest_id)*100)*7;
+						var quantity_left = max_quantity;
+						if (Object.keys(rows).length > 0)
+							quantity_left = max_quantity-rows[0].quantity;
+						
+						if (quantity_left <= 0) {
+							bot.sendMessage(message.chat.id, "Non puoi più acquistare scrigni di questa rarità, riprova la prossima settimana", store);
+							return;
+						}
+						
+						var kb = {
+							parse_mode: "Markdown",
+							reply_markup: {
+								resize_keyboard: true,
+								keyboard: [["1"], ["10"], ["100"], ["200"], [quantity_left.toString()], ["Torna all'emporio"], ["Torna al menu"]]
+							}
 						};
+
+						bot.sendMessage(message.chat.id, "Seleziona la quantità di scrigni da acquistare, ogni scrigno costa " + formatNumber(price_view) + " §\nPuoi ancora acquistarne " + formatNumber(quantity_left) + " questa settimana", kb).then(function () {
+							answerCallbacks[message.chat.id] = function (answer) {
+								var quantity = answer.text;
+								if ((quantity == "Torna al menu") || (quantity == "Torna all'emporio"))
+									return;
+								if ((quantity < 1) || (re.test(quantity) == false)) {
+									bot.sendMessage(message.chat.id, "Quantità non valida", store);
+									return;
+								}
+								
+								if (quantity > quantity_left) {
+									bot.sendMessage(message.chat.id, "Non puoi acquistare così tanti scrigni, massimo " + formatNumber(quantity_left), store);
+									return;
+								}
+
+								if (price_drop == 1)
+									price -= Math.round((price / 100) * sconto);
+
+								quantity = Math.floor(quantity);
+								price = price * parseInt(quantity);
+
+								bot.sendMessage(message.chat.id, "Sei sicuro di voler acquistare " + formatNumber(quantity) + " scrigni per " + formatNumber(price) + "§ ?", storeYesNo).then(function () {
+									answerCallbacks[message.chat.id] = function (answer) {
+										if (answer.text.toLowerCase() == "si") {
+											connection.query('SELECT money FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+
+												if (rows[0].money - price < 0) {
+													bot.sendMessage(message.chat.id, "Non hai abbastanza credito a disposizione (" + formatNumber(rows[0].money) + "/" + formatNumber(price) + ")", store);
+													return;
+												}
+
+												var bonus_text = "";
+												if (abBonus == 1) {
+													price = Math.round(price / 2);
+													bonus_text = " dimezzati grazie al tuo talento!";
+												}
+
+												setAchievement(player_id, 14, quantity, chest_id);
+
+												connection.query('SELECT 1 FROM shop_limit WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id, function (err, rows, fields) {
+													if (err) throw err;
+
+													if (Object.keys(rows).length == 0) {
+														connection.query('INSERT INTO shop_limit (player_id, chest_id, quantity) VALUES (' + player_id + ', ' + chest_id + ', ' + quantity + ')', function (err, rows, fields) {
+															if (err) throw err;
+														});
+													} else {
+														connection.query('UPDATE shop_limit SET quantity = quantity + ' + quantity + ' WHERE chest_id = ' + chest_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+															if (err) throw err;
+														});
+													}
+													
+													connection.query('INSERT INTO shop_history (player_id, chest_id, quantity) VALUES (' + player_id + ', ' + chest_id + ', ' + quantity + ')', function (err, rows, fields) {
+														if (err) throw err;
+													});
+
+													connection.query('UPDATE player SET money = money-' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+														addChest(player_id, chest_id, quantity);
+														bot.sendMessage(message.chat.id, "Acquisto completato con successo! Hai speso " + formatNumber(price) + " §" + bonus_text, chest);
+													});
+												});
+											});
+										}
+									}
+								});
+							};
+						});
 					});
 				});
 			} else if (oggetto.indexOf("Pozione") != -1) {
@@ -41351,9 +41395,6 @@ bot.onText(/invita (.+)|^\/invita$/i, function (message, match) {
 });
 
 bot.onText(/spia (.+)|^\/spia/i, function (message, match) {
-
-	var test = 0;
-
 	var spy_null = {
 		parse_mode: "Markdown",
 		reply_markup: {
@@ -41432,13 +41473,6 @@ bot.onText(/spia (.+)|^\/spia/i, function (message, match) {
 							bot.sendMessage(message.chat.id, "Il bersaglio è sotto protezione", back);
 							return;
 						}
-
-						if (test == 1) {
-							if ((player.toLowerCase() == "delooo") || (player.toLowerCase() == "raukonar") || (player.toLowerCase() == "gaius87") || (player.toLowerCase() == "inudragoon")) {
-								bot.sendMessage(message.chat.id, "Il bersaglio è sotto protezione", back);
-								return;
-							}
-						}
 					}
 
 					if (rows[0].id == 1) {
@@ -41502,13 +41536,6 @@ bot.onText(/spia (.+)|^\/spia/i, function (message, match) {
 							if (rows[0].heist_protection != null) {
 								bot.sendMessage(message.chat.id, "Il bersaglio è sotto protezione", back);
 								return;
-							}
-
-							if (test == 1) {
-								if ((player.toLowerCase() == "delooo") || (player.toLowerCase() == "raukonar") || (player.toLowerCase() == "gaius87") || (player.toLowerCase() == "inudragoon")) {
-									bot.sendMessage(message.chat.id, "Il bersaglio è sotto protezione", back);
-									return;
-								}
 							}
 						}
 
@@ -53036,6 +53063,12 @@ function resetAchievement() {
 
 function resetTeamMission() {
 	connection.query('UPDATE team SET mission_day_count = 0', function (err, rows, fields) {
+		if (err) throw err;
+	});
+}
+
+function resetShopLimit() {
+	connection.query('DELETE FROM shop_limit', function (err, rows, fields) {
 		if (err) throw err;
 	});
 }
