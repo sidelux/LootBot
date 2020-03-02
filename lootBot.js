@@ -6250,10 +6250,12 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 											
 											var trainingLobby = 0;
 											if (answer.text.toLowerCase().indexOf("allenamento") != -1) {
+												/*
 												if (message.from.id != 20471035) {
-													bot.sendMessage(message.chat.id, "In costruzione...", kbBack);
+													bot.sendMessage(message.chat.id, "Manutenzione, riprova tra poco", kbBack);
 													return;
 												}
+												*/
 												trainingLobby = 1;
 											}
 											
@@ -8234,7 +8236,10 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									} else if (objId == 13) {		// bevanda boost
 										wait_time = 1;
 										boost_query += ", boost_turn = boost_turn+3";
-										text += "Trovi e raccogli una " + mapIdToSym(13) + " Bevanda Boost, per i prossimi 3 turni il tempo di attesa per i movimenti è ridotto\n";
+										var next = "per i prossimi";
+										if (boost_turn > 0)
+											next = "per altri";
+										text += "Trovi e raccogli una " + mapIdToSym(13) + " Bevanda Boost, " + next + " 3 turni il tempo di attesa per i movimenti è ridotto\n";
 										toClear = 1;
 									}
 									
@@ -36551,13 +36556,16 @@ bot.onText(/ricicla$|ricicla ancora|^\/ricicla (.+)/i, function (message) {
 */
 
 bot.onText(/ricicla/i, function (message) {
+	/*
 	if ((message.from.id != 20471035) &&
 		(message.from.id != 340271798) &&
 		(message.from.id != 138671537) &&
 		(message.from.id != 62162452) &&
 		(message.from.id != 57314672)) {
 		bot.sendMessage(message.chat.id, "Manutenzione in corso, riprova più tardi", mark);
+		return;
 	}
+	*/
 		
 	connection.query('SELECT id, holiday, money, account_id, mission_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -36735,7 +36743,7 @@ bot.onText(/ricicla/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							keyboard: [["/ricicla " + oggetto + "," + qnt], ["Ricicla Ancora"], ["Torna al menu"]]
+							keyboard: [["/ricicla " + oggetto + "," + qnt + "," + item_result_name], ["Ricicla Ancora"], ["Torna al menu"]]
 						}
 					};
 
@@ -37240,11 +37248,12 @@ bot.onText(/compra/i, function (message) {
 					}
 				});
 			} else if (oggetto.indexOf("Scrigno") != -1) {
-						
+				/*
 				if (message.from.id != 20471035) {
 					bot.sendMessage(message.chat.id, "Manutenzione in corso, riprova tra poco", back);
 					return;
 				}
+				*/
 				
 				connection.query('SELECT value, id FROM chest WHERE name = "' + oggetto + '" AND id < 7', function (err, rows, fields) {
 					if (err) throw err;
