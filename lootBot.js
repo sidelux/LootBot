@@ -106,6 +106,7 @@ var eventFestival;				// event_crafting_status con total_cnt a 0
 var specialMission;				// nulla
 var checkDragonTopOn;			// alla chiusura: svuota tabelle dragon_ e auto increment dummy a 100000
 var gnomorra;					// svuota tabella event_gnomorra
+var dungeonRush;				// nulla
 var lootteriaBlock = 0;
 var autoEstrazione = 0;
 
@@ -330,6 +331,10 @@ callNTimes(300000, function () { //Ogni 5 minuti
 		checkExtraDust();
 	}
 	checkDragonBoost();
+});
+
+callNTimes(600000, function () { //Ogni 10 minuti
+	checkLifeRush();
 });
 
 callNTimes(1800000, function () { //Ogni mezz'ora
@@ -797,7 +802,7 @@ bot.onText(/^\/nextevent (.+)|^\/nextevent/, function (message, match) {
 				bot.sendMessage(message.chat.id, "Prossimo evento annullato");
 			});
 		} else {
-			var eventList = ["crazyMode", "luckyMode", "arena", "lootteria", "villa", "wanted", "eventTeamStory", "eventFestival", "specialMission", "checkDragonTopOn", "gnomorra"];
+			var eventList = ["crazyMode", "luckyMode", "arena", "lootteria", "villa", "wanted", "eventTeamStory", "eventFestival", "specialMission", "checkDragonTopOn", "gnomorra", "dungeonRush"];
 
 			if (eventList.indexOf(match[1]) == -1) {
 				bot.sendMessage(message.chat.id, "Evento non valido");
@@ -8996,6 +9001,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 						}
 					};
 
+					if (dungeonRush == 1)
+						rows[0].room_time = null;
+					
 					if (rows[0].room_time != null) {
 						var now = new Date();
 						var min = Math.round(((room_time - now) / 1000) / 60);
@@ -27004,6 +27012,11 @@ bot.onText(/^incrementi effettuati/i, function (message) {
 });
 
 bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^❤️$|^cc$|^cp$/i, function (message) {
+	
+	if (dungeonRush == 1) {
+		bot.sendMessage(message.chat.id, "La cura è disattivata durante il Dungeon Rush!", back);
+		return;
+	}
 
 	var kbBack = {
 		parse_mode: "Markdown",
@@ -30442,6 +30455,7 @@ bot.onText(/eventi/i, function (message) {
 		"> *Villa di LastSoldier95* - 4 Giorni\n" +
 		"> *Il Canto del Bardo* - Weekend\n" +
 		"> *Gnomorra Lootiana* - Weekend\n" +
+		"> *Dungeon Rush* - Weekend\n" +
 		"\n*Eventi Settimanali Ricorrenti:\n\n*" +
 		"> *Miniere di Mana* - Giovedì/Venerdì \n" +
 		"> *Generatore di Polvere* - Lunedì/Martedì\n" +
@@ -40264,6 +40278,21 @@ bot.onText(/^apri/i, function (message) {
 	});
 });
 
+bot.onText(/dungeon rush/i, function (message) {
+	if (dungeonRush == 0) {
+		bot.sendMessage(message.chat.id, "La modalità dungeon rush non è attiva!", back);
+		return;
+	}
+
+	var bonus = "> Nessuna attesa tra le stanze\n" +
+		"> Cure con le Pozioni disattivate\n" +
+		"> Cura automatica del 10% ogni 10 minuti\n" +
+
+		"\nI bonus possono cambiare di volta in volta!";
+
+	bot.sendMessage(message.chat.id, "*Dungeon Rush!*\nQuesto evento dura tutto il weekend, modificando i dungeon in questo modo:\n\n" + bonus, back);
+});
+
 bot.onText(/weekend della follia/i, function (message) {
 	if (crazyMode == 0) {
 		bot.sendMessage(message.chat.id, "La modalità follia non è attiva!", back);
@@ -46270,6 +46299,8 @@ function mainMenu(message) {
 					if (Object.keys(rows).length > 0) {
 						room_time = rows[0].room_time;
 						var now = new Date();
+						if (dungeonRush == 1)
+							rows[0].room_time = null;
 						if (rows[0].room_time != null)
 							dungeon_min = Math.round(((new Date(room_time) - now) / 1000) / 60);
 						if (rows[0].diff <= 5)
@@ -46742,6 +46773,8 @@ function checkKeyboard() {
 		mainKeys.splice(0, 0, ['🎄 Villaggio Innevato (Evento) 🌨']);
 	if (gnomorra == 1)
 		mainKeys.splice(0, 0, ['📄 Gnomorra Lootiana (Evento) 🈵']);
+	if (dungeonRush == 1)
+		mainKeys.splice(0, 0, ['🛡 Dungeon Rush (Evento) 🏃‍♂️']);
 
 	main_html = {
 		parse_mode: "HTML",
@@ -46878,6 +46911,7 @@ function getEvents() {
 	text += "specialMission: " + specialMission + "\n";
 	text += "checkDragonTopOn: " + checkDragonTopOn + "\n";
 	text += "gnomorra: " + gnomorra + "\n";
+	text += "dungeonRush: " + dungeonRush + "\n";
 	
 	return text;
 }
@@ -46894,6 +46928,7 @@ function reloadEvents() {
 	specialMission = getValue("specialMission");
 	checkDragonTopOn = getValue("checkDragonTopOn");
 	gnomorra = getValue("gnomorra");
+	dungeonRush = getValue("dungeonRush");
 }
 
 function updateValue(keyName, valueName) {
@@ -53471,6 +53506,35 @@ function refreshLife() {
 		if (err) throw err;
 	});
 	connection.query('UPDATE merchant_offer SET day_cnt = 0', function (err, rows, fields) {
+		if (err) throw err;
+	});
+}
+
+function checkLifeRush() {
+	if (dungeonRush == 1) {
+		connection.query('SELECT id, life, total_life FROM player WHERE life < total_life', function (err, rows, fields) {
+			if (err) throw err;
+			if (Object.keys(rows).length > 0) {
+				if (Object.keys(rows).length == 1)
+					console.log(getNow("it") + "\x1b[32m 1 ricarica salute dungeon rush\x1b[0m");
+				else
+					console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " ricariche salute dungeon rush\x1b[0m");
+				rows.forEach(setLifeRush);
+			}
+		});
+	}
+}
+
+function setLifeRush(element, index, array) {
+	var player_id = element.id;
+	var life = element.life;
+	var total_life = element.total_life;
+	
+	var refill = life+(life*0.1);
+	if (life+refill > total_life)
+		refill = total_life-life;
+	
+	connection.query('UPDATE player SET life = life+' + refill + ' WHERE id = ' + player_id, function (err, rows, fields) {
 		if (err) throw err;
 	});
 }
