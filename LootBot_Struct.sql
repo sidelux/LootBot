@@ -616,7 +616,7 @@ CREATE TABLE `card_trade` (
   KEY `card_trade_p2` (`player_to`),
   CONSTRAINT `card_trade_p1` FOREIGN KEY (`player_from`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `card_trade_p2` FOREIGN KEY (`player_to`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -636,7 +636,7 @@ CREATE TABLE `card_trade_detail` (
   KEY `card_trade_id` (`card_id`),
   CONSTRAINT `card_trade` FOREIGN KEY (`trade_id`) REFERENCES `card_trade` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `card_trade_id` FOREIGN KEY (`card_id`) REFERENCES `card_list` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

@@ -1045,6 +1045,9 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 			var item_2id = rows[0].id2;
 			var item_3id = rows[0].id3;
 
+			var minValue = 500;
+			var bonusText = "5% monete in più per l'uccisione di mob e boss in Assalto";
+
 			console.log(item_1, item_2, item_3, item_1id, item_2id, item_3id);
 
 			connection.query('SELECT COUNT(player_id) As cnt FROM achievement_global', function (err, rows, fields) {
@@ -1063,9 +1066,6 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 
 									connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY val DESC', function (err, rows, fields) {
 										if (err) throw err;
-
-										var minValue = 50;
-										var bonusText = "33% probabilità di ottenere +1 🏆 al termine della partita nelle Mappe";
 
 										var text = "";
 
@@ -14779,6 +14779,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																						getSnowball(message.chat.id, message.from.username, player_id);
 
+																						globalAchievement(player_id, 1);
 																						setAchievement(player_id, 3, 1);
 
 																						if (boss_battle == 1) {
@@ -15454,7 +15455,7 @@ bot.onText(/rinasci/i, function (message) {
 													chest7 + " Scrigni Capsula\n" +
 													"Oltre a " + money + " §\n" +
 													unlock +
-													"Ed ora continua la tua incredibile avventura! Buon game!", back_html);
+													"\n\nEd ora continua la tua incredibile avventura! Buon game!", back_html);
 									console.log("Rinascita " + reborn + " per " + message.from.username + " completata");
 									calcLife(message);
 								});
@@ -29206,18 +29207,15 @@ bot.onText(/^aumenta posti/i, function (message) {
 bot.onText(/Entra in(?! uno esistente)/i, function (message) {
 	var name = message.text.substring(message.text.indexOf("in") + 3, message.text.lenght);
 
-	if (name == "Torna al menu") {
+	if (name == "Torna al menu")
 		return;
-	}
 
 	var pos = name.indexOf("(");
-	if (pos != -1) {
+	if (pos != -1)
 		name = name.substr(0, pos - 1);
-	}
 
-	if ((name.toLowerCase() == "uno esistente") || (name.toLowerCase() == "combattimento")) {
+	if ((name.toLowerCase() == "uno esistente") || (name.toLowerCase() == "combattimento"))
 		return;
-	}
 
 	connection.query('SELECT id, team_time, holiday, account_id, exp, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -29280,7 +29278,7 @@ bot.onText(/Entra in(?! uno esistente)/i, function (message) {
 										bot.sendMessage(message.chat.id, "Il tuo livello non è ancora sufficiente per entrare in questo team, torna al " + getLevel(min_lev), back);
 										return;
 									}
-									connection.query('INSERT INTO `team_player`(`id`, `player_id`, `team_id`) VALUES (DEFAULT,' + player_id + ',' + team_id + ')', function (err, rows, fields) {
+									connection.query('INSERT INTO team_player (id, player_id, team_id) VALUES (DEFAULT,' + player_id + ',' + team_id + ')', function (err, rows, fields) {
 										if (err) throw err;
 										connection.query('SELECT player_id FROM team_player WHERE team_id = ' + team_id + ' AND role = 1', function (err, rows, fields) {
 											if (err) throw err;
@@ -41199,6 +41197,113 @@ bot.onText(/Torna in Vita/i, function (message) {
 	});
 });
 
+bot.onText(/invita (.+)|^\/invita$/i, function (message, match) {
+	connection.query('SELECT id, account_id, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+		if (rows[0].holiday == 1) {
+			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back)
+			return;
+		}
+		
+		var player_id = rows[0].id;
+
+		connection.query('SELECT team_id, role FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+
+			var isAdmin = 0;
+			var team_id = rows[0].team_id;
+
+			if (rows[0].role == 0) {
+				bot.sendMessage(message.chat.id, "Questa funzione è riservata all'amministratore!", back);
+				return;
+			}
+			
+			if (match[1] == undefined) {
+				bot.sendMessage(message.chat.id, "Specifica il nome del giocatore dopo il comando", back);
+				return;
+			}
+			
+			var invite_param = match[1];
+			
+			connection.query('SELECT id, chat_id, nickname, exp, reborn FROM player WHERE nickname = "' + invite_param + '"', function (err, rows, fields) {
+				if (err) throw err;
+				
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Il giocatore specificato non esiste", back);
+					return;
+				}
+				
+				if ((Math.floor(rows[0].exp/10) < 20) && (rows[0].reborn == 1)) {
+					bot.sendMessage(message.chat.id, "Il giocatore non ha ancora raggiunto il livello 20, non può ricevere inviti privati", back);
+					return;
+				}
+				
+				var invite_player_id = rows[0].id;
+				var invite_chat_id = rows[0].chat_id;
+				var invite_nickname = rows[0].nickname;
+				
+				connection.query('SELECT id, player_id, allow FROM direct_message WHERE player_id = ' + invite_player_id, function (err, rows, fields) {
+					if (err) throw err;
+					var allow = 1;
+					if (Object.keys(rows).length == 0) {
+						connection.query('INSERT INTO direct_message (player_id, to_id) VALUES (' + invite_player_id + ', ' + player_id + ')', function (err, rows, fields) {
+							if (err) throw err;
+							bot.sendMessage(invite_chat_id, "Sei stato aggiunto al registro messaggi, usa /ricezione per bloccare i messaggi in entrata o riattivarli, '/r testo' per rispondere all'ultima discussione");
+						});
+					} else
+						allow = rows[0].allow;
+
+					if (message.from.id != 20471035) {
+						if (allow == 0) {
+							bot.sendMessage(message.chat.id, "Il giocatore ha bloccato la ricezione inviti");
+							return;
+						}
+					}
+				
+					connection.query('SELECT 1 FROM team_player WHERE player_id = ' + invite_player_id, function (err, rows, fields) {
+						if (err) throw err;
+
+						if (Object.keys(rows).length > 0) {
+							bot.sendMessage(message.chat.id, "Il giocatore è già in un team", back);
+							return;
+						}
+
+						connection.query('SELECT name FROM team WHERE id = ' + team_id, function (err, rows, fields) {
+							if (err) throw err;
+
+							var team_name = rows[0].name;
+
+							var kb = {
+								parse_mode: "HTML",
+								reply_markup: {
+									resize_keyboard: true,
+									keyboard: [["Entra in " + team_name], ["Rifiuta invito"], ["Torna al menu"]]
+								}
+							};
+
+							bot.sendMessage(message.chat.id, "Invito spedito!", back);
+							bot.sendMessage(invite_chat_id, message.from.username + ", amministratore del team _" + team_name + "_, ti invita ad unirti alle loro fila. Cosa vuoi fare?", kb).then(function () {
+								answerCallbacks[invite_chat_id] = function (answer) {
+									if (answer.text == "Rifiuta invito") {
+										bot.sendMessage(invite_chat_id, "Invito rifiutato!", back);
+										bot.sendMessage(message.chat.id, invite_nickname + "ha rifiutato il tuo invito!", back);
+									}
+								}
+							});
+						});
+					});
+				});
+			});
+		});
+	});
+});
+
 bot.onText(/spia (.+)|^\/spia/i, function (message, match) {
 
 	var test = 0;
@@ -49700,7 +49805,7 @@ function getRankAt(message, size) {
 }
 
 function getRankArt(message, size) {
-	connection.query('SELECT P.nickname, A.get_date FROM artifacts A, player P WHERE P.account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id AND item_id = 675 ORDER BY get_date DESC', function (err, rows, fields) {
+	connection.query('SELECT P.nickname, A.get_date FROM artifacts A, player P WHERE P.account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id AND item_id = 788 ORDER BY get_date DESC', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0) {
@@ -50941,6 +51046,10 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								money += money*team_boost_money;
 								if (Object.keys(ability).length > 0)
 									money += money*((ability[0].ability_level*ability[0].val)/100);
+								
+								if (rows[i].global_end == 1)
+									money += money*0.05;
+								
 								money = Math.round(money);
 
 								exp = 10;
@@ -56763,6 +56872,7 @@ function setFinishedLobbyEnd(element, index, array) {
 						trophies_count = ((lobby_total_space-pos+1)+parseInt(rows[i].kills))*multiplier;
 						
 						var bonus = "";
+						/*
 						if (rows[i].global_end == 1) {
 							var randGlobal = Math.random()*100;
 							if (randGlobal < 33) {
@@ -56770,6 +56880,7 @@ function setFinishedLobbyEnd(element, index, array) {
 								bonus = " 🌍";
 							}
 						}
+						*/
 						
 						var icons = " ";
 						if (rows[i].penality_escape == 1) {
@@ -59147,7 +59258,6 @@ function setExp(player_id, exp) {
 		}
 
 		setAchievement(player_id, 57, exp);
-		globalAchievement(player_id, exp);
 	});
 }
 
