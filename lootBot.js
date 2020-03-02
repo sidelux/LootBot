@@ -6130,7 +6130,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Accedi alla Lobby 🏹"], ["Trofei 🏆", "Vittorie 🎉", "Uccisioni 💀"], ["Guida 💬", "Stato 📜"], ["Torna al menu"]]
+				keyboard: [["Accedi alla Lobby 🏹"], ["Allenamento 🥋"], ["Trofei 🏆", "Vittorie 🎉", "Uccisioni 💀"], ["Guida 💬", "Stato 📜"], ["Torna al menu"]]
 			}
 		};
 
@@ -6241,7 +6241,18 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 										if (answer.text == "Torna al menu")
 											return;
 
-										if (answer.text.toLowerCase().indexOf("lobby") != -1) {
+										if ((answer.text.toLowerCase().indexOf("lobby") != -1) ||
+											(answer.text.toLowerCase().indexOf("allenamento") != -1)){
+											
+											var trainingLobby = 0;
+											if (answer.text.toLowerCase().indexOf("allenamento") != -1) {
+												if (message.from.id != 20471035) {
+													bot.sendMessage(message.chat.id, "In costruzione...", kbBack);
+													return;
+												}
+												trainingLobby = 1;
+											}
+											
 											var d = new Date();
 											if ((d.getHours() < nightEnd) || (d.getHours() >= nightStart)) {
 												bot.sendMessage(message.chat.id, "Puoi accedere ad una lobby solamente di giorno, dalle " + nightEnd + ":00 alle " + nightStart + ":00", kbBack);
@@ -6259,9 +6270,11 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 												bot.sendMessage(message.chat.id, "Sei già in attesa in una lobby", kbStop);
 												return;
 											}
-											if (map_daily_diff <= 0) {
-												bot.sendMessage(message.chat.id, "Hai già giocato il numero massimo di partite oggi", kbStop);
-												return;
+											if (trainingLobby == 0) {
+												if (map_daily_diff <= 0) {
+													bot.sendMessage(message.chat.id, "Hai già giocato il numero massimo di partite oggi", kbStop);
+													return;
+												}
 											}
 											if (lobby_wait_end != null) {
 												var d = new Date(lobby_wait_end);
@@ -6271,8 +6284,12 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 											}
 											
 											var max_lobby_count = 3;
+											
+											var query = 'SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg, L2.id FROM map_lobby L LEFT JOIN map_lobby_list L2 ON L.lobby_id = L2.lobby_id, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL AND L2.id IS NULL AND L.lobby_training = 0 GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY RAND()';
+											if (trainingLobby == 1)
+												query = 'SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg, L2.id FROM map_lobby L LEFT JOIN map_lobby_list L2 ON L.lobby_id = L2.lobby_id, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL AND L2.id IS NULL AND L.lobby_training = 1 GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY cnt DESC';
 
-											connection.query('SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg, L2.id FROM map_lobby L LEFT JOIN map_lobby_list L2 ON L.lobby_id = L2.lobby_id, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL AND L2.id IS NULL GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY RAND()', function (err, rows, fields) {
+											connection.query(query, function (err, rows, fields) {
 												if (err) throw err;
 
 												var lobby_id;
@@ -6328,7 +6345,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 													text = "Sei stato aggiunto alla lobby" + members + wait;
 												}
 
-												connection.query('UPDATE map_lobby SET lobby_id = ' + lobby_id + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+												connection.query('UPDATE map_lobby SET lobby_id = ' + lobby_id + ', lobby_training = ' + trainingLobby + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
 												});
 
@@ -52169,17 +52186,18 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 				bot.sendMessage(rows[i].chat_id, text);
 
 			// salva in history
-			connection.query('SELECT id FROM map_lobby_list WHERE lobby_id = ' + lobby_id,  function (err, rows, fields) {
+			connection.query('SELECT id, lobby_training FROM map_lobby_list WHERE lobby_id = ' + lobby_id,  function (err, rows, fields) {
 				if (err) throw err;
 
 				var map_lobby_id = rows[0].id;
+				var lobby_training = rows[0].lobby_training;
 
 				connection.query('SELECT COUNT(id) As cnt FROM map_history WHERE map_lobby_id = ' + map_lobby_id,  function (err, rows, fields) {
 					if (err) throw err;
 
 					var pos = lobby_total_space-rows[0].cnt;
 
-					connection.query('INSERT INTO map_history (map_lobby_id, player_id, cause, position, kills, life, penality_escape) VALUES (' + map_lobby_id + ', ' + player_id + ', ' + cause + ', ' + pos + ', ' + match_kills + ', ' + life + ', ' + is_escaped + ')', function (err, rows, fields) {
+					connection.query('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, cause, position, kills, life, penality_escape) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + player_id + ', ' + cause + ', ' + pos + ', ' + match_kills + ', ' + life + ', ' + is_escaped + ')', function (err, rows, fields) {
 						// if (err) throw err; // per errore duplicazione righe
 
 						// concludi
@@ -56804,7 +56822,7 @@ function setBattleTimeElapsed(element, index, array) {
 }
 
 function checkFullLobby() {
-	connection.query('SELECT M.lobby_id, COUNT(M.lobby_id) As cnt FROM map_lobby M LEFT JOIN map_lobby_list L ON M.lobby_id = L.lobby_id WHERE M.lobby_id IS NOT NULL AND L.id IS NULL GROUP BY M.lobby_id HAVING cnt = ' + lobby_total_space + ' ORDER BY M.id', function (err, rows, fields) {
+	connection.query('SELECT M.lobby_id, M.lobby_training, COUNT(M.lobby_id) As cnt FROM map_lobby M LEFT JOIN map_lobby_list L ON M.lobby_id = L.lobby_id WHERE M.lobby_id IS NOT NULL AND L.id IS NULL GROUP BY M.lobby_id HAVING cnt = ' + lobby_total_space + ' ORDER BY M.id', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
@@ -56819,6 +56837,7 @@ function checkFullLobby() {
 function setFullLobby(element, index, array) {
 	var lobby_id = element.lobby_id;
 	var players = element.cnt;
+	var lobby_training = element.lobby_training;
 
 	connection.query('SELECT map_conditions FROM config', function (err, rows, fields) {
 		if (err) throw err;
@@ -56828,7 +56847,7 @@ function setFullLobby(element, index, array) {
 		var size = Math.round(players*2-1);	// sempre dispari
 		var mapMatrix = generateMap(lobby_id, size, size, players, map_conditions);
 
-		connection.query('INSERT INTO map_lobby_list (lobby_id, map_json, turn_number, next_restrict_time, conditions) VALUES (' + lobby_id + ', "' + JSON.stringify(mapMatrix) + '", 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE), ' + map_conditions + ')', function (err, rows, fields) {
+		connection.query('INSERT INTO map_lobby_list (lobby_id, lobby_training, map_json, turn_number, next_restrict_time, conditions) VALUES (' + lobby_id + ', ' + lobby_training + ', "' + JSON.stringify(mapMatrix) + '", 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE), ' + map_conditions + ')', function (err, rows, fields) {
 			if (err) throw err;
 
 			connection.query('SELECT P.id, P.chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
@@ -56873,7 +56892,7 @@ function setFullLobby(element, index, array) {
 
 function checkLobbyEnd() {
 	// connection.query('SELECT lobby_id, COUNT(id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL AND killed = 1 GROUP BY lobby_id HAVING cnt >= ' + (lobby_total_space-1), function (err, rows, fields) {
-	connection.query('SELECT L.lobby_id, COUNT(H.player_id) As cnt FROM map_lobby_list L, map_history H WHERE L.id = H.map_lobby_id GROUP BY L.id HAVING cnt >= ' + (lobby_total_space-1), function (err, rows, fields) {
+	connection.query('SELECT L.lobby_id, L.lobby_training, COUNT(H.player_id) As cnt FROM map_lobby_list L, map_history H WHERE L.id = H.map_lobby_id GROUP BY L.id HAVING cnt >= ' + (lobby_total_space-1), function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
@@ -56887,6 +56906,8 @@ function checkLobbyEnd() {
 
 function setFinishedLobbyEnd(element, index, array) {
 	var lobby_id = element.lobby_id;
+	var lobby_training = element.lobby_training;
+	
 	connection.query('SELECT id, conditions FROM map_lobby_list WHERE lobby_id = ' + lobby_id,  function (err, rows, fields) {
 		if (err) throw err;
 
@@ -56909,7 +56930,7 @@ function setFinishedLobbyEnd(element, index, array) {
 					winner_match_kills = rows[0].match_kills;
 
 					// aggiunge il primo in classifica se era l'unico rimasto vivo
-					connection_sync.query('INSERT INTO map_history (map_lobby_id, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + winner_player_id + ', 1, ' + winner_match_kills + ')');
+					connection_sync.query('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + winner_player_id + ', 1, ' + winner_match_kills + ')');
 				}
 
 				connection.query('SELECT M.id As mapId, P.id, P.nickname, P.trophies, M.position, M.kills, M.life, M.penality_escape, P.map_count, P.global_end FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position ASC, kills DESC, life DESC, insert_date DESC', function (err, rows, fields) {
@@ -56961,6 +56982,12 @@ function setFinishedLobbyEnd(element, index, array) {
 						if (rows[i].map_count > lobby_daily_limit)
 							trophies_count = 0;
 						
+						if (lobby_training == 1) {
+							trophies_count = 0;
+							bonus = "";
+							icons = "";
+						}
+						
 						if (trophies_count >= 0)
 							trophies_query = "+" + trophies_count;
 						else {
@@ -57002,6 +57029,8 @@ function setFinishedLobbyEnd(element, index, array) {
 							if (err) throw err;
 
 							var msg = "La partita è terminata!";
+							if (lobby_training == 1)
+								msg = "La partita di allenamento è terminata!";
 							var gender = "Il vincitore";
 							if (winner_player_id != -1) {
 								if (winner_gender == "F")
