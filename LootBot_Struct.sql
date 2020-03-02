@@ -2077,6 +2077,7 @@ DROP TABLE IF EXISTS `map_history`;
 CREATE TABLE `map_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `map_lobby_id` int(11) NOT NULL,
+  `lobby_training` tinyint(1) NOT NULL DEFAULT '0',
   `player_id` int(11) NOT NULL,
   `cause` int(11) NOT NULL DEFAULT '0',
   `position` int(11) NOT NULL,
@@ -2103,6 +2104,7 @@ CREATE TABLE `map_lobby` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
   `lobby_id` int(11) DEFAULT NULL,
+  `lobby_training` tinyint(1) NOT NULL DEFAULT '0',
   `lobby_wait_end` timestamp NULL DEFAULT NULL,
   `match_kills` int(11) NOT NULL DEFAULT '0',
   `global_kills` int(11) NOT NULL DEFAULT '0',
@@ -2159,6 +2161,7 @@ DROP TABLE IF EXISTS `map_lobby_list`;
 CREATE TABLE `map_lobby_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `lobby_id` int(11) NOT NULL,
+  `lobby_training` tinyint(1) NOT NULL DEFAULT '0',
   `map_json` text NOT NULL,
   `creation_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `turn_number` int(11) NOT NULL,
@@ -3305,6 +3308,47 @@ CREATE TABLE `set_list` (
   PRIMARY KEY (`id`),
   KEY `player_id` (`player_id`),
   CONSTRAINT `PLAYERID_SET` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `shop_history`
+--
+
+DROP TABLE IF EXISTS `shop_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `shop_history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `player_id` int(11) NOT NULL,
+  `chest_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `shop_log_chest` (`chest_id`),
+  KEY `shop_log_player` (`player_id`),
+  CONSTRAINT `shop_log_chest` FOREIGN KEY (`chest_id`) REFERENCES `chest` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `shop_log_player` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `shop_limit`
+--
+
+DROP TABLE IF EXISTS `shop_limit`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `shop_limit` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `player_id` int(11) NOT NULL,
+  `chest_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `shop_limit_player` (`player_id`),
+  KEY `shop_limit_chest` (`chest_id`),
+  CONSTRAINT `shop_limit_chest` FOREIGN KEY (`chest_id`) REFERENCES `chest` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `shop_limit_player` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
