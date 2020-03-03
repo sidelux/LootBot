@@ -6645,7 +6645,7 @@ bot.onText(/esci dalla lobby/i, function (message) {
 			}
 		};
 
-		connection.query('SELECT lobby_id FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT lobby_id, lobby_training FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
@@ -6654,6 +6654,7 @@ bot.onText(/esci dalla lobby/i, function (message) {
 			}
 
 			var lobby_id = rows[0].lobby_id;
+			var lobby_training = rows[0].lobby_training;
 
 			if (lobby_id == null) {
 				bot.sendMessage(message.chat.id, "Accedi ad una lobby prima di poterne uscire", kbBack);
@@ -6667,32 +6668,41 @@ bot.onText(/esci dalla lobby/i, function (message) {
 					bot.sendMessage(message.chat.id, "Non puoi abbandonare la lobby se è completa, a breve inizierà la partita", kbBack);
 					return;
 				}
+				
+				var extra = " Dovrai attendere un po' di tempo per rientrare";
+				var extra2 = "\nDovrai attendere un po' di tempo prima di accedere ad una nuova lobby";
+				if (lobby_training == 0) {
+					extra = "";
+					extra2 = "";
+				}
 
-				bot.sendMessage(message.chat.id, "Sei sicuro di voler uscire dalla lobby? Dovrai attendere un po' di tempo per rientrare", kbYesNo).then(function () {
+				bot.sendMessage(message.chat.id, "Sei sicuro di voler uscire dalla lobby?" + extra, kbYesNo).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text.toLowerCase() == "si") {
 							connection.query('SELECT 1 FROM map_lobby_list WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 								if (err) throw err;
 								if (Object.keys(rows).length == 0) {
-									var d = new Date();
-									d.setMinutes(d.getMinutes() + 15);
-									var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-									connection.query('UPDATE map_lobby SET lobby_id = NULL, lobby_wait_end = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
-										if (err) throw err;
-										bot.sendMessage(message.chat.id, "Sei uscito dalla lobby!\nDovrai attendere un po' di tempo prima di accedere ad una nuova lobby", kbBack);
-
-										/*
-										connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
+									if (lobby_training == 0) {
+										var d = new Date();
+										d.setMinutes(d.getMinutes() + 15);
+										var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+										connection.query('UPDATE map_lobby SET lobby_id = NULL, lobby_wait_end = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
-
-											for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-												bot.sendMessage(rows[i].chat_id, "Un giocatore è uscito dalla lobby!");
 										});
-										*/
+									}
+									
+									bot.sendMessage(message.chat.id, "Sei uscito dalla lobby!" + extra2, kbBack);
+
+									/*
+									connection.query('SELECT chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id,  function (err, rows, fields) {
+										if (err) throw err;
+
+										for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+											bot.sendMessage(rows[i].chat_id, "Un giocatore è uscito dalla lobby!");
 									});
-								} else {
+									*/
+								} else
 									bot.sendMessage(message.chat.id, "Non puoi uscire dalla lobby finchè sei in partita!", kbBack);
-								}
 							});
 						}
 					}
