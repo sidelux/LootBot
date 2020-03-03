@@ -589,6 +589,7 @@ bot.onText(/^\/comandigiocatore/, function (message) {
 					"/spia - Spia un giocatore mostrando la scheda giocatore\n" +
 					"/ispeziona - Ispeziona un giocatore, puoi anche specificare il nome dello gnomo da inviare\n" +
 					"/rango - Visualizza informazioni sul rango del giocatore\n" +
+					"/lega - Visualizza informazioni sulla lega del giocatore\n" +
 					"/imprese - Visualizza lo stato delle imprese giornaliere\n" +
 					"/abilità - Visualizza informazioni sull'abilità del giocatore\n" +
 					"/posizione - Indica la posizione in classifica globale e se si otterrà il relativo punto partecipazione\n" +
@@ -8756,6 +8757,34 @@ bot.onText(/^\/rango/, function (message, match) {
 		setTimeout(function () {
 			bot.sendSticker(message.chat.id, getRankFileId(player_rank_b));
 		}, 500);
+	});
+});
+
+bot.onText(/^\/lega/, function (message, match) {
+	connection.query('SELECT id, mission_count FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0)
+			return;
+
+		var player_id = rows[0].id;
+		var mission_count = rows[0].mission_count;
+		var league_name;
+		if (mission_count <= 300)
+			league_name = "Lega degli Eploratori";
+		else if (mission_count <= 600)
+			league_name = "Lega degli Esperti";
+		else if (mission_count <= 1000)
+			league_name = "Lega dei Veterani";
+		else if (mission_count <= 2000)
+			league_name = "Lega dei Maestri";
+		else if (mission_count <= 5000)
+			league_name = "Lega dei Campioni";
+		else if (mission_count <= 10000)
+			league_name = "Lega degli Eroi";
+		else
+			league_name = "Lega delle Leggende";
+		bot.sendMessage(message.chat.id, "Informazioni lega per " + message.from.username + ":\nLega Attuale: <b>" + league_name + "</b> (" + player_rank_b + ")\nMissioni completate: " + formatNumber(mission_count), html);
 	});
 });
 

@@ -58389,7 +58389,7 @@ function setFinishedMission(element, index, array) {
 									addChest(element.id, chest_bonus_id);
 									var chest_info = connection_sync.query("SELECT name FROM chest WHERE id = " + chest_bonus_id);
 									chest_bonus = "\nPer la tua appartenenza alla _" + league_name + "_, ottieni uno *" + chest_info[0].name + "* aggiuntivo!";
-									console.log("Premio leghe missioni: " + chest_info[0].name);
+									// console.log("Premio leghe missioni: " + chest_info[0].name);
 								}
 
 								bot.sendMessage(chat_id, "Missione completata! Hai ottenuto:\n" + crazyText + "*" + rows[0].name + "* (" + rows[0].rarity_shortname + ")" + evolved_text + ", *" + formatNumber(money) + "* § e *" + exp + "* exp " + extra + "!" + chest_bonus + rarity_miss, mark);
