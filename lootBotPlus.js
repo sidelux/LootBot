@@ -8784,7 +8784,7 @@ bot.onText(/^\/lega/, function (message, match) {
 			league_name = "Lega degli Eroi";
 		else
 			league_name = "Lega delle Leggende";
-		bot.sendMessage(message.chat.id, "Informazioni lega per " + message.from.username + ":\nLega Attuale: <b>" + league_name + "</b> (" + player_rank_b + ")\nMissioni completate: " + formatNumber(mission_count), html);
+		bot.sendMessage(message.chat.id, "Informazioni lega per " + message.from.username + ":\nLega Attuale: <b>" + league_name + "</b>\nMissioni completate: " + formatNumber(mission_count), html);
 	});
 });
 
