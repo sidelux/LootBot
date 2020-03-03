@@ -6669,11 +6669,11 @@ bot.onText(/esci dalla lobby/i, function (message) {
 					return;
 				}
 				
-				var extra = " Dovrai attendere un po' di tempo per rientrare";
-				var extra2 = "\nDovrai attendere un po' di tempo prima di accedere ad una nuova lobby";
+				var extra = "";
+				var extra2 = "";
 				if (lobby_training == 0) {
-					extra = "";
-					extra2 = "";
+					extra = " Dovrai attendere un po' di tempo per rientrare";
+					extra2 = "\nDovrai attendere un po' di tempo prima di accedere ad una nuova lobby";
 				}
 
 				bot.sendMessage(message.chat.id, "Sei sicuro di voler uscire dalla lobby?" + extra, kbYesNo).then(function () {
