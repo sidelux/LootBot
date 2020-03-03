@@ -58358,7 +58358,7 @@ function setFinishedMission(element, index, array) {
 								var league_name = "";
 								var chest_bonus_id = 0;
 								if (this_mission_count == 100) {
-									chest_bonus = "\nRaggiungendo la 100esima missione completata sei stato inserito nell'Associazione degli Avventurieri, otterrai premi aggiuntivi per ogni missione completata\nCompletane altre per migliorare i premi ottenuti!";
+									chest_bonus = "\nRaggiungendo la 100esima missione completata sei stato inserito nell'_Associazione degli Avventurieri_, otterrai premi aggiuntivi per ogni missione completata\nCompletane altre per migliorare i premi ottenuti!";
 								} else if (this_mission_count <= 300) {
 									chest_bonus_id = 1;
 									league_name = "Lega degli Eploratori";
@@ -58385,10 +58385,10 @@ function setFinishedMission(element, index, array) {
 									league_name = "Lega delle Leggende";
 								}
 								
-								if (chest_bonus_id == 1) {
+								if (chest_bonus_id > 0) {
 									addChest(element.id, chest_bonus_id);
 									var chest_info = connection_sync.query("SELECT name FROM chest WHERE id = " + chest_bonus_id);
-									chest_bonus = "\nPer la tua appartenenza alla _" + league_name + "_, ottieni uno *" + chest_info[0].name + "* aggiuntivo";
+									chest_bonus = "\nPer la tua appartenenza alla _" + league_name + "_, ottieni uno *" + chest_info[0].name + "* aggiuntivo!";
 									console.log("Premio leghe missioni: " + chest_info[0].name);
 								}
 
