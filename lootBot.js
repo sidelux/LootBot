@@ -6578,6 +6578,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 															"\n> Per ogni movimento su una casella vuota, il giocatore recupera una piccola percentuale di salute." +
 															"\n> La partita termina quando rimane solo un giocatore o vengono tutti sconfitti dal restringimento." +
 															"\n> Ogni tanto possono cambiare le condizioni della mappa, quando cambiano compare la relativa scritta, le nuove lobby verranno giocate in quelle condizioni." +
+															"\n> La modalità allenamento consiste nel giocare partite extra al di fuori di limitazione orarie e giornaliere, senza consumare partite nè ottenere trofei." +
 															"\n\n<b>Combattimento</b>" +
 															"\n> La Vocazione influisce sul combattimento del giocatore." +
 															"\n> Il drago non accompagna il giocatore all'interno della mappa." +
@@ -52151,6 +52152,7 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 		var match_kills = rows[0].match_kills;
 		var is_escaped = rows[0].is_escaped;
 		var enemy;
+		var updateEnemy = 0;
 		if (rows[0].enemy_id != null)
 			enemy = connection_sync.query('SELECT M.player_id, P.chat_id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND player_id = ' + rows[0].enemy_id);	// sono io il player_id
 		else
@@ -52164,9 +52166,8 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 			enemy_id = enemy[0].player_id;
 			enemy_chat_id = enemy[0].chat_id;
 			
-			if (cause == 2) {
-				connection_sync.query('UPDATE map_lobby SET match_kills = match_kills+1, global_kills = global_kills+1 WHERE player_id = ' + enemy_id);
-			}
+			if (cause == 2)
+				updateEnemy = 1;
 			
 			setAchievement(enemy_id, 90, 1);
 		}
@@ -52199,6 +52200,10 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 
 				var map_lobby_id = rows[0].id;
 				var lobby_training = rows[0].lobby_training;
+				
+				if ((updateEnemy == 1) && (lobby_training == 0)){
+					connection_sync.query('UPDATE map_lobby SET match_kills = match_kills+1, global_kills = global_kills+1 WHERE player_id = ' + enemy_id);
+				}
 
 				connection.query('SELECT COUNT(id) As cnt FROM map_history WHERE map_lobby_id = ' + map_lobby_id,  function (err, rows, fields) {
 					if (err) throw err;
@@ -56893,9 +56898,11 @@ function setFullLobby(element, index, array) {
 						if (err) throw err;
 					});
 					
-					connection.query('UPDATE player SET map_count = map_count+1 WHERE id = ' + rows[i].id, function (err, rows, fields) {
-						if (err) throw err;
-					});
+					if (lobby_training == 0) {
+						connection.query('UPDATE player SET map_count = map_count+1 WHERE id = ' + rows[i].id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+					}
 
 					bot.sendMessage(rows[i].chat_id, "La mappa è stata generata!\nEntra in battaglia e conquista la vittoria!", kb);
 				}
@@ -56905,7 +56912,6 @@ function setFullLobby(element, index, array) {
 };
 
 function checkLobbyEnd() {
-	// connection.query('SELECT lobby_id, COUNT(id) As cnt FROM map_lobby WHERE lobby_id IS NOT NULL AND killed = 1 GROUP BY lobby_id HAVING cnt >= ' + (lobby_total_space-1), function (err, rows, fields) {
 	connection.query('SELECT L.lobby_id, L.lobby_training, COUNT(H.player_id) As cnt FROM map_lobby_list L, map_history H WHERE L.id = H.map_lobby_id GROUP BY L.id HAVING cnt >= ' + (lobby_total_space-1), function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
@@ -58236,7 +58242,7 @@ function setFinishedMission(element, index, array) {
 							var rarity_miss = "";
 
 							if (Object.keys(rows).length > 0)
-								rarity_miss = "\nLa prossima sarà di rarità " + rows[0].rarity;
+								rarity_miss = "\n\nLa prossima sarà di rarità " + rows[0].rarity;
 
 							connection.query('SELECT name, rarity_shortname, id FROM chest WHERE id = ' + mission_chest, function (err, rows, fields) {
 								if (err) throw err;
@@ -58346,8 +58352,47 @@ function setFinishedMission(element, index, array) {
 								*/
 
 								exp = Math.round(exp);
+								
+								var this_mission_count = mission_count+1;
+								var chest_bonus = "";
+								var league_name = "";
+								var chest_bonus_id = 0;
+								if (this_mission_count == 100) {
+									chest_bonus = "\nRaggiungendo la 100esima missione completata sei stato inserito nell'Associazione degli Avventurieri, otterrai premi aggiuntivi per ogni missione completata\nCompletane altre per migliorare i premi ottenuti!";
+								} else if (this_mission_count <= 300) {
+									chest_bonus_id = 1;
+									league_name = "Lega degli Eploratori";
+								} else if (this_mission_count <= 600) {
+									chest_bonus_id = Math.round(getRandomArbitrary(1, 2));
+									league_name = "Lega degli Esperti";
+								} else if (this_mission_count <= 1000) {
+									chest_bonus_id = Math.round(getRandomArbitrary(1, 3));
+									league_name = "Lega dei Veterani";
+								} else if (this_mission_count <= 2000) {
+									chest_bonus_id = Math.round(getRandomArbitrary(1, 4));
+									league_name = "Lega dei Maestri";
+								} else if (this_mission_count <= 5000) {
+									chest_bonus_id = Math.round(getRandomArbitrary(1, 5));
+									league_name = "Lega dei Campioni";
+								} else if (this_mission_count <= 10000) {
+									chest_bonus_id = Math.round(getRandomArbitrary(1, 6));
+									league_name = "Lega degli Eroi";
+								} else {
+									chest_bonus_id = Math.round(getRandomArbitrary(1, 6));
+									var rand = Math.round()*100;
+									if (rand < 2)
+										chest_bonus_id = 7;
+									league_name = "Lega delle Leggende";
+								}
+								
+								if (chest_bonus_id == 1) {
+									addChest(element.id, chest_bonus_id);
+									var chest_info = connection_sync.query("SELECT name FROM chest WHERE id = " + chest_bonus_id);
+									chest_bonus = "\nPer la tua appartenenza alla _" + league_name + "_, ottieni uno *" + chest_info[0].name + "* aggiuntivo";
+									console.log("Premio leghe missioni: " + chest_info[0].name);
+								}
 
-								bot.sendMessage(chat_id, "Missione completata! Hai ottenuto:\n" + crazyText + "*" + rows[0].name + "* (" + rows[0].rarity_shortname + ")" + evolved_text + ", *" + formatNumber(money) + "* § e *" + exp + "* exp " + extra + "!" + rarity_miss, mark);
+								bot.sendMessage(chat_id, "Missione completata! Hai ottenuto:\n" + crazyText + "*" + rows[0].name + "* (" + rows[0].rarity_shortname + ")" + evolved_text + ", *" + formatNumber(money) + "* § e *" + exp + "* exp " + extra + "!" + chest_bonus + rarity_miss, mark);
 
 								addChest(element.id, chest_id);
 								setExp(element.id, exp);
