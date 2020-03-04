@@ -8771,7 +8771,7 @@ bot.onText(/^\/lega/, function (message, match) {
 		var mission_count = rows[0].mission_count;
 		var league_name;
 		if (mission_count <= 300)
-			league_name = "Lega degli Eploratori";
+			league_name = "Lega degli Esploratori";
 		else if (mission_count <= 600)
 			league_name = "Lega degli Esperti";
 		else if (mission_count <= 1000)

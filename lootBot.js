@@ -6689,6 +6689,10 @@ bot.onText(/esci dalla lobby/i, function (message) {
 										connection.query('UPDATE map_lobby SET lobby_id = NULL, lobby_wait_end = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 										});
+									} else {
+										connection.query('UPDATE map_lobby SET lobby_id = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+										});
 									}
 									
 									bot.sendMessage(message.chat.id, "Sei uscito dalla lobby!" + extra2, kbBack);
@@ -8559,7 +8563,13 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 						else if (first == 0)
 							iKeys.splice(1, 0, [rows[last-1].name + " (stanze: " + rows[last-1].rooms + ", punti min: " + rows[last-1].min_rank + ")"]);
 
-						iKeys.push(["Azzera il Rango ⚠️"]);
+						if (player_reborn <= 2) {
+							if ((player_reborn == 2) && (player_level <= 5))
+								iKeys.push(["Azzera il Rango ⚠️"]);
+							else if (player_reborn < 2)
+								iKeys.push(["Azzera il Rango ⚠️"]);
+						}
+						
 						iKeys.push(["Torna al menu"]);
 
 						var dSelect = {
@@ -58371,7 +58381,7 @@ function setFinishedMission(element, index, array) {
 									chest_bonus = "\nRaggiungendo la 100esima missione completata sei stato inserito nell'_Associazione degli Avventurieri_, otterrai premi aggiuntivi per ogni missione completata\nCompletane altre per migliorare i premi ottenuti!";
 								} else if (this_mission_count <= 300) {
 									chest_bonus_id = 1;
-									league_name = "Lega degli Eploratori";
+									league_name = "Lega degli Esploratori";
 								} else if (this_mission_count <= 600) {
 									chest_bonus_id = Math.round(getRandomArbitrary(1, 2));
 									league_name = "Lega degli Esperti";
