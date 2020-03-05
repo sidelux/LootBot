@@ -8486,12 +8486,14 @@ bot.onText(/^\/mappatura/i, function (message) {
 				return;
 			}
 			
+			var dungeon_id = dungeon_id;
+			
 			connection.query('SELECT name FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 				if (err) throw err;
 				
 				var istance_name = rows[0].name;
 			
-				connection.query('SELECT M.room_id, M.dir_top As mapped_top, M.dir_right As mapped_right, M.dir_left As mapped_left, R.dir_top, R.dir_right, R.dir_left FROM dungeon_map M, dungeon_rooms R WHERE M.dungeon_id = R.dungeon_id AND M.room_id = R.room_id AND M.player_id = R.player_id AND M.dungeon_id = ' + dungeon_id + ' AND M.player_id = ' + player_id, function (err, rows, fields) {
+				connection.query('SELECT M.room_id, M.dir_top As mapped_top, M.dir_right As mapped_right, M.dir_left As mapped_left, R.dir_top, R.dir_right, R.dir_left FROM dungeon_map M, dungeon_rooms R WHERE M.dungeon_id = R.dungeon_id AND M.room_id = R.room_id AND M.dungeon_id = ' + dungeon_id + ' AND M.player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length == 0) {
