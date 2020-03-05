@@ -9513,6 +9513,22 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 									var dir_right = parseInt(rows[0].dir_right);
 									var dir_left = parseInt(rows[0].dir_left);
 									var dir = null;
+									var selected_dir = "";
+									
+									var mapped = connection_sync.query('SELECT dir_top, dir_right, dir_left FROM dungeon_map WHERE room_id = ' + (room_id+1) + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id);
+									
+									if (Object.keys(mapped).length > 0) {
+										var mapped_left = "-";
+										var mapped_top = "-";
+										var mapped_right = "-";
+										if (mapped[0].dir_left == 1)
+											mapped_left = dungeonToDesc(dir_left);
+										if (mapped[0].dir_top == 1)
+											mapped_top = dungeonToDesc(dir_top);
+										if (mapped[0].dir_right == 1)
+											mapped_right = dungeonToDesc(dir_right);
+										text += "\n" + mapped_left + " " + mapped_top + " " + mapped_right;
+									}
 
 									if (last_dir != null)
 										dNav = dNext2;
@@ -9521,13 +9537,16 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 										answerCallbacks[message.chat.id] = function (answer) {
 											if (answer.text == "Torna al menu")
 												return;
-											if ((answer.text == "⬆️") || (answer.text.toLowerCase() == "su"))
+											if ((answer.text == "⬆️") || (answer.text.toLowerCase() == "su")) {
 												dir = dir_top;
-											else if ((answer.text == "⬅️") || (answer.text.toLowerCase() == "sinistra") || (answer.text.toLowerCase() == "sx"))
+												selected_dir = "top";
+											} else if ((answer.text == "⬅️") || (answer.text.toLowerCase() == "sinistra") || (answer.text.toLowerCase() == "sx")) {
 												dir = dir_left;
-											else if ((answer.text == "➡️") || (answer.text.toLowerCase() == "destra") || (answer.text.toLowerCase() == "dx"))
+												selected_dir = "left";
+											} else if ((answer.text == "➡️") || (answer.text.toLowerCase() == "destra") || (answer.text.toLowerCase() == "dx")) {
 												dir = dir_right;
-											else if (answer.text == "Commenta") {
+												selected_dir = "right";
+											} else if (answer.text == "Commenta") {
 												connection.query('SELECT creator_id FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 													if (err) throw err;
 
@@ -9906,11 +9925,27 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 											connection.query('UPDATE dungeon_status SET last_dir = ' + dir + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 											});
+											
+											if (selected_dir != "") {
+												connection.query('SELECT dir_' + selected_dir + ' As saved_dir FROM dungeon_map WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+
+													if (Object.keys(rows).length == 0) {
+														connection.query('INSERT INTO dungeon_map (room_id, dungeon_id, player_id, dir_' + selected_dir + ') VALUES (' + room_id + ', ' + dungeon_id + ', ' + player_id + ', 1)', function (err, rows, fields) {
+															if (err) throw err;
+														});
+													} else {
+														if (rows[0].saved_dir == 0) {
+															connection.query('UPDATE dungeon_map SET dir_' + selected_dir + ' = 1 WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
+														}
+													}
+												});
+											}
 
 											if (dir > 10) {
 												var monsterLev = dir - 10;
-
-
 
 												connection.query('SELECT id, min_rank FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 													if (err) throw err;
