@@ -7179,6 +7179,8 @@ bot.onText(/attacca!/i, function (message) {
 
 								if (enemy_life - dmg <= 0) {
 									text += "\nIn modo da sconfiggerlo definitivamente con un colpo mortale!";
+									enemy_text += "\nVieni sconfitto definitivamente con un colpo mortale!";
+									
 									if ((enemy_money > 0) || (enemy_scrap > 0)) {
 										text += "\nFrugando nella sua sacca ottieni ";
 										if ((enemy_money > 0) && (enemy_scrap > 0))
@@ -7252,7 +7254,6 @@ bot.onText(/attacca!/i, function (message) {
 									query += ", money = money+" + enemy_money + ", scrap = scrap+" + enemy_scrap + item_query;
 									enemy_query += ", life = 0, money = money-" + enemy_money + ", scrap = 0" + enemy_item_query;
 									
-									enemy_text += "\nVieni sconfitto definitivamente con un colpo mortale!";
 									mapPlayerKilled(lobby_id, enemy_id, 2, null, 1);
 									
 									getSnowball(message.chat.id, message.from.username, player_id);
@@ -7260,6 +7261,9 @@ bot.onText(/attacca!/i, function (message) {
 									enemy_query += ", life = life-" + dmg;
 								
 								if (life - my_dmg <= 0) {
+									text += "\nVenendo sconfitto definitivamente con un colpo mortale!";
+									enemy_text += "\nSconfiggendolo definitivamente con un colpo mortale!";
+									
 									// controlli invertiti
 									if ((money > 0) || (scrap > 0)) {
 										enemy_text += "\nFrugando nella sua sacca ottieni ";
@@ -7333,8 +7337,6 @@ bot.onText(/attacca!/i, function (message) {
 									enemy_query += ", money = money+" + money + ", scrap = scrap+" + scrap + enemy_item_query;
 									query += ", life = 0, money = money-" + money + ", scrap = 0" + item_query;
 									
-									text += "\nVenendo sconfitto definitivamente con un colpo mortale!";
-									enemy_text += "\nSconfiggendolo definitivamente con un colpo mortale!";
 									mapPlayerKilled(lobby_id, player_id, 2, null, 1);
 									
 									/*
@@ -8458,6 +8460,66 @@ bot.onText(/sacca$/i, function (message) {
 	});
 });
 
+bot.onText(/^\/mappatura/i, function (message) {
+	connection.query('SELECT account_id, id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+
+		var player_id = rows[0].id;
+		
+		connection.query('SELECT dungeon_id FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+			
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Accedi ai dungeon per utilizzare questo comando");
+				return;
+			}
+			
+			if (rows[0].dungeon_id == null) {
+				bot.sendMessage(message.chat.id, "Accedi ad un dungeon per utilizzare questo comando");
+				return;
+			}
+			
+			connection.query('SELECT name FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
+				if (err) throw err;
+				
+				var istance_name = rows[0].name;
+			
+				connection.query('SELECT M.room_id, M.dir_top As mapped_top, M.dir_right As mapped_right, M.dir_left As mapped_left, R.dir_top, R.dir_right, R.dir_left FROM dungeon_map M, dungeon_rooms R WHERE M.dungeon_id = R.dungeon_id AND M.room_id = R.room_id AND M.player_id = R.player_id AND M.dungeon_id = ' + dungeon_id + ' AND M.player_id = ' + player_id, function (err, rows, fields) {
+					if (err) throw err;
+
+					if (Object.keys(rows).length == 0) {
+						bot.sendMessage(message.chat.id, "Non è stata mappata ancora alcuna stanza in questo dungeon");
+						return;
+					}
+
+					var text = "Mappatura per l'istanza *" + istance_name + "*:";
+					for (i = 0; i < Object.keys(rows).length; i++) {
+						var mapped_left = "-";
+						var mapped_top = "-";
+						var mapped_right = "-";
+						if (mapped[i].mapped_left == 1)
+							mapped_left = dungeonToDesc(rows[i].dir_left);
+						if (mapped[i].mapped_top == 1)
+							mapped_top = dungeonToDesc(rows[i].dir_top);
+						if (mapped[i].mapped_right == 1)
+							mapped_right = dungeonToDesc(rows[i].dir_right);
+						text += "\nStanza " + rows[i].room_id + ": " + mapped_left + " | " + mapped_top + " | " + mapped_right;
+					}
+					
+					bot.sendMessage(message.chat.id, text, mark);
+				});
+			});
+		});
+	});
+});
+
 bot.onText(/dungeon|^dg$/i, function (message) {
 
 	if (message.text.toLowerCase().indexOf("velocemente") != -1)
@@ -9513,7 +9575,6 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 									var dir_right = parseInt(rows[0].dir_right);
 									var dir_left = parseInt(rows[0].dir_left);
 									var dir = null;
-									var selected_dir = "";
 									
 									var mapped = connection_sync.query('SELECT dir_top, dir_right, dir_left FROM dungeon_map WHERE room_id = ' + (room_id+1) + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id);
 									
@@ -9527,7 +9588,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 											mapped_top = dungeonToDesc(dir_top);
 										if (mapped[0].dir_right == 1)
 											mapped_right = dungeonToDesc(dir_right);
-										text += "\n" + mapped_left + " " + mapped_top + " " + mapped_right;
+										text += "\n" + mapped_left + " | " + mapped_top + " | " + mapped_right;
 									}
 
 									if (last_dir != null)
@@ -9537,16 +9598,13 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 										answerCallbacks[message.chat.id] = function (answer) {
 											if (answer.text == "Torna al menu")
 												return;
-											if ((answer.text == "⬆️") || (answer.text.toLowerCase() == "su")) {
+											if ((answer.text == "⬆️") || (answer.text.toLowerCase() == "su"))
 												dir = dir_top;
-												selected_dir = "top";
-											} else if ((answer.text == "⬅️") || (answer.text.toLowerCase() == "sinistra") || (answer.text.toLowerCase() == "sx")) {
+											else if ((answer.text == "⬅️") || (answer.text.toLowerCase() == "sinistra") || (answer.text.toLowerCase() == "sx"))
 												dir = dir_left;
-												selected_dir = "left";
-											} else if ((answer.text == "➡️") || (answer.text.toLowerCase() == "destra") || (answer.text.toLowerCase() == "dx")) {
+											else if ((answer.text == "➡️") || (answer.text.toLowerCase() == "destra") || (answer.text.toLowerCase() == "dx"))
 												dir = dir_right;
-												selected_dir = "right";
-											} else if (answer.text == "Commenta") {
+											else if (answer.text == "Commenta") {
 												connection.query('SELECT creator_id FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 													if (err) throw err;
 
@@ -9926,23 +9984,30 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												if (err) throw err;
 											});
 											
-											if (selected_dir != "") {
-												connection.query('SELECT dir_' + selected_dir + ' As saved_dir FROM dungeon_map WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
-													if (err) throw err;
+											var selected_dir = "";
+											// questa if serve per catturare tutti i casi e non solo quelli provenienti da selezione della direzione
+											if (dir == dir_top)
+												selected_dir = "top";
+											else if (dir == dir_right)
+												selected_dir = "right";
+											else if (dir == dir_left)
+												selected_dir = "left";
+											
+											connection.query('SELECT dir_' + selected_dir + ' As saved_dir FROM dungeon_map WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
 
-													if (Object.keys(rows).length == 0) {
-														connection.query('INSERT INTO dungeon_map (room_id, dungeon_id, player_id, dir_' + selected_dir + ') VALUES (' + room_id + ', ' + dungeon_id + ', ' + player_id + ', 1)', function (err, rows, fields) {
+												if (Object.keys(rows).length == 0) {
+													connection.query('INSERT INTO dungeon_map (room_id, dungeon_id, player_id, dir_' + selected_dir + ') VALUES (' + room_id + ', ' + dungeon_id + ', ' + player_id + ', 1)', function (err, rows, fields) {
+														if (err) throw err;
+													});
+												} else {
+													if (rows[0].saved_dir == 0) {
+														connection.query('UPDATE dungeon_map SET dir_' + selected_dir + ' = 1 WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 														});
-													} else {
-														if (rows[0].saved_dir == 0) {
-															connection.query('UPDATE dungeon_map SET dir_' + selected_dir + ' = 1 WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
-																if (err) throw err;
-															});
-														}
 													}
-												});
-											}
+												}
+											});
 
 											if (dir > 10) {
 												var monsterLev = dir - 10;
@@ -52319,6 +52384,85 @@ function dungeonToDesc(d) {
 		return "Vicolo cieco";
 	else if (d == -26)
 		return "Negozio di figurine";
+}
+
+function dungeonToSym(d) {
+	if (d > 10)
+		return "🐗";
+	else if (d == 1)
+		return "🎁";
+	else if (d == 2)
+		return "💰";
+	else if (d == 3)
+		return "💥";
+	else if (d == 4)
+		return "🧙‍♂";
+	else if (d == 5)
+		return "🎚";
+	else if (d == 6)
+		return "🙇🏻‍♂️";
+	else if (d == 7)
+		return "👵🏻";
+	else if (d == 8)
+		return "☎️";
+	else if (d == 9)
+		return "⚖️";
+	else if (d == 10)
+		return "🗡";
+	else if (d == 0)
+		return "⛲️";
+	else if (d == -1)
+		return "⚡️";
+	else if (d == -2)
+		return "🔪";
+	else if (d == -3)
+		return "🀄️";
+	else if (d == -4)
+		return "👨🏻‍🎤";
+	else if (d == -5)
+		return "🧘‍♂️";
+	else if (d == -6)
+		return "🧞‍♂️";
+	else if (d == -7)
+		return "🐉";
+	else if (d == -8)
+		return "🕸";
+	else if (d == -9)
+		return "🎲";
+	else if (d == -10)
+		return "🚪";
+	else if (d == -11)
+		return "🕳";
+	else if (d == -12)
+		return "👳‍♂";
+	else if (d == -13)
+		return "⁉️";
+	else if (d == -14)
+		return "🖼";
+	else if (d == -15)
+		return "🍷";
+	else if (d == -16)
+		return "💣";
+	else if (d == -17)
+		return "🛢";
+	else if (d == -18)
+		return "💎";
+	else if (d == -19)
+		return "🔮";
+	else if (d == -20)
+		return "🏜";
+	else if (d == -21)
+		return "🧘‍♂";
+	else if (d == -22)
+		return "⏳";
+	else if (d == -23)
+		return "🧗‍♂";
+	else if (d == -24)
+		return "🌪️";
+	else if (d == -25)
+		return "⛔";
+	else if (d == -26)
+		return "🃏";
 }
 
 function findMissing(numArray) {
