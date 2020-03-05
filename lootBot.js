@@ -11620,7 +11620,26 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														});
 														return;
 													}
-													text += "Ti offre *" + rows[0].item1n + "* in cambio del tuo *" + rows[0].item2n + "*";
+													
+													var item_id = rows[0].item2id;
+													var item_qnt = getItemCnt(player_id, item_id);
+													var item_poss = "";
+													if (item_qnt > 0)
+														item_poss = " ✅";
+													else {
+														var material_result = connection_sync.query('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item_id);
+														
+														if (Object.keys(material_result).length > 0) {
+															if (getItemCnt(player_id, material_result[0].material_1) > 0 &&
+																getItemCnt(player_id, material_result[0].material_2) > 0 &&
+																getItemCnt(player_id, material_result[0].material_3) > 0) {
+																item_poss = " ☑️";
+															}
+														} else
+															console.log("item2", item1);
+													}
+													
+													text += "Ti offre *" + rows[0].item1n + "* in cambio del tuo *" + rows[0].item2n + "*" + item_poss;
 
 													iKeys.push(["Accetta", "Ignora"]);
 													iKeys.push(["Cerca *" + rows[0].item1n]);
@@ -42322,7 +42341,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 
 					bot.sendMessage(message.chat.id, "Per entrare nel rifugio di <b>" + nick + "</b> devi possedere delle Rune di un valore più alto rispetto a quelle del guardiano del cancello, come procedi?\n\nLo gnomo torna dal rifugio con 5 Rune, su ogni runa è scritto un numero:\n\n💬 " + my_comb_arr.join(" ") + "\n\nPuoi cambiare le Rune ancora " + (4 - travel) + " volte, lo gnomo si stancherà di aspettare alle " + short_date_end, kb).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
-							if (answer.text == "Cambia Rune") {
+							if (answer.text.toLowerCase() == "cambia rune") {
 
 								if (travel >= 4) {
 									bot.sendMessage(message.chat.id, "Non puoi cambiare Rune più di 2 volte per ispezione!", rBack);
@@ -42409,7 +42428,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 									};
 								});
 
-							} else if (answer.text == "Tieni Combinazione") {
+							} else if (answer.text.toLowerCase() == "tieni combinazione") {
 
 								var num = [];
 								var end = "";
