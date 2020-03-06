@@ -11737,8 +11737,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																getItemCnt(player_id, material_result[0].material_3) > 0) {
 																item_poss = " ☑️";
 															}
-														} else
-															console.log("item2", item1);
+														}
 													}
 													
 													text += "Ti offre *" + rows[0].item1n + "* in cambio del tuo *" + rows[0].item2n + "*" + item_poss;
@@ -13645,7 +13644,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																}
 															};
 															
-															bot.sendMessage(message.chat.id, "Seleziona la rarità della Figurina che vuoi acquistare, ti costerà Rarità*50 💎", dOptions).then(function () {
+															bot.sendMessage(message.chat.id, "Seleziona la rarità della Figurina che vuoi acquistare, ti costerà 50x Rarità 💎", dOptions).then(function () {
 																answerCallbacks[message.chat.id] = function (answer) {
 																	if (answer.text == "Torna al menu")
 																		return;
@@ -13661,43 +13660,53 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		return;
 																	}
 																	
+																	var dYesNo = {
+																		parse_mode: "Markdown",
+																		reply_markup: {
+																			resize_keyboard: true,
+																			keyboard: [["Si"], ["Torna al menu"]]
+																		}
+																	};
+																	
 																	var price = (rarity*50);
 																	
-																	bot.sendMessage(message.chat.id, "Sei sicuro di voler acquistare una Figurina casuale per " + price + " 💎?", dOptions).then(function () {
+																	bot.sendMessage(message.chat.id, "Sei sicuro di voler acquistare una Figurina casuale per " + price + " 💎?", dYesNo).then(function () {
 																		answerCallbacks[message.chat.id] = function (answer) {
-																			var p = connection_sync.query("SELECT money FROM player WHERE id = " + player_id);
-																			if (p[0].gems < price) {
-																				bot.sendMessage(message.chat.id, "Non hai abbastanza 💎", dNext);
-																				return;
-																			}
-																			
-																			connection.query('UPDATE player SET gems = gems-' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																			
-																			connection.query('SELECT id, name, rarity FROM card_list WHERE rarity = ' + rarity + ' ORDER BY RAND()', function (err, rows, fields) {
-																				if (err) throw err;
-
-																				var inv = connection_sync.query('SELECT 1 FROM card_inventory WHERE card_id = ' + rows[0].id + ' AND player_id = ' + player_id);
-																				if (Object.keys(inv).length == 0) {
-																					connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + rows[0].id + ')', function (err, rows, fields) {
-																						if (err) throw err;
-																					});
-																				} else {
-																					connection.query('UPDATE card_inventory SET quantity = quantity + 1 WHERE player_id = ' + player_id + ' AND card_id = ' + rows[0].id, function (err, rows, fields) {
-																						if (err) throw err;
-																					});
+																			if (answer.text.toLowerCase() == "si") {
+																				var p = connection_sync.query("SELECT money FROM player WHERE id = " + player_id);
+																				if (p[0].gems < price) {
+																					bot.sendMessage(message.chat.id, "Non hai abbastanza 💎", dNext);
+																					return;
 																				}
-																				
-																				bot.sendMessage(message.chat.id, "Hai acquistato ed ottenuto la Figurina " + rows[0].name + " (" + rows[0].rarity + ")\n\nEsci dal negozio sfoggiando il tuo bottino...", dNext);
-																				
-																				connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+
+																				connection.query('UPDATE player SET gems = gems-' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
 																				});
-																				connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+
+																				connection.query('SELECT id, name, rarity FROM card_list WHERE rarity = ' + rarity + ' ORDER BY RAND()', function (err, rows, fields) {
 																					if (err) throw err;
+
+																					var inv = connection_sync.query('SELECT 1 FROM card_inventory WHERE card_id = ' + rows[0].id + ' AND player_id = ' + player_id);
+																					if (Object.keys(inv).length == 0) {
+																						connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + rows[0].id + ')', function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																					} else {
+																						connection.query('UPDATE card_inventory SET quantity = quantity + 1 WHERE player_id = ' + player_id + ' AND card_id = ' + rows[0].id, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																					}
+
+																					bot.sendMessage(message.chat.id, "Hai acquistato ed ottenuto la Figurina " + rows[0].name + " (" + rows[0].rarity + ")\n\nEsci dal negozio sfoggiando il tuo bottino...", dNext);
+
+																					connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+																						if (err) throw err;
+																					});
+																					connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																						if (err) throw err;
+																					});
 																				});
-																			});
+																			}
 																		}
 																	});
 																}

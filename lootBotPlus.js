@@ -8753,7 +8753,7 @@ bot.onText(/^\/rango/, function (message, match) {
 		var rank = getRankName(player_rank_b, 0);
 		var next_rank = 0;
 		next_rank = parseInt(getRankName(player_rank_b, 1));
-		bot.sendMessage(message.chat.id, "Informazioni rango per " + message.from.username + ":\nRango Attuale: <b>" + formatNumber(rank) + "</b> (" + player_rank_b + ")\nAumento Rango: " + formatNumber(next_rank) + " punti\nDungeon completati: " + formatNumber(dungeon_count), html);
+		bot.sendMessage(message.chat.id, "Informazioni rango per " + message.from.username + ":\n<b>Rango Attuale</b>: " + formatNumber(rank) + " (" + player_rank_b + ")\n<b>Aumento Rango</b>: " + formatNumber(next_rank) + " punti\n<b>Dungeon completati</b>: " + formatNumber(dungeon_count), html);
 		setTimeout(function () {
 			bot.sendSticker(message.chat.id, getRankFileId(player_rank_b));
 		}, 500);
@@ -8770,21 +8770,33 @@ bot.onText(/^\/lega/, function (message, match) {
 		var player_id = rows[0].id;
 		var mission_count = rows[0].mission_count;
 		var league_name;
-		if (mission_count <= 300)
+		var next_pnt = 0;
+		if (mission_count <= 300) {
 			league_name = "Lega degli Esploratori";
-		else if (mission_count <= 600)
+			next_pnt = 300;
+		} else if (mission_count <= 600) {
 			league_name = "Lega degli Esperti";
-		else if (mission_count <= 1000)
+			next_pnt = 600;
+		} else if (mission_count <= 1000) {
 			league_name = "Lega dei Veterani";
-		else if (mission_count <= 2000)
+			next_pnt = 1000;
+		} else if (mission_count <= 2000) {
 			league_name = "Lega dei Maestri";
-		else if (mission_count <= 5000)
+			next_pnt = 2000;
+		} else if (mission_count <= 5000) {
 			league_name = "Lega dei Campioni";
-		else if (mission_count <= 10000)
+			next_pnt = 5000;
+		} else if (mission_count <= 10000) {
 			league_name = "Lega degli Eroi";
-		else
+			next_pnt = 10000;
+		} else
 			league_name = "Lega delle Leggende";
-		bot.sendMessage(message.chat.id, "Informazioni lega per " + message.from.username + ":\nLega Attuale: <b>" + league_name + "</b>\nMissioni completate: " + formatNumber(mission_count), html);
+		
+		var next_pnt_text = "";
+		if (next_pnt != 0)
+			next_pnt_text = "\n<b>Aumento lega</b>: " + next_pnt + " missioni";
+			
+		bot.sendMessage(message.chat.id, "Informazioni lega per " + message.from.username + ":\n<b>Lega Attuale</b>: " + league_name + next_pnt_text + "\n<b>Missioni completate</b>: " + formatNumber(mission_count), html);
 	});
 });
 
