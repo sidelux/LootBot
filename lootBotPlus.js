@@ -10720,12 +10720,17 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 			var boost_id = rows[0].boost_id;
 			var creation_date = rows[0].creation_date;
 			var top_win = rows[0].top_win;
+			var global_win = rows[0].global_win;
 			var trophies = rows[0].trophies;
 			var total_trophies = rows[0].total_trophies;
 
 			var top_win_text = "";
 			if (top_win > 0)
 				top_win_text = "Vittorie Vette: " + top_win + "\n";
+			
+			var global_win_text = "";
+			if (global_win > 0)
+				global_win_text = "Vittorie Globali: " + global_win + "\n";
 			
 			var trophies_text = "";
 			if (total_trophies > 0)
@@ -11262,6 +11267,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																											rank +
 																											mission_team_count +
 																											top_win_text +
+																											global_win_text +
 																											trophies_text +
 																											(player_description != null ? "\n<i>" + player_description + "</i>" : ""), html);
 																						});

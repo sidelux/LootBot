@@ -1116,6 +1116,11 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 											connection.query('UPDATE player SET global_event = global_event+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
 												if (err) throw err;
 											});
+											if (i == 0) {
+												connection.query('UPDATE player SET global_win = global_win+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
+													if (err) throw err;
+												});
+											}
 											bot.sendMessage(rows[i].chat_id, "Per il tuo posizionamento in classifica la tua impresa globale viene conteggiata nelle statistiche" + extra + "!", mark);
 										}
 									});
@@ -11399,6 +11404,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																var life = Math.round(rows[0].life / 2);
 																if (cursed == 1)
 																	life = rows[0].total_life*0.9;
+																if (rows[0].life - life < 0)
+																	life = rows[0].life;
 																var rand = Math.random() * 100;
 
 																connection.query('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -11436,9 +11443,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			connection.query('UPDATE player SET life = life - ' + life + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																				if (cursed == 1) {
-																					bot.sendMessage(message.chat.id, "Come avanzi di due passi scatta un meccanismo e un'ascia gigantesca ti precipita addosso, il tuo drago non è abbastanza forte per proteggerti, l'ascia ti prende in pieno e perdi quasi l'intera salute!", dNext);
+																					bot.sendMessage(message.chat.id, "Come avanzi di due passi scatta un meccanismo e un'ascia gigantesca ti precipita addosso, il tuo drago non è abbastanza forte per proteggerti, l'ascia ti prende in pieno e perdi " + life + " hp!", dNext);
 																				} else {
-																					bot.sendMessage(message.chat.id, "Come avanzi di due passi scatta un meccanismo e un'ascia gigantesca ti precipita addosso, il tuo drago non è abbastanza forte per proteggerti, l'ascia ti prende in pieno e perdi metà della tua salute!", dNext);
+																					bot.sendMessage(message.chat.id, "Come avanzi di due passi scatta un meccanismo e un'ascia gigantesca ti precipita addosso, il tuo drago non è abbastanza forte per proteggerti, l'ascia ti prende in pieno e perdi " + life + " hp!", dNext);
 																				}
 																			});
 																		}
@@ -13673,7 +13680,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	bot.sendMessage(message.chat.id, "Sei sicuro di voler acquistare una Figurina casuale per " + price + " 💎?", dYesNo).then(function () {
 																		answerCallbacks[message.chat.id] = function (answer) {
 																			if (answer.text.toLowerCase() == "si") {
-																				var p = connection_sync.query("SELECT money FROM player WHERE id = " + player_id);
+																				var p = connection_sync.query("SELECT gems FROM player WHERE id = " + player_id);
 																				if (p[0].gems < price) {
 																					bot.sendMessage(message.chat.id, "Non hai abbastanza 💎", dNext);
 																					return;
@@ -45698,12 +45705,17 @@ function getInfo(message, player, myhouse_id) {
 			var boost_id = rows[0].boost_id;
 			var creation_date = rows[0].creation_date;
 			var top_win = rows[0].top_win;
+			var global_win = rows[0].global_win;
 			var trophies = rows[0].trophies;
 			var total_trophies = rows[0].total_trophies;
 
 			var top_win_text = "";
 			if (top_win > 0)
 				top_win_text = "Vittorie Vette: " + top_win + "\n";
+			
+			var global_win_text = "";
+			if (global_win > 0)
+				global_win_text = "Vittorie Globali: " + global_win + "\n";
 			
 			var trophies_text = "";
 			if (total_trophies > 0)
@@ -46278,6 +46290,7 @@ function getInfo(message, player, myhouse_id) {
 																											rank +
 																											mission_team_count +
 																											top_win_text +
+																											global_win_text +
 																											trophies_text +
 																											(player_description != null ? "\n<i>" + player_description + "</i>" : ""), kb);
 																						});
