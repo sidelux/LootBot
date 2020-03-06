@@ -8491,7 +8491,7 @@ bot.onText(/^\/mappatura/i, function (message) {
 				return;
 			}
 			
-			var dungeon_id = dungeon_id;
+			var dungeon_id = rows[0].dungeon_id;
 			
 			connection.query('SELECT name FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -8511,11 +8511,11 @@ bot.onText(/^\/mappatura/i, function (message) {
 						var mapped_left = "-";
 						var mapped_top = "-";
 						var mapped_right = "-";
-						if (mapped[i].mapped_left == 1)
+						if (rows[i].mapped_left == 1)
 							mapped_left = dungeonToDesc(rows[i].dir_left);
-						if (mapped[i].mapped_top == 1)
+						if (rows[i].mapped_top == 1)
 							mapped_top = dungeonToDesc(rows[i].dir_top);
-						if (mapped[i].mapped_right == 1)
+						if (rows[i].mapped_right == 1)
 							mapped_right = dungeonToDesc(rows[i].dir_right);
 						text += "\nStanza " + rows[i].room_id + ": " + mapped_left + " | " + mapped_top + " | " + mapped_right;
 					}
@@ -10000,21 +10000,23 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 											else if (dir == dir_left)
 												selected_dir = "left";
 											
-											connection.query('SELECT dir_' + selected_dir + ' As saved_dir FROM dungeon_map WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
-												if (err) throw err;
+											if (selected_dir != "") {
+												connection.query('SELECT dir_' + selected_dir + ' As saved_dir FROM dungeon_map WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
 
-												if (Object.keys(rows).length == 0) {
-													connection.query('INSERT INTO dungeon_map (room_id, dungeon_id, player_id, dir_' + selected_dir + ') VALUES (' + room_id + ', ' + dungeon_id + ', ' + player_id + ', 1)', function (err, rows, fields) {
-														if (err) throw err;
-													});
-												} else {
-													if (rows[0].saved_dir == 0) {
-														connection.query('UPDATE dungeon_map SET dir_' + selected_dir + ' = 1 WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+													if (Object.keys(rows).length == 0) {
+														connection.query('INSERT INTO dungeon_map (room_id, dungeon_id, player_id, dir_' + selected_dir + ') VALUES (' + room_id + ', ' + dungeon_id + ', ' + player_id + ', 1)', function (err, rows, fields) {
 															if (err) throw err;
 														});
+													} else {
+														if (rows[0].saved_dir == 0) {
+															connection.query('UPDATE dungeon_map SET dir_' + selected_dir + ' = 1 WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
+														}
 													}
-												}
-											});
+												});
+											}
 
 											if (dir > 10) {
 												var monsterLev = dir - 10;
@@ -13704,7 +13706,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																						});
 																					}
 
-																					bot.sendMessage(message.chat.id, "Hai acquistato ed ottenuto la Figurina " + rows[0].name + " (" + rows[0].rarity + ")\n\nEsci dal negozio sfoggiando il tuo bottino...", dNext);
+																					bot.sendMessage(message.chat.id, "Hai acquistato ed ottenuto la Figurina 🃏 *" + rows[0].name + "* (" + rows[0].rarity + ")\n\nEsci dal negozio sfoggiando il tuo bottino...", dNext);
 
 																					connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
