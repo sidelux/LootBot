@@ -8206,7 +8206,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										var price = 0;
 										if (randRarity < 5) {
 											rarity = "E";
-											price = 10;
+											price = 8;
 										} else if (randRarity < 20) {
 											rarity = "L";
 											price = 6;
@@ -8495,37 +8495,78 @@ bot.onText(/^\/mappatura/i, function (message) {
 			
 			connection.query('SELECT name FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 				if (err) throw err;
-				
+
 				var istance_name = rows[0].name;
 			
-				connection.query('SELECT M.room_id, M.dir_top As mapped_top, M.dir_right As mapped_right, M.dir_left As mapped_left, R.dir_top, R.dir_right, R.dir_left FROM dungeon_map M, dungeon_rooms R WHERE M.dungeon_id = R.dungeon_id AND M.room_id = R.room_id AND M.dungeon_id = ' + dungeon_id + ' AND M.player_id = ' + player_id, function (err, rows, fields) {
+				connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 
-					if (Object.keys(rows).length == 0) {
-						bot.sendMessage(message.chat.id, "Non è stata mappata ancora alcuna stanza in questo dungeon");
-						return;
-					}
-
-					var text = "Mappatura per l'istanza *" + istance_name + "*:";
-					for (i = 0; i < Object.keys(rows).length; i++) {
-						var mapped_left = "-";
-						var mapped_top = "-";
-						var mapped_right = "-";
-						if (rows[i].mapped_left == 1)
-							mapped_left = dungeonToDesc(rows[i].dir_left);
-						if (rows[i].mapped_top == 1)
-							mapped_top = dungeonToDesc(rows[i].dir_top);
-						if (rows[i].mapped_right == 1)
-							mapped_right = dungeonToDesc(rows[i].dir_right);
-						text += "\nStanza " + rows[i].room_id + ": " + mapped_left + " | " + mapped_top + " | " + mapped_right;
+					var query = 'SELECT M.room_id, M.dir_top As mapped_top, M.dir_right As mapped_right, M.dir_left As mapped_left, R.dir_top, R.dir_right, R.dir_left FROM dungeon_map M, dungeon_rooms R WHERE M.dungeon_id = R.dungeon_id AND M.room_id = R.room_id AND M.dungeon_id = ' + dungeon_id + ' AND M.player_id = ' + player_id + ' ORDER BY M.room_id';
+					var mapping_type = "giocatore";
+					if (Object.keys(rows).length > 0) {
+						query = 'SELECT M.room_id, MAX(M.dir_top) As mapped_top, MAX(M.dir_right) As mapped_right, MAX(M.dir_left) As mapped_left, R.dir_top, R.dir_right, R.dir_left FROM dungeon_map M, dungeon_rooms R, team T, team_player TP WHERE M.dungeon_id = R.dungeon_id AND M.room_id = R.room_id AND M.player_id = TP.player_id AND TP.team_id = T.id AND M.dungeon_id = ' + dungeon_id + ' AND T.id = ' + rows[0].team_id + ' GROUP BY room_id';
+						mapping_type = "team"
 					}
 					
-					bot.sendMessage(message.chat.id, text, mark);
+					connection.query(query, function (err, rows, fields) {
+						if (err) throw err;
+
+						if (Object.keys(rows).length == 0) {
+							bot.sendMessage(message.chat.id, "Non è stata mappata ancora alcuna stanza in questo dungeon");
+							return;
+						}
+
+						var text = "Mappatura " + mapping_type + " per l'istanza *" + istance_name + "*:";
+						for (i = 0; i < Object.keys(rows).length; i++) {
+							var mapped_left = "-";
+							var mapped_top = "-";
+							var mapped_right = "-";
+							if (rows[i].mapped_left == 1)
+								mapped_left = dungeonToDesc(rows[i].dir_left);
+							if (rows[i].mapped_top == 1)
+								mapped_top = dungeonToDesc(rows[i].dir_top);
+							if (rows[i].mapped_right == 1)
+								mapped_right = dungeonToDesc(rows[i].dir_right);
+							text += "\n" + rows[i].room_id + ": " + mapped_left + " | " + mapped_top + " | " + mapped_right;
+						}
+
+						bot.sendMessage(message.chat.id, text, mark);
+					});
 				});
 			});
 		});
 	});
 });
+
+function addToMapping(selected_dir, dungeon_id, player_id, room_id) {
+	connection.query('SELECT dir_' + selected_dir + ' As saved_dir FROM dungeon_map WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0) {
+			connection.query('INSERT INTO dungeon_map (room_id, dungeon_id, player_id, dir_' + selected_dir + ') VALUES (' + room_id + ', ' + dungeon_id + ', ' + player_id + ', 1)', function (err, rows, fields) {
+				if (err) throw err;
+			});
+		} else {
+			if (rows[0].saved_dir == 0) {
+				connection.query('UPDATE dungeon_map SET dir_' + selected_dir + ' = 1 WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+					if (err) throw err;
+				});
+			}
+		}
+	});
+}
+
+function removeFromMapping(dungeon_id, player_id, room_id) {
+	connection.query('SELECT 1 FROM dungeon_map WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length > 0) {
+			connection.query('UPDATE dungeon_map SET dir_top = 0, dir_right = 0, dir_left = 0 WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
+	});
+}
 
 bot.onText(/dungeon|^dg$/i, function (message) {
 
@@ -8946,6 +8987,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			var creation = rows[0].creation_date;
 																			var finish = rows[0].finish_date;
 																			var creator_comment = rows[0].creator_comment
+																			var total_rooms = rows[0].rooms
 
 																			var cursedText = "";
 																			if (rows[0].cursed)
@@ -8962,7 +9004,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																				}
 																			};
 
-																			connection.query('SELECT nickname, room_id, rooms FROM dungeon_status S, dungeon_list L, player P WHERE L.id = ' + dungeon_id + ' AND L.id = S.dungeon_id AND S.player_id = P.id', function (err, rows, fields) {
+																			connection.query('SELECT nickname, room_id FROM dungeon_status S, dungeon_list L, player P WHERE L.id = ' + dungeon_id + ' AND L.id = S.dungeon_id AND S.player_id = P.id', function (err, rows, fields) {
 																				if (err) throw err;
 
 																				var playerlist = "";
@@ -8971,7 +9013,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																					var room;
 																					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 																						room = rows[i].room_id;
-																						if (rows[i].room_id > rows[i].rooms)
+																						if (rows[i].room_id > total_rooms)
 																							room = "finale";
 																						playerlist += "> " + rows[i].nickname + " (stanza " + room + ")\n";
 																					}
@@ -8988,28 +9030,46 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																					var creator_name = "?";
 																					if (Object.keys(rows).length > 0)
 																						creator_name = rows[0].nickname;
+																					
+																					connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
+																						if (err) throw err;
+																						
+																						var query = 'SELECT 1 FROM dungeon_map WHERE dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id;
+																						var mapping_type = "giocatore";
+																						if (Object.keys(rows).length > 0) {
+																							query = 'SELECT 1 FROM dungeon_map M, team T, team_player TP WHERE M.player_id = TP.player_id AND TP.team_id = T.id AND dungeon_id = ' + dungeon_id + ' AND T.id = ' + rows[0].team_id + ' GROUP BY room_id';
+																							mapping_type = "team";
+																						}
+																						
+																						connection.query(query, function (err, rows, fields) {
+																							if (err) throw err;
 
-																					bot.sendMessage(message.chat.id, "<i>" + name1 + " " + num + cursedText + "</i>\n<b>Data creazione</b>: " + long_date_creation + "\n<b>Creatore dell'istanza</b>: " + creator_name + "\n<b>Data crollo</b>: " + long_date_finish + "\n<b>Esploratori al suo interno</b>: " + duration + "/" + max_duration + creator_comment_txt + "\n" + playerlist + "Continuare?", confDg).then(function () {
-																						answerCallbacks[message.chat.id] = function (answer) {
-																							if (answer.text.toLowerCase() == "si") {
-																								connection.query('SELECT duration FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
-																									if (err) throw err;
-																									if ((rows[0].duration >= max_duration) || (duration < 0)) {
-																										bot.sendMessage(message.chat.id, "Questo dungeon è già pieno di esploratori, aspetta che qualcuno esca o genera una nuova istanza.", dBack);
-																										return;
-																									}
+																							var mapped_rooms = Object.keys(rows).length;
+																							var mapped_perc = Math.round(mapped_rooms/total_rooms*100);
 
-																									connection.query('UPDATE dungeon_list SET duration = duration+1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
-																										if (err) throw err;
-																										connection.query('INSERT INTO dungeon_status (player_id, dungeon_id, room_id, finish_time) VALUES (' + player_id + ',' + dungeon_id + ',1,"' + long_date + '")', function (err, rows, fields) {
+																							bot.sendMessage(message.chat.id, "<i>" + name1 + " " + num + cursedText + "</i>\n<b>Data creazione</b>: " + long_date_creation + "\n<b>Creatore dell'istanza</b>: " + creator_name + "\n<b>Data crollo</b>: " + long_date_finish + "\n<b>Esploratori al suo interno</b>: " + duration + "/" + max_duration + creator_comment_txt + "\nMappatura (" + mapping_type + "): " + mapped_perc + "%\n" + playerlist + "Continuare?", confDg).then(function () {
+																								answerCallbacks[message.chat.id] = function (answer) {
+																									if (answer.text.toLowerCase() == "si") {
+																										connection.query('SELECT duration FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 																											if (err) throw err;
-																											bot.sendMessage(message.chat.id, "Sei stato aggiunto alla Lista Avventurieri del dungeon *" + dungeon_name + "*!", dBack);
-																											setAchievement(player_id, 27, 1);
+																											if ((rows[0].duration >= max_duration) || (duration < 0)) {
+																												bot.sendMessage(message.chat.id, "Questo dungeon è già pieno di esploratori, aspetta che qualcuno esca o genera una nuova istanza.", dBack);
+																												return;
+																											}
+
+																											connection.query('UPDATE dungeon_list SET duration = duration+1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
+																												if (err) throw err;
+																												connection.query('INSERT INTO dungeon_status (player_id, dungeon_id, room_id, finish_time) VALUES (' + player_id + ',' + dungeon_id + ',1,"' + long_date + '")', function (err, rows, fields) {
+																													if (err) throw err;
+																													bot.sendMessage(message.chat.id, "Sei stato aggiunto alla Lista Avventurieri del dungeon *" + dungeon_name + "*!", dBack);
+																													setAchievement(player_id, 27, 1);
+																												});
+																											});
 																										});
-																									});
-																								});
-																							};
-																						};
+																									};
+																								};
+																							});
+																						});
 																					});
 																				});
 																			});
@@ -9050,6 +9110,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 					var room_id = parseInt(rows[0].room_id);
 					var monster_id = rows[0].monster_id;
 					var last_dir = rows[0].last_dir;
+					var last_selected_dir = rows[0].last_selected_dir;
 					var room_time = new Date(rows[0].room_time);
 					var param = rows[0].param;
 					var timecheck = rows[0].timevar;
@@ -9439,7 +9500,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		if (err) throw err;
 																	});
 																}
-																connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, last_selected_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 																bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
@@ -9563,7 +9624,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																				if (err) throw err;
 																			});
 																		}
-																		connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																		connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, last_selected_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
 																		bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
@@ -9583,7 +9644,13 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 									var dir_left = parseInt(rows[0].dir_left);
 									var dir = null;
 									
-									var mapped = connection_sync.query('SELECT dir_top, dir_right, dir_left FROM dungeon_map WHERE room_id = ' + (room_id+1) + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id);
+									var mapped;
+									var team_mapping = connection_sync.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id);
+									if (Object.keys(team_mapping).length > 0) {
+										// usa il max per unire le mappature fatte di tutti i giocatori del team
+										mapped = connection_sync.query('SELECT MAX(dir_top) As dir_top, MAX(dir_right) As dir_right, MAX(dir_left) As dir_left FROM dungeon_map M, team T, team_player TP WHERE M.player_id = TP.player_id AND TP.team_id = T.id AND room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND T.id = ' + team_mapping[0].team_id + ' GROUP BY room_id');
+									} else
+										mapped = connection_sync.query('SELECT dir_top, dir_right, dir_left FROM dungeon_map WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id);
 									
 									if (Object.keys(mapped).length > 0) {
 										var mapped_left = "-";
@@ -9597,21 +9664,28 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 											mapped_right = dungeonToDesc(dir_right);
 										text += "\n" + mapped_left + " | " + mapped_top + " | " + mapped_right;
 									}
+									
+									var selected_dir = null;
 
-									if (last_dir != null)
+									if (last_dir != null) {
 										dNav = dNext2;
+										selected_dir = last_selected_dir;
+									}
 
 									bot.sendMessage(message.chat.id, text, dNav).then(function () {
 										answerCallbacks[message.chat.id] = function (answer) {
 											if (answer.text == "Torna al menu")
 												return;
-											if ((answer.text == "⬆️") || (answer.text.toLowerCase() == "su"))
+											if ((answer.text == "⬆️") || (answer.text.toLowerCase() == "su")) {
 												dir = dir_top;
-											else if ((answer.text == "⬅️") || (answer.text.toLowerCase() == "sinistra") || (answer.text.toLowerCase() == "sx"))
+												selected_dir = "top";
+											} else if ((answer.text == "⬅️") || (answer.text.toLowerCase() == "sinistra") || (answer.text.toLowerCase() == "sx")) {
 												dir = dir_left;
-											else if ((answer.text == "➡️") || (answer.text.toLowerCase() == "destra") || (answer.text.toLowerCase() == "dx"))
+												selected_dir = "left";
+											} else if ((answer.text == "➡️") || (answer.text.toLowerCase() == "destra") || (answer.text.toLowerCase() == "dx")) {
 												dir = dir_right;
-											else if (answer.text == "Commenta") {
+												selected_dir = "right";
+											} else if (answer.text == "Commenta") {
 												connection.query('SELECT creator_id FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 													if (err) throw err;
 
@@ -9987,36 +10061,16 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 											var room_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 											var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
 
-											connection.query('UPDATE dungeon_status SET last_dir = ' + dir + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+											var selected_dir_query = "NULL";
+											if (selected_dir != null)
+												selected_dir_query = '"' + selected_dir + '"';
+											
+											connection.query('UPDATE dungeon_status SET last_dir = ' + dir + ', last_selected_dir = ' + selected_dir_query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 											});
 											
-											var selected_dir = "";
-											// questa if serve per catturare tutti i casi e non solo quelli provenienti da selezione della direzione
-											if (dir == dir_top)
-												selected_dir = "top";
-											else if (dir == dir_right)
-												selected_dir = "right";
-											else if (dir == dir_left)
-												selected_dir = "left";
-											
-											if (selected_dir != "") {
-												connection.query('SELECT dir_' + selected_dir + ' As saved_dir FROM dungeon_map WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
-													if (err) throw err;
-
-													if (Object.keys(rows).length == 0) {
-														connection.query('INSERT INTO dungeon_map (room_id, dungeon_id, player_id, dir_' + selected_dir + ') VALUES (' + room_id + ', ' + dungeon_id + ', ' + player_id + ', 1)', function (err, rows, fields) {
-															if (err) throw err;
-														});
-													} else {
-														if (rows[0].saved_dir == 0) {
-															connection.query('UPDATE dungeon_map SET dir_' + selected_dir + ' = 1 WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
-																if (err) throw err;
-															});
-														}
-													}
-												});
-											}
+											if (selected_dir != null)
+												addToMapping(selected_dir, dungeon_id, player_id, room_id);
 
 											if (dir > 10) {
 												var monsterLev = dir - 10;
@@ -10126,7 +10180,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																							if (err) throw err;
 																						});
 																					}
-																					connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																					connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, last_selected_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 																					});
 																					bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
@@ -10250,7 +10304,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																									if (err) throw err;
 																								});
 																							}
-																							connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																							connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, last_selected_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
 																							bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
@@ -10261,7 +10315,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		};
 																	});
 																});
-																connection.query('UPDATE dungeon_status SET last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																connection.query('UPDATE dungeon_status SET last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 																return;
@@ -10277,7 +10331,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 														});
-														connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+														connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 														});
 													}
@@ -10312,7 +10366,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 														});
-														connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+														connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 														});
 													}
@@ -10358,7 +10412,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
 												});
-												connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+												connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
 												});
 											} else if (dir == 4) {
@@ -10372,7 +10426,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													if (err) throw err;
 
 													if (Object.keys(rows).length == 0) {
-														connection.query('UPDATE dungeon_status SET last_dir = NULL, room_id = room_id+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+														connection.query('UPDATE dungeon_status SET last_dir = NULL, last_selected_dir = NULL, room_id = room_id+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 															bot.sendMessage(message.chat.id, "Il viandante al momento non è disponibile, la stanza viene saltata", dNext);
 														});
@@ -10413,7 +10467,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	setBoost(player_id, boost_mission, boost_id);
 																connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
-																	connection.query('UPDATE dungeon_status SET last_dir = NULL, room_id = room_id+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE dungeon_status SET last_dir = NULL, last_selected_dir = NULL, room_id = room_id+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																		bot.sendMessage(message.chat.id, "Decidi di ignorare il viandante e prosegui", dNext);
 																	});
@@ -10464,7 +10518,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																						if (err) throw err;
 																					});
 
-																					connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																					connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 																					});
 
@@ -10510,7 +10564,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = ' + room_id + ', last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = ' + room_id + ', last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 														} else
@@ -10611,7 +10665,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																									if (err) throw err;
 																								});
 																							}
-																							connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																							connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, last_selected_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
 																							bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
@@ -10622,7 +10676,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		};
 																	});
 																});
-																connection.query('UPDATE dungeon_status SET last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																connection.query('UPDATE dungeon_status SET last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 																return; // Non cancellare
@@ -10649,7 +10703,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															if (err) throw err;
 														});
 
-														connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+														connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 														});
 													};
@@ -10686,7 +10740,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															} else {
 																if (boost_id == 8)
 																	setBoost(player_id, boost_mission, boost_id);
-																connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '", last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '", last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																	bot.sendMessage(message.chat.id, "La vecchina ha preparato una Pozione, e decidi di provarla, ma appena bevuta ti addormenti, al tuo risveglio sei nuovamente davanti alle 3 porte che ti avevano condotto in questa foresta.", dNext);
 																});
@@ -10702,7 +10756,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 														});
-														connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+														connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 														});
 													};
@@ -10803,7 +10857,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
-																		connection.query('UPDATE dungeon_status SET param = NULL, room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																		connection.query('UPDATE dungeon_status SET param = NULL, room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
 																		return;
@@ -10868,7 +10922,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
-																connection.query('UPDATE dungeon_status SET param = NULL, room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																connection.query('UPDATE dungeon_status SET param = NULL, room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 															};
@@ -10996,7 +11050,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																									if (err) throw err;
 																								});
 																							}
-																							connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																							connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, last_selected_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
 																							bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
@@ -11008,7 +11062,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	});
 																});
 															});
-															connection.query('UPDATE dungeon_status SET last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 															return;
@@ -11019,7 +11073,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 														} else
@@ -11153,7 +11207,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET param = NULL, room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 														}
@@ -11204,7 +11258,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
-																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 																} else {
@@ -11283,7 +11337,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																										if (err) throw err;
 																									});
 																								}
-																								connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																								connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, last_selected_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
 																								bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
@@ -11330,7 +11384,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
-																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 
@@ -11376,7 +11430,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
-																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
 																		});
@@ -11456,7 +11510,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
-																		connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																		connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
 																	});
@@ -11637,7 +11691,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			});
 
 																			if (timecheck >= 5) {
-																				connection.query('UPDATE dungeon_status SET room_id = ' + winroom + ', last_dir = NULL, param = NULL, timevar = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																				connection.query('UPDATE dungeon_status SET room_id = ' + winroom + ', last_dir = NULL, last_selected_dir = NULL, param = NULL, timevar = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
 																					bot.sendMessage(message.chat.id, "Hai esaurito i tentativi, vieni automaticamente sbalzato alla stanza corretta!", dNext);
 																				});
@@ -11693,7 +11747,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
-																connection.query('UPDATE dungeon_status SET room_id = ' + next + ', last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																connection.query('UPDATE dungeon_status SET room_id = ' + next + ', last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 															} else {
@@ -11703,7 +11757,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	if (err) throw err;
 
 																	if (timecheck >= 5) {
-																		connection.query('UPDATE dungeon_status SET room_id = ' + winroom + ', last_dir = NULL, param = NULL, timevar = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																		connection.query('UPDATE dungeon_status SET room_id = ' + winroom + ', last_dir = NULL, last_selected_dir = NULL, param = NULL, timevar = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																			bot.sendMessage(message.chat.id, "Hai esaurito i tentativi, vieni automaticamente sbalzato alla stanza corretta!", dNext);
 																		});
@@ -11725,7 +11779,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													if (err) throw err;
 
 													if (Object.keys(rows).length == 0) {
-														connection.query('UPDATE dungeon_status SET last_dir = NULL, room_id = room_id+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+														connection.query('UPDATE dungeon_status SET last_dir = NULL, last_selected_dir = NULL, room_id = room_id+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 															bot.sendMessage(message.chat.id, "Il predone al momento non è disponibile, la stanza viene saltata", dNext);
 														});
@@ -11775,7 +11829,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	setBoost(player_id, boost_mission, boost_id);
 																connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
-																	connection.query('UPDATE dungeon_status SET last_dir = NULL, room_id = room_id+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE dungeon_status SET last_dir = NULL, last_selected_dir = NULL, room_id = room_id+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																		bot.sendMessage(message.chat.id, "Decidi di ignorare il predone e prosegui", dNext);
 																	});
@@ -11801,7 +11855,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																				if (err) throw err;
 																			});
 
-																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
 
@@ -11898,7 +11952,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET param = NULL, room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET param = NULL, room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 														} else
@@ -11934,7 +11988,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 														} else if (answer.text == "Avere uno zaino pieno zeppo") {
@@ -11958,7 +12012,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
-																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 															});
@@ -11988,7 +12042,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 														} else if (answer.text == "Completare il dungeon velocemente") {
@@ -12026,7 +12080,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = ' + room_id + ', last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = ' + room_id + ', last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 														} else
@@ -12091,7 +12145,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
-																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 																});
@@ -12103,7 +12157,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 														} else
@@ -12169,7 +12223,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 														};
@@ -12246,7 +12300,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
-																		connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																		connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
 																	}
@@ -12300,7 +12354,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
-																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 															}
@@ -12327,7 +12381,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 														} else if (answer.text == "Porta Misteriosa") {
@@ -12363,7 +12417,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
-																	connection.query('UPDATE dungeon_status SET room_id = ' + room + ', last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE dungeon_status SET room_id = ' + room + ', last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 																});
@@ -12382,7 +12436,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 														});
-														connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+														connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 														});
 														return;
@@ -12456,7 +12510,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
-																		connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																		connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
 																	});
@@ -12507,7 +12561,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
-																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 																});
@@ -12542,14 +12596,14 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		if (err) throw err;
 
 																		if (rows[0].mkeys < keys) {
-																			bot.sendMessage(message.chat.id, "Non hai abbastanza 🗝, ne servono "  +keys + ", ignori l'anziano saggio e prosegui", dNext);
+																			bot.sendMessage(message.chat.id, "Non hai abbastanza 🗝, ne servono " + keys + ", ignori l'anziano saggio e prosegui", dNext);
 
 																			if (boost_id == 8)
 																				setBoost(player_id, boost_mission, boost_id);
 																			connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
-																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
 																		} else {
@@ -12558,17 +12612,23 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																				var rand = Math.round(Math.random()*2);
 																				var sage_dir = "";
+																				var selected_dir = "";
 																				var text_dir = "";
 																				if (rand == 0) {
+																					selected_dir = "top";
 																					sage_dir = "dir_top";
 																					text_dir = "dritto";
 																				} else if (rand == 1) {
+																					selected_dir = "left";
 																					sage_dir = "dir_left";
 																					text_dir = "sinistra";
 																				} else if (rand == 2) {
+																					selected_dir = "right";
 																					sage_dir = "dir_right";
 																					text_dir = "destra";
 																				}
+																				
+																				addToMapping(selected_dir, dungeon_id, player_id, room_id);
 
 																				connection.query('SELECT room_id, ' + sage_dir + ' As dir FROM dungeon_rooms WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND ' + sage_dir + ' < 11 ORDER BY RAND()', function (err, rows, fields) {
 																					if (err) throw err;
@@ -12580,7 +12640,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																						connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																							if (err) throw err;
 																						});
-																						connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																						connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																							if (err) throw err;
 																						});
 																					} else {
@@ -12595,7 +12655,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																						connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																							if (err) throw err;
 																						});
-																						connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																						connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																							if (err) throw err;
 																						});
 																					}
@@ -12614,7 +12674,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 														}
@@ -12647,6 +12707,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																var newT = arr[0];
 																var newL = arr[1];
 																var newR = arr[2];
+																
+																removeFromMapping(dungeon_id, player_id, rows[0].room_id);
 
 																connection.query('UPDATE dungeon_rooms SET dir_right = ' + newR + ', dir_left = ' + newL + ', dir_top = ' + newT + ' WHERE id = ' + rows[0].id, function (err, rows, fields) {
 																	if (err) throw err;
@@ -12658,7 +12720,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
-																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 
@@ -12706,11 +12768,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	if (err) throw err;
 																});
 																if (room_id > 1) {
-																	connection.query('UPDATE dungeon_status SET room_id = room_id-1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE dungeon_status SET room_id = room_id-1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 																} else {
-																	connection.query('UPDATE dungeon_status SET last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE dungeon_status SET last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 																}
@@ -12729,11 +12791,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																if (err) throw err;
 															});
 															if (room_id > 1) {
-																connection.query('UPDATE dungeon_status SET room_id = room_id-1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																connection.query('UPDATE dungeon_status SET room_id = room_id-1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 															} else {
-																connection.query('UPDATE dungeon_status SET last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																connection.query('UPDATE dungeon_status SET last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 															}
@@ -12747,7 +12809,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 														}
@@ -12865,7 +12927,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																					connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 																					});
-																					connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																					connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 																					});
 																				});
@@ -12880,7 +12942,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
-																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
 																		}
@@ -12933,7 +12995,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
-																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 																});
@@ -12948,7 +13010,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 														}
@@ -13001,7 +13063,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
-																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 															});
@@ -13015,7 +13077,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 														}
@@ -13093,7 +13155,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
-																		connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																		connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
 																	});
@@ -13107,7 +13169,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
-																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 																}
@@ -13198,7 +13260,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
-																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 																});
@@ -13213,7 +13275,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 														}
@@ -13292,7 +13354,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
-																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
 																		}
@@ -13307,7 +13369,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
-																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 																}
@@ -13394,7 +13456,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET param = NULL, room_id = room_id+1, last_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET param = NULL, room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 														} else
@@ -13471,7 +13533,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 															return;
@@ -13513,7 +13575,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 															return;
@@ -13527,7 +13589,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 															return;
@@ -13568,7 +13630,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 															return;
@@ -13582,7 +13644,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 															return;
@@ -13607,7 +13669,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																if (boost_id == 8)
 																	setBoost(player_id, boost_mission, boost_id);
 
-																connection.query('UPDATE dungeon_status SET room_id = room_id, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																connection.query('UPDATE dungeon_status SET room_id = room_id, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 																connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -13653,7 +13715,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																}
 															};
 															
-															bot.sendMessage(message.chat.id, "Seleziona la rarità della Figurina che vuoi acquistare, ti costerà 50x Rarità 💎", dOptions).then(function () {
+															bot.sendMessage(message.chat.id, "Seleziona la rarità della Figurina che vuoi acquistare", dOptions).then(function () {
 																answerCallbacks[message.chat.id] = function (answer) {
 																	if (answer.text == "Torna al menu")
 																		return;
@@ -13677,7 +13739,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		}
 																	};
 																	
-																	var price = (rarity*50);
+																	var price = 40+(rarity*10);
 																	
 																	bot.sendMessage(message.chat.id, "Sei sicuro di voler acquistare una Figurina casuale per " + price + " 💎?", dYesNo).then(function () {
 																		answerCallbacks[message.chat.id] = function (answer) {
@@ -13711,7 +13773,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																					connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 																					});
-																					connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																					connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 																					});
 																				});
@@ -13729,7 +13791,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
 															return;
@@ -14590,7 +14652,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																								if (err) throw err;
 																							});
 																						}
-																						connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																						connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, last_selected_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																							if (err) throw err;
 																						});
 																						bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
@@ -15005,7 +15067,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																			var lifesum = monster_life - danno;
 																			if (lifesum <= 0) {
-																				connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, monster_paralyzed = 0, monster_critic = 0, room_id = room_id+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																				connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, last_selected_dir = NULL, monster_paralyzed = 0, monster_critic = 0, room_id = room_id+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
 
 																					var chest_id = Math.ceil(room_id / 10);
@@ -36445,7 +36507,7 @@ bot.onText(/emporio/i, function (message) {
 						var potionL = 5000;
 						var plume = 10000;
 						var dust = 25000;
-						var package = 5;
+						var package = 2;
 
 						if (price_drop == 1) {
 							iKeys.push(["Compra Pozione Piccola (" + formatNumber(parseInt(potionS - Math.round((potionS / 100) * sconto))) + " §)"]);
@@ -36899,7 +36961,7 @@ bot.onText(/ricicla/i, function (message) {
 				return;
 			}
 			var split = message.text.split(",");
-			if (split.count < 3) {
+			if (split.length < 3) {
 				bot.sendMessage(message.chat.id, "Numero di parametri non valido: /ricicla oggettoDaRiciclare,quantità,oggettoRisultato", back);
 				return;
 			}
