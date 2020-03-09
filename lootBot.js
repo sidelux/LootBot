@@ -8493,10 +8493,11 @@ bot.onText(/^\/mappatura/i, function (message) {
 			
 			var dungeon_id = rows[0].dungeon_id;
 			
-			connection.query('SELECT name FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
+			connection.query('SELECT name, rooms FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				var istance_name = rows[0].name;
+				var istance_rooms = rows[0].rooms;
 			
 				connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
@@ -8517,17 +8518,21 @@ bot.onText(/^\/mappatura/i, function (message) {
 						}
 
 						var text = "Mappatura " + mapping_type + " per l'istanza *" + istance_name + "*:";
-						for (i = 0; i < Object.keys(rows).length; i++) {
-							var mapped_left = "-";
-							var mapped_top = "-";
-							var mapped_right = "-";
-							if (rows[i].mapped_left == 1)
-								mapped_left = dungeonToDesc(rows[i].dir_left);
-							if (rows[i].mapped_top == 1)
-								mapped_top = dungeonToDesc(rows[i].dir_top);
-							if (rows[i].mapped_right == 1)
-								mapped_right = dungeonToDesc(rows[i].dir_right);
-							text += "\n" + rows[i].room_id + ": " + mapped_left + " | " + mapped_top + " | " + mapped_right;
+						for (k = 0; k < istance_rooms; k++) {
+							var current_room = k+1;
+							if (rows[k].room_id == current_room) {
+								var mapped_left = "-";
+								var mapped_top = "-";
+								var mapped_right = "-";
+								if (rows[k].mapped_left == 1)
+									mapped_left = dungeonToDesc(rows[k].dir_left);
+								if (rows[k].mapped_top == 1)
+									mapped_top = dungeonToDesc(rows[k].dir_top);
+								if (rows[k].mapped_right == 1)
+									mapped_right = dungeonToDesc(rows[k].dir_right);
+								text += "\n" + current_room + ": " + mapped_left + " | " + mapped_top + " | " + mapped_right;
+							} else
+								text += "\n" + current_room + ": - | - | -";
 						}
 
 						bot.sendMessage(message.chat.id, text, mark);
@@ -8702,10 +8707,10 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 						else if (first == 0)
 							iKeys.splice(1, 0, [rows[last-1].name + " (stanze: " + rows[last-1].rooms + ", punti min: " + rows[last-1].min_rank + ")"]);
 
-						if (player_reborn <= 2) {
-							if ((player_reborn == 2) && (player_level <= 5))
+						if (player_reborn <= 3) {
+							if ((player_reborn == 3) && (player_level <= 5))
 								iKeys.push(["Azzera il Rango ⚠️"]);
-							else if (player_reborn < 2)
+							else if (player_reborn < 3)
 								iKeys.push(["Azzera il Rango ⚠️"]);
 						}
 						
@@ -9645,10 +9650,12 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 									var dir = null;
 									
 									var mapped;
+									var mapped_type = "giocatore";
 									var team_mapping = connection_sync.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id);
 									if (Object.keys(team_mapping).length > 0) {
 										// usa il max per unire le mappature fatte di tutti i giocatori del team
 										mapped = connection_sync.query('SELECT MAX(dir_top) As dir_top, MAX(dir_right) As dir_right, MAX(dir_left) As dir_left FROM dungeon_map M, team T, team_player TP WHERE M.player_id = TP.player_id AND TP.team_id = T.id AND room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND T.id = ' + team_mapping[0].team_id + ' GROUP BY room_id');
+										mapped_type = "team";
 									} else
 										mapped = connection_sync.query('SELECT dir_top, dir_right, dir_left FROM dungeon_map WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id);
 									
@@ -9662,7 +9669,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 											mapped_top = dungeonToDesc(dir_top);
 										if (mapped[0].dir_right == 1)
 											mapped_right = dungeonToDesc(dir_right);
-										text += "\n" + mapped_left + " | " + mapped_top + " | " + mapped_right;
+										text += "\n\n🗺 Mappatura (" + mapped_type + ")\n" + mapped_left + " | " + mapped_top + " | " + mapped_right;
 									}
 									
 									var selected_dir = null;
@@ -26603,7 +26610,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																						var ally = "alleati";
 																						if (turn == 1)
 																							ally = "alleato";
-																						player_text += "\nIl nemico lancia " + magicToName(4) + " e aumenta la probabilità di critico contro " + turn + " " + ally;
+																						player_text += "\nIl nemico lancia " + magicToName(4) + " e aumenta la probabilità di critico per " + turn + " " + ally;
 																						setAchievement(playerid, 66, 1);
 																					}
 																				}
@@ -53647,7 +53654,7 @@ function estrazione() {
 			quantity = rows[0].quantity;
 		} else if (rows[0].money != 0) {
 			type = "money";
-			name = rows[0].money + " §";
+			name = formatNumber(rows[0].money) + " §";
 			money = rows[0].money;
 		} else if ((rows[0].chest_id != 0) && (rows[0].item_id != null)) {
 			type = "chest";
@@ -53704,6 +53711,11 @@ function estrazione() {
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					playerId = rows[i].player_id;
 					nickname = rows[i].nickname;
+					if (nick_extracted.indexOf(playerId) != -1) {
+						// in caso di estrazione doppia
+						i--;
+						continue;
+					} 
 					nick_extracted.push(playerId);
 					chat_ids.push(rows[i].chat_id);
 					console.log("Estratto " + nickname);
