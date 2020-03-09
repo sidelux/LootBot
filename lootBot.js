@@ -7212,7 +7212,7 @@ bot.onText(/attacca!/i, function (message) {
 											item_query += ", weapon_id = " + enemy_weapon_id;
 											enemy_item_query += ", weapon_id = NULL";
 										} else {
-											text += "\nConvertito in un 🔩 Rottame!";
+											text += "\nArma convertita in un 🔩 Rottame!";
 											enemy_scrap++;
 										}
 									} else {
@@ -7229,7 +7229,7 @@ bot.onText(/attacca!/i, function (message) {
 											item_query += ", weapon2_id = " + enemy_weapon2_id;
 											enemy_item_query += ", weapon2_id = NULL";
 										} else {
-											text += "\nConvertito in un 🔩 Rottame!";
+											text += "\nArmatura convertita in un 🔩 Rottame!";
 											enemy_scrap++;
 										}
 									} else {
@@ -7246,7 +7246,7 @@ bot.onText(/attacca!/i, function (message) {
 											item_query += ", weapon3_id = " + enemy_weapon3_id;
 											enemy_item_query += ", weapon3_id = NULL";
 										} else {
-											text += "\nConvertito in un 🔩 Rottame!";
+											text += "\nScudo convertito in un 🔩 Rottame!";
 											enemy_scrap++;
 										}
 									} else {
@@ -7296,7 +7296,7 @@ bot.onText(/attacca!/i, function (message) {
 											enemy_item_query += ", weapon_id = " + weapon_id;
 											item_query += ", weapon_id = NULL";
 										} else {
-											enemy_text += "\nConvertito in un 🔩 Rottame!";
+											enemy_text += "\nArma convertita in un 🔩 Rottame!";
 											scrap++;
 										}
 									} else {
@@ -7313,7 +7313,7 @@ bot.onText(/attacca!/i, function (message) {
 											enemy_item_query += ", weapon2_id = " + weapon2_id;
 											item_query += ", weapon2_id = NULL";
 										} else {
-											enemy_text += "\nConvertito in un 🔩 Rottame!";
+											enemy_text += "\nArmatura convertita in un 🔩 Rottame!";
 											scrap++;
 										}
 									} else {
@@ -7330,7 +7330,7 @@ bot.onText(/attacca!/i, function (message) {
 											enemy_item_query += ", weapon3_id = " + weapon3_id;
 											item_query += ", weapon3_id = NULL";
 										} else {
-											enemy_text += "\nConvertito in un 🔩 Rottame!";
+											enemy_text += "\nScudo convertito in un 🔩 Rottame!";
 											scrap++;
 										}
 									} else {
@@ -7788,7 +7788,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 														text += "\nArma sostituita!";
 														item_query = ", weapon_id = '" + item_id + "'";
 													} else {
-														text += "\nConvertita in un 🔩 Rottame!";
+														text += "\nArma convertita in un 🔩 Rottame!";
 														scrap_query = ", scrap = scrap+1";
 													}
 												} else {
@@ -7802,7 +7802,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 														text += "\nArmatura sostituita!";
 														item_query = ", weapon2_id = '" + item_id + "'";
 													} else {
-														text += "\nConvertita in un 🔩 Rottame!";
+														text += "\nArmatura convertita in un 🔩 Rottame!";
 														scrap_query = ", scrap = scrap+1";
 													}
 												} else {
@@ -7816,7 +7816,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 														text += "\nScudo sostituito!";
 														item_query = ", weapon3_id = '" + item_id + "'";
 													} else {
-														text += "\nConvertito in un 🔩 Rottame!";
+														text += "\nScudo convertito in un 🔩 Rottame!";
 														scrap_query = ", scrap = scrap+1";
 													}
 												} else {
@@ -8320,7 +8320,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 													text += "\nArma sostituita!";
 													item_query = ", weapon_id = '" + item_id + "'";
 												} else {
-													text += "\nConvertita in un 🔩 Rottame!";
+													text += "\nArma convertita in un 🔩 Rottame!";
 													scrap_query = ", scrap = scrap+1";
 												}
 											} else {
@@ -8334,7 +8334,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 													text += "\nArmatura sostituita!";
 													item_query = ", weapon2_id = '" + item_id + "'";
 												} else {
-													text += "\nConvertita in un 🔩 Rottame!";
+													text += "\nArmatura convertita in un 🔩 Rottame!";
 													scrap_query = ", scrap = scrap+1";
 												}
 											} else {
@@ -8348,7 +8348,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 													text += "\nScudo sostituito!";
 													item_query = ", weapon3_id = '" + item_id + "'";
 												} else {
-													text += "\nConvertito in un 🔩 Rottame!";
+													text += "\nScudo convertito in un 🔩 Rottame!";
 													scrap_query = ", scrap = scrap+1";
 												}
 											} else {
@@ -57254,7 +57254,7 @@ function setBattleTimeElapsed(element, index, array) {
 								enemy_item_query += ", weapon_id = " + weapon_id;
 								item_query += ", weapon_id = NULL";
 							} else {
-								enemy_text += "\nConvertito in un 🔩 Rottame!";
+								enemy_text += "\nArma convertita in un 🔩 Rottame!";
 								scrap++;
 							}
 						} else {
@@ -57271,7 +57271,7 @@ function setBattleTimeElapsed(element, index, array) {
 								enemy_item_query += ", weapon2_id = " + weapon2_id;
 								item_query += ", weapon2_id = NULL";
 							} else {
-								enemy_text += "\nConvertito in un 🔩 Rottame!";
+								enemy_text += "\nArmatura convertita in un 🔩 Rottame!";
 								scrap++;
 							}
 						} else {
@@ -57288,7 +57288,7 @@ function setBattleTimeElapsed(element, index, array) {
 								enemy_item_query += ", weapon3_id = " + weapon3_id;
 								item_query += ", weapon3_id = NULL";
 							} else {
-								enemy_text += "\nConvertito in un 🔩 Rottame!";
+								enemy_text += "\nScudo convertito in un 🔩 Rottame!";
 								scrap++;
 							}
 						} else {
@@ -58225,7 +58225,7 @@ function resetMapCount() {
 	connection.query('UPDATE player SET map_count = 0 WHERE map_count != 0', function (err, rows, fields) {
 		if (err) throw err;
 	});
-	connection.query('UPDATE map_lobby SET lobby_id = NULL WHERE lobby_id IS NOT NULL', function (err, rows, fields) {
+	connection.query('UPDATE map_lobby SET lobby_id = NULL WHERE lobby_id IS NOT NULL AND lobby_training = 0', function (err, rows, fields) {
 		if (err) throw err;
 	});
 };
