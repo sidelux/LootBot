@@ -8483,7 +8483,7 @@ bot.onText(/^\/mappatura|^\/mappaturasym/i, function (message) {
 
 		var player_id = rows[0].id;
 		
-		connection.query('SELECT dungeon_id FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT dungeon_id, room_id, last_selected_dir FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			
 			if (Object.keys(rows).length == 0) {
@@ -8497,6 +8497,8 @@ bot.onText(/^\/mappatura|^\/mappaturasym/i, function (message) {
 			}
 			
 			var dungeon_id = rows[0].dungeon_id;
+			var room_id = rows[0].room_id;
+			var last_selected_dir = rows[0].last_selected_dir;
 			
 			connection.query('SELECT name, rooms FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -8526,6 +8528,9 @@ bot.onText(/^\/mappatura|^\/mappaturasym/i, function (message) {
 						var current_room;
 						var found;
 						var rowId;
+						var posLeft;
+						var posTop;
+						var posRight;
 						for (k = 0; k < istance_rooms; k++) {
 							current_room = k+1;
 							found = 0;
@@ -8534,6 +8539,18 @@ bot.onText(/^\/mappatura|^\/mappaturasym/i, function (message) {
 									found = 1;
 									rowId = i;
 								}
+							}
+							
+							posLeft = "";
+							posTop = "";
+							posRight = "";
+							if (room_id == current_room) {
+								if (last_selected_dir == "left")
+									posLeft = " 📍";
+								else if (last_selected_dir == "top")
+									posTop = " 📍";
+								else if (last_selected_dir == "right")
+									posRight = " 📍";
 							}
 							
 							if (found == 1) {
@@ -8558,7 +8575,7 @@ bot.onText(/^\/mappatura|^\/mappaturasym/i, function (message) {
 									else
 										mapped_right = dungeonToDesc(rows[rowId].dir_right);
 								}
-								text += "\n" + current_room + ": " + mapped_left + " | " + mapped_top + " | " + mapped_right;
+								text += "\n" + current_room + ": " + mapped_left + posLeft + " | " + mapped_top + posTop + " | " + mapped_right + posRight;
 							} else
 								text += "\n" + current_room + ": - | - | -";
 						}
