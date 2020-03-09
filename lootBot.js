@@ -1460,7 +1460,8 @@ bot.onText(/^\/comandi/, function (message, match) {
 					    "/setglobal (imposta stato globale)\n" +
 					   	"/globaldesc (imposta descrizione globale)\n" +
 					   	"/globalcap (imposta cap)\n" +
-					    "/incremglobal (sposta fine globale di un mese)\n");
+					    "/incremglobal (sposta fine globale di un mese)\n" +
+					   	"/destroylobby lobby_id (distrugge la lobby uccidendo tutti i giocatori)\n");
 	} else
 		bot.sendMessage(message.chat.id, "Piacerebbe :D");
 });
@@ -8522,29 +8523,40 @@ bot.onText(/^\/mappatura|^\/mappaturasym/i, function (message) {
 						}
 
 						var text = "Mappatura " + mapping_type + " per l'istanza *" + istance_name + "*:";
+						var current_room;
+						var found;
+						var rowId;
 						for (k = 0; k < istance_rooms; k++) {
-							var current_room = k+1;
-							if (rows[k] != undefined) {
+							current_room = k+1;
+							found = 0;
+							for(i = 0; i < Object.keys(rows).length; i++) {
+								if (rows[i].room_id == current_room) {
+									found = 1;
+									rowId = i;
+								}
+							}
+							
+							if (found == 1) {
 								var mapped_left = "-";
 								var mapped_top = "-";
 								var mapped_right = "-";
-								if (rows[k].mapped_left == 1) {
+								if (rows[rowId].mapped_left == 1) {
 									if (emojiMode == 1)
-										mapped_left = dungeonToSym(rows[k].dir_left);
+										mapped_left = dungeonToSym(rows[rowId].dir_left);
 									else
-										mapped_left = dungeonToDesc(rows[k].dir_left);
+										mapped_left = dungeonToDesc(rows[rowId].dir_left);
 								}
-								if (rows[k].mapped_top == 1) {
+								if (rows[rowId].mapped_top == 1) {
 									if (emojiMode == 1)
-										mapped_top = dungeonToSym(rows[k].dir_top);
+										mapped_top = dungeonToSym(rows[rowId].dir_top);
 									else
-										mapped_top = dungeonToDesc(rows[k].dir_top);
+										mapped_top = dungeonToDesc(rows[rowId].dir_top);
 								}
-								if (rows[k].mapped_right == 1) {
+								if (rows[rowId].mapped_right == 1) {
 									if (emojiMode == 1)
-										mapped_right = dungeonToSym(rows[k].dir_right);
+										mapped_right = dungeonToSym(rows[rowId].dir_right);
 									else
-										mapped_right = dungeonToDesc(rows[k].dir_right);
+										mapped_right = dungeonToDesc(rows[rowId].dir_right);
 								}
 								text += "\n" + current_room + ": " + mapped_left + " | " + mapped_top + " | " + mapped_right;
 							} else
@@ -45479,6 +45491,32 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 	});
 });
 
+bot.onText(/^\/last (.+)/, function (message, match) {
+	var nick = match[1];
+
+	if (message.from.id == 20471035) {
+		connection.query('SELECT time FROM last_command, player WHERE last_command.account_id = player.account_id AND player.nickname = "' + nick + '"', function (err, rows, fields) {
+			if (err) throw err;
+			if (Object.keys(rows).length > 0) {
+				var d = new Date(rows[0].time);
+				var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth()+1) + "/" + d.getFullYear();
+				bot.sendMessage(message.chat.id, long_date);
+			} else {
+				bot.sendMessage(message.chat.id, "Boh!");
+			}
+		});
+	};
+});
+
+bot.onText(/^\/destroylobby (.+)/, function (message, match) {
+	var lobby_id = match[1];
+
+	if (message.from.id == 20471035) {
+		destroyLobby(lobby_id);
+		bot.sendMessage(message.chat.id, "Fatto!");
+	};
+});
+
 // FUNZIONI
 
 function cleanInactive6() {
@@ -57042,6 +57080,10 @@ function checkMapElapsed() {
 function setMapElapsed(element, index, array) {
 	var lobby_id = element.lobby_id;
 	
+	destroyLobby(lobby_id);
+}
+
+function destroyLobby(lobby_id) {
 	connection.query('SELECT P.id As player_id, P.chat_id As chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND M.killed = 0 AND M.lobby_id = ' + lobby_id, function (err, rows, fields) {
 		if (err) throw err;
 		
@@ -57535,8 +57577,11 @@ function setFinishedLobbyEnd(element, index, array) {
 							if (err) throw err;
 						});
 						pos++;
-
-						setAchievement(rows[i].id, 88, 1);
+						
+						if (lobby_training == 1)
+							setAchievement(rows[i].id, 91, 1);
+						else
+							setAchievement(rows[i].id, 88, 1);
 					}
 
 					connection.query('SELECT P.id, P.nickname, P.gender FROM map_history M, player P WHERE M.player_id = P.id AND M.position = 1 AND M.map_lobby_id = ' + map_lobby_id, function (err, rows, fields) {
@@ -60097,23 +60142,6 @@ function calcLife(message) {
 		});
 	});
 }
-
-bot.onText(/^\/last (.+)/, function (message, match) {
-	var nick = match[1];
-
-	if (message.from.id == 20471035) {
-		connection.query('SELECT time FROM last_command, player WHERE last_command.account_id = player.account_id AND player.nickname = "' + nick + '"', function (err, rows, fields) {
-			if (err) throw err;
-			if (Object.keys(rows).length > 0) {
-				var d = new Date(rows[0].time);
-				var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth()+1) + "/" + d.getFullYear();
-				bot.sendMessage(message.chat.id, long_date);
-			} else {
-				bot.sendMessage(message.chat.id, "Boh!");
-			}
-		});
-	};
-});
 
 function addZero(i) {
 	if (i < 10)
