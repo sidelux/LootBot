@@ -8465,7 +8465,7 @@ bot.onText(/sacca$/i, function (message) {
 	});
 });
 
-bot.onText(/^\/mappatura/i, function (message) {
+bot.onText(/^\/mappatura|^\/mappaturasym/i, function (message) {
 	connection.query('SELECT account_id, id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -8475,6 +8475,10 @@ bot.onText(/^\/mappatura/i, function (message) {
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
+		
+		var emojiMode = 0;
+		if (message.text == "/mappaturasym")
+			emojiMode = 1;
 
 		var player_id = rows[0].id;
 		
@@ -8520,16 +8524,28 @@ bot.onText(/^\/mappatura/i, function (message) {
 						var text = "Mappatura " + mapping_type + " per l'istanza *" + istance_name + "*:";
 						for (k = 0; k < istance_rooms; k++) {
 							var current_room = k+1;
-							if (rows[k].room_id == current_room) {
+							if (rows[k] != undefined) {
 								var mapped_left = "-";
 								var mapped_top = "-";
 								var mapped_right = "-";
-								if (rows[k].mapped_left == 1)
-									mapped_left = dungeonToDesc(rows[k].dir_left);
-								if (rows[k].mapped_top == 1)
-									mapped_top = dungeonToDesc(rows[k].dir_top);
-								if (rows[k].mapped_right == 1)
-									mapped_right = dungeonToDesc(rows[k].dir_right);
+								if (rows[k].mapped_left == 1) {
+									if (emojiMode == 1)
+										mapped_left = dungeonToSym(rows[k].dir_left);
+									else
+										mapped_left = dungeonToDesc(rows[k].dir_left);
+								}
+								if (rows[k].mapped_top == 1) {
+									if (emojiMode == 1)
+										mapped_top = dungeonToSym(rows[k].dir_top);
+									else
+										mapped_top = dungeonToDesc(rows[k].dir_top);
+								}
+								if (rows[k].mapped_right == 1) {
+									if (emojiMode == 1)
+										mapped_right = dungeonToSym(rows[k].dir_right);
+									else
+										mapped_right = dungeonToDesc(rows[k].dir_right);
+								}
 								text += "\n" + current_room + ": " + mapped_left + " | " + mapped_top + " | " + mapped_right;
 							} else
 								text += "\n" + current_room + ": - | - | -";
