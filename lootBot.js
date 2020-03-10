@@ -9084,18 +9084,21 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																					connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 																						
-																						var query = 'SELECT 1 FROM dungeon_map WHERE dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id;
+																						var query = 'SELECT (SUM(dir_top)+SUM(dir_right)+SUM(dir_left)) As tot FROM dungeon_map WHERE dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id;
 																						var mapping_type = "giocatore";
 																						if (Object.keys(rows).length > 0) {
-																							query = 'SELECT 1 FROM dungeon_map M, team T, team_player TP WHERE M.player_id = TP.player_id AND TP.team_id = T.id AND dungeon_id = ' + dungeon_id + ' AND T.id = ' + rows[0].team_id + ' GROUP BY room_id';
+																							query = 'SELECT (SUM(dir_top)+SUM(dir_right)+SUM(dir_left)) As tot FROM dungeon_map M, team T, team_player TP WHERE M.player_id = TP.player_id AND TP.team_id = T.id AND dungeon_id = ' + dungeon_id + ' AND T.id = ' + rows[0].team_id + ' GROUP BY room_id';
 																							mapping_type = "team";
 																						}
 																						
 																						connection.query(query, function (err, rows, fields) {
 																							if (err) throw err;
 
-																							var mapped_rooms = Object.keys(rows).length;
-																							var mapped_perc = Math.round(mapped_rooms/total_rooms*100);
+																							var mapped_dirs = 0;
+																							if (Object.keys(rows).length > 0)
+																								mapped_dirs = rows[0].tot;
+																							var total_dirs = total_rooms*3;
+																							var mapped_perc = Math.round(mapped_dirs/total_dirs*100);
 
 																							bot.sendMessage(message.chat.id, "<i>" + name1 + " " + num + cursedText + "</i>\n<b>Data creazione</b>: " + long_date_creation + "\n<b>Creatore dell'istanza</b>: " + creator_name + "\n<b>Data crollo</b>: " + long_date_finish + "\n<b>Esploratori al suo interno</b>: " + duration + "/" + max_duration + creator_comment_txt + "\nMappatura (" + mapping_type + "): " + mapped_perc + "%\n" + playerlist + "Continuare?", confDg).then(function () {
 																								answerCallbacks[message.chat.id] = function (answer) {
@@ -11760,24 +11763,28 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																return;
 															}
 
+															var next_dir = "";
 															if (answer.text.indexOf("1.") != -1) {
 																if (params[3] == 0)
 																	win = 0;
 																else
 																	win = 1;
 																next = params[0];
+																next_dir = params[2];
 															} else if (answer.text.indexOf("2.") != -1) {
 																if (params[7] == 0)
 																	win = 0;
 																else
 																	win = 1;
 																next = params[4];
+																next_dir = params[6];
 															} else if (answer.text.indexOf("3.") != -1) {
 																if (params[11] == 0)
 																	win = 0;
 																else
 																	win = 1;
 																next = params[8];
+																next_dir = params[10];
 															} else
 																return;
 
@@ -11790,6 +11797,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																next++;
 
 															if (win == 1) {
+																addToMapping(next_dir, dungeon_id, player_id, next);
 																connection.query('UPDATE dungeon_status SET param = NULL, timevar = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																	bot.sendMessage(message.chat.id, "Premi un pulsante e sul muro appare un messaggio con scritto _'La stanza indicata corrisponde perfettamente alla sua descrizione!'_, vieni teletrasportato alla stanza " + next + " del dungeon", dNext);
