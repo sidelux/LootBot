@@ -9442,7 +9442,7 @@ bot.onText(/^\/prezzo (.+)|^\/prezzo/, function (message, match) {
 		var item_id = rows[0].id;
 		var value = rows[0].value;
 
-		connection.query('SELECT quantity, price, (SELECT nickname FROM market_direct_history, player WHERE player.id = from_id AND item_id = ' + item_id + ' LIMIT 1) As fromId, (SELECT nickname FROM market_direct_history, player WHERE player.id = to_id AND item_id = ' + item_id + ' LIMIT 1) As toId, (SELECT SUM(quantity) FROM market_direct_history WHERE item_id = ' + item_id + ') As cnt, market_direct_history.time FROM market_direct_history WHERE item_id = ' + item_id + ' AND price != ' + value + ' ORDER BY id DESC', function (err, rows, fields) {
+		connection.query('SELECT quantity, price, (SELECT nickname FROM market_direct_history, player WHERE player.id = from_id AND item_id = ' + item_id + ' LIMIT 1) As fromId, (SELECT nickname FROM market_direct_history, player WHERE player.id = to_id AND item_id = ' + item_id + ' LIMIT 1) As toId, (SELECT SUM(quantity) FROM market_direct_history WHERE item_id = ' + item_id + ') As cnt, market_direct_history.time FROM market_direct_history WHERE type != 4 AND item_id = ' + item_id + ' AND price != ' + value + ' ORDER BY id DESC', function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
 				var text = "Ultimi prezzi trovati per " + oggetto + ":";
@@ -9460,7 +9460,7 @@ bot.onText(/^\/prezzo (.+)|^\/prezzo/, function (message, match) {
 				for (var i = 0; i < Object.keys(rows).length; i++) {
 					d = new Date(rows[i].time);
 					long_date = " alle " + addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + ":" + addZero(d.getSeconds()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-					this_row = "\n> " + formatNumber(Math.round(rows[i].price)) + " § ";
+					this_row = "\n> " + formatNumber(Math.round(rows[i].price)) + " § per " + formatNumber(rows[i].quantity) + " copie";
 					if (this_row != last_row) {
 						text += this_row + long_date;
 						last_row = this_row;
@@ -9470,7 +9470,7 @@ bot.onText(/^\/prezzo (.+)|^\/prezzo/, function (message, match) {
 					if (row_cnt >= len)
 						break;
 				}
-				bot.sendMessage(message.from.id, text + "\nVenduto " + rows[0].cnt + " volte");
+				bot.sendMessage(message.from.id, text + "\nVenduto " + formatNumber(rows[0].cnt) + " volte");
 			} else {
 				bot.sendMessage(message.from.id, "Non ho trovato l'ultimo prezzo dell'oggetto specificato");
 			}
