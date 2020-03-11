@@ -9092,7 +9092,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																						var query = 'SELECT (SUM(dir_top)+SUM(dir_right)+SUM(dir_left)) As tot FROM dungeon_map WHERE dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id;
 																						var mapping_type = "giocatore";
 																						if (Object.keys(rows).length > 0) {
-																							query = 'SELECT (SUM(dir_top)+SUM(dir_right)+SUM(dir_left)) As tot FROM dungeon_map M, team T, team_player TP WHERE M.player_id = TP.player_id AND TP.team_id = T.id AND dungeon_id = ' + dungeon_id + ' AND T.id = ' + rows[0].team_id + ' GROUP BY room_id';
+																							query = 'SELECT SUM(tot) As tot FROM (SELECT (SUM(dir_top)+SUM(dir_right)+SUM(dir_left)) As tot FROM dungeon_map M, team T, team_player TP WHERE M.player_id = TP.player_id AND TP.team_id = T.id AND dungeon_id = ' + dungeon_id + ' AND T.id = ' + rows[0].team_id + ' GROUP BY room_id) As t';
 																							mapping_type = "team";
 																						}
 																						
@@ -57555,7 +57555,7 @@ function setFinishedLobbyEnd(element, index, array) {
 						else if (rows[i].kills > 0)
 							kill_text = rows[i].kills + " uccisioni, ";
 						
-						trophies_count = ((lobby_total_space-pos+1)+parseInt(rows[i].kills))*multiplier;
+						trophies_count = ((lobby_total_space-pos)+parseInt(rows[i].kills))*multiplier;
 						
 						var bonus = "";
 						/*
