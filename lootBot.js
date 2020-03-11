@@ -8531,6 +8531,7 @@ bot.onText(/^\/mappatura|^\/mappaturasym/i, function (message) {
 						var posLeft;
 						var posTop;
 						var posRight;
+						var posRoom;
 						for (k = 0; k < istance_rooms; k++) {
 							current_room = k+1;
 							found = 0;
@@ -8544,6 +8545,8 @@ bot.onText(/^\/mappatura|^\/mappaturasym/i, function (message) {
 							posLeft = "";
 							posTop = "";
 							posRight = "";
+							posRoom = "";
+							
 							if (room_id == current_room) {
 								if (last_selected_dir == "left")
 									posLeft = " 📍";
@@ -8551,6 +8554,8 @@ bot.onText(/^\/mappatura|^\/mappaturasym/i, function (message) {
 									posTop = " 📍";
 								else if (last_selected_dir == "right")
 									posRight = " 📍";
+								else
+									posRoom = " 📍";
 							}
 							
 							if (found == 1) {
@@ -8575,9 +8580,9 @@ bot.onText(/^\/mappatura|^\/mappaturasym/i, function (message) {
 									else
 										mapped_right = dungeonToDesc(rows[rowId].dir_right);
 								}
-								text += "\n" + current_room + ": " + mapped_left + posLeft + " | " + mapped_top + posTop + " | " + mapped_right + posRight;
+								text += "\n" + current_room + posRoom + ": " + mapped_left + posLeft + " | " + mapped_top + posTop + " | " + mapped_right + posRight;
 							} else
-								text += "\n" + current_room + ": - | - | -";
+								text += "\n" + current_room + posRoom + ": - | - | -";
 						}
 
 						bot.sendMessage(message.chat.id, text, mark);
@@ -9100,7 +9105,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																							var total_dirs = total_rooms*3;
 																							var mapped_perc = Math.round(mapped_dirs/total_dirs*100);
 
-																							bot.sendMessage(message.chat.id, "<i>" + name1 + " " + num + cursedText + "</i>\n<b>Data creazione</b>: " + long_date_creation + "\n<b>Creatore dell'istanza</b>: " + creator_name + "\n<b>Data crollo</b>: " + long_date_finish + "\n<b>Esploratori al suo interno</b>: " + duration + "/" + max_duration + creator_comment_txt + "\nMappatura (" + mapping_type + "): " + mapped_perc + "%\n" + playerlist + "Continuare?", confDg).then(function () {
+																							bot.sendMessage(message.chat.id, "<i>" + name1 + " " + num + cursedText + "</i>\n<b>Data creazione</b>: " + long_date_creation + "\n<b>Creatore dell'istanza</b>: " + creator_name + "\n<b>Data crollo</b>: " + long_date_finish + "\n<b>Esploratori al suo interno</b>: " + duration + "/" + max_duration + creator_comment_txt + "\n<b>Mappatura (" + mapping_type + ")</b>: " + mapped_perc + "%\n" + playerlist + "Continuare?", confDg).then(function () {
 																								answerCallbacks[message.chat.id] = function (answer) {
 																									if (answer.text.toLowerCase() == "si") {
 																										connection.query('SELECT duration FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
