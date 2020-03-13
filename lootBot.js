@@ -9092,7 +9092,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																						var query = 'SELECT (SUM(dir_top)+SUM(dir_right)+SUM(dir_left)) As tot FROM dungeon_map WHERE dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id;
 																						var mapping_type = "giocatore";
 																						if (Object.keys(rows).length > 0) {
-																							query = 'SELECT SUM(tot) As tot FROM (SELECT (SUM(dir_top)+SUM(dir_right)+SUM(dir_left)) As tot FROM dungeon_map M, team T, team_player TP WHERE M.player_id = TP.player_id AND TP.team_id = T.id AND dungeon_id = ' + dungeon_id + ' AND T.id = ' + rows[0].team_id + ' GROUP BY room_id) As t';
+																							query = 'SELECT SUM(tot) As tot FROM (SELECT (IF(SUM(dir_top) > 0, 1, 0)+IF(SUM(dir_right), 1, 0)+IF(SUM(dir_left), 1, 0)) As tot FROM dungeon_map M, team T, team_player TP WHERE M.player_id = TP.player_id AND TP.team_id = T.id AND dungeon_id = ' + dungeon_id + ' AND T.id = ' + rows[0].team_id + ' GROUP BY room_id) As t';
 																							mapping_type = "team";
 																						}
 																						
@@ -32936,7 +32936,7 @@ bot.onText(/piazza di lootia|piazza/i, function (message) {
 
 		var iKeys = [];
 		iKeys.push(["Emporio 💸","Mercante Pazzo 👝"]);
-		iKeys.push(["Contrabbandiere dell'Est 👣"]);
+		iKeys.push(["Contrabbandiere dell'Est 🔩"]);
 		iKeys.push(["Affari Passati 💬", "Poste 🎁"]);
 		iKeys.push(['Biblioteca 🏛']);
 		iKeys.push(["Torna al menu"]);
