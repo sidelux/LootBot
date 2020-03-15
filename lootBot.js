@@ -12692,13 +12692,13 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																					sage_dir = "dir_right";
 																					text_dir = "destra";
 																				}
-																				
-																				addToMapping(selected_dir, dungeon_id, player_id, room_id);
 
 																				connection.query('SELECT room_id, ' + sage_dir + ' As dir FROM dungeon_rooms WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND ' + sage_dir + ' < 11 ORDER BY RAND()', function (err, rows, fields) {
 																					if (err) throw err;
 																					if (Object.keys(rows).length > 0) {
 																						bot.sendMessage(message.chat.id, "L'anziano si concentra e un'aura azzurrina si forma attorno a lui, dopo alcuni secondi spalanca gli occhi urlando: " + dungeonToDesc(rows[0].dir).toUpperCase() + " " + text_dir.toUpperCase() + " " + rows[0].room_id + "!!\nDopo di che se ne va a passo lento...", dNext);
+																				
+																						addToMapping(selected_dir, dungeon_id, player_id, rows[0].room_id);
 
 																						if (boost_id == 8)
 																							setBoost(player_id, boost_mission, boost_id);
