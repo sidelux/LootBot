@@ -19722,7 +19722,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																	return;
 																}
 
-																bot.sendMessage(message.chat.id, "Sei veramente sicuro di voler abbandonare la battaglia? Verrà conteggiata come persa, inoltre puoi rinunciare solamente ad un combattimento al giorno.", kbYesNo).then(function () {
+																bot.sendMessage(message.chat.id, "Sei veramente sicuro di voler abbandonare la battaglia? Verrà conteggiata come persa, inoltre puoi rinunciare solamente a 3 combattimenti al giorno.", kbYesNo).then(function () {
 																	answerCallbacks[message.chat.id] = function (answer) {
 																		if (answer.text.toLowerCase() == "si") {
 																			connection.query('SELECT combat, rank FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -20851,7 +20851,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 														bot.sendMessage(message.chat.id, "Hai già rinunciato a 3 incontri oggi", kbBack);
 														return;
 													}
-													bot.sendMessage(message.chat.id, "Sei veramente sicuro di voler abbandonare la battaglia? Verrà conteggiata come persa, inoltre puoi rinunciare solamente ad un combattimento al giorno.", kbYesNo).then(function () {
+													bot.sendMessage(message.chat.id, "Sei veramente sicuro di voler abbandonare la battaglia? Verrà conteggiata come persa, inoltre puoi rinunciare solamente a 3 combattimenti al giorno.", kbYesNo).then(function () {
 														answerCallbacks[message.chat.id] = function (answer) {
 															if (answer.text.toLowerCase() == "si") {
 
@@ -46678,7 +46678,7 @@ function mainMenu(message) {
 																				} else if (dragon_search_status != null)
 																					msgtext = msgtext + "\n🐉 Drago in ricerca nelle Vette";
 																				else
-																					msgtext = msgtext + "\n❗️🐉 Drago pronto a combattere";
+																					msgtext = msgtext + "\n🐉❗️ Drago pronto a combattere";
 																			} else
 																				msgtext = msgtext + "\n🐉 Drago esausto, fallo riposare!";
 																		}
