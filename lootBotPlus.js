@@ -8794,7 +8794,7 @@ bot.onText(/^\/lega/, function (message, match) {
 		
 		var next_pnt_text = "";
 		if (next_pnt != 0)
-			next_pnt_text = "\n<b>Aumento lega</b>: " + next_pnt + " missioni";
+			next_pnt_text = "\n<b>Aumento lega</b>: " + formatNumber(next_pnt) + " missioni";
 			
 		bot.sendMessage(message.chat.id, "Informazioni lega per " + message.from.username + ":\n<b>Lega Attuale</b>: " + league_name + next_pnt_text + "\n<b>Missioni completate</b>: " + formatNumber(mission_count), html);
 	});
