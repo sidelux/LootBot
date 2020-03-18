@@ -11162,6 +11162,16 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 												if (player_rank == 0)
 													player_rank = 1;
+												
+												if (acc_prob >= 10) {
+													dOptions = {
+														parse_mode: "Markdown",
+														reply_markup: {
+															resize_keyboard: true,
+															keyboard: [["Estrai spada"], ["Torna al menu"]]
+														}
+													};
+												}
 
 												bot.sendMessage(message.chat.id, "Entri in una stanza piena d'oro luccicante e una spada conficcata nel muro, puoi decidere di raccogliere monete ma un messaggio su un cartello raccomanda di non essere troppo avido, cosa fai?\nFin ora hai accumulato *" + formatNumber(acc_money) + "* § per la probabilità del *" + acc_prob + "*% di rischiare la vita.", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = function (answer) {
@@ -24011,7 +24021,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 							var diff = Math.round((now - d) / 1000); //in secondi
 							diff = Math.abs(diff);
 
-							var text = "Il <b>Giorno della Preparazione " + boss_num + "</b> terminerà tra " + toTime(diff) + "!\n\nOrganizzazione attuale intorno alla magione del team:\n";
+							var text = "Il <b> " + boss_num + "° Giorno della Preparazione</b> terminerà tra " + toTime(diff) + "!\n\nOrganizzazione attuale intorno alla magione del team:\n";
 							connection.query('SELECT AP.name, AP.id As place_id, P.id, P.nickname, P.exp, P.reborn, P.class, APT.level, APT.time_end, AP.class_bonus, C.name As class_bonus_name, (SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE place_id = AP.id AND team_id = ' + team_id + ') As players, AP.max_players, AP.max_level FROM assault_place AP LEFT JOIN (SELECT * FROM assault_place_team WHERE team_id = ' + team_id + ') APT ON (APT.place_id = AP.id AND APT.team_id = ' + team_id + ') LEFT JOIN assault_place_player_id APP ON (AP.id = APP.place_id AND APP.team_id = ' + team_id + ') LEFT JOIN player P ON P.id = APP.player_id LEFT JOIN class C ON AP.class_bonus = C.id WHERE P.holiday = 0 OR P.holiday IS NULL ORDER BY AP.id', function (err, rows, fields) {
 								if (err) throw err;
 
@@ -25102,7 +25112,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 								var diff = Math.round((now - d) / 1000); //in secondi
 								diff = Math.abs(diff);
 
-								var text = "Il <b>Giorno dell'Assalto " + boss_num + "</b> terminerà tra " + toTime(diff) + "!\n";
+								var text = "Il <b>" + boss_num + "° Giorno dell'Assalto</b> terminerà tra " + toTime(diff) + "!\n";
 
 								var extra = "";
 								if (is_boss == 1)
@@ -25146,7 +25156,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 							
 							setAchievement(player_id, 44, 999);
 
-							bot.sendMessage(message.chat.id, "Il <b>Giorno dell'Assalto " + (boss_num-1) + "</b> è stato completato, attendi ancora " + toTime(diff) + "!", kb);
+							bot.sendMessage(message.chat.id, "Il <b>" + (boss_num-1) + "° Giorno dell'Assalto</b> è stato completato, attendi ancora " + toTime(diff) + "!", kb);
 						}
 					}
 				});
@@ -55496,7 +55506,7 @@ function setFinishedAssaults(element, index, array) {
 				var nickname = player[0].nickname;
 			}
 
-			text += "Il <b>Giorno dell'Assalto " + boss_num + "</b> ha inizio, entra in combattimento per ottenere la vittoria!\nL'eletto incaricato di guidare la battaglia è <b>" + nickname + "</b> 🗡";
+			text += "Il <b>" + boss_num + "° Giorno dell'Assalto</b> ha inizio, entra in combattimento per ottenere la vittoria!\nL'eletto incaricato di guidare la battaglia è <b>" + nickname + "</b> 🗡";
 
 			connection.query('UPDATE assault SET phase = ' + (phase+1) + ', refresh_mob = 1, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), expire_notify = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -55535,7 +55545,7 @@ function setFinishedAssaults(element, index, array) {
 				if (err) throw err;
 			});
 
-			text += "Il <b>Giorno dell'Assalto " + (boss_num-1) + "</b> è stato completato con successo!\n\nIl <b>Giorno della Preparazione</b> ha inizio, tutti i compagni sono usciti dall'infermeria, ora organizza le tue strutture per sopravvivere contro un altro boss!";
+			text += "Il <b>" + (boss_num-1) + "° Giorno dell'Assalto</b> è stato completato con successo!\n\nIl <b>Giorno della Preparazione</b> ha inizio, tutti i compagni sono usciti dall'infermeria, ora organizza le tue strutture per sopravvivere contro un altro boss!";
 		} else {
 			console.log("Errore phase non valida: " + phase);
 			return;
