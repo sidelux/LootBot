@@ -57607,24 +57607,25 @@ function checkTopSeasonEnd() {
 										else
 											console.log(text);
 									}
-									if (test == 0) {
-										connection.query('UPDATE player SET top_first = 0', function (err, rows, fields) {
-											if (err) throw err;
-										});
-
-										updateValue("checkDragonTopOn", 0);
-										reloadEvents();
-										checkDragonTopOn = 0;	// per forzare aggiornamento tastiera
-										checkKeyboard();
-
-										console.log("Vette chiuse!");
-									} else
-										console.log("Chiusura vette saltata");
 								}
 							}.bind({
 								top_id: top_id
 							}));
 						}
+						
+						if (test == 0) {
+							connection.query('UPDATE player SET top_first = 0', function (err, rows, fields) {
+								if (err) throw err;
+							});
+
+							updateValue("checkDragonTopOn", 0);
+							reloadEvents();
+							checkDragonTopOn = 0;	// per forzare aggiornamento tastiera
+							checkKeyboard();
+
+							console.log("Vette chiuse!");
+						} else
+							console.log("Chiusura vette saltata");
 					});
 				} else
 					console.log("Salto per " + combatCnt + " draghi ancora in combattimento");
