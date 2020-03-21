@@ -56370,7 +56370,7 @@ function setFinishedTeamMission(element, index, array) {
 						question = question.replace(new RegExp("%team%", "g"), team[0].name);
 
 						for (i = 0; i < Object.keys(rows).length; i++) {
-							bot.sendMessage(rows[i].chat_id, "<b>Incarico in corso</b> (" + part_id + "a scelta)\n\n" + last_answer + question + answer_list + "\n", {parse_mode: 'HTML', reply_markup: {inline_keyboard: iKeys}});
+							bot.sendMessage(rows[i].chat_id, "<b>Incarico in corso</b> (" + new_part_id + "a scelta)\n\n" + last_answer + question + answer_list + "\n", {parse_mode: 'HTML', reply_markup: {inline_keyboard: iKeys}});
 						}
 
 						connection.query('UPDATE mission_team_party SET text_user = "' + rows[0].nickname + '" WHERE party_id = ' + party_id + ' AND team_id = ' + team_id, function (err, rows, fields) {

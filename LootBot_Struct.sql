@@ -1171,6 +1171,26 @@ CREATE TABLE `dungeon_map` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `dungeon_map_msg`
+--
+
+DROP TABLE IF EXISTS `dungeon_map_msg`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `dungeon_map_msg` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `dungeon_id` int(11) NOT NULL,
+  `player_id` int(11) NOT NULL,
+  `message` text NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `dungeon_msg_id` (`dungeon_id`),
+  KEY `dungeon_player_id` (`player_id`),
+  CONSTRAINT `dungeon_msg_id` FOREIGN KEY (`dungeon_id`) REFERENCES `dungeon_list` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `dungeon_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `dungeon_market`
 --
 
