@@ -8505,89 +8505,158 @@ bot.onText(/^\/mappatura|^\/mappaturasym/i, function (message) {
 
 				var istance_name = rows[0].name;
 				var istance_rooms = rows[0].rooms;
-			
-				connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
+				
+				connection.query('SELECT P.nickname, M.message FROM dungeon_map_msg M, player P WHERE M.player_id = P.id', function (err, rows, fields) {
 					if (err) throw err;
-
-					var query = 'SELECT M.room_id, M.dir_top As mapped_top, M.dir_right As mapped_right, M.dir_left As mapped_left, R.dir_top, R.dir_right, R.dir_left FROM dungeon_map M, dungeon_rooms R WHERE M.dungeon_id = R.dungeon_id AND M.room_id = R.room_id AND M.dungeon_id = ' + dungeon_id + ' AND M.player_id = ' + player_id + ' ORDER BY M.room_id';
-					var mapping_type = "giocatore";
-					if (Object.keys(rows).length > 0) {
-						query = 'SELECT M.room_id, MAX(M.dir_top) As mapped_top, MAX(M.dir_right) As mapped_right, MAX(M.dir_left) As mapped_left, R.dir_top, R.dir_right, R.dir_left FROM dungeon_map M, dungeon_rooms R, team T, team_player TP WHERE M.dungeon_id = R.dungeon_id AND M.room_id = R.room_id AND M.player_id = TP.player_id AND TP.team_id = T.id AND M.dungeon_id = ' + dungeon_id + ' AND T.id = ' + rows[0].team_id + ' GROUP BY room_id';
-						mapping_type = "team"
-					}
 					
-					connection.query(query, function (err, rows, fields) {
+					var messages = "";
+					if (Object.keys(rows).length > 0) {
+						messages = "\n\nMessaggi lasciati dagli esploratori:";
+						for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+							messages += "\n> " + rows[i].nickname + ": " + rows[i].message;
+					}
+			
+					connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 
-						if (Object.keys(rows).length == 0) {
-							bot.sendMessage(message.chat.id, "Non è stata mappata ancora alcuna stanza in questo dungeon");
-							return;
+						var query = 'SELECT M.room_id, M.dir_top As mapped_top, M.dir_right As mapped_right, M.dir_left As mapped_left, R.dir_top, R.dir_right, R.dir_left FROM dungeon_map M, dungeon_rooms R WHERE M.dungeon_id = R.dungeon_id AND M.room_id = R.room_id AND M.dungeon_id = ' + dungeon_id + ' AND M.player_id = ' + player_id + ' ORDER BY M.room_id';
+						var mapping_type = "giocatore";
+						if (Object.keys(rows).length > 0) {
+							query = 'SELECT M.room_id, MAX(M.dir_top) As mapped_top, MAX(M.dir_right) As mapped_right, MAX(M.dir_left) As mapped_left, R.dir_top, R.dir_right, R.dir_left FROM dungeon_map M, dungeon_rooms R, team T, team_player TP WHERE M.dungeon_id = R.dungeon_id AND M.room_id = R.room_id AND M.player_id = TP.player_id AND TP.team_id = T.id AND M.dungeon_id = ' + dungeon_id + ' AND T.id = ' + rows[0].team_id + ' GROUP BY room_id';
+							mapping_type = "team"
 						}
 
-						var text = "Mappatura " + mapping_type + " per l'istanza *" + istance_name + "*:";
-						var current_room;
-						var found;
-						var rowId;
-						var posLeft;
-						var posTop;
-						var posRight;
-						var posRoom;
-						for (k = 0; k < istance_rooms; k++) {
-							current_room = k+1;
-							found = 0;
-							for(i = 0; i < Object.keys(rows).length; i++) {
-								if (rows[i].room_id == current_room) {
-									found = 1;
-									rowId = i;
-								}
-							}
-							
-							posLeft = "";
-							posTop = "";
-							posRight = "";
-							posRoom = "";
-							
-							if (room_id == current_room) {
-								if (last_selected_dir == "left")
-									posLeft = " 📍";
-								else if (last_selected_dir == "top")
-									posTop = " 📍";
-								else if (last_selected_dir == "right")
-									posRight = " 📍";
-								else
-									posRoom = " 📍";
-							}
-							
-							if (found == 1) {
-								var mapped_left = "-";
-								var mapped_top = "-";
-								var mapped_right = "-";
-								if (rows[rowId].mapped_left == 1) {
-									if (emojiMode == 1)
-										mapped_left = dungeonToSym(rows[rowId].dir_left);
-									else
-										mapped_left = dungeonToDesc(rows[rowId].dir_left);
-								}
-								if (rows[rowId].mapped_top == 1) {
-									if (emojiMode == 1)
-										mapped_top = dungeonToSym(rows[rowId].dir_top);
-									else
-										mapped_top = dungeonToDesc(rows[rowId].dir_top);
-								}
-								if (rows[rowId].mapped_right == 1) {
-									if (emojiMode == 1)
-										mapped_right = dungeonToSym(rows[rowId].dir_right);
-									else
-										mapped_right = dungeonToDesc(rows[rowId].dir_right);
-								}
-								text += "\n" + current_room + posRoom + ": " + mapped_left + posLeft + " | " + mapped_top + posTop + " | " + mapped_right + posRight;
-							} else
-								text += "\n" + current_room + posRoom + ": - | - | -";
-						}
+						connection.query(query, function (err, rows, fields) {
+							if (err) throw err;
 
-						bot.sendMessage(message.chat.id, text, mark);
+							if (Object.keys(rows).length == 0) {
+								bot.sendMessage(message.chat.id, "Non è stata mappata ancora alcuna stanza in questo dungeon");
+								return;
+							}
+
+							var text = "Mappatura " + mapping_type + " per l'istanza <b>" + istance_name + "</b>:";
+							var current_room;
+							var found;
+							var rowId;
+							var posLeft;
+							var posTop;
+							var posRight;
+							var posRoom;
+							for (k = 0; k < istance_rooms; k++) {
+								current_room = k+1;
+								found = 0;
+								for(i = 0; i < Object.keys(rows).length; i++) {
+									if (rows[i].room_id == current_room) {
+										found = 1;
+										rowId = i;
+									}
+								}
+
+								posLeft = "";
+								posTop = "";
+								posRight = "";
+								posRoom = "";
+
+								if (room_id == current_room) {
+									if (last_selected_dir == "left")
+										posLeft = " 📍";
+									else if (last_selected_dir == "top")
+										posTop = " 📍";
+									else if (last_selected_dir == "right")
+										posRight = " 📍";
+									else
+										posRoom = " 📍";
+								}
+
+								if (found == 1) {
+									var mapped_left = "-";
+									var mapped_top = "-";
+									var mapped_right = "-";
+									if (rows[rowId].mapped_left == 1) {
+										if (emojiMode == 1)
+											mapped_left = dungeonToSym(rows[rowId].dir_left);
+										else
+											mapped_left = dungeonToDesc(rows[rowId].dir_left);
+									}
+									if (rows[rowId].mapped_top == 1) {
+										if (emojiMode == 1)
+											mapped_top = dungeonToSym(rows[rowId].dir_top);
+										else
+											mapped_top = dungeonToDesc(rows[rowId].dir_top);
+									}
+									if (rows[rowId].mapped_right == 1) {
+										if (emojiMode == 1)
+											mapped_right = dungeonToSym(rows[rowId].dir_right);
+										else
+											mapped_right = dungeonToDesc(rows[rowId].dir_right);
+									}
+									text += "\n" + current_room + posRoom + ": " + mapped_left + posLeft + " | " + mapped_top + posTop + " | " + mapped_right + posRight;
+								} else
+									text += "\n" + current_room + posRoom + ": - | - | -";
+							}
+
+							bot.sendMessage(message.chat.id, text + messages, html);
+						});
 					});
 				});
+			});
+		});
+	});
+});
+
+bot.onText(/^\/mappaturamsg (.+)|^\/mappaturamsg$/i, function (message, match) {
+	connection.query('SELECT account_id, id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+
+		var player_id = rows[0].id;
+		
+		connection.query('SELECT dungeon_id FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+			
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Accedi ai dungeon per utilizzare questo comando");
+				return;
+			}
+			
+			if (rows[0].dungeon_id == null) {
+				bot.sendMessage(message.chat.id, "Accedi ad un dungeon per utilizzare questo comando");
+				return;
+			}
+			
+			var dungeon_id = rows[0].dungeon_id;
+			
+			if (match[1] == undefined) {
+				bot.sendMessage(message.chat.id, "Specifica un testo dopo il comando /mappaturamsg");
+				return;
+			}
+			
+			var text = match[1];
+			var reg = new RegExp("^[a-zA-Z0-9àèìòùé.,\\\?\!\'\@\(\) ]{1,500}$");
+			if (reg.test(text) == false) {
+				bot.sendMessage(message.chat.id, "Messaggio non valido, riprova", back);
+				return;
+			}
+			
+			connection.query('SELECT message FROM dungeon_map_message WHERE dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					connection.query('INSERT INTO dungeon_map_message (dungeon_id, player_id, message) VALUES (' + dungeon_id + ', ' + player_id + ', "' + text + '")', function (err, rows, fields) {
+						if (err) throw err;
+						bot.sendMessage(message.chat.id, "Messaggio mappatura aggiunto!", back);
+					});
+				} else {
+					connection.query('UPDATE dungeon_map_message SET message = "' + text + '" WHERE dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+						bot.sendMessage(message.chat.id, "Messaggio mappatura aggiornato!", back);
+					});
+				}
 			});
 		});
 	});
@@ -22511,12 +22580,28 @@ bot.onText(/team/i, function (message) {
 	});
 });
 
+bot.onText(/^gazzettino degli incarichi/i, function (message) {
+	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+		
+		connection.query('SELECT L.title, COUNT(P.id) As cnt FROM mission_team_list L LEFT JOIN mission_team_party P ON L.id = P.assigned_to GROUP BY L.id ORDER BY L.title', function (err, rows, fields) {
+			if (err) throw err;
+			
+			var text = "*Incarichi in corso*:";
+			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+				text += "\n> " + rows[i].title + ": " + rows[i].cnt;
+			
+			bot.sendMessage(message.chat.id, text, back);
+		});
+	});
+});
+
 bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 	connection.query('SELECT id, holiday, gender, travel_id, cave_id, mission_id, mission_special_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
 		if (rows[0].holiday == 1) {
-			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back)
+			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back);
 			return;
 		}
 
@@ -22604,9 +22689,11 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 							text += "La notte dura dalle " + nightStart + ":00 alle " + nightEnd + ":00";
 
 							if (isAdmin == 1)
-								iKeys.push(["Gestisci Party 👥", "Il mio Party 👥"], ["Torna al team", "Torna al menu"])
+								iKeys.push(["Gestisci Party 👥", "Il mio Party 👥"], ["Torna al team", "Torna al menu"]);
 							else
-								iKeys.push(["Il mio Party 👥"], ["Torna al team", "Torna al menu"])
+								iKeys.push(["Il mio Party 👥"], ["Torna al team", "Torna al menu"]);
+							
+							iKeys.push(["Gazzettino degli Incarichi 🗞"]);
 
 							var kb = {
 								parse_mode: "HTML",
@@ -56283,7 +56370,7 @@ function setFinishedTeamMission(element, index, array) {
 						question = question.replace(new RegExp("%team%", "g"), team[0].name);
 
 						for (i = 0; i < Object.keys(rows).length; i++) {
-							bot.sendMessage(rows[i].chat_id, "<b>Incarico in corso</b>\n\n" + last_answer + question + answer_list + "\n", {parse_mode: 'HTML', reply_markup: {inline_keyboard: iKeys}});
+							bot.sendMessage(rows[i].chat_id, "<b>Incarico in corso</b> (" + part_id + "a scelta)\n\n" + last_answer + question + answer_list + "\n", {parse_mode: 'HTML', reply_markup: {inline_keyboard: iKeys}});
 						}
 
 						connection.query('UPDATE mission_team_party SET text_user = "' + rows[0].nickname + '" WHERE party_id = ' + party_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
