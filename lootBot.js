@@ -7063,6 +7063,7 @@ bot.onText(/attacca!/i, function (message) {
 										bot.sendMessage(message.chat.id, "Devi riprenderti prima di sferrare un altro attacco!", kbBack);
 										return;
 									}
+									var heavyText = "";
 									if (answer.text.toLowerCase().indexOf("rottame") != -1) {
 										if (battle_heavy == 1) {
 											bot.sendMessage(message.chat.id, "Devi sferrare prima l'attacco caricato!", kbBack);
@@ -7076,7 +7077,6 @@ bot.onText(/attacca!/i, function (message) {
 										heavyText = " con un rottame";
 										query += ", scrap = scrap-1";
 									}
-									var heavyText = "";
 									if (battle_heavy == 1) {
 										full_damage = full_damage*2;
 										heavyText = " con attacco caricato";
