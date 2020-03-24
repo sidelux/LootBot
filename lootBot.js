@@ -8511,7 +8511,7 @@ bot.onText(/^\/mappatura$|^\/mappaturasym$/i, function (message) {
 				var istance_name = rows[0].name;
 				var istance_rooms = rows[0].rooms;
 				
-				connection.query('SELECT P.nickname, M.message FROM dungeon_map_msg M, player P WHERE M.player_id = P.id', function (err, rows, fields) {
+				connection.query('SELECT P.nickname, M.message FROM dungeon_map_msg M, player P WHERE M.player_id = P.id AND M.dungeon_id = ' + dungeon_id, function (err, rows, fields) {
 					if (err) throw err;
 					
 					var messages = "";
@@ -8610,7 +8610,7 @@ bot.onText(/^\/mappatura$|^\/mappaturasym$/i, function (message) {
 });
 
 bot.onText(/^\/mappaturamsg (.+)|^\/mappaturamsg$/i, function (message, match) {
-	connection.query('SELECT account_id, id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, id, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -8621,6 +8621,11 @@ bot.onText(/^\/mappaturamsg (.+)|^\/mappaturamsg$/i, function (message, match) {
 		}
 
 		var player_id = rows[0].id;
+		
+		if (rows[0].reborn == 1) {
+			bot.sendMessage(message.chat.id, "Puoi utilizzare questo comando solo dopo aver raggiunto la prima rinascita");
+			return;
+		}
 		
 		connection.query('SELECT dungeon_id FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -36974,7 +36979,7 @@ bot.onText(/ricicla/i, function (message) {
 						}
 					};
 
-					bot.sendMessage(message.chat.id, "Seleziona gli oggetti da riciclare, consumandone 5 riceverai l'oggetto che verrà specificato della stessa rarità, o immediatamente superiore (in questo caso ti costerà C -> NC: 10.000 §, NC -> R: 15.000 §, R -> UR: 20.000 §, UR -> L: 25.000 §, L -> E: 30.000 §).", kb).then(function () {
+					bot.sendMessage(message.chat.id, "Scrivi il nome dell'oggetto da riciclare, consumandone 5 riceverai l'oggetto che verrà specificato della stessa rarità, o immediatamente superiore (in questo caso ti costerà C -> NC: 10.000 §, NC -> R: 15.000 §, R -> UR: 20.000 §, UR -> L: 25.000 §, L -> E: 30.000 §).", kb).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							var oggetto = answer.text;
 
@@ -36984,7 +36989,7 @@ bot.onText(/ricicla/i, function (message) {
 							var pos = oggetto.indexOf("(");
 							oggetto = oggetto.substr(0, pos - 1);
 
-							bot.sendMessage(message.chat.id, "Quale oggetto vuoi ottenere?", kb2).then(function () {
+							bot.sendMessage(message.chat.id, "Scrivi il nome dell'oggetto che vuoi ottenere", kb2).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if ((answer.text == "Ricicla Ancora") || (answer.text == "Torna al menu"))
 										return;
