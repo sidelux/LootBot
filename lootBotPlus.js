@@ -683,7 +683,19 @@ bot.onText(/^\/comandigenerali/, function (message) {
 					"/token - Permette di ottenere un token per accedere alle Loot Bot API\n" +
 					"/notifiche - Permette di disattivare le notifiche di una particolare sezione del bot\n" +
 					"/calcola - Gestisce calcoli anche avanzati utilizzando funzioni (in inglese)\n" +
-					"/suggerimenti comandi - Visualizza la lista dei comandi disponibili per effettuare suggerimenti", mark);
+					"/suggerimenti comandi - Visualizza la lista dei comandi disponibili per effettuare suggerimenti\n" +
+					"/online - Visualzza i giocatori che hanno inviato un comando nell'ultimo minuto", mark);
+});
+
+bot.onText(/^\/online/, function (message, match) {
+	connection.query('SELECT COUNT(*) As active FROM last_command WHERE TIMESTAMPDIFF(SECOND, time, NOW()) <= 60', function (err, rows, fields) {
+		if (err) throw err;
+		var act_minute = rows[0].active;
+		
+		var d = new Date();
+		var long_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+		bot.sendMessage(message.chat.id, "*👥 Loot players (LIVE)*\nOre " + addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + " del " + long_date + "\n*" + act_minute + "* giocatori online ora", mark);
+	});
 });
 
 bot.onText(/^\/calcola (.+)|^\/calcola/, function (message, match) {

@@ -8466,7 +8466,7 @@ bot.onText(/sacca$/i, function (message) {
 	});
 });
 
-bot.onText(/^\/mappatura|^\/mappaturasym/i, function (message) {
+bot.onText(/^\/mappatura$|^\/mappaturasym$/i, function (message) {
 	connection.query('SELECT account_id, id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -8644,15 +8644,15 @@ bot.onText(/^\/mappaturamsg (.+)|^\/mappaturamsg$/i, function (message, match) {
 				return;
 			}
 			
-			connection.query('SELECT message FROM dungeon_map_message WHERE dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+			connection.query('SELECT message FROM dungeon_map_msg WHERE dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
-					connection.query('INSERT INTO dungeon_map_message (dungeon_id, player_id, message) VALUES (' + dungeon_id + ', ' + player_id + ', "' + text + '")', function (err, rows, fields) {
+					connection.query('INSERT INTO dungeon_map_msg (dungeon_id, player_id, message) VALUES (' + dungeon_id + ', ' + player_id + ', "' + text + '")', function (err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Messaggio mappatura aggiunto!", back);
 					});
 				} else {
-					connection.query('UPDATE dungeon_map_message SET message = "' + text + '" WHERE dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+					connection.query('UPDATE dungeon_map_msg SET message = "' + text + '" WHERE dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Messaggio mappatura aggiornato!", back);
 					});
@@ -22737,7 +22737,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 
 							bot.sendMessage(message.chat.id, text, kb).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
-									if ((answer.text.toLowerCase().indexOf("il mio party") != -1) || (answer.text.toLowerCase().indexOf("gestisci party") != -1) || (answer.text == "Torna al team") || (answer.text == "Torna al menu"))
+									if ((answer.text.toLowerCase().indexOf("il mio party") != -1) || (answer.text.toLowerCase().indexOf("gestisci party") != -1) || (answer.text == "Torna al team") || (answer.text == "Torna al menu") || (answer.text.toLowerCase().indexOf("gazzettino") != -1))
 										return;
 									else {
 
@@ -36901,8 +36901,6 @@ bot.onText(/ricicla/i, function (message) {
 
 					delItem(player_id, item_id, qnt);
 
-					setAchievement(player_id, 15, calc_qnt);
-
 					var broken = 0;
 					var cnt = 0;
 
@@ -36913,6 +36911,8 @@ bot.onText(/ricicla/i, function (message) {
 						else
 							cnt++;
 					};
+
+					setAchievement(player_id, 15, cnt);
 					
 					addItem(player_id, item_result_id, cnt);
 
@@ -46260,11 +46260,13 @@ function mainMenu(message) {
 					 "<a href='https://www.paypal.me/EdoardoCortese'>Dona</a> e riceverai 🌕 per la Ruota della Luna!",
 					 "Aggiungi @lootplusbot al tuo gruppo!",
 					 "Visita @LaBachecaDiLootia per pubblicizzare o trovare un team!",
-					 // "Suggerisci migliorie in @Suggerimenti_per_LootBot!",
+					 "Vota migliorie e bilanciamenti in @Suggerimenti_per_LootBot!",
 					 ((n != 6) && (n != 0) ? "Ricordati di completare le Imprese Giornaliere!" : "In settimana completa le Imprese Giornaliere!")];
 		var rand = Math.round(Math.random() * (Object.keys(links).length - 1));
 		price_drop_msg = "\n " + links[rand];
 	}
+	
+	price_drop_msg = "\n#restaacasa e contribuisci a limitare la diffusione del virus!";
 
 	var time = "🌕 Salve";
 	var n = new Date().getHours();
@@ -52468,12 +52470,15 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 			if (err) throw err;
 
 			var text = "";
+			var penality_restrict = 0;
 			if (cause == 1)
 				text = "Un giocatore è stato ucciso da una trappola!";
 			else if (cause == 2)
 				text = "Un giocatore è stato ucciso da un altro giocatore!";
-			else if (cause == 3)
+			else if (cause == 3) {
 				text = "Un giocatore è stato ucciso a causa del restringimento della mappa!";
+				penality_restrict = 1;
+			}
 			
 			if (cause != 3)
 				is_escaped = 0; // da la penalità solo se a causa del restringimento
@@ -52497,7 +52502,7 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 
 					var pos = lobby_total_space-rows[0].cnt;
 
-					connection.query('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, cause, position, kills, life, penality_escape) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + player_id + ', ' + cause + ', ' + pos + ', ' + match_kills + ', ' + life + ', ' + is_escaped + ')', function (err, rows, fields) {
+					connection.query('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, cause, position, kills, life, penality_escape, penality_restrict) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + player_id + ', ' + cause + ', ' + pos + ', ' + match_kills + ', ' + life + ', ' + is_escaped + ', ' + penality_restrict + ')', function (err, rows, fields) {
 						// if (err) throw err; // per errore duplicazione righe
 
 						// concludi
@@ -56513,7 +56518,7 @@ bot.onText(/^\/incarico/, function (message, match) {
 							plur3 = "deve";
 						}
 						
-						var choice = "alla <b>" + part_id + "</b> scelta";
+						var choice = "alla <b>" + part_id + "°</b> scelta";
 						if (part_id == 0)
 							choice = "in attesa della scelta";
 
@@ -57296,7 +57301,7 @@ function setFinishedLobbyEnd(element, index, array) {
 					connection_sync.query('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + winner_player_id + ', 1, ' + winner_match_kills + ')');
 				}
 
-				connection.query('SELECT M.id As mapId, P.id, P.nickname, P.trophies, M.position, M.kills, M.life, M.penality_escape, P.map_count, P.global_end FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position ASC, kills DESC, life DESC, insert_date DESC', function (err, rows, fields) {
+				connection.query('SELECT M.id As mapId, P.id, P.nickname, P.trophies, M.position, M.kills, M.life, M.penality_escape, M.penality_restrict, P.map_count, P.global_end FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position ASC, kills DESC, life DESC, insert_date DESC', function (err, rows, fields) {
 					if (err) throw err;
 
 					var list = "";
@@ -57317,7 +57322,7 @@ function setFinishedLobbyEnd(element, index, array) {
 						else if (rows[i].kills > 0)
 							kill_text = rows[i].kills + " uccisioni, ";
 						
-						trophies_count = ((lobby_total_space-pos)+parseInt(rows[i].kills))*multiplier;
+						trophies_count = ((lobby_total_space-pos+1)+parseInt(rows[i].kills))*multiplier;
 						
 						var bonus = "";
 						/*
@@ -57333,6 +57338,11 @@ function setFinishedLobbyEnd(element, index, array) {
 						var icons = " ";
 						if (rows[i].penality_escape == 1) {
 							icons += "🏳";
+							trophies_count--;
+						}
+						
+						if (rows[i].penality_restrict == 1) {
+							icons += "☠️";
 							trophies_count--;
 						}
 						
