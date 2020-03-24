@@ -2129,6 +2129,7 @@ CREATE TABLE `map_history` (
   `insert_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `life` int(11) DEFAULT NULL,
   `penality_escape` tinyint(1) NOT NULL DEFAULT '0',
+  `penality_restrict` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `map_history_no_duplicate` (`map_lobby_id`,`player_id`),
   KEY `map_history_player_id` (`player_id`),

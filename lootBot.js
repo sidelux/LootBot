@@ -6574,6 +6574,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 															mapIdToSym(11) + " Stanza Teletrasporto - Fornisce la scelta al giocatore se teletrasportarsi in un luogo casuale della mappa o su un giocatore avversario\n" +
 															mapIdToSym(12) + " Campo Paralizzante - Paralizza il giocatore costringendogli a ritardare la continuazione dell'esplorazione\n" +
 															mapIdToSym(13) + " Bevanda Boost - Riduce il tempo di attesa per il movimento per 3 turni, nel caso in cui si incontrasse un Campo Paralizzante la bevanda non avrà effetto e non ne sarà scalato un utilizzo\n" +
+															
 															"\n<b>Istruzioni base</b>" +
 															"\n> Di notte, la domenica e durante le Vette non è possibile accedere a nuove Lobby." +
 															"\n> Il personaggio inizierà la partita con un equip base, zero monete e zero rottami." +
@@ -6587,6 +6588,9 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 															"\n> La partita termina anche se trascorre un tempo determinato entro il quale deve concludersi la partita, altrimenti vengono sconfitti automaticamente tutti i partecipanti." +
 															"\n> Ogni tanto possono cambiare le condizioni della mappa, quando cambiano compare la relativa scritta, le nuove lobby verranno giocate in quelle condizioni." +
 															"\n> La modalità allenamento consiste nel giocare partite extra al di fuori di limitazione orarie e giornaliere, senza consumare partite nè ottenere trofei." +
+															"\n> Se un giocatore scappa e viene ucciso dal restringimento, otterrà un trofeo in meno al termine della partita." +
+															"\n> Se un giocatore viene ucciso dal restringimento, otterrà un trofeo in meno al termine della partita." +
+															
 															"\n\n<b>Combattimento</b>" +
 															"\n> La Vocazione influisce sul combattimento del giocatore." +
 															"\n> Il drago non accompagna il giocatore all'interno della mappa." +
@@ -6595,6 +6599,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 															"\n> Il comando Rottame infligge più danni rispetto all'attacco normale consumando un Rottame dalla Sacca." +
 															"\n> Il comando Difendi, nel caso di successo obbliga a saltare il turno successivo del nemico, nel caso di fallimento il turno lo salta l'utilizzatore, può effettuare una parata parziale o totale del colpo subito." +
 															"\n> Ogni turno scade dopo un breve tempo, quando scade tocca all'avversario, se scade per troppe volte la vittoria dell'avversario è automatica." +
+															
 															"\n\n<b>Stagione</b>" +
 															"\n> Le stagioni durano circa tre settimane, la data precisa è indicata nel messaggio principale." +
 															"\n> Alla fine di ogni partita vengono forniti dei trofei in base alla posizione conclusiva ed alle uccisioni dei nemici." +
