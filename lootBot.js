@@ -47016,7 +47016,7 @@ function checkKeyboard() {
 	if (wanted == 1)
 		mainKeys.splice(0, 0, ['💰Il Ricercato (Evento) 👺']);
 	if (eventDust == 1)
-		mainKeys.splice(0, 0, ['⏲ Generatore di Polvere (Evento) 🔥']);
+		mainKeys.splice(0, 0, ['⏲ Generatore di Polvere (Evento) ♨️']);
 	if (villa == 1)
 		mainKeys.splice(0, 0, ['🏰 Villa di LastSoldier95 (Evento) 📦']);
 	if (eventTeamStory == 1)
@@ -52498,7 +52498,8 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 				text = "Un giocatore è stato ucciso da un altro giocatore!";
 			else if (cause == 3) {
 				text = "Un giocatore è stato ucciso a causa del restringimento della mappa!";
-				penality_restrict = 1;
+				if (enemy_id == -1)	// se non combattimento
+					penality_restrict = 1;
 			}
 
 			if (cause != 3)
@@ -57174,7 +57175,8 @@ function setBattleTimeElapsed(element, index, array) {
 						if (err) throw err;
 					});
 				} else {
-					connection.query('UPDATE map_lobby SET my_turn = 0, battle_timeout = NULL, battle_turn_lost = battle_turn_lost + 1, battle_time_elapsed = battle_time_elapsed + ' + diff + query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+					// azzera anche il caricato
+					connection.query('UPDATE map_lobby SET my_turn = 0, battle_timeout = NULL, battle_turn_lost = battle_turn_lost + 1, battle_time_elapsed = battle_time_elapsed + ' + diff + query + ', battle_heavy = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 					});
 					connection.query('UPDATE map_lobby SET my_turn = 1, battle_timeout = "' + long_date + '", battle_turn_start = NOW()' + enemy_query + ' WHERE player_id = ' + enemy_id, function (err, rows, fields) {
