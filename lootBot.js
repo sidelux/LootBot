@@ -7089,7 +7089,7 @@ bot.onText(/attacca!/i, function (message) {
 											bot.sendMessage(message.chat.id, "Non hai alcun rottame da lanciare!", kbBack);
 											return;
 										}
-										full_damage = full_damage*2;
+										full_damage = Math.round(full_damage*1.5);
 										heavyText = " con un rottame";
 										query += ", scrap = scrap-1";
 									}
@@ -8223,13 +8223,13 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										var price = 0;
 										if (randRarity < 5) {
 											rarity = "E";
-											price = 8;
+											price = 5;
 										} else if (randRarity < 20) {
 											rarity = "L";
-											price = 6;
+											price = 4;
 										} else if (randRarity < 50) {
 											rarity = "UR";
-											price = 4;
+											price = 3;
 										} else {
 											rarity = "R";
 											price = 2;
@@ -36973,7 +36973,7 @@ bot.onText(/ricicla/i, function (message) {
 				connection.query('SELECT item.name, inventory.quantity, item.rarity FROM inventory, item WHERE item.id = inventory.item_id AND item.rarity = "' + rarity + '" AND player_id = ' + player_id + ' AND inventory.quantity >= 5', function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length == 0) {
-						bot.sendMessage(message.chat.id, "Non hai oggetti di rarità " + r + " riciclabili.", back);
+						bot.sendMessage(message.chat.id, "Non hai oggetti di rarità " + rarity + " riciclabili.", back);
 						return;
 					}
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++)
@@ -46938,6 +46938,12 @@ function mainMenu(message) {
 function printStart(message) {
 	connection.query('SELECT invite_code, gender FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
+		
+		if (Object.keys(rows).length == 0) {
+			bot.sendMessage(message.chat.id, "Account non trovato, se hai cambiato nickname usa il comando /migrazione, altrimenti usa il comando /start", back);
+			return;
+		}
+		
 		var code = rows[0].invite_code;
 		var gender_text = "a"
 		if (rows[0].gender == "M")
