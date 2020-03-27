@@ -34432,7 +34432,8 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 
 	if ((message.text.toLowerCase().indexOf("pacchetto") == "negozio") || 
 		(message.text.toLowerCase() == "figurine collezionate") || 
-		(message.text.toLowerCase().indexOf("pacchetto") != -1))
+		(message.text.toLowerCase().indexOf("pacchetto") != -1) ||
+	   	(message.text.toLowerCase().indexOf("stanza") != -1))
 		return;
 
 	connection.query('SELECT id, account_id, holiday, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
