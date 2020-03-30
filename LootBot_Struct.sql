@@ -3436,6 +3436,7 @@ CREATE TABLE `team` (
   `min_lev` int(11) NOT NULL DEFAULT '0',
   `boss_count` int(3) NOT NULL DEFAULT '0',
   `craft_count` int(11) NOT NULL DEFAULT '0',
+  `dungeon_count` int(11) NOT NULL DEFAULT '0',
   `craft_week_count` int(11) NOT NULL DEFAULT '0',
   `mission_count` int(11) NOT NULL DEFAULT '0',
   `mission_day_count` int(11) NOT NULL DEFAULT '0',
