@@ -57315,7 +57315,7 @@ function setFullLobby(element, index, array) {
 
 					bot.sendMessage(rows[i].chat_id, "La mappa è stata generata!\nEntra in battaglia e conquista la vittoria!", kb);
 					
-					var art = connection_sync.query('SELECT COUNT(id) As cnt FROM artifacts WHERE player_id = ' + player_id);
+					var art = connection_sync.query('SELECT COUNT(id) As cnt FROM artifacts WHERE player_id = ' + rows[i].id);
 					if (art[0].cnt < 5)
 						flari_active = 0;
 				}
