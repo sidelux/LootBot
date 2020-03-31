@@ -2213,6 +2213,7 @@ CREATE TABLE `map_lobby_list` (
   `next_restrict_time` timestamp NULL DEFAULT NULL,
   `conditions` int(11) NOT NULL,
   `restrict_end` tinyint(1) NOT NULL DEFAULT '0',
+  `flari_active` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `map_lobby_list_lobby_id` (`lobby_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;

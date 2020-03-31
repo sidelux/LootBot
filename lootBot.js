@@ -1055,8 +1055,8 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 			var item_2id = rows[0].id2;
 			var item_3id = rows[0].id3;
 
-			var minValue = 500;
-			var bonusText = "5% monete in più per l'uccisione di mob e boss in Assalto";
+			var minValue = 250;
+			var bonusText = "-20% tempo esplorazione cave";
 
 			console.log(item_1, item_2, item_3, item_1id, item_2id, item_3id);
 
@@ -6982,8 +6982,18 @@ bot.onText(/attacca!/i, function (message) {
 					var equip = "🗡 " + enemy_weapon_name + " (" + enemy_weapon + ", " + enemy_weapon_crit + "%)\n" +
 						"🥋 " + enemy_weapon2_name + " (" + enemy_weapon2 + ", " + enemy_weapon2_crit + "%)\n" +
 						"🛡 " + enemy_weapon3_name + " (" + enemy_weapon3 + ", " + enemy_weapon3_crit + "%)\n";
+					
+					var extra_flari = "";
+					if (flari_active == 1)
+						extra_flari = "Flaridion attivi nel combattimento!\n";
+					
+					var heart = "❤️";
+					if (rows[0].life/rows[0].total_life*100 < 15)
+						heart = "🖤";
+					else if (rows[0].life/rows[0].total_life*100 < 60)
+						heart = "🧡";
 
-					bot.sendMessage(message.chat.id, "Stai combattendo contro <b>" + rows[0].nickname + "</b> " + classSym(enemy_class_id) + "\n❤️ " + formatNumber(rows[0].life) + " hp\n" + equip + "\nLa tua salute: " + formatNumber(life) + " hp\n\nCosa vuoi fare?", kbFight).then(function () {
+					bot.sendMessage(message.chat.id, "Stai combattendo contro <b>" + rows[0].nickname + "</b> " + classSym(enemy_class_id) + "\n" + heart + " " + formatNumber(rows[0].life) + " hp\n" + equip + "\nLa tua salute: " + formatNumber(life) + " hp\n\n" + extra_flari + "Cosa vuoi fare?", kbFight).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							if (answer.text == "Torna al menu")
 								return;
@@ -8483,12 +8493,12 @@ bot.onText(/sacca$/i, function (message) {
 				weapon_desc += "-";
 			if (weapon2_id != null) {
 				var weapon2 = connection_sync.query("SELECT name, power_armor, critical FROM item WHERE id = " + weapon2_id);
-				weapon2_desc += weapon2[0].name + " (" + weapon2[0].power_armor + ", " + weapon[0].critical + "%)";
+				weapon2_desc += weapon2[0].name + " (" + weapon2[0].power_armor + ", " + weapon2[0].critical + "%)";
 			} else
 				weapon2_desc += "-";
 			if (weapon3_id != null) {
 				var weapon3 = connection_sync.query("SELECT name, power_shield, critical FROM item WHERE id = " + weapon3_id);
-				weapon3_desc += weapon3[0].name + " (" + weapon3[0].power_shield + ", " + weapon[0].critical + "%)";
+				weapon3_desc += weapon3[0].name + " (" + weapon3[0].power_shield + ", " + weapon3[0].critical + "%)";
 			} else
 				weapon3_desc += "-";
 
@@ -8531,11 +8541,13 @@ bot.onText(/^\/mappatura$|^\/mappaturasym$/i, function (message) {
 			var room_id = rows[0].room_id;
 			var last_selected_dir = rows[0].last_selected_dir;
 
-			connection.query('SELECT name, rooms FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
+			connection.query('SELECT name, rooms, finish_date FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				var istance_name = rows[0].name;
 				var istance_rooms = rows[0].rooms;
+				var finish_date = new Date(rows[0].finish_date);
+				var long_date = addZero(finish_date.getDate()) + "/" + addZero(finish_date.getMonth() + 1) + "/" + finish_date.getFullYear() + " " + addZero(finish_date.getHours()) + ':' + addZero(finish_date.getMinutes());
 
 				connection.query('SELECT P.nickname, M.message FROM dungeon_map_msg M, player P WHERE M.player_id = P.id AND M.dungeon_id = ' + dungeon_id, function (err, rows, fields) {
 					if (err) throw err;
@@ -8565,7 +8577,7 @@ bot.onText(/^\/mappatura$|^\/mappaturasym$/i, function (message) {
 								return;
 							}
 
-							var text = "Mappatura " + mapping_type + " per l'istanza <b>" + istance_name + "</b>:";
+							var text = "Mappatura " + mapping_type + " per l'istanza <b>" + istance_name + "</b> (Scadenza: " + long_date + "):";
 							var current_room;
 							var found;
 							var rowId;
@@ -15340,7 +15352,6 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																						getSnowball(message.chat.id, message.from.username, player_id);
 
-																						globalAchievement(player_id, 1);
 																						setAchievement(player_id, 3, 1);
 
 																						if (boss_battle == 1) {
@@ -45182,6 +45193,8 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 										if (rows[i].name.indexOf("Cava") != -1) {
 											if ((class_id == 7) && (reborn > 1))
 												rows[i].duration -= rows[i].duration*0.05;
+											if (global_end == 1)
+												rows[i].duration -= rows[i].duration*0.2;
 										}
 
 										rows[i].duration -= rows[i].duration*(dragon_level/300);
@@ -45261,6 +45274,10 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 																	rows[0].duration -= rows[0].duration*0.05;
 
 																rows[0].duration -= rows[0].duration*(dragon_level/300);
+																
+																if (global_end == 1)
+																	rows[0].duration -= rows[0].duration*0.2;
+																
 																var now = new Date();
 																now.setMinutes(now.getMinutes() + rows[0].duration);
 																var time = " <i>(" + toTime(rows[0].duration*60, 0) + split + ")</i>";
@@ -51374,8 +51391,10 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 								if (Object.keys(ability).length > 0)
 									money += money*((ability[0].ability_level*ability[0].val)/100);
 
+								/*
 								if (rows[i].global_end == 1)
 									money += money*0.05;
+								*/
 
 								money = Math.round(money);
 
@@ -57320,7 +57339,7 @@ function setFullLobby(element, index, array) {
 						flari_active = 0;
 				}
 				
-				console.log("flari_active", flari_active);
+				// console.log("flari_active", flari_active);
 				connection.query('UPDATE map_lobby_list SET flari_active = ' + flari_active + ' WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 					if (err) throw err;
 				});
@@ -57431,9 +57450,10 @@ function setFinishedLobbyEnd(element, index, array) {
 							icons = "";
 						}
 
-						if (trophies_count >= 0)
+						if (trophies_count >= 0) {
 							trophies_query = "+" + trophies_count;
-						else {
+							globalAchievement(rows[i].id, trophies_count);
+						} else {
 							trophies_actual = rows[i].trophies;
 							trophies_count = Math.abs(trophies_count);
 							if (trophies_actual-trophies_count <= 0)
