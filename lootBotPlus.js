@@ -10443,33 +10443,6 @@ function cleanForMerge(text) {
 	return text.replaceAll(/<[^>]*>/, "");
 }
 
-function getRankName(rank) {
-	var text = "";
-
-	if (rank <= rankList[0])
-		text = "Esploratore Novizio";
-	else if (rank <= rankList[1])
-		text = "Esploratore Modesto";
-	else if (rank <= rankList[2])
-		text = "Esploratore Professionista";
-	else if (rank <= rankList[3])
-		text = "Avventuriero Giovane";
-	else if (rank <= rankList[4])
-		text = "Avventuriero Forestiero";
-	else if (rank <= rankList[5])
-		text = "Avventuriero della Notte";
-	else if (rank <= rankList[6])	//500
-		text = "Avventuriero Impavido";
-	else if (rank <= rankList[7]) 	//750
-		text = "Avventuriero Eroico";
-	else if (rank <= rankList[8]) 	//1000
-		text = "Eroe delle Esplorazioni";
-	else
-		text = "Mappatore Avanzato";
-
-	return text;
-};
-
 function attack(nickname, message, from_id, weapon_bonus, cost, source, account_id, global_end, boost_id, boost_mission, method) {
 	connection.query('SELECT exp, ability, chat_id, heist_count, heist_limit, heist_protection, house_id, custom_name_h, id, money FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
 		if (err) throw err;

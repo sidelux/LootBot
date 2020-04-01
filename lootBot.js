@@ -44913,6 +44913,13 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 									var cap = global_cap;
 									if (global_hide == 1)
 										cap = "???";
+									
+									// pesce d'aprile
+									globalVal = Math.round(getRandomArbitrary(1, 999999));
+									cap = Math.round(getRandomArbitrary(999999, 9999999999));
+									global_desc = "oggetti U ottenuti in qualsiasi modo";
+									// fine
+									
 									text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> " + global_desc + "\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
 								}
 							}
