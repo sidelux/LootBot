@@ -2861,6 +2861,7 @@ CREATE TABLE `player` (
   `total_life` int(32) NOT NULL DEFAULT '0',
   `death_count` int(11) NOT NULL DEFAULT '0',
   `money` int(16) NOT NULL DEFAULT '100',
+  `tap_end_time` timestamp NULL DEFAULT NULL,
   `magic_active` int(11) NOT NULL DEFAULT '0',
   `dragon_to` int(11) NOT NULL DEFAULT '0',
   `paralyzed` int(11) NOT NULL DEFAULT '0',

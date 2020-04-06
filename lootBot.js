@@ -39798,10 +39798,14 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 							var charm_id = 0;
 							if (Object.keys(rows).length > 0)
 								charm_id = rows[0].charm_id;
-							connection.query('SELECT reborn, id, rarity FROM item WHERE name = "' + oggetto + '"', function (err, rows, fields) {
+							connection.query('SELECT reborn, id, rarity FROM item WHERE name LIKE "%' + oggetto + '%"', function (err, rows, fields) {
 								if (err) throw err;
 								if (Object.keys(rows).length == 0) {
 									bot.sendMessage(message.chat.id, "L'oggetto specificato non esiste.", equip);
+									return;
+								}
+								if (Object.keys(rows).length > 1) {
+									bot.sendMessage(message.chat.id, "Troppi risultati, prova con un nome più specifico.", equip);
 									return;
 								}
 								if (getItemCnt(player_id, rows[0].id) > 0) {
@@ -39838,11 +39842,15 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 							});
 						});
 					} else {
-						connection.query('SELECT reborn, critical, power, power_armor, power_shield, id, rarity FROM item WHERE name = "' + oggetto + '" AND (power <> 0 OR power_armor <> 0 OR power_shield <> 0)', function (err, rows, fields) {
+						connection.query('SELECT reborn, critical, power, power_armor, power_shield, id, rarity FROM item WHERE name LIKE "%' + oggetto + '%" AND (power <> 0 OR power_armor <> 0 OR power_shield <> 0)', function (err, rows, fields) {
 							if (err) throw err;
 
 							if (Object.keys(rows).length == 0) {
 								bot.sendMessage(message.chat.id, "L'oggetto specificato non esiste", equip);
+								return;
+							}
+							if (Object.keys(rows).length > 1) {
+								bot.sendMessage(message.chat.id, "Troppi risultati, prova con un nome più specifico.", equip);
 								return;
 							}
 
@@ -57750,6 +57758,17 @@ function setFinishedLobbyEnd(element, index, array) {
 							setAchievement(rows[i].id, 91, 1);
 						else
 							setAchievement(rows[i].id, 88, 1);
+						
+						if ((villa == 1) && (trophies_count > 0)){
+							var villaPnt = connection_sync.query('SELECT player_id, points FROM event_villa_status WHERE player_id = ' + rows[i].id);
+							if (Object.keys(villaPnt).length > 0) {
+								var points = parseInt(villaPnt[0].points);
+								var pnt = trophies_count;
+								connection_sync.query('UPDATE event_villa_status SET points = points+' + pnt + ' WHERE player_id = ' + rows[i].id);
+								bot.sendMessage(rows[i].chat_id, "Hai ricevuto " + pnt + " punti per l'evento della Villa di LastSoldier95! Ora ne possiedi *" + (points + pnt) + "*!", mark);
+								//console.log("Consegnati " + parts + " punti a " + rows[i].nickname);
+							};
+						}
 					}
 
 					connection.query('SELECT P.id, P.nickname, P.gender FROM map_history M, player P WHERE M.player_id = P.id AND M.position = 1 AND M.map_lobby_id = ' + map_lobby_id, function (err, rows, fields) {
