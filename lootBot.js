@@ -39798,7 +39798,13 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 							var charm_id = 0;
 							if (Object.keys(rows).length > 0)
 								charm_id = rows[0].charm_id;
-							connection.query('SELECT reborn, id, rarity FROM item WHERE name LIKE "%' + oggetto + '%"', function (err, rows, fields) {
+							
+							var search_query = "LIKE '%" + oggetto + "%'";
+							var s = connection_sync.query("SELECT COUNT(id) As cnt FROM item WHERE name = '" + oggetto + "'");
+							if (s[0].cnt == 1)
+								search_query = "= '" + oggetto + "'";
+							
+							connection.query('SELECT reborn, id, rarity FROM item WHERE name ' + search_query, function (err, rows, fields) {
 								if (err) throw err;
 								if (Object.keys(rows).length == 0) {
 									bot.sendMessage(message.chat.id, "L'oggetto specificato non esiste.", equip);
@@ -39842,7 +39848,12 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 							});
 						});
 					} else {
-						connection.query('SELECT reborn, critical, power, power_armor, power_shield, id, rarity FROM item WHERE name LIKE "%' + oggetto + '%" AND (power <> 0 OR power_armor <> 0 OR power_shield <> 0)', function (err, rows, fields) {
+						var search_query = "LIKE '%" + oggetto + "%'";
+						var s = connection_sync.query("SELECT COUNT(id) As cnt FROM item WHERE name = '" + oggetto + "'");
+						if (s[0].cnt == 1)
+							search_query = "= '" + oggetto + "'";
+						
+						connection.query('SELECT reborn, critical, power, power_armor, power_shield, id, rarity FROM item WHERE name ' + search_query + ' AND (power <> 0 OR power_armor <> 0 OR power_shield <> 0)', function (err, rows, fields) {
 							if (err) throw err;
 
 							if (Object.keys(rows).length == 0) {
@@ -57596,7 +57607,7 @@ function setFullLobby(element, index, array) {
 				for(i = 0; i < mapMatrix.length; i++) {
 					for(j = 0; j < mapMatrix[i].length; j++) {
 						if (mapMatrix[i][j] == 8)
-							posArr.push([i, j]);
+							posArr.push([j, i]);
 					}
 				}
 
@@ -57671,7 +57682,7 @@ function setFinishedLobbyEnd(element, index, array) {
 					connection_sync.query('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + winner_player_id + ', 1, ' + winner_match_kills + ')');
 				}
 
-				connection.query('SELECT M.id As mapId, P.id, P.nickname, P.trophies, M.position, M.kills, M.life, M.penality_escape, M.penality_restrict, P.map_count, P.global_end FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position ASC, kills DESC, life DESC, insert_date DESC', function (err, rows, fields) {
+				connection.query('SELECT M.id As mapId, P.id, P.chat_id, P.nickname, P.trophies, M.position, M.kills, M.life, M.penality_escape, M.penality_restrict, P.map_count, P.global_end FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position ASC, kills DESC, life DESC, insert_date DESC', function (err, rows, fields) {
 					if (err) throw err;
 
 					var list = "";
