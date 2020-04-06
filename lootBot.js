@@ -6972,6 +6972,7 @@ bot.onText(/attacca!/i, function (message) {
 					var enemy_boost_mission = null;
 					var enemy_boost_id = null;
 				
+					var flari_line = "";
 					if (flari_active == 0) {
 						power_dmg = 0;
 						power_def = 0;
@@ -6984,7 +6985,8 @@ bot.onText(/attacca!/i, function (message) {
 						enemy_power_weapon = 0;
 						enemy_power_armor = 0;
 						enemy_power_shield = 0;
-					}
+					} else
+						flari_line = "\nFlaridion: " + formatNumber(enemy_power_dmg) + " attacco, " + formatNumber(enemy_power_def) + " difesa";
 					
 					if (conditions == 9) {
 						exp = 5000;
@@ -7017,17 +7019,13 @@ bot.onText(/attacca!/i, function (message) {
 						"🥋 " + enemy_weapon2_name + " (" + enemy_weapon2 + ", " + Math.round(enemy_full_armor) + "%)\n" +
 						"🛡 " + enemy_weapon3_name + " (" + enemy_weapon3 + ", " + Math.round(enemy_full_shield) + "%)\n";
 					
-					var extra_flari = "";
-					if (flari_active == 1)
-						extra_flari = "Flaridion attivi nel combattimento!\n";
-					
 					var heart = "❤️";
 					if (rows[0].life/rows[0].total_life*100 < 15)
 						heart = "🖤";
 					else if (rows[0].life/rows[0].total_life*100 < 60)
 						heart = "🧡";
 
-					bot.sendMessage(message.chat.id, "Stai combattendo contro <b>" + rows[0].nickname + "</b> " + classSym(enemy_class_id) + "\n" + heart + " " + formatNumber(rows[0].life) + " hp\n" + equip + "\nLa tua salute: " + formatNumber(life) + " hp\n\n" + extra_flari + "Cosa vuoi fare?", kbFight).then(function () {
+					bot.sendMessage(message.chat.id, "Stai combattendo contro <b>" + rows[0].nickname + "</b> " + classSym(enemy_class_id) + "\n" + heart + " " + formatNumber(rows[0].life) + " hp\n" + equip + flari_line + "\nLa tua salute: " + formatNumber(life) + " hp\n\nCosa vuoi fare?", kbFight).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							if (answer.text == "Torna al menu")
 								return;
@@ -8450,7 +8448,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 });
 
 bot.onText(/sacca$/i, function (message) {
-	connection.query('SELECT id, class, reborn, holiday, account_id, gender, power_weapon, power_armor, power_shield FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, class, reborn, holiday, account_id, gender, power_weapon, power_armor, power_shield, power_dmg, power_def FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -8468,6 +8466,8 @@ bot.onText(/sacca$/i, function (message) {
 		var class_id = rows[0].class;
 		var reborn = rows[0].reborn;
 		
+		var power_dmg = rows[0].power_dmg;
+		var power_def = rows[0].power_def;
 		var power_weapon = rows[0].power_weapon;
 		var power_armor = rows[0].power_armor;
 		var power_shield = rows[0].power_shield;
@@ -8508,11 +8508,13 @@ bot.onText(/sacca$/i, function (message) {
 			
 			var map_lobby = connection_sync.query('SELECT flari_active FROM map_lobby_list WHERE lobby_id = ' + lobby_id);
 
+			var flari_line = "";
 			if (map_lobby[0].flari_active == 0) {
 				power_weapon = 0;
 				power_armor = 0;
 				power_shield = 0;
-			}
+			} else
+				flari_line = "\nFlaridion: " + formatNumber(power_dmg) + " attacco, " + formatNumber(power_def) + " difesa";
 			
 			if (weapon_id != null) {
 				var weapon = connection_sync.query("SELECT name, power, critical FROM item WHERE id = " + weapon_id);
@@ -8546,7 +8548,7 @@ bot.onText(/sacca$/i, function (message) {
 			} else
 				weapon3_desc += "-";
 
-			bot.sendMessage(message.chat.id, "Equipaggiamento attuale:\n" + weapon_desc + "\n" + weapon2_desc + "\n" + weapon3_desc + "\n" + money_desc + "\n" + scrap_desc, kbBack);
+			bot.sendMessage(message.chat.id, "Equipaggiamento attuale:\n" + weapon_desc + "\n" + weapon2_desc + "\n" + weapon3_desc + "\n" + money_desc + "\n" + scrap_desc + flari_line, kbBack);
 		});
 	});
 });
@@ -34227,7 +34229,7 @@ bot.onText(/alchimia/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [['Sintesi ✨'], ['Incanta 💎 ', 'Scomponi 💎 '], ['Utilizza Polvere 🌪', 'Trasmogrificazione 🌀'], ["Rimodulatore di Flaridion 🔗"], ['Torna al menu']]
+			keyboard: [['Sintesi ✨'], ['Incanta 💎 ', 'Scomponi 💎 '], ['Utilizza Polvere 🌪', 'Trasmogrificazione 🌀'], ["Rimodulatore di Flaridion 🔗"], ['Torna all\'alchimia'], ['Torna al menu']]
 		}
 	}
 
@@ -37329,7 +37331,18 @@ bot.onText(/^vendi/i, function (message) {
 					bot.sendMessage(message.chat.id, "Torna dopo aver acquistato dei Tappi!", store);
 					return;
 				}
-				bot.sendMessage(message.chat.id, "L'attuale valore dei Tappi è *" + formatNumber(rows[0].value) + "§* l'uno, ne possiedi *" + tap_qnt + "*, sei sicuro di volerli vendere tutti?", yesno).then(function () {
+				if (player_id != 1) {
+					var d = new Date();
+					if (d.getDay() == 0) {
+						bot.sendMessage(message.chat.id, "I Tappi possono essere venduti tutti i giorni tranne la domenica, dalle 10:00 alle 22:00", store);
+						return;
+					}
+					if ((d.getHours() < 10) || (d.getHours() > 21)) {
+						bot.sendMessage(message.chat.id, "I Tappi possono essere venduti tutti i giorni tranne la domenica, dalle 10:00 alle 22:00", store);
+						return;
+					}
+				}
+				bot.sendMessage(message.chat.id, "L'attuale valore dei Tappi è *" + formatNumber(rows[0].value) + "§* l'uno, ne possiedi *" + tap_qnt + "*, sei sicuro di volerli vendere tutti?\nRicorda che di domenica non è possibile vendere i Tappi", yesno).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text.toLowerCase() == "si") {
 							connection.query('SELECT ROUND(SUM(item.value*inventory.quantity)) As total FROM inventory, item WHERE inventory.item_id = item.id AND item.id = 797 AND player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
@@ -57600,7 +57613,6 @@ function setFullLobby(element, index, array) {
 						flari_active = 0;
 				}
 				
-				// console.log("flari_active", flari_active);
 				connection.query('UPDATE map_lobby_list SET flari_active = ' + flari_active + ' WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 					if (err) throw err;
 				});
