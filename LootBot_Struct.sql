@@ -2150,6 +2150,7 @@ CREATE TABLE `map_lobby` (
   `player_id` int(11) NOT NULL,
   `lobby_id` int(11) DEFAULT NULL,
   `lobby_training` tinyint(1) NOT NULL DEFAULT '0',
+  `lobby_enter_time` timestamp NULL DEFAULT NULL,
   `lobby_wait_end` timestamp NULL DEFAULT NULL,
   `match_kills` int(11) NOT NULL DEFAULT '0',
   `global_kills` int(11) NOT NULL DEFAULT '0',
