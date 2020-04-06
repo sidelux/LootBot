@@ -30011,7 +30011,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [["Invia una Cassa 📦"], ["Torna al menu"]]
+			keyboard: [["Invia una Cassa 📦"], ["Cronologia 📜"], ["Torna al menu"]]
 		}
 	};
 
@@ -30064,11 +30064,12 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 		if (rows[0].gender == "M")
 			gender_text = "o";
 
-		connection.query('SELECT COUNT(*) As cnt, (SELECT COUNT(*) FROM event_villa_gift WHERE from_id = ' + player_id + ') As mycnt FROM event_villa_gift', function (err, rows, fields) {
+		connection.query('SELECT COUNT(*) As cnt, (SELECT COUNT(*) FROM event_villa_gift WHERE from_id = ' + player_id + ') As mycnt, (SELECT COUNT(*) FROM event_villa_gift WHERE to_id = ' + player_id + ') As mycntrec FROM event_villa_gift', function (err, rows, fields) {
 			if (err) throw err;
 
 			var count = rows[0].cnt;
 			var mycount = rows[0].mycnt;
+			var mycountrec = rows[0].mycntrec;
 
 			connection.query('SELECT player_id, points FROM event_villa_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -30093,7 +30094,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 				var gift = Math.floor(rows[0].points / 5);
 				var bonusText = "";
 
-				var text = "Benvenut" + gender_text + " nella *Villa di LastSoldier95* 🏰!\nSvolgi missioni e incarichi da questo momento ed ogni 5 punti otterrai la possibilità di inviare una *Cassa Misteriosa* 📦 ad un altro avventuriero (compresi gli oggetti U)!\n\nHai a disposizione *" + gift + "* Casse da inviare (" + rows[0].points + " punti)\nFin ora sono state inviate *" + formatNumber(count) + "* Casse, *" + mycount + "* da parte tua\n\nNota: Se non invierai tutte le casse entro martedì sera, il padrone di casa se le riprenderà scontento del tuo operato" + bonusText;
+				var text = "Benvenut" + gender_text + " nella *Villa di LastSoldier95* 🏰!\nSvolgi missioni e incarichi da questo momento ed ogni 5 punti otterrai la possibilità di inviare una *Cassa Misteriosa* 📦 ad un altro avventuriero (compresi gli oggetti U)!\n\nHai a disposizione *" + gift + "* Casse da inviare (" + rows[0].points + " punti)\nFin ora sono state inviate *" + formatNumber(count) + "* Casse, tu ne hai inviate *" + mycount + "* e ricevute *" + mycountrec + "*\n\nNota: Se non invierai tutte le casse entro martedì sera, il padrone di casa se le riprenderà scontento del tuo operato" + bonusText;
 				bot.sendMessage(message.chat.id, text, kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text.indexOf("Cassa") != -1) {
@@ -30184,6 +30185,37 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 										});
 									});
 								};
+							});
+						} else if (answer.text.indexOf("Cronologia") != -1) {
+							connection.query('SELECT nickname, COUNT(to_id) As cnt FROM event_villa_gift E, player P WHERE E.to_id = P.id AND E.from_id = ' + player_id + ' GROUP BY to_id', function (err, rows, fields) {
+								if (err) throw err;
+								
+								var text = "Inviate:\n";
+								if (Object.keys(rows).length == 0)
+									text = "Nessuna cassa inviata\n";
+								else {
+									for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+										text += "> " + rows[i].cnt + "x " + rows[i].nickname + "\n";
+								}
+								
+								connection.query('SELECT nickname, COUNT(from_id) As cnt FROM event_villa_gift E, player P WHERE E.from_id = P.id AND E.to_id = ' + player_id + ' GROUP BY from_id', function (err, rows, fields) {
+									if (err) throw err;
+
+									text += "\nRicevute:\n";
+									if (Object.keys(rows).length == 0)
+										text = "Nessuna cassa ricevuta\n";
+									else {
+										for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+											text += "> " + rows[i].cnt + "x " + rows[i].nickname + "\n";
+									}
+									
+									if (text.length >= 4000) {
+										bot.sendMessage(message.chat.id, "Troppi giocatori, non è possibile visualizzare la lista completa", kb2);
+										return;
+									}
+								
+									bot.sendMessage(message.chat.id, text, kb2);
+								});
 							});
 						}
 					};
