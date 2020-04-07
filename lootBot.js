@@ -30093,8 +30093,12 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 
 				var gift = Math.floor(rows[0].points / 5);
 				var bonusText = "";
+				
+				var plur = "e";
+				if (gift == 1)
+					plur = "a";
 
-				var text = "Benvenut" + gender_text + " nella *Villa di LastSoldier95* 🏰!\nSvolgi missioni e incarichi da questo momento ed ogni 5 punti otterrai la possibilità di inviare una *Cassa Misteriosa* 📦 ad un altro avventuriero (compresi gli oggetti U)!\n\nHai a disposizione *" + gift + "* Casse da inviare (" + rows[0].points + " punti)\nFin ora sono state inviate *" + formatNumber(count) + "* Casse, tu ne hai inviate *" + mycount + "* e ricevute *" + mycountrec + "*\n\nNota: Se non invierai tutte le casse entro martedì sera, il padrone di casa se le riprenderà scontento del tuo operato" + bonusText;
+				var text = "Benvenut" + gender_text + " nella *Villa di LastSoldier95* 🏰!\nSvolgi missioni, incarichi e partite nelle Mappe da questo momento ed ogni 5 punti otterrai la possibilità di inviare una *Cassa Misteriosa* 📦 ad un altro avventuriero (compresi gli oggetti U)!\n\nHai a disposizione *" + gift + "* Cass" + plur + " da inviare (" + rows[0].points + " punti)\nFin ora sono state inviate *" + formatNumber(count) + "* Casse, tu ne hai inviate *" + mycount + "* e ricevute *" + mycountrec + "*\n\nNota: Se non invierai tutte le casse entro martedì sera, il padrone di casa se le riprenderà scontento del tuo operato" + bonusText;
 				bot.sendMessage(message.chat.id, text, kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text.indexOf("Cassa") != -1) {
@@ -34223,8 +34227,6 @@ bot.onText(/Torna a /i, function (message) {
 		cercaTermine(message, oggetto, player_id);
 	});
 });
-
-
 
 bot.onText(/lista ricerche/i, function (message) {
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -45680,6 +45682,9 @@ function setTapTime(element, index, array) {
 
 function changeTapPrice() {
 	var tap_price = Math.round(getRandomArbitrary(1000, 2000));
+	var rand = Math.random()*100;
+	if (rand <= 5)
+		tap_price = Math.round(getRandomArbitrary(500, 2500));
 	connection.query("UPDATE item SET value = " + tap_price + " WHERE id = 797", function (err, rows, fields) {
 		if (err) throw err;
 		console.log("Prezzo tappo aggiornato: " + tap_price);
@@ -48042,7 +48047,10 @@ function cercaTermine(message, param, player_id) {
 						bottext += "\n*Rinascita richiesta*: " + stars;
 						if (dragon_power != 0)
 							bottext += "\n*Drago*: " + dragon_power;
-						bottext += "\n*Rarità*: " + rarity + " (" + formatNumber(price) + " §, all'emporio: " + formatNumber(Math.round(price / 2)) + " §)";
+						if (item_id == 797)	// tappi
+							bottext += "\n*Rarità*: " + rarity + " (" + formatNumber(price) + " §)";
+						else
+							bottext += "\n*Rarità*: " + rarity + " (" + formatNumber(price) + " §, all'emporio: " + formatNumber(Math.round(price / 2)) + " §)";
 						bottext += "\n*Consumabile*: " + cons + cons_pnt;
 						bottext += "\n*Punti creazione*: " + craft_pnt;
 
@@ -57647,7 +57655,7 @@ function setFullLobby(element, index, array) {
 				var flari_active = 1;
 
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					connection.query('UPDATE map_lobby SET lobby_enter_time = NULL, weapon_id = 13, weapon2_id = 56, weapon3_id = 26, posX = ' + posArr[i][0] + ', posY = ' + posArr[i][1] + ', life = ' + life + ', total_life = ' + life + ', money = 0, scrap = 0 WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
+					connection.query('UPDATE map_lobby SET lobby_enter_time = NULL, killed = 0, weapon_id = 13, weapon2_id = 56, weapon3_id = 26, posX = ' + posArr[i][0] + ', posY = ' + posArr[i][1] + ', life = ' + life + ', total_life = ' + life + ', money = 0, scrap = 0 WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
 						if (err) throw err;
 					});
 
