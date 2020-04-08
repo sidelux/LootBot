@@ -2990,6 +2990,7 @@ CREATE TABLE `player` (
   `token_used` tinyint(1) NOT NULL DEFAULT '0',
   `token_last_use` date DEFAULT NULL,
   `token_streak` int(11) NOT NULL DEFAULT '0',
+  `tap_price` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `nickname` (`nickname`),
   UNIQUE KEY `account_id` (`account_id`),
