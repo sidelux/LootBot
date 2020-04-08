@@ -6995,7 +6995,7 @@ bot.onText(/attacca!/i, function (message) {
 						enemy_reborn = 2;
 					}
 
-					var damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn);
+					var damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn, 1);
 					var defence = getPlayerDefence(weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, exp, power_def);
 					var crit = getPlayerCritics(player_id, weapon_crit, weapon2_crit, weapon3_crit, charm_id, power_weapon, power_armor, power_shield, class_id, reborn);
 
@@ -7005,7 +7005,7 @@ bot.onText(/attacca!/i, function (message) {
 					var full_armor = crit[1];
 					var full_shield = crit[2];
 
-					var enemy_damage = getPlayerDamage(enemy_exp, enemy_weapon, enemy_weapon_enchant, enemy_charm_id, enemy_power_dmg, enemy_class_id, enemy_reborn);
+					var enemy_damage = getPlayerDamage(enemy_exp, enemy_weapon, enemy_weapon_enchant, enemy_charm_id, enemy_power_dmg, enemy_class_id, enemy_reborn, 1);
 					var enemy_defence = getPlayerDefence(enemy_weapon2, enemy_weapon3, enemy_weapon_enchant, enemy_weapon2_enchant, enemy_weapon3_enchant, enemy_exp, enemy_power_def);
 					var enemy_crit = getPlayerCritics(enemy_player_id, enemy_weapon_crit, enemy_weapon2_crit, enemy_weapon3_crit, enemy_charm_id, enemy_power_weapon, enemy_power_armor, enemy_power_shield, enemy_class_id, enemy_reborn);
 
@@ -26049,7 +26049,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		if (Object.keys(avg_players).length > 0) {
 																			var avg_tot = 0;
 																			for (var i = 0, len = Object.keys(avg_players).length; i < len; i++) {
-																				avg_tot += getPlayerDamage(avg_players[0].exp, avg_players[0].weapon, avg_players[0].weapon_enchant, avg_players[0].charm_id, avg_players[0].power_dmg, avg_players[0].class, avg_players[0].reborn);
+																				avg_tot += getPlayerDamage(avg_players[0].exp, avg_players[0].weapon, avg_players[0].weapon_enchant, avg_players[0].charm_id, avg_players[0].power_dmg, avg_players[0].class, avg_players[0].reborn, 0);
 																			}
 																			avg_dmg = avg_tot/Object.keys(avg_players).length;
 																		}
@@ -26293,7 +26293,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			magic3 = 0;
 																			magic4 = 0;
 
-																			damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn);
+																			damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn, 0);
 																			crit = getPlayerCritics(playerid, weapon_crit, weapon2_crit, weapon3_crit, charm_id, power_weapon, power_armor, power_shield, class_id, reborn);
 																			dragon = getPlayerDragon(playerid, class_id, reborn, charm_id);
 
@@ -27053,7 +27053,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			magic3 = 0;
 																			magic4 = 0;
 
-																			damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn);
+																			damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn, 0);
 																			crit = getPlayerCritics(playerid, weapon_crit, weapon2_crit, weapon3_crit, charm_id, power_weapon, power_armor, power_shield, class_id, reborn);
 																			dragon = getPlayerDragon(playerid, class_id, reborn, charm_id);
 
@@ -30191,7 +30191,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 								};
 							});
 						} else if (answer.text.indexOf("Cronologia") != -1) {
-							connection.query('SELECT nickname, COUNT(to_id) As cnt FROM event_villa_gift E, player P WHERE E.to_id = P.id AND E.from_id = ' + player_id + ' GROUP BY to_id', function (err, rows, fields) {
+							connection.query('SELECT nickname, COUNT(to_id) As cnt FROM event_villa_gift E, player P WHERE E.to_id = P.id AND E.from_id = ' + player_id + ' GROUP BY to_id ORDER BY cnt DESC', function (err, rows, fields) {
 								if (err) throw err;
 								
 								var text = "Inviate:\n";
@@ -30202,7 +30202,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 										text += "> " + rows[i].cnt + "x " + rows[i].nickname + "\n";
 								}
 								
-								connection.query('SELECT nickname, COUNT(from_id) As cnt FROM event_villa_gift E, player P WHERE E.from_id = P.id AND E.to_id = ' + player_id + ' GROUP BY from_id', function (err, rows, fields) {
+								connection.query('SELECT nickname, COUNT(from_id) As cnt FROM event_villa_gift E, player P WHERE E.from_id = P.id AND E.to_id = ' + player_id + ' GROUP BY from_id ORDER BY cnt DESC', function (err, rows, fields) {
 									if (err) throw err;
 
 									text += "\nRicevute:\n";
@@ -33655,7 +33655,7 @@ bot.onText(/^\/refreshPrice/i, function (message, match) {
 	});
 });
 
-bot.onText(/offerte giornaliere|mercante pazzo/i, function (message) {
+bot.onText(/offerte giornaliere|mercante pazzo|^mercante$/i, function (message) {
 
 	if (message.text.indexOf("Cerca") != -1)
 		return;
@@ -52075,7 +52075,7 @@ function repairWall(team_id) {
 	});
 }
 
-function getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn) {
+function getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn, reduceRange) {
 	if ((class_id == 8) && (reborn == 2))
 		weapon += weapon * 0.10;
 	else if ((class_id == 8) && (reborn == 3))
@@ -52088,6 +52088,8 @@ function getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class
 		weapon += weapon * 0.40;
 
 	var danno = Math.round((exp/30) + (Math.random() * (exp / 30)) + (weapon * 2));
+	if (reduceRange == 1)
+		danno = Math.round((exp/15) + (Math.random() * (exp / 60)) + (weapon * 2));
 	if (weapon > 0)
 		danno += weapon_enchant + power_dmg;
 
@@ -57906,7 +57908,7 @@ function setSeasonEnd(element, index, array) {
 	var trophies = element.trophies;
 
 	var text = "";
-	var mana = trophies*30;
+	var mana = trophies*25;
 	var dust = trophies*2;
 	var chest = Math.round(trophies/2);
 	var chestU = Math.floor(trophies/150);
