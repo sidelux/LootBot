@@ -10004,12 +10004,15 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																				if (i == 0) {
 																					d = dir_top;
 																					t = "Avanti";
+																					addToMapping("top", dungeon_id, player_id, room_id);
 																				} else if (i == 1) {
 																					d = dir_right;
 																					t = "Destra";
+																					addToMapping("right", dungeon_id, player_id, room_id);
 																				} else if (i == 2) {
 																					d = dir_left;
 																					t = "Sinistra";
+																					addToMapping("left", dungeon_id, player_id, room_id);
 																				}
 																				text += "*" + t + ":* " + dungeonToDesc(d) + "\n";
 																				i++;
@@ -12889,6 +12892,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																						bot.sendMessage(message.chat.id, "L'anziano si concentra e un'aura azzurrina si forma attorno a lui, dopo alcuni secondi spalanca gli occhi urlando: " + dungeonToDesc(rows[0].dir).toUpperCase() + " " + text_dir.toUpperCase() + " " + rows[0].room_id + "!!\nDopo di che se ne va a passo lento...", dNext);
 
 																						addToMapping(selected_dir, dungeon_id, player_id, rows[0].room_id);
+																						
+																						setAchievement(player_id, 74, 1);
 
 																						if (boost_id == 8)
 																							setBoost(player_id, boost_mission, boost_id);
@@ -36838,6 +36843,10 @@ bot.onText(/emporio/i, function (message) {
 
 				chest_list += "> " + rows[i].name + " ancora " + formatNumber(quantity_left) + "\n";
 			}
+			
+			var tap_cnt = getItemCnt(player_id, 797);
+			var tap_left = 1000-tap_cnt;
+			chest_list += "\nAncora " + formatNumber(tap_left) + " Tappi acquistabili prima di domenica";
 
 			bot.sendMessage(message.chat.id, price_drop_msg + "Hai a disposizione " + formatNumber(money) + " §, cosa vuoi fare?" + chest_list, kb).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
