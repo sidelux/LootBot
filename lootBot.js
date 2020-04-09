@@ -13724,82 +13724,79 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												});
 											} else if (dir == -22) {
-												var dOptions = {
-													parse_mode: "Markdown",
-													reply_markup: {
-														resize_keyboard: true,
-														keyboard: [["Ah"], ["Torna al menu"]]
-													}
-												};
+												var d = new Date();
+												var day = d.getDay();
 
-												bot.sendMessage(message.chat.id, "Entrando nella stanza pesti una leva nascosta, la maledizione Unna t'ha colpito!", dOptions).then(function () {
-													answerCallbacks[message.chat.id] = function (answer) {
-														if (answer.text == "Ah") {
+												var text = "Entrando nella stanza pesti una leva nascosta, la maledizione Unna t'ha colpito!\n\n_Scricchiolando_ la leva emette un rumore inquietante...\n";
 
-															var d = new Date();
-															var day = d.getDay();
-
-															var text = "_Scricchiolando_ la leva emette un rumore inquietante...\n";
-
-															if ((day == 1) || (day == 2)) {				// lunedì-martedì
-																var exist = connection_sync.query("SELECT 1 FROM event_dust_status WHERE extracting = 1 AND player_id = " + player_id);
-																if (Object.keys(exist).length > 0) {
-																	connection.query('UPDATE event_dust_status SET `generated` = 0, notified = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
-																		if (err) throw err;
-																	});
-																	text += "Il Generatore di *Polvere* è stato azzerato!";
-																} else
-																	text += "Ma per stavolta nulla accade!";
-															} else if ((day == 4) || (day == 5)) { 		// giovedì-venerdì
-																var exist = connection_sync.query("SELECT 1 FROM event_mana_status WHERE time_start IS NOT NULL AND player_id = " + player_id);
-																if (Object.keys(exist).length > 0) {
-																	connection.query('UPDATE event_mana_status SET time_start = NOW() WHERE player_id = ' + player_id, function (err, rows, fields) {
-																		if (err) throw err;
-																	});
-																	text += "L'estrazione di *Mana* è stata resettata!";
-																} else 
-																	text += "Ma per stavolta nulla accade!";
-															} else {
-																var money = Math.round(getRandomArbitrary(-player_rank*200, player_rank*200));
-																if (cursed == 1)
-																	money = money*2;
-
-																var query = " + " + Math.abs(money);
-																if (money < 0)
-																	query = " - " + Math.abs(money);
-
-																var p = connection_sync.query("SELECT money FROM player WHERE id = " + player_id);
-																if ((p[0].money-Math.abs(money) > 0) && (money > 0)) {
-																	connection.query('UPDATE player SET money = money' + query + ' WHERE id = ' + player_id, function (err, rows, fields) {
-																		if (err) throw err;
-																	});
-
-																	if (money > 0)
-																		text += "Nel tuo borsellino appaiono *" + formatNumber(money) + "* §!";
-																	else
-																		text += "Dal tuo borsellino evaporano *" + formatNumber(Math.abs(money)) + "* §!";
-																} else
-																	text += "Ma per stavolta nulla accade!";
-															}
-
-															text += "\n\nLentamente prosegui verso la stanza successiva...";
-
-															bot.sendMessage(message.chat.id, text, dNext);
-
-															var d = new Date();
-															d.setMinutes(d.getMinutes() + Math.round(getRandomArbitrary(2, 30)));
-															var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-
-															connection.query('UPDATE dungeon_status SET room_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+												if ((day == 1) || (day == 2)) {				// lunedì-martedì
+													var exist = connection_sync.query("SELECT 1 FROM event_dust_status WHERE extracting = 1 AND player_id = " + player_id);
+													if (Object.keys(exist).length > 0) {
+														connection.query('UPDATE event_dust_status SET `generated` = ROUND(`generated`/2), notified = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+															if (err) throw err;
+														});
+														text += "Il Generatore di *Polvere* è stato dimezzato!";
+													} else
+														text += "Ma per stavolta nulla accade!";
+												} else if ((day == 4) || (day == 5)) { 		// giovedì-venerdì
+													var exist = connection_sync.query("SELECT mana_1, mana_2, mana_3 FROM event_mana_status WHERE time_start IS NOT NULL AND player_id = " + player_id);
+													if (Object.keys(exist).length > 0) {
+														var qnt = 100;
+														if (exist[0].mana_1 > qnt) {
+															connection.query('UPDATE event_mana_status SET mana_1 = mana_1-' + qnt + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+														}
+														if (exist[0].mana_2 > qnt) {
+															connection.query('UPDATE event_mana_status SET mana_2 = mana_2-' + qnt + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
-															return;
-														} else
-															return;
-													}
+														}
+														if (exist[0].mana_2 > qnt) {
+															connection.query('UPDATE event_mana_status SET mana_3 = mana_3-' + qnt + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
+														}
+														
+														text += "Il tuo *Mana* è stato ridotto di " + qnt + " unità!";
+													} else 
+														text += "Ma per stavolta nulla accade!";
+												} else {
+													var money = Math.round(getRandomArbitrary(-player_rank*200, player_rank*200));
+													if (cursed == 1)
+														money = money*2;
+
+													var query = " + " + Math.abs(money);
+													if (money < 0)
+														query = " - " + Math.abs(money);
+
+													var p = connection_sync.query("SELECT money FROM player WHERE id = " + player_id);
+													if ((p[0].money-Math.abs(money) > 0) && (money > 0)) {
+														connection.query('UPDATE player SET money = money' + query + ' WHERE id = ' + player_id, function (err, rows, fields) {
+															if (err) throw err;
+														});
+
+														if (money > 0)
+															text += "Nel tuo borsellino appaiono *" + formatNumber(money) + "* §!";
+														else
+															text += "Dal tuo borsellino evaporano *" + formatNumber(Math.abs(money)) + "* §!";
+													} else
+														text += "Ma per stavolta nulla accade!";
+												}
+
+												text += "\n\nLentamente prosegui verso la stanza successiva...";
+
+												bot.sendMessage(message.chat.id, text, dNext);
+
+												var d = new Date();
+												d.setMinutes(d.getMinutes() + Math.round(getRandomArbitrary(2, 30)));
+												var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+												connection.query('UPDATE dungeon_status SET room_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+												});
+												connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
 												});
 											} else if (dir == -23) {
 												var dOptions = {
