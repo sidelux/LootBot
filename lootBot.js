@@ -3682,6 +3682,7 @@ bot.onText(/annulla bevanda/i, function (message) {
 						connection.query('UPDATE player SET money = money-' + cost + ', boost_id = 0, boost_mission = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 							bot.sendMessage(message.chat.id, "La bevanda attiva è stata annullata!", back);
+							setAchievement(player_id, 75, 1);
 						});
 					});
 				};
@@ -13741,7 +13742,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												} else if ((day == 4) || (day == 5)) { 		// giovedì-venerdì
 													var exist = connection_sync.query("SELECT mana_1, mana_2, mana_3 FROM event_mana_status WHERE time_start IS NOT NULL AND player_id = " + player_id);
 													if (Object.keys(exist).length > 0) {
-														var qnt = 100;
+														var qnt = 50;
 														if (exist[0].mana_1 > qnt) {
 															connection.query('UPDATE event_mana_status SET mana_1 = mana_1-' + qnt + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
@@ -13758,7 +13759,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															});
 														}
 														
-														text += "Il tuo *Mana* è stato ridotto di " + qnt + " unità!";
+														text += "Il tuo *Mana* è stato ridotto di " + qnt + " unità per tipo!";
 													} else 
 														text += "Ma per stavolta nulla accade!";
 												} else {
@@ -36843,7 +36844,7 @@ bot.onText(/emporio/i, function (message) {
 			
 			var tap_cnt = getItemCnt(player_id, 797);
 			var tap_left = 1000-tap_cnt;
-			chest_list += "\nAncora " + formatNumber(tap_left) + " Tappi acquistabili prima di domenica";
+			chest_list += "\nAncora " + formatNumber(tap_left) + " Tappi acquistabili domenica";
 
 			bot.sendMessage(message.chat.id, price_drop_msg + "Hai a disposizione " + formatNumber(money) + " §, cosa vuoi fare?" + chest_list, kb).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
@@ -37735,6 +37736,7 @@ bot.onText(/compra/i, function (message) {
 							quantity_left = max_quantity-rows[0].quantity;
 
 						if (quantity_left <= 0) {
+							setAchievement(player_id, 14, 99999, chest_id);
 							bot.sendMessage(message.chat.id, "Non puoi più acquistare scrigni di questa rarità, riprova la prossima settimana", store);
 							return;
 						}
