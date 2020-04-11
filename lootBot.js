@@ -34270,7 +34270,7 @@ bot.onText(/alchimia/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [['Sintesi ✨'], ['Incanta 💎 ', 'Scomponi 💎 '], ['Utilizza Polvere 🌪', 'Trasmogrificazione 🌀'], ["Rimodulatore di Flaridion 🔗"], ['Torna all\'alchimia'], ['Torna al menu']]
+			keyboard: [['Sintesi ✨'], ['Incanta 💎 ', 'Scomponi 💎 '], ['Utilizza Polvere 🌪', 'Trasmogrificazione 🌀'], ["Rimodulatore di Flaridion 🔗"], ['Torna al menu']]
 		}
 	}
 
