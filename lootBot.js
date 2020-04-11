@@ -18052,10 +18052,7 @@ bot.onText(/pergamena/i, function (message) {
 								bot.sendMessage(message.chat.id, "I simboli non sono consentiti o il testo è troppo lungo (max 2048 caratteri).", back);
 								return;
 							}
-
-							connection.query('UPDATE team SET point = point-' + price + ', point_spent = point_spent+' + price + ', story = "' + story.trim() + '" WHERE id = ' + team_id, function (err, rows, fields) {
-								if (err) throw err;
-							});
+							
 							bot.sendMessage(message.chat.id, "Hai modificato la pergamena del team!", team);
 						});
 					};
