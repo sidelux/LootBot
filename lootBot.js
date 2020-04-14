@@ -1501,7 +1501,9 @@ bot.onText(/^\/scorciatoia/, function (message, match) {
 					"> '/invitati' - Mostra i player che si sono registrati usando il link invito\n" +
 					"> '/sintesi 100,200,300' (blu, giallo, rosso) - Apre il menù per procedere alla sintesi incantesimi\n" +
 					"> '/trasmo bianca,gialla,rosso (spada, armatura, scudo)' - Apre il menù per modificare l'equipaggiamento necro\n" +
-					"> ispeziona - Apre il menù rifugio");
+					"> ispeziona - Apre il menù rifugio\n" +
+				   	"> generatore - Apre il generatore\n" +
+				   	"> miniera/miniere - Apre le miniere di mana");
 });
 
 bot.onText(/^\/marketban (.+)/, function (message, match) {
@@ -31467,7 +31469,7 @@ bot.onText(/^spolvera/i, function (message) {
 	});
 });
 
-bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
+bot.onText(/Miniere di Mana|Raccolta|^miniera$|^miniere$/i, function (message) {
 
 	if (message.from.id != 20471035) {
 		if (eventMana == 0) {
@@ -31739,7 +31741,7 @@ bot.onText(/Miniere di Mana|Raccolta/i, function (message) {
 	});
 });
 
-bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
+bot.onText(/generatore di polvere|torna al generatore|^generatore$/i, function (message) {
 	if (message.from.id != 20471035) {
 		if (eventDust == 0) {
 			bot.sendMessage(message.chat.id, "L'evento non è disponibile oggi!", back);
