@@ -9588,6 +9588,38 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 								var arr1 = arr.slice(0, rooms);
 								var arr2 = arr.slice(rooms, rooms * 2);
 								var arr3 = arr.slice(rooms * 2, rooms * 3);
+								
+								var valid = 0;
+								while (valid == 0) {
+									for (var i = 0; i < rooms; i++) {
+										top = arr1[i];
+										right = arr2[i];
+										left = arr3[i];
+
+										if ((i <= 3) && ((top == -25) || (right == -25) || (left == -25))) {
+											valid = 0;
+											break;
+										}
+										if ((i <= 3) && ((top == 5) || (right == 5) || (left == 5))) {
+											valid = 0;
+											break;
+										}
+										if (i >= 3) {
+											valid = 1;
+											break;
+										}
+									}
+									
+									if (valid == 0) {
+										arr = shuffle(arr);
+
+										arr1 = arr.slice(0, rooms);
+										arr2 = arr.slice(rooms, rooms * 2);
+										arr3 = arr.slice(rooms * 2, rooms * 3);
+									}
+								}
+								
+								console.log("valid:", valid);
 
 								for (var i = 0; i < rooms; i++) {
 									top = arr1[i];
@@ -31852,14 +31884,14 @@ bot.onText(/generatore di polvere|torna al generatore/i, function (message) {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text == "Torna al menu")
 										return;
-									if (answer.text == "Aziona Generatore") {
+									if (answer.text.toLowerCase() == "aziona generatore") {
 										var d = new Date();
 										var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 										connection.query('UPDATE event_dust_status SET extracting = 1, last_update = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 											bot.sendMessage(message.chat.id, "Generatore *azionato*! Torna tra un po' di tempo per ritirare la polvere prodotta!", gBack);
 										});
-									} else if (answer.text == "Aumenta Deposito") {
+									} else if (answer.text.toLowerCase() == "aumenta deposito") {
 										if (max_qnt >= 77) {
 											bot.sendMessage(message.chat.id, "Il deposito del generatore è già potenziato al massimo!", gBack);
 											return;
@@ -37370,7 +37402,7 @@ bot.onText(/^vendi/i, function (message) {
 				}
 			});
 			return;
-		} else if (oggetto.toLowerCase() == "tappi") {
+		} else if ((oggetto.toLowerCase() == "tappi") || (oggetto.toLowerCase() == "tappo")) {
 			var tap_qnt = getItemCnt(player_id, 797);
 			if (tap_qnt == 0) {
 				bot.sendMessage(message.chat.id, "Torna dopo aver acquistato dei Tappi!", store);
@@ -51323,27 +51355,32 @@ function getTeamMembers(answerText) {
 		rows = res1;
 	else
 		rows = res2;
+	
+	var team_id = rows[0].id;
+	var team_name = rows[0].name;
 
-	if (rows[0].id == 1113)
+	if (team_id == 1113)
 		return "Non è possibile visualizzare la lista membri di questo team";
 
 	var slogan = "";
 	if (rows[0].slogan != null)
 		slogan = "Slogan: <i>" + rows[0].slogan + "</i>\n";
 
+	var child_id = -1;
 	var child_team = "";
 	if (rows[0].child_team != null) {
-		var child = connection_sync.query("SELECT name FROM team WHERE id = " + rows[0].child_team);
+		var child = connection_sync.query("SELECT id, name FROM team WHERE id = " + rows[0].child_team);
 		child_team = "Accademia: " + child[0].name + "\n";
+		child_id = child[0].id;
 	}
 
 	var story = "";
 	if (rows[0].story != null)
 		story = "\n\nPergamena: <i>" + rows[0].story + "</i>\n";
 
-	var text = "Il team <b>" + rows[0].name + "</b>:\n" + slogan + child_team + "Boss uccisi: " + formatNumber(rows[0].boss_count) + "\nAssalti: " + rows[0].kill_num + "\nMembri: " + rows[0].players + "/" + rows[0].max_players + "\n\n";
+	var text = "Il team <b>" + team_name + "</b>:\n" + slogan + child_team + "Boss uccisi: " + formatNumber(rows[0].boss_count) + "\nAssalti: " + rows[0].kill_num + "\nMembri: " + rows[0].players + "/" + rows[0].max_players + "\n\n";
 
-	var rows = connection_sync.query('SELECT player.nickname, player.reborn, player.exp, team_player.role FROM team_player, player WHERE player.id = team_player.player_id AND team_id = ' + rows[0].id + ' ORDER BY team_player.role = 0, team_player.role, player.reborn DESC, player.exp DESC');
+	var rows = connection_sync.query('SELECT player.nickname, player.reborn, player.exp, team_player.role FROM team_player, player WHERE player.id = team_player.player_id AND team_id = ' + team_id + ' ORDER BY team_player.role = 0, team_player.role, player.reborn DESC, player.exp DESC');
 	var stars = "";
 	var admin = "";
 	for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
@@ -51356,7 +51393,32 @@ function getTeamMembers(answerText) {
 			admin = " 👤";
 		text += rows[i].nickname + " " + rebSym(rows[i].reborn) + " (" + Math.floor(rows[i].exp / 10) + ")" + admin + "\n";
 	}
-	return text + story;
+		
+	var team_list = "\nCatena Team:\n";
+	var end = 0;
+	var acc;
+	var cnt = 0;
+	while (end == 0) {
+		acc = connection_sync.query('SELECT id, name, child_team FROM team WHERE id = ' + child_id);
+		console.log(acc[0].id, acc[0].name);
+		if ((Object.keys(acc).length == 0) || (acc[0].child_team == null))
+			end = 1;
+		else {
+			if (team_name == acc[0].name) {
+				end = 1;
+				break;
+			}
+			team_list += acc[0].name;
+			child_id = acc[0].child_team;
+			cnt++;
+			end = 0;
+		}
+	}
+	
+	if (cnt == 0)
+		team_list = "";
+	
+	return text + story + team_list;
 }
 
 function assaultIncrement(message, player_id, team_id) {
