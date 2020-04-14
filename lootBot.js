@@ -51400,7 +51400,6 @@ function getTeamMembers(answerText) {
 	var cnt = 0;
 	while (end == 0) {
 		acc = connection_sync.query('SELECT id, name, child_team FROM team WHERE id = ' + child_id);
-		console.log(acc[0].id, acc[0].name);
 		if ((Object.keys(acc).length == 0) || (acc[0].child_team == null))
 			end = 1;
 		else {
