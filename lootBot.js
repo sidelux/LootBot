@@ -51366,21 +51366,20 @@ function getTeamMembers(answerText) {
 
 	var slogan = "";
 	if (rows[0].slogan != null)
-		slogan = "Slogan: <i>" + rows[0].slogan + "</i>\n";
+		slogan = "<b>Slogan</b>: <i>" + rows[0].slogan + "</i>\n";
 
-	var child_id = -1;
+	var child_id = rows[0].child_team;
 	var child_team = "";
 	if (rows[0].child_team != null) {
-		var child = connection_sync.query("SELECT id, name FROM team WHERE id = " + rows[0].child_team);
-		child_team = "Accademia: " + child[0].name + "\n";
-		child_id = child[0].id;
+		var child = connection_sync.query("SELECT name FROM team WHERE id = " + rows[0].child_team);
+		child_team = "<b>Accademia</b>: " + child[0].name + "\n";
 	}
 
 	var story = "";
 	if (rows[0].story != null)
 		story = "\n\nPergamena: <i>" + rows[0].story + "</i>\n";
 
-	var text = "Il team <b>" + team_name + "</b>:\n" + slogan + child_team + "Boss uccisi: " + formatNumber(rows[0].boss_count) + "\nAssalti: " + rows[0].kill_num + "\nMembri: " + rows[0].players + "/" + rows[0].max_players + "\n\n";
+	var text = "Il team <b>" + team_name + "</b>:\n" + slogan + child_team + "<b>Boss uccisi</b>: " + formatNumber(rows[0].boss_count) + "\n<b>Assalti</b>: " + rows[0].kill_num + "\n<b>Membri</b>: " + rows[0].players + "/" + rows[0].max_players + "\n\n";
 
 	var rows = connection_sync.query('SELECT player.nickname, player.reborn, player.exp, team_player.role FROM team_player, player WHERE player.id = team_player.player_id AND team_id = ' + team_id + ' ORDER BY team_player.role = 0, team_player.role, player.reborn DESC, player.exp DESC');
 	var stars = "";
@@ -51396,23 +51395,27 @@ function getTeamMembers(answerText) {
 		text += rows[i].nickname + " " + rebSym(rows[i].reborn) + " (" + Math.floor(rows[i].exp / 10) + ")" + admin + "\n";
 	}
 		
-	var team_list = "\nCatena Team:\n";
+	var team_list = "\n<b>Catena Team</b>:\n<b>" + team_name + "</b>\n";
 	var end = 0;
 	var acc;
 	var cnt = 0;
 	while (end == 0) {
 		acc = connection_sync.query('SELECT id, name, child_team FROM team WHERE id = ' + child_id);
-		if ((Object.keys(acc).length == 0) || (acc[0].child_team == null))
+		if (Object.keys(acc).length == 0)
 			end = 1;
 		else {
 			if (team_name == acc[0].name) {
 				end = 1;
 				break;
 			}
-			team_list += acc[0].name;
+			team_list += acc[0].name + "\n";
 			child_id = acc[0].child_team;
 			cnt++;
 			end = 0;
+			if (acc[0].child_team == null) {
+				end = 1;
+				break;
+			}
 		}
 	}
 	
