@@ -9620,8 +9620,6 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 										arr3 = arr.slice(rooms * 2, rooms * 3);
 									}
 								}
-								
-								console.log("valid:", valid);
 
 								for (var i = 0; i < rooms; i++) {
 									top = arr1[i];
@@ -28422,7 +28420,7 @@ bot.onText(/Hall of Fame/i, function (message) {
 		connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 			if (err) throw err;
 			var desc = "\n\nIl calcolo tiene conto del tempo trascorso negli Incarichi, dei punti creazione del team, dei dungeon completati in team e degli Assalti completati con successo.";
-			var query = "SELECT name As name, ((500*mission_time_count)+(craft_count)+(3000*boss_count)+(125000*(A.completed+kill_num))+(dungeon_count)) As pnt FROM team T LEFT JOIN assault A ON T.id = A.team_id GROUP BY T.id ORDER BY pnt DESC";
+			var query = "SELECT name As name, ((500*mission_time_count)+(craft_count)+(3000*boss_count)+(125000*(A.completed+kill_num))+(dungeon_count*250)) As pnt FROM team T LEFT JOIN assault A ON T.id = A.team_id GROUP BY T.id ORDER BY pnt DESC";
 			if (rows[0].top_min == 1) {
 				connection.query(query, function (err, rows, fields) {
 					if (err) throw err;
@@ -38049,8 +38047,10 @@ bot.onText(/compra/i, function (message) {
 
 						quantity = parseInt(quantity);
 						quantity = Math.floor(quantity);
+						
+						price_view = price_view*quantity;
 
-						bot.sendMessage(message.chat.id, "Sei sicuro di voler acquistare " + quantity + " 💎?", storeYesNo).then(function () {
+						bot.sendMessage(message.chat.id, "Sei sicuro di voler acquistare " + quantity + " 💎 per " + formatNumber(price_view) + "§?", storeYesNo).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
 								if (answer.text.toLowerCase() == "si") {
 									var value = price_gem;
@@ -54750,7 +54750,10 @@ function setDragonTop(element, index, array) {
 					if (res == 1) {
 						bot.sendMessage(chat_id, "In base al tuo posizionamento nella vetta sei stato portato al monte successivo! Il *" + name + "*!", mark);
 					} else if (res == -1) {
-						bot.sendMessage(chat_id, "In base al tuo posizionamento nella vetta sei stato retrocesso al monte precedente! Il *" + name + "*!", mark);
+						if (top == 1)
+							bot.sendMessage(chat_id, "In base al tuo posizionamento nella vetta sei rimasto nello stesso monte! Il *" + name + "*!", mark);
+						else
+							bot.sendMessage(chat_id, "In base al tuo posizionamento nella vetta sei stato retrocesso al monte precedente! Il *" + name + "*!", mark);
 					} else if (res == 0) {
 						bot.sendMessage(chat_id, "In base al tuo posizionamento nella vetta sei rimasto nel monte attuale! Il *" + name + "*!", mark);
 					}
