@@ -6096,7 +6096,7 @@ bot.onText(/statistiche/i, function (message) {
 });
 
 bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla mappa/i, function (message) {
-	connection.query('SELECT id, holiday, account_id, gender, trophies, map_count, exp FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, holiday, account_id, gender, trophies, map_count, exp, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -6115,6 +6115,11 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 				bot.sendMessage(message.chat.id, "Manutenzione, riprova più tardi!", back)
 				return;
 			}
+		}
+		
+		if (rows[0].reborn == 1) {
+			bot.sendMessage(message.chat.id, "Le Mappe di Lootia sono accessibili solo dopo aver raggiunto la Rinascita 1 (Livello 100)! Potrai combattere in Mappe generate casualmente contro altri giocatori e vincere sostanziosi premi!", back)
+			return;
 		}
 
 		var player_id = rows[0].id;
@@ -6312,6 +6317,11 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 											}
 
 											var max_lobby_count = 3;
+											var d = new Date();
+											if (d.getHours() >= 18)
+												max_lobby_count = 2;
+											if ((d.getDay() == 0) || (d.getDay() == 6))
+												max_lobby_count = 3;
 
 											var query = 'SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg, L2.id FROM map_lobby L LEFT JOIN map_lobby_list L2 ON L.lobby_id = L2.lobby_id, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL AND L2.id IS NULL AND L.lobby_training = 0 GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY RAND()';
 											if (trainingLobby == 1)
