@@ -7218,7 +7218,7 @@ bot.onText(/attacca!/i, function (message) {
 										var randDamage = Math.random()*100;
 										var extra = "";
 										var enemy_extra = "";
-										if (randDamage >= 50) {
+										if ((randDamage >= 50) && (enemy_battle_stunned == 0)) {
 											my_dmg = Math.round(getRandomArbitrary(1000, 2500));
 											extra = " Ma durante la fuga l'avversario ti colpisce alle spalle e perdi " + formatNumber(my_dmg) + " hp!";
 											enemy_extra = " Ma durante la fuga riesci a colpirlo alle spalle e perde " + formatNumber(my_dmg) + " hp!";
@@ -9448,7 +9448,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							keyboard: [["1", "2", "3"], ["4", "5", "6"], ["❣️", "❤️"], ["Scappa"], ["Torna al menu"]]
+							keyboard: [["1", "2", "3"], ["4", "5", "6"], ["Cura", "❣️", "❤️"], ["Scappa"], ["Torna al menu"]]
 						}
 					};
 
@@ -18816,7 +18816,7 @@ bot.onText(/cassaforte/i, function (message, match) {
 			}
 			*/
 
-			if (role != 1) {
+			if (role == 0) {
 				var kb = {
 					parse_mode: "HTML",
 					reply_markup: {
@@ -18864,7 +18864,7 @@ bot.onText(/cassaforte/i, function (message, match) {
 				if (safe_tot > 0)
 					current = "\nContiene in totale " + formatNumber(safe_tot) + " §";
 
-				bot.sendMessage(message.chat.id, "La <b>Cassaforte</b> serve ad avere un luogo comune per depositare le proprie monete, così che possano essere poi utilizzate dall'amministratore per vari scopi\nCosa vuoi fare con la cassaforte?" + current + "\n\n" + text, kb).then(function () {
+				bot.sendMessage(message.chat.id, "La <b>Cassaforte</b> serve ad avere un luogo comune per depositare le proprie monete, così che possano essere poi utilizzate dall'amministratore o dal vice per vari scopi\nCosa vuoi fare con la cassaforte?" + current + "\n\n" + text, kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text == "Deposita") {
 							bot.sendMessage(message.chat.id, "Quante monete vuoi depositare?\nNe possiedi " + formatNumber(money), kbBack).then(function () {
@@ -18925,8 +18925,8 @@ bot.onText(/cassaforte/i, function (message, match) {
 								}
 							});
 						} else if (answer.text == "Ritira") {
-							if (role != 1) {
-								bot.sendMessage(message.from.id, "Può ritirare le monete solo l'amministratore", kbBack);
+							if (role == 0) {
+								bot.sendMessage(message.from.id, "Può ritirare le monete solo l'amministratore o il vice", kbBack);
 								return;
 							}
 
