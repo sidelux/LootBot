@@ -7166,7 +7166,7 @@ bot.onText(/attacca!/i, function (message) {
 									}
 									if (fullProtected == 0) {
 										var randDodge = Math.random()*100;
-										if (enemy_full_shield >= randDodge) {
+										if ((enemy_full_shield >= randDodge) && (enemy_battle_stunned == 0)) {
 											text += "L'avversario riesce a schivare il tuo attacco!";
 											enemy_text += "Riesci a schivare l'attacco del tuo avversario!";
 											if ((enemy_battle_shield == 2) || (partialProtected == 1))
@@ -9448,7 +9448,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							keyboard: [["1", "2", "3"], ["4", "5", "6"], ["Cura", "❣️", "❤️"], ["Scappa"], ["Torna al menu"]]
+							keyboard: [["1", "2", "3"], ["4", "5", "6"], ["🍵", "❣️", "❤️"], ["Scappa"], ["Torna al menu"]]
 						}
 					};
 
@@ -19023,7 +19023,7 @@ bot.onText(/cassaforte/i, function (message, match) {
 								var text = "Ultimi 50 depositi:\n";
 								for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 									var d = new Date(rows[i].insert_date);
-									text += "> " + rows[i].nickname + " - " + rows[i].money + " § il " + toDate("it", d) + "\n";
+									text += "> " + rows[i].nickname + " - " + formatNumber(rows[i].money) + " § il " + toDate("it", d) + "\n";
 								}
 
 								bot.sendMessage(message.from.id, text, kbBack);
@@ -48680,101 +48680,117 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 							answerCallbacks[message.chat.id] = function (answer) {
 								if ((answer.text == "Torna al menu") || (answer.text == "Matchmaking"))
 									return;
+								
+								var type = "";
+								var method;
+								if (answer.text == "Invia Piedelesto") {
+									method = 1;
+									type = "Piedelesto";
+								} else if (answer.text == "Invia Occhiofurbo") {
+									method = 3;
+									type = "Occhiofurbo";
+								} else if (answer.text == "Invia Testacalda") {
+									method = 2;
+									type = "Testacalda";
+								} else
+									return;
+								
+								bot.sendMessage(message.chat.id, "Sei sicuro di voler inviare " + type + " all'ispezione?", yesno).then(function () {
+									answerCallbacks[message.chat.id] = function (answer) {
+										if (answer.text.toLowerCase() == "si") {
+											var kbBack = {
+												parse_mode: "Markdown",
+												reply_markup: {
+													resize_keyboard: true,
+													keyboard: [["Torna al rifugio"], ["Torna al menu"]]
+												}
+											};
 
-								var kbBack = {
-									parse_mode: "Markdown",
-									reply_markup: {
-										resize_keyboard: true,
-										keyboard: [["Torna al rifugio"], ["Torna al menu"]]
-									}
-								};
-
-								connection.query('SELECT id FROM heist_progress WHERE from_id = ' + from_id, function (err, rows, fields) {
-									if (err) throw err;
-									if (Object.keys(rows).length > 0) {
-										bot.sendMessage(message.chat.id, "Stai svolgendo un ispezione, completala prima di iniziarne un'altra", kbBack);
-										return;
-									}
-
-									connection.query('SELECT datetime FROM heist WHERE from_id = ' + from_id, function (err, rows, fields) {
-										if (err) throw err;
-										if (Object.keys(rows).length > 0) {
-											var date = new Date(rows[0].datetime);
-											var short_date = addZero(date.getHours()) + ":" + addZero(date.getMinutes());
-											var text = "Ispezione in corso fino alle " + short_date;
-											if (wanted == 0)
-												bot.sendMessage(message.chat.id, text, back);
-											else
-												bot.sendMessage(message.chat.id, text, abort_heist);
-											return;
-										}
-
-										var query = "";
-										var method = 0;
-										if (answer.text == "Invia Piedelesto") {
-											method = 1;
-											setAchievement(from_id, 58, 1);
-										} else if (answer.text == "Invia Occhiofurbo") {
-											method = 3;
-											setAchievement(from_id, 85, 1);
-										} else if (answer.text == "Invia Testacalda") {
-											method = 2;
-											setAchievement(from_id, 86, 1);
-										} else
-											return;
-
-										//Secondi (massimo 6*600 + 100)
-										var totTime = (grade * 900);
-										var rate = 50;
-
-										if (method == 1) {
-											totTime = Math.round(totTime * 0.6);
-											rate = 40;
-										} else if (method == 3) {
-											totTime = Math.round(totTime * 1.2);
-											rate = 60;
-										}
-
-										if (wanted == 1)
-											totTime = Math.round(totTime / 1.5);
-
-										if (crazyMode == 1)
-											totTime = Math.round(totTime / 2);
-
-										/*
-										if (global_end == 1) {
-											totTime = Math.round(totTime / 2);
-										}
-										*/
-
-										if (boost_id == 9) {
-											setBoost(from_id, boost_mission, boost_id);
-											totTime = Math.round(totTime / 2);
-										}
-
-										if (isWanted == 1)
-											totTime = (Math.round(Math.random() * 10 + 5) * method) * 60;
-
-										var now = new Date();
-										now.setSeconds(now.getSeconds() + totTime);
-										var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
-										var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
-
-										connection.query('INSERT INTO heist (from_id, to_id, datetime, rate, grade, matchmaking) ' +
-														 'VALUES (' + from_id + ',' + to_id + ',"' + long_date + '",' + rate + ',' + grade + ',' + isMatch + ')',
-														 function (err, rows, fields) {
-											if (err) throw err;
-											if (isWanted == 0)
-												bot.sendMessage(message.chat.id, "Hai inviato il tuo gnomo esploratore all'ispezione del rifugio selezionato, torna alle " + short_date + " per risolvere il dilemma del rifugio e cercare di ottenere una 🗝", abort_heist);
-											else
-												bot.sendMessage(message.chat.id, "Hai inviato il tuo gnomo esploratore alla cattura del ricercato, torna alle " + short_date + " per scoprirne l'esito", back);
-										});
-										if (isWanted == 0) {
-											connection.query('UPDATE player SET heist_count = heist_count+1 WHERE id = ' + from_id, function (err, rows, fields) {
+											connection.query('SELECT id FROM heist_progress WHERE from_id = ' + from_id, function (err, rows, fields) {
 												if (err) throw err;
+												if (Object.keys(rows).length > 0) {
+													bot.sendMessage(message.chat.id, "Stai svolgendo un ispezione, completala prima di iniziarne un'altra", kbBack);
+													return;
+												}
+
+												connection.query('SELECT datetime FROM heist WHERE from_id = ' + from_id, function (err, rows, fields) {
+													if (err) throw err;
+													if (Object.keys(rows).length > 0) {
+														var date = new Date(rows[0].datetime);
+														var short_date = addZero(date.getHours()) + ":" + addZero(date.getMinutes());
+														var text = "Ispezione in corso fino alle " + short_date;
+														if (wanted == 0)
+															bot.sendMessage(message.chat.id, text, back);
+														else
+															bot.sendMessage(message.chat.id, text, abort_heist);
+														return;
+													}
+
+													var query = "";
+													if (method == 1)
+														setAchievement(from_id, 58, 1);
+													else if (method == 3)
+														setAchievement(from_id, 85, 1);
+													else if (method == 2)
+														setAchievement(from_id, 86, 1);
+													else {
+														bot.sendMessage(message.chat.id, "Gnomo non valido, riprova", back);
+														return;
+													}
+
+													//Secondi (massimo 6*600 + 100)
+													var totTime = (grade * 900);
+													var rate = 50;
+
+													if (method == 1) {
+														totTime = Math.round(totTime * 0.6);
+														rate = 40;
+													} else if (method == 3) {
+														totTime = Math.round(totTime * 1.2);
+														rate = 60;
+													}
+
+													if (wanted == 1)
+														totTime = Math.round(totTime / 1.5);
+
+													if (crazyMode == 1)
+														totTime = Math.round(totTime / 2);
+
+													/*
+													if (global_end == 1) {
+														totTime = Math.round(totTime / 2);
+													}
+													*/
+
+													if (boost_id == 9) {
+														setBoost(from_id, boost_mission, boost_id);
+														totTime = Math.round(totTime / 2);
+													}
+
+													if (isWanted == 1)
+														totTime = (Math.round(Math.random() * 10 + 5) * method) * 60;
+
+													var now = new Date();
+													now.setSeconds(now.getSeconds() + totTime);
+													var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
+													var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
+
+													connection.query('INSERT INTO heist (from_id, to_id, datetime, rate, grade, matchmaking) VALUES (' + from_id + ',' + to_id + ',"' + long_date + '",' + rate + ',' + grade + ',' + isMatch + ')', function (err, rows, fields) {
+														if (err) throw err;
+														if (isWanted == 0)
+															bot.sendMessage(message.chat.id, "Hai inviato il tuo gnomo esploratore all'ispezione del rifugio selezionato, torna alle " + short_date + " per risolvere il dilemma del rifugio e cercare di ottenere una 🗝", abort_heist);
+														else
+															bot.sendMessage(message.chat.id, "Hai inviato il tuo gnomo esploratore alla cattura del ricercato, torna alle " + short_date + " per scoprirne l'esito", back);
+													});
+													if (isWanted == 0) {
+														connection.query('UPDATE player SET heist_count = heist_count+1 WHERE id = ' + from_id, function (err, rows, fields) {
+															if (err) throw err;
+														});
+													}
+												});
 											});
 										}
-									});
+									}
 								});
 							};
 						});
