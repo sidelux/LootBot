@@ -45722,10 +45722,10 @@ function changeTapPrice() {
 
 function setTapPrice(element, index, array) {
 	var player_id = element.id;
-	var tap_price = Math.round(getRandomArbitrary(1000, 2000));
+	var tap_price = Math.round(getRandomArbitrary(10000, 20000));
 	var rand = Math.random()*100;
 	if (rand <= 5)
-		tap_price = Math.round(getRandomArbitrary(500, 2500));
+		tap_price = Math.round(getRandomArbitrary(5000, 25000));
 	connection.query("UPDATE player SET tap_price = " + tap_price + " WHERE id = " + player_id, function (err, rows, fields) {
 		if (err) throw err;
 		console.log("Prezzo tappo aggiornato: " + tap_price);
