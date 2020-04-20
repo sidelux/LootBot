@@ -4372,7 +4372,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			func = "add";
 
 			if ((text == undefined) || (text == "") || (isNaN(code))) {
-				bot.sendMessage(message.chat.id, "Sintassi: /negozioa codice oggetto:prezzo:quantità,oggetto:prezzo:quantità,oggetto:prezzo:quantità.");
+				bot.sendMessage(message.chat.id, "Sintassi: /negozioa codice oggetto:prezzo:quantità,oggetto:prezzo:quantità,oggetto:prezzo:quantità.\n\nSimboli:\n# - Imposta la privacy\n! - Imposta la vendita massiva\n* - Imposta la protezione\n? - Imposta l'auto cancellazione quando vuoto");
 				return;
 			}
 		} else if ((message.text.indexOf("negozior") != -1) && (message.text.indexOf("negozioref") == -1)){
@@ -9048,6 +9048,11 @@ bot.onText(/^\/vette/, function (message) {
 				}
 				
 				var top_id = rows[0].top_id;
+				
+				if (top_id == 0) {
+					bot.sendMessage(message.chat.id, "Accedi ad un Monte per utilizzare questo comando.");
+					return;
+				}
 				
 				connection.query('SELECT name FROM dragon_top_list WHERE id = ' + top_id, function (err, rows, fields) {
 					if (err) throw err;

@@ -217,6 +217,10 @@ var j10 = Schedule.scheduleJob('0 0 * * 1', function () {
 	resetShopLimit();
 });
 
+var j11 = Schedule.scheduleJob('01 12 * * *', function () {	// 12:01 di giorno
+	changeTapPrice();
+});
+
 callNTimes(20000, function () { //20 secondi
 	if (checkDragonTopOn == 1)
 		checkDragonSearch();
@@ -9448,7 +9452,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							keyboard: [["1", "2", "3"], ["4", "5", "6"], ["🍵", "❣️", "❤️"], ["Scappa"], ["Torna al menu"]]
+							keyboard: [["1", "2", "3"], ["4", "5", "6"], ["❣️", "🍵", "❤️"], ["Scappa"], ["Torna al menu"]]
 						}
 					};
 
@@ -13623,8 +13627,12 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														var qnt = 5;
 														if (cursed == 1)
 															qnt = 10;
+														
+														var poss = "";
+														if (getItemCnt(player_id, 72) >= qnt)
+															poss = " ✅";
 
-														bot.sendMessage(message.chat.id, "Entri in una stanza che non ha affatto le sembianze di una stanza, piuttosto un grosso parco, al centro una ragazza circondata da Draghi, si tratta di un *Mercante Draconico*, fornisce oggetti utili al proprio drago in cambio di " + qnt + "x Pietre Cuore Leggendario.\nStavolta vuole scambiare *" + item1_name + "*, accetti l'offerta?", dOptions).then(function () {
+														bot.sendMessage(message.chat.id, "Entri in una stanza che non ha affatto le sembianze di una stanza, piuttosto un grosso parco, al centro una ragazza circondata da Draghi, si tratta di un *Mercante Draconico*, fornisce oggetti utili al proprio drago in cambio di " + qnt + "x Pietre Cuore Leggendario" + poss + ".\nStavolta vuole scambiare *" + item1_name + "*, accetti l'offerta?", dOptions).then(function () {
 															answerCallbacks[message.chat.id] = function (answer) {
 																if (answer.text.toLowerCase() == "si") {
 
@@ -15189,7 +15197,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																			if ((critical_rand <= en_crit) && (paralyzed == 0)) {
 																				damage = damage * 2;
 																				en_crit_bool = 1;
-																				en_crit_txt = " CRITICI ";
+																				en_crit_txt = " CRITICI";
 																			}
 
 																			if (damage <= 0)
@@ -39735,7 +39743,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 											parse_mode: "Markdown",
 											reply_markup: {
 												resize_keyboard: true,
-												keyboard: [["Conferma"], ["Cerca " + item_name], ["Torna all'Albero"], ["Torna al menu"]]
+												keyboard: [["Conferma"], ["Cerca *" + item_name], ["Torna all'Albero"], ["Torna al menu"]]
 											}
 										};
 
@@ -47697,7 +47705,7 @@ function cercaTermine(message, param, player_id) {
 			}
 
 			if (param.toLowerCase() == "armi") {
-				connection.query('SELECT id, name, rarity, power FROM item WHERE power > 0 ORDER BY name', function (err, rows, fields) {
+				connection.query('SELECT id, name, rarity, power, critical FROM item WHERE power > 0 ORDER BY name', function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0) {
 						var bottext = "Risultati per categoria '" + param + "':\n";
@@ -47708,7 +47716,7 @@ function cercaTermine(message, param, player_id) {
 							else if ((rows[i].id == 638) || (rows[i].id == 639) || (rows[i].id == 640) || (rows[i].id == 754))
 								rows[i].power = calcNecro(300, lev, reb, 2);
 
-							bottext = bottext + rows[i].name + " (" + rows[i].rarity + ")   +" + rows[i].power + "\n";
+							bottext = bottext + rows[i].name + " (" + rows[i].rarity + ") +" + rows[i].power + ", " + rows[i].critical + "\n";
 							iKeys.push(["Cerca " + rows[i].name]);
 						}
 
@@ -47731,7 +47739,7 @@ function cercaTermine(message, param, player_id) {
 				return;
 			}
 			if (param.toLowerCase() == "armature") {
-				connection.query('SELECT id, name, rarity, power_armor FROM item WHERE power_armor < 0 ORDER BY name', function (err, rows, fields) {
+				connection.query('SELECT id, name, rarity, power_armor, critical FROM item WHERE power_armor < 0 ORDER BY name', function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0) {
 						var bottext = "Risultati per categoria '" + param + "':\n";
@@ -47742,7 +47750,7 @@ function cercaTermine(message, param, player_id) {
 							else if ((rows[i].id == 688) || (rows[i].id == 689) || (rows[i].id == 690) || (rows[i].id == 790))
 								rows[i].power_armor = -Math.abs(calcNecro(250, lev, reb, 2));
 
-							bottext = bottext + rows[i].name + " (" + rows[i].rarity + ")   " + rows[i].power_armor + "\n";
+							bottext = bottext + rows[i].name + " (" + rows[i].rarity + ")   " + rows[i].power_armor + ", " + rows[i].critical + "\n";
 							iKeys.push(["Cerca " + rows[i].name]);
 						}
 
@@ -47765,7 +47773,7 @@ function cercaTermine(message, param, player_id) {
 				return;
 			}
 			if (param.toLowerCase() == "scudi") {
-				connection.query('SELECT id, name, rarity, power_shield FROM item WHERE power_shield < 0 ORDER BY name', function (err, rows, fields) {
+				connection.query('SELECT id, name, rarity, power_shield, critical FROM item WHERE power_shield < 0 ORDER BY name', function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length > 0) {
 						var bottext = "Risultati per categoria '" + param + "':\n";
@@ -47776,7 +47784,7 @@ function cercaTermine(message, param, player_id) {
 							else if ((rows[i].id == 671) || (rows[i].id == 672) || (rows[i].id == 673) || (rows[i].id == 791))
 								rows[i].power_shield = -Math.abs(calcNecro(250, lev, reb, 2));
 
-							bottext = bottext + rows[i].name + " (" + rows[i].rarity + ")   " + rows[i].power_shield + "\n";
+							bottext = bottext + rows[i].name + " (" + rows[i].rarity + ")   " + rows[i].power_shield + ", " + rows[i].critical + "\n";
 							iKeys.push(["Cerca " + rows[i].name]);
 						}
 
