@@ -7240,15 +7240,27 @@ bot.onText(/attacca!/i, function (message) {
 
 										if (lost_money > money)
 											lost_money = money;
+										
+										if (enemy_battle_stunned != 0) {
+											lost_money = 0;
+											my_dmg = 0;
+										}
 
 										if ((lost_money > 0) && (life-my_dmg > 0)) {	// se non perdo monete e sono ancora vivo
 											extra_lost_money = " oltre a " + formatNumber(lost_money) + " §";
 											query += ", money = money-" + lost_money;
 											enemy_query += ", money = money+" + lost_money;
 										}
+										
+										var dmg_extra = "";
+										var enemy_dmg_extra = "";
+										if (my_dmg > 0) {
+											dmg_extra = " Ma durante il tentativo l'avversario ti colpisce alle spalle e perdi <b>" + formatNumber(my_dmg) + "</b> hp" + extra_lost_money + "!";
+											enemy_dmg_extra = " Ma durante il tentativo riesci a colpirlo alle spalle e perde <b>" + formatNumber(my_dmg) + "</b> hp" + extra_lost_money + "!";
+										}
 
-										text += "Tenti di scappare dallo scontro senza successo! Ma durante il tentativo l'avversario ti colpisce alle spalle e perdi <b>" + formatNumber(my_dmg) + "</b> hp" + extra_lost_money + "!";
-										enemy_text += "L'avversario tenta di scappare dallo scontro senza successo! Ma durante il tentativo riesci a colpirlo alle spalle e perde <b>" + formatNumber(my_dmg) + "</b> hp" + extra_lost_money + "!";
+										text += "Tenti di scappare dallo scontro senza successo!" + dmg_extra;
+										enemy_text += "L'avversario tenta di scappare dallo scontro senza successo!" + enemy_dmg_extra;
 									}
 								} else
 									return;
@@ -15598,8 +15610,12 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																										connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
 																											if (err) throw err;
 																											if (Object.keys(rows).length > 0) {
-																												connection.query('UPDATE team SET dungeon_count = dungeon_count+1 WHERE id = ' + rows[0].team_id, function (err, rows, fields) {
+																												var team_id = rows[0].team_id;
+																												connection.query('SELECT rooms FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 																													if (err) throw err;
+																													connection.query('UPDATE team SET dungeon_count = dungeon_count+1, dungeon_room_count = dungeon_room_count+' + rows[0].rooms + ' WHERE id = ' + team_id, function (err, rows, fields) {
+																														if (err) throw err;
+																													});
 																												});
 																											}
 																										});
@@ -22416,6 +22432,7 @@ bot.onText(/team/i, function (message) {
 				var team_craft = rows[0].craft_count;
 				var team_week_craft = rows[0].craft_week_count;
 				var team_dungeon_count = rows[0].dungeon_count;
+				var team_dungeon_room_count = rows[0].dungeon_room_count;
 				var team_players = rows[0].players;
 				var team_details = rows[0].details;
 				var team_max_players = rows[0].max_players;
@@ -22679,7 +22696,7 @@ bot.onText(/team/i, function (message) {
 										text += "👥 " + team_players + "/" + team_max_players + "\n";
 										text += "🐗 " + formatNumber(team_boss_count) + " Boss Sconfitti\n";
 										text += "📦 " + formatNumber(team_craft) + " Punti Creazione (" + formatNumber(team_week_craft) + " settimanali)\n";
-										text += "🛡 " + formatNumber(team_dungeon_count) + " Dungeon\n";
+										text += "🛡 " + formatNumber(team_dungeon_count) + " Dungeon (" + formatNumber(team_dungeon_room_count) + " stanze)\n";
 										text += "📊 " + team_kill_num + " Scalate\n";
 										text += "🐺 " + team_assault_completed + "/" + team_assault_lost + " Assalti\n";
 										text += "📜 " + formatNumber(team_mission_count) + " Incarichi (" + formatNumber(team_mission_week_count) + " settimanali)\n";
@@ -28438,7 +28455,7 @@ bot.onText(/Hall of Fame/i, function (message) {
 		connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 			if (err) throw err;
 			var desc = "\n\nIl calcolo tiene conto del tempo trascorso negli Incarichi, dei punti creazione del team, dei dungeon completati in team e degli Assalti completati con successo.";
-			var query = "SELECT name As name, ((500*mission_time_count)+(craft_count)+(3000*boss_count)+(125000*(A.completed+kill_num))+(dungeon_count*250)) As pnt FROM team T LEFT JOIN assault A ON T.id = A.team_id GROUP BY T.id ORDER BY pnt DESC";
+			var query = "SELECT name As name, ((500*mission_time_count)+(craft_count)+(3000*boss_count)+(125000*(A.completed+kill_num))+(dungeon_room_count)) As pnt FROM team T LEFT JOIN assault A ON T.id = A.team_id GROUP BY T.id ORDER BY pnt DESC";
 			if (rows[0].top_min == 1) {
 				connection.query(query, function (err, rows, fields) {
 					if (err) throw err;
@@ -52987,10 +53004,19 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 					if (err) throw err;
 
 					var pos = lobby_total_space-rows[0].cnt;
-
-					connection.query('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, cause, position, kills, life, penality_escape, penality_restrict) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + player_id + ', ' + cause + ', ' + pos + ', ' + match_kills + ', ' + life + ', ' + is_escaped + ', ' + penality_restrict + ')', function (err, rows, fields) {
-						// if (err) throw err; // per errore duplicazione righe
-
+					
+					connection.query('SELECT COUNT(id) As cnt FROM map_history WHERE map_lobby_id = ' + map_lobby_id + ' AND player_id = ' + player_id,  function (err, rows, fields) {
+						if (err) throw err;
+						
+						// se già presente nella history lo toglie dalla lobby
+						if (rows[0].cnt == 0) {
+							connection_sync.query('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, cause, position, kills, life, penality_escape, penality_restrict) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + player_id + ', ' + cause + ', ' + pos + ', ' + match_kills + ', ' + life + ', ' + is_escaped + ', ' + penality_restrict + ')');
+						} else {
+							connection.query('UPDATE map_lobby SET lobby_id = NULL, lobby_enter_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+							});
+						}
+						
 						// concludi
 						connection.query("UPDATE player SET death_count = death_count+1 WHERE id = " + player_id, function (err, rows, fields) {
 							if (err) throw err;
