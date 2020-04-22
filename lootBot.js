@@ -53008,19 +53008,16 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 					connection.query('SELECT COUNT(id) As cnt FROM map_history WHERE map_lobby_id = ' + map_lobby_id + ' AND player_id = ' + player_id,  function (err, rows, fields) {
 						if (err) throw err;
 						
-						// se già presente nella history lo toglie dalla lobby
+						// se non è salvato lo aggiunge alla history
 						if (rows[0].cnt == 0) {
 							connection_sync.query('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, cause, position, kills, life, penality_escape, penality_restrict) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + player_id + ', ' + cause + ', ' + pos + ', ' + match_kills + ', ' + life + ', ' + is_escaped + ', ' + penality_restrict + ')');
-						} else {
-							connection.query('UPDATE map_lobby SET lobby_id = NULL, lobby_enter_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-								if (err) throw err;
-							});
 						}
 						
 						// concludi
 						connection.query("UPDATE player SET death_count = death_count+1 WHERE id = " + player_id, function (err, rows, fields) {
 							if (err) throw err;
 						});
+						// imposta killed invece che cancellare la riga perchè poi si deve uscire a mano
 						connection.query('UPDATE map_lobby SET killed = 1, my_turn = 0, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_turn_start = NULL, battle_time_elapsed = 0, battle_turn_lost = 0, battle_turn_active = 0, battle_time_elapsed = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 
@@ -57013,9 +57010,10 @@ bot.onText(/^\/incarico/, function (message, match) {
 			var short_date = addZero(mission_time_end.getHours()) + ":" + addZero(mission_time_end.getMinutes());
 			var mission_time_limit = new Date(rows[0].mission_time_limit);
 			var short_date_limit = addZero(mission_time_limit.getHours()) + ":" + addZero(mission_time_limit.getMinutes());
+			var new_part_id = part_id+1;
 
 			if (rows[0].wait == 0) {
-				bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nSiete alla <b>" + (part_id+1) + "</b> scelta e la prossima inizierà alle alle <i>" + short_date + "</i>!\nL'incarico scadrà alle " + short_date_limit, back_html);
+				bot.sendMessage(message.chat.id, "<b>Incarico in corso</b> (" + new_part_id + "a scelta)\n\nSiete alla <b>" + (part_id+1) + "</b> scelta e la prossima inizierà alle alle <i>" + short_date + "</i>!\nL'incarico scadrà alle " + short_date_limit, back_html);
 			} else if (rows[0].wait == 1) {
 				//console.log("Richiamo manuale incarico per party " + party_id + " e team " + team_id);
 
