@@ -53010,7 +53010,9 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 						
 						// se non è salvato lo aggiunge alla history
 						if (rows[0].cnt == 0) {
-							connection_sync.query('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, cause, position, kills, life, penality_escape, penality_restrict) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + player_id + ', ' + cause + ', ' + pos + ', ' + match_kills + ', ' + life + ', ' + is_escaped + ', ' + penality_restrict + ')');
+							connection.query('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, cause, position, kills, life, penality_escape, penality_restrict) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + player_id + ', ' + cause + ', ' + pos + ', ' + match_kills + ', ' + life + ', ' + is_escaped + ', ' + penality_restrict + ')',   function (err, rows, fields) {
+								if (err) throw err;
+							});
 						}
 						
 						// concludi
@@ -55272,7 +55274,7 @@ function setEvents(element, index, array) {
 		var winterMonths = [12, 1, 2, 3, 4, 5];
 		var summerMonths = [6, 7, 8, 9, 10, 11];
 		var now = new Date();
-		var month = now.getMonth+1;
+		var month = now.getMonth()+1;
 		var hotcold = "";
 		if (winterMonths.indexOf(month) != -1)
 			hotcold = "freddo";
@@ -57782,7 +57784,7 @@ function setFullLobby(element, index, array) {
 				var flari_active = 1;
 
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					connection.query('UPDATE map_lobby SET lobby_enter_time = NULL, killed = 0, weapon_id = 13, weapon2_id = 56, weapon3_id = 26, posX = ' + posArr[i][0] + ', posY = ' + posArr[i][1] + ', life = ' + life + ', total_life = ' + life + ', money = 0, scrap = 0 WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
+					connection.query('UPDATE map_lobby SET lobby_enter_time = NULL, killed = 0, weapon_id = 13, weapon2_id = 56, weapon3_id = 26, posX = ' + posArr[i][0] + ', posY = ' + posArr[i][1] + ', life = ' + life + ', total_life = ' + life + ', money = 0, scrap = 0, battle_time_elapsed = 0, battle_turn_start = NULL WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
 						if (err) throw err;
 					});
 
