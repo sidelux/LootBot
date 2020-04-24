@@ -6329,7 +6329,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 
 											var query = 'SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg, L2.id FROM map_lobby L LEFT JOIN map_lobby_list L2 ON L.lobby_id = L2.lobby_id, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL AND L2.id IS NULL AND L.lobby_training = 0 GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY RAND()';
 											if (trainingLobby == 1)
-												query = 'SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg, L2.id FROM map_lobby L LEFT JOIN map_lobby_list L2 ON L.lobby_id = L2.lobby_id, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL AND L2.id IS NULL AND L.lobby_training = 1 GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY cnt DESC';
+												query = 'SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg, L2.id FROM map_lobby L LEFT JOIN map_lobby_list L2 ON L.lobby_id = L2.lobby_id, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL AND L2.id IS NULL AND L.lobby_training = 1 GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY cnt DESC LIMIT 1';
 
 											connection.query(query, function (err, rows, fields) {
 												if (err) throw err;
@@ -6363,9 +6363,6 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 														});
 														index = counts.indexOf(closest);
 													}
-
-													if (trainingLobby == 1)
-														index = 0;	// usa solo una lobby per l'allenamento
 
 													lobby_id = lobbies[index];
 													var members_cnt = members[index];
@@ -10856,9 +10853,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	bot.sendMessage(message.chat.id, "Spingendo una leva senti degli strani rumori, ma non succede nulla!", dNext);
 															} else if ((rand > 50) && (rand <= 90)) {
 																room_id++;
+																setAchievement(player_id, 73, 1);
 																bot.sendMessage(message.chat.id, "Tiri la leva verso di te ed in una parete si apre uno stretto varco: strisciando in un tunnel claustrofobico riesci a raggiungere la stanza successiva.", dNext);
 															} else if (rand > 90) {
 																room_id += 2;
+																setAchievement(player_id, 73, 1);
 																bot.sendMessage(message.chat.id, "Tiri la leva verso di te ed una parete si apre in un gran fragore: è una scorciatoia che ti permette di superare 2 stanze!", dNext);
 															}
 															if (boost_id == 8)
@@ -22406,7 +22405,7 @@ bot.onText(/team/i, function (message) {
 			price_drop_msg = "*SOLO OGGI* ";
 		}
 
-		connection.query('SELECT team.id As team_id, name, slogan, mission_count, kill_num, boost_id, point, point_spent, craft_count, dungeon_count, players, details, max_players, boss_count, level, closed, mission_week_count, craft_week_count FROM team, team_player WHERE team.id = team_player.team_id AND player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT team.id As team_id, name, slogan, mission_count, kill_num, boost_id, point, point_spent, craft_count, dungeon_count, dungeon_room_count, players, details, max_players, boss_count, level, closed, mission_week_count, craft_week_count FROM team, team_player WHERE team.id = team_player.team_id AND player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
@@ -53008,20 +53007,27 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 					connection.query('SELECT COUNT(id) As cnt FROM map_history WHERE map_lobby_id = ' + map_lobby_id + ' AND player_id = ' + player_id,  function (err, rows, fields) {
 						if (err) throw err;
 						
+						console.log("Elaborazione uccisione di " + player_id);
+						
 						// se non è salvato lo aggiunge alla history
 						if (rows[0].cnt == 0) {
 							connection.query('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, cause, position, kills, life, penality_escape, penality_restrict) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + player_id + ', ' + cause + ', ' + pos + ', ' + match_kills + ', ' + life + ', ' + is_escaped + ', ' + penality_restrict + ')',   function (err, rows, fields) {
 								if (err) throw err;
 							});
-						}
+							console.log("Aggiunto a map_history");
+						} else
+							console.log("Salto aggiunta a map_history perchè già presente");
 						
 						// concludi
 						connection.query("UPDATE player SET death_count = death_count+1 WHERE id = " + player_id, function (err, rows, fields) {
 							if (err) throw err;
 						});
+						
 						// imposta killed invece che cancellare la riga perchè poi si deve uscire a mano
 						connection.query('UPDATE map_lobby SET killed = 1, my_turn = 0, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_turn_start = NULL, battle_time_elapsed = 0, battle_turn_lost = 0, battle_turn_active = 0, battle_time_elapsed = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
+							
+							console.log("Impostato killed = 1");
 
 							if (check_next) {
 								// player_id sono io che sono appena stato sconfitto
