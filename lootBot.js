@@ -266,6 +266,7 @@ callNTimes(60000, function () { //Ogni 1 minuto
 	checkMapElapsed();
 	checkLobbyEnter();
 	checkLobbyLeave();
+	fixPlayerKilled();
 
 	if (checkDragonTopOn == 0)
 		checkTopSeasonStart();
@@ -57753,6 +57754,46 @@ function setBattleTimeElapsed(element, index, array) {
 		connection.query('UPDATE map_lobby SET battle_timeout = NULL WHERE player_id IN (' + player_id + ', ' + enemy_id + ')', function (err, rows, fields) {
 			if (err) throw err;
 		});
+	});
+}
+
+function fixPlayerKilled() {
+	connection.query('SELECT M.player_id, M.life, M.match_kills, M.is_escaped, LL.id As map_lobby_id, LL.lobby_training FROM map_lobby M, map_lobby_list LL WHERE M.lobby_id = LL.lobby_id AND M.killed = 1', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length == 1)
+				console.log(getNow("it") + "\x1b[32m 1 fix giocatore lobby\x1b[0m");
+			else
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " fix giocatori lobby\x1b[0m");
+			rows.forEach(setFixPlayerKilled);
+		}
+	});
+};
+
+function setFixPlayerKilled(element, index, array) {
+	var player_id = element.player_id;
+	var map_lobby_id = element.map_lobby_id;
+	var lobby_training = element.lobby_training;
+	var match_kills = element.match_kills;
+	var life = element.life;
+	var is_escaped = element.is_escaped;
+	var penality_restrict = 0;
+	
+	connection.query('SELECT 1 FROM map_history WHERE map_lobby_id = ' + map_lobby_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+		
+		if (Object.keys(rows).length == 0) {
+			connection.query('SELECT COUNT(id) As cnt FROM map_history WHERE map_lobby_id = ' + map_lobby_id,  function (err, rows, fields) {
+				if (err) throw err;
+
+				var pos = lobby_total_space-rows[0].cnt;
+				
+				connection.query('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, cause, position, kills, life, penality_escape, penality_restrict) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + player_id + ', 2, ' + pos + ', ' + match_kills + ', ' + life + ', ' + is_escaped + ', ' + penality_restrict + ')',   function (err, rows, fields) {
+					if (err) throw err;
+				});
+				console.log("setFixPlayerKilled", player_id);
+			});
+		}
 	});
 }
 
