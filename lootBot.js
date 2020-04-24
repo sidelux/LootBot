@@ -51463,12 +51463,11 @@ function getTeamMembers(answerText) {
 	var cnt = 0;
 	var child_id = main_id;
 	while (end == 0) {
-		console.log(child_id);
 		acc = connection_sync.query('SELECT id, name, child_team FROM team WHERE id = ' + child_id);
 		if (Object.keys(acc).length == 0)
 			end = 1;
 		else {
-			if (cnt == 0)
+			if (acc[0].id == team_id)
 				team_list += "<b>" + acc[0].name + "</b>\n";
 			else
 				team_list += acc[0].name + "\n";
