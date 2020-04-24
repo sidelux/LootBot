@@ -8056,7 +8056,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 					bot.sendMessage(message.chat.id, "👥 " + total_players_alive + " su " + lobby_total_space + " sopravvissuti\n❤️ " + formatNumber(life) + wait_text + restrict_text + boost_text + "\n" + map, kbSel).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
-							if ((answer.text == "Torna al menu") || (answer.text.toLowerCase().indexOf("aggiorna") != -1))
+							if ((answer.text == "Torna alla mappa") || (answer.text == "Torna al menu") || (answer.text.toLowerCase().indexOf("aggiorna") != -1))
 								return;
 
 							connection.query('SELECT killed FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -51445,20 +51445,33 @@ function getTeamMembers(answerText) {
 		text += rows[i].nickname + " " + rebSym(rows[i].reborn) + " (" + Math.floor(rows[i].exp / 10) + ")" + admin + "\n";
 	}
 		
-	var team_list = "\n<b>Catena Team</b>:\n<b>" + team_name + "</b>\n";
+	var team_list = "\n<b>Catena Team</b>:\n";
 	var end = 0;
+	
+	var main;
+	var main_id = team_id;
+	while (end == 0) {
+		main = connection_sync.query('SELECT id FROM team WHERE child_team = ' + main_id);
+		if (Object.keys(main).length == 0)
+			end = 1;
+		else
+			main_id = main[0].id;
+	}
+	
+	end = 0;
 	var acc;
 	var cnt = 0;
+	var child_id = main_id;
 	while (end == 0) {
+		console.log(child_id);
 		acc = connection_sync.query('SELECT id, name, child_team FROM team WHERE id = ' + child_id);
 		if (Object.keys(acc).length == 0)
 			end = 1;
 		else {
-			if (team_name == acc[0].name) {
-				end = 1;
-				break;
-			}
-			team_list += acc[0].name + "\n";
+			if (cnt == 0)
+				team_list += "<b>" + acc[0].name + "</b>\n";
+			else
+				team_list += acc[0].name + "\n";
 			child_id = acc[0].child_team;
 			cnt++;
 			end = 0;
@@ -57417,7 +57430,7 @@ function destroyLobby(lobby_id) {
 }
 
 function checkLobbyEnter() {
-	connection.query('SELECT player_id FROM map_lobby WHERE DATE_ADD(lobby_enter_time, INTERVAL 30 MINUTE) < NOW()', function (err, rows, fields) {
+	connection.query('SELECT lobby_id, player_id FROM map_lobby WHERE DATE_ADD(lobby_enter_time, INTERVAL 30 MINUTE) < NOW()', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
@@ -57431,12 +57444,20 @@ function checkLobbyEnter() {
 
 function setLobbyEnter(element, index, array) {
 	var player_id = element.player_id;
+	var lobby_id = element.lobby_id;
 
-	connection.query('SELECT chat_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+	connection.query('SELECT COUNT(id) FROM map_lobby WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 		if (err) throw err;
-		bot.sendMessage(rows[0].chat_id, "Il tempo di ricerca nella lobby è scaduto, accedi di nuovo!");
-		connection.query('UPDATE map_lobby SET lobby_id = NULL, lobby_training = 0, lobby_enter_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+		if (rows[0].cnt == lobby_total_space) {
+			console.log("Salto per lobby piena");
+			return;
+		}
+		connection.query('SELECT chat_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
+			bot.sendMessage(rows[0].chat_id, "Il tempo di ricerca nella lobby è scaduto, accedi di nuovo!");
+			connection.query('UPDATE map_lobby SET lobby_id = NULL, lobby_training = 0, lobby_enter_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
 		});
 	});
 }
