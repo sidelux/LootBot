@@ -57877,7 +57877,7 @@ function setFinishedLobbyEnd(element, index, array) {
 					connection_sync.query('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + winner_player_id + ', 1, ' + winner_match_kills + ')');
 				}
 
-				connection.query('SELECT M.id As mapId, P.id, P.chat_id, P.nickname, P.trophies, M.position, M.kills, M.life, M.penality_escape, M.penality_restrict, P.map_count, P.global_end FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position ASC, kills DESC, life DESC, insert_date DESC', function (err, rows, fields) {
+				connection.query('SELECT M.id As mapId, P.id, P.chat_id, P.nickname, P.trophies, M.position, M.kills, M.life, M.penality_escape, M.penality_restrict, P.map_count, P.global_end FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position ASC, life DESC, kills DESC, insert_date DESC', function (err, rows, fields) {
 					if (err) throw err;
 
 					var list = "";
