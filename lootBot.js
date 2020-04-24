@@ -57445,8 +57445,9 @@ function setLobbyEnter(element, index, array) {
 	var player_id = element.player_id;
 	var lobby_id = element.lobby_id;
 
-	connection.query('SELECT COUNT(id) FROM map_lobby WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+	connection.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 		if (err) throw err;
+		console.log("Controllo lobby", rows[0].cnt, lobby_total_space);
 		if (rows[0].cnt == lobby_total_space) {
 			console.log("Salto per lobby piena");
 			return;
