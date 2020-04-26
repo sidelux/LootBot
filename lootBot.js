@@ -33373,12 +33373,14 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 					poss = " ✅";
 				else {
 					var material_result = connection_sync.query('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item_id);
-
-					if (getItemCnt(player_id, material_result[0].material_1) > 0 &&
-						getItemCnt(player_id, material_result[0].material_2) > 0 &&
-						getItemCnt(player_id, material_result[0].material_3) > 0) {
-						poss = " ☑️";
-						addCreate = 1;
+					
+					if (material_result[0] != undefined) {
+						if (getItemCnt(player_id, material_result[0].material_1) > 0 &&
+							getItemCnt(player_id, material_result[0].material_2) > 0 &&
+							getItemCnt(player_id, material_result[0].material_3) > 0) {
+							poss = " ☑️";
+							addCreate = 1;
+						}
 					}
 				}
 
@@ -37322,11 +37324,6 @@ bot.onText(/^vendi/i, function (message) {
 	if (oggetto.indexOf("(") != -1)
 		oggetto = oggetto.substring(0, oggetto.indexOf("(") - 1);
 
-	if (crazyMode == 1) {
-		bot.sendMessage(message.chat.id, "Durante il weekend folle non puoi vendere oggetti", back);
-		return;
-	}
-
 	if (message.text.toLowerCase() == "vendi")
 		return;
 
@@ -37367,6 +37364,12 @@ bot.onText(/^vendi/i, function (message) {
 		}
 
 		if ((oggetto == "C") || (oggetto == "NC") || (oggetto == "R") || (oggetto == "UR") || (oggetto == "L") || (oggetto == "E")) {
+			
+			if (crazyMode == 1) {
+				bot.sendMessage(message.chat.id, "Durante il weekend folle non puoi vendere oggetti", back);
+				return;
+			}
+			
 			bot.sendMessage(message.chat.id, "Sei veramente sicuro di voler vendere tutta la rarità " + oggetto + " alla metà del valore?\nIl coupon non funziona in questa modalità di vendita", yesno).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if (answer.text.toLowerCase() == "si") {
@@ -37473,6 +37476,11 @@ bot.onText(/^vendi/i, function (message) {
 					}
 				}
 			});
+			return;
+		}
+		
+		if (crazyMode == 1) {
+			bot.sendMessage(message.chat.id, "Durante il weekend folle non puoi vendere oggetti", back);
 			return;
 		}
 
@@ -50937,6 +50945,8 @@ function refreshMerchant(player_id) {
 			if (err) throw err;
 			connection.query('SELECT id, base_sum, price_sum, name, value FROM item WHERE estimate > 0 AND id != ' + rows[0].item_id + ' AND rarity IN ("C","NC","R","UR","L","E") AND craftable = 1 AND base_sum > 0 AND price_sum > 0 ORDER BY RAND()', function (err, rows, fields) {
 				if (err) throw err;
+				if (rows[0] == undefined)
+					return;
 				var val = parseInt(rows[0].base_sum);
 				var price_sum = parseInt(rows[0].price_sum);
 
@@ -51377,6 +51387,9 @@ function gnomorraStart(player_id, enemy_player_id, practice) {
 }
 
 function getTeamMembers(answerText) {
+	
+	// return "Questa funzione non è al momento disponibile";
+	
 	var query = 'LIKE "%' + answerText + '%"';
 	if (answerText.indexOf("*") != -1) {
 		answerText = answerText.replace("*", "");
@@ -51448,31 +51461,54 @@ function getTeamMembers(answerText) {
 		
 	var team_list = "\n<b>Catena Team</b>:\n";
 	var end = 0;
+	var limit = 10;
 	
 	var main;
+	var main_cnt = 0;
 	var main_id = team_id;
 	while (end == 0) {
 		main = connection_sync.query('SELECT id FROM team WHERE child_team = ' + main_id);
 		if (Object.keys(main).length == 0)
 			end = 1;
-		else
+		else {
+			if (main_cnt+1 >= limit) {
+				end = 1;
+				break;
+			}
+			if (main[0].id == team_id) {
+				end = 1;
+				break;
+			}
 			main_id = main[0].id;
+			main_cnt++;
+		}
 	}
 	
 	end = 0;
 	var acc;
 	var cnt = 0;
+	var first_child = null;
 	var child_id = main_id;
 	while (end == 0) {
 		acc = connection_sync.query('SELECT id, name, child_team FROM team WHERE id = ' + child_id);
 		if (Object.keys(acc).length == 0)
 			end = 1;
 		else {
+			if (cnt+1 >= limit) {
+				end = 1;
+				break;
+			}
+			if (acc[0].id == first_child) {
+				end = 1;
+				break;
+			}
 			if (acc[0].id == team_id)
 				team_list += "<b>" + acc[0].name + "</b>\n";
 			else
 				team_list += acc[0].name + "\n";
 			child_id = acc[0].child_team;
+			if (first_child == null)
+				first_child = acc[0].id;
 			cnt++;
 			end = 0;
 			if (acc[0].child_team == null) {
