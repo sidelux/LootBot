@@ -16976,7 +16976,7 @@ bot.onText(/^Incanta|Torna all'incantamento/i, function (message) {
 			status += "\n> Scudo Incantato +" + e3 + " " + numToMana(b3) + " (" + short_date + ")";
 		}
 
-		bot.sendMessage(message.chat.id, "Per incantare un oggetto dell'equipaggiamento ti serve una Runa E oppure 2 💎, aumenterai il valore dell'oggetto e la probabilità di lanciare incantesimi.\n" + status, kb);
+		bot.sendMessage(message.chat.id, "Per incantare un oggetto dell'equipaggiamento ti serve una Runa E (o di rarità superiore) oppure 2 💎, aumenterai il valore dell'oggetto e la probabilità di lanciare incantesimi.\n" + status, kb);
 	});
 });
 
@@ -33373,14 +33373,11 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 					poss = " ✅";
 				else {
 					var material_result = connection_sync.query('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item_id);
-					
-					if (material_result[0] != undefined) {
-						if (getItemCnt(player_id, material_result[0].material_1) > 0 &&
-							getItemCnt(player_id, material_result[0].material_2) > 0 &&
-							getItemCnt(player_id, material_result[0].material_3) > 0) {
-							poss = " ☑️";
-							addCreate = 1;
-						}
+					if (getItemCnt(player_id, material_result[0].material_1) > 0 &&
+						getItemCnt(player_id, material_result[0].material_2) > 0 &&
+						getItemCnt(player_id, material_result[0].material_3) > 0) {
+						poss = " ☑️";
+						addCreate = 1;
 					}
 				}
 
@@ -47153,7 +47150,7 @@ function mainMenu(message) {
 														}
 														if (travel_id > 0) {
 															var travel_end = new Date(travel_time_end);
-															msgtext = msgtext + "\n🗺 Viaggio fino alle " + addZero(travel_end.getHours()) + ":" + addZero(travel_end.getMinutes()) + " del " + addZero(travel_end.getDate()) + "/" + addZero(travel_end.getMonth() + 1) + "/" + travel_end.getFullYear();
+															msgtext = msgtext + "\n🧗 Viaggio fino alle " + addZero(travel_end.getHours()) + ":" + addZero(travel_end.getMinutes()) + " del " + addZero(travel_end.getDate()) + "/" + addZero(travel_end.getMonth() + 1) + "/" + travel_end.getFullYear();
 														}
 														if (cave_id > 0) {
 															var cave_end = new Date(cave_time_end);
@@ -50945,8 +50942,6 @@ function refreshMerchant(player_id) {
 			if (err) throw err;
 			connection.query('SELECT id, base_sum, price_sum, name, value FROM item WHERE estimate > 0 AND id != ' + rows[0].item_id + ' AND rarity IN ("C","NC","R","UR","L","E") AND craftable = 1 AND base_sum > 0 AND price_sum > 0 ORDER BY RAND()', function (err, rows, fields) {
 				if (err) throw err;
-				if (rows[0] == undefined)
-					return;
 				var val = parseInt(rows[0].base_sum);
 				var price_sum = parseInt(rows[0].price_sum);
 
