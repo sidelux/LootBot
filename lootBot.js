@@ -15245,7 +15245,10 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																			if ((critical_rand3 <= critical_shield) && (meParalyzed == 0)) {
 																				damage = 0;
 																				crit_bool3 = 1;
-																				crit_txt3 = " ed il colpo viene assorbito completamente dallo scudo";
+																				var dmg_part = "da una posizione difensiva";
+																				if (player_weapon3_id != 0)
+																					dmg_part = "completamente dallo scudo";
+																				crit_txt3 = " ed il colpo viene assorbito " + dmg_part;
 																				setAchievement(player_id, 32, 1);
 																			}
 
@@ -15815,12 +15818,15 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																					}
 
 																					if (damage == 0) {
+																						var dmg_part = "colpirti";
+																						if (player_weapon2_id != 0)
+																							dmg_part = "scalfire l'armatura";
 																						if (extra != "") {
-																							bot.sendMessage(message.chat.id, "Il mostro " + extra + ", ma il suo attacco successivo non riesce a scalfire l'armatura" + magic_txt2 + "!" + restored, dBattle);
+																							bot.sendMessage(message.chat.id, "Il mostro " + extra + ", ma il suo attacco successivo non riesce a " + dmg_part + magic_txt2 + "!" + restored, dBattle);
 																						} else if (magic == 1) {
 																							bot.sendMessage(message.chat.id, "Hai lanciato " + magicToName(1) + ", previeni il danno del mostro e ne rifletti una parte potenziando il tuo attacco (subisce *" + formatNumber(danno) + "* danni), inoltre ti curi di *" + formatNumber(heal) + "* hp", dBattle);
 																						} else {
-																							bot.sendMessage(message.chat.id, "Il mostro non riesce a scalfire l'armatura" + crit_txt3 + magic_txt2 + "!", dBattle);
+																							bot.sendMessage(message.chat.id, "Il mostro non riesce a " + dmg_part + crit_txt3 + magic_txt2 + "!", dBattle);
 																						}
 																					} else {
 																						if (extra != "")
