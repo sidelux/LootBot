@@ -6608,7 +6608,8 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 															mapIdToSym(10) + " Mappa bruciata - Se si capita in una casella bruciata, si viene sconfitti\n" +
 															mapIdToSym(11) + " Stanza Teletrasporto - Fornisce la scelta al giocatore se teletrasportarsi in un luogo casuale della mappa o su un giocatore avversario\n" +
 															mapIdToSym(12) + " Campo Paralizzante - Paralizza il giocatore costringendogli a ritardare la continuazione dell'esplorazione\n" +
-															mapIdToSym(13) + " Bevanda Boost - Riduce il tempo di attesa per il movimento per 3 turni, nel caso in cui si incontrasse un Campo Paralizzante la bevanda non avrà effetto e non ne sarà scalato un utilizzo\n\nUtilizza i pulsanti per leggere il resto", kbHelp).then(function () {
+															mapIdToSym(13) + " Bevanda Boost - Riduce il tempo di attesa per il movimento per 3 turni, nel caso in cui si incontrasse un Campo Paralizzante la bevanda non avrà effetto e non ne sarà scalato un utilizzo\n\nUtilizza i pulsanti per leggere il resto\n" +
+															mapIdToSym(14) + " Combattimento in corso - Indica che nella casella si sta svolgendo un combattimento tra due giocatori", kbHelp).then(function () {
 												answerCallbacks[message.chat.id] = function (answer) {
 													if (answer.text == "Base") {
 														bot.sendMessage(message.chat.id, "\n<b>Istruzioni base</b>" +
@@ -10643,12 +10644,24 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															if (player_rank == 0)
 																player_rank = 1;
 															var randC = Math.random()*100;
+															var rand = Math.round(Math.random() * (player_rank * 100)) + (player_rank * 100);
+															if (cursed == 1)
+																rand = rand*2;
 															if (randC < 30) {
 																bot.sendMessage(message.chat.id, "Corri verso il mucchietto ma mentre ti avvicini vedi un altro avventuriero arraffartelo da sotto il naso! Prosegui alla prossima stanza con un po' di tristezza negli occhi", dNext);
+																
+																connection.query('SELECT P.id, P.chat_id FROM dungeon_status D, player P WHERE D.player_id = P.id AND P.id != ' + player_id + ' AND dungeon_id = ' + dungeon_id + ' AND room_time IS NOT NULL', function (err, rows, fields) {
+																	if (err) throw err;
+																	if (Object.keys(rows).length > 0) {
+																		var lucky_player_id = rows[0].id;
+																		var lucky_chat_id = rows[0].chat_id;
+																		connection.query('UPDATE player SET money = money+' + rand + ' WHERE id = ' + lucky_player_id, function (err, rows, fields) {
+																			if (err) throw err;
+																			bot.sendMessage(lucky_chat_id, "Mentre percorri i corridoi del dungeon vedi un Varco Temporale, lasciato da un avventuriero, che si sta chiudendo. Temerario ci infili il braccio riuscendo ad agguantare un mucchietto di monete contenente " + formatNumber(rand) + "§");
+																		});
+																	}
+																});
 															} else if (randC < 98) {
-																var rand = Math.round(Math.random() * (player_rank * 100)) + (player_rank * 100);
-																if (cursed == 1)
-																	rand = rand*2;
 																connection.query('UPDATE player SET money = money+' + rand + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																	bot.sendMessage(message.chat.id, "Corri verso il mucchietto e ne raccogli il più possibile, hai ottenuto *" + formatNumber(rand) + "* §! Prosegui alla prossima stanza con il borsellino un po' più pesante", dNext);
@@ -13162,6 +13175,17 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															var item_poss = "";
 															if (item1qnt > 0)
 																item_poss = " ✅";
+															else {
+																var material_result = connection_sync.query('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item1);
+
+																if (Object.keys(material_result).length > 0) {
+																	if (getItemCnt(player_id, material_result[0].material_1) > 0 &&
+																		getItemCnt(player_id, material_result[0].material_2) > 0 &&
+																		getItemCnt(player_id, material_result[0].material_3) > 0) {
+																		item_poss = " ☑️";
+																	}
+																}
+															}
 
 															connection.query('SELECT name FROM item WHERE id = ' + item2, function (err, rows, fields) {
 																if (err) throw err;
@@ -13434,8 +13458,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																getItemCnt(player_id, material_result[0].material_3) > 0) {
 																item_poss = " ☑️";
 															}
-														} else
-															console.log("item1", item1);
+														}
 													}
 
 													connection.query('SELECT name FROM item WHERE id = ' + item1, function (err, rows, fields) {
@@ -25678,6 +25701,10 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															text += "\n\nSono stati attivati <b>" + miniboost_count + "</b> incrementi";
 														else if (miniboost_count == 1)
 															text += "\n\nE' stato attivato <b>1</b> incremento";
+														
+														var miniboost_query = connection_sync.query("SELECT COUNT(id) As cnt FROM assault_place_miniboost WHERE player_id = " + player_id);
+														if (miniboost_query[0].cnt == 1)
+															text += " 💢";
 
 														var gender_mob = "";
 														if (!is_boss) {
@@ -40909,6 +40936,7 @@ bot.onText(/weekend della follia/i, function (message) {
 		"> Possono essere acquistati 3 pacchetti delle Offerte Giornaliere\n" +
 		"> Le ricompense degli incarichi sono aumentate del 50%\n" +
 		"> E' possibile giocare 2 partite in più nelle Mappe\n" +
+		"> Le Cave forniscono una Pietra del Drago in più al loro completamento\n" +
 
 		"\nI bonus possono cambiare di volta in volta!";
 
@@ -53524,10 +53552,8 @@ function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnem
 					isEnemy = 0;
 					if (Object.keys(checkEnemy).length > 0) {
 						for (var k = 0, len = Object.keys(checkEnemy).length; k < len; k++) {
-							if ((checkEnemy[k].posX == j) && (checkEnemy[k].posY == i)) {
-								text += mapIdToSym(8) + " ";
-								isEnemy = 1;
-							}
+							if ((checkEnemy[k].posX == j) && (checkEnemy[k].posY == i)) 
+								isEnemy++;
 						}
 					}
 
@@ -53536,6 +53562,11 @@ function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnem
 							text += mapIdToSym(0) + " ";
 						else
 							text += mapIdToSym(mapMatrix[i][j]) + " ";
+					} else {
+						if (isEnemy == 1)
+							text += mapIdToSym(8) + " ";
+						else if (isEnemy > 1)
+							text += mapIdToSym(14) + " ";
 					}
 				} else
 					text += "◼️ ";
@@ -53627,7 +53658,7 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 }
 
 function mapIdToSym(objId) {
-	var symArr = ["◻️", "💰", "💰", "🕳", "💊", "🔁", "💸", "✨", "👣", "🔩", "☠️", "💨", "⚡️", "🔋"];
+	var symArr = ["◻️", "💰", "💰", "🕳", "💊", "🔁", "💸", "✨", "👣", "🔩", "☠️", "💨", "⚡️", "🔋", "💥"];
 	if (symArr[objId] == undefined)
 		console.log("mapIdToSym undefined: " + objId);
 	return symArr[objId];
@@ -57065,7 +57096,7 @@ bot.onText(/^\/incarico/, function (message, match) {
 			var new_part_id = part_id+1;
 
 			if (rows[0].wait == 0) {
-				bot.sendMessage(message.chat.id, "<b>Incarico in corso</b> (" + new_part_id + "a scelta)\n\nSiete alla <b>" + (part_id+1) + "</b> scelta e la prossima inizierà alle alle <i>" + short_date + "</i>!\nL'incarico scadrà alle " + short_date_limit, back_html);
+				bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nSiete alla <b>" + (part_id+1) + "</b> scelta e la prossima inizierà alle alle <i>" + short_date + "</i>!\nL'incarico scadrà alle " + short_date_limit, back_html);
 			} else if (rows[0].wait == 1) {
 				//console.log("Richiamo manuale incarico per party " + party_id + " e team " + team_id);
 
@@ -57123,7 +57154,7 @@ bot.onText(/^\/incarico/, function (message, match) {
 
 						question = question.replace("%casuale%", "qualcuno");
 
-						bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\n" + last_answer + question + "\n", {parse_mode: 'HTML', reply_markup: {inline_keyboard: iKeys}});
+						bot.sendMessage(message.chat.id, "<b>Incarico in corso</b> (" + new_part_id + "a scelta)\n\n" + last_answer + question + "\n", {parse_mode: 'HTML', reply_markup: {inline_keyboard: iKeys}});
 					});
 				});
 			};
@@ -59972,6 +60003,11 @@ function setFinishedCave(element, index, array) {
 			extra = " (aumentate grazie al bonus globale!)";
 		}
 		*/
+		
+		if (crazyMode == 1) {
+			caveid += 1;
+			extra = " (+1 Pietra, follia!)";
+		}
 
 		if (charm_id == 603)
 			caveid += 2;
