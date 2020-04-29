@@ -4372,7 +4372,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			func = "add";
 
 			if ((text == undefined) || (text == "") || (isNaN(code))) {
-				bot.sendMessage(message.chat.id, "Sintassi: /negozioa codice oggetto:prezzo:quantità,oggetto:prezzo:quantità,oggetto:prezzo:quantità.\n\nSimboli:\n# - Imposta la privacy\n! - Imposta la vendita massiva\n* - Imposta la protezione\n? - Imposta l'auto cancellazione quando vuoto");
+				bot.sendMessage(message.chat.id, "Sintassi: /negozioa codice oggetto:prezzo:quantità,oggetto:prezzo:quantità,oggetto:prezzo:quantità.");
 				return;
 			}
 		} else if ((message.text.indexOf("negozior") != -1) && (message.text.indexOf("negozioref") == -1)){
@@ -4449,7 +4449,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			func = "new";
 
 			if ((text == undefined) || (text == "")) {
-				bot.sendMessage(message.chat.id, "Sintassi: /negozio oggetto:prezzo:quantità,oggetto:prezzo:quantità,oggetto:prezzo:quantità.");
+				bot.sendMessage(message.chat.id, "Sintassi: /negozio oggetto:prezzo:quantità,oggetto:prezzo:quantità,oggetto:prezzo:quantità.\n\nSimboli:\n# - Imposta la privacy\n! - Imposta la vendita massiva\n!! - Obbliga la vendita massiva\n* - Imposta la protezione\n? - Imposta l'auto cancellazione quando vuoto");
 				return;
 			}
 		}

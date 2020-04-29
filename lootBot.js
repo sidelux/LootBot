@@ -1070,8 +1070,8 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 			var item_2id = rows[0].id2;
 			var item_3id = rows[0].id3;
 
-			var minValue = 250;
-			var bonusText = "-20% tempo esplorazione cave";
+			var minValue = 100;
+			var bonusText = "?";
 
 			console.log(item_1, item_2, item_3, item_1id, item_2id, item_3id);
 
