@@ -1071,7 +1071,7 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 			var item_3id = rows[0].id3;
 
 			var minValue = 100;
-			var bonusText = "?";
+			var bonusText = "-50% costo produzione oggetti con la Polvere";
 
 			console.log(item_1, item_2, item_3, item_1id, item_2id, item_3id);
 
@@ -1089,7 +1089,7 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 								connection.query('UPDATE player SET global_end = 0', function (err, rows, fields) {
 									if (err) throw err;
 
-									connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY val DESC', function (err, rows, fields) {
+									connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (SELECT account_id FROM banlist) HAVING val > 0 ORDER BY val DESC', function (err, rows, fields) {
 										if (err) throw err;
 
 										var text = "";
@@ -34458,7 +34458,7 @@ bot.onText(/genera scaglia evolutiva/i, function (message) {
 });
 
 bot.onText(/utilizza polvere/i, function (message) {
-	connection.query('SELECT id, class, reborn, holiday, account_id, travel_id, cave_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, class, reborn, holiday, account_id, travel_id, cave_id, global_end FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -34475,6 +34475,7 @@ bot.onText(/utilizza polvere/i, function (message) {
 		var player_id = rows[0].id;
 		var class_id = rows[0].class;
 		var reborn = rows[0].reborn;
+		var global_end = rows[0].global_end;
 
 		var alchemy = {
 			parse_mode: "Markdown",
@@ -34523,14 +34524,15 @@ bot.onText(/utilizza polvere/i, function (message) {
 					var rar2 = 60;
 					var rar3 = 80;
 					var rar4 = 100;
+					
+					if (global_end == 1) {
+						rar1 = 20;
+						rar2 = 30;
+						rar3 = 40;
+						rar4 = 50;
+					}
 
-					bot.sendMessage(message.chat.id, "Puoi creare un oggetto utilizzando la Polvere (ad esclusione degli equipaggiamenti):\n" +
-									"Raro -> " + rar1 + "\n" +
-									"Ultra Raro -> " + rar2 + "\n" +
-									"Leggendario -> " + rar3 + "\n" +
-									"Epico -> " + rar4 + "\n" +
-									"Se l'oggetto è craftato, richiederà il *doppio* della polvere + una quantità dipendente dal valore\n\n" +
-									"Inserisci il nome dell'oggetto, al momento c'è una piccolissima probabilità di fallimento nella creazione.", alchemy).then(function () {
+					bot.sendMessage(message.chat.id, "Puoi creare un oggetto utilizzando la Polvere (ad esclusione degli equipaggiamenti):\nRaro -> " + rar1 + "\nUltra Raro -> " + rar2 + "\nLeggendario -> " + rar3 + "\nEpico -> " + rar4 + "\nSe l'oggetto è craftato, richiederà il *doppio* della polvere + una quantità dipendente dal valore\n\nInserisci il nome dell'oggetto, al momento c'è una piccolissima probabilità di fallimento nella creazione.", alchemy).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							if (answer.text.indexOf("Torna al") != -1)
 								return;
@@ -45554,8 +45556,10 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 										if (rows[i].name.indexOf("Cava") != -1) {
 											if ((class_id == 7) && (reborn > 1))
 												rows[i].duration -= rows[i].duration*0.05;
+											/*
 											if (global_end == 1)
 												rows[i].duration -= rows[i].duration*0.2;
+											*/
 										}
 
 										rows[i].duration -= rows[i].duration*(dragon_level/300);
@@ -53743,6 +53747,8 @@ function getRankName(rank, opt) {
 }
 
 function globalAchievement(player_id, value = 1) {
+	if (value == 0)
+		return;
 	connection.query('SELECT global_eventon, global_cap, global_eventwait FROM config', function (err, rows, fields) {
 		if (err) throw err;
 		if (rows[0].global_eventon == 1) {
@@ -58049,7 +58055,6 @@ function setFinishedLobbyEnd(element, index, array) {
 
 						if (trophies_count >= 0) {
 							trophies_query = "+" + trophies_count;
-							globalAchievement(rows[i].id, trophies_count);
 						} else {
 							trophies_actual = rows[i].trophies;
 							trophies_count = Math.abs(trophies_count);
@@ -60133,6 +60138,9 @@ function setFinishedCave(element, index, array) {
 					totPnt += (stone_id-67);
 					addItem(element.id, stone_id);
 				}
+				
+				if (cave_gem == 0)
+					globalAchievement(element.id, caveid);
 
 				connection.query('UPDATE player SET cave_limit = 0, cave_id = 0, cave_time_end = NULL, cave_count = cave_count+1 WHERE id = ' + element.id, function (err, rows, fields) {
 					if (err) throw err;
