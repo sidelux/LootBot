@@ -217,7 +217,7 @@ var j10 = Schedule.scheduleJob('0 0 * * 1', function () {
 	resetShopLimit();
 });
 
-var j11 = Schedule.scheduleJob('01 12 * * *', function () {	// 12:01 di giorno
+var j11 = Schedule.scheduleJob('00 16 * * *', function () {	// 16:00 di giorno
 	changeTapPrice();
 });
 
@@ -7723,7 +7723,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 						var split = last_obj_val.split(":");
 						var item_id = split[0];
 						var price = split[1];
-						connection.query('SELECT name, power, power_armor, power_shield FROM item WHERE id = ' + item_id, function (err, rows, fields) {
+						connection.query('SELECT name, power, power_armor, power_shield, critical FROM item WHERE id = ' + item_id, function (err, rows, fields) {
 							if (err) throw err;
 
 							var item_name = rows[0].name;
@@ -7735,6 +7735,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 							var item_type = 0;
 							var item_power = 0;
 							var item_icon = "";
+							var item_crit = rows[0].critical;
 							if (rows[0].power > 0) {
 								item_type = 1;
 								item_power = rows[0].power;
@@ -7749,7 +7750,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 								item_icon = " 🛡";
 							}
 
-							bot.sendMessage(message.chat.id, "Puoi scambiare " + price + " 🔩 Rottam" + plur + " per <b>" + item_name + "</b> (" + item_power + item_icon + "), al momento ne possiedi " + scrap + ", procedi?", kbYesNo).then(function () {
+							bot.sendMessage(message.chat.id, "Puoi scambiare " + price + " 🔩 Rottam" + plur + " per <b>" + item_name + "</b> (" + item_power + ", " + item_crit + item_icon + "), al momento ne possiedi " + scrap + ", procedi?", kbYesNo).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text == "Torna al menu")
 										return;
@@ -7820,7 +7821,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 						var split = last_obj_val.split(":");
 						var item_id = split[0];
 						var price = split[1];
-						connection.query('SELECT name, power, power_armor, power_shield FROM item WHERE id = ' + item_id, function (err, rows, fields) {
+						connection.query('SELECT name, power, power_armor, power_shield, critical FROM item WHERE id = ' + item_id, function (err, rows, fields) {
 							if (err) throw err;
 
 							var item_name = rows[0].name;
@@ -7832,6 +7833,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 							var item_type = 0;
 							var item_power = 0;
 							var item_icon = "";
+							var item_critical = rows[0].critical;
 							if (rows[0].power > 0) {
 								item_type = 1;
 								item_power = rows[0].power;
@@ -7846,7 +7848,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 								item_icon = " 🛡";
 							}
 
-							bot.sendMessage(message.chat.id, "Puoi acquistare <b>" + item_name + "</b> (" + item_power + item_icon + ") per " + formatNumber(price) + " §, al momento possiedi " + formatNumber(money) + " §, procedi?", kbYesNo).then(function () {
+							bot.sendMessage(message.chat.id, "Puoi acquistare <b>" + item_name + "</b> (" + item_power + ", " + item_critical + item_icon + ") per " + formatNumber(price) + " §, al momento possiedi " + formatNumber(money) + " §, procedi?", kbYesNo).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text == "Torna al menu")
 										return;
@@ -7924,7 +7926,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 						});
 						return;
 					} else if (last_obj == 11) {
-						bot.sendMessage(message.chat.id, "In questo luogo puoi scegliere se utilizzare il teletrasporto, rischiando di ritrovarti in un luogo pericoloso o di fronte ad un nemico, oppure non rischiare e riprendere la tua esplorazione. In entrambi i casi non dovrai aspettare per proseguire.", kbTeleport).then(function () {
+						bot.sendMessage(message.chat.id, "In questo luogo puoi scegliere se utilizzare il teletrasporto, rischiando di ritrovarti in un luogo pericoloso o di fronte ad un nemico: in entrambi i casi non dovrai aspettare per proseguire. In alternativa puoi non rischiare e riprendere la tua esplorazione con la normale attesa.", kbTeleport).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
 								if (answer.text == "Torna al menu")
 									return;
@@ -9738,6 +9740,12 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 										bot.sendMessage(message.chat.id, "Stai combattendo contro un mostro!\nNon puoi proseguire senza averlo prima sconfitto.", dBattle).then(function () {
 											answerCallbacks[message.chat.id] = function (answer) {
 												if (answer.text == "Scappa") {
+													
+													if (room_id > room_num) {
+														bot.sendMessage(message.chat.id, "Non puoi scappare all'ultima stanza del dungeon!", dNext);
+														return;
+													}
+													
 													bot.sendMessage(message.chat.id, "Sicuro di voler tentare di tornare alla stanza precedente? Il mostro potrebbe colpirti durante la fuga", dYesNo).then(function () {
 														answerCallbacks[message.chat.id] = function (answer) {
 															if (answer.text.toLowerCase() == "si") {
@@ -9861,6 +9869,12 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												bot.sendMessage(message.chat.id, "Incontri una Bestia *" + rows[0].name + "* di livello *" + rows[0].level + "*, puoi sfidarlo e completare il dungeon, oppure scappare.", dBattle).then(function () {
 													answerCallbacks[message.chat.id] = function (answer) {
 														if (answer.text == "Scappa") {
+															
+															if (room_id > room_num) {
+																bot.sendMessage(message.chat.id, "Non puoi scappare all'ultima stanza del dungeon!", dNext);
+																return;
+															}
+															
 															bot.sendMessage(message.chat.id, "Sicuro di voler tentare di tornare alla stanza precedente? Il mostro potrebbe colpirti durante la fuga", dYesNo).then(function () {
 																answerCallbacks[message.chat.id] = function (answer) {
 																	if (answer.text.toLowerCase() == "si") {
@@ -10423,6 +10437,12 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															bot.sendMessage(message.chat.id, extra + "Incontri un *" + rows[0].name + "* di livello *" + rows[0].level + "*, puoi sfidarlo per ottenere il suo bottino e proseguire, oppure scappare.", dBattle).then(function () {
 																answerCallbacks[message.chat.id] = function (answer) {
 																	if (answer.text == "Scappa") {
+																		
+																		if (room_id > room_num) {
+																			bot.sendMessage(message.chat.id, "Non puoi scappare all'ultima stanza del dungeon!", dNext);
+																			return;
+																		}
+																		
 																		bot.sendMessage(message.chat.id, "Sicuro di voler tentare di tornare alla stanza precedente? Il mostro potrebbe colpirti durante la fuga", dYesNo).then(function () {
 																			answerCallbacks[message.chat.id] = function (answer) {
 																				if (answer.text.toLowerCase() == "si") {
@@ -14787,12 +14807,13 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 										var paralyzed = rows[0].monster_paralyzed;
 										var critic = rows[0].monster_critic;
 
-										connection.query('SELECT cursed, mob_power_multiplier, min_rank FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
+										connection.query('SELECT cursed, mob_power_multiplier, min_rank, rooms FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 											if (err) throw err;
 
 											var cursed = rows[0].cursed;
 											var mob_power_multiplier = rows[0].mob_power_multiplier;
 											var dungeon_min_rank = rows[0].min_rank;
+											var room_num = rows[0].room_num;
 
 											connection.query('SELECT name, life, level, weapon_id, weapon2_id, weapon3_id, charm_id FROM dungeon_monsters WHERE id = ' + monster_id, function (err, rows, fields) {
 												if (err) throw err;
@@ -14937,6 +14958,12 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																	answerCallbacks[message.chat.id] = function (answer) {
 
 																		if (answer.text == "Scappa") {
+																			
+																			if (room_id > room_num) {
+																				bot.sendMessage(message.chat.id, "Non puoi scappare all'ultima stanza del dungeon!", dNext);
+																				return;
+																			}
+																			
 																			bot.sendMessage(message.chat.id, "Sicuro di voler uscire dal dungeon?", dYesNo).then(function () {
 																				answerCallbacks[message.chat.id] = function (answer) {
 																					if (answer.text.toLowerCase() == "si") {
@@ -18925,7 +18952,7 @@ bot.onText(/cassaforte/i, function (message, match) {
 									if (answer.text == "Torna alla cassaforte")
 										return;
 
-									answer.text = answer.text.replaceAll(/\./, "");
+									answer.text = answer.text.replaceAll(/\./, "").replaceAll(/\k/, "000");
 
 									if (isNaN(parseInt(answer.text))) {
 										bot.sendMessage(message.from.id, "Valore non valido", kbBack);
@@ -19384,7 +19411,7 @@ bot.onText(/^\/pagateam (.+)|^\/pagateam/i, function (message, match) {
 		return;
 	}
 
-	var price = parseInt(elements[0].replace(/[^\w\s]/gi, '').trim());
+	var price = parseInt(elements[0].replace(/[^\w\s]/gi, '').trim().replaceAll(/\./, "").replaceAll(/\k/, "000"));
 	var msg = "";
 	if (Object.keys(elements).length == 2)
 		msg = elements[1].trim();
@@ -34525,12 +34552,9 @@ bot.onText(/utilizza polvere/i, function (message) {
 					var rar3 = 80;
 					var rar4 = 100;
 					
-					if (global_end == 1) {
-						rar1 = 20;
-						rar2 = 30;
-						rar3 = 40;
-						rar4 = 50;
-					}
+					var extra = "";
+					if (global_end == 1)
+						extra = "\n*Il prezzo totale è dimezzato grazie al bonus globale!*";
 
 					bot.sendMessage(message.chat.id, "Puoi creare un oggetto utilizzando la Polvere (ad esclusione degli equipaggiamenti):\nRaro -> " + rar1 + "\nUltra Raro -> " + rar2 + "\nLeggendario -> " + rar3 + "\nEpico -> " + rar4 + "\nSe l'oggetto è craftato, richiederà il *doppio* della polvere + una quantità dipendente dal valore\n\nInserisci il nome dell'oggetto, al momento c'è una piccolissima probabilità di fallimento nella creazione.", alchemy).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
@@ -34542,7 +34566,7 @@ bot.onText(/utilizza polvere/i, function (message) {
 							connection.query('SELECT id, estimate, craftable, rarity, name FROM item WHERE rarity IN ("R","UR","L","E") AND power = 0 AND power_shield = 0 AND power_armor = 0 AND dragon_power = 0 AND name = "' + item_sel + '"', function (err, rows, fields) {
 								if (err) throw err;
 								if (Object.keys(rows).length == 0) {
-									bot.sendMessage(message.chat.id, "L'oggetto non esiste o la rarità non è consentita", alchemy);
+									bot.sendMessage(message.chat.id, "L'oggetto non esiste, la rarità non è consentita o stai cercando di creare un equipaggiamento", alchemy);
 									return;
 								}
 
@@ -34566,6 +34590,9 @@ bot.onText(/utilizza polvere/i, function (message) {
 									nec = nec * 2;
 									nec += Math.round(estimate / 10000);
 								}
+					
+								if (global_end == 1)
+									nec = Math.round(nec/2);
 
 								bot.sendMessage(message.chat.id, "Quante copie dell'oggetto vuoi creare? Una copia di questo oggetto ti costerà " + nec + " unità di Polvere", kbNum).then(function () {
 									answerCallbacks[message.chat.id] = function (answer) {
@@ -41011,7 +41038,7 @@ bot.onText(/evento della luna/i, function (message) {
 			"> La Luna Nera può dare consigli corretti o sbagliati ai viaggiatori di Dungeon che concludono le loro avventure sotto la sua influenza. Vi è possibilità di raddoppiare i loro *Punti Rango* al completamento di essi o di Annullarli\n" +
 			"> Il *Contrabbandiere* adora la Luce della Luna Nera e aumenta notevolmente rispetto alla Luna Dorata la probabilità di raddoppiare i soldi dati per un oggetto, ma a volte può essere più guardingo e conclude in fretta le sue transazioni dimezzando il guadagno\n" +
 			"> I mandanti degli Incarichi, spaventati dalla luce della Luna Nera, possono triplicare la ricompensa di Punti Anima oppure rifiutarsi di fornirne\n" +
-			"> Inoltre solo durante il weekend della luna, le Monete Lunari ottenute grazie alle donazioni sono raddoppiate e quelle ricchieste per fare il giro della Ruota sono dimezzate!\n" +
+			"> Inoltre solo durante il weekend della luna, le Monete Lunari ottenute grazie alle donazioni sono raddoppiate e quelle richieste per fare il giro della Ruota sono dimezzate!\n" +
 			"> *Ruota* della Luna Nera\n" +
 			"\n*Vuoi accedere alla Ruota?*";
 	}
@@ -45640,8 +45667,10 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 
 																rows[0].duration -= rows[0].duration*(dragon_level/300);
 
+																/*
 																if (global_end == 1)
 																	rows[0].duration -= rows[0].duration*0.2;
+																*/
 
 																var now = new Date();
 																now.setMinutes(now.getMinutes() + rows[0].duration);
@@ -57473,7 +57502,7 @@ bot.onText(/^\/firstfestival/, function (message, match) {
 });
 
 function checkMapElapsed() {
-	connection.query('SELECT lobby_id FROM map_lobby_list WHERE DATE_ADD(creation_date, INTERVAL 3 HOUR) < NOW()', function (err, rows, fields) {
+	connection.query('SELECT lobby_id FROM map_lobby_list WHERE DATE_ADD(creation_date, INTERVAL 2 HOUR) < NOW()', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
