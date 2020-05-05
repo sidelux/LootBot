@@ -42551,7 +42551,7 @@ bot.onText(/necro del destino/i, function (message) {
 										}
 
 										var ok = 0;
-										if (((num == 1) || (num == 4)) && (done == 1))
+										if (((num == 1) || (num == 4) || (num == 9)) && (done == 1))
 											ok = 1;
 
 										if (ok == 0) {
