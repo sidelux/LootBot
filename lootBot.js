@@ -8590,6 +8590,13 @@ bot.onText(/sacca$/i, function (message) {
 	});
 });
 
+bot.onText(/^\/legenda$/i, function (message) {
+	var legend = "";
+	for (var i = -26; i < 10; i++)
+		legend += "\n> " + dungeonToDesc(i) + " - " + dungeonToSym(i);
+	bot.sendMessage(message.chat.id, "Legenda simboli dungeon per la Mappatura:" + legend, back);
+});
+
 bot.onText(/^\/mappatura$|^\/mappaturasym$/i, function (message) {
 	connection.query('SELECT account_id, id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -8721,7 +8728,7 @@ bot.onText(/^\/mappatura$|^\/mappaturasym$/i, function (message) {
 									text += "\n" + current_room + posRoom + ": - | - | -";
 							}
 
-							bot.sendMessage(message.chat.id, text + messages, html);
+							bot.sendMessage(message.chat.id, text + messages + "\nUsa il comando /legenda per consultare la legenda dei simboli", html);
 						});
 					});
 				});
@@ -19697,7 +19704,7 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 								return;
 							}
 
-							bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nelle <b>Vette dei Draghi</b> 🐲!\nIn questo luogo dovrai sottoporre il tuo <i>" + dragon_name + "</i> all'ardua sfida di raggiungere le cime dei monti più alti di Lootia! Durante questa sfida incontrerai altri draghi, dovrai sfidarli ed essere un bravo domatore per salire fino alla vetta. Le battaglie si svolgono in diversi Monti, tutti iniziano dal primo e man mano che si ottengono vittorie si passa al successivo!\nRicorda che quando il drago combatte, non ti potrà aiutare nelle battaglie al di fuori della vetta.\n\n<b>Funzionamento</b>:\n\n- Il drago da sfidare verrà scelto casualmente in base al Monte in cui si viene inseriti\n- Una volta sconfitto si ottiene 1 Ð o più, se si viene sconfitti lo si perde\n- Al termine della giornata per avanzare di Monte è necessario raggiungere un certo quantitativo di Ð variabile, scendendo sotto una certa soglie di retrocede a quello precedente, inoltre spostandoti di monte le Ð si resettano\n- Ogni mossa consuma un certo numero di Scaglie ⚜️ e ne ottieni una alla fine di ogni turno, per un massimo di 5, puoi ottenerne una anche solo saltando il turno\n- Riceverai un premio in base al posizionamento ottenuto alla fine della stagione.\n- Al primo accesso otterrai Ð in base al livello del tuo drago\n\nLa stagione attuale scadrà alle " + finish_date + "\n\nSei veramente sicur" + gender_text + " di voler accedere alle Vette?", kbYesNoBack).then(function () {
+							bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nelle <b>Vette dei Draghi</b> 🐲!\nIn questo luogo dovrai sottoporre il tuo <i>" + dragon_name + "</i> all'ardua sfida di raggiungere le cime dei monti più alti di Lootia! Durante questa sfida incontrerai altri draghi, dovrai sfidarli ed essere un bravo domatore per salire fino alla vetta. Le battaglie si svolgono in diversi Monti, tutti iniziano dal primo e man mano che si ottengono vittorie si passa al successivo!\nRicorda che quando il drago combatte, non ti potrà aiutare nelle battaglie al di fuori della vetta.\n\n<b>Funzionamento</b>:\n\n- Il drago da sfidare verrà scelto casualmente in base al Monte in cui si viene inseriti\n- Una volta sconfitto si ottiene 1 Ð o più, se si viene sconfitti lo si perde\n- Al termine della giornata per avanzare di Monte è necessario raggiungere un certo quantitativo di Ð variabile, scendendo sotto una certa soglie si retrocede a quello precedente, inoltre spostandoti di monte le Ð si resettano\n- Ogni mossa consuma un certo numero di Scaglie ⚜️ e ne ottieni una alla fine di ogni turno, per un massimo di 5, puoi ottenerne una anche solo saltando il turno\n- Riceverai un premio in base al posizionamento ottenuto alla fine della stagione.\n- Al primo accesso otterrai Ð in base al livello del tuo drago\n\nLa stagione attuale scadrà alle " + finish_date + "\n\nSei veramente sicur" + gender_text + " di voler accedere alle Vette?", kbYesNoBack).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									if (answer.text.toLowerCase() == "si") {
 										connection.query('INSERT INTO dragon_top_status (player_id, dragon_id) VALUES (' + player_id + ',' + dragon_id + ')', function (err, rows, fields) {
@@ -43528,7 +43535,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 									});
 								}
 							} else if (answer.text == "Rinuncia") {
-								bot.sendMessage(message.chat.id, "Sicuro di voler rinunciare all'ispezione? Perderai 2 punti abilità", kbYesNo).then(function () {
+								bot.sendMessage(message.chat.id, "Sicuro di voler rinunciare all'ispezione? Perderai 1 punto abilità", kbYesNo).then(function () {
 									answerCallbacks[message.chat.id] = function (answer) {
 										if (answer.text.toLowerCase() == "si") {
 											connection.query('DELETE FROM heist_progress WHERE from_id = ' + player_id, function (err, rows, fields) {
@@ -58210,6 +58217,8 @@ function setSeasonEnd(element, index, array) {
 	var chest = Math.round(trophies/2);
 	var chestU = Math.floor(trophies/150);
 	var moon = Math.floor(trophies/200);
+	
+	setAchievement(player_id, 81, mana*3);
 
 	text += "\n " + formatNumber(mana) + "x Mana di ogni tipo";
 	text += "\n " + formatNumber(dust) + "x Polvere";

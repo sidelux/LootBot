@@ -11448,7 +11448,7 @@ function checkStatus(message, nickname, accountid, type) {
 				if (exist == 0) {
 					bot.kickChatMember(message.chat.id, accountid).then(function (result) {
 						if (result != false) {
-							bot.sendMessage(message.chat.id, nickname + " non è iscritto, l'ho bannato");
+							bot.sendMessage(message.chat.id, nickname + " non è iscritto, l'ho bannato dal gruppo");
 							bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa del fatto che non sei registrato al gioco");
 						}
 					});
@@ -11461,7 +11461,7 @@ function checkStatus(message, nickname, accountid, type) {
 				if ((group_ban == 1) && (exist == 1)){
 					bot.kickChatMember(message.chat.id, accountid).then(function (result) {
 						if (result != false) {
-							bot.sendMessage(message.chat.id, nickname + " è bannato dai gruppi, l'ho bannato");
+							bot.sendMessage(message.chat.id, nickname + " è bannato dai gruppi, l'ho bannato dal gruppo");
 							bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa del ban da tutti i gruppi");
 						}
 					});
@@ -11475,7 +11475,7 @@ function checkStatus(message, nickname, accountid, type) {
 					if (isBanned(accountid) != null) {
 						bot.kickChatMember(message.chat.id, accountid).then(function (result) {
 							if (result != false) {
-								bot.sendMessage(message.chat.id, nickname + " è bannato dal gioco, l'ho bannato");
+								bot.sendMessage(message.chat.id, nickname + " è bannato dal gioco, l'ho bannato dal gruppo");
 								bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa del ban dal gioco");
 							}
 						});
@@ -11518,7 +11518,7 @@ function checkStatus(message, nickname, accountid, type) {
 					if ((levReal < min) || (levReal > max)) {
 						bot.kickChatMember(message.chat.id, accountid).then(function (result) {
 							if (result != "False") {
-								bot.sendMessage(message.chat.id, nickname + " non rispetta i requisiti del livello (" + levReal + "), l'ho bannato");
+								bot.sendMessage(message.chat.id, nickname + " non rispetta i requisiti del livello (" + levReal + "), l'ho bannato dal gruppo");
 								bot.sendMessage(message.from.id, "Sei stato bannato dal gruppo " + group_name + " a causa dei requisiti relativi al livello minimo o massimo");
 							}
 						});
