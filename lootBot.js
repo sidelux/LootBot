@@ -17768,7 +17768,7 @@ bot.onText(/ripristina bevanda/i, function (message) {
 		if (restore == 1)
 			plur = "a";
 
-		bot.sendMessage(message.chat.id, "Ripristinare " + restore + " caric" + plur + " di questa bevanda ti costerà " + dust + " unità di Polvere, procedi?", kb4).then(function () {
+		bot.sendMessage(message.chat.id, "Ripristinare " + restore + " caric" + plur + " di questa bevanda ti costerà " + dust + " unità di Polvere, al momento ne possiedi " + formatNumber(getItemCnt(player_id, 646)) + ", procedi?", kb4).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text.toLowerCase() == "si") {
 					if (getItemCnt(player_id, 646) < dust) {
@@ -19036,6 +19036,8 @@ bot.onText(/cassaforte/i, function (message, match) {
 										bot.sendMessage(message.from.id, "Valore non valido", kbBack);
 										return;
 									}
+									
+									answer.text = answer.text.trim().replaceAll(/\./, "").replaceAll(/\k/, "000");
 
 									var get = parseInt(answer.text);
 									if (get < 1) {
@@ -24446,7 +24448,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 										var full_kb = [[build, "Gestisci 🛠"],["Rapporto 🔎", "Panoramica 🔄"]];
 										var index = 3;
 										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-											if (rows[i].nickname != null) {
+											if ((rows[i].nickname != null) && (rows[i].nickname != message.from.username)) {
 												full_kb.splice(index, 0, ["Rimuovi " + rows[i].nickname]);
 												index++;
 											}
