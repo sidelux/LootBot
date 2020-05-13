@@ -17282,6 +17282,7 @@ bot.onText(/fai nascere il drago|accudisci drago|nutri ancora|^drago$|^drago �
 								if ((dragon_lev == 200) && (dragon_evolved == 1))
 									iKeys.push(["Scaglia Evolutiva Plus ☄️"]);
 
+								iKeys.push(["Torna al drago"]);
 								iKeys.push(["Torna al menu"]);
 
 								var kb = {
@@ -46790,7 +46791,7 @@ function mainMenu(message) {
 		price_drop_msg = "\n " + links[rand];
 	}
 
-	price_drop_msg = "\n#restaacasa e contribuisci a limitare la diffusione del virus!";
+	price_drop_msg = "\n🏡 Resta a casa e contribuisci a limitare la diffusione del virus!";
 
 	var time = "🌕 Salve";
 	var n = new Date().getHours();
