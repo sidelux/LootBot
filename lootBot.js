@@ -187,6 +187,7 @@ var j4 = Schedule.scheduleJob('05 00 * * *', function () { //00:05 notte
 	deleteSearch();
 	resetDragonReject();
 	deleteHistory();
+	deleteOneTimeGift();
 });
 
 var j5 = Schedule.scheduleJob('00 15 * * *', function () { //15:00
@@ -538,21 +539,21 @@ bot.on('message', function (message) {
 		var month = now_d.getMonth();
 		var year = now_d.getFullYear();
 
-		if (((day == 31) && (month == 9) && (hour >= 12)) || ((day == 1) && (month == 10) && (hour <= 12))) {
+		if ((day == 31) && (month == 9) && (hour >= 12) && (year == 2020)) {
 			connection.query('SELECT COUNT(*) As cnt FROM one_time_gift WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (rows[0].cnt == 0) {
 					connection.query('INSERT INTO one_time_gift (player_id) VALUES (' + player_id + ')', function (err, rows, fields) {
 						if (err) throw err;
-						addItem(player_id, 789);
-						bot.sendMessage(message.chat.id, "Buon Halloween 🎃!\nPer la tua presenza costante nel gioco, hai ricevuto una nuova IN non commerciabile: una *Zucchetta di Halloween 2019 (IN)*!", mark);
+						addItem(player_id, 801);
+						bot.sendMessage(message.chat.id, "Buon Halloween 🎃!\nPer la tua presenza costante nel gioco, hai ricevuto una nuova IN non commerciabile: una *Zucchetta di Halloween 2020 (IN)*!", mark);
 						console.log("One time gift a " + message.from.username);
 					});
 				}
 			});
 		}
 
-		if ((day == 15) && (month == 4)) {
+		if ((day == 15) && (month == 4) && (hour >= 9) && (hour <= 22)) {
 			connection.query('SELECT COUNT(*) As cnt FROM one_time_gift WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (rows[0].cnt == 0) {
@@ -1805,7 +1806,7 @@ bot.onText(/\/start (.+)|\/start/i, function (message, match) {
 		if (Object.keys(rows).length > 0) {
 			connection.query('UPDATE player SET chat_id = ' + message.chat.id + ' WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 				if (err) throw err;
-				bot.sendMessage(message.chat.id, "Sei già registrato! Se hai qualche problema, segnala all'amministratore", back);
+				bot.sendMessage(message.chat.id, "Sei già registrato! Se hai qualche problema, segnala all'amministratore @fenix45!", back);
 			});
 			return;
 		}
@@ -8836,6 +8837,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 		return;
 
 	if (message.text.toLowerCase().indexOf("stato dungeon") != -1)
+		return;
+	
+	if (message.text.toLowerCase().indexOf("rush") != -1)
 		return;
 
 	if (message.text.length > 25)
@@ -18593,6 +18597,14 @@ bot.onText(/equipaggia drago/i, function (message) {
 						keyboard: [["Torna al drago"], ["Torna al menu"]]
 					}
 				};
+				
+				var kbBackYesNo = {
+					parse_mode: "Markdown",
+					reply_markup: {
+						resize_keyboard: true,
+						keyboard: [["Si"], ["Torna al drago"], ["Torna al menu"]]
+					}
+				};
 
 				bot.sendMessage(message.chat.id, "Cosa vuoi equipaggiare al drago? 🐉", kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
@@ -18619,7 +18631,7 @@ bot.onText(/equipaggia drago/i, function (message) {
 								return;
 							}
 
-							bot.sendMessage(message.chat.id, "Confermi?", yesno).then(function () {
+							bot.sendMessage(message.chat.id, "Confermi?", kbBackYesNo).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
 									var resp = answer.text;
 									if (resp.toLowerCase() != "si")
@@ -40950,7 +40962,7 @@ bot.onText(/dungeon rush/i, function (message) {
 
 	var bonus = "> Nessuna attesa tra le stanze\n" +
 		"> Cure con le Pozioni disattivate\n" +
-		"> Cura automatica del 10% ogni 10 minuti\n" +
+		"> Cura automatica del 15% ogni 10 minuti\n" +
 
 		"\nI bonus possono cambiare di volta in volta!";
 
@@ -45787,6 +45799,12 @@ bot.onText(/^\/destroylobby (.+)/, function (message, match) {
 
 // FUNZIONI
 
+function deleteOneTimeGift() {
+	connection.query("DELETE FROM one_time_gift", function (err, rows, fields) {
+		if (err) throw err;
+	});
+}
+
 function checkTapTime() {
 	connection.query("SELECT id, chat_id FROM player WHERE tap_end_time < NOW() AND tap_end_time IS NOT NULL", function (err, rows, fields) {
 		if (err) throw err;
@@ -47539,7 +47557,7 @@ function checkKeyboard() {
 	if (gnomorra == 1)
 		mainKeys.splice(0, 0, ['📄 Gnomorra Lootiana (Evento) 🈵']);
 	if (dungeonRush == 1)
-		mainKeys.splice(0, 0, ['🛡 Dungeon Rush (Evento) 🏃‍♂️']);
+		mainKeys.splice(0, 0, ['🛡 Dungeon Rush (Evento) (Beta) 🏃‍♂️']);
 
 	main_html = {
 		parse_mode: "HTML",
@@ -54507,7 +54525,7 @@ function setLifeRush(element, index, array) {
 	var life = element.life;
 	var total_life = element.total_life;
 
-	var refill = life+(life*0.1);
+	var refill = life+(life*0.15);
 	if (life+refill > total_life)
 		refill = total_life-life;
 

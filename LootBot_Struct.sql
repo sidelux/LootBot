@@ -2776,6 +2776,7 @@ DROP TABLE IF EXISTS `one_time_gift`;
 CREATE TABLE `one_time_gift` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
+  `redeem_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `PLAYERID_ONET` (`player_id`),
   CONSTRAINT `PLAYERID_ONETIME` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
