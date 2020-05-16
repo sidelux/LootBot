@@ -49046,6 +49046,11 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 								bot.sendMessage(message.chat.id, "Sei in piena salute, non è necessario utilizzare Pozioni!", back);
 								return;
 							}
+							
+							if (dungeonRush == 1) {
+								bot.sendMessage(message.chat.id, "La cura è disattivata durante il Dungeon Rush!", back);
+								return;
+							}
 
 							bot.sendMessage(message.chat.id, "Quante pozioni vuoi usare?", kbNum).then(function () {
 								answerCallbacks[message.chat.id] = function (answer) {
@@ -54525,7 +54530,7 @@ function setLifeRush(element, index, array) {
 	var life = element.life;
 	var total_life = element.total_life;
 
-	var refill = life+(life*0.15);
+	var refill = life+(total_life*0.15);
 	if (life+refill > total_life)
 		refill = total_life-life;
 
@@ -58774,6 +58779,9 @@ function setFinishedDungeonEnd(element, index, array) {
 function setFinishedDungeonRoom(element, index, array) {
 	var player_id = element.player_id;
 	var chat_id = element.chat_id;
+	
+	if (dungeonRush == 1)
+		return;
 
 	connection.query('UPDATE dungeon_status SET room_time = NULL WHERE id = ' + element.room_id, function (err, rows, fields) {
 		if (err) throw err;
