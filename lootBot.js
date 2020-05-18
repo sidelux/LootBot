@@ -11855,9 +11855,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			connection.query('UPDATE player SET life = life - ' + life + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																				if (cursed == 1) {
-																					bot.sendMessage(message.chat.id, "Come avanzi di due passi scatta un meccanismo e un'ascia gigantesca ti precipita addosso, il tuo drago non è abbastanza forte per proteggerti, l'ascia ti prende in pieno e perdi " + life + " hp!", dNext);
+																					bot.sendMessage(message.chat.id, "Come avanzi di due passi scatta un meccanismo e un'ascia gigantesca ti precipita addosso, il tuo drago non è abbastanza forte per proteggerti, l'ascia ti prende in pieno e perdi " + formatNumber(life) + " hp!", dNext);
 																				} else {
-																					bot.sendMessage(message.chat.id, "Come avanzi di due passi scatta un meccanismo e un'ascia gigantesca ti precipita addosso, il tuo drago non è abbastanza forte per proteggerti, l'ascia ti prende in pieno e perdi " + life + " hp!", dNext);
+																					bot.sendMessage(message.chat.id, "Come avanzi di due passi scatta un meccanismo e un'ascia gigantesca ti precipita addosso, il tuo drago non è abbastanza forte per proteggerti, l'ascia ti prende in pieno e perdi " + formatNumber(life) + " hp!", dNext);
 																				}
 																			});
 																		}
@@ -12237,6 +12237,16 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														keyboard: [["Medita"], ["Termina Meditazione"], ["Torna al menu"]]
 													}
 												};
+												
+												if (param > 6) {
+													dOptions = {
+														parse_mode: "Markdown",
+														reply_markup: {
+															resize_keyboard: true,
+															keyboard: [["Termina Meditazione"], ["Torna al menu"]]
+														}
+													};
+												}
 
 												var text = "";
 												if (param == null) {
@@ -13762,6 +13772,16 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														keyboard: [["Concentrati"], ["Termina Concentrazione"], ["Torna al menu"]]
 													}
 												};
+												
+												if (param > 6) {
+													dOptions = {
+														parse_mode: "Markdown",
+														reply_markup: {
+															resize_keyboard: true,
+															keyboard: [["Termina Concentrazione"], ["Torna al menu"]]
+														}
+													};
+												}
 
 												var text = "";
 												if (param == null) {
@@ -17272,7 +17292,6 @@ bot.onText(/fai nascere il drago|accudisci drago|nutri ancora|^drago$|^drago �
 							iKeys.push(["Equipaggia Drago 🐉"]);
 							iKeys.push(["Rinomina Drago 💬", "Cambia Tipo " + dragonSym(dragon_type)]);
 							iKeys.push(["Bevande 🍶", "Riposa 💤", "Risorse 🍵"]);
-							iKeys.push(["Ripristina Bevanda 🍶"]);
 
 							connection.query('SELECT item.name, inventory.quantity As num FROM item, inventory WHERE inventory.player_id = ' + player_id + ' AND item.id = inventory.item_id AND item.name LIKE "Pietra%" AND item.rarity = "D" AND inventory.quantity > 0 ORDER BY item.id', function (err, rows, fields) {
 								if (err) throw err;
@@ -17532,6 +17551,40 @@ bot.onText(/Dai un nome al drago/i, function (message) {
 });
 
 bot.onText(/^bevande|torna alle bevande/i, function (message) {
+	connection.query('SELECT account_id, holiday, id, class, reborn, boost_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+		if (rows[0].holiday == 1) {
+			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back);
+			return;
+		}
+		
+		var iKeys = [];
+		iKeys.push(["Produci Bevanda"]);
+		iKeys.push(["Ripristina Bevanda"]);
+		
+		if (rows[0].boost_id != 0)
+			iKeys.push(["Annulla Bevanda"]);
+		
+		var kb = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: iKeys
+			}
+		};
+		
+		bot.sendMessage(message.chat.id, "Puoi effettuare diverse operazioni con le bevande, seleziona quella che ti interessa", kb);
+	});
+});
+
+bot.onText(/^produci bevanda/i, function (message) {
 	connection.query('SELECT account_id, holiday, id, class, reborn, boost_id, boost_mission FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -46641,8 +46694,6 @@ function getInfo(message, player, myhouse_id) {
 																									(house_id >= 5)) {
 																									Keys.push(["Nomina Equip/Rifugio 🏷"]);
 																								}
-																								if (boost_id != 0)
-																									Keys.push(["Annulla Bevanda Attiva 🚫"]);
 																								Keys.push(["Descrizioni 💬", "Figurine 🃏"]);
 																								Keys.push(["Vacanza ⛱"], ["Sesso ⚤", "Nascita ✨"]);
 																								Keys.push(["Orario 🕰"]);
