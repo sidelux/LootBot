@@ -9789,17 +9789,17 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		if (err) throw err;
 																	});
 																	if (cursed == 1) {
-																		if (rank == 1) {
+																		if (player_rank == 1) {
 																			connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
-																		} else if (rank > 1) {
+																		} else if (player_rank > 1) {
 																			connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
 																		}
 																	} else {
-																		if (rank > 0) {
+																		if (player_rank > 0) {
 																			connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
@@ -9919,17 +9919,17 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																				if (err) throw err;
 																			});
 																			if (cursed == 1) {
-																				if (rank == 1) {
+																				if (player_rank == 1) {
 																					connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 																					});
-																				} else if (rank > 1) {
+																				} else if (player_rank > 1) {
 																					connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 																					});
 																				}
 																			} else {
-																				if (rank > 0) {
+																				if (player_rank > 0) {
 																					connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 																					});
@@ -10486,17 +10486,17 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																							if (err) throw err;
 																						});
 																						if (cursed == 1) {
-																							if (rank == 1) {
+																							if (player_rank == 1) {
 																								connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
-																							} else if (rank > 1) {
+																							} else if (player_rank > 1) {
 																								connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
 																							}
 																						} else {
-																							if (rank > 0) {
+																							if (player_rank > 0) {
 																								connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																								});
@@ -10610,17 +10610,17 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																									if (err) throw err;
 																								});
 																								if (cursed == 1) {
-																									if (rank == 1) {
+																									if (player_rank == 1) {
 																										connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																											if (err) throw err;
 																										});
-																									} else if (rank > 1) {
+																									} else if (player_rank > 1) {
 																										connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																											if (err) throw err;
 																										});
 																									}
 																								} else {
-																									if (rank > 0) {
+																									if (player_rank > 0) {
 																										connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																											if (err) throw err;
 																										});
@@ -10985,17 +10985,17 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																									if (err) throw err;
 																								});
 																								if (cursed == 1) {
-																									if (rank == 1) {
+																									if (player_rank == 1) {
 																										connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																											if (err) throw err;
 																										});
-																									} else if (rank > 1) {
+																									} else if (player_rank > 1) {
 																										connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																											if (err) throw err;
 																										});
 																									}
 																								} else {
-																									if (rank > 0) {
+																									if (player_rank > 0) {
 																										connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																											if (err) throw err;
 																										});
@@ -11232,17 +11232,17 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			if (err) throw err;
 																		});
 																		if (cursed == 1) {
-																			if (rank == 1) {
+																			if (player_rank == 1) {
 																				connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
 																				});
-																			} else if (rank > 1) {
+																			} else if (player_rank > 1) {
 																				connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
 																				});
 																			}
 																		} else {
-																			if (rank > 0) {
+																			if (player_rank > 0) {
 																				connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
 																				});
@@ -11370,17 +11370,17 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																									if (err) throw err;
 																								});
 																								if (cursed == 1) {
-																									if (rank == 1) {
+																									if (player_rank == 1) {
 																										connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																											if (err) throw err;
 																										});
-																									} else if (rank > 1) {
+																									} else if (player_rank > 1) {
 																										connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																											if (err) throw err;
 																										});
 																									}
 																								} else {
-																									if (rank > 0) {
+																									if (player_rank > 0) {
 																										connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																											if (err) throw err;
 																										});
@@ -11667,17 +11667,17 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																										if (err) throw err;
 																									});
 																									if (cursed == 1) {
-																										if (rank == 1) {
+																										if (player_rank == 1) {
 																											connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																												if (err) throw err;
 																											});
-																										} else if (rank > 1) {
+																										} else if (player_rank > 1) {
 																											connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																												if (err) throw err;
 																											});
 																										}
 																									} else {
-																										if (rank > 0) {
+																										if (player_rank > 0) {
 																											connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																												if (err) throw err;
 																											});
@@ -14369,6 +14369,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 		}
 
 		var player_id = rows[0].id;
+		var player_rank = rows[0].rank;
+		if (player_rank > 500)
+			player_rank = 500;
 		var player_weapon_id = rows[0].weapon_id;
 		var player_weapon2_id = rows[0].weapon2_id;
 		var player_weapon3_id = rows[0].weapon3_id;
@@ -15004,17 +15007,17 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																								if (err) throw err;
 																							});
 																							if (cursed == 1) {
-																								if (rank == 1) {
+																								if (player_rank == 1) {
 																									connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																										if (err) throw err;
 																									});
-																								} else if (rank > 1) {
+																								} else if (player_rank > 1) {
 																									connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																										if (err) throw err;
 																									});
 																								}
 																							} else {
-																								if (rank > 0) {
+																								if (player_rank > 0) {
 																									connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																										if (err) throw err;
 																									});
@@ -15816,17 +15819,17 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							});
 
 																							if (cursed == 1) {
-																								if (rank == 1) {
+																								if (player_rank == 1) {
 																									connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																										if (err) throw err;
 																									});
-																								} else if (rank > 1) {
+																								} else if (player_rank > 1) {
 																									connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																										if (err) throw err;
 																									});
 																								}
 																							} else {
-																								if (rank > 0) {
+																								if (player_rank > 0) {
 																									connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
 																										if (err) throw err;
 																									});
@@ -54530,7 +54533,7 @@ function setLifeRush(element, index, array) {
 	var life = element.life;
 	var total_life = element.total_life;
 
-	var refill = life+(total_life*0.15);
+	var refill = total_life*0.15;
 	if (life+refill > total_life)
 		refill = total_life-life;
 
@@ -60527,8 +60530,10 @@ function setExp(player_id, exp) {
 			((reborn == 2) && (my_exp < 1500)) ||
 			((reborn == 3) && (my_exp < 2000)) ||
 			((reborn == 4) && (my_exp < 3000)) ||
-			(reborn == 5)) {
-			if (my_exp < 10000) {
+			((reborn == 5) && (my_exp < 10000)) ||
+			(reborn == 6) && (my_exp < 25000)){
+			if (((reborn <= 5) && (my_exp < 10000)) ||
+				((reborn == 6) && (my_exp < 250000))){
 				connection.query('UPDATE player SET exp = exp+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 				});
