@@ -13237,7 +13237,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	parse_mode: "Markdown",
 																	reply_markup: {
 																		resize_keyboard: true,
-																		keyboard: [["Si", "No"], ["Cerca *" + item1_name], ["Torna al menu"]]
+																		keyboard: [["Si", "No"], ["Cerca *" + item1_name], ["Crea " + item1_name], ["Torna al menu"]]
 																	}
 																};
 
@@ -13511,7 +13511,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															parse_mode: "Markdown",
 															reply_markup: {
 																resize_keyboard: true,
-																keyboard: [["Si", "No"], ["Cerca *" + item1_name], ["Torna al menu"]]
+																keyboard: [["Si", "No"], ["Cerca *" + item1_name], ["Crea " + item1_name], ["Torna al menu"]]
 															}
 														};
 
@@ -60576,28 +60576,27 @@ function setExp(player_id, exp) {
 		var chat_id = rows[0].chat_id;
 		var reborn = rows[0].reborn;
 		var my_exp = rows[0].exp;
-
+		
 		if (((reborn == 1) && (my_exp < 1000)) ||
 			((reborn == 2) && (my_exp < 1500)) ||
 			((reborn == 3) && (my_exp < 2000)) ||
 			((reborn == 4) && (my_exp < 3000)) ||
 			((reborn == 5) && (my_exp < 10000)) ||
-			(reborn == 6) && (my_exp < 25000)){
-			if (((reborn <= 5) && (my_exp < 10000)) ||
-				((reborn == 6) && (my_exp < 250000))){
-				connection.query('UPDATE player SET exp = exp+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
-					if (err) throw err;
-				});
-			} else {
-				connection.query('SELECT COUNT(id) As cnt FROM artifacts WHERE item_id = 675 AND player_id = ' + player_id, function (err, rows, fields) {
-					if (err) throw err;
-					if (rows[0].cnt > 0) {
-						connection.query('UPDATE player SET gain_exp = gain_exp+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
-							if (err) throw err;
-						});
-					}
-				});
-			}
+			((reborn == 6) && (my_exp < 250000))) {
+			connection.query('UPDATE player SET exp = exp+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
+		
+		if (reborn >= 5) {
+			connection.query('SELECT COUNT(id) As cnt FROM artifacts WHERE item_id = 675 AND player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				if (rows[0].cnt > 0) {
+					connection.query('UPDATE player SET gain_exp = gain_exp+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
+				}
+			});
 		}
 
 		setAchievement(player_id, 57, exp);

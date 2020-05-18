@@ -9459,7 +9459,7 @@ bot.onText(/^\/prezzo (.+)|^\/prezzo/, function (message, match) {
 		var item_id = rows[0].id;
 		var value = rows[0].value;
 
-		connection.query('SELECT quantity, price, (SELECT nickname FROM market_direct_history, player WHERE player.id = from_id AND item_id = ' + item_id + ' LIMIT 1) As fromId, (SELECT nickname FROM market_direct_history, player WHERE player.id = to_id AND item_id = ' + item_id + ' LIMIT 1) As toId, (SELECT SUM(quantity) FROM market_direct_history WHERE item_id = ' + item_id + ') As cnt, market_direct_history.time FROM market_direct_history WHERE type != 4 AND item_id = ' + item_id + ' AND price != ' + value + ' ORDER BY id DESC', function (err, rows, fields) {
+		connection.query('SELECT quantity, price, (SELECT nickname FROM market_direct_history, player WHERE player.id = from_id AND item_id = ' + item_id + ' LIMIT 1) As fromId, (SELECT nickname FROM market_direct_history, player WHERE player.id = to_id AND item_id = ' + item_id + ' LIMIT 1) As toId, (SELECT SUM(quantity) FROM market_direct_history WHERE item_id = ' + item_id + ') As cnt, market_direct_history.time FROM market_direct_history WHERE type != 4 AND item_id = ' + item_id + ' AND price != ' + value + ' ORDER BY id DESC LIMIT 1000', function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
 				var text = "Ultimi prezzi trovati per " + oggetto + ":";
