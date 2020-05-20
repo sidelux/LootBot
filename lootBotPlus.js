@@ -11599,6 +11599,13 @@ function getRealLevel(reb, lev) {
 		lev += 200;
 		lev += 300;
 	}
+	if (reb == 6) {
+		lev += 100;
+		lev += 150;
+		lev += 200;
+		lev += 300;
+		lev += 1000;
+	}
 	return lev;
 }
 

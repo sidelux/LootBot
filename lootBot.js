@@ -10370,9 +10370,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												sec = sec - 120;
 											if ((player_class_id == 9) && (player_reborn > 1))
 												sec = sec - 120;
-											if ((player_class_id == 9) && (player_reborn == 5))
+											if ((player_class_id == 9) && (player_reborn >= 5))
 												sec = sec - 180;
-											if ((player_class_id == 9) && (player_reborn == 5))
+											if ((player_class_id == 9) && (player_reborn == 6))
 												sec = sec - 60;
 											if ((player_class_id == 3) && (player_reborn >= 4))
 												sec = sec - 240;
@@ -13688,7 +13688,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															parse_mode: "Markdown",
 															reply_markup: {
 																resize_keyboard: true,
-																keyboard: [["Si", "No"], ["Cerca *" + item1_name], ["Torna al menu"]]
+																keyboard: [["Si", "No"], ["Torna al menu"]]
 															}
 														};
 
@@ -15724,7 +15724,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							sec = sec - 120;
 																						if ((class_id == 9) && (reborn > 1))
 																							sec = sec - 120;
-																						if ((class_id == 9) && (reborn == 5))
+																						if ((class_id == 9) && (reborn >= 5))
 																							sec = sec - 180;
 																						if ((class_id == 9) && (reborn == 6))
 																							sec = sec - 60;
@@ -17308,7 +17308,6 @@ bot.onText(/fai nascere il drago|accudisci drago|nutri ancora|^drago$|^drago �
 								if ((dragon_lev == 200) && (dragon_evolved == 1))
 									iKeys.push(["Scaglia Evolutiva Plus ☄️"]);
 
-								iKeys.push(["Torna al drago"]);
 								iKeys.push(["Torna al menu"]);
 
 								var kb = {
@@ -17571,6 +17570,9 @@ bot.onText(/^bevande|torna alle bevande/i, function (message) {
 		
 		if (rows[0].boost_id != 0)
 			iKeys.push(["Annulla Bevanda"]);
+		
+		iKeys.push(["Torna al drago"]);
+		iKeys.push(["Torna al menu"]);
 		
 		var kb = {
 			parse_mode: "Markdown",
@@ -18337,7 +18339,7 @@ bot.onText(/dai pietra/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								keyboard: [["1"], [cnt], ["Torna al menu"]]
+								keyboard: [["1"], [cnt], ["Torna al drago"], ["Torna al menu"]]
 							}
 						};
 					} else {
@@ -18345,14 +18347,14 @@ bot.onText(/dai pietra/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								keyboard: [["1"], ["Torna al menu"]]
+								keyboard: [["1"], ["Torna al drago"], ["Torna al menu"]]
 							}
 						};
 					}
 
 					bot.sendMessage(message.chat.id, "Quante pietre vuoi utilizzare?", kb).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
-							if (answer.text != "Torna al menu") {
+							if ((answer.text != "Torna al menu") && (answer.text != "Torna al drago")) {
 
 								var qnt = answer.text;
 
@@ -48558,6 +48560,13 @@ function getRealLevel(reb, lev) {
 		lev += 200;
 		lev += 300;
 	}
+	if (reb == 6) {
+		lev += 100;
+		lev += 150;
+		lev += 200;
+		lev += 300;
+		lev += 1000;
+	}
 	return lev;
 }
 
@@ -59824,7 +59833,7 @@ function setFinishedHeistProgress(element, index, array) {
 };
 
 function setFinishedHeist(element, index, array) {
-	connection.query('SELECT player.nickname, player.exp, player.heist_streak, player.ability, player.money, player.id, player.chat_id, heist.grade, heist.rate, heist.to_id, heist.matchmaking FROM player, heist WHERE heist.from_id = player.id AND heist.id = ' + element.id, function (err, rows, fields) {
+	connection.query('SELECT player.nickname, player.reborn, player.exp, player.heist_streak, player.ability, player.money, player.id, player.chat_id, heist.grade, heist.rate, heist.to_id, heist.matchmaking FROM player, heist WHERE heist.from_id = player.id AND heist.id = ' + element.id, function (err, rows, fields) {
 		if (err) throw err;
 		var fromNick = rows[0].nickname;
 		var fromId = rows[0].id;
@@ -59832,7 +59841,7 @@ function setFinishedHeist(element, index, array) {
 		var fromChat = rows[0].chat_id;
 		var fromMoney = parseInt(rows[0].money);
 		var fromAbility = parseInt(rows[0].ability);
-		var fromLevel = Math.floor(rows[0].exp / 10);
+		var fromLevel = getRealLevel(rows[0].reborn, Math.floor(rows[0].exp/10));
 		var streak = parseInt(rows[0].heist_streak);
 		var isMatch = rows[0].matchmaking;
 		var rate = rows[0].rate; //Probabilità di successo
@@ -59960,7 +59969,7 @@ function setFinishedHeist(element, index, array) {
 
 						rate -= to_house_id * 5;
 						rate -= dragon_level / 7;
-						rate += fromLevel / 20;
+						rate += fromLevel / 50;
 
 						connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + fromId + ' AND ability_id = 4', function (err, rows, fields) {
 							if (err) throw err;
