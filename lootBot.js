@@ -37604,6 +37604,7 @@ bot.onText(/^vendi/i, function (message) {
 							answerCallbacks[message.chat.id] = function (answer) {
 								if (answer.text.toLowerCase() == "si") {
 									delItem(player_id, 797, tap_qnt);
+									setAchievement(player_id, 7, total);
 
 									connection.query('UPDATE player SET money = money + ' + total + ' WHERE id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
@@ -44210,7 +44211,7 @@ bot.onText(/inserisci il nickname|ispeziona (.+)/i, function (message, match) {
 
 bot.onText(/^protezione/i, function (message) {
 
-	if (message.text.toLowerCase().indexOf("protezione di stoffa") != -1)
+	if (message.text.toLowerCase().indexOf("protezione di") != -1)
 		return;
 
 	connection.query('SELECT id, heist_protection FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
