@@ -45724,87 +45724,99 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 													var resp = answer.text;
 													if (resp.toLowerCase() != "si")
 														return;
-													var cavepos = viaggio.indexOf("Cava");
-													if (cavepos != -1) {
-														if ((exp < 100) && (reborn == 1)) {
-															bot.sendMessage(message.chat.id, "Non puoi viaggiare in cava fino al livello 10.", back);
+													
+													connection.query('SELECT mission_party FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+													
+														/*
+														if (rows[0].mission_party > 0) {
+															bot.sendMessage(message.chat.id, "Incarico in corso! Attendi il termine prima di avviare un esplorazione.", back)
 															return;
 														}
+														*/
 
-														connection.query('SELECT * FROM cave WHERE name = "' + viaggio + '"', function (err, rows, fields) {
-															if (err) throw err;
-															if (Object.keys(rows).length == 0) {
-																bot.sendMessage(message.chat.id, "Cava non valida", back);
+														var cavepos = viaggio.indexOf("Cava");
+														if (cavepos != -1) {
+															if ((exp < 100) && (reborn == 1)) {
+																bot.sendMessage(message.chat.id, "Non puoi viaggiare in cava fino al livello 10.", back);
 																return;
-															} else {
-																var split = "";
-																if (double == 1) {
-																	rows[0].duration = rows[0].duration/2;
-																	split = " dimezzato!";
-																	setAchievement(player_id, 55, 1);
-																}
-																if ((class_id == 7) && (reborn > 1))
-																	rows[0].duration -= rows[0].duration*0.05;
-
-																rows[0].duration -= rows[0].duration*(dragon_level/300);
-
-																/*
-																if (global_end == 1)
-																	rows[0].duration -= rows[0].duration*0.2;
-																*/
-
-																var now = new Date();
-																now.setMinutes(now.getMinutes() + rows[0].duration);
-																var time = " <i>(" + toTime(rows[0].duration*60, 0) + split + ")</i>";
-
-																var short_date = addZero(now.getDate()) + "/" + addZero(now.getMonth() + 1) + "/" + now.getFullYear() + " alle " + addZero(now.getHours()) + ":" + addZero(now.getMinutes());
-																var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
-
-																var exp = 1;
-
-																bot.sendMessage(message.chat.id, "<b>" + rows[0].name + "</b>\n" + message.from.username + ", ti aspetta un'esplorazione nella " + viaggio + " che terminerà il " + short_date + time + " (+" + exp + " exp)", abort_travel_2);
-
-																setExp(player_id, exp);
-
-																connection.query('UPDATE player SET cave_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', cave_time_end = "' + long_date + '", cave_gem = 0 WHERE id = ' + player_id, function (err, rows, fields) {
-																	if (err) throw err;
-																});
 															}
-														});
-													} else {
-														connection.query('SELECT * FROM travel WHERE name = "' + viaggio + '"', function (err, rows, fields) {
-															if (err) throw err;
-															if (Object.keys(rows).length == 0) {
-																bot.sendMessage(message.chat.id, "Viaggio non valido", back);
-																return;
-															} else {
-																var split = "";
-																if (double == 1) {
-																	rows[0].duration = rows[0].duration/2;
-																	split = " dimezzato!";
-																	setAchievement(player_id, 55, 1);
+
+															connection.query('SELECT * FROM cave WHERE name = "' + viaggio + '"', function (err, rows, fields) {
+																if (err) throw err;
+																if (Object.keys(rows).length == 0) {
+																	bot.sendMessage(message.chat.id, "Cava non valida", back);
+																	return;
+																} else {
+																	var split = "";
+																	if (double == 1) {
+																		rows[0].duration = rows[0].duration/2;
+																		split = " dimezzato!";
+																		setAchievement(player_id, 55, 1);
+																	}
+																	if ((class_id == 7) && (reborn > 1))
+																		rows[0].duration -= rows[0].duration*0.05;
+
+																	rows[0].duration -= rows[0].duration*(dragon_level/300);
+
+																	/*
+																	if (global_end == 1)
+																		rows[0].duration -= rows[0].duration*0.2;
+																	*/
+
+																	var now = new Date();
+																	now.setMinutes(now.getMinutes() + rows[0].duration);
+																	var time = " <i>(" + toTime(rows[0].duration*60, 0) + split + ")</i>";
+
+																	var short_date = addZero(now.getDate()) + "/" + addZero(now.getMonth() + 1) + "/" + now.getFullYear() + " alle " + addZero(now.getHours()) + ":" + addZero(now.getMinutes());
+																	var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
+
+																	var exp = 1;
+
+																	bot.sendMessage(message.chat.id, "<b>" + rows[0].name + "</b>\n" + message.from.username + ", ti aspetta un'esplorazione nella " + viaggio + " che terminerà il " + short_date + time + " (+" + exp + " exp)", abort_travel_2);
+
+																	setExp(player_id, exp);
+
+																	connection.query('UPDATE player SET cave_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', cave_time_end = "' + long_date + '", cave_gem = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+																		if (err) throw err;
+																	});
 																}
+															});
+														} else {
+															connection.query('SELECT * FROM travel WHERE name = "' + viaggio + '"', function (err, rows, fields) {
+																if (err) throw err;
+																if (Object.keys(rows).length == 0) {
+																	bot.sendMessage(message.chat.id, "Viaggio non valido", back);
+																	return;
+																} else {
+																	var split = "";
+																	if (double == 1) {
+																		rows[0].duration = rows[0].duration/2;
+																		split = " dimezzato!";
+																		setAchievement(player_id, 55, 1);
+																	}
 
-																rows[0].duration -= rows[0].duration*(dragon_level/300);
-																var now = new Date();
-																now.setMinutes(now.getMinutes() + rows[0].duration);
-																var time = " <i>(" + toTime(rows[0].duration*60, 0) + split + ")</i>";
+																	rows[0].duration -= rows[0].duration*(dragon_level/300);
+																	var now = new Date();
+																	now.setMinutes(now.getMinutes() + rows[0].duration);
+																	var time = " <i>(" + toTime(rows[0].duration*60, 0) + split + ")</i>";
 
-																var short_date = addZero(now.getDate()) + "/" + addZero(now.getMonth() + 1) + "/" + now.getFullYear() + " alle " + addZero(now.getHours()) + ":" + addZero(now.getMinutes());
-																var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
+																	var short_date = addZero(now.getDate()) + "/" + addZero(now.getMonth() + 1) + "/" + now.getFullYear() + " alle " + addZero(now.getHours()) + ":" + addZero(now.getMinutes());
+																	var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
 
-																var exp = 1;
+																	var exp = 1;
 
-																bot.sendMessage(message.chat.id, "<b>" + rows[0].name + "</b>\n" + message.from.username + ", ti aspetta un incredibile viaggio, " + rows[0].description + " " + short_date + time + " (+" + exp + " exp)", abort_travel);
+																	bot.sendMessage(message.chat.id, "<b>" + rows[0].name + "</b>\n" + message.from.username + ", ti aspetta un incredibile viaggio, " + rows[0].description + " " + short_date + time + " (+" + exp + " exp)", abort_travel);
 
-																setExp(player_id, exp);
+																	setExp(player_id, exp);
 
-																connection.query('UPDATE player SET travel_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', travel_time_end = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
-																	if (err) throw err;
-																});
-															}
-														});
-													}
+																	connection.query('UPDATE player SET travel_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', travel_time_end = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																		if (err) throw err;
+																	});
+																}
+															});
+														}
+													});
 												};
 											});
 											return;
@@ -46095,7 +46107,7 @@ function setMapCondition() {
 			var randCond = Math.random()*100;
 			var cond = 0;
 			if (randCond <= 50)
-				cond = Math.round(getRandomArbitrary(1, map_condition_max));
+				cond = Math.floor(getRandomArbitrary(1, map_condition_max+1));
 
 			connection.query('UPDATE config SET map_conditions = ' + cond, function (err, rows, fields) {
 				if (err) throw err;
