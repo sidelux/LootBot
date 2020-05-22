@@ -6331,13 +6331,16 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 
 											var query = 'SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg, L2.id FROM map_lobby L LEFT JOIN map_lobby_list L2 ON L.lobby_id = L2.lobby_id, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL AND L2.id IS NULL AND L.lobby_training = 0 GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY RAND()';
 											if (trainingLobby == 1)
-												query = 'SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg, L2.id FROM map_lobby L LEFT JOIN map_lobby_list L2 ON L.lobby_id = L2.lobby_id, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL AND L2.id IS NULL AND L.lobby_training = 1 GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY cnt DESC LIMIT 1';
+												query = 'SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg, L2.id FROM map_lobby L LEFT JOIN map_lobby_list L2 ON L.lobby_id = L2.lobby_id, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL AND L2.id IS NULL AND L.lobby_training = 1 GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY cnt DESC';
 
 											connection.query(query, function (err, rows, fields) {
 												if (err) throw err;
 
 												var lobby_id;
 												var text = "";
+												
+												if (trainingLobby == 1)
+													max_lobby_count = 1;
 
 												if (Object.keys(rows).length < max_lobby_count) {
 													var max_lobby = connection_sync.query('SELECT MAX(lobby_id) As mx FROM map_lobby WHERE lobby_id IS NOT NULL');
