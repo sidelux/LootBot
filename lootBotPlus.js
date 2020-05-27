@@ -9011,16 +9011,37 @@ bot.onText(/^\/gruzzolo/, function (message) {
 });
 
 bot.onText(/^\/trofei/, function (message) {
-	connection.query('SELECT trophies FROM player WHERE id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+	connection.query('SELECT id, trophies FROM player WHERE id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0)
 			return;
+		
+		var trophies = rows[0].trophies;
+		var player_id = rows[0].player_id;
+		
+		connection.query('SELECT P.id FROM player P WHERE trophies > 0 ORDER BY trophies DESC', function (err, rows, fields) {
+			if (err) throw err;
+			
+			var pos = 1;
+			var found = 0;
+			var extra = "";
+			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+				if (rows[i].id == player_id) {
+					found = 1;
+					break;
+				}
+				pos++;
+			}
+			
+			if (found == 1)
+				extra = " ed hai raggiunto la posizione <b>" + pos + "</b> della classifica";
 
-		var options = {parse_mode: 'HTML'};
-		if (message.reply_to_message != undefined)
-			options = {parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id};
-		bot.sendMessage(message.chat.id, message.from.username + ", hai accumulato <b>" + formatNumber(rows[0].trophies) + "</b> 🏆 in questa stagione", options);
+			var options = {parse_mode: 'HTML'};
+			if (message.reply_to_message != undefined)
+				options = {parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id};
+			bot.sendMessage(message.chat.id, message.from.username + ", hai accumulato <b>" + formatNumber(trophies) + "</b> 🏆" + extra + " in questa stagione", options);
+		});
 	});
 });
 

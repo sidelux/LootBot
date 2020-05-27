@@ -416,7 +416,7 @@ bot.on('message', function (message) {
 
 	if (message.text != undefined) {
 		if ((message.text != "") && (message.text.indexOf("/start") == -1)) {
-			//console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
+			// console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
 			connection.query('SELECT id FROM last_command WHERE account_id = ' + message.from.id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
@@ -6122,16 +6122,12 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 				return;
 			}
 		}
-		
-		if (rows[0].reborn == 1) {
-			bot.sendMessage(message.chat.id, "Le Mappe di Lootia sono accessibili solo dopo aver raggiunto la Rinascita 1 (Livello 100)! Potrai combattere in Mappe generate casualmente contro altri giocatori e vincere sostanziosi premi!", back)
-			return;
-		}
 
 		var player_id = rows[0].id;
 		var trophies = rows[0].trophies;
 		var map_count = rows[0].map_count;
 		var exp = rows[0].exp;
+		var reborn = rows[0].reborn;
 
 		var gender_text = "a";
 		if (rows[0].gender == "M")
@@ -6288,6 +6284,11 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 												}
 												*/
 												trainingLobby = 1;
+											} else {
+												if (reborn == 1) {
+													bot.sendMessage(message.chat.id, "La modalità classificata delle Mappe di Lootia è accessibile solo dopo aver raggiunto la Rinascita 1 (Livello 100)! Nel frattempo puoi esercitarti nella modalità Allenamento per prepararti alla vera battaglia!", back)
+													return;
+												}
 											}
 
 											if (trainingLobby == 0) {
@@ -32288,7 +32289,7 @@ bot.onText(/^\/sintesi (.+),(.+),(.+)|^\/sintesi/i, function (message, match) {
 												};
 
 												bot.sendMessage(message.chat.id, "Hai sintetizzato " + magic_sym + " *" + magic_name + " " + power + "* " + "!" + extra, kb);
-												setAchievement(player_id, 28, 1);
+												setAchievement(player_id, 28, quantity);
 											});
 										});
 									});
@@ -32628,7 +32629,7 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 																						connection.query('INSERT INTO magic (player_id, type, power, quantity) VALUES (' + player_id + ',' + type + ',' + power + ',' + quantity + ')', function (err, rows, fields) {
 																							if (err) throw err;
 																							bot.sendMessage(message.chat.id, "Hai sintetizzato " + magic_sym + " *" + magic_name + " " + power + "*!" + extra, kbBack);
-																							setAchievement(player_id, 28, 1);
+																							setAchievement(player_id, 28, quantity);
 																						});
 																					});
 																				});
@@ -36449,7 +36450,10 @@ bot.onText(/^solo (.){1,15}$|^base per quantità$/i, function (message) {
 					bot.sendMessage(message.chat.id, text, backPack);
 			});
 		} else {
-			connection.query('SELECT inventory.player_id, item.name, item.craftable, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND rarity = "' + soloRarity + '" AND inventory.quantity > 0 ORDER BY item.name ASC', function (err, rows, fields) {
+			orderQuery = "item.name ASC";
+			if (soloRarity == "D")
+				orderQuery = "item.id ASC";
+			connection.query('SELECT inventory.player_id, item.name, item.craftable, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND rarity = "' + soloRarity + '" AND inventory.quantity > 0 ORDER BY ' + orderQuery, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length > 0) {
 					text = "*" + rows[0].rname + "*:\n\n";
@@ -45254,7 +45258,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 					var global_desc = rows[0].global_desc;
 					var global_date = rows[0].global_date;
 
-					connection.query('SELECT L.name, L.det, L.value, L.reward, L.type, S.progress, I.name As itemName, L.multiply, S.completed FROM achievement_daily D INNER JOIN achievement_list L ON D.achievement_id = L.id LEFT JOIN achievement_status S ON S.achievement_id = D.achievement_id AND S.player_id = ' + player_id + ' LEFT JOIN item I ON D.item_id = I.id ORDER BY D.id', function (err, rows, fields) {
+					connection.query('SELECT L.name, L.det, L.value, L.reward, L.type, S.progress, I.name As itemName, L.multiply, S.completed, L.limit_reborn FROM achievement_daily D INNER JOIN achievement_list L ON D.achievement_id = L.id LEFT JOIN achievement_status S ON S.achievement_id = D.achievement_id AND S.player_id = ' + player_id + ' LEFT JOIN item I ON D.item_id = I.id ORDER BY D.id', function (err, rows, fields) {
 						if (err) throw err;
 						var text = "<b>Imprese giornaliere</b>\n";
 						if (Object.keys(rows).length > 0) {
@@ -45264,6 +45268,10 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 								if (rows[i].type == 12)
 									rows[i].name += " (" + rows[i].itemName + ")";
 								if (rows[i].multiply == 1) {
+									if (rows[i].limit_reborn != 0) {
+										if (reb > rows[i].limit_reborn)
+											reb = rows[i].limit_reborn;
+									}
 									rows[i].reward = rows[i].reward*reb;
 									rows[i].value = rows[i].value*reb;
 								}
@@ -47263,11 +47271,16 @@ function mainMenu(message) {
 													if (allcomplete == 1)
 														achievement = "🏁";
 
-													var ach_now = connection_sync.query('SELECT name, progress, value, ROUND(progress/IF(multiply=0, value, value*' + reborn + ')*100) As perc, multiply FROM achievement_daily, achievement_list, achievement_status WHERE achievement_daily.achievement_id = achievement_list.id AND achievement_status.achievement_id = achievement_list.id AND player_id = ' + player_id + ' AND completed = 0 ORDER BY perc DESC');
+													var ach_now = connection_sync.query('SELECT name, progress, value, ROUND(progress/IF(multiply=0, value, value*GREATEST(' + reborn + ', limit_reborn))*100) As perc, multiply, limit_reborn FROM achievement_daily, achievement_list, achievement_status WHERE achievement_daily.achievement_id = achievement_list.id AND achievement_status.achievement_id = achievement_list.id AND player_id = ' + player_id + ' AND completed = 0 ORDER BY perc DESC');
 													var ach_line = "";
 													if (Object.keys(ach_now).length > 0) {
-														if (ach_now[0].multiply == 1)
+														if (ach_now[0].multiply == 1) {
+															if (ach_now[0].limit_reborn != 0) {
+																if (reborn > ach_now[0].limit_reborn)
+																	reborn = ach_now[0].limit_reborn
+															}
 															ach_now[0].value = ach_now[0].value*reborn;
+														}
 														ach_line = "\n🏋 " + ach_now[0].name + " (" + formatNumber(ach_now[0].progress) + "/" + formatNumber(ach_now[0].value) + ") ";
 													} else
 														ach_line = "\n🏋 Imprese: ";
@@ -49348,6 +49361,11 @@ function setFinishedArena(element, index, array) {
 
 		connection.query('SELECT * FROM dragon WHERE id = ' + dragon1, function (err, rows, fields) {
 			if (err) throw err;
+			
+			if (Object.keys(rows).length == 0) {
+				console.log("Drago non trovato: " + dragon1);
+				return;
+			}
 
 			var myId = rows[0].id;
 			var name1 = rows[0].name;
@@ -50310,12 +50328,16 @@ function setAchievement(player_id, type, increment, itemId = 0) {
 		var reborn = rows[0].reborn;
 		var chat_id = rows[0].chat_id;
 
-		connection.query('SELECT name, value, type, achievement_id, item_id, reward, multiply FROM achievement_daily, achievement_list WHERE achievement_daily.achievement_id = achievement_list.id AND achievement_list.type = ' + type, function (err, rows, fields) {
+		connection.query('SELECT name, value, type, achievement_id, item_id, reward, multiply, limit_reborn FROM achievement_daily, achievement_list WHERE achievement_daily.achievement_id = achievement_list.id AND achievement_list.type = ' + type, function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
 				var count_ach = rows[0].value;
 				var reward = rows[0].reward;
 				if (rows[0].multiply == 1) {
+					if (rows[0].limit_reborn != 0) {
+						if (reborn > rows[0].limit_reborn)
+							reborn = rows[0].limit_reborn;
+					}
 					count_ach = count_ach*reborn;
 					reward = reward*reborn;
 				}

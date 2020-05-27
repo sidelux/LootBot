@@ -105,6 +105,7 @@ CREATE TABLE `achievement_list` (
   `reward` int(11) NOT NULL DEFAULT '0',
   `type` int(11) NOT NULL,
   `multiply` int(11) NOT NULL DEFAULT '0',
+  `limit_reborn` int(11) NOT NULL DEFAULT '0',
   `only_map` tinyint(1) NOT NULL DEFAULT '0',
   `enabled` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
