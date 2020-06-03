@@ -42548,8 +42548,8 @@ bot.onText(/necro del destino/i, function (message) {
 															bot.sendMessage(message.chat.id, "Quantità non valida", kbBack);
 															return;
 														}
-														if ((qnt < 1) || (qnt > 10)) {
-															bot.sendMessage(message.chat.id, "Quantità non valida, minimo 1 e massimo 10 copie", kbBack);
+														if (qnt < 1) {
+															bot.sendMessage(message.chat.id, "Quantità non valida, minimo 1 copia", kbBack);
 															return;
 														}
 
@@ -46890,8 +46890,6 @@ function mainMenu(message) {
 		var rand = Math.round(Math.random() * (Object.keys(links).length - 1));
 		price_drop_msg = "\n " + links[rand];
 	}
-
-	price_drop_msg = "\n🏡 Resta a casa e contribuisci a limitare la diffusione del virus!";
 
 	var time = "🌕 Salve";
 	var n = new Date().getHours();
@@ -53738,8 +53736,12 @@ function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnem
 						else if (isEnemy > 1)
 							text += mapIdToSym(14) + " ";
 					}
-				} else
-					text += "◼️ ";
+				} else {
+					if ((mapMatrix[i][j] == 4) || (mapMatrix[i][j] == 5) || (mapMatrix[i][j] == 6))
+						text += mapIdToSym(mapMatrix[i][j]) + " ";
+					else
+						text += "◼️ ";
+				}
 			}
 		}
 	}
