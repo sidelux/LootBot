@@ -1071,8 +1071,8 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 			var item_2id = rows[0].id2;
 			var item_3id = rows[0].id3;
 
-			var minValue = 100;
-			var bonusText = "-50% costo produzione oggetti con la Polvere";
+			var minValue = 500;
+			var bonusText = "ottieni il doppio del Mana dalle Miniere";
 
 			console.log(item_1, item_2, item_3, item_1id, item_2id, item_3id);
 
@@ -31770,12 +31770,10 @@ bot.onText(/Miniere di Mana|Raccolta|^miniera$|^miniere$/i, function (message) {
 							quantity -= quantity * 0.1;
 
 						var extra_mana = "";
-						/*
 						if (global_end == 1) {
 							quantity = quantity*2;
 							extra_mana = " (aumentata grazie al bonus globale)";
 						}
-						*/
 
 						quantity = Math.floor(quantity);
 
@@ -34637,8 +34635,10 @@ bot.onText(/utilizza polvere/i, function (message) {
 					var rar4 = 100;
 					
 					var extra = "";
+					/*
 					if (global_end == 1)
 						extra = "\n*Il prezzo totale è dimezzato grazie al bonus globale!*";
+					*/
 
 					bot.sendMessage(message.chat.id, "Puoi creare un oggetto utilizzando la Polvere (ad esclusione degli equipaggiamenti):\nRaro -> " + rar1 + "\nUltra Raro -> " + rar2 + "\nLeggendario -> " + rar3 + "\nEpico -> " + rar4 + "\nSe l'oggetto è craftato, richiederà il *doppio* della polvere + una quantità dipendente dal valore\n\nInserisci il nome dell'oggetto, al momento c'è una piccolissima probabilità di fallimento nella creazione.", alchemy).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
@@ -34675,8 +34675,10 @@ bot.onText(/utilizza polvere/i, function (message) {
 									nec += Math.round(estimate / 10000);
 								}
 					
+								/*
 								if (global_end == 1)
 									nec = Math.round(nec/2);
+								*/
 
 								bot.sendMessage(message.chat.id, "Quante copie dell'oggetto vuoi creare? Una copia di questo oggetto ti costerà " + nec + " unità di Polvere", kbNum).then(function () {
 									answerCallbacks[message.chat.id] = function (answer) {
@@ -50040,15 +50042,8 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 							copy = "copia";
 
 						var matRcnt = getItemCnt(player_id, matR);
-						var matRcnt_txt = "";
-						if (matRcnt == 1)
-							matRcnt_txt = "\nPossiedi 1 copia di questo oggetto";
-						else if (matRcnt > 1)
-							matRcnt_txt = "\nPossiedi " + matRcnt + " copie di questo oggetto";
-						else
-							matRcnt_txt = "\nNon possiedi questo oggetto";
 
-						bot.sendMessage(message.chat.id, "Spenderai *" + formatNumber(cost) + "* §" + cost_text + " e consumerai *" + quantity + "* " + copy + " dei seguenti oggetti:\n> " + n1 + " (" + r1 + ", " + q1 + ")" + s1 + "\n> " + n2 + " (" + r2 + ", " + q2 + ")" + s2 + "\n> " + n3 + " (" + r3 + ", " + q3 + ")" + s3 + matRcnt_txt, kb).then(function () {
+						bot.sendMessage(message.chat.id, "Creazione " + quantity + "x " + result_name + " (ne hai " + matRcnt + ")\nSpenderai *" + formatNumber(cost) + "* §" + cost_text + " e consumerai *" + quantity + "* " + copy + " dei seguenti oggetti:\n> " + n1 + " (" + r1 + ", " + q1 + ")" + s1 + "\n> " + n2 + " (" + r2 + ", " + q2 + ")" + s2 + "\n> " + n3 + " (" + r3 + ", " + q3 + ")" + s3, kb).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
 
 								var res = answer.text.toLowerCase();
@@ -50154,6 +50149,8 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 														var extra_craft = "";
 														if (craftexp > 0)
 															extra_craft = " ed ottenuto *" + craftexp + "* PC";
+														
+														globalAchievement(player_id, craftexp);
 
 														var resQuantity = getItemCnt(player_id, matR);
 														if (quantity == 1)
@@ -50161,7 +50158,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 														else
 															bot.sendMessage(message.chat.id, "Hai creato " + quantity + "x *" + oggetto + "* (ne possiedi " + resQuantity + ")" + extra_craft + "!", craft);
 
-														connection.query('UPDATE player SET craft_week = craft_week + ' + craftexp + ', craft_count = craft_count + ' + craftexp + ', craft_day = craft_day + ' + craftexp + ' WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+														connection.query('UPDATE player SET craft_week = craft_week + ' + craftexp + ', craft_count = craft_count + ' + craftexp + ', craft_day = craft_day + ' + craftexp + ' WHERE id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 														});
 
@@ -60306,9 +60303,6 @@ function setFinishedCave(element, index, array) {
 					totPnt += (stone_id-67);
 					addItem(element.id, stone_id);
 				}
-				
-				if (cave_gem == 0)
-					globalAchievement(element.id, caveid);
 
 				connection.query('UPDATE player SET cave_limit = 0, cave_id = 0, cave_time_end = NULL, cave_count = cave_count+1 WHERE id = ' + element.id, function (err, rows, fields) {
 					if (err) throw err;

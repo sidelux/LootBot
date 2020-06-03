@@ -1612,7 +1612,6 @@ bot.onText(/^\/mercatini/, function (message) {
 					"@ilvenditoreoscuro -  Il viandante più economico di Lootia!\n" +
 					"@spillat -  Il luogo in cui il Re papera dona cibo ai suoi sudditi.\n" +
 					"@pietredeldragoshop - Il tuo drago ha fame? Che aspetti, nutrilo da Pietredeldragoshop.\n" +
-					"@nicoloot - Non hai molti soldi? Entra e vedrai, il prezzo non sarà un tuo problema 💸.\n" +
 					"@SethShop - 'SethNegozio', per chi non fosse bravo con l'inglese.\n" +
 					"@argonautashop - Piccole lotterie, pietre a basso prezzo e eventi carini.\n" +
 					"<a href='https://t.me/joinchat/AAAAAFfCIOoiRA2xApWn3A'>Scommesse sulle globali</a> - Scommetti sui risultati delle globali!\n" +
