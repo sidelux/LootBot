@@ -40091,10 +40091,11 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 							});
 						});
 					} else {
-						var search_query = "LIKE '%" + oggetto + "%'";
-						var s = connection_sync.query("SELECT COUNT(id) As cnt FROM item WHERE name = '" + oggetto + "'");
+						var oggetto_sql = oggetto.replace(/'/g, "\\'");
+						var search_query = "LIKE '%" + oggetto_sql + "%'";
+						var s = connection_sync.query("SELECT COUNT(id) As cnt FROM item WHERE name = '" + oggetto_sql + "'");
 						if (s[0].cnt == 1)
-							search_query = "= '" + oggetto + "'";
+							search_query = "= '" + oggetto_sql + "'";
 
 						connection.query('SELECT reborn, critical, power, power_armor, power_shield, id, rarity FROM item WHERE name ' + search_query + ' AND (power <> 0 OR power_armor <> 0 OR power_shield <> 0)', function (err, rows, fields) {
 							if (err) throw err;
