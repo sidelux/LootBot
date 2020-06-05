@@ -415,6 +415,12 @@ bot.on('message', function (message) {
 	*/
 
 	if (message.text != undefined) {
+	
+		if (message.via_bot != undefined) {
+			if (message.via_bot.is_bot == 1)
+				console.log("Bot: " + message.via_bot.username);
+		}
+		
 		if ((message.text != "") && (message.text.indexOf("/start") == -1)) {
 			// console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
 			connection.query('SELECT id FROM last_command WHERE account_id = ' + message.from.id, function (err, rows, fields) {
@@ -45534,6 +45540,116 @@ bot.onText(/^vacanza/i, function (message) {
 	});
 });
 
+bot.onText(/^ricarica interventi/i, function (message) {
+	
+	var kbBack = {
+		parse_mode: "Markdown",
+		reply_markup: {
+			resize_keyboard: true,
+			keyboard: [["Torna al giocatore"], ["Torna al menu"]]
+		}
+	};
+	
+	if (dungeonRush == 1) {
+		bot.sendMessage(message.chat.id, "Questa funzione non è utilizzabile durante il Dungeon Rush", kbBack);
+		return;
+	}
+	
+	connection.query('SELECT account_id, id, refilled, class, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+
+		var player_id = rows[0].id;
+		
+		var refilled = rows[0].refilled;
+		var class_id = rows[0].class;
+		var reborn = rows[0].reborn;
+
+		connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 6', function (err, rows, fields) {
+			if (err) throw err;
+
+			var att = 0;
+			if (Object.keys(rows).length > 0) {
+				if (rows[0].ability_level > 0)
+					att = Math.ceil(rows[0].ability_level / 2);
+			}
+
+			if ((class_id == 5) && (reborn == 5))
+				att += 5;
+			else if ((class_id == 5) && (reborn == 6))
+				att += 7;
+			
+			var refill_left = (att-refilled);
+			
+			var kb = {
+				parse_mode: "Markdown",
+				reply_markup: {
+					resize_keyboard: true,
+					keyboard: [["1", "5", String(refilled)], ["Torna al giocatore"], ["Torna al menu"]]
+				}
+			};
+			
+			if (refilled == 0) {
+				bot.sendMessage(message.chat.id, "Al momento possiedi tutti gli Interventi Divini", kbBack);
+				return;
+			}
+			
+			var qnt = 10;
+			
+			bot.sendMessage(message.chat.id, "Puoi ricaricare gli Interventi Divini in cambio di Intrugli Revitalizzanti, quanti ne vuoi ricaricare?\nAl momento ne puoi utilizzare ancora " + refill_left + " su " + att + ", e possiedi " + getItemCnt(player_id, 759) + " intrugli. Per ricaricare di un utilizzo, consumerai " + qnt + " Intrugli", kb).then(function () {
+				answerCallbacks[message.chat.id] = function (answer) {
+					if ((answer.text == "Torna al giocatore") || (answer.text == "Torna al menu"))
+						return;
+					var num = parseInt(answer.text);
+					if (isNaN(num)) {
+						bot.sendMessage(message.chat.id, "Valore non valido, riprova", kbBack);
+						return;
+					}
+					if ((num < 1) || (num > refilled)) {
+						bot.sendMessage(message.chat.id, "Valore non valido, riprova, minimo 1 massimo " + refilled, kbBack);
+						return;
+					}
+					
+					var kbYesNo = {
+						parse_mode: "Markdown",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: [["Si"], ["Torna al giocatore"], ["Torna al menu"]]
+						}
+					};
+					
+					var cost = num*qnt;
+					
+					bot.sendMessage(message.chat.id, "Procedi alla ricarica degli Interventi Divini consumando " + cost + " Intrugli Revitalizzanti?", kbYesNo).then(function () {
+						answerCallbacks[message.chat.id] = function (answer) {
+							if (answer.text.toLowerCase() == "si") {
+								var int = getItemCnt(player_id, 759);
+								if (int < cost) {
+									bot.sendMessage(message.chat.id, "Non hai abbastanza Intrugli Revitalizzanti, ne possiedi " + int + " su " + cost, kbBack);
+									return;
+								}
+								
+								delItem(player_id, 759, cost);
+								connection.query('UPDATE player SET refilled = refilled-' + num + ' WHERE id = ' + player_id, function (err, rows, fields) {
+									if (err) throw err;
+								});
+								
+								bot.sendMessage(message.chat.id, "Hai ricaricato " + num + " Interventi Divini!", kbBack);
+							}
+						}
+					});
+				}
+			});
+		});
+	});
+});
+
 bot.onText(/^orario/i, function (message) {
 	var kb = {
 		parse_mode: "Markdown",
@@ -46707,6 +46823,7 @@ function getInfo(message, player, myhouse_id) {
 
 																								Keys.push(["Drago 🐉", "Vocazione 🏹"]); 
 																								Keys.push(["Artefatti 🔱", "Albero Talenti 🌳"]);
+																								Keys.push(["Ricarica Interventi ✨"]);
 																								Keys.push(["Link Invito 🗣", "Statistiche 📊"]);
 																								if (((weapon_id == 638) || 
 																									 (weapon_id == 639) || 
@@ -49867,6 +49984,13 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 	if (isNaN(quantity)) {
 		bot.sendMessage(message.chat.id, "Quantità non valida", back);
 		return;
+	}
+	
+	if (message.via_bot != undefined) {
+		if (message.via_bot.is_bot == 1) {
+			bot.sendMessage(message.chat.id, "Non è possibile utilizzare bot inline per facilitare le creazioni", back);
+			return;
+		}
 	}
 
 	quantity = parseInt(quantity);

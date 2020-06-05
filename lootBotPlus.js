@@ -4252,12 +4252,12 @@ bot.onText(/^\/negoziodesc (.+),(.+)|^\/negoziodesc/, function (message, match) 
 		}
 
 		if ((code == undefined) || (code == "")) {
-			bot.sendMessage(message.chat.id, "La sintassi è: '/negoziodesc CODICE,Descrizione'. Scrivi svuota al posto della descrizione per rimuoverla");
+			bot.sendMessage(message.chat.id, "La sintassi è: '/negoziodesc CODICE,Descrizione'. Scrivi svuota al posto della descrizione per rimuoverla, è possibile inserire i caratteri alfanumerici, le lettere accentate, ?!'@ e spazi, massimo 500 caratteri");
 			return;
 		}
 
 		if ((text == undefined) || (text == "")) {
-			bot.sendMessage(message.chat.id, "La sintassi è: '/negoziodesc CODICE,Descrizione'. Scrivi svuota al posto della descrizione per rimuoverla");
+			bot.sendMessage(message.chat.id, "La sintassi è: '/negoziodesc CODICE,Descrizione'. Scrivi svuota al posto della descrizione per rimuoverla, è possibile inserire i caratteri alfanumerici, le lettere accentate, ?!'@ e spazi, massimo 500 caratteri");
 			return;
 		}
 
