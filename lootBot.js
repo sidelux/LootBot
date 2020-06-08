@@ -31776,8 +31776,9 @@ bot.onText(/Miniere di Mana|Raccolta|^miniera$|^miniere$/i, function (message) {
 							quantity -= quantity * 0.1;
 
 						var extra_mana = "";
+						// modifica anche il ritiro automatico
 						if (global_end == 1) {
-							quantity = quantity*2;
+							quantity = quantity*3;
 							extra_mana = " (aumentata grazie al bonus globale)";
 						}
 
@@ -42609,7 +42610,7 @@ bot.onText(/necro del destino/i, function (message) {
 							var multiplier = 1;
 							if (step == last_step) {
 								done = 1;
-								multiplier = 2;
+								// multiplier = 2;
 							}
 
 							bot.sendMessage(message.chat.id, "Con i Necrospiriti 💠 puoi acquistare diversi oggetti:" +
@@ -47089,6 +47090,7 @@ function mainMenu(message) {
 		var boost_end = rows[0].boost_mission;
 		var mission_party = rows[0].mission_party;
 		var map_count = rows[0].map_count;
+		var tap_end_time = new Date(rows[0].tap_end_time);
 
 		var dragon_search_status = rows[0].status;
 
@@ -47108,6 +47110,15 @@ function mainMenu(message) {
 			var rows = connection_sync.query('SELECT SUM(value) As val FROM achievement_global');
 			if (Object.keys(global).length > 0)
 				msgtext += "\n🌍 Impresa globale: " + Math.floor(rows[0].val/global[0].global_cap*100) + "%";
+		}
+		
+		var now = new Date();
+		if ((tap_end_time != null) && (tap_end_time >= now)) {
+			if (getItemCnt(player_id, 797) > 0) {
+				var diff = Math.round((now - d) / 1000 / 60 / 24); //in ore
+				if (diff < 24)
+					msgtext += "\n🌍 Tappi in scadenza tra " + diff + " ore!";
+			}
 		}
 
 		if (mission_party > 0) {
@@ -49986,12 +49997,14 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 		return;
 	}
 	
+	/*
 	if (message.via_bot != undefined) {
 		if (message.via_bot.is_bot == 1) {
 			bot.sendMessage(message.chat.id, "Non è possibile utilizzare bot inline per facilitare le creazioni", back);
 			return;
 		}
 	}
+	*/
 
 	quantity = parseInt(quantity);
 
@@ -54174,12 +54187,11 @@ function autoMana() {
 					rows[i].quantity -= rows[i].quantity * 0.1;
 
 				var extra_mana = "";
-				/*
+				// modifiche anche il ritiro manuale
 				if (rows[i].global_end == 1) {
-					rows[i].quantity = rows[i].quantity*2;
+					rows[i].quantity = rows[i].quantity*3;
 					extra_mana = " (aumentato grazie al bonus globale)";
 				}
-				*/
 
 				rows[i].quantity = Math.floor(rows[i].quantity);
 

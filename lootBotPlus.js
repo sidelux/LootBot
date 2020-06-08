@@ -9017,7 +9017,7 @@ bot.onText(/^\/trofei/, function (message) {
 			return;
 		
 		var trophies = rows[0].trophies;
-		var player_id = rows[0].player_id;
+		var player_id = rows[0].id;
 		
 		connection.query('SELECT P.id FROM player P WHERE trophies > 0 ORDER BY trophies DESC', function (err, rows, fields) {
 			if (err) throw err;
