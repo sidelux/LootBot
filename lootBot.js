@@ -417,8 +417,22 @@ bot.on('message', function (message) {
 	if (message.text != undefined) {
 	
 		if (message.via_bot != undefined) {
-			if (message.via_bot.is_bot == 1)
-				console.log("Bot: " + message.via_bot.username);
+			if (message.via_bot.is_bot == 1) {
+				// console.log("Bot: " + message.via_bot.username);
+				connection.query('SELECT id FROM bot_use WHERE username = "' + message.via_bot.username + '"', function (err, rows, fields) {
+					if (err) throw err;
+					
+					if (Object.keys(rows).length == 0) {
+						connection.query('INSERT INTO bot_use (username, messages) VALUES ("' + message.via_bot.username + '", 1)', function (err, rows, fields) {
+								if (err) throw err;
+						});
+					} else {
+						connection.query('UPDATE bot_use SET messages = messages+1 WHERE id = ' + rows[0].id, function (err, rows, fields) {
+								if (err) throw err;
+						});
+					}
+				});
+			}
 		}
 		
 		if ((message.text != "") && (message.text.indexOf("/start") == -1)) {
@@ -47115,7 +47129,7 @@ function mainMenu(message) {
 		var now = new Date();
 		if ((tap_end_time != null) && (tap_end_time >= now)) {
 			if (getItemCnt(player_id, 797) > 0) {
-				var diff = Math.round((now - d) / 1000 / 60 / 24); //in ore
+				var diff = Math.round((tap_end_time - now) / 1000 / 60 / 24); //in ore
 				if (diff < 24)
 					msgtext += "\n🌍 Tappi in scadenza tra " + diff + " ore!";
 			}
@@ -57465,7 +57479,7 @@ bot.onText(/^\/incarico/, function (message, match) {
 
 						question = question.replace("%casuale%", "qualcuno");
 
-						bot.sendMessage(message.chat.id, "<b>Incarico in corso</b> (" + new_part_id + "a scelta)\n\n" + last_answer + question + "\n", {parse_mode: 'HTML', reply_markup: {inline_keyboard: iKeys}});
+						bot.sendMessage(message.chat.id, "<b>Incarico in corso</b> (" + part_id + "a scelta)\n\n" + last_answer + question + "\n", {parse_mode: 'HTML', reply_markup: {inline_keyboard: iKeys}});
 					});
 				});
 			};
