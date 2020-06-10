@@ -5920,6 +5920,13 @@ bot.onText(/cambia vocazione/i, function (message) {
 });
 
 bot.onText(/statistiche/i, function (message) {
+	var kbBack = {
+		parse_mode: "Markdown",
+		reply_markup: {
+			resize_keyboard: true,
+			keyboard: [["Torna al giocatore"], ["Torna al menu"]]
+		}
+	};
 	connection.query('SELECT id, mission_count, achievement_count, achievement_count_all, dungeon_count, cave_count, travel_count, global_event, kill_streak_ok, gain_exp, mission_team_count, creation_date, top_rank_count, total_trophies, power_used, death_count FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
@@ -6093,7 +6100,7 @@ bot.onText(/statistiche/i, function (message) {
 																											"*Scambi in entrata*: " + formatNumber(scambiIn) + "\n" +
 																											"*Lotterie*: " + formatNumber(lotterie) + "\n" +
 																											"*Lotterie vinte*: " + formatNumber(lotterieVinte);
-																										bot.sendMessage(message.chat.id, text, back);
+																										bot.sendMessage(message.chat.id, text, kbBack);
 																									});
 																								});
 																							});
@@ -37539,7 +37546,7 @@ bot.onText(/^vendi/i, function (message) {
 				return;
 			}
 			
-			bot.sendMessage(message.chat.id, "Sei veramente sicuro di voler vendere tutta la rarità " + oggetto + " alla metà del valore?\nIl coupon non funziona in questa modalità di vendita", yesno).then(function () {
+			bot.sendMessage(message.chat.id, "Sei veramente sicuro di voler vendere tutta la rarità " + oggetto + " alla metà del valore?", yesno).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if (answer.text.toLowerCase() == "si") {
 						connection.query('SELECT ROUND(SUM(item.value/2*inventory.quantity)) As total FROM inventory, item WHERE inventory.item_id = item.id AND item.rarity = "' + oggetto + '" AND player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
@@ -37618,11 +37625,11 @@ bot.onText(/^vendi/i, function (message) {
 			if (player_id != 1) {
 				var d = new Date();
 				if (d.getDay() == 0) {
-					bot.sendMessage(message.chat.id, "I Tappi possono essere venduti tutti i giorni tranne la domenica, dalle 10:00 alle 22:00", store);
+					bot.sendMessage(message.chat.id, "I Tappi possono essere venduti tutti i giorni tranne la domenica, dalle 09:00 alle 23:00", store);
 					return;
 				}
-				if ((d.getHours() < 10) || (d.getHours() > 21)) {
-					bot.sendMessage(message.chat.id, "I Tappi possono essere venduti tutti i giorni tranne la domenica, dalle 10:00 alle 22:00", store);
+				if ((d.getHours() < 9) || (d.getHours() > 22)) {
+					bot.sendMessage(message.chat.id, "I Tappi possono essere venduti tutti i giorni tranne la domenica, dalle 09:00 alle 23:00", store);
 					return;
 				}
 			}
@@ -37823,11 +37830,11 @@ bot.onText(/compra/i, function (message) {
 					}
 					var d = new Date();
 					if (d.getDay() != 0) {
-						bot.sendMessage(message.chat.id, "I Tappi possono essere acquistati solo di domenica, dalle 10:00 alle 22:00", store);
+						bot.sendMessage(message.chat.id, "I Tappi possono essere acquistati solo di domenica, dalle 09:00 alle 23:00", store);
 						return;
 					}
-					if ((d.getHours() < 10) || (d.getHours() > 21)) {
-						bot.sendMessage(message.chat.id, "I Tappi possono essere acquistati solo di domenica, dalle 10:00 alle 22:00", store);
+					if ((d.getHours() < 9) || (d.getHours() > 22)) {
+						bot.sendMessage(message.chat.id, "I Tappi possono essere acquistati solo di domenica, dalle 09:00 alle 23:00", store);
 						return;
 					}
 				}
