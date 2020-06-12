@@ -1529,7 +1529,8 @@ bot.onText(/^\/scorciatoia/, function (message, match) {
 					"> '/trasmo bianca,gialla,rosso (spada, armatura, scudo)' - Apre il menù per modificare l'equipaggiamento necro\n" +
 					"> ispeziona - Apre il menù rifugio\n" +
 				   	"> generatore - Apre il generatore\n" +
-				   	"> miniera/miniere - Apre le miniere di mana");
+				   	"> miniera/miniere - Apre le miniere di mana\n" +
+				   	"> stats - Apre le statistiche giocatore");
 });
 
 bot.onText(/^\/marketban (.+)/, function (message, match) {
@@ -5919,7 +5920,7 @@ bot.onText(/cambia vocazione/i, function (message) {
 	});
 });
 
-bot.onText(/statistiche/i, function (message) {
+bot.onText(/statistiche|^stats$/i, function (message) {
 	var kbBack = {
 		parse_mode: "Markdown",
 		reply_markup: {
@@ -33593,6 +33594,14 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 							keyboard: [["Torna dal contrabbandiere"], ["Torna al menu"]]
 						}
 					};
+					
+					var kbBackEnd = {
+						parse_mode: "HTML",
+						reply_markup: {
+							resize_keyboard: true,
+							keyboard: [["Torna alla piazza"], ["Torna al menu"]]
+						}
+					};
 
 					var kbSel = {
 						parse_mode: "Markdown",
@@ -33603,7 +33612,7 @@ bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
 					};
 
 					if (day_cnt == merchant_limit) {
-						bot.sendMessage(message.chat.id, "Il Contrabbandiere non ha più bisogno di nulla per oggi", kbBack);
+						bot.sendMessage(message.chat.id, "Il Contrabbandiere non ha più bisogno di nulla per oggi", kbBackEnd);
 						return;
 					}
 
