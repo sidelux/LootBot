@@ -15162,9 +15162,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																			connection.query('UPDATE dungeon_status SET monster_paralyzed = ' + (turn - 1) + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																				if (magicDouble == 1) {
-																					bot.sendMessage(message.chat.id, "Il mostro è stato paralizzato per " + turn + " turni (x2)!");
+																					bot.sendMessage(message.chat.id, "Hai lanciato *" + magicToName(1) + "*. Il mostro è stato paralizzato per " + turn + " turni (x2)!", mark);
 																				} else {
-																					bot.sendMessage(message.chat.id, "Il mostro è stato paralizzato per " + turn + " turni!");
+																					bot.sendMessage(message.chat.id, "Hai lanciato *" + magicToName(1) + "*. Il mostro è stato paralizzato per " + turn + " turni!", mark);
 																				}
 
 																				connection.query('UPDATE player SET boost_cast = 0 WHERE id = ' + player_id, function (err, rows, fields) {
@@ -15211,8 +15211,6 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																			});
 																			if (magic == 1)
 																				setAchievement(player_id, 92, 1);
-																			else if (magic == 3)
-																				setAchievement(player_id, 93, 1);
 																		}
 
 																		connection.query('SELECT * FROM dungeon_status WHERE player_id = ' + player_id + ' AND monster_id != 0', function (err, rows, fields) {
@@ -15242,12 +15240,15 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																			}
 
 																			var magic_txt = "";
+																			var magic_kill = "";
 																			if ((magic == 3) && (meParalyzed == 0)) {
+																				setAchievement(player_id, 93, 1);
 																				danno = danno * (magicPow / 30);
 																				if (magicDouble == 1)
 																					magic_txt = " con un incantesimo (x2)";
 																				else
 																					magic_txt = " con un incantesimo";
+																				magic_kill = " con " + magicToName(3);
 																			}
 
 																			if ((class_id == 2) && (reborn > 1))
@@ -15597,9 +15598,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							exp_text =  " ed ottenuto " + exp + " exp";
 
 																						if (chest > 0)
-																							bot.sendMessage(message.chat.id, "Hai ucciso il mostro, infliggendo " + formatNumber(danno) + " danni" + exp_text + ".\nFrugando tra le sue cose hai ottenuto *" + moneyText + "* e " + chest + "x *" + chestName + "*!", dNext);
+																							bot.sendMessage(message.chat.id, "Hai ucciso il mostro, infliggendo " + formatNumber(danno) + " danni" + magic_kill + exp_text + ".\nFrugando tra le sue cose hai ottenuto *" + moneyText + "* e " + chest + "x *" + chestName + "*!", dNext);
 																						else if (chest == 0)
-																							bot.sendMessage(message.chat.id, "Hai ucciso il mostro, infliggendo " + formatNumber(danno) + " danni" + exp_text + ".\nFrugando tra le sue cose hai ottenuto *" + moneyText + "*!", dNext);
+																							bot.sendMessage(message.chat.id, "Hai ucciso il mostro, infliggendo " + formatNumber(danno) + " danni" + magic_kill + exp_text + ".\nFrugando tra le sue cose hai ottenuto *" + moneyText + "*!", dNext);
 
 																						getSnowball(message.chat.id, message.from.username, player_id);
 
@@ -15921,7 +15922,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																						if (extra != "") {
 																							bot.sendMessage(message.chat.id, "Il mostro " + extra + ", ma il suo attacco successivo non riesce a " + dmg_part + magic_txt2 + "!" + restored, dBattle);
 																						} else if (magic == 1) {
-																							bot.sendMessage(message.chat.id, "Hai lanciato " + magicToName(1) + ", previeni il danno del mostro e ne rifletti una parte potenziando il tuo attacco (subisce *" + formatNumber(danno) + "* danni), inoltre ti curi di *" + formatNumber(heal) + "* hp", dBattle);
+																							bot.sendMessage(message.chat.id, "Hai lanciato *" + magicToName(1) + "*, previeni il danno del mostro e ne rifletti una parte potenziando il tuo attacco (subisce *" + formatNumber(danno) + "* danni), inoltre ti curi di *" + formatNumber(heal) + "* hp", dBattle);
 																						} else {
 																							bot.sendMessage(message.chat.id, "Il mostro non riesce a " + dmg_part + crit_txt3 + magic_txt2 + "!", dBattle);
 																						}
@@ -57145,6 +57146,9 @@ function setFinishedTeamMission(element, index, array) {
 								console.log("Errore premi");
 								return;
 							}
+							
+							if (crazyMode == 1)
+								rewardText += "\n\nTutti i premi sono aumentati del 50%, FOLLIA!";
 
 							//console.log("Reward incarico: " + rewardStr + " - " + qnt)
 
