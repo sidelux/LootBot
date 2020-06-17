@@ -14360,8 +14360,12 @@ bot.onText(/usa varco/i, function (message) {
 
 		var d = new Date(dungeon_time);
 		var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
+		
+		var extra = "";
+		if (crazyMode == 0)
+			extra = ", puoi utilizzarli ancora " + (3-rows[0].dungeon_skip) + " volte prima che la struttura spazio-temporale si laceri";
 
-		bot.sendMessage(message.chat.id, "Puoi tornare nei dungeon alle " + short_date + "\nVuoi utilizzare un Varco Temporale per annullare l'attesa?\nNe possiedi " + getItemCnt(player_id, 645) + ", puoi utilizzarli ancora " + (3-rows[0].dungeon_skip) + " volte prima che la struttura spazio-temporale si laceri", dVarco).then(function () {
+		bot.sendMessage(message.chat.id, "Puoi tornare nei dungeon alle " + short_date + "\nVuoi utilizzare un Varco Temporale per annullare l'attesa?\nNe possiedi " + getItemCnt(player_id, 645) + extra, dVarco).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text.toLowerCase() == "si") {
 
@@ -14484,56 +14488,56 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 			critical_shield += 3;
 		}
 		if ((class_id == 2) && (reborn == 3))
-			critical_armor += 5;
+			critical_armor += 2;
 		if ((class_id == 2) && (reborn >= 4)) {
-			critical_armor += 7;
-			critical_shield += 7;
+			critical_armor += 3;
+			critical_shield += 3;
 		}
 		if ((class_id == 4) && (reborn == 3)) {
-			critical += 2;
-			critical_armor += 2;
-			critical_shield += 2;
+			critical += 1;
+			critical_armor += 1;
+			critical_shield += 1;
 		}
 		if ((class_id == 4) && (reborn >= 4)) {
-			critical += 5;
-			critical_armor += 5;
-			critical_shield += 5;
+			critical += 2;
+			critical_armor += 2;
+			critical_shield += 2;
 		}
 		if ((class_id == 5) && (reborn == 3))
-			critical_shield += 5;
+			critical_shield += 2;
 		if ((class_id == 5) && (reborn >= 4))
-			critical_shield += 10;
+			critical_shield += 4;
 		if ((class_id == 6) && (reborn == 3))
 			critical_armor += 2;
 		if ((class_id == 6) && (reborn == 3))
 			critical_shield += 2;
 		if ((class_id == 6) && (reborn >= 4))
-			critical_armor += 7;
+			critical_armor += 3;
 		if ((class_id == 6) && (reborn >= 4))
-			critical_shield += 7;
+			critical_shield += 3;
 		if ((class_id == 6) && (reborn == 5))
-			critical_armor += 7;
+			critical_armor += 4;
 		if ((class_id == 6) && (reborn == 6))
-			critical_armor += 8;
+			critical_armor += 4;
 		if ((class_id == 6) && (reborn == 5))
-			critical_shield += 7;
+			critical_shield += 4;
+		if ((class_id == 6) && (reborn == 6))
+			critical_shield += 4;
 		if ((class_id == 8) && (reborn == 3))
-			critical_shield += 5;
-		if ((class_id == 8) && (reborn >= 4))
-			critical_shield += 7;
-		if ((class_id == 6) && (reborn == 6))
-			critical_shield += 8;
-		if ((class_id == 8) && (reborn == 5))
-			critical += 10;
-		if ((class_id == 8) && (reborn == 6))
-			critical += 5;
-		if ((class_id == 9) && (reborn == 3)) {
-			critical += 2;
 			critical_shield += 2;
+		if ((class_id == 8) && (reborn >= 4))
+			critical_shield += 3;
+		if ((class_id == 8) && (reborn >= 5))
+			critical += 3;
+		if ((class_id == 8) && (reborn == 6))
+			critical += 3;
+		if ((class_id == 9) && (reborn == 3)) {
+			critical += 1;
+			critical_shield += 1;
 		}
 		if ((class_id == 9) && (reborn >= 4)) {
-			critical += 7;
-			critical_shield += 7;
+			critical += 2;
+			critical_shield += 2;
 		}
 
 		if ((class_id == 8) && (reborn == 2))
@@ -15162,9 +15166,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																			connection.query('UPDATE dungeon_status SET monster_paralyzed = ' + (turn - 1) + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																				if (magicDouble == 1) {
-																					bot.sendMessage(message.chat.id, "Hai lanciato *" + magicToName(1) + "*. Il mostro è stato paralizzato per " + turn + " turni (x2)!", mark);
+																					bot.sendMessage(message.chat.id, "Hai lanciato *" + magicToName(2) + "*. Il mostro è stato paralizzato per " + turn + " turni (x2)!", mark);
 																				} else {
-																					bot.sendMessage(message.chat.id, "Hai lanciato *" + magicToName(1) + "*. Il mostro è stato paralizzato per " + turn + " turni!", mark);
+																					bot.sendMessage(message.chat.id, "Hai lanciato *" + magicToName(2) + "*. Il mostro è stato paralizzato per " + turn + " turni!", mark);
 																				}
 
 																				connection.query('UPDATE player SET boost_cast = 0 WHERE id = ' + player_id, function (err, rows, fields) {
@@ -22198,7 +22202,8 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																						var rank = 1;
 																						var rank_lost = 1;
 																						if (dragon_level < (enemy_dragon_level - 20)) {
-																							rank = 2;
+																							if (is_dummy == 0)
+																								rank = 2;
 																							rank_lost = 2;
 																						}
 
@@ -29045,12 +29050,12 @@ bot.onText(/Gestisci Membri/i, function (message) {
 																		return;
 																	}
 
-																	bot.sendMessage(message.chat.id, "Sei sicuro di voler spostare il membro?", kbYesNo).then(function () {
+																	bot.sendMessage(message.chat.id, "Sei sicuro di voler spostare il membro? Dovrà attendere 12 ore prima di partecipare all'assalto o agli incarichi", kbYesNo).then(function () {
 																		answerCallbacks[message.chat.id] = function (answer) {
 																			if (answer.text.toLowerCase() == "si") {
 
 																				var d2 = new Date();
-																				d2.setHours(d2.getHours() + 48);
+																				d2.setHours(d2.getHours() + 12);
 																				var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
 
 																				connection.query('UPDATE player SET boss_time = "' + long_date + '", team_mission_time = "' + long_date + '" WHERE id = ' + playerId, function (err, rows, fields) {
@@ -29170,12 +29175,12 @@ bot.onText(/Gestisci Membri/i, function (message) {
 																		return;
 																	}
 
-																	bot.sendMessage(message.chat.id, "Sei sicuro di voler spostare il membro?", kbYesNo).then(function () {
+																	bot.sendMessage(message.chat.id, "Sei sicuro di voler spostare il membro? Dovrà attendere 12 ore prima di partecipare all'assalto o agli incarichi", kbYesNo).then(function () {
 																		answerCallbacks[message.chat.id] = function (answer) {
 																			if (answer.text.toLowerCase() == "si") {
 
 																				var d2 = new Date();
-																				d2.setHours(d2.getHours() + 48);
+																				d2.setHours(d2.getHours() + 12);
 																				var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
 
 																				connection.query('UPDATE player SET boss_time = "' + long_date + '", team_mission_time = "' + long_date + '" WHERE id = ' + playerId, function (err, rows, fields) {
@@ -43603,10 +43608,14 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 													var heistRand = Math.random() * 100;
 													if (heist_streak + 1 >= 10) {
 														var chestStreak = 4;
-														if (heistRand % 2 == 0)
+														if (heistRand % 3 == 0)
 															chestStreak = 5;
-														if (heistRand % 15 == 0)
+														if (heistRand % 6 == 0)
 															chestStreak = 6;
+														if (heistRand % 9 == 0)
+															chestStreak = 8;
+														if (heistRand % 50 == 0)
+															chestStreak = 7;
 														connection.query('UPDATE player SET heist_streak = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 															addChest(player_id, chestStreak);
@@ -46763,56 +46772,58 @@ function getInfo(message, player, myhouse_id) {
 																							//Vocazioni
 
 																							if ((class_id == 2) && (reborn == 3))
-																								weapon2_crit += 5;
+																								weapon2_crit += 2;
 																							if ((class_id == 2) && (reborn >= 4)) {
-																								weapon2_crit += 7;
-																								weapon3_crit += 7;
+																								weapon2_crit += 3;
+																								weapon3_crit += 3;
 																							}
 																							if ((class_id == 4) && (reborn == 3)) {
+																								weapon_crit += 1;
+																								weapon2_crit += 1;
+																								weapon3_crit += 1;
+																							}
+																							if ((class_id == 4) && (reborn >= 4)) {
 																								weapon_crit += 2;
 																								weapon2_crit += 2;
 																								weapon3_crit += 2;
 																							}
-																							if ((class_id == 4) && (reborn >= 4)) {
-																								weapon_crit += 5;
-																								weapon2_crit += 5;
-																								weapon3_crit += 5;
-																							}
 																							if ((class_id == 5) && (reborn == 3))
-																								weapon3_crit += 5;
+																								weapon3_crit += 2;
 																							if ((class_id == 5) && (reborn >= 4))
-																								weapon3_crit += 10;
+																								weapon3_crit += 4;
 																							if ((class_id == 6) && (reborn == 3))
 																								weapon2_crit += 2;
 																							if ((class_id == 6) && (reborn == 3))
 																								weapon3_crit += 2;
 																							if ((class_id == 6) && (reborn >= 4))
-																								weapon2_crit += 7;
+																								weapon2_crit += 3;
 																							if ((class_id == 6) && (reborn >= 4))
-																								weapon3_crit += 7;
+																								weapon3_crit += 3;
 																							if ((class_id == 6) && (reborn == 5))
-																								weapon2_crit += 7;
-																							if ((class_id == 8) && (reborn == 6))
-																								weapon2_crit += 8;
+																								weapon2_crit += 4;
 																							if ((class_id == 6) && (reborn == 5))
-																								weapon3_crit += 7;
+																								weapon3_crit += 4;
+																							if ((class_id == 6) && (reborn == 6))
+																								critical_armor += 4;
+																							if ((class_id == 6) && (reborn == 6))
+																								critical_shield += 4;
 																							if ((class_id == 8) && (reborn == 6))
 																								weapon3_crit += 8;
 																							if ((class_id == 8) && (reborn == 3))
-																								weapon3_crit += 5;
-																							if ((class_id == 8) && (reborn >= 4))
-																								weapon3_crit += 7;
-																							if ((class_id == 8) && (reborn == 5))
-																								weapon_crit += 10;
-																							if ((class_id == 8) && (reborn == 6))
-																								weapon_crit += 5;
-																							if ((class_id == 9) && (reborn == 3)) {
-																								weapon_crit += 2;
 																								weapon3_crit += 2;
+																							if ((class_id == 8) && (reborn >= 4))
+																								weapon3_crit += 3;
+																							if ((class_id == 8) && (reborn >= 5))
+																								weapon_crit += 3;
+																							if ((class_id == 8) && (reborn == 6))
+																								weapon_crit += 3;
+																							if ((class_id == 9) && (reborn == 3)) {
+																								weapon_crit += 1;
+																								weapon3_crit += 1;
 																							}
 																							if ((class_id == 9) && (reborn >= 4)) {
-																								weapon_crit += 7;
-																								weapon3_crit += 7;
+																								weapon_crit += 2;
+																								weapon3_crit += 2;
 																							}
 
 																							if ((class_id == 7) && (reborn == 5))
@@ -52679,56 +52690,56 @@ function getPlayerCritics(player_id, weapon_crit, weapon2_crit, weapon3_crit, ch
 		critical_shield += 3;
 	}
 	if ((class_id == 2) && (reborn == 3))
-		critical_armor += 5;
+		critical_armor += 2;
 	if ((class_id == 2) && (reborn >= 4)) {
-		critical_armor += 7;
-		critical_shield += 7;
+		critical_armor += 3;
+		critical_shield += 3;
 	}
 	if ((class_id == 4) && (reborn == 3)) {
-		critical += 2;
-		critical_armor += 2;
-		critical_shield += 2;
+		critical += 1;
+		critical_armor += 1;
+		critical_shield += 1;
 	}
 	if ((class_id == 4) && (reborn >= 4)) {
-		critical += 5;
-		critical_armor += 5;
-		critical_shield += 5;
+		critical += 2;
+		critical_armor += 2;
+		critical_shield += 2;
 	}
 	if ((class_id == 5) && (reborn == 3))
-		critical_shield += 5;
+		critical_shield += 2;
 	if ((class_id == 5) && (reborn >= 4))
-		critical_shield += 10;
+		critical_shield += 4;
 	if ((class_id == 6) && (reborn == 3))
 		critical_armor += 2;
 	if ((class_id == 6) && (reborn == 3))
 		critical_shield += 2;
 	if ((class_id == 6) && (reborn >= 4))
-		critical_armor += 7;
+		critical_armor += 3;
 	if ((class_id == 6) && (reborn >= 4))
-		critical_shield += 7;
+		critical_shield += 3;
 	if ((class_id == 6) && (reborn == 5))
-		critical_armor += 7;
+		critical_armor += 4;
 	if ((class_id == 6) && (reborn == 6))
-		critical_armor += 8;
+		critical_armor += 4;
 	if ((class_id == 6) && (reborn == 5))
-		critical_shield += 7;
+		critical_shield += 4;
+	if ((class_id == 6) && (reborn == 6))
+		critical_shield += 4;
 	if ((class_id == 8) && (reborn == 3))
-		critical_shield += 5;
-	if ((class_id == 8) && (reborn >= 4))
-		critical_shield += 7;
-	if ((class_id == 6) && (reborn == 6))
-		critical_shield += 8;
-	if ((class_id == 8) && (reborn == 5))
-		critical += 10;
-	if ((class_id == 8) && (reborn == 6))
-		critical += 5;
-	if ((class_id == 9) && (reborn == 3)) {
-		critical += 2;
 		critical_shield += 2;
+	if ((class_id == 8) && (reborn >= 4))
+		critical_shield += 3;
+	if ((class_id == 8) && (reborn >= 5))
+		critical += 3;
+	if ((class_id == 8) && (reborn == 6))
+		critical += 3;
+	if ((class_id == 9) && (reborn == 3)) {
+		critical += 1;
+		critical_shield += 1;
 	}
 	if ((class_id == 9) && (reborn >= 4)) {
-		critical += 7;
-		critical_shield += 7;
+		critical += 2;
+		critical_shield += 2;
 	}
 
 	var rows = connection_sync.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 1');
@@ -52826,43 +52837,6 @@ function truncate(text, maxlen) {
 function idToClass(classId) {
 	const rows = connection_sync.query("SELECT name FROM class WHERE id = " + classId);
 	return rows[0].name;
-}
-
-function esitoScontro(message, dragon_level, enemy_dragon_level, dragon_arms_id, player_id, enemy_dragon_name, rank, chat_id2) {
-	var money = 0;
-	var chest = 1;
-	var randM = Math.random() * 100;
-	var bonus_money = "";
-	if (randM < 30) {
-		money = dragon_level * getRandomArbitrary(15, 30);
-		money = Math.round(money);
-		bonus_money = " (Bonus: " + formatNumber(money) + " §)";
-	}
-
-	if (dragon_level > (enemy_dragon_level + 50))
-		chest = 0;
-
-	if (dragon_arms_id == 714) {
-		var randS = Math.random() * 100;
-		if (randS < 50)
-			chest++;
-	}
-
-	var extra = "";
-	if (chest == 1) {
-		extra = " ed uno Scrigno Scaglia!";
-		addChest(player_id, 9);
-	} else if (chest > 1) {
-		extra = " e " + chest + " Scrigni Scaglia!";
-		addChest(player_id, 9, chest);
-	}
-
-	connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + player_id, function (err, rows, fields) {
-		if (err) throw err;
-	});
-
-	bot.sendMessage(message.chat.id, "Hai sconfitto <b>" + enemy_dragon_name + "</b>, hai ottenuto " + rank + " Ð" + extra + bonus_money, kbBack);
-	bot.sendMessage(chat_id2, "Il tuo drago è stato sconfitto nella vetta da " + dragon_name + "! Fallo riposare per tornare a combattere!");
 }
 
 function progressBar(dragon_life, dragon_total_life) {
@@ -53420,14 +53394,14 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 					connection.query('SELECT COUNT(id) As cnt FROM map_history WHERE map_lobby_id = ' + map_lobby_id + ' AND player_id = ' + player_id,  function (err, rows, fields) {
 						if (err) throw err;
 						
-						console.log("Elaborazione uccisione di " + player_id);
+						// console.log("Elaborazione uccisione di " + player_id);
 						
 						// se non è salvato lo aggiunge alla history
 						if (rows[0].cnt == 0) {
 							connection.query('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, cause, position, kills, life, penality_escape, penality_restrict) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + player_id + ', ' + cause + ', ' + pos + ', ' + match_kills + ', ' + life + ', ' + is_escaped + ', ' + penality_restrict + ')',   function (err, rows, fields) {
 								if (err) throw err;
 							});
-							console.log("Aggiunto a map_history");
+							// console.log("Aggiunto a map_history");
 						} else
 							console.log("Salto aggiunta a map_history perchè già presente");
 						
@@ -53440,7 +53414,7 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 						connection.query('UPDATE map_lobby SET killed = 1, my_turn = 0, enemy_id = NULL, battle_shield = 0, battle_heavy = 0, battle_stunned = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_turn_start = NULL, battle_time_elapsed = 0, battle_turn_lost = 0, battle_turn_active = 0, battle_time_elapsed = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 							
-							console.log("Impostato killed = 1");
+							// console.log("Impostato killed = 1");
 
 							if (check_next) {
 								// player_id sono io che sono appena stato sconfitto
@@ -59731,7 +59705,7 @@ function setFinishedMission(element, index, array) {
 								}
 
 								if ((class_id == 7) && (reborn > 1))
-									money -= money * 0.15;
+									money -= money * 0.50;
 								if ((class_id == 9) && (reborn > 1))
 									money += money * 0.15;
 
