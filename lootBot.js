@@ -15213,9 +15213,10 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																				if (err) throw err;
 																				//console.log("Magia con ID " + magicId + " utilizzata");
 																			});
-																			if (magic == 1)
-																				setAchievement(player_id, 92, 1);
 																		}
+																		
+																		if (magic == 1)
+																			setAchievement(player_id, 92, 1);
 
 																		connection.query('SELECT * FROM dungeon_status WHERE player_id = ' + player_id + ' AND monster_id != 0', function (err, rows, fields) {
 																			if (err) throw err;
@@ -49450,6 +49451,8 @@ function validTeamMember(team_id, player_id) {
 	var soglia = 2.9;
 	if (rows[0].kill_num >= 1)
 		soglia = 3.5;
+	
+	soglia = 3.6;	// per introduzione R5
 
 	for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 		if (player_id == rows[i].player_id) {
