@@ -9116,8 +9116,8 @@ bot.onText(/^\/imprese/, function (message) {
 					if (Object.keys(ach).length > 0) {
 						if (rows[i].multiply == 1) {
 							if (rows[i].limit_reborn != 0) {
-								if (reb > rows[i].limit_reborn)
-									reb = rows[i].limit_reborn;
+								if (reborn > rows[i].limit_reborn)
+									reborn = rows[i].limit_reborn;
 							}
 							rows[i].reward = rows[i].reward*reborn;
 							rows[i].value = rows[i].value*reborn;
