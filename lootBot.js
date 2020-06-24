@@ -11147,6 +11147,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																} else if (player_reborn == 5) {
 																	addItem(player_id, 647, qnt);
 																	bot.sendMessage(message.chat.id, "La vecchina sta incenerendo una Fenice appena catturata per un incantesimo, e decide di regalartene un po' per aver avuto fiducia in lei. Ottieni così " + qnt + "x *Cenere di Fenice*", dNext);
+																} else if (player_reborn == 6) {
+																	addItem(player_id, 759, qnt);
+																	bot.sendMessage(message.chat.id, "La vecchina sta preparando un Intruglio in un pentolone, e decide di regalartene un po' per aver avuto fiducia in lei. Ottieni così " + qnt + "x *Intruglio Revitalizzante*", dNext);
 																}
 															} else {
 																if (boost_id == 8)
