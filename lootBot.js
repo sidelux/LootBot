@@ -30271,7 +30271,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 		villa = 0;
 
 	if (villa == 0) {
-		connection.query("SELECT nickname, COUNT(item_id) As cnt FROM event_villa_gift, player WHERE event_villa_gift.from_id = player.id GROUP BY from_id ORDER BY COUNT(item_id) DESC LIMIT 50", function (err, rows, fields) {
+		connection.query("SELECT nickname, COUNT(item_id) As cnt FROM event_villa_gift, player WHERE event_villa_gift.from_id = player.id GROUP BY from_id ORDER BY COUNT(item_id) DESC LIMIT 25", function (err, rows, fields) {
 			if (err) throw err;
 
 			var text = "";
@@ -30281,17 +30281,37 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 				c++;
 			}
 
-			connection.query("SELECT nickname, COUNT(item_id) As cnt FROM event_villa_gift, player WHERE event_villa_gift.to_id = player.id GROUP BY to_id ORDER BY COUNT(item_id) DESC LIMIT 50", function (err, rows, fields) {
+			connection.query("SELECT nickname, COUNT(item_id) As cnt FROM event_villa_gift, player WHERE event_villa_gift.to_id = player.id GROUP BY to_id ORDER BY COUNT(item_id) DESC LIMIT 25", function (err, rows, fields) {
 				if (err) throw err;
 
-				text += "\n\nE quella di chi ne ha ricevute di più:\n";
+				text += "\nE quella di chi ne ha ricevute di più:\n";
 				c = 1;
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					text += c + "° " + rows[i].nickname + " (" + rows[i].cnt + ")\n";
 					c++;
 				}
+				
+				connection.query("SELECT COUNT(I.id) As cnt, I.name FROM event_villa_gift E, item I WHERE E.item_id = I.id GROUP BY item_id ORDER BY cnt DESC LIMIT 10", function (err, rows, fields) {
+					if (err) throw err;
+					
+					text += "\nGli oggetti più ottenuti:\n";
+					for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+						text += rows[i].name + " (" + rows[i].cnt + ")\n";
+					
+					connection.query("SELECT COUNT(id) As cnt FROM event_villa_gift WHERE item_id = 777", function (err, rows, fields) {
+						if (err) throw err;
+						
+						var special = rows[0].cnt;
+						
+						connection.query("SELECT COUNT(id) As cnt FROM event_villa_gift", function (err, rows, fields) {
+							if (err) throw err;
 
-				bot.sendMessage(message.chat.id, "L'evento è terminato! Grazie per aver partecipato, ecco la classifica di chi ha donato più casse:\n" + text, back_html);
+							text += "\nLa <b>Testa del Dragone</b> in questo evento è stata ottenuta " + special + " volte su " + formatNumber(rows[0].cnt) + " Casse totali\n";
+
+							bot.sendMessage(message.chat.id, "L'evento è terminato!\nGrazie per aver partecipato, ecco la classifica di chi ha donato più casse:\n" + text, back_html);
+						});
+					});
+				});
 			});
 		});
 		return;
@@ -54202,7 +54222,7 @@ function rebSym(reborn) {
 	else if (reborn == 5)
 		rebSym = "🌟";
 	else if (reborn == 6)
-		rebSym = "💥";
+		rebSym = "🎖";
 	return rebSym;
 }
 

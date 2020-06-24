@@ -10659,7 +10659,7 @@ function rebSym(reborn) {
 	else if (reborn == 5)
 		rebSym = "🌟";
 	else if (reborn == 6)
-		rebSym = "💥";
+		rebSym = "🎖";
 	return rebSym;
 }
 
