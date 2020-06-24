@@ -1493,6 +1493,8 @@ bot.onText(/^\/comandi/, function (message, match) {
 						"/conditions num (condizioni mappe)\n" +
 						"/checkevents (stato eventi)\n" +
 						"/reloadevents (ricarica eventi)\n" +
+						"/activateevent (attiva evento manualmente)\n" +
+						"/deactivateevent (disattiva evento manualmente)\n" +
 						"/setglobal (imposta stato globale)\n" +
 						"/globaldesc (imposta descrizione globale)\n" +
 						"/globalcap (imposta cap)\n" +
