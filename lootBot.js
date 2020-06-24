@@ -3959,78 +3959,111 @@ bot.onText(/trasmogrificazione|trasmo$|^\/trasmo (.+)/i, function (message, matc
 						keyboard: [["Procedi"], ["Torna all'alchimia"], ["Torna al menu"]]
 					}
 				};
+				
+				connection.query("SELECT SUM(ability_level) As cnt FROM ability WHERE player_id = " + player_id, function (err, rows, fields) {
+					if (err) throw err;
 
-				bot.sendMessage(message.chat.id, "Per sbloccare questa funzionalità ti serviranno questi requisiti:\n" +
-								"> 160 Livelli complessivi dei Talenti\n" +
-								"> Almeno 4 Artefatti ottenuti\n" +
-								"> Livello 1000\n" +
-								"> Drago al livello 200\n" +
-								"> Set Necro Base (verrà consumato)\n" +
-								"\nIn seguito potrai cambiare il tipo di equipaggiamento Necro.", kb).then(function () {
-					answerCallbacks[message.chat.id] = function (answer) {
-						if (answer.text == "Procedi") {
+					var req1 = ""
+					if (rows[0].cnt >= 160)
+						req1 = " ✅";
 
-							connection.query("SELECT SUM(ability_level) As cnt FROM ability WHERE player_id = " + player_id, function (err, rows, fields) {
-								if (err) throw err;
+					connection.query("SELECT COUNT(item_id) As cnt FROM artifacts WHERE player_id = " + player_id, function (err, rows, fields) {
+						if (err) throw err;
 
-								if (rows[0].cnt < 160) {
-									bot.sendMessage(message.chat.id, "I talenti ottenuti non sono sufficienti", back);
-									return;
-								}
+						var req2 = "";
+						if (rows[0].cnt >= 4)
+							req2 = " ✅";
 
-								connection.query("SELECT COUNT(item_id) As cnt FROM artifacts WHERE player_id = " + player_id, function (err, rows, fields) {
-									if (err) throw err;
+						var req3 = "";
+						if (level >= 1000)
+							req3 = " ✅";
 
-									if (rows[0].cnt < 4) {
-										bot.sendMessage(message.chat.id, "Gli artefatti ottenuti non sono sufficienti", back);
-										return;
-									}
+						connection.query('SELECT level FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
+							if (err) throw err;
+							var req4 = "";
+							if (Object.keys(rows).length > 0) {
+								if (rows[0].level >= 200)
+									req4 = " ✅";
+							}
 
-									if (level < 1000) {
-										bot.sendMessage(message.chat.id, "Il livello del personaggio ottenuto non è sufficiente", back);
-										return;
-									}
+							var req5 = "";
+							if ((getItemCnt(player_id, 221) >= 1) && (getItemCnt(player_id, 577) >= 1) && (getItemCnt(player_id, 600) >= 1))
+								req5 = " ✅";
 
-									connection.query('SELECT level FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
-										if (err) throw err;
-										if (Object.keys(rows).length == 0) {
-											bot.sendMessage(message.chat.id, "Non possiedi il drago", back);
-											return;
-										}
+							bot.sendMessage(message.chat.id, "Per sbloccare questa funzionalità ti serviranno questi requisiti:\n" +
+											"> 160 Livelli complessivi dei Talenti" + req1 + "\n" +
+											"> Almeno 4 Artefatti ottenuti" + req2 + "\n" +
+											"> Livello 1000" + req3 + "\n" +
+											"> Drago al livello 200" + req4 + "\n" +
+											"> Set Necro Base (verrà consumato)" + req5 + "\n" +
+											"\nIn seguito potrai cambiare il tipo di equipaggiamento Necro.", kb).then(function () {
+								answerCallbacks[message.chat.id] = function (answer) {
+									if (answer.text == "Procedi") {
 
-										if (rows[0].level < 200) {
-											bot.sendMessage(message.chat.id, "Il livello del drago ottenuto non è sufficiente", back);
-											return;
-										}
-
-										if (getItemCnt(player_id, 221) < 1) {
-											bot.sendMessage(message.chat.id, "Non possiedi la Necrolama", back);
-											return;
-										}
-
-										if (getItemCnt(player_id, 577) < 1) {
-											bot.sendMessage(message.chat.id, "Non possiedi la Corazza Necro", back);
-											return;
-										}
-
-										if (getItemCnt(player_id, 600) < 1) {
-											bot.sendMessage(message.chat.id, "Non possiedi lo Scudo Necro", back);
-											return;
-										}
-
-										delItem(player_id, 221, 1);
-										delItem(player_id, 577, 1);
-										delItem(player_id, 600, 1);
-
-										connection.query('INSERT INTO necro_change (player_id) VALUES (' + player_id + ')', function (err, rows, fields) {
+										connection.query("SELECT SUM(ability_level) As cnt FROM ability WHERE player_id = " + player_id, function (err, rows, fields) {
 											if (err) throw err;
-											bot.sendMessage(message.chat.id, "Hai ottenuto l'accesso alle *Porte degli Dei*, potrai cambiare il tipo di equipaggiamento Necro su richiesta!", back);
+
+											if (rows[0].cnt < 160) {
+												bot.sendMessage(message.chat.id, "I talenti ottenuti non sono sufficienti", back);
+												return;
+											}
+
+											connection.query("SELECT COUNT(item_id) As cnt FROM artifacts WHERE player_id = " + player_id, function (err, rows, fields) {
+												if (err) throw err;
+
+												if (rows[0].cnt < 4) {
+													bot.sendMessage(message.chat.id, "Gli artefatti ottenuti non sono sufficienti", back);
+													return;
+												}
+
+												if (level < 1000) {
+													bot.sendMessage(message.chat.id, "Il livello del personaggio ottenuto non è sufficiente", back);
+													return;
+												}
+
+												connection.query('SELECT level FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+													if (Object.keys(rows).length == 0) {
+														bot.sendMessage(message.chat.id, "Non possiedi il drago", back);
+														return;
+													}
+
+													if (rows[0].level < 200) {
+														bot.sendMessage(message.chat.id, "Il livello del drago ottenuto non è sufficiente", back);
+														return;
+													}
+
+													if (getItemCnt(player_id, 221) < 1) {
+														bot.sendMessage(message.chat.id, "Non possiedi la Necrolama", back);
+														return;
+													}
+
+													if (getItemCnt(player_id, 577) < 1) {
+														bot.sendMessage(message.chat.id, "Non possiedi la Corazza Necro", back);
+														return;
+													}
+
+													if (getItemCnt(player_id, 600) < 1) {
+														bot.sendMessage(message.chat.id, "Non possiedi lo Scudo Necro", back);
+														return;
+													}
+
+													delItem(player_id, 221, 1);
+													delItem(player_id, 577, 1);
+													delItem(player_id, 600, 1);
+
+													connection.query('INSERT INTO necro_change (player_id) VALUES (' + player_id + ')', function (err, rows, fields) {
+														if (err) throw err;
+														bot.sendMessage(message.chat.id, "Hai ottenuto l'accesso alle *Porte degli Dei*, potrai cambiare il tipo di equipaggiamento Necro su richiesta!", back);
+													});
+												});
+											});
 										});
-									});
-								});
+									};
+								};
 							});
-						};
-					};
+						});
+					});
 				});
 				return;
 			}
@@ -60783,7 +60816,7 @@ function setExp(player_id, exp) {
 			});
 		}
 		
-		if (reborn >= 5) {
+		if (((reborn == 5) && (my_exp == 10000)) || ((reborn == 6) && (my_exp == 250000))) {
 			connection.query('SELECT COUNT(id) As cnt FROM artifacts WHERE item_id = 675 AND player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (rows[0].cnt > 0) {
