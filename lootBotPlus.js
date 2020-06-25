@@ -830,8 +830,7 @@ bot.onText(/^\/marketban (.+)/, function (message, match) {
 	};
 });
 
-bot.onText(/^\/([0-9]+)+birre$/, function (message, match) {
-
+bot.onText(/^\/([0-9]{1,3})birre$/, function (message, match) {	
 	match[1] = parseInt(match[1]);
 	if (match[1] < 1)
 		match[1] = 1;
@@ -1419,7 +1418,6 @@ bot.onText(/^\/pinfo (.+)/, function (message, match) {
 
 bot.onText(/^\/info$/, function (message) {
 	var reply = "";
-	console.log(message);
 
 	if (message.reply_to_message != undefined) {
 		var date = new Date(message.reply_to_message.date * 1000);
