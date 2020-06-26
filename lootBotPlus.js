@@ -5965,7 +5965,7 @@ bot.onText(/^\/crealotteria(?!p) (.+)|^\/crealotteria(?!p)$/, function (message,
 	var max_text = "";
 	var match = oggetto.match(/\d+/g);
 	if (match != null) {
-		oggetto = oggetto.replace(/\d+/g, '');
+		oggetto = oggetto.replace(/\d+/g, '').trim();
 		max_players = parseInt(match[0]);
 		max_text = ", massimi: " + max_players;
 		if (isNaN(max_players) || (max_players < 5)){
@@ -6013,7 +6013,6 @@ bot.onText(/^\/crealotteria(?!p) (.+)|^\/crealotteria(?!p)$/, function (message,
 					return;
 				}
 
-
 				connection.query('SELECT item.allow_sell, item.id FROM inventory, item WHERE inventory.item_id = item.id AND item.name = "' + oggetto + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length == 0) {
@@ -6060,7 +6059,7 @@ bot.onText(/^\/crealotteriap ([^\s]+) (.+)|^\/crealotteriap$/, function (message
 	var max_text = "";
 	var match = oggetto.match(/\d+/g);
 	if (match != null) {
-		oggetto = oggetto.replace(/\d+/g, '');
+		oggetto = oggetto.replace(/\d+/g, '').trim();
 		max_players = parseInt(match[0]);
 		max_text = ", massimi: " + max_players;
 		if (isNaN(max_players) || (max_players < 5)){
