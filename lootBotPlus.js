@@ -5957,7 +5957,7 @@ bot.on('callback_query', function (message) {
 bot.onText(/^\/crealotteria(?!p) (.+)|^\/crealotteria(?!p)$/, function (message, match) {
 	var oggetto = match[1];
 	if ((oggetto == undefined) || (oggetto == "")) {
-		bot.sendMessage(message.chat.id, "Per inserire una lotteria utilizza la seguente sintassi: '/crealotteria Prezzo NomeOggetto numeroMassimoPartecipanti', l'oggetto viene rimosso dall'inventario appena creata la lotteria e il numero di partecipanti minimo è 5");
+		bot.sendMessage(message.chat.id, "Per inserire una lotteria utilizza la seguente sintassi: '/crealotteria NomeOggetto numeroMassimoPartecipanti', l'oggetto viene rimosso dall'inventario appena creata la lotteria e il numero di partecipanti minimo è 5");
 		return;
 	}
 
