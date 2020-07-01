@@ -1091,8 +1091,8 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 			var item_2id = rows[0].id2;
 			var item_3id = rows[0].id3;
 
-			var minValue = 500;
-			var bonusText = "ottieni il doppio del Mana dalle Miniere";
+			var minValue = 5000;
+			var bonusText = "ottieni il doppio degli scrigni negli Assalti";
 
 			console.log(item_1, item_2, item_3, item_1id, item_2id, item_3id);
 
@@ -31868,10 +31868,12 @@ bot.onText(/Miniere di Mana|Raccolta|^miniera$|^miniere$/i, function (message) {
 
 						var extra_mana = "";
 						// modifica anche il ritiro automatico
+						/*
 						if (global_end == 1) {
 							quantity = quantity*3;
 							extra_mana = " (aumentata grazie al bonus globale)";
 						}
+						*/
 
 						quantity = Math.floor(quantity);
 
@@ -45198,7 +45200,7 @@ bot.onText(/missione/i, function (message) {
 						/*
 						if (global_end == 1) {
 							name += " (Ridotta per bonus globale)";
-							duration_reduce += 25;
+							duration_reduce += 15;
 						}
 						*/
 
@@ -50392,8 +50394,6 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 														var extra_craft = "";
 														if (craftexp > 0)
 															extra_craft = " ed ottenuto *" + craftexp + "* PC";
-														
-														globalAchievement(player_id, craftexp);
 
 														var resQuantity = getItemCnt(player_id, matR);
 														if (quantity == 1)
@@ -52355,7 +52355,6 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 										chest7 += 3;
 								}
 
-								/*
 								if (rows[i].global_end == 1) {
 									chest1 = chest1*2;
 									chest2 = chest2*2;
@@ -52367,7 +52366,6 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 									chest8 = chest8*2;
 									chest9 = chest9*2;
 								}
-								*/
 
 								/*
 								if (rows[i].global_end == 1)
@@ -54258,10 +54256,12 @@ function autoMana() {
 
 				var extra_mana = "";
 				// modifiche anche il ritiro manuale
+				/*
 				if (rows[i].global_end == 1) {
 					rows[i].quantity = rows[i].quantity*3;
 					extra_mana = " (aumentato grazie al bonus globale)";
 				}
+				*/
 
 				rows[i].quantity = Math.floor(rows[i].quantity);
 
@@ -59109,6 +59109,7 @@ function setFinishedDungeonRoom(element, index, array) {
 		var rand = Math.round(Math.random() * (Object.keys(strArr).length - 1));
 		bot.sendMessage(element.chat_id, strArr[rand]);
 		setAchievement(player_id, 63, 1);
+		globalAchievement(player_id, 1);
 	});
 };
 
