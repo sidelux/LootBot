@@ -11120,9 +11120,9 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																								weapon2_crit += 3;
 																							if ((class_id == 6) && (reborn >= 4))
 																								weapon3_crit += 3;
-																							if ((class_id == 6) && (reborn == 5))
+																							if ((class_id == 6) && (reborn >= 5))
 																								weapon2_crit += 4;
-																							if ((class_id == 6) && (reborn == 5))
+																							if ((class_id == 6) && (reborn >= 5))
 																								weapon3_crit += 4;
 																							if ((class_id == 6) && (reborn == 6))
 																								weapon2_crit += 4;

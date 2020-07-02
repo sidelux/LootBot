@@ -10243,6 +10243,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																if (err) throw err;
 																bot.sendMessage(message.chat.id, "Hai deciso di rinunciare al dungeon scappando con un Kit Fuga!", back);
 															});
+															setAchievement(player_id, 51, 1);
 														} else if (answer.text == "Non usare") {
 															var d = new Date();
 															d.setHours(d.getHours() + wait_dungeon_long);
@@ -10258,7 +10259,6 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																bot.sendMessage(message.chat.id, "Hai deciso di rinunciare al dungeon", back);
 															});
 														}
-														setAchievement(player_id, 51, 1);
 													}
 												});
 												return;
@@ -11222,6 +11222,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			if (err) throw err;
 																			bot.sendMessage(message.chat.id, "Hai deciso di rinunciare al dungeon scappando con un Kit Fuga!", back);
 																		});
+																		setAchievement(player_id, 51, 1);
 																	} else if (answer.text == "Non usare") {
 																		var d = new Date();
 																		d.setHours(d.getHours() + wait_dungeon_long);
@@ -11237,7 +11238,6 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			bot.sendMessage(message.chat.id, "Hai deciso di rinunciare al dungeon", back);
 																		});
 																	}
-																	setAchievement(player_id, 51, 1);
 																}
 															});
 															return;
@@ -14553,11 +14553,11 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 			critical_armor += 3;
 		if ((class_id == 6) && (reborn >= 4))
 			critical_shield += 3;
-		if ((class_id == 6) && (reborn == 5))
+		if ((class_id == 6) && (reborn >= 5))
 			critical_armor += 4;
 		if ((class_id == 6) && (reborn == 6))
 			critical_armor += 4;
-		if ((class_id == 6) && (reborn == 5))
+		if ((class_id == 6) && (reborn >= 5))
 			critical_shield += 4;
 		if ((class_id == 6) && (reborn == 6))
 			critical_shield += 4;
@@ -15129,7 +15129,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							connection.query('UPDATE dungeon_status SET room_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
-																						}
+																						}									
 																						connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, last_dir = NULL, last_selected_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																							if (err) throw err;
 																						});
@@ -46860,14 +46860,14 @@ function getInfo(message, player, myhouse_id) {
 																								weapon2_crit += 3;
 																							if ((class_id == 6) && (reborn >= 4))
 																								weapon3_crit += 3;
-																							if ((class_id == 6) && (reborn == 5))
+																							if ((class_id == 6) && (reborn >= 5))
 																								weapon2_crit += 4;
-																							if ((class_id == 6) && (reborn == 5))
+																							if ((class_id == 6) && (reborn >= 5))
 																								weapon3_crit += 4;
 																							if ((class_id == 6) && (reborn == 6))
-																								critical_armor += 4;
+																								weapon2_crit += 4;
 																							if ((class_id == 6) && (reborn == 6))
-																								critical_shield += 4;
+																								weapon3_crit += 4;
 																							if ((class_id == 8) && (reborn == 6))
 																								weapon3_crit += 8;
 																							if ((class_id == 8) && (reborn == 3))
@@ -52776,11 +52776,11 @@ function getPlayerCritics(player_id, weapon_crit, weapon2_crit, weapon3_crit, ch
 		critical_armor += 3;
 	if ((class_id == 6) && (reborn >= 4))
 		critical_shield += 3;
-	if ((class_id == 6) && (reborn == 5))
+	if ((class_id == 6) && (reborn >= 5))
 		critical_armor += 4;
 	if ((class_id == 6) && (reborn == 6))
 		critical_armor += 4;
-	if ((class_id == 6) && (reborn == 5))
+	if ((class_id == 6) && (reborn >= 5))
 		critical_shield += 4;
 	if ((class_id == 6) && (reborn == 6))
 		critical_shield += 4;
