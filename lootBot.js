@@ -3559,7 +3559,7 @@ bot.onText(/Rimodulatore di Flaridion|Torna al rimodulatore|^rimodulatore$/i, fu
 											return;
 										}
 
-										connection.query('UPDATE player SET gems = gems-' + gems + ', power_used = 0, power_pnt = power_pnt+' + power_used + ', power_dmg = 0, power_def = 0, power_weapon = 0, power_armor = 0, power_shield = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+										connection.query('UPDATE player SET gems = gems-' + gems + ', power_used = 0, power_pnt = power_pnt+' + power_used + ', power_dmg = 0, power_def = 0, power_weapon = 0, power_armor = 0, power_shield = 0, power_dragon_dmg = 0, power_dragon_def = 0, power_dragon_crit = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 											bot.sendMessage(message.chat.id, "Sono stati riaccreditati " + formatNumber(power_used) + " Flaridion!", kbBack);
 										});
@@ -49491,7 +49491,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 }
 
 function validTeamMember(team_id, player_id) {
-	const rows = connection_sync.query('SELECT player.id As player_id, team.kill_num, team.name, player.reborn, player.nickname, FLOOR(player.exp/10) As level FROM team, team_player, player WHERE team.id = team_player.team_id AND team_player.player_id = player.id AND team.id = ' + team_id + ' ORDER BY player.reborn, player.exp DESC');
+	const rows = connection_sync.query('SELECT P.id As player_id, T.kill_num, T.name, P.reborn, P.nickname, FLOOR(P.exp/10) As level FROM team T, team_player TP, player P WHERE T.id = TP.team_id AND TP.player_id = P.id AND T.id = ' + team_id + ' ORDER BY P.reborn, P.exp DESC');
 
 	var mediaTeam = 0;
 	for (var i = 0, len = Object.keys(rows).length; i < len; i++)
@@ -49512,7 +49512,7 @@ function validTeamMember(team_id, player_id) {
 	if (rows[0].kill_num >= 1)
 		soglia = 3.5;
 	
-	soglia = 3.6;	// per introduzione R5
+	soglia = 3.6;	// per introduzione R5, togliere
 
 	for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 		if (player_id == rows[i].player_id) {
