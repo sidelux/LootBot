@@ -49497,6 +49497,9 @@ function validTeamMember(team_id, player_id) {
 	for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 		mediaTeam += parseInt(getRealLevel(rows[i].reborn, rows[i].level));
 	mediaTeam = mediaTeam / Object.keys(rows).length;
+	
+	if (mediaTeam >= 2850)	// per supporto R5
+		return 1;
 
 	var sum = 0;
 	var lev = 0;
@@ -49511,8 +49514,6 @@ function validTeamMember(team_id, player_id) {
 	var soglia = 2.9;
 	if (rows[0].kill_num >= 1)
 		soglia = 3.5;
-	
-	soglia = 3.6;	// per introduzione R5, togliere
 
 	for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 		if (player_id == rows[i].player_id) {
@@ -54819,7 +54820,7 @@ function refreshLife() {
 
 function checkLifeRush() {
 	if (dungeonRush == 1) {
-		connection.query('SELECT id, life, total_life FROM player WHERE life < total_life', function (err, rows, fields) {
+		connection.query('SELECT id, chat_id, life, total_life FROM player WHERE life < total_life', function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
 				if (Object.keys(rows).length == 1)
@@ -54834,12 +54835,15 @@ function checkLifeRush() {
 
 function setLifeRush(element, index, array) {
 	var player_id = element.id;
+	var chat_id = element.chat_id;
 	var life = element.life;
 	var total_life = element.total_life;
 
 	var refill = total_life*0.15;
-	if (life+refill > total_life)
+	if (life+refill > total_life) {
 		refill = total_life-life;
+		bot.sendMessage(chat_id, "Hai ricaricato tutta la salute!");
+	}
 
 	connection.query('UPDATE player SET life = life+' + refill + ' WHERE id = ' + player_id, function (err, rows, fields) {
 		if (err) throw err;
