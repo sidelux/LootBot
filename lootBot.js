@@ -54,8 +54,8 @@ var battle_season_test = 0;
 var dragon_limit_search = 15;
 var map_condition_max = 10;
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
-var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750, 2500, 3000, 3750];
-var progLevRew = [50000, 100000, 125000, 150000, 250000, 1000000, 2500000, 5000000, 5000000, 10000000, 20000000];
+var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750, 2500, 3000, 3750, 4250];
+var progLevRew = [50000, 100000, 125000, 150000, 250000, 1000000, 2500000, 5000000, 5000000, 10000000, 20000000, 30000000];
 var progMis = [10, 25, 50, 75, 100, 250, 500, 1000, 2000, 5000, 10000, 25000, 50000];
 var progMisRew = [5000, 12500, 25000, 50000, 75000, 100000, 250000, 350000, 500000, 1000000, 2000000, 3000000, 5000000];
 var progDung = [1, 5, 10, 25, 50, 75, 100, 250, 500, 1000, 1500, 2500, 3000];
@@ -16150,7 +16150,7 @@ bot.onText(/rinasci/i, function (message) {
 		if (reborn == 4)
 			text = "Desideri rinascere?\nIl tuo personaggio non perderà alcuna risorsa, riceverai il simbolo speciale e il massimo livello sarà il 1.000. Tuttavia per iniziare la rinascita ti servono almeno due Artefatti!\nProcedi?";
 		else if (reborn == 5)
-			text = "Desideri rinascere?\nIl tuo personaggio non perderà alcuna risorsa, il massimo livello sarà il 2.000. Tuttavia per iniziare la rinascita ti servono sei Artefatti!\nProcedi?";
+			text = "Desideri rinascere?\nIl tuo personaggio non perderà alcuna risorsa, il massimo livello sarà il 2.500. Tuttavia per iniziare la rinascita ti servono sei Artefatti!\nProcedi?";
 
 		bot.sendMessage(message.chat.id, text, kb).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
@@ -45376,6 +45376,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 					connection.query('SELECT L.name, L.det, L.value, L.reward, L.type, S.progress, I.name As itemName, L.multiply, S.completed, L.limit_reborn FROM achievement_daily D INNER JOIN achievement_list L ON D.achievement_id = L.id LEFT JOIN achievement_status S ON S.achievement_id = D.achievement_id AND S.player_id = ' + player_id + ' LEFT JOIN item I ON D.item_id = I.id ORDER BY D.id', function (err, rows, fields) {
 						if (err) throw err;
 						var text = "<b>Imprese giornaliere</b>\n";
+						var reb_lim = reb;
 						if (Object.keys(rows).length > 0) {
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 								if (rows[i].progress == null)
@@ -45385,10 +45386,10 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 								if (rows[i].multiply == 1) {
 									if (rows[i].limit_reborn != 0) {
 										if (reb > rows[i].limit_reborn)
-											reb = rows[i].limit_reborn;
+											reb_lim = rows[i].limit_reborn;
 									}
-									rows[i].reward = rows[i].reward*reb;
-									rows[i].value = rows[i].value*reb;
+									rows[i].reward = rows[i].reward*reb_lim;
+									rows[i].value = rows[i].value*reb_lim;
 								}
 								if (rows[i].completed == 1)
 									text += "> ✅ <b>" + rows[i].name + "</b>: " + formatNumber(rows[i].value) + " " + rows[i].det + " (" + formatNumber(rows[i].reward) + " §)\n";
@@ -47509,13 +47510,14 @@ function mainMenu(message) {
 
 													var ach_now = connection_sync.query('SELECT name, progress, value, ROUND(progress/IF(multiply=0, value, value*GREATEST(' + reborn + ', limit_reborn))*100) As perc, multiply, limit_reborn FROM achievement_daily, achievement_list, achievement_status WHERE achievement_daily.achievement_id = achievement_list.id AND achievement_status.achievement_id = achievement_list.id AND player_id = ' + player_id + ' AND completed = 0 ORDER BY perc DESC');
 													var ach_line = "";
+													var reborn_ach = reborn;
 													if (Object.keys(ach_now).length > 0) {
 														if (ach_now[0].multiply == 1) {
 															if (ach_now[0].limit_reborn != 0) {
 																if (reborn > ach_now[0].limit_reborn)
-																	reborn = ach_now[0].limit_reborn
+																	reborn_ach = ach_now[0].limit_reborn
 															}
-															ach_now[0].value = ach_now[0].value*reborn;
+															ach_now[0].value = ach_now[0].value*reborn_ach;
 														}
 														ach_line = "\n🏋 " + ach_now[0].name + " (" + formatNumber(ach_now[0].progress) + "/" + formatNumber(ach_now[0].value) + ") ";
 													} else
@@ -48837,7 +48839,14 @@ function getRealLevel(reb, lev) {
 
 function getLevel(lev) {
 	var reb = 0;
-	if (lev >= 750) {
+	if (lev >= 1750) {
+		lev -= 100;
+		lev -= 150;
+		lev -= 200;
+		lev -= 300;
+		lev -= 750;
+		reb = 6;
+	} else if (lev >= 750) {
 		lev -= 100;
 		lev -= 150;
 		lev -= 200;
