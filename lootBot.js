@@ -52193,387 +52193,404 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 		extra = "boss";
 
 	final_report += "🎉 Il " + extra + " è stato sconfitto 🎉!\n\n<b>Assegnazione delle ricompense:</b>\n";
-
-	connection.query('SELECT level FROM team_boost WHERE team_id = ' + team_id + ' AND boost_id = 2', function (err, rows, fields) {
+	
+	connection.query('SELECT boost_id FROM team WHERE id = ' + team_id, function (err, rows, fields) {
 		if (err) throw err;
+		
+		var team_boost_chest_tmp = 0;
+		if (rows[0].boost_id == 4)
+			team_boost_chest_tmp = 1;
 
-		var team_boost_money = 0;
-		if (Object.keys(rows).length > 0)
-			team_boost_money = (0.03 * rows[0].level);
-
-		connection.query('SELECT level FROM team_boost WHERE team_id = ' + team_id + ' AND boost_id = 4', function (err, rows, fields) {
+		connection.query('SELECT level FROM team_boost WHERE team_id = ' + team_id + ' AND boost_id = 2', function (err, rows, fields) {
 			if (err) throw err;
 
-			var team_boost_chest = 0;
+			var team_boost_money = 0;
 			if (Object.keys(rows).length > 0)
-				team_boost_chest = (0.03 * rows[0].level);
+				team_boost_money = (0.03 * rows[0].level);
 
-			var bonus_act = 0;
-			var acc_bonus = 0;
-
-			connection.query('SELECT T2.players, T2.level FROM team T1 JOIN team T2 ON T1.child_team = T2.id WHERE T1.id = ' + team_id, function (err, rows, fields) {
+			connection.query('SELECT level FROM team_boost WHERE team_id = ' + team_id + ' AND boost_id = 4', function (err, rows, fields) {
 				if (err) throw err;
 
-				//Se questa è la madre
-				if (Object.keys(rows).length > 0) {
-					if (rows[0].level >= 5) {
-						bonus_act = 1;
-						acc_bonus = 5;
-					}
-				}
+				var team_boost_chest = 0;
+				if (Object.keys(rows).length > 0)
+					team_boost_chest = (0.03 * rows[0].level);
 
-				connection.query('SELECT T2.players, T2.level FROM team T1 JOIN team T2 ON T1.id = T2.id WHERE T1.child_team = ' + team_id, function (err, rows, fields) {
+				var bonus_act = 0;
+				var acc_bonus = 0;
+
+				connection.query('SELECT T2.players, T2.level FROM team T1 JOIN team T2 ON T1.child_team = T2.id WHERE T1.id = ' + team_id, function (err, rows, fields) {
 					if (err) throw err;
 
-					//Se questa è la accademia
+					//Se questa è la madre
 					if (Object.keys(rows).length > 0) {
-						if ((rows[0].level >= 5) && (bonus_act == 0))
+						if (rows[0].level >= 5) {
+							bonus_act = 1;
 							acc_bonus = 5;
+						}
 					}
 
-					connection.query("SELECT level FROM assault_place_team WHERE team_id = " + team_id + " ORDER BY place_id", function (err, rows, fields) {
+					connection.query('SELECT T2.players, T2.level FROM team T1 JOIN team T2 ON T1.id = T2.id WHERE T1.child_team = ' + team_id, function (err, rows, fields) {
 						if (err) throw err;
 
-						var paPlace = 0;
-						var placeAvg = 0;
-						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-							paPlace += rows[i].level*5;
-							placeAvg += rows[i].level;
+						//Se questa è la accademia
+						if (Object.keys(rows).length > 0) {
+							if ((rows[0].level >= 5) && (bonus_act == 0))
+								acc_bonus = 5;
 						}
-						placeAvg = Math.round(placeAvg/Object.keys(rows).length);
 
-						connection.query('SELECT P.id, P.chat_id, P.reborn, APT.level, TP.suspended, P.boost_id, P.boost_mission, P.global_end, T.boost_id As team_boost_id, kill_streak FROM team_player TP, assault_place_player_id APP, player P, assault_place_team APT, team T WHERE TP.team_id = T.id AND TP.player_id = P.id AND APT.place_id = APP.place_id AND APP.player_id = P.id AND APT.team_id = APP.team_id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
+						connection.query("SELECT level FROM assault_place_team WHERE team_id = " + team_id + " ORDER BY place_id", function (err, rows, fields) {
 							if (err) throw err;
 
-							var place_text = "";
-							var money = 0;
-							var paPnt = 0;
-							var exp = 0;
-							var chest1 = 0;
-							var chest2 = 0;
-							var chest3 = 0;
-							var chest4 = 0;
-							var chest5 = 0;
-							var chest6 = 0;
-							var chest7 = 0;
-							var chest8 = 0;
-							var chest9 = 0;
-							var capsule = 0;
-
-							if (is_boss == 1)
-								paPnt = 50;
-							else
-								paPnt = 10;
-							if (((lockNextBoss == 1) || (boss_num == 31)) && (is_boss == 1)) {
-								paPnt += paPlace;
-								place_text = " (" + paPlace + " per le postazioni rimaste)";
-							}
-							paPnt += acc_bonus;
-
-							var paUpd = paPnt;
-							var paView = paPnt;
-
-							var reward = "";
-							var boss_molt = (1+boss_num/10);
-							var randProb = 0;
-
+							var paPlace = 0;
+							var placeAvg = 0;
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-								if (rows[i].suspended == 1) {
-									bot.sendMessage(rows[i].chat_id, final_report + "Nessuna ricompensa a causa della sospensione", kbBack2);
-									continue;
-								}
+								paPlace += rows[i].level*5;
+								placeAvg += rows[i].level;
+							}
+							placeAvg = Math.round(placeAvg/Object.keys(rows).length);
 
-								// reset
-								reward = "";
-								money = 0;
-								exp = 0;
-								chest1 = 0;
-								chest2 = 0;
-								chest3 = 0;
-								chest4 = 0;
-								chest5 = 0;
-								chest6 = 0;
-								chest7 = 0;
-								chest8 = 0;
-								chest9 = 0;
-								capsule = 0;
-								paView = paPnt;
+							connection.query('SELECT P.id, P.chat_id, P.reborn, APT.level, TP.suspended, P.boost_id, P.boost_mission, P.global_end, T.boost_id As team_boost_id, kill_streak FROM team_player TP, assault_place_player_id APP, player P, assault_place_team APT, team T WHERE TP.team_id = T.id AND TP.player_id = P.id AND APT.place_id = APP.place_id AND APP.player_id = P.id AND APT.team_id = APP.team_id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
+								if (err) throw err;
 
-								var ability = connection_sync.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + rows[i].id + ' AND ability_id = 12');
+								var place_text = "";
+								var money = 0;
+								var paPnt = 0;
+								var exp = 0;
+								var chest1 = 0;
+								var chest2 = 0;
+								var chest3 = 0;
+								var chest4 = 0;
+								var chest5 = 0;
+								var chest6 = 0;
+								var chest7 = 0;
+								var chest8 = 0;
+								var chest9 = 0;
+								var capsule = 0;
 
-								// calcoli ricompense
-								money = 100000*(1+boss_num)
-								if (!is_boss)
-									money = money/(4-mob_count);
-								if (rows[i].team_boost_id == 2)	// boost temporaneo monete
-									money += money*0.5;
-								money += money*team_boost_money;
-								if (Object.keys(ability).length > 0)
-									money += money*((ability[0].ability_level*ability[0].val)/100);
-
-								/*
-								if (rows[i].global_end == 1)
-									money += money*0.05;
-								*/
-
-								money = Math.round(money);
-
-								exp = 10;
 								if (is_boss == 1)
-									exp = 20;
-
-								chest1 = 1.1*placeAvg*boss_molt;
-								chest2 = 0.9*placeAvg*boss_molt;
-								chest3 = 0.7*placeAvg*boss_molt;
-								chest4 = 0.5*placeAvg*boss_molt;
-								chest5 = 0.3*placeAvg*boss_molt;
-								chest6 = 0.1*placeAvg*boss_molt;
-
-								chest1 += chest1*team_boost_chest;
-								chest2 += chest2*team_boost_chest;
-								chest3 += chest3*team_boost_chest;
-								chest4 += chest4*team_boost_chest;
-								chest5 += chest5*team_boost_chest;
-								chest6 += chest6*team_boost_chest;
-
-								chest1 = Math.round(chest1);
-								chest2 = Math.round(chest2);
-								chest3 = Math.round(chest3);
-								chest4 = Math.round(chest4);
-								chest5 = Math.round(chest5);
-								chest6 = Math.round(chest6);
-
-								/*
-								if (rows[i].global_end == 1) {
-									paUpd += 7;
-									paView += 7;
+									paPnt = 50;
+								else
+									paPnt = 10;
+								if (((lockNextBoss == 1) || (boss_num == 31)) && (is_boss == 1)) {
+									paPnt += paPlace;
+									place_text = " (" + paPlace + " per le postazioni rimaste)";
 								}
-								*/
+								paPnt += acc_bonus;
 
-								if (is_boss == 1) {
-									randProb = Math.random()*100;
-									if (rows[i].boost_id == 5) {
-										randProb -= 5;	// ridurre perchè così aumenta probabilità
-										setBoost(rows[i].id, rows[i].boost_mission, rows[i].boost_id);
+								var paUpd = paPnt;
+								var paView = paPnt;
+
+								var reward = "";
+								var boss_molt = (1+boss_num/10);
+								var randProb = 0;
+
+								for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+									if (rows[i].suspended == 1) {
+										bot.sendMessage(rows[i].chat_id, final_report + "Nessuna ricompensa a causa della sospensione", kbBack2);
+										continue;
 									}
-									if (randProb <= 1)
-										capsule = 1;
-									randProb = Math.random()*100;
-									if (boss_num > randProb)
-										chest7 = Math.round(Math.random()+1);
-									if (boss_num == 31)
-										chest7 += 3;
-								}
 
-								if (rows[i].global_end == 1) {
-									chest1 = chest1*2;
-									chest2 = chest2*2;
-									chest3 = chest3*2;
-									chest4 = chest4*2;
-									chest5 = chest5*2;
-									chest6 = chest6*2;
-									chest7 = chest7*2;
-									chest8 = chest8*2;
-									chest9 = chest9*2;
-								}
-
-								/*
-								if (rows[i].global_end == 1)
+									// reset
+									reward = "";
+									money = 0;
+									exp = 0;
+									chest1 = 0;
+									chest2 = 0;
+									chest3 = 0;
+									chest4 = 0;
+									chest5 = 0;
+									chest6 = 0;
 									chest7 = 0;
-								*/
+									chest8 = 0;
+									chest9 = 0;
+									capsule = 0;
+									paView = paPnt;
 
-								// costruzione testo e consegna
-								// console.log("paView " + paView);
-								reward += "> <b>" + paView + "</b> 🦋" + place_text + "\n\n";
-								if (exp > 0) {
-									reward += "> <b>" + exp + "</b> exp\n";
-									setExp(rows[i].id, exp);
-								}
-								if (chest1 > 0) {
-									addChest(rows[i].id, 1, chest1);
-									reward += "> <b>" + chest1 + "</b> Scrigni di Legno\n";
-								}
-								if (chest2 > 0) {
-									addChest(rows[i].id, 2, chest2);
-									reward += "> <b>" + chest2 + "</b> Scrigni di Ferro\n";
-								}
-								if (chest3 > 0) {
-									addChest(rows[i].id, 3, chest3);
-									reward += "> <b>" + chest3 + "</b> Scrigni Preziosi\n";
-								}
-								if (chest4 > 0) {
-									addChest(rows[i].id, 4, chest4);
-									reward += "> <b>" + chest4 + "</b> Scrigni di Diamante\n";
-								}
-								if (chest5 > 0) {
-									addChest(rows[i].id, 5, chest5);
-									reward += "> <b>" + chest5 + "</b> Scrigni Leggendari\n";
-								}
-								if (chest6 > 0) {
-									addChest(rows[i].id, 6, chest6);
-									reward += "> <b>" + chest6 + "</b> Scrigni Epici\n";
-								}
-								if (chest7 > 0) {
-									addChest(rows[i].id, 7, chest7);
-									reward += "> <b>" + chest7 + "</b> Scrigni Capsula\n";
-								}
-								if (chest8 > 0) {
-									addChest(rows[i].id, 8, chest8);
-									reward += "> <b>" + chest8 + "</b> Scrigni Mistici\n";
-								}
-								if (chest9 > 0) {
-									addChest(rows[i].id, 9, chest9);
-									reward += "> <b>" + chest9 + "</b> Scrigni Scaglia\n";
-								}
+									var ability = connection_sync.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + rows[i].id + ' AND ability_id = 12');
 
-								if (money > 0) {
-									connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + rows[i].id, function (err, rows, fields) {
-										if (err) throw err;
-									});
-									reward += "> <b>" + formatNumber(money) + "</b> §\n";
-								}
+									// calcoli ricompense
+									money = 100000*(1+boss_num)
+									if (!is_boss)
+										money = money/(4-mob_count);
+									if (rows[i].team_boost_id == 2)	// boost temporaneo monete
+										money += money*0.5;
+									money += money*team_boost_money;
+									if (Object.keys(ability).length > 0)
+										money += money*((ability[0].ability_level*ability[0].val)/100);
 
-								if (capsule > 0) {
-									addItem(rows[i].id, 169);
-									reward += "> <b>" + capsule + "</b> Capsula di Antimateria\n";
-								}
+									/*
+									if (rows[i].global_end == 1)
+										money += money*0.05;
+									*/
 
-								/*
-								if (team_id == 1113)
-									reward += "\nEpicità: " + epic_var + "\n";
-								*/
+									money = Math.round(money);
 
-								bot.sendMessage(rows[i].chat_id, final_report + reward, kbBack2);
-								setAchievement(rows[i].id, 19, 1);
+									exp = 10;
+									if (is_boss == 1)
+										exp = 20;
 
-								if ((boss_num == 31) && (is_boss == 1) && (lockNextBoss == 0)) {
-									if (rows[i].kill_streak+1 >= 3) {
-										connection.query('UPDATE player SET kill_streak_ok = 1 WHERE id = ' + rows[i].id, function (err, rows, fields) {
+									chest1 = 1.1*placeAvg*boss_molt;
+									chest2 = 0.9*placeAvg*boss_molt;
+									chest3 = 0.7*placeAvg*boss_molt;
+									chest4 = 0.5*placeAvg*boss_molt;
+									chest5 = 0.3*placeAvg*boss_molt;
+									chest6 = 0.1*placeAvg*boss_molt;
+
+									chest1 += chest1*team_boost_chest;
+									chest2 += chest2*team_boost_chest;
+									chest3 += chest3*team_boost_chest;
+									chest4 += chest4*team_boost_chest;
+									chest5 += chest5*team_boost_chest;
+									chest6 += chest6*team_boost_chest;
+									
+									if (team_boost_chest_tmp == 1) {
+										chest1 += chest1*0.1;
+										chest2 += chest2*0.1;
+										chest3 += chest3*0.1;
+										chest4 += chest4*0.1;
+										chest5 += chest5*0.1;
+										chest6 += chest6*0.1;
+									}
+
+									chest1 = Math.round(chest1);
+									chest2 = Math.round(chest2);
+									chest3 = Math.round(chest3);
+									chest4 = Math.round(chest4);
+									chest5 = Math.round(chest5);
+									chest6 = Math.round(chest6);
+
+									/*
+									if (rows[i].global_end == 1) {
+										paUpd += 7;
+										paView += 7;
+									}
+									*/
+
+									if (is_boss == 1) {
+										randProb = Math.random()*100;
+										if (rows[i].boost_id == 5) {
+											randProb -= 5;	// ridurre perchè così aumenta probabilità
+											setBoost(rows[i].id, rows[i].boost_mission, rows[i].boost_id);
+										}
+										if (randProb <= 1)
+											capsule = 1;
+										randProb = Math.random()*100;
+										if (boss_num > randProb)
+											chest7 = Math.round(Math.random()+1);
+										if (boss_num == 31)
+											chest7 += 3;
+									}
+
+									if (rows[i].global_end == 1) {
+										chest1 = chest1*2;
+										chest2 = chest2*2;
+										chest3 = chest3*2;
+										chest4 = chest4*2;
+										chest5 = chest5*2;
+										chest6 = chest6*2;
+										chest7 = chest7*2;
+										chest8 = chest8*2;
+										chest9 = chest9*2;
+									}
+
+									/*
+									if (rows[i].global_end == 1)
+										chest7 = 0;
+									*/
+
+									// costruzione testo e consegna
+									// console.log("paView " + paView);
+									reward += "> <b>" + paView + "</b> 🦋" + place_text + "\n\n";
+									if (exp > 0) {
+										reward += "> <b>" + exp + "</b> exp\n";
+										setExp(rows[i].id, exp);
+									}
+									if (chest1 > 0) {
+										addChest(rows[i].id, 1, chest1);
+										reward += "> <b>" + chest1 + "</b> Scrigni di Legno\n";
+									}
+									if (chest2 > 0) {
+										addChest(rows[i].id, 2, chest2);
+										reward += "> <b>" + chest2 + "</b> Scrigni di Ferro\n";
+									}
+									if (chest3 > 0) {
+										addChest(rows[i].id, 3, chest3);
+										reward += "> <b>" + chest3 + "</b> Scrigni Preziosi\n";
+									}
+									if (chest4 > 0) {
+										addChest(rows[i].id, 4, chest4);
+										reward += "> <b>" + chest4 + "</b> Scrigni di Diamante\n";
+									}
+									if (chest5 > 0) {
+										addChest(rows[i].id, 5, chest5);
+										reward += "> <b>" + chest5 + "</b> Scrigni Leggendari\n";
+									}
+									if (chest6 > 0) {
+										addChest(rows[i].id, 6, chest6);
+										reward += "> <b>" + chest6 + "</b> Scrigni Epici\n";
+									}
+									if (chest7 > 0) {
+										addChest(rows[i].id, 7, chest7);
+										reward += "> <b>" + chest7 + "</b> Scrigni Capsula\n";
+									}
+									if (chest8 > 0) {
+										addChest(rows[i].id, 8, chest8);
+										reward += "> <b>" + chest8 + "</b> Scrigni Mistici\n";
+									}
+									if (chest9 > 0) {
+										addChest(rows[i].id, 9, chest9);
+										reward += "> <b>" + chest9 + "</b> Scrigni Scaglia\n";
+									}
+
+									if (money > 0) {
+										connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + rows[i].id, function (err, rows, fields) {
+											if (err) throw err;
+										});
+										reward += "> <b>" + formatNumber(money) + "</b> §\n";
+									}
+
+									if (capsule > 0) {
+										addItem(rows[i].id, 169);
+										reward += "> <b>" + capsule + "</b> Capsula di Antimateria\n";
+									}
+
+									/*
+									if (team_id == 1113)
+										reward += "\nEpicità: " + epic_var + "\n";
+									*/
+
+									bot.sendMessage(rows[i].chat_id, final_report + reward, kbBack2);
+									setAchievement(rows[i].id, 19, 1);
+
+									if ((boss_num == 31) && (is_boss == 1) && (lockNextBoss == 0)) {
+										if (rows[i].kill_streak+1 >= 3) {
+											connection.query('UPDATE player SET kill_streak_ok = 1 WHERE id = ' + rows[i].id, function (err, rows, fields) {
+												if (err) throw err;
+											});
+										}
+										connection.query('UPDATE team_player SET kill_streak = kill_streak+1 WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
 											if (err) throw err;
 										});
 									}
-									connection.query('UPDATE team_player SET kill_streak = kill_streak+1 WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
-										if (err) throw err;
-									});
-								}
 
-								if ((is_boss == 0) && (rows[i].reborn > 2)) {
-									var card = connection_sync.query('SELECT id, rarity FROM card_list WHERE name = "' + mob_name + '"');
-									if (Object.keys(card).length == 0) {
-										var randVal = Math.random()*100;
-										if (randVal < 50) {
-											var card_rarity = generateCardRarity();
-											var max = connection_sync.query('SELECT MAX(id) As mx FROM card_list');
-											var new_id = (max[0].mx+1);
-											if (new_id > 5000) {
-												// console.log("Limite 5000 figurine raggiunto, salto la creazione di nuove");
-											} else {
-												connection_sync.query('INSERT INTO card_list (id, name, rarity) VALUES (' + new_id + ', "' + mob_name + '", ' + card_rarity + ')');
-												console.log("Figurina creata: " + mob_name + " (" + card_rarity + ") [" + new_id + "] da utente " + rows[i].id);
+									if ((is_boss == 0) && (rows[i].reborn > 2)) {
+										var card = connection_sync.query('SELECT id, rarity FROM card_list WHERE name = "' + mob_name + '"');
+										if (Object.keys(card).length == 0) {
+											var randVal = Math.random()*100;
+											if (randVal < 50) {
+												var card_rarity = generateCardRarity();
+												var max = connection_sync.query('SELECT MAX(id) As mx FROM card_list');
+												var new_id = (max[0].mx+1);
+												if (new_id > 5000) {
+													// console.log("Limite 5000 figurine raggiunto, salto la creazione di nuove");
+												} else {
+													connection_sync.query('INSERT INTO card_list (id, name, rarity) VALUES (' + new_id + ', "' + mob_name + '", ' + card_rarity + ')');
+													console.log("Figurina creata: " + mob_name + " (" + card_rarity + ") [" + new_id + "] da utente " + rows[i].id);
 
-												connection_sync.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + rows[i].id + ', ' + new_id + ')');
+													connection_sync.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + rows[i].id + ', ' + new_id + ')');
 
-												bot.sendMessage(rows[i].chat_id, "Hai creato ed ottenuto la figurina 🃏 *" + mob_name + " (" + card_rarity + ")*! Creane altre per ampliare la collezione!", mark);
+													bot.sendMessage(rows[i].chat_id, "Hai creato ed ottenuto la figurina 🃏 *" + mob_name + " (" + card_rarity + ")*! Creane altre per ampliare la collezione!", mark);
+												}
+											}
+										} else {
+											var tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_list');
+											var have_tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE quantity > 0 AND player_id = ' + rows[i].id);
+
+											var randVal = Math.random()*100;
+											var prob = (100-card[0].rarity*10)*0.5;	// 1 => 45, 9 => 5
+											if (prob == 0)
+												prob = 1;
+											if (randVal < prob) {
+												var have = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE player_id = ' + rows[i].id + ' AND card_id = ' + card[0].id);
+												if (have[0].cnt == 0)
+													connection_sync.query('INSERT INTO card_inventory (player_id, card_id, quantity) VALUES (' + rows[i].id + ', ' + card[0].id + ', 1)');
+												else
+													connection_sync.query('UPDATE card_inventory SET quantity = quantity+1 WHERE player_id = ' + rows[i].id + ' AND card_id = ' + card[0].id);
+												// console.log("Figurina ottenuta: " + mob_name);
+
+												bot.sendMessage(rows[i].chat_id, "Hai trovato la figurina 🃏 *" + mob_name + " (" + card[0].rarity + ")*! Ne possiedi " + (have_tot[0].cnt+1) + "/" + tot[0].cnt, mark);
 											}
 										}
-									} else {
-										var tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_list');
-										var have_tot = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE quantity > 0 AND player_id = ' + rows[i].id);
-
-										var randVal = Math.random()*100;
-										var prob = (100-card[0].rarity*10)*0.5;	// 1 => 45, 9 => 5
-										if (prob == 0)
-											prob = 1;
-										if (randVal < prob) {
-											var have = connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE player_id = ' + rows[i].id + ' AND card_id = ' + card[0].id);
-											if (have[0].cnt == 0)
-												connection_sync.query('INSERT INTO card_inventory (player_id, card_id, quantity) VALUES (' + rows[i].id + ', ' + card[0].id + ', 1)');
-											else
-												connection_sync.query('UPDATE card_inventory SET quantity = quantity+1 WHERE player_id = ' + rows[i].id + ' AND card_id = ' + card[0].id);
-											// console.log("Figurina ottenuta: " + mob_name);
-
-											bot.sendMessage(rows[i].chat_id, "Hai trovato la figurina 🃏 *" + mob_name + " (" + card[0].rarity + ")*! Ne possiedi " + (have_tot[0].cnt+1) + "/" + tot[0].cnt, mark);
-										}
 									}
 								}
-							}
 
-							//console.log("paUpd " + paUpd);
-							connection.query('UPDATE team SET point = point+' + paUpd + ' WHERE id = ' + team_id, function (err, rows, fields) {
-								if (err) throw err;
+								//console.log("paUpd " + paUpd);
+								connection.query('UPDATE team SET point = point+' + paUpd + ' WHERE id = ' + team_id, function (err, rows, fields) {
+									if (err) throw err;
+								});
+								if (is_boss == 1) {
+									connection.query('UPDATE team SET boss_count = boss_count+1 WHERE id = ' + team_id, function (err, rows, fields) {
+										if (err) throw err;
+									});
+								}
 							});
-							if (is_boss == 1) {
-								connection.query('UPDATE team SET boss_count = boss_count+1 WHERE id = ' + team_id, function (err, rows, fields) {
-									if (err) throw err;
-								});
-							}
-						});
 
-						if (is_boss) {
-							if (lockNextBoss == 1) {
-								connection.query('SELECT chat_id FROM assault_place_player_id APP, player WHERE APP.player_id = player.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
-									if (err) throw err;
-
-									for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-										bot.sendMessage(rows[i].chat_id, "🎉🎉 Il team ha completato con successo l'Assalto Parziale! 🎉🎉\n\nL'assalto non è stato contrassegnato come completato nel conteggio, espandi prima il team per proseguire!", kbBack2);
-
-									assaultEnd(team_id, 1);
-								});
-							} else if (boss_num == 31) {
-								if (epic_var > epic_var_record)
-									epic_var_record = epic_var;
-
-								connection.query('SELECT epic_var_record, DATEDIFF(CURDATE(), CAST(epic_var_record_time As date)) As diff FROM config', function (err, rows, fields) {
-									if (err) throw err;
-									if (epic_var > rows[0].epic_var_record * (1-0.03*rows[0].diff)) {
-										var turns = "un'intensa";
-										if (mob_turn > 5)
-											turns = "una lunga";
-										bot.sendMessage("@LootEpic", "<b>Un nuovo epico scontro ha diffuso un eco nelle terre di Lootia...</b>\nIl team <b>" + team_name + "</b> ha sconfitto clamorosamente <b>" + mob_name + "</b> dopo " + turns + " battaglia!\n\n<i>Le prodi gesta rimarranno scritte nella storia</i>", html);
-										connection.query('UPDATE config SET epic_var_record_time = NOW(), epic_var_record = ' + epic_var, function (err, rows, fields) {
-											if (err) throw err;
-										});
-									}
-								});
-
-								connection.query('UPDATE assault SET completed = completed+1, phase = 0, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1, epic_var = 0, epic_var_record = ' + epic_var_record + ', lock_time_end = NULL, elected_lock_time_end = NULL, weak_unlocked = 0, weak_time_end = NULL, expire_notify = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
-									if (err) throw err;
-
-									connection.query('SELECT P.id, P.chat_id FROM assault_place_player_id APP, player P WHERE APP.player_id = P.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
+							if (is_boss) {
+								if (lockNextBoss == 1) {
+									connection.query('SELECT chat_id FROM assault_place_player_id APP, player WHERE APP.player_id = player.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
 										if (err) throw err;
 
-										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-											bot.sendMessage(rows[i].chat_id, "🎉🎉 Il team ha completato con successo l'Assalto n. " + (kill_num+1) + "! 🎉🎉", kbBack2);
-										}
+										for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+											bot.sendMessage(rows[i].chat_id, "🎉🎉 Il team ha completato con successo l'Assalto Parziale! 🎉🎉\n\nL'assalto non è stato contrassegnato come completato nel conteggio, espandi prima il team per proseguire!", kbBack2);
 
-										connection.query('UPDATE team SET kill_num = kill_num+1 WHERE id = ' + team_id, function (err, rows, fields) {
-											if (err) throw err;
-										});
-
-										assaultEnd(team_id, 1, 1);
+										assaultEnd(team_id, 1);
 									});
+								} else if (boss_num == 31) {
+									if (epic_var > epic_var_record)
+										epic_var_record = epic_var;
+
+									connection.query('SELECT epic_var_record, DATEDIFF(CURDATE(), CAST(epic_var_record_time As date)) As diff FROM config', function (err, rows, fields) {
+										if (err) throw err;
+										if (epic_var > rows[0].epic_var_record * (1-0.03*rows[0].diff)) {
+											var turns = "un'intensa";
+											if (mob_turn > 5)
+												turns = "una lunga";
+											bot.sendMessage("@LootEpic", "<b>Un nuovo epico scontro ha diffuso un eco nelle terre di Lootia...</b>\nIl team <b>" + team_name + "</b> ha sconfitto clamorosamente <b>" + mob_name + "</b> dopo " + turns + " battaglia!\n\n<i>Le prodi gesta rimarranno scritte nella storia</i>", html);
+											connection.query('UPDATE config SET epic_var_record_time = NOW(), epic_var_record = ' + epic_var, function (err, rows, fields) {
+												if (err) throw err;
+											});
+										}
+									});
+
+									connection.query('UPDATE assault SET completed = completed+1, phase = 0, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1, epic_var = 0, epic_var_record = ' + epic_var_record + ', lock_time_end = NULL, elected_lock_time_end = NULL, weak_unlocked = 0, weak_time_end = NULL, expire_notify = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
+										if (err) throw err;
+
+										connection.query('SELECT P.id, P.chat_id FROM assault_place_player_id APP, player P WHERE APP.player_id = P.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
+											if (err) throw err;
+
+											for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+												bot.sendMessage(rows[i].chat_id, "🎉🎉 Il team ha completato con successo l'Assalto n. " + (kill_num+1) + "! 🎉🎉", kbBack2);
+											}
+
+											connection.query('UPDATE team SET kill_num = kill_num+1 WHERE id = ' + team_id, function (err, rows, fields) {
+												if (err) throw err;
+											});
+
+											assaultEnd(team_id, 1, 1);
+										});
+									});
+								} else {
+									connection.query('UPDATE assault SET phase = 3, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = boss_num+1, epic_var = 0, lock_time_end = NULL, elected_lock_time_end = NULL, weak_unlocked = 0, weak_time_end = NULL WHERE team_id = ' + team_id, function (err, rows, fields) {
+										if (err) throw err;
+
+										generateMobWeakness(team_id, 4);
+									});
+								}
+
+								connection.query('UPDATE team SET boost_id = 0 WHERE id = ' + team_id, function (err, rows, fields) {
+									if (err) throw err;
 								});
 							} else {
-								connection.query('UPDATE assault SET phase = 3, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = boss_num+1, epic_var = 0, lock_time_end = NULL, elected_lock_time_end = NULL, weak_unlocked = 0, weak_time_end = NULL WHERE team_id = ' + team_id, function (err, rows, fields) {
+								connection.query('UPDATE assault SET refresh_mob = 1, mob_count = mob_count+1, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, epic_var = ' + epic_var + ', lock_time_end = NULL, elected_lock_time_end = NULL WHERE team_id = ' + team_id, function (err, rows, fields) {
 									if (err) throw err;
-
-									generateMobWeakness(team_id, 4);
 								});
 							}
 
-							connection.query('UPDATE team SET boost_id = 0 WHERE id = ' + team_id, function (err, rows, fields) {
+							repairWall(team_id);
+
+							connection.query('DELETE FROM assault_place_miniboost WHERE team_id = ' + team_id, function (err, rows, fields) {
 								if (err) throw err;
 							});
-						} else {
-							connection.query('UPDATE assault SET refresh_mob = 1, mob_count = mob_count+1, mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, epic_var = ' + epic_var + ', lock_time_end = NULL, elected_lock_time_end = NULL WHERE team_id = ' + team_id, function (err, rows, fields) {
-								if (err) throw err;
-							});
-						}
-
-						repairWall(team_id);
-
-						connection.query('DELETE FROM assault_place_miniboost WHERE team_id = ' + team_id, function (err, rows, fields) {
-							if (err) throw err;
 						});
 					});
 				});
