@@ -981,6 +981,50 @@ bot.onText(/^\/popcorn/, function (message) {
 	});
 });
 
+bot.onText(/\/checkMember (.+) (.+)/i, function (message, match) {
+	connection.query('SELECT id FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
+		if (err) throw err;
+		var player_id = rows[0].id;
+		connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+			validTeamMember(message, rows[0].team_id, player_id, match[2]);
+		});
+	});
+});
+
+function validTeamMember(message, team_id, player_id, soglia) {
+	const rows = connection_sync.query('SELECT P.id As player_id, T.kill_num, T.name, P.reborn, P.nickname, FLOOR(P.exp/10) As level FROM team T, team_player TP, player P WHERE T.id = TP.team_id AND TP.player_id = P.id AND T.id = ' + team_id + ' ORDER BY P.reborn, P.exp DESC');
+
+	var mediaTeam = 0;
+	for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+		mediaTeam += parseInt(getRealLevel(rows[i].reborn, rows[i].level));
+	mediaTeam = mediaTeam / Object.keys(rows).length;
+
+	var sum = 0;
+	var lev = 0;
+	var dev = 0;
+	var calc = 0;
+	for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+		lev = getRealLevel(rows[i].reborn, rows[i].level);
+		sum += Math.pow(Math.abs(mediaTeam - lev), 2);
+	}
+	dev = Math.sqrt(sum / Object.keys(rows).length);
+
+	var res = 0;
+	for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+		if (player_id == rows[i].player_id) {
+			lev = getRealLevel(rows[i].reborn, rows[i].level);
+			calc = Math.round((lev - mediaTeam) / dev * 100) / 100;
+			if (isNaN(calc) || (calc < 0))
+				calc = 0;
+			if (calc <= soglia)
+				res = 1;
+		}
+	}
+	
+	bot.sendMessage(message.chat.id, "Media team: " + mediaTeam + "\nDev: " + dev + "\nRes: " + res);
+};
+
 bot.onText(/^\/ovetto/, function (message) {
 	connection.query('SELECT id, market_ban, account_id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;

@@ -41840,7 +41840,6 @@ bot.onText(/\/checkMember (.+)/i, function (message, match) {
 		connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			bot.sendMessage(message.chat.id, "Valido: " + validTeamMember(rows[0].team_id, player_id));
-			console.log(validTeamMember(rows[0].team_id, player_id));
 		});
 	});
 });
