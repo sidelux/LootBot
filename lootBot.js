@@ -10258,6 +10258,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																if (err) throw err;
 																bot.sendMessage(message.chat.id, "Hai deciso di rinunciare al dungeon", back);
 															});
+															setAchievement(player_id, 51, 1);
 														}
 													}
 												});
@@ -11237,6 +11238,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			if (err) throw err;
 																			bot.sendMessage(message.chat.id, "Hai deciso di rinunciare al dungeon", back);
 																		});
+																		setAchievement(player_id, 51, 1);
 																	}
 																}
 															});
