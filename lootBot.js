@@ -49507,9 +49507,6 @@ function validTeamMember(team_id, player_id) {
 	for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 		mediaTeam += parseInt(getRealLevel(rows[i].reborn, rows[i].level));
 	mediaTeam = mediaTeam / Object.keys(rows).length;
-	
-	if (mediaTeam >= 2850)	// per supporto R5
-		return 1;
 
 	var sum = 0;
 	var lev = 0;
@@ -49527,7 +49524,10 @@ function validTeamMember(team_id, player_id) {
 
 	for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 		if (player_id == rows[i].player_id) {
-			lev = getRealLevel(rows[i].reborn, rows[i].level);
+			if (rows[i].reborn == 6)
+				lev = getRealLevel(6, 1000);
+			else
+				lev = getRealLevel(rows[i].reborn, rows[i].level);
 			calc = Math.round((lev - mediaTeam) / dev * 100) / 100;
 			if (isNaN(calc) || (calc < 0))
 				calc = 0;
@@ -60867,13 +60867,23 @@ function setExp(player_id, exp) {
 			((reborn == 3) && (my_exp < 2000)) ||
 			((reborn == 4) && (my_exp < 3000)) ||
 			((reborn == 5) && (my_exp < 10000)) ||
-			((reborn == 6) && (my_exp < 250000))) {
+			((reborn == 6) && (my_exp < 25000))) {
 			connection.query('UPDATE player SET exp = exp+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
 		}
 		
-		if (((reborn == 5) && (my_exp == 10000)) || ((reborn == 6) && (my_exp == 250000))) {
+		if ((reborn == 5) && (my_exp > 10000)) {
+			connection.query('UPDATE player SET exp = 10000 WHERE id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+		} else if ((reborn == 6) && (my_exp > 25000)) {
+			connection.query('UPDATE player SET exp = 25000 WHERE id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
+		
+		if (((reborn == 5) && (my_exp >= 10000)) || ((reborn == 6) && (my_exp >= 25000))) {
 			connection.query('SELECT COUNT(id) As cnt FROM artifacts WHERE item_id = 675 AND player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (rows[0].cnt > 0) {
