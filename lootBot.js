@@ -6337,6 +6337,11 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 
 										if ((answer.text.toLowerCase().indexOf("lobby") != -1) ||
 											(answer.text.toLowerCase().indexOf("allenamento") != -1)){
+											
+											/*
+											bot.sendMessage(message.chat.id, "Manutenzione, riprova tra poco");
+											return;
+											*/
 
 											var trainingLobby = 0;
 											if (answer.text.toLowerCase().indexOf("allenamento") != -1) {
@@ -6408,9 +6413,13 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 
 												if (Object.keys(rows).length < max_lobby_count) {
 													var max_lobby = connection_sync.query('SELECT MAX(lobby_id) As mx FROM map_lobby WHERE lobby_id IS NOT NULL');
-													if (Object.keys(max_lobby).length == 0)
-														lobby_id = 1;
-													else 
+													if (max_lobby[0].mx == null) {
+														var max_lobby = connection_sync.query('SELECT MAX(map_lobby_id) As mx FROM map_history');
+														if (max_lobby[0].mx == null)
+															lobby_id = 1;
+														else
+															lobby_id = max_lobby[0].mx+1;
+													} else 
 														lobby_id = max_lobby[0].mx+1;
 
 													text = "Sei stato aggiunto ad una nuova lobby, attendi che altri giocatori si uniscano...";
@@ -49501,6 +49510,8 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 }
 
 function validTeamMember(team_id, player_id) {
+	return 1;
+	
 	const rows = connection_sync.query('SELECT P.id As player_id, T.kill_num, T.name, P.reborn, P.nickname, FLOOR(P.exp/10) As level FROM team T, team_player TP, player P WHERE T.id = TP.team_id AND TP.player_id = P.id AND T.id = ' + team_id + ' ORDER BY P.reborn, P.exp DESC');
 
 	var mediaTeam = 0;
@@ -49524,10 +49535,6 @@ function validTeamMember(team_id, player_id) {
 
 	for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 		if (player_id == rows[i].player_id) {
-			if (rows[i].reborn == 6)
-				lev = getRealLevel(6, 1000);
-			else
-				lev = getRealLevel(rows[i].reborn, rows[i].level);
 			calc = Math.round((lev - mediaTeam) / dev * 100) / 100;
 			if (isNaN(calc) || (calc < 0))
 				calc = 0;
