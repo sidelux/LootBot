@@ -34267,8 +34267,8 @@ bot.onText(/^Poste/, function (message) {
 				var diff = Math.round(((now - d) / 1000) / 60 / 60); //in ore
 				diff = Math.abs(diff);
 
-				if (diff < 24 * 2) {
-					d.setDate(d.getDate() + 2);
+				if (diff < 24) {
+					d.setDate(d.getDate() + 1);
 					var long_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear() + " alle " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
 					bot.sendMessage(message.chat.id, "Prima di spedire ancora devi aspettare fino al " + long_date, back);
@@ -34276,7 +34276,7 @@ bot.onText(/^Poste/, function (message) {
 				}
 			}
 
-			bot.sendMessage(message.chat.id, "Inserisci il nickname del giocatore al quale spedire l'oggetto, puoi farlo solamente una volta ogni 2 giorni, ad eccezione di alcune festività", kb).then(function () {
+			bot.sendMessage(message.chat.id, "Inserisci il nickname del giocatore al quale spedire l'oggetto, puoi farlo solamente una volta ogni 24 ore, ad eccezione di alcune festività", kb).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if ((answer.text == "Torna al menu") || (answer.text == "Torna alla piazza"))
 						return;
@@ -59968,7 +59968,7 @@ function setFinishedSpecialMission(element, index, array) {
 
 					var item_id = rows[0].id;
 					var exp = rows[0].rarityid;
-					var dust = exp;
+					var dust = exp*10;
 					var num = 1;
 
 					if (boost_id == 2) {
