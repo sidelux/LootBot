@@ -10787,6 +10787,10 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 			if (top_win > 0)
 				top_win_text = "Vittorie Vette: " + top_win + "\n";
 			
+			var map_win = connection_sync.query("SELECT COUNT(id) As cnt FROM map_history WHERE player_id = " + player_id + " AND position = 1");
+			if (map_win[0].cnt > 0)
+				top_win_text = "Vittorie Mappe: " + map_win[0].cnt + "\n";
+			
 			var global_win_text = "";
 			if (global_win > 0)
 				global_win_text = "Vittorie Globali: " + global_win + "\n";

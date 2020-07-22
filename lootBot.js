@@ -44367,29 +44367,38 @@ bot.onText(/^protezione/i, function (message) {
 			bot.sendMessage(message.chat.id, "Ti serve il Campo di Forza.", back);
 			return;
 		}
+		
+		connection.query('SELECT 1 FROM heist WHERE from_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
 
-		bot.sendMessage(message.chat.id, "Il Campo di Forza ti fornirà protezione dalle Ispezioni per 24 ore, ma intanto non potrai ispezionare, confermi?\nNe possiedi ancora " + getItemCnt(player_id, 237), yesno).then(function () {
-			answerCallbacks[message.chat.id] = function (answer) {
-				var conf = answer.text;
-				if (conf == "Si") {
+			if (Object.keys(rows).length > 0) {
+				bot.sendMessage(message.chat.id, "Non puoi attivare un campo di forza finchè sei in ispezione", back);
+				return;
+			}
 
-					if (getItemCnt(player_id, 237) == 0) {
-						bot.sendMessage(message.chat.id, "Ti serve il Campo di Forza.", back);
-						return;
+			bot.sendMessage(message.chat.id, "Il Campo di Forza ti fornirà protezione dalle Ispezioni per 24 ore, ma intanto non potrai ispezionare, confermi?\nNe possiedi ancora " + getItemCnt(player_id, 237), yesno).then(function () {
+				answerCallbacks[message.chat.id] = function (answer) {
+					var conf = answer.text;
+					if (conf == "Si") {
+
+						if (getItemCnt(player_id, 237) == 0) {
+							bot.sendMessage(message.chat.id, "Ti serve il Campo di Forza.", back);
+							return;
+						}
+
+						var now = new Date();
+						now.setHours(now.getHours() + 24);
+						var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
+						var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes()) + " del " + addZero(now.getDate()) + "/" + addZero(now.getMonth() + 1);
+
+						connection.query('UPDATE player SET heist_protection = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+							if (err) throw err;
+							bot.sendMessage(message.chat.id, "Sei protetto fino alle " + short_date, back);
+						});
+						delItem(player_id, 237, 1);
 					}
-
-					var now = new Date();
-					now.setHours(now.getHours() + 24);
-					var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
-					var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes()) + " del " + addZero(now.getDate()) + "/" + addZero(now.getMonth() + 1);
-
-					connection.query('UPDATE player SET heist_protection = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
-						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Sei protetto fino alle " + short_date, back);
-					});
-					delItem(player_id, 237, 1);
-				}
-			};
+				};
+			});
 		});
 	});
 });
@@ -44935,7 +44944,7 @@ bot.onText(/itinerario propizio|itinerari|regioni/i, function (message) {
 										if (boost_id == 1) {
 											duration = duration / 2;
 											name = name + " (Velocizzata)";
-										} else if ((boost_id == 0) || (boost_id == 3) || (boost_id == 8) || (boost_id == 9))
+										} else
 											extra2 = "❌";
 
 										parsedDate.setSeconds(parsedDate.getSeconds() + duration);
@@ -46493,6 +46502,10 @@ function getInfo(message, player, myhouse_id) {
 			var top_win_text = "";
 			if (top_win > 0)
 				top_win_text = "Vittorie Vette: " + top_win + "\n";
+			
+			var map_win = connection_sync.query("SELECT COUNT(id) As cnt FROM map_history WHERE player_id = " + player_id + " AND position = 1");
+			if (map_win[0].cnt > 0)
+				top_win_text = "Vittorie Mappe: " + map_win[0].cnt + "\n";
 
 			var global_win_text = "";
 			if (global_win > 0)
