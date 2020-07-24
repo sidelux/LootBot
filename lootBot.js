@@ -44572,7 +44572,7 @@ bot.onText(/^prelevazione/i, function (message) {
 											chest = 3;
 										else
 											chest = 4;
-									} else if ((reborn == 4) || (reborn == 5)) {
+									} else if (reborn >= 4) {
 										var rand = Math.round(Math.random());
 										if (rand == 1)
 											chest = 5;
