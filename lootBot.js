@@ -1189,39 +1189,44 @@ bot.onText(/^\/failglobal/, function (message, match) {
 			if (err) throw err;
 
 			var tot = rows[0].cnt;
-
-			connection.query('SELECT SUM(value) As val FROM achievement_global', function (err, rows, fields) {
+			
+			connection.query('SELECT global_desc FROM config', function (err, rows, fields) {
 				if (err) throw err;
-				bot.sendMessage(message.chat.id, "Il valore attuale è " + formatNumber(rows[0].val) + " per " + formatNumber(tot) + " persone, sicuro di chiudere l'impresa FALLITA?", yesno).then(function () {
-					answerCallbacks[message.chat.id] = function (answer) {
-						if (answer.text.toLowerCase() == "si") {
-							connection.query('UPDATE player SET global_end = 0', function (err, rows, fields) {
-								if (err) throw err;
+				
+				var global_desc = rows[0].global_desc;
 
-								var minValue = 500;
-								var minText = "stanze dungeon completate";
-								var text = "nessuno scrigno U ottenuto in assalto!";
-
-								connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM player P LEFT JOIN achievement_global A ON A.player_id = P.id WHERE P.reborn > 1 AND P.account_id NOT IN (SELECT account_id FROM banlist) AND (A.value < ' + minValue + ' OR A.value IS NULL) GROUP BY P.id ORDER BY val DESC', function (err, rows, fields) {
+				connection.query('SELECT SUM(value) As val FROM achievement_global', function (err, rows, fields) {
+					if (err) throw err;
+					bot.sendMessage(message.chat.id, "Il valore attuale è " + formatNumber(rows[0].val) + " per " + formatNumber(tot) + " persone, sicuro di chiudere l'impresa FALLITA?", yesno).then(function () {
+						answerCallbacks[message.chat.id] = function (answer) {
+							if (answer.text.toLowerCase() == "si") {
+								connection.query('UPDATE player SET global_end = 0', function (err, rows, fields) {
 									if (err) throw err;
-									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-										connection.query('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
-											if (err) throw err;
-										});
-										bot.sendMessage(rows[i].chat_id, "Per il fallimento dell'Impresa Globale (minimo " + formatNumber(minValue) + " " + minText + "), da questo momento fino al termine della prossima impresa " + text);
-										console.log(rows[i].nickname + " - Fallito");
-									}
-								});
 
-								connection.query('UPDATE config SET global_eventon = 0, global_eventwait = 1', function (err, rows, fields) {
-									if (err) throw err;
-									bot.sendMessage(message.chat.id, "Fatto!");
+									var minValue = 500;
+									var text = "nessuna moneta ottenuta dalle ispezioni!";
 
-									getGlobalPDF(message);
+									connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM player P LEFT JOIN achievement_global A ON A.player_id = P.id WHERE P.reborn > 1 AND P.account_id NOT IN (SELECT account_id FROM banlist) AND (A.value < ' + minValue + ' OR A.value IS NULL) GROUP BY P.id ORDER BY val DESC', function (err, rows, fields) {
+										if (err) throw err;
+										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+											connection.query('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
+												if (err) throw err;
+											});
+											bot.sendMessage(rows[i].chat_id, "Per il fallimento dell'Impresa Globale (minimo " + formatNumber(minValue) + " " + global_desc + "), da questo momento fino al termine della prossima impresa " + text);
+											console.log(rows[i].nickname + " - Fallito");
+										}
+									});
+
+									connection.query('UPDATE config SET global_eventon = 0, global_eventwait = 1', function (err, rows, fields) {
+										if (err) throw err;
+										bot.sendMessage(message.chat.id, "Fatto!");
+
+										getGlobalPDF(message);
+									});
 								});
-							});
+							}
 						}
-					}
+					});
 				});
 			});
 		});
@@ -8804,8 +8809,11 @@ bot.onText(/^\/mappatura$|^\/mappaturasym$/i, function (message) {
 								} else
 									text += "\n" + current_room + posRoom + ": - | - | -";
 							}
-
-							bot.sendMessage(message.chat.id, text + messages + "\nUsa il comando /legenda per consultare la legenda dei simboli", html);
+							
+							if ((text + messages).length >= 4000)
+								bot.sendMessage(message.chat.id, text + "\nUsa il comando /legenda per consultare la legenda dei simboli", html);
+							else
+								bot.sendMessage(message.chat.id, text + messages + "\nUsa il comando /legenda per consultare la legenda dei simboli", html);
 						});
 					});
 				});
@@ -43598,6 +43606,10 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 													moneytxt = "<b>nulla</b>";
 												}
 											}
+											
+											// globale
+											if (global_end == 1)
+												money = 0;
 
 											if (noMoneyItemId == 0) {
 												connection.query('UPDATE player SET money = money-' + money + ' WHERE id = ' + toId, function (err, rows, fields) {
@@ -45507,7 +45519,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 						text += "\n<b>Impresa globale</b>\n";
 
 						var d = new Date();
-						if ((d.getMonth()+1 == 8) || ((d.getMonth()+1 == 7) && (d.getDate() == 31)))
+						if (d.getMonth()+1 == 8)
 							text += "Questo mese nessuna globale! Goditi le vacanze 🏖\n";
 						else {
 							if ((global == 1) && (diffM < 0) && (globalVal < global_cap))
@@ -52404,6 +52416,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											chest7 += 3;
 									}
 
+									/*
 									if (rows[i].global_end == 1) {
 										chest1 = chest1*2;
 										chest2 = chest2*2;
@@ -52415,6 +52428,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 										chest8 = chest8*2;
 										chest9 = chest9*2;
 									}
+									*/
 
 									/*
 									if (rows[i].global_end == 1)
@@ -59161,7 +59175,7 @@ function setFinishedDungeonRoom(element, index, array) {
 		var rand = Math.round(Math.random() * (Object.keys(strArr).length - 1));
 		bot.sendMessage(element.chat_id, strArr[rand]);
 		setAchievement(player_id, 63, 1);
-		globalAchievement(player_id, 1);
+		// globalAchievement(player_id, 1);
 	});
 };
 

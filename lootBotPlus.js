@@ -3655,7 +3655,7 @@ bot.onText(/^\/asta(?!p) ([^\s]+) (.+)|^\/asta(?!p)/, function (message, match) 
 	var prezzo = parseInt(match[1]);
 	var nickname = match[2];
 	if ((nickname == undefined) || (nickname == "") || (prezzo == undefined) || (isNaN(prezzo))) {
-		bot.sendMessage(message.chat.id, "Per partecipare ad un asta utilizza la seguente sintassi: /asta Prezzo @nickname, mentre /creaasta per iniziarne una nuova");
+		bot.sendMessage(message.chat.id, "Per partecipare ad un asta utilizza la seguente sintassi: '/asta Prezzo, @nickname', mentre /creaasta per iniziarne una nuova");
 		return;
 	}
 
