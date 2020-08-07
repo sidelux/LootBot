@@ -10779,18 +10779,20 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 			var boost_id = rows[0].boost_id;
 			var creation_date = rows[0].creation_date;
 			var top_win = rows[0].top_win;
+			var top_win_best = rows[0].top_win_best;
+			var map_win_best = rows[0].map_win_best;
 			var global_win = rows[0].global_win;
 			var trophies = rows[0].trophies;
 			var total_trophies = rows[0].total_trophies;
 
 			var top_win_text = "";
 			if (top_win > 0)
-				top_win_text = "Vittorie Vette: " + top_win + "\n";
+				top_win_text = "Vittorie Vette: " + top_win + " (" + top_win_best + " Ð)\n";
 			
 			var map_win_text = "";
 			var map_win = connection_sync.query("SELECT COUNT(id) As cnt FROM map_history WHERE player_id = " + player_id + " AND position = 1");
 			if (map_win[0].cnt > 0)
-				map_win_text = "Vittorie Mappe: " + map_win[0].cnt + "\n";
+				map_win_text = "Vittorie Mappe: " + map_win[0].cnt + " (" + map_win_best + " 🏆)\n";
 			
 			var global_win_text = "";
 			if (global_win > 0)

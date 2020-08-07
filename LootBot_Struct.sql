@@ -956,7 +956,7 @@ CREATE TABLE `dragon_dummy` (
   `evolved` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `type` (`type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1017,7 +1017,7 @@ CREATE TABLE `dragon_top_dummy` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `dragon_id` (`dragon_id`),
   CONSTRAINT `DRAGONID_VETTAD` FOREIGN KEY (`dragon_id`) REFERENCES `dragon_dummy` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1109,6 +1109,7 @@ CREATE TABLE `dragon_top_status` (
   `confusion` int(11) NOT NULL DEFAULT '0' COMMENT 'Confuso',
   `wait_dmg` int(11) NOT NULL DEFAULT '0' COMMENT 'Colpo caricato',
   `ice` int(11) NOT NULL DEFAULT '0' COMMENT 'Congelamento',
+  `flari_active` tinyint(1) NOT NULL DEFAULT '0',
   `wait_time` timestamp NULL DEFAULT NULL,
   `battle_time` timestamp NULL DEFAULT NULL,
   `no_match_time` timestamp NULL DEFAULT NULL,
@@ -1763,7 +1764,7 @@ CREATE TABLE `global_msg` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `chat_id` bigint(16) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2988,6 +2989,8 @@ CREATE TABLE `player` (
   `status` int(11) DEFAULT NULL,
   `status_cnt` int(11) NOT NULL DEFAULT '0',
   `top_win` int(11) NOT NULL DEFAULT '0',
+  `top_win_best` int(11) NOT NULL DEFAULT '0',
+  `map_win_best` int(11) NOT NULL DEFAULT '0',
   `global_win` int(11) NOT NULL DEFAULT '0',
   `top_rank_count` int(11) NOT NULL DEFAULT '0',
   `trophies` int(11) NOT NULL DEFAULT '0',

@@ -718,7 +718,7 @@ var abort_heist = {
 	parse_mode: "Markdown",
 	reply_markup: {
 		resize_keyboard: true,
-		keyboard: [["Completa immediatamente"], ["Torna al menu"]]
+		keyboard: [["Completa immediatamente"], ["Torna al rifugio"], ["Torna al menu"]]
 	}
 };
 
@@ -21043,10 +21043,6 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 			var dragon_arms_duration = rows[0].arms_duration;
 			var dragon_crit = rows[0].critical;
 
-			dragon_damage += power_dragon_dmg;
-			dragon_defence += power_dragon_def;
-			dragon_crit += power_dragon_crit;
-
 			if ((class_id == 7) && (reborn > 1)) {
 				dragon_claws += dragon_claws * 0.5;
 				dragon_saddle += dragon_saddle * 0.5;
@@ -21089,7 +21085,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 					}
 				};
 
-				connection.query('SELECT id, is_dummy, top_id, enemy_dragon_id, poison, dmg_boost, ice, protection, wait_dmg, confusion, battle_time, reject FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+				connection.query('SELECT id, is_dummy, top_id, enemy_dragon_id, poison, dmg_boost, ice, flari_active, protection, wait_dmg, confusion, battle_time, reject FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length == 0) {
@@ -21103,6 +21099,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 					}
 
 					var enemy_dragon_id = rows[0].enemy_dragon_id;
+					var flari_active = rows[0].flari_active;
 
 					var d = new Date(rows[0].battle_time);
 					var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
@@ -21254,9 +21251,6 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 									reborn2 = rows[0].reborn;
 									class_id2 = rows[0].class;
 									enemy_class = rows[0].class_name + " " + classSym(rows[0].class_name);
-									enemy_power_dragon_dmg = rows[0].power_dragon_dmg;
-									enemy_power_dragon_def = rows[0].power_dragon_def;
-									enemy_power_dragon_crit = rows[0].power_dragon_crit;
 								} else {
 									enemy_charm_id = 695;
 									if (class_id == 7) {
@@ -21265,6 +21259,18 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 										enemy_class = classRow[0].name + " " + classSym(classRow[0].name);
 									} else
 										enemy_class = "-";
+								}
+								
+								if (flari_active == 1) {
+									dragon_damage += power_dragon_dmg;
+									dragon_defence += power_dragon_def;
+									dragon_crit += power_dragon_crit;
+								
+									if (is_dummy == 0) {
+										enemy_power_dragon_dmg = rows[0].power_dragon_dmg;
+										enemy_power_dragon_def = rows[0].power_dragon_def;
+										enemy_power_dragon_crit = rows[0].power_dragon_crit;
+									}
 								}
 
 								connection.query('SELECT combat, rank FROM dragon_top_rank WHERE player_id = ' + player_id2, function (err, rows, fields) {
@@ -43588,6 +43594,10 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 										if (crazyMode == 1)
 											money = money * 2;
 										money = Math.round(money);
+											
+										// globale
+										if (global_end == 1)
+											money = 0;
 
 										connection.query("SELECT money FROM player WHERE id = " + toId, function (err, rows, fields) {
 											if (err) throw err;
@@ -43606,10 +43616,6 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 													moneytxt = "<b>nulla</b>";
 												}
 											}
-											
-											// globale
-											if (global_end == 1)
-												money = 0;
 
 											if (noMoneyItemId == 0) {
 												connection.query('UPDATE player SET money = money-' + money + ' WHERE id = ' + toId, function (err, rows, fields) {
@@ -46507,18 +46513,20 @@ function getInfo(message, player, myhouse_id) {
 			var boost_id = rows[0].boost_id;
 			var creation_date = rows[0].creation_date;
 			var top_win = rows[0].top_win;
+			var top_win_best = rows[0].top_win_best;
+			var map_win_best = rows[0].map_win_best;
 			var global_win = rows[0].global_win;
 			var trophies = rows[0].trophies;
 			var total_trophies = rows[0].total_trophies;
 
 			var top_win_text = "";
 			if (top_win > 0)
-				top_win_text = "Vittorie Vette: " + top_win + "\n";
+				top_win_text = "Vittorie Vette: " + top_win + " (" + top_win_best + " Ð)\n";
 			
 			var map_win_text = "";
 			var map_win = connection_sync.query("SELECT COUNT(id) As cnt FROM map_history WHERE player_id = " + player_id + " AND position = 1");
 			if (map_win[0].cnt > 0)
-				map_win_text = "Vittorie Mappe: " + map_win[0].cnt + "\n";
+				map_win_text = "Vittorie Mappe: " + map_win[0].cnt + " (" + map_win_best + " 🏆)\n";
 
 			var global_win_text = "";
 			if (global_win > 0)
@@ -55106,7 +55114,7 @@ function setDragonSearch(element, index, array) {
 		diff = Math.round(diff/5);
 	}
 
-	var query = 'SELECT P.chat_id, R.dragon_id, R.rank, D.name, D.type, D.level, D.arms_id FROM dragon_top_rank R, dragon D, player P, dragon_top_status D2 WHERE D2.dragon_id = D.id AND P.id = D.player_id AND ' + searchOpt + ' BETWEEN ' + (searchVal - diff) + ' AND ' + (searchVal + diff) + ' AND R.dragon_id = D.id AND R.top_id = ' + top_id + ' AND R.dragon_id != ' + dragon_id + ' AND R.combat = 0 AND D.sleep_h = 0 AND D.life > 0 AND D2.no_match_time IS NULL AND R.dragon_id != 3 AND P.status IS NULL ORDER BY RAND()';
+	var query = 'SELECT P.id As player_id, P.chat_id, R.dragon_id, R.rank, D.name, D.type, D.level, D.arms_id FROM dragon_top_rank R, dragon D, player P, dragon_top_status D2 WHERE D2.dragon_id = D.id AND P.id = D.player_id AND ' + searchOpt + ' BETWEEN ' + (searchVal - diff) + ' AND ' + (searchVal + diff) + ' AND R.dragon_id = D.id AND R.top_id = ' + top_id + ' AND R.dragon_id != ' + dragon_id + ' AND R.combat = 0 AND D.sleep_h = 0 AND D.life > 0 AND D2.no_match_time IS NULL AND R.dragon_id != 3 AND P.status IS NULL ORDER BY RAND()';
 	connection.query(query, function (err, rows, fields) {
 		if (err) throw err;
 
@@ -55123,12 +55131,18 @@ function setDragonSearch(element, index, array) {
 		var level = rows[0].level;
 		var enemy_dragon_arms_id = rows[0].arms_id;
 		var enemy_dragon_id = rows[0].dragon_id;
+		var enemy_player_id = rows[0].player_id;
 		var chat_id2 = rows[0].chat_id;
 
 		connection.query('UPDATE player SET status = NULL, status_cnt = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
+				
+			var flari_active = 1;
+			var art = connection_sync.query('SELECT COUNT(id) As cnt FROM artifacts WHERE player_id = ' + enemy_player_id);
+			if (art[0].cnt < 5)
+				flari_active = 0;
 
-			connection.query('UPDATE dragon_top_status SET poison = 0, protection = 0, dmg_boost = 0, confusion = 0, wait_dmg = 0, ice = 0, enemy_dragon_id = ' + enemy_dragon_id + ', battle_time = "' + long_date + '", no_match_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+			connection.query('UPDATE dragon_top_status SET poison = 0, protection = 0, dmg_boost = 0, confusion = 0, wait_dmg = 0, ice = 0, flari_active = ' + flari_active + ', enemy_dragon_id = ' + enemy_dragon_id + ', battle_time = "' + long_date + '", no_match_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) {
 					bot.sendMessage(chat_id, "A causa di un problema sei stato escluso dal combattimento in vetta senza penalità, ora puoi rientrare in coda");
 					console.log("ERRORE DUPLICAZIONE player_id " + player_id);
@@ -55156,7 +55170,7 @@ function setDragonSearch(element, index, array) {
 								enemy_scale = 2;
 						}
 
-						connection.query('UPDATE dragon_top_status SET poison = 0, protection = 0, dmg_boost = 0, confusion = 0, wait_dmg = 0, ice = 0 WHERE dragon_id = ' + enemy_dragon_id, function (err, rows, fields) {
+						connection.query('UPDATE dragon_top_status SET poison = 0, protection = 0, dmg_boost = 0, confusion = 0, wait_dmg = 0, ice = 0, flari_active = ' + flari_active + ' WHERE dragon_id = ' + enemy_dragon_id, function (err, rows, fields) {
 							if (err) throw err;
 
 							connection.query('UPDATE dragon SET scale = ' + enemy_scale + ' WHERE id = ' + enemy_dragon_id, function (err, rows, fields) {
@@ -58594,7 +58608,7 @@ function checkMapSeasonEnd() {
 					if (err) throw err;
 				});
 			}
-			connection.query('SELECT id, chat_id, trophies FROM player WHERE trophies > 0', function (err, rows, fields) {
+			connection.query('SELECT id, chat_id, trophies, map_win_best FROM player WHERE trophies > 0', function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length > 0) {
 					if (Object.keys(rows).length == 1)
@@ -58612,6 +58626,7 @@ function setSeasonEnd(element, index, array) {
 	var player_id = element.id;
 	var chat_id = element.chat_id;
 	var trophies = element.trophies;
+	var map_win_best = element.map_win_best;
 
 	var text = "";
 	var mana = trophies*25;
@@ -58642,6 +58657,12 @@ function setSeasonEnd(element, index, array) {
 		connection.query('UPDATE event_mana_status SET mana_1 = mana_1+' + mana + ', mana_2 = mana_2+' + mana + ', mana_3 = mana_3+' + mana + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
+		
+		if (trophies > map_win_best) {
+			connection.query("UPDATE player SET map_win_best = " + trophies + " WHERE id = " + player_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
 
 		if (dust > 0)
 			addItem(player_id, 646, dust);
@@ -58777,7 +58798,7 @@ function checkTopSeasonEnd() {
 
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 							top_id = rows[i].id;
-							connection.query('SELECT D.player_id, D.rank, P.chat_id, P.top_rank_count FROM dragon_top_rank D, player P, dragon D2 WHERE P.id = D2.player_id AND D.player_id = P.id AND D.top_id = ' + top_id + ' ORDER BY D.rank DESC, D2.level ASC, P.id ASC', function (err, rows, fields) {
+							connection.query('SELECT D.player_id, D.rank, P.chat_id, P.top_rank_count, P.top_win_best FROM dragon_top_rank D, player P, dragon D2 WHERE P.id = D2.player_id AND D.player_id = P.id AND D.top_id = ' + top_id + ' ORDER BY D.rank DESC, D2.level ASC, P.id ASC', function (err, rows, fields) {
 								if (err) throw err;
 
 								if (Object.keys(rows).length > 0) {
@@ -58813,6 +58834,12 @@ function checkTopSeasonEnd() {
 											connection.query('UPDATE player SET top_win = top_win+1 WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
 												if (err) throw err;
 											});
+											
+											if (rows[j].rank > rows[j].top_win_best) {
+												connection.query('UPDATE player SET top_win_best = ' + rows[j].rank + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
+													if (err) throw err;
+												});
+											}
 										}
 
 										// console.log(rows[j].player_id, mana, chest, dust, moon_qnt);
