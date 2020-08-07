@@ -45421,6 +45421,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 								if (rows[i].type == 12)
 									rows[i].name += " (" + rows[i].itemName + ")";
 								if (rows[i].multiply == 1) {
+									reb_lim = reb;
 									if (rows[i].limit_reborn != 0) {
 										if (reb > rows[i].limit_reborn)
 											reb_lim = rows[i].limit_reborn;

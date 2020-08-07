@@ -9146,22 +9146,24 @@ bot.onText(/^\/imprese/, function (message) {
 		var daily = rows[0].achievement_count;
 		var triplet = rows[0].achievement_count_all;
 		
-		connection.query('SELECT D.achievement_id, L.name, L.value, L.multiply FROM achievement_daily D, achievement_list L WHERE D.achievement_id = L.id ORDER BY D.id', function (err, rows, fields) {
+		connection.query('SELECT D.achievement_id, L.name, L.value, L.multiply, L.limit_reborn FROM achievement_daily D, achievement_list L WHERE D.achievement_id = L.id ORDER BY D.id', function (err, rows, fields) {
 			if (err) throw err;
 
 			var achievement = "";
+			var reb_lim = reborn;
 			if (Object.keys(rows).length > 0) {
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					achievement += "<b>" + rows[i].name + "</b>:";
 					var ach = connection_sync.query('SELECT completed, progress FROM achievement_status WHERE player_id = ' + player_id + ' AND achievement_id = ' + rows[i].achievement_id);
 					if (Object.keys(ach).length > 0) {
 						if (rows[i].multiply == 1) {
+							reb_lim = reborn;
 							if (rows[i].limit_reborn != 0) {
 								if (reborn > rows[i].limit_reborn)
-									reborn = rows[i].limit_reborn;
+									reb_lim = rows[i].limit_reborn;
 							}
-							rows[i].reward = rows[i].reward*reborn;
-							rows[i].value = rows[i].value*reborn;
+							rows[i].reward = rows[i].reward*reb_lim;
+							rows[i].value = rows[i].value*reb_lim;
 						}
 						if (ach[0].completed == 1)
 							achievement += " ✅";
