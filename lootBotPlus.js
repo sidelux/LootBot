@@ -9646,7 +9646,7 @@ bot.onText(/^\/giocatore|^\/giocatrice/, function (message) {
 });
 
 bot.onText(/^\/drago (.+),(.+)|^\/drago/, function (message, match) {
-	connection.query('SELECT id, money, power_dragon_dmg, power_dragon_def, power_dragon_crit FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, money FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 0) {
 			bot.sendMessage(message.chat.id, "Non sei registrato!");
@@ -9655,9 +9655,6 @@ bot.onText(/^\/drago (.+),(.+)|^\/drago/, function (message, match) {
 
 		var player_id = [rows[0].id];
 		var money = rows[0].money;
-		var power_dragon_dmg = rows[0].power_dragon_dmg;
-		var power_dragon_def = rows[0].power_dragon_def;
-		var power_dragon_crit = rows[0].power_dragon_crit;
 
 		var isSpy = 0;
 		if ((match[1] != undefined) && (match[2] != undefined)) {
@@ -9698,7 +9695,11 @@ bot.onText(/^\/drago (.+),(.+)|^\/drago/, function (message, match) {
 
 		var text = "";
 		for (i = 0; i < player_id.length; i++) {
-			var rows = connection_sync.query('SELECT dragon.*, nickname, class, charm_id, reborn, dragon_description FROM player, dragon WHERE player.id = dragon.player_id AND player.id = ' + player_id[i]);
+			var rows = connection_sync.query('SELECT D.*, P.nickname, P.class, P.charm_id, P.reborn, P.dragon_description, P.power_dragon_dmg, P.power_dragon_def, P.power_dragon_crit FROM player P, dragon D WHERE P.id = D.player_id AND P.id = ' + player_id[i]);
+			
+			var power_dragon_dmg = rows[0].power_dragon_dmg;
+			var power_dragon_def = rows[0].power_dragon_def;
+			var power_dragon_crit = rows[0].power_dragon_crit;
 
 			if (Object.keys(rows).length == 0) {
 				bot.sendMessage(message.from.id, "Non possiedi ancora un drago!");

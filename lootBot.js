@@ -55139,7 +55139,10 @@ function setDragonSearch(element, index, array) {
 			if (err) throw err;
 				
 			var flari_active = 1;
-			var art = connection_sync.query('SELECT COUNT(id) As cnt FROM artifacts WHERE player_id = ' + enemy_player_id);
+			var art = connection_sync.query('SELECT COUNT(id) As cnt FROM artifacts WHERE player_id = ' + player_id);
+			if (art[0].cnt < 5)
+				flari_active = 0;
+			art = connection_sync.query('SELECT COUNT(id) As cnt FROM artifacts WHERE player_id = ' + enemy_player_id);
 			if (art[0].cnt < 5)
 				flari_active = 0;
 
