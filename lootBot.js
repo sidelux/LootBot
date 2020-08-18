@@ -13067,60 +13067,78 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																				if (err) throw err;
 																			});
 																		} else {
-																			connection.query('UPDATE player SET mkeys = mkeys-' + keys + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																			connection.query('SELECT COUNT(id) As not_mapped FROM dungeon_map WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND (dir_top = 0 OR dir_right = 0 OR dir_left = 0)', function (err, rows, fields) {
 																				if (err) throw err;
-
-																				var rand = Math.round(Math.random()*2);
-																				var sage_dir = "";
-																				var selected_dir = "";
-																				var text_dir = "";
-																				if (rand == 0) {
-																					selected_dir = "top";
-																					sage_dir = "dir_top";
-																					text_dir = "dritto";
-																				} else if (rand == 1) {
-																					selected_dir = "left";
-																					sage_dir = "dir_left";
-																					text_dir = "sinistra";
-																				} else if (rand == 2) {
-																					selected_dir = "right";
-																					sage_dir = "dir_right";
-																					text_dir = "destra";
+																				if (rows[0].not_mapped > 0) {	// se non sono tutte mappate
+																					bot.sendMessage(message.chat.id, "L'anziano saggio sa già che tu conosci tutte le stanze davanti a te, ti ignora e prosegui la tua esplorazione", dNext);
+																					setAchievement(player_id, 74, 1);
+																					
+																					if (boost_id == 8)
+																						setBoost(player_id, boost_mission, boost_id);
+																					connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+																						if (err) throw err;
+																					});
+																					connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																						if (err) throw err;
+																					});
+																					return;
 																				}
-
-																				connection.query('SELECT room_id, ' + sage_dir + ' As dir FROM dungeon_rooms WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND ' + sage_dir + ' < 11 ORDER BY RAND()', function (err, rows, fields) {
+																			
+																				connection.query('UPDATE player SET mkeys = mkeys-' + keys + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
-																					if (Object.keys(rows).length > 0) {
-																						bot.sendMessage(message.chat.id, "L'anziano si concentra e un'aura azzurrina si forma attorno a lui, dopo alcuni secondi spalanca gli occhi urlando: " + dungeonToDesc(rows[0].dir).toUpperCase() + " " + text_dir.toUpperCase() + " " + rows[0].room_id + "!!\nDopo di che se ne va a passo lento...", dNext);
 
-																						addToMapping(selected_dir, dungeon_id, player_id, rows[0].room_id);
-																						
-																						setAchievement(player_id, 74, 1);
-
-																						if (boost_id == 8)
-																							setBoost(player_id, boost_mission, boost_id);
-																						connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
-																							if (err) throw err;
-																						});
-																						connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-																							if (err) throw err;
-																						});
-																					} else {
-																						bot.sendMessage(message.chat.id, "L'anziano purtroppo non riesce a vedere alcuna stanza particolare davanti a te, ti restituisce le 🗝 e ti congeda con un po' di malinconia sul volto...", dNext);
-
-																						connection.query('UPDATE player SET mkeys = mkeys+10 WHERE id = ' + player_id, function (err, rows, fields) {
-																							if (err) throw err;
-																						});
-
-																						if (boost_id == 8)
-																							setBoost(player_id, boost_mission, boost_id);
-																						connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
-																							if (err) throw err;
-																						});
-																						connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-																							if (err) throw err;
-																						});
+																					var rand = Math.round(Math.random()*2);
+																					var sage_dir = "";
+																					var selected_dir = "";
+																					var text_dir = "";
+																					if (rand == 0) {
+																						selected_dir = "top";
+																						sage_dir = "dir_top";
+																						text_dir = "dritto";
+																					} else if (rand == 1) {
+																						selected_dir = "left";
+																						sage_dir = "dir_left";
+																						text_dir = "sinistra";
+																					} else if (rand == 2) {
+																						selected_dir = "right";
+																						sage_dir = "dir_right";
+																						text_dir = "destra";
 																					}
+
+																					connection.query('SELECT room_id, ' + sage_dir + ' As dir FROM dungeon_rooms WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND ' + sage_dir + ' < 11 ORDER BY RAND()', function (err, rows, fields) {
+																						if (err) throw err;
+																						if (Object.keys(rows).length > 0) {
+																							bot.sendMessage(message.chat.id, "L'anziano si concentra e un'aura azzurrina si forma attorno a lui, dopo alcuni secondi spalanca gli occhi urlando: " + dungeonToDesc(rows[0].dir).toUpperCase() + " " + text_dir.toUpperCase() + " " + rows[0].room_id + "!!\nDopo di che se ne va a passo lento...", dNext);
+
+																							addToMapping(selected_dir, dungeon_id, player_id, rows[0].room_id);
+
+																							setAchievement(player_id, 74, 1);
+
+																							if (boost_id == 8)
+																								setBoost(player_id, boost_mission, boost_id);
+																							connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+																								if (err) throw err;
+																							});
+																							connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																								if (err) throw err;
+																							});
+																						} else {
+																							bot.sendMessage(message.chat.id, "L'anziano purtroppo non riesce a vedere alcuna stanza particolare davanti a te, ti restituisce le 🗝 e ti congeda con un po' di malinconia sul volto...", dNext);
+
+																							connection.query('UPDATE player SET mkeys = mkeys+10 WHERE id = ' + player_id, function (err, rows, fields) {
+																								if (err) throw err;
+																							});
+
+																							if (boost_id == 8)
+																								setBoost(player_id, boost_mission, boost_id);
+																							connection.query('UPDATE dungeon_status SET room_time = "' + room_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+																								if (err) throw err;
+																							});
+																							connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																								if (err) throw err;
+																							});
+																						}
+																					});
 																				});
 																			});
 																		}
@@ -50436,8 +50454,14 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 														if (err) throw err;
 
 														if (Object.keys(rows).length > 0) {
-															for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-																iKeys.push(["Crea " + rows[i].name]);
+															var cnt = Object.keys(rows).length;
+															for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+																iKeys.push(["Crea " + rows[i].name + ", 1"]);
+																if (cnt <= 5) {
+																	iKeys.push(["Crea " + rows[i].name + ", 2"]);
+																	iKeys.push(["Crea " + rows[i].name + ", 3"]);
+																}
+															}
 														}
 
 														iKeys.push(["Contrabbandiere", "Torna a *" + oggetto]);
