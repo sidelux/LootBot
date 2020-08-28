@@ -41012,8 +41012,11 @@ bot.onText(/^apri/i, function (message) {
 					}
 				};
 			}
-
+			
 			var alltxt = "Sicuro di voler aprire tutti gli scrigni?\nNe possiedi " + formatNumber(qnt) + " su un massimo di " + formatNumber(maxChest) + " apribili contemporaneamente, procedendo saranno aperti partendo dalla rarità più bassa";
+			if (qnt < 5000)
+				alltxt = "Sicuro di voler aprire tutti gli scrigni?\nNe possiedi " + formatNumber(qnt);
+			
 			if (scrigno != "tutti")
 				alltxt = "Possiedi " + formatNumber(qnt) + "x *" + scrigno + "*, quanti ne vuoi aprire?";
 

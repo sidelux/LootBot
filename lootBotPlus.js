@@ -3424,9 +3424,11 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+),(.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p
 						bot.sendMessage(message.chat.id, "Questo oggetto non può essere messo all'asta");
 						return;
 					}
-
-					if ((prezzo > parseInt(rows[0].value)) || (prezzo < Math.round(rows[0].value / 100))) {
-						bot.sendMessage(message.chat.id, "Il prezzo inserito non è valido, max: " + parseInt(rows[0].value) + ", min: " + Math.round(rows[0].value / 100));
+					
+					var maxPrice = rows[0].value*100;
+					var minPrice = Math.round(rows[0].value/100);
+					if ((prezzo > parseInt(maxPrice)) || (prezzo < minPrice)) {
+						bot.sendMessage(message.chat.id, "Il prezzo inserito non è valido, max: " + maxPrice + ", min: " + minPrice);
 						return;
 					}
 
@@ -3435,7 +3437,7 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+),(.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p
 
 					var d = new Date();
 					var start_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-					d.setMinutes(d.getMinutes() + 60);
+					d.setMinutes(d.getMinutes() + 180);
 					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
 					connection.query('INSERT INTO auction_list (chat_id, creator_id, item_id, last_price, time_end, time_start) VALUES (' + message.chat.id + ',' + player_id + ',' + item_id + ',' + prezzo + ',"' + long_date + '","' + start_date + '")', function (err, rows, fields) {
