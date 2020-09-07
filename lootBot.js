@@ -15925,7 +15925,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																								att += 7;
 																							if (refilled < att) {
 																								var refill = Math.floor(player_total_life * (rows[0].ability_level / 10)); // Cura = livello*10%
-																								connection.query('UPDATE player SET refilled = refilled+1, life = ' + refill + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																								connection.query('UPDATE player SET refilled = refilled+1, life = ' + refill + ', paralyzed = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 																									bot.sendMessage(message.chat.id, "Il mostro ti colpisce mortalmente ma grazie all'Intervento Divino torni in battaglia con " + formatNumber(refill) + "/" + formatNumber(player_total_life) + " hp! (" + (att-(refilled+1)) + " residui)", dBattle);
 																								});
@@ -42130,7 +42130,7 @@ bot.onText(/Torna in Vita/i, function (message) {
 							}
 
 							var refill = Math.floor(total_life * (rows[0].ability_level / 10)); // Cura = livello*10%
-							connection.query('UPDATE player SET refilled = refilled+1, life = ' + refill + ' WHERE id = ' + player_id, function (err, rows, fields) {
+							connection.query('UPDATE player SET refilled = refilled+1, life = ' + refill + ', paralyzed = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
 								bot.sendMessage(message.chat.id, "L'Intervento Divino ti ha concesso di tornare in battaglia con " + formatNumber(refill) + "/" + formatNumber(total_life) + " hp!", kbBack);
 							});
