@@ -19651,7 +19651,7 @@ bot.onText(/^\/pagateam (.+)|^\/pagateam/i, function (message, match) {
 				return;
 			}
 
-			connection.query('SELECT nickname, player_id, chat_id FROM team_player, player WHERE player.id = team_player.player_id AND team_id = ' + rows[0].team_id + ' AND player_id != ' + player_id + ' AND suspended = 0', function (err, rows, fields) {
+			connection.query('SELECT nickname, player_id, chat_id, money FROM team_player, player WHERE player.id = team_player.player_id AND team_id = ' + rows[0].team_id + ' AND player_id != ' + player_id + ' AND suspended = 0', function (err, rows, fields) {
 				if (err) throw err;
 
 				if (Object.keys(rows).length == 0) {
@@ -19668,10 +19668,18 @@ bot.onText(/^\/pagateam (.+)|^\/pagateam/i, function (message, match) {
 				var d2 = new Date();
 				var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
 
+				var total_price_reduce = 0;
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					connection.query('UPDATE player SET money = money+' + price + ' WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
-						if (err) throw err;
-					});
+					if (rows[0].money+price > 1000000000) {
+						bot.sendMessage(rows[i].chat_id, message.from.username + " del tuo team voleva inviarti <b>" + price + " §</b>, ma raggiungendo il cap non hai ricevuto la somma prevista.", html);
+						continue;
+					} else {
+						connection.query('UPDATE player SET money = money+' + price + ' WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+					}
+					
+					total_price_reduce += price;
 
 					var extra = "";
 					if (msg != "")
@@ -19684,9 +19692,9 @@ bot.onText(/^\/pagateam (.+)|^\/pagateam/i, function (message, match) {
 					});
 				}
 
-				connection.query('UPDATE player SET money = money-' + total_price + ' WHERE id = ' + player_id, function (err, rows, fields) {
+				connection.query('UPDATE player SET money = money-' + total_price_reduce + ' WHERE id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
-					bot.sendMessage(message.chat.id, "Hai inviato correttamente *" + formatNumber(total_price) + " §* al team!", mark);
+					bot.sendMessage(message.chat.id, "Hai inviato correttamente *" + formatNumber(total_price_reduce) + " §* al team!", mark);
 				});
 			});
 		});
@@ -41435,6 +41443,8 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 								skip1 = 1;
 							else if ((lev == 1000) && (reborn == 5))
 								skip1 = 1;
+							else if ((lev == 2500) && (reborn == 6))
+								skip1 = 1;
 							if ((dragon_lev == 300) || ((dragon_lev == 200) && (evolved == 1)) || ((dragon_lev == 100) && (evolved == 0)))
 								skip2 = 1;
 
@@ -43624,8 +43634,10 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 										money = Math.round(money);
 											
 										// globale
+										/*
 										if (global_end == 1)
 											money = 0;
+										*/
 
 										connection.query("SELECT money FROM player WHERE id = " + toId, function (err, rows, fields) {
 											if (err) throw err;
@@ -59243,7 +59255,6 @@ function setFinishedDungeonRoom(element, index, array) {
 		var rand = Math.round(Math.random() * (Object.keys(strArr).length - 1));
 		bot.sendMessage(element.chat_id, strArr[rand]);
 		setAchievement(player_id, 63, 1);
-		// globalAchievement(player_id, 1);
 	});
 };
 
@@ -59913,6 +59924,7 @@ function setFinishedMission(element, index, array) {
 								if (mission_gem == 0) {
 									if (mission_chest >= 4)
 										setAchievement(element.id, 82, 1);
+									globalAchievement(element.id, 1);
 								}
 
 								var extra = "";
