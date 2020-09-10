@@ -2920,6 +2920,7 @@ CREATE TABLE `player` (
   `dungeon_time` timestamp NULL DEFAULT NULL,
   `dungeon_skip` int(11) NOT NULL DEFAULT '0',
   `dungeon_count` int(11) NOT NULL DEFAULT '0',
+  `dungeon_energy` int(11) NOT NULL DEFAULT '0',
   `craft_count` int(8) NOT NULL DEFAULT '0',
   `craft_week` int(11) NOT NULL DEFAULT '0',
   `craft_day` int(11) NOT NULL DEFAULT '0',

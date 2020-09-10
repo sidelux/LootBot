@@ -6619,10 +6619,8 @@ bot.onText(/^\/offri/i, function (message) {
 		bot.sendMessage(message.from.id, "Il parametro acquirente è obbligatorio");
 		return;
 	}
-	if (isNaN(price)) {
-		bot.sendMessage(message.from.id, "Il parametro prezzo non è valido");
-		return;
-	}
+	if (isNaN(price))
+		price = 0; // imposta al minimo dopo
 
 	connection.query('SELECT account_id, holiday, market_ban, id, money FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
