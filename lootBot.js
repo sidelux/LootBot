@@ -13701,10 +13701,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												bot.sendMessage(message.chat.id, text, dNext);
 
 												endDungeonRoom(player_id);
-												
-												connection.query('UPDATE player SET dungeon_energy = ' + Math.round(getRandomArbitrary(2, 20)) + ' WHERE id = ' + player_id, function (err, rows, fields) {
-													if (err) throw err;
-												});
+												reduceDungeonEnergy(player_id, Math.round(getRandomArbitrary(2, 20)));
 												
 												connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
@@ -13740,10 +13737,6 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															}
 															
 															endDungeonRoom(player_id);
-															
-															if (dungeon_energy < charges)
-																charges = dungeon_energy;
-															
 															reduceDungeonEnergy(player_id, charges);
 															
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -13790,13 +13783,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 															setAchievement(player_id, 80, 1);
 															endDungeonRoom(player_id);
-
-															if (dungeon_energy < charges)
-																charges = dungeon_energy;
 															
-															connection.query('UPDATE player SET dungeon_energy = ' + charges + ' WHERE id = ' + player_id, function (err, rows, fields) {
-																if (err) throw err;
-															});
+															reduceDungeonEnergy(player_id, charges);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -47306,6 +47294,11 @@ function mainMenu(message) {
 															var dungeon = new Date(dungeon_time);
 															msgtext = msgtext + "\n🛡 Attesa dungeon fino alle " + addZero(dungeon.getHours()) + ":" + addZero(dungeon.getMinutes());
 														}
+														var dungeon_energy_text = dungeonRush;
+														if (dungeonRush == 1) {
+															dungeon_energy_text = "∞";
+															dungeon_energy = 999;
+														}
 														if (dungeon_energy < 10)
 															msgtext = msgtext + "\n🛡 Cariche dungeon non sufficenti";
 														else {
@@ -47320,7 +47313,7 @@ function mainMenu(message) {
 																	plurH = "a";
 																if (dungeon_finish_time == 0)
 																	dungeon_finish_time = "meno di 1";
-																msgtext = msgtext + "\n🛡 Esplora il dungeon (" + room_txt + ")" + dungeon_diff + " 💥 " + dungeon_finish_time + " or" + plurH + " 🔋 " + dungeon_energy + "/" + max_dungeon_energy;
+																msgtext = msgtext + "\n🛡 Esplora il dungeon (" + room_txt + ")" + dungeon_diff + " 💥 " + dungeon_finish_time + " or" + plurH + " 🔋 " + dungeon_energy_text + "/" + max_dungeon_energy;
 															} else
 																msgtext = msgtext + "\n🛡 Entra in un dungeon!";
 														}
@@ -54635,25 +54628,25 @@ function setDungeonEnergy(element, index, array) {
 		if (Object.keys(rows).length > 0)
 			abBonus = parseInt(rows[0].ability_level) * rows[0].val;
 	
-		var refill = 10;
+		var refill = 5;
 
 		if (abBonus > 0)
 			refill += abBonus;
 		if ((class_id == 3) && (reborn == 3))
-			refill += 10;
+			refill += 7;
 		if ((class_id == 9) && (reborn > 1))
-			refill += 10;
+			refill += 7;
 		if ((class_id == 9) && (reborn >= 5))
-			refill += 15;
-		if ((class_id == 9) && (reborn == 6))
-			refill += 5;
-		if ((class_id == 3) && (reborn >= 4))
-			refill += 20;
-		if (crazyMode == 1)
 			refill += 10;
+		if ((class_id == 9) && (reborn == 6))
+			refill += 3;
+		if ((class_id == 3) && (reborn >= 4))
+			refill += 15;
+		if (crazyMode == 1)
+			refill += 7;
 
 		if (boost_id == 8) {
-			refill += 20;
+			refill += 10;
 			setBoost(player_id, boost_mission, boost_id);
 		}
 
