@@ -12180,7 +12180,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																return;
 															}
 															
-															var charges = (10 * param) + 10;
+															var charges = (3 * param) + 3;
 															if (cursed == 1)
 																charges = charges*2;
 															if (dungeon_energy < charges) {
@@ -13581,7 +13581,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																return;
 															}
 															
-															var charges = (15 * param) + 15;
+															var charges = (5 * param) + 5;
 															if (cursed == 1)
 																charges = charges*2;
 															if (dungeon_energy < charges) {
@@ -13695,13 +13695,15 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													} else
 														text += "Ma per stavolta nulla accade!";
 												}
+												
+												var charges = Math.round(getRandomArbitrary(2, 20));
 
-												text += "\n\nLentamente prosegui verso la stanza successiva...";
+												text += "\n\nLentamente prosegui verso la stanza successiva... Consumando " + charges + " Cariche Esplorative...";
 
 												bot.sendMessage(message.chat.id, text, dNext);
 
 												endDungeonRoom(player_id);
-												reduceDungeonEnergy(player_id, Math.round(getRandomArbitrary(2, 20)));
+												reduceDungeonEnergy(player_id, charges);
 												
 												connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
@@ -47293,29 +47295,30 @@ function mainMenu(message) {
 														if (dungeon_time != null) {
 															var dungeon = new Date(dungeon_time);
 															msgtext = msgtext + "\n🛡 Attesa dungeon fino alle " + addZero(dungeon.getHours()) + ":" + addZero(dungeon.getMinutes());
-														}
-														var dungeon_energy_text = dungeonRush;
-														if (dungeonRush == 1) {
-															dungeon_energy_text = "∞";
-															dungeon_energy = 999;
-														}
-														if (dungeon_energy < 10)
-															msgtext = msgtext + "\n🛡 Cariche dungeon non sufficenti";
-														else {
-															if (room_num > 0) {
-																var room_txt = room_num + "/" + room_tot_num;
-																if (room_num > room_tot_num)
-																	room_txt = "Boss";
-																if (dungeon_min == 0)
-																	dungeon_min = "meno di 1";
-																var plurH = "e";
-																if (dungeon_finish_time <= 1)
-																	plurH = "a";
-																if (dungeon_finish_time == 0)
-																	dungeon_finish_time = "meno di 1";
-																msgtext = msgtext + "\n🛡 Esplora il dungeon (" + room_txt + ")" + dungeon_diff + " 💥 " + dungeon_finish_time + " or" + plurH + " 🔋 " + dungeon_energy_text + "/" + max_dungeon_energy;
-															} else
-																msgtext = msgtext + "\n🛡 Entra in un dungeon!";
+														} else {
+															var dungeon_energy_text = dungeon_energy;
+															if (dungeonRush == 1) {
+																dungeon_energy_text = "∞";
+																dungeon_energy = 999;
+															}
+															if (dungeon_energy < 10)
+																msgtext = msgtext + "\n🛡 Cariche dungeon non sufficenti (" + dungeon_energy + "/10)";
+															else {
+																if (room_num > 0) {
+																	var room_txt = room_num + "/" + room_tot_num;
+																	if (room_num > room_tot_num)
+																		room_txt = "Boss";
+																	if (dungeon_min == 0)
+																		dungeon_min = "meno di 1";
+																	var plurH = "e";
+																	if (dungeon_finish_time <= 1)
+																		plurH = "a";
+																	if (dungeon_finish_time == 0)
+																		dungeon_finish_time = "meno di 1";
+																	msgtext = msgtext + "\n🛡 Esplora il dungeon (" + room_txt + ")" + dungeon_diff + " 💥 " + dungeon_finish_time + " or" + plurH + " 🔋 " + dungeon_energy_text + "/" + max_dungeon_energy;
+																} else
+																	msgtext = msgtext + "\n🛡 Entra in un dungeon!";
+															}
 														}
 
 														if (Object.keys(rows).length > 0) {
@@ -54633,17 +54636,17 @@ function setDungeonEnergy(element, index, array) {
 		if (abBonus > 0)
 			refill += abBonus;
 		if ((class_id == 3) && (reborn == 3))
-			refill += 7;
+			refill += 6;
 		if ((class_id == 9) && (reborn > 1))
-			refill += 7;
+			refill += 6;
 		if ((class_id == 9) && (reborn >= 5))
-			refill += 10;
+			refill += 9;
 		if ((class_id == 9) && (reborn == 6))
 			refill += 3;
 		if ((class_id == 3) && (reborn >= 4))
-			refill += 15;
+			refill += 12;
 		if (crazyMode == 1)
-			refill += 7;
+			refill += 6;
 
 		if (boost_id == 8) {
 			refill += 10;
@@ -59413,7 +59416,7 @@ function setFinishedMission(element, index, array) {
 								m = 2+mplus;
 								connection.query('UPDATE player SET boost_id = 8, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
 									if (err) throw err;
-									bot.sendMessage(chat_id, "Hai trovato una Bevanda Corsa! Per " + m + " stanze dungeon il tempo di attesa è dimezzato.");
+									bot.sendMessage(chat_id, "Hai trovato una Bevanda Corsa! Per " + m + " volte ottieni più Cariche Esplorative.");
 									setAchievement(element.id, 69, 1);
 								});
 								achPnt++;
