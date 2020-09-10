@@ -13723,16 +13723,22 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															var rand = Math.random()*100;
 															var d = new Date();
 															var charges = 0;
+															
+															var need_charges = 20;
+															if (cursed == 1)
+																need_charges = 40;
+															if (dungeon_energy < need_charges) {
+																bot.sendMessage(message.chat.id, "Devi avere almeno 20 Cariche Esplorative per tentare questa impresa", dNext);
+																return;
+															}
+															
 															if (rand < 50) {
 																var damage = Math.round(getRandomArbitrary(room_id*100, room_id*200));
 																connection.query('UPDATE player SET life = life-' + damage + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
-																bot.sendMessage(message.chat.id, "Fai un grande respiro ed emetti un urlo talmente forte da spaventare i Cerbrutti a distanza di km, il crepaccio si spacca ma alcune pietre ti precipitano addosso (perdi " + formatNumber(damage) + " hp), procedi verso la prossima stanza più lentamente a causa delle ferite", dNext);
-																if (cursed == 1)
-																	charges = 40;
-																else
-																	charges = 20;
+																charges = need_charges;
+																bot.sendMessage(message.chat.id, "Fai un grande respiro ed emetti un urlo talmente forte da spaventare i Cerbrutti a distanza di km, il crepaccio si spacca ma alcune pietre ti precipitano addosso (perdi " + formatNumber(damage) + " hp), procedi verso la prossima stanza più lentamente a causa delle ferite e con " + charges + " Cariche Esplorative in meno", dNext);
 															} else {
 																bot.sendMessage(message.chat.id, "Fai un grande respiro ed emetti un urlo talmente forte da spaventare i Cerbrutti a distanza di km, il crepaccio si spacca e procedi verso la prossima stanza sentendoti molto più leggero e veloce", dNext);
 																charges = 1;
@@ -13780,6 +13786,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															var charges = 10;
 															if (cursed == 1)
 																charges = 20;
+															
+															if (dungeon_energy < charges) {
+																bot.sendMessage(message.chat.id, "Non hai abbastanza Cariche Esplorative per spolverare, te ne servono " + charges + "!", dNext);
+																return;
+															}
 
 															bot.sendMessage(message.chat.id, "Inizi a spolverare, consumi " + charges + " Cariche Esplorative, ma ottieni " + dust + " Polvere! Prosegui verso la porta un po' tossicchiante...", dNext);
 
@@ -45876,7 +45887,7 @@ function setTapPrice(element, index, array) {
 		tap_price = Math.round(getRandomArbitrary(5000, 25000));
 	connection.query("UPDATE player SET tap_price = " + tap_price + " WHERE id = " + player_id, function (err, rows, fields) {
 		if (err) throw err;
-		console.log("Prezzo tappo aggiornato: " + tap_price);
+		// console.log("Prezzo tappo aggiornato: " + tap_price);
 	});
 }
 
@@ -47296,28 +47307,27 @@ function mainMenu(message) {
 															var dungeon = new Date(dungeon_time);
 															msgtext = msgtext + "\n🛡 Attesa dungeon fino alle " + addZero(dungeon.getHours()) + ":" + addZero(dungeon.getMinutes());
 														} else {
-															var dungeon_energy_text = dungeon_energy;
-															if (dungeonRush == 1) {
-																dungeon_energy_text = "∞";
-																dungeon_energy = 999;
-															}
-															if (dungeon_energy < 10)
-																msgtext = msgtext + "\n🛡 Cariche dungeon non sufficenti (" + dungeon_energy + "/10)";
+															if (room_num == 0)
+																msgtext = msgtext + "\n🛡 Entra in un dungeon!";
 															else {
-																if (room_num > 0) {
-																	var room_txt = room_num + "/" + room_tot_num;
-																	if (room_num > room_tot_num)
-																		room_txt = "Boss";
-																	if (dungeon_min == 0)
-																		dungeon_min = "meno di 1";
+																var dungeon_energy_text = dungeon_energy;
+																if (dungeonRush == 1) {
+																	dungeon_energy_text = "∞";
+																	dungeon_energy = 999;
+																}
+																var room_txt = " (" + room_num + "/" + room_tot_num + ")";
+																if (room_num > room_tot_num)
+																	room_txt = "Boss";
+																if (dungeon_energy < 10)
+																	msgtext = msgtext + "\n🛡 Cariche Esplorative non sufficenti" + room_txt + " 🔋 " + dungeon_energy + "/10";
+																else {
 																	var plurH = "e";
 																	if (dungeon_finish_time <= 1)
 																		plurH = "a";
 																	if (dungeon_finish_time == 0)
 																		dungeon_finish_time = "meno di 1";
-																	msgtext = msgtext + "\n🛡 Esplora il dungeon (" + room_txt + ")" + dungeon_diff + " 💥 " + dungeon_finish_time + " or" + plurH + " 🔋 " + dungeon_energy_text + "/" + max_dungeon_energy;
-																} else
-																	msgtext = msgtext + "\n🛡 Entra in un dungeon!";
+																	msgtext = msgtext + "\n🛡❗️ Esplora il dungeon" + room_txt + dungeon_diff + " 💥 " + dungeon_finish_time + " or" + plurH + " 🔋 " + dungeon_energy_text + "/" + max_dungeon_energy;
+																}
 															}
 														}
 
@@ -48823,6 +48833,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 					iKeys.push(["Invia Occhiofurbo"]);
 					iKeys.push(["Invia Testacalda"]);
 					iKeys.push(["Matchmaking (§)"]);
+					iKeys.push(["Torna al rifugio"]);
 					iKeys.push(["Torna al menu"]);
 
 					var option = {
