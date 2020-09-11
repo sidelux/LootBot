@@ -13695,15 +13695,12 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													} else
 														text += "Ma per stavolta nulla accade!";
 												}
-												
-												var charges = Math.round(getRandomArbitrary(2, 20));
 
-												text += "\n\nLentamente prosegui verso la stanza successiva... Consumando " + charges + " Cariche Esplorative...";
+												text += "\n\nLentamente prosegui verso la stanza successiva...";
 
 												bot.sendMessage(message.chat.id, text, dNext);
 
 												endDungeonRoom(player_id);
-												reduceDungeonEnergy(player_id, charges);
 												
 												connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
@@ -13739,13 +13736,13 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																});
 																charges = need_charges;
 																bot.sendMessage(message.chat.id, "Fai un grande respiro ed emetti un urlo talmente forte da spaventare i Cerbrutti a distanza di km, il crepaccio si spacca ma alcune pietre ti precipitano addosso (perdi " + formatNumber(damage) + " hp), procedi verso la prossima stanza più lentamente a causa delle ferite e con " + charges + " Cariche Esplorative in meno", dNext);
+																reduceDungeonEnergy(player_id, charges);
 															} else {
 																bot.sendMessage(message.chat.id, "Fai un grande respiro ed emetti un urlo talmente forte da spaventare i Cerbrutti a distanza di km, il crepaccio si spacca e procedi verso la prossima stanza sentendoti molto più leggero e veloce", dNext);
-																charges = 1;
+																addDungeonEnergy(player_id, 5);
 															}
 															
 															endDungeonRoom(player_id);
-															reduceDungeonEnergy(player_id, charges);
 															
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
@@ -47317,9 +47314,9 @@ function mainMenu(message) {
 																}
 																var room_txt = " (" + room_num + "/" + room_tot_num + ")";
 																if (room_num > room_tot_num)
-																	room_txt = "Boss";
+																	room_txt = " (Boss)";
 																if (dungeon_energy < 10)
-																	msgtext = msgtext + "\n🛡 Cariche Esplorative non sufficenti" + room_txt + " 🔋 " + dungeon_energy + "/10";
+																	msgtext = msgtext + "\n🛡 Cariche Esplorative non sufficienti" + room_txt + " 🔋 " + dungeon_energy + "/10";
 																else {
 																	var plurH = "e";
 																	if (dungeon_finish_time <= 1)
@@ -54685,14 +54682,17 @@ function endDungeonRoom(player_id) {
 }
 
 function reduceDungeonEnergy(player_id, quantity) {
-	connection.query('SELECT dungeon_energy FROM player WHERE id = ' + player_id, function (err, rows, fields) {
-		if (err) throw err;
-		if (rows[0].dungeon_energy < quantity)
-			quantity = rows[0].dungeon_energy;
-		connection.query('UPDATE player SET dungeon_energy = dungeon_energy-' + quantity + ' WHERE id = ' + player_id, function (err, rows, fields) {
-			if (err) throw err;
-		});
-	});
+	var player = connection_sync.query('SELECT dungeon_energy FROM player WHERE id = ' + player_id);
+	if (player[0].dungeon_energy < quantity)
+		quantity = player[0].dungeon_energy;
+	connection_sync.query('UPDATE player SET dungeon_energy = dungeon_energy-' + quantity + ' WHERE id = ' + player_id);
+}
+
+function addDungeonEnergy(player_id, quantity) {
+	var player = connection_sync.query('SELECT dungeon_energy FROM player WHERE id = ' + player_id);
+	if (player[0].dungeon_energy+quantity > max_dungeon_energy)
+		quantity = max_dungeon_energy-player[0].dungeon_energy;
+	connection_sync.query('UPDATE player SET dungeon_energy = dungeon_energy+' + quantity + ' WHERE id = ' + player_id);
 }
 
 function refreshManaBoost() {
