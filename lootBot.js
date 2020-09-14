@@ -47378,8 +47378,11 @@ function mainMenu(message) {
                                                                     var coeff = 1000 * 60 * 10;
                                                                     var date = new Date();
                                                                     date.setMinutes(date.getMinutes()+10);
-                                                                    var rounded = new Date(Math.round(date.getTime() / coeff) * coeff)
-                                                                    var next_charge = rounded.getHours() + ":" + rounded.getMinutes();
+                                                                    var next_charge;
+                                                                    if (date.getMinutes()%10 === 0)
+                                                                        next_charge = addZero(date.getHours()) + ":" + addZero(date.getMinutes());
+                                                                    else
+                                                                        next_charge = addZero(date.getHours()) + ":" + addZero(Math.floor(date.getMinutes()/10)*10);
                                                                     
 																	msgtext = msgtext + "\n🛡 Cariche Esplorative non sufficienti" + room_txt + " 🔋 " + dungeon_energy + "/10 ⏱ " + next_charge;
                                                                 } else {
