@@ -13784,7 +13784,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															if (cursed == 1)
 																charges = 20;
 															
-															if (dungeon_energy < charges) {
+															if (dungeon_energy < (charges+10)) {
 																bot.sendMessage(message.chat.id, "Non hai abbastanza Cariche Esplorative per spolverare, te ne servono " + charges + "!", dNext);
 																return;
 															}
@@ -45432,7 +45432,7 @@ bot.onText(/^ricarica interventi/i, function (message) {
 			
 			var qnt = 10;
 			
-			bot.sendMessage(message.chat.id, "Puoi ricaricare gli Interventi Divini in cambio di Intrugli Revitalizzanti, quanti ne vuoi ricaricare?\nAl momento ne puoi utilizzare ancora " + refill_left + " su " + att + ", e possiedi " + getItemCnt(player_id, 759) + " intrugli. Per ricaricare di un utilizzo, consumerai " + qnt + " Intrugli", kb).then(function () {
+			bot.sendMessage(message.chat.id, "Puoi ricaricare gli Interventi Divini in cambio di Intrugli Revitalizzanti, quanti ne vuoi ricaricare?\nAl momento ne puoi utilizzare ancora " + refill_left + " su " + att + ", e possiedi " + formatNumber(getItemCnt(player_id, 759)) + " intrugli. Per ricaricare di un utilizzo, consumerai " + qnt + " Intrugli", kb).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
 					if ((answer.text == "Torna al giocatore") || (answer.text == "Torna al menu"))
 						return;
@@ -48885,7 +48885,15 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 								} else
 									return;
 								
-								bot.sendMessage(message.chat.id, "Sei sicuro di voler inviare " + type + " all'ispezione?", yesno).then(function () {
+								var kbYesNo = {
+									parse_mode: "Markdown",
+									reply_markup: {
+										resize_keyboard: true,
+										keyboard: [["Si"], ["Torna al rifugio"], ["Torna al menu"]]
+									}
+								};
+								
+								bot.sendMessage(message.chat.id, "Sei sicuro di voler inviare " + type + " all'ispezione?", kbYesNo).then(function () {
 									answerCallbacks[message.chat.id] = function (answer) {
 										if (answer.text.toLowerCase() == "si") {
 											var kbBack = {

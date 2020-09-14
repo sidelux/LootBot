@@ -9168,7 +9168,7 @@ bot.onText(/^\/imprese/, function (message) {
 						if (ach[0].completed == 1)
 							achievement += " ✅";
 						else
-							achievement += " ❌ " + ach[0].progress + "/" + rows[i].value;
+							achievement += " ❌ " + formatNumber(ach[0].progress) + "/" + formatNumber(rows[i].value);
 					} else
 						achievement += " ❌";
 					achievement += "\n";
