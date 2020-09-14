@@ -223,6 +223,10 @@ var j11 = Schedule.scheduleJob('00 16 * * *', function () {	// 16:00 di giorno
 	changeTapPrice();
 });
 
+var j12 = Schedule.scheduleJob('*/10 * * * *', function () {	// ogni 10 min
+	checkDungeonEnergy();
+});
+
 callNTimes(20000, function () { //20 secondi
 	if (checkDragonTopOn == 1)
 		checkDragonSearch();
@@ -350,7 +354,6 @@ callNTimes(300000, function () { //Ogni 5 minuti
 callNTimes(600000, function () { //Ogni 10 minuti
 	checkLifeRush();
 	checkTapTime();
-	checkDungeonEnergy();
 });
 
 callNTimes(1800000, function () { //Ogni mezz'ora
@@ -9061,6 +9064,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 								iKeys.push(["Azzera il Rango ⚠️"]);
 						}
 
+						iKeys.push(["Notifiche cariche dungeon 🛡"]);
 						iKeys.push(["Torna al menu"]);
 
 						var dSelect = {
@@ -22568,7 +22572,7 @@ bot.onText(/team/i, function (message) {
 											}
 											if ((isAdmin == 0) && (isViceAdmin == 1))
 												iKeys.push(["Lascia ❌"]);
-											iKeys.push(["Limite 🚫", "Notifiche 💤"]);
+											iKeys.push(["Limite 🚫", "Notifiche team 💤"]);
 											if (team_closed == 1)
 												show_type = "Chiuso";
 											if (team_details == 1)
@@ -22581,7 +22585,7 @@ bot.onText(/team/i, function (message) {
 											if (team_details == 1)
 												iKeys.push(["Dettaglio Membri 👥"]);
 											iKeys.push(["Cassaforte 💰", "Magazzino 📦"]);
-											iKeys.push(["Hall of Fame 🏆", "Notifiche 💤"]);
+											iKeys.push(["Hall of Fame 🏆", "Notifiche team 💤"]);
 											iKeys.push(["Potenziamenti Anima 🦋"]);
 											iKeys.push(["Liste Membri 🔎", "Lascia ❌"]);
 											iKeys.push(["Torna al menu"]);
@@ -25533,7 +25537,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 															parse_mode: "HTML",
 															reply_markup: {
 																resize_keyboard: true,
-																keyboard: [["Scatena attacco ☄️"], ["Incita 💢", "Incremento 💢"], ["Partecipanti 👥"], ["Notifiche 💤"], ["Cambia eletto 🗡", "Arrenditi 🏳"],["Torna al menu"]]
+																keyboard: [["Scatena attacco ☄️"], ["Incita 💢", "Incremento 💢"], ["Partecipanti 👥"], ["Notifiche team 💤"], ["Cambia eletto 🗡", "Arrenditi 🏳"],["Torna al menu"]]
 															}
 														};
 
@@ -25545,7 +25549,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																parse_mode: "HTML",
 																reply_markup: {
 																	resize_keyboard: true,
-																	keyboard: [["Scatena attacco ☄️"], ["Incita 💢", "Incremento 💢"], ["Partecipanti 👥", active], ["Notifiche 💤"], ["Cambia eletto 🗡", "Arrenditi 🏳"],["Torna al menu"]]
+																	keyboard: [["Scatena attacco ☄️"], ["Incita 💢", "Incremento 💢"], ["Partecipanti 👥", active], ["Notifiche team 💤"], ["Cambia eletto 🗡", "Arrenditi 🏳"],["Torna al menu"]]
 																}
 															};
 														} else if ((elected == 0) && (isAdmin == 0)) {
@@ -25553,7 +25557,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																parse_mode: "HTML",
 																reply_markup: {
 																	resize_keyboard: true,
-																	keyboard: [["Incita 💥", "Incremento 💢"], ["Notifiche 💤"], ["Partecipanti 👥", "Torna al menu"]]
+																	keyboard: [["Incita 💥", "Incremento 💢"], ["Notifiche team 💤"], ["Partecipanti 👥", "Torna al menu"]]
 																}
 															};
 
@@ -25565,7 +25569,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	parse_mode: "HTML",
 																	reply_markup: {
 																		resize_keyboard: true,
-																		keyboard: [["Incita 💥", "Incremento 💢"], [active, "Notifiche 💤"], ["Partecipanti 👥", "Torna al menu"]]
+																		keyboard: [["Incita 💥", "Incremento 💢"], [active, "Notifiche team 💤"], ["Partecipanti 👥", "Torna al menu"]]
 																	}
 																};
 															}
@@ -25574,7 +25578,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																parse_mode: "HTML",
 																reply_markup: {
 																	resize_keyboard: true,
-																	keyboard: [["Incita 💥", "Incremento 💢"], ["Cambia eletto 🗡", "Partecipanti 👥"], ["Notifiche 💤", "Torna al menu"]]
+																	keyboard: [["Incita 💥", "Incremento 💢"], ["Cambia eletto 🗡", "Partecipanti 👥"], ["Notifiche team 💤", "Torna al menu"]]
 																}
 															};
 
@@ -25585,7 +25589,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	parse_mode: "HTML",
 																	reply_markup: {
 																		resize_keyboard: true,
-																		keyboard: [["Incita 💥", "Incremento 💢"], [active], ["Cambia eletto 🗡", "Partecipanti 👥"], ["Notifiche 💤", "Torna al menu"]]
+																		keyboard: [["Incita 💥", "Incremento 💢"], [active], ["Cambia eletto 🗡", "Partecipanti 👥"], ["Notifiche team 💤", "Torna al menu"]]
 																	}
 																};
 															}
@@ -25646,7 +25650,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	return;
 																}
 
-																if (answer.text.toLowerCase().indexOf("notifiche") != -1)
+																if (answer.text.toLowerCase().indexOf("notifiche team") != -1)
 																	return;
 
 																if (answer.text.toLowerCase().indexOf("attiva") != -1) {
@@ -29314,7 +29318,7 @@ bot.onText(/^Lascia$|Lascia ❌/i, function (message) {
 	});
 });
 
-bot.onText(/^Notifiche/i, function (message) {
+bot.onText(/^notifiche team/i, function (message) {
 	connection.query('SELECT account_id, holiday, id, money FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -29370,6 +29374,51 @@ bot.onText(/^Notifiche/i, function (message) {
 				});
 			});
 		});
+	});
+});
+
+bot.onText(/^notifiche cariche dungeon/i, function (message) {
+	connection.query('SELECT account_id, holiday, id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+		if (rows[0].holiday == 1) {
+			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back)
+			return;
+		}
+
+		var player_id = rows[0].id;
+
+        connection.query('SELECT dungeon_energy_notification FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+            if (err) throw err;
+            var notify = rows[0].dungeon_energy_notification;
+
+            bot.sendMessage(message.chat.id, "Cambiare l'impostazione notifiche per le cariche?", conf).then(function () {
+                answerCallbacks[message.chat.id] = function (answer) {
+                    var action = answer.text;
+                    if (action == "Torna al Dungeon")
+                        return;
+                    else if (action == "Conferma") {
+                        if (notify == 1)
+                            notify = 0;
+                        else
+                            notify = 1;
+                        connection.query('UPDATE player SET dungeon_energy_notification = ' + notify + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+                            if (err) throw err;
+                            if (notify == 0)
+                                bot.sendMessage(message.chat.id, "Hai disattivato le notifiche per le cariche dungeon!\nOra riceverai una notifica solo quando le cariche saranno piene", back);
+                            else
+                                bot.sendMessage(message.chat.id, "Hai attivato le notifiche per le cariche dungeon!\nOra riceverai una notifica ogni volta che riceverai cariche", back);
+                        });
+                    }
+                };
+            });
+        });
 	});
 });
 
@@ -30029,7 +30078,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [["Invia una Cassa 📦"], ["Cronologia 📜"], ["Torna al menu"]]
+			keyboard: [["Invia una Cassa 📦"], ["Cronologia giocatori 📜"], ["Cronologia casse 📦"], ["Torna al menu"]]
 		}
 	};
 
@@ -30208,7 +30257,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 									});
 								};
 							});
-						} else if (answer.text.indexOf("Cronologia") != -1) {
+						} else if (answer.text.indexOf("giocatori") != -1) {
 							connection.query('SELECT nickname, COUNT(to_id) As cnt FROM event_villa_gift E, player P WHERE E.to_id = P.id AND E.from_id = ' + player_id + ' GROUP BY to_id ORDER BY cnt DESC', function (err, rows, fields) {
 								if (err) throw err;
 
@@ -30239,7 +30288,21 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 									bot.sendMessage(message.chat.id, text, kb2);
 								});
 							});
-						}
+						} else if (answer.text.indexOf("casse") != -1) {
+							connection.query('SELECT COUNT(I.id) As cnt, I.name FROM event_villa_gift E, item I WHERE E.item_id = I.id AND to_id = ' + player_id + ' GROUP BY E.item_id ORDER BY E.id DESC LIMIT 50', function (err, rows, fields) {
+								if (err) throw err;
+
+								var text = "Ultimi 50 oggetti trovati:\n";
+								if (Object.keys(rows).length == 0)
+									text = "Nessun oggetto ricevuto\n";
+								else {
+									for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+										text += "> " + rows[i].cnt + "x " + rows[i].name + "\n";
+								}
+
+								bot.sendMessage(message.chat.id, text, kb2);
+							});
+                        }
 					};
 				});
 			});
@@ -54619,7 +54682,7 @@ function setLifeRush(element, index, array) {
 }
 
 function checkDungeonEnergy() {
-	connection.query('SELECT id, dungeon_energy, chat_id, class, reborn, boost_id, boost_mission FROM player WHERE dungeon_energy < ' + max_dungeon_energy, function (err, rows, fields) {
+	connection.query('SELECT id, dungeon_energy, dungeon_energy_notification, chat_id, class, reborn, boost_id, boost_mission FROM player WHERE dungeon_energy < ' + max_dungeon_energy, function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
@@ -54634,6 +54697,7 @@ function checkDungeonEnergy() {
 function setDungeonEnergy(element, index, array) {
 	var player_id = element.id;
 	var dungeon_energy = element.dungeon_energy;
+	var dungeon_energy_notification = element.dungeon_energy_notification;
 	var chat_id = element.chat_id;
 	var reborn = element.reborn;
 	var class_id = element.class;
@@ -54674,7 +54738,7 @@ function setDungeonEnergy(element, index, array) {
 			if (dungeonRush == 0)
 				bot.sendMessage(chat_id, "L'Energia Esplorativa è carica al massimo!");
 		} else {
-			if (dungeonRush == 0)
+			if ((dungeonRush == 0) && (dungeon_energy_notification == 1))
 				bot.sendMessage(chat_id, "Hai ottenuto " + refill + " Cariche Esplorative per il dungeon!");
 		}
 
