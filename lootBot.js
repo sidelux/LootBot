@@ -235,10 +235,6 @@ callNTimes(20000, function () { //20 secondi
 });
 
 callNTimes(40000, function () { //40 secondi
-	// checkDungeonRoom();
-});
-
-callNTimes(40000, function () { //40 secondi
 	if (checkDragonTopOn == 1)
 		checkDragonSearchCd();
 });
@@ -12186,7 +12182,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															
 															var charges = (3 * param) + 3;
 															if (cursed == 1)
-																charges = charges*2;
+																charges += 5;
 															if (dungeon_energy < charges) {
 																bot.sendMessage(message.chat.id, "Non hai abbastanza Cariche Esplorative, ne servono " + charges + " per meditare ulteriormente", dNext);
 																return;
@@ -13587,7 +13583,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															
 															var charges = (5 * param) + 5;
 															if (cursed == 1)
-																charges = charges*2;
+																charges += 10;
 															if (dungeon_energy < charges) {
 																bot.sendMessage(message.chat.id, "Non hai abbastanza Cariche Esplorative, ne servono " + charges + " per concentrarti ulteriormente", dNext);
 																return;
@@ -29408,12 +29404,12 @@ bot.onText(/^notifiche cariche dungeon/i, function (message) {
                             notify = 0;
                         else
                             notify = 1;
-                        connection.query('UPDATE player SET dungeon_energy_notification = ' + notify + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+                        connection.query('UPDATE player SET dungeon_energy_notification = ' + notify + ' WHERE id = ' + player_id, function (err, rows, fields) {
                             if (err) throw err;
                             if (notify == 0)
-                                bot.sendMessage(message.chat.id, "Hai disattivato le notifiche per le cariche dungeon!\nOra riceverai una notifica solo quando le cariche saranno piene", back);
+                                bot.sendMessage(message.chat.id, "Riceverai una notifica solo quando le Cariche Esplorative saranno piene!", back);
                             else
-                                bot.sendMessage(message.chat.id, "Hai attivato le notifiche per le cariche dungeon!\nOra riceverai una notifica ogni volta che riceverai cariche", back);
+                                bot.sendMessage(message.chat.id, "Riceverai una notifica ogni volta che riceverai cariche!", back);
                         });
                     }
                 };
@@ -47378,9 +47374,15 @@ function mainMenu(message) {
 																var room_txt = " (" + room_num + "/" + room_tot_num + ")";
 																if (room_num > room_tot_num)
 																	room_txt = " (Boss)";
-																if (dungeon_energy < 10)
-																	msgtext = msgtext + "\n🛡 Cariche Esplorative non sufficienti" + room_txt + " 🔋 " + dungeon_energy + "/10";
-																else {
+																if (dungeon_energy < 10) {
+                                                                    var coeff = 1000 * 60 * 10;
+                                                                    var date = new Date();
+                                                                    date.setMinutes(date.getMinutes()+10);
+                                                                    var rounded = new Date(Math.round(date.getTime() / coeff) * coeff)
+                                                                    var next_charge = rounded.getHours() + ":" + rounded.getMinutes();
+                                                                    
+																	msgtext = msgtext + "\n🛡 Cariche Esplorative non sufficienti" + room_txt + " 🔋 " + dungeon_energy + "/10 ⏱ " + next_charge;
+                                                                } else {
 																	var plurH = "e";
 																	if (dungeon_finish_time <= 1)
 																		plurH = "a";
