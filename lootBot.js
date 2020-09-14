@@ -22265,13 +22265,10 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 
 bot.onText(/team/i, function (message) {
 
-	if (message.text.toLowerCase().indexOf("paga") != -1)
-		return;
-
-	if (message.text.toLowerCase().indexOf("del team") != -1)
-		return;
-
-	if (message.text.toLowerCase().indexOf("membri") != -1)
+	if ((message.text.toLowerCase().indexOf("paga") != -1) || 
+        (message.text.toLowerCase().indexOf("del team") != -1) ||
+        (message.text.toLowerCase().indexOf("membri") != -1) ||
+        (message.text.toLowerCase().indexOf("notifiche") != -1))
 		return;
 
 	connection.query('SELECT account_id, holiday, id, money, team_time FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -30285,7 +30282,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 								});
 							});
 						} else if (answer.text.indexOf("casse") != -1) {
-							connection.query('SELECT COUNT(I.id) As cnt, I.name FROM event_villa_gift E, item I WHERE E.item_id = I.id AND to_id = ' + player_id + ' GROUP BY E.item_id ORDER BY E.id DESC LIMIT 50', function (err, rows, fields) {
+							connection.query('SELECT COUNT(I.id) As cnt, I.name, I.rarity FROM event_villa_gift E, item I WHERE E.item_id = I.id AND to_id = ' + player_id + ' GROUP BY E.item_id ORDER BY E.id DESC LIMIT 50', function (err, rows, fields) {
 								if (err) throw err;
 
 								var text = "Ultimi 50 oggetti trovati:\n";
@@ -30293,7 +30290,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 									text = "Nessun oggetto ricevuto\n";
 								else {
 									for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-										text += "> " + rows[i].cnt + "x " + rows[i].name + "\n";
+										text += "> " + rows[i].cnt + "x " + rows[i].name + " (" + rows[i].rarity + ")\n";
 								}
 
 								bot.sendMessage(message.chat.id, text, kb2);
