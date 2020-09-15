@@ -9078,6 +9078,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 								if (answer.text == "Torna al menu")
 									return;
+                                
+                                if (answer.text.indexOf("Notifiche") != -1)
+									return;
 
 								if (answer.text == "Il mio Rango") {
 									var next_rank = 0;
@@ -10653,7 +10656,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														else
 															return;
 
-														endDungeonRoom(player_id);
+														endDungeonRoom(player_id, boost_id, boost_mission);
 														
 														connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
@@ -10699,7 +10702,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															}
 														} else
 															return;
-														endDungeonRoom(player_id);
+														endDungeonRoom(player_id, boost_id, boost_mission);
 														
 														connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
@@ -10742,7 +10745,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													});
 												}
 												
-												endDungeonRoom(player_id);
+												endDungeonRoom(player_id, boost_id, boost_mission);
 												
 												connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
@@ -10795,7 +10798,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														answerCallbacks[message.chat.id] = function (answer) {
 															var ogg = answer.text;
 															if (ogg == "Ignora") {
-																endDungeonRoom(player_id);
+																endDungeonRoom(player_id, boost_id, boost_mission);
 																connection.query('UPDATE dungeon_status SET last_dir = NULL, last_selected_dir = NULL, room_id = room_id+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																	bot.sendMessage(message.chat.id, "Decidi di ignorare il viandante e prosegui", dNext);
@@ -10840,7 +10843,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																				connection.query('UPDATE player SET money = money-' + item_price + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
 
-																					endDungeonRoom(player_id);
+																					endDungeonRoom(player_id, boost_id, boost_mission);
 
 																					connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
@@ -10885,7 +10888,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																setAchievement(player_id, 73, 1);
 																bot.sendMessage(message.chat.id, "Tiri la leva verso di te ed una parete si apre in un gran fragore: è una scorciatoia che ti permette di superare 2 stanze!", dNext);
 															}
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = ' + room_id + ', last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -11014,7 +11017,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														else
 															return;
 
-														endDungeonRoom(player_id);
+														endDungeonRoom(player_id, boost_id, boost_mission);
 
 														connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
@@ -11054,7 +11057,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	bot.sendMessage(message.chat.id, "La vecchina sta preparando un Intruglio in un pentolone, e decide di regalartene un po' per aver avuto fiducia in lei. Ottieni così " + qnt + "x *Intruglio Revitalizzante*", dNext);
 																}
 															} else {
-																endDungeonRoom(player_id);
+																endDungeonRoom(player_id, boost_id, boost_mission);
 																connection.query('UPDATE dungeon_status SET last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																	bot.sendMessage(message.chat.id, "La vecchina ha preparato una Pozione, e decidi di provarla, ma appena bevuta ti addormenti, al tuo risveglio sei nuovamente davanti alle 3 porte che ti avevano condotto in questa foresta.", dNext);
@@ -11066,7 +11069,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														else
 															return;
 
-														endDungeonRoom(player_id);
+														endDungeonRoom(player_id, boost_id, boost_mission);
 														
 														connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
@@ -11165,7 +11168,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																	if (param.split(",")[1] >= 5) {
 																		bot.sendMessage(message.chat.id, "Hai effettuato tutti i tentativi possibili! Uno strano suono rimbomba nelle pareti e si apre la porta per la prossima stanza!", dNext);
-																		endDungeonRoom(player_id);
+																		endDungeonRoom(player_id, boost_id, boost_mission);
 																		connection.query('UPDATE dungeon_status SET param = NULL, room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
@@ -11226,7 +11229,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																} else {
 																	bot.sendMessage(message.chat.id, "Hai trovato il pulsante corretto! Prosegui alla prossima stanza.", dNext);
 																}
-																endDungeonRoom(player_id);
+																endDungeonRoom(player_id, boost_id, boost_mission);
 																connection.query('UPDATE dungeon_status SET param = NULL, room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
@@ -11368,7 +11371,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															return;
 														} else if (answer.text == "Ignora") {
 															bot.sendMessage(message.chat.id, "Hai ignorato gli oggetti", dNext);
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -11507,7 +11510,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	setAchievement(player_id, 83, acc_money);
 																}
 															});
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															
 															connection.query('UPDATE dungeon_status SET param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
@@ -11558,7 +11561,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		bot.sendMessage(message.chat.id, "Ti avvicini alla fontana e vedi che l'acqua ha uno strano colore, la esamini meglio ed ottieni " + cnt + " Mana " + color + "!", dNext);
 																		setAchievement(player_id, 81, cnt);
 																	});
-																	endDungeonRoom(player_id);
+																	endDungeonRoom(player_id, boost_id, boost_mission);
 																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
@@ -11675,7 +11678,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	if (err) throw err;
 																	bot.sendMessage(message.chat.id, "Scegli di inserire nella fessura " + formatNumber(money) + " §, il portone ti ringrazia con una voce inquietante, e si apre lentamente, così da aprire la strada per la stanza seguente.", dNext);
 																});
-																endDungeonRoom(player_id);
+																endDungeonRoom(player_id, boost_id, boost_mission);
 																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
@@ -11717,7 +11720,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																					bot.sendMessage(message.chat.id, "Scegli di tirare giù il portone a spallate, perdi così " + formatNumber(life) + " hp, ma riesci ad aprire la strada per la stanza seguente.", dNext);
 																				});
 																			}
-																			endDungeonRoom(player_id);
+																			endDungeonRoom(player_id, boost_id, boost_mission);
 																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
@@ -11793,7 +11796,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																				}
 																			});
 																		}
-																		endDungeonRoom(player_id);
+																		endDungeonRoom(player_id, boost_id, boost_mission);
 																		connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
@@ -12029,12 +12032,12 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	if (err) throw err;
 																	bot.sendMessage(message.chat.id, "Premi un pulsante e sul muro appare un messaggio con scritto _'La stanza indicata corrisponde perfettamente alla sua descrizione!'_, vieni teletrasportato alla stanza " + next + " del dungeon", dNext);
 																});
-																endDungeonRoom(player_id);
+																endDungeonRoom(player_id, boost_id, boost_mission);
 																connection.query('UPDATE dungeon_status SET room_id = ' + next + ', last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 															} else {
-																endDungeonRoom(player_id);
+																endDungeonRoom(player_id, boost_id, boost_mission);
 																connection.query('UPDATE dungeon_status SET timevar = timevar+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 
@@ -12107,7 +12110,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														answerCallbacks[message.chat.id] = function (answer) {
 															var ogg = answer.text;
 															if (ogg == "Ignora") {
-																endDungeonRoom(player_id);
+																endDungeonRoom(player_id, boost_id, boost_mission);
 																connection.query('UPDATE dungeon_status SET last_dir = NULL, last_selected_dir = NULL, room_id = room_id+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																	bot.sendMessage(message.chat.id, "Decidi di ignorare il predone e prosegui", dNext);
@@ -12127,7 +12130,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			addItem(player_id, item1id);
 																			delItem(player_id, item2id, 1);
 
-																			endDungeonRoom(player_id);
+																			endDungeonRoom(player_id, boost_id, boost_mission);
 
 																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
@@ -12232,7 +12235,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																}
 															}
 
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET param = NULL, room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -12264,7 +12267,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	bot.sendMessage(message.chat.id, "Hai espresso il tuo desiderio... Ma non è stato ascoltato! Ti rimane 1 solo hp!", dNext);
 																});
 															}
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -12284,7 +12287,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		bot.sendMessage(message.chat.id, "Hai espresso il tuo desiderio... Ma non è stato ascoltato! Hai perso " + name + "!", dNext);
 																	}
 																}
-																endDungeonRoom(player_id);
+																endDungeonRoom(player_id, boost_id, boost_mission);
 																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
@@ -12310,7 +12313,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	});
 																});
 															}
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -12344,7 +12347,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	bot.sendMessage(message.chat.id, "Hai espresso il tuo desiderio... Ma non è stato ascoltato! Retrocedi di due stanze!", dNext);
 																}
 															}
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = ' + room_id + ', last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -12405,7 +12408,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			bot.sendMessage(message.chat.id, "Colpendo il drago scopri che si tratta in realtà di un peluche, ma comunque ottieni una Pietra Anima Preziosa!", dNext);
 																		}
 																	};
-																	endDungeonRoom(player_id);
+																	endDungeonRoom(player_id, boost_id, boost_mission);
 																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
@@ -12413,7 +12416,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															});
 														} else if (answer.text == "Ignora") {
 															bot.sendMessage(message.chat.id, "Corri velocemente verso l'uscita e passi alla stanza successiva", dNext);
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -12475,7 +12478,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 															bot.sendMessage(message.chat.id, "Succede qualcosa, " + text + "\nProcedi alla prossima stanza con aria interrogativa...", dNext);
 
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -12548,7 +12551,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		} else {
 																			bot.sendMessage(message.chat.id, text + "\n\nHai PERSO!", dNext);
 																		}
-																		endDungeonRoom(player_id);
+																		endDungeonRoom(player_id, boost_id, boost_mission);
 																		connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
@@ -12598,7 +12601,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																});
 															} else if (answer.text == "Ignora") {
 																bot.sendMessage(message.chat.id, "Ringrazi il marinaio dell'offerta e passi alla stanza successiva", dNext);
-																endDungeonRoom(player_id);
+																endDungeonRoom(player_id, boost_id, boost_mission);
 																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
@@ -12621,7 +12624,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 															bot.sendMessage(message.chat.id, "Scegli la solita porta arrugginita e procedi alla stanza successiva", dNext);
 
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -12653,7 +12656,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																	bot.sendMessage(message.chat.id, "Apri lentamente la porta e la attraversi, ritrovandoti alla stanza numero *" + room + "* del dungeon!", dNext);
 
-																	endDungeonRoom(player_id);
+																	endDungeonRoom(player_id, boost_id, boost_mission);
 																	connection.query('UPDATE dungeon_status SET room_id = ' + room + ', last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
@@ -12668,7 +12671,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 													if (Object.keys(rows).length == 0) {
 														bot.sendMessage(message.chat.id, "Vedi un pozzo in lontananza, ma è diroccato e non puoi far altro che proseguire", dNext);
-														endDungeonRoom(player_id);
+														endDungeonRoom(player_id, boost_id, boost_mission);
 														connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 														});
@@ -12738,7 +12741,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		connection.query('UPDATE dungeon_well SET amount = amount+' + money + ' WHERE dungeon_id = ' + dungeon_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
-																		endDungeonRoom(player_id);
+																		endDungeonRoom(player_id, boost_id, boost_mission);
 																		connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
@@ -12785,7 +12788,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			if (err) throw err;
 																		});
 																	}
-																	endDungeonRoom(player_id);
+																	endDungeonRoom(player_id, boost_id, boost_mission);
 																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
@@ -12823,7 +12826,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		if (rows[0].mkeys < keys) {
 																			bot.sendMessage(message.chat.id, "Non hai abbastanza 🗝, ne servono " + keys + ", ignori l'anziano saggio e prosegui", dNext);
 
-																			endDungeonRoom(player_id);
+																			endDungeonRoom(player_id, boost_id, boost_mission);
 																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
@@ -12834,7 +12837,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																					bot.sendMessage(message.chat.id, "L'anziano saggio sa già che tu conosci tutte le stanze davanti a te, ti ignora e prosegui la tua esplorazione", dNext);
 																					setAchievement(player_id, 74, 1);
 																					
-																					endDungeonRoom(player_id);
+																					endDungeonRoom(player_id, boost_id, boost_mission);
 																					connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 																					});
@@ -12871,7 +12874,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																							setAchievement(player_id, 74, 1);
 
-																							endDungeonRoom(player_id);
+																							endDungeonRoom(player_id, boost_id, boost_mission);
 																							connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
@@ -12882,7 +12885,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																								if (err) throw err;
 																							});
 
-																							endDungeonRoom(player_id);
+																							endDungeonRoom(player_id, boost_id, boost_mission);
 																							connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
 																							});
@@ -12898,7 +12901,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 															bot.sendMessage(message.chat.id, "Hai ignorato l'anziano saggio", dNext);
 
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -12940,7 +12943,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																});
 																bot.sendMessage(message.chat.id, "Tocchi lo strano tipo sulla schiena. Si gira di scatto: _Amico ho appena invertito le scelte della stanza " + rows[0].room_id + ", buon divertimento! ihih..._ Ti giri e continui seguendo il corridoio...", dNext);
 
-																endDungeonRoom(player_id);
+																endDungeonRoom(player_id, boost_id, boost_mission);
 																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
@@ -12983,7 +12986,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																my_dir = "dir_left";
 															else {
 																bot.sendMessage(message.chat.id, "Questa stanza è già stata specchiata, retrocedi alla precedente", dNext);
-																endDungeonRoom(player_id);
+																endDungeonRoom(player_id, boost_id, boost_mission);
 																if (room_id > 1) {
 																	connection.query('UPDATE dungeon_status SET room_id = room_id-1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
@@ -13016,7 +13019,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														} else if (answer.text == "Ignora") {
 															bot.sendMessage(message.chat.id, "Giri curioso attorno al piccolo specchio, e lo osservi incresparsi come una tavola d'acqua col vento...\nEsiti un ultimo istante, prima di proseguire verso la prossima stanza", dNext);
 
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -13140,7 +13143,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																					bot.sendMessage(message.chat.id, "Hai bevuto la " + item2_name + " e ti senti un po' meglio, prosegui il dungeon", dNext);
 
-																					endDungeonRoom(player_id);
+																					endDungeonRoom(player_id, boost_id, boost_mission);
 																					connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 																					});
@@ -13150,7 +13153,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																			bot.sendMessage(message.chat.id, "Ignori l'offerta e prosegui", dNext);
 
-																			endDungeonRoom(player_id);
+																			endDungeonRoom(player_id, boost_id, boost_mission);
 																			
 																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
@@ -13200,7 +13203,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		if (err) throw err;
 																	});
 
-																	endDungeonRoom(player_id);
+																	endDungeonRoom(player_id, boost_id, boost_mission);
 																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
@@ -13210,7 +13213,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 															bot.sendMessage(message.chat.id, "Ignori la richiesta e prosegui", dNext);
 
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -13259,7 +13262,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																bot.sendMessage(message.chat.id, text, dNext);
 
-																endDungeonRoom(player_id);
+																endDungeonRoom(player_id, boost_id, boost_mission);
 																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
@@ -13268,7 +13271,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 															bot.sendMessage(message.chat.id, "Ignori la stanza e prosegui", dNext);
 
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -13340,7 +13343,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	connection.query('UPDATE player SET gems = gems+' + qnt + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 
-																		endDungeonRoom(player_id);
+																		endDungeonRoom(player_id, boost_id, boost_mission);
 																		connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
@@ -13349,7 +13352,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																	bot.sendMessage(message.chat.id, "Ignori l'offerta del Gioielliere e prosegui", dNext);
 
-																	endDungeonRoom(player_id);
+																	endDungeonRoom(player_id, boost_id, boost_mission);
 																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
@@ -13436,7 +13439,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																	bot.sendMessage(message.chat.id, text, dNext);
 
-																	endDungeonRoom(player_id);
+																	endDungeonRoom(player_id, boost_id, boost_mission);
 																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
@@ -13446,7 +13449,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 															bot.sendMessage(message.chat.id, "Cerchi di evitare il fascio di energia passando a fianco e procedi alla prossima stanza...", dNext);
 
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -13524,7 +13527,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																				bot.sendMessage(message.chat.id, "Per ringraziarti dello scambio il Mercante ti regala anche una *Capsula Prelevazione*!", mark);
 																			}
 
-																			endDungeonRoom(player_id);
+																			endDungeonRoom(player_id, boost_id, boost_mission);
 																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
@@ -13534,7 +13537,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																	bot.sendMessage(message.chat.id, "Ignori lo scambio del Mercante e prosegui", dNext);
 
-																	endDungeonRoom(player_id);
+																	endDungeonRoom(player_id, boost_id, boost_mission);
 																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
@@ -13627,7 +13630,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																}
 															}
 
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET param = NULL, room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -13700,7 +13703,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 												bot.sendMessage(message.chat.id, text, dNext);
 
-												endDungeonRoom(player_id);
+												endDungeonRoom(player_id, boost_id, boost_mission);
 												
 												connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
@@ -13742,7 +13745,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																addDungeonEnergy(player_id, 5);
 															}
 															
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
@@ -13752,7 +13755,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 															bot.sendMessage(message.chat.id, "Ignori la crepa e prosegui da una strada alternativa", dNext);
 
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
@@ -13792,7 +13795,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															bot.sendMessage(message.chat.id, "Inizi a spolverare, consumi " + charges + " Cariche Esplorative, ma ottieni " + dust + " Polvere! Prosegui verso la porta un po' tossicchiante...", dNext);
 
 															setAchievement(player_id, 80, 1);
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															
 															reduceDungeonEnergy(player_id, charges);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -13803,7 +13806,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 															bot.sendMessage(message.chat.id, "Prosegui dritto e fortunatamente trovi la porta per la prossima stanza", dNext);
 
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
@@ -13827,7 +13830,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															if (room_id > 1) {
 																bot.sendMessage(message.chat.id, "Torni alla stanza precedente con rassegnazione...", dNext);
 
-																endDungeonRoom(player_id);
+																endDungeonRoom(player_id, boost_id, boost_mission);
 
 																connection.query('UPDATE dungeon_status SET room_id = room_id, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
@@ -13927,7 +13930,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																					bot.sendMessage(message.chat.id, "Hai acquistato ed ottenuto la Figurina 🃏 *" + rows[0].name + "* (" + rows[0].rarity + ")\n\nEsci dal negozio sfoggiando il tuo bottino...", dNext);
 
-																					endDungeonRoom(player_id);
+																					endDungeonRoom(player_id, boost_id, boost_mission);
 																					connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 																					});
@@ -13940,7 +13943,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														} else if (answer.text == "Ignora") {
 															bot.sendMessage(message.chat.id, "Esci dal negozio...", dNext);
 
-															endDungeonRoom(player_id);
+															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -14738,6 +14741,21 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																	heart = "🖤";
 																else if (player_life/player_total_life*100 < 60)
 																	heart = "🧡";
+                                                                
+                                                                var rows = connection_sync.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 6');
+
+                                                                var att = 0;
+                                                                if (Object.keys(rows).length > 0) {
+                                                                    if (rows[0].ability_level > 0)
+                                                                        att = Math.ceil(rows[0].ability_level / 2);
+                                                                }
+
+                                                                if ((class_id == 5) && (reborn == 5))
+                                                                    att += 5;
+                                                                else if ((class_id == 5) && (reborn == 6))
+                                                                    att += 7;
+
+                                                                var refill_left = (att - refilled);
 
 																bot.sendMessage(message.chat.id, "*" + monster_name + "*\n" +
 																				"\n❤️ *" + formatNumber(monster_life) + "* hp\n" +
@@ -14747,7 +14765,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																				(weapon2_name != "-" ? "🥋 " + weapon2_name + "\n" : "") +
 																				(weapon3_name != "-" ? "🛡 " + weapon3_name + "\n" : "") +
 																				(charm_name != "-" ? "📿 " + charm_name + "\n" : "") +
-																				"\n" + heart + " *" + formatNumber(player_life) + "* hp\n" +
+																				"\n" + heart + " *" + formatNumber(player_life) + "* hp 🤍 " + refill_left + "/5\n" +
 																				my_status, dBattleM).then(function () {
 																	answerCallbacks[message.chat.id] = function (answer) {
 
@@ -39062,6 +39080,8 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					if ((abarr[rows[i].id] < 10) || (abarr[rows[i].id] == undefined))
 						iKeys.push([rows[i].name]);
+                    else
+                        iKeys.push([rows[i].name + " ✅"]);
 					abname[rows[i].id] = rows[i].name;
 					tot++;
 				}
@@ -39085,6 +39105,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 						answerCallbacks[message.chat.id] = function (answer) {
 							if (answer.text == "Torna al menu")
 								return;
+                            answer.text = answer.text.replace(" ✅", "");
 							connection.query('SELECT * FROM ability_list WHERE name = "' + answer.text + '"', function (err, rows, fields) {
 								if (err) throw err;
 								if (Object.keys(rows).length == 0) {
@@ -54684,7 +54705,7 @@ function setLifeRush(element, index, array) {
 }
 
 function checkDungeonEnergy() {
-	connection.query('SELECT id, dungeon_energy, dungeon_energy_notification, chat_id, class, reborn, boost_id, boost_mission FROM player WHERE dungeon_energy < ' + max_dungeon_energy, function (err, rows, fields) {
+	connection.query('SELECT id, dungeon_energy, dungeon_energy_notification, chat_id, class, reborn FROM player WHERE dungeon_energy < ' + max_dungeon_energy, function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
@@ -54703,8 +54724,6 @@ function setDungeonEnergy(element, index, array) {
 	var chat_id = element.chat_id;
 	var reborn = element.reborn;
 	var class_id = element.class;
-	var boost_id = element.boost_id;
-	var boost_mission = element.boost_mission;
 	
 	connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 3', function (err, rows, fields) {
 		if (err) throw err;
@@ -54730,11 +54749,6 @@ function setDungeonEnergy(element, index, array) {
 		if (crazyMode == 1)
 			refill += 6;
 
-		if (boost_id == 8) {
-			refill += 10;
-			setBoost(player_id, boost_mission, boost_id);
-		}
-
 		if (refill+dungeon_energy >= max_dungeon_energy) {
 			refill = max_dungeon_energy-dungeon_energy;
 			if (dungeonRush == 0)
@@ -54750,9 +54764,13 @@ function setDungeonEnergy(element, index, array) {
 	});
 }
 
-function endDungeonRoom(player_id) {
-	reduceDungeonEnergy(player_id, 10);
+function endDungeonRoom(player_id, boost_id, boost_mission) {
 	setAchievement(player_id, 63, 1);
+    if (boost_id == 8) {
+        setBoost(player_id, boost_mission, boost_id);
+        return;
+    }
+	reduceDungeonEnergy(player_id, 10);
 }
 
 function reduceDungeonEnergy(player_id, quantity) {
