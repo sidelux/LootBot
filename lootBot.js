@@ -14631,7 +14631,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 														weapon_dmg = calcNecro(300, monster_level, 3, 1);
 													else if (weapon_id == 373)
 														weapon_dmg = power_dmg;
-													var weapon_name = rows[0].name + " (+" + weapon_dmg + ")";
+													var weapon_name = rows[0].name + " (+" + weapon_dmg + ", " + rows[0].critical + "%)";
 													var en_crit = rows[0].critical;
 
 													weapon_dmg = weapon_dmg*mob_power_multiplier;
@@ -14649,7 +14649,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																weapon2_dmg = -Math.abs(calcNecro(250, monster_level, 3, 1));
 																extra = ", Probab. /2: " + critic + "%";
 															}
-															weapon2_name = rows[0].name + " (" + weapon2_dmg + ")";
+															weapon2_name = rows[0].name + " (" + weapon2_dmg + ", " + rows[0].critical + "%)";
 															en_crit2 = rows[0].critical;
 														}
 
@@ -14666,7 +14666,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																weapon3_dmg = rows[0].power_shield;
 																if ((weapon3_id == 600) || (weapon3_id == 671) || (weapon3_id == 672) || (weapon3_id == 673) || (weapon3_id == 791))
 																	weapon3_dmg = -Math.abs(calcNecro(250, monster_level, 3, 1));
-																weapon3_name = rows[0].name + " (" + weapon3_dmg + ")";
+																weapon3_name = rows[0].name + " (" + weapon3_dmg + ", " + rows[0].critical + "%)";
 																en_crit3 = rows[0].critical;
 															}
 
@@ -15494,33 +15494,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							});
 																						}
 
-																						var d = new Date();
-																						var sec = wait_room;
-
-																						if (abBonus2 > 0)
-																							sec -= abBonus2;
-																						if ((class_id == 3) && (reborn == 3))
-																							sec = sec - 120;
-																						if ((class_id == 9) && (reborn > 1))
-																							sec = sec - 120;
-																						if ((class_id == 9) && (reborn >= 5))
-																							sec = sec - 180;
-																						if ((class_id == 9) && (reborn == 6))
-																							sec = sec - 60;
-																						if ((class_id == 3) && (reborn >= 4))
-																							sec = sec - 240;
-																						if (crazyMode == 1)
-																							sec = sec - 120;
-
-																						if (boost_id == 8)
-																							sec = Math.ceil(sec/2);
-
-																						d.setSeconds(d.getSeconds() + sec);
-
-																						var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-																						var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
-
-																						endDungeonRoom(player_id, long_date);
+																						endDungeonRoom(player_id, boost_id, boost_mission);
 
 																						if (exp > 0)
 																							setExp(player_id, exp);
@@ -47402,7 +47376,7 @@ function mainMenu(message) {
                                                                     else
                                                                         next_charge = addZero(date.getHours()) + ":" + addZero(Math.floor(date.getMinutes()/10)*10);
                                                                     
-																	msgtext = msgtext + "\n🛡 Cariche Esplorative non sufficienti" + room_txt + " 🔋 " + dungeon_energy + "/10 ⏱ " + next_charge;
+																	msgtext = msgtext + "\n🛡 Cariche Esplorative non sufficienti" + room_txt + " 🔋 " + dungeon_energy + "/" + max_dungeon_energy + " ⏱ " + next_charge;
                                                                 } else {
 																	var plurH = "e";
 																	if (dungeon_finish_time <= 1)
