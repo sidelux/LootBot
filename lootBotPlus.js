@@ -669,7 +669,8 @@ bot.onText(/^\/comanditeam/, function (message) {
 					"/chiedoaiuto - Invia un messaggio taggando solo i membri non in dungeon disponibili ad uno scambio nel dungeon\n" +
 					"/serveaiuto - Invia un messaggio taggando solo i membri in dungeon disponibili ad uno scambio nel dungeon\n" +
 					"/chiamateam - Invia un messaggio taggando tutti i membri del proprio team anche in privato\n" +
-					"/statoincarichi - Mostra un riepilogo di tutti gli incarichi in corso", mark);
+					"/statoincarichi - Mostra un riepilogo di tutti gli incarichi in corso\n" +
+                    "/stanzeteam - Mostra la lista dei compagni di team e la stanza che hanno raggiunto nel dungeon", mark);
 });
 
 bot.onText(/^\/comandigenerali/, function (message) {
@@ -1741,6 +1742,38 @@ bot.onText(/^\/chiamateam$/, function (message, match) {
 			}
 
 			bot.sendMessage(message.chat.id, "<b>" + message.from.username + "</b> chiama i suoi compagni di team!\n" + nicklist, html);
+		});
+	});
+});
+
+bot.onText(/^\/stanzeteam/, function (message, match) {
+
+	if (!checkSpam(message))
+		return;
+
+	connection.query('SELECT team_id, player_id FROM team_player WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0){
+			bot.sendMessage(message.from.id, "Non sei in team");
+			return;
+		}
+
+		var team_id = rows[0].team_id;
+		var player_id = rows[0].player_id;
+
+		connection.query('SELECT P.nickname, D.room_id, L.rooms FROM team_player T, player P, dungeon_status D, dungeon_list L WHERE P.id = D.player_id AND D.dungeon_id = L.id AND T.player_id = P.id AND T.team_id = ' + team_id + ' ORDER BY room_id DESC', function (err, rows, fields) {
+			if (err) throw err;
+
+			var nicklist = "";
+
+            if (Object.keys(rows).length > 0) {
+                for (i = 0; i < Object.keys(rows).length; i++)
+                    nicklist += "> " + rows[i].nickname + " (" + rows[i].room_id + "/" + rows[i].rooms + ")\n";
+            } else
+                nicklist = "Nessun compagno in dungeon"
+
+			bot.sendMessage(message.chat.id, "Compagni di team in dungeon:\n" + nicklist, html);
 		});
 	});
 });
