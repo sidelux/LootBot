@@ -14756,6 +14756,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
                                                                     att += 7;
 
                                                                 var refill_left = (att - refilled);
+                                                                var refill_left_text = "🤍";
+                                                                if (refill_left == 0)
+                                                                    refill_left_text = "🖤";
 
 																bot.sendMessage(message.chat.id, "*" + monster_name + "*\n" +
 																				"\n❤️ *" + formatNumber(monster_life) + "* hp\n" +
@@ -14765,7 +14768,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																				(weapon2_name != "-" ? "🥋 " + weapon2_name + "\n" : "") +
 																				(weapon3_name != "-" ? "🛡 " + weapon3_name + "\n" : "") +
 																				(charm_name != "-" ? "📿 " + charm_name + "\n" : "") +
-																				"\n" + heart + " *" + formatNumber(player_life) + "* hp 🤍 " + refill_left + "/" + att + "\n" +
+																				"\n" + heart + " *" + formatNumber(player_life) + "* hp " + refill_left_text + " " + refill_left + "/" + att + "\n" +
 																				my_status, dBattleM).then(function () {
 																	answerCallbacks[message.chat.id] = function (answer) {
 

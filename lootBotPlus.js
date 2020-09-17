@@ -1762,14 +1762,14 @@ bot.onText(/^\/stanzeteam/, function (message, match) {
 		var team_id = rows[0].team_id;
 		var player_id = rows[0].player_id;
 
-		connection.query('SELECT P.nickname, D.room_id, L.rooms FROM team_player T, player P, dungeon_status D, dungeon_list L WHERE P.id = D.player_id AND D.dungeon_id = L.id AND T.player_id = P.id AND T.team_id = ' + team_id + ' ORDER BY room_id DESC', function (err, rows, fields) {
+		connection.query('SELECT P.nickname, D.room_id, L.rooms, P.rank FROM team_player T, player P, dungeon_status D, dungeon_list L WHERE P.id = D.player_id AND D.dungeon_id = L.id AND T.player_id = P.id AND T.team_id = ' + team_id + ' ORDER BY rank DESC', function (err, rows, fields) {
 			if (err) throw err;
 
 			var nicklist = "";
 
             if (Object.keys(rows).length > 0) {
                 for (i = 0; i < Object.keys(rows).length; i++)
-                    nicklist += "> " + rows[i].nickname + " (" + rows[i].room_id + "/" + rows[i].rooms + ")\n";
+                    nicklist += "> " + rows[i].nickname + ": " + rows[i].room_id + "/" + rows[i].rooms + ", Rango " + formatNumber(rows[i].rank) + "\n";
             } else
                 nicklist = "Nessun compagno in dungeon"
 
