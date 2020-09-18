@@ -59496,7 +59496,7 @@ function setFinishedMission(element, index, array) {
 								m = 2+mplus;
 								connection.query('UPDATE player SET boost_id = 8, boost_mission = ' + m + ' WHERE id = ' + element.id, function (err, rows, fields) {
 									if (err) throw err;
-									bot.sendMessage(chat_id, "Hai trovato una Bevanda Corsa! Per " + m + " volte ottieni più Cariche Esplorative.");
+									bot.sendMessage(chat_id, "Hai trovato una Bevanda Corsa! Per " + m + " stanze non consumi Cariche Esplorative.");
 									setAchievement(element.id, 69, 1);
 								});
 								achPnt++;
