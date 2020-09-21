@@ -12831,7 +12831,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																				if (err) throw err;
 																			});
 																		} else {
-																			connection.query('SELECT COUNT(id) As not_mapped FROM dungeon_map WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND (dir_top = 0 OR dir_right = 0 OR dir_left = 0)', function (err, rows, fields) {
+																			connection.query('SELECT COUNT(id) As not_mapped FROM dungeon_map WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND (dir_top = 0 OR dir_right = 0 OR dir_left = 0) AND player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																				if (rows[0].not_mapped > 0) {	// se non sono tutte mappate
 																					bot.sendMessage(message.chat.id, "L'anziano saggio sa già che tu conosci tutte le stanze davanti a te, ti ignora e prosegui la tua esplorazione", dNext);
@@ -37740,7 +37740,7 @@ bot.onText(/compra/i, function (message) {
 					}
 				};
 
-				bot.sendMessage(message.chat.id, "Seleziona la quantità di pacchetti da acquistare (contengono 5 figurine), ogni pacchetto costa " + package + " 🌕", kb).then(function () {
+				bot.sendMessage(message.chat.id, "Seleziona la quantità di pacchetti da acquistare (contengono 5 figurine), ogni pacchetto costa " + package + " 🌕, puoi acquistarne un massimo di " + formatNumber(Math.floor(moon_coint/package)), kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						var quantity = answer.text;
 						if ((quantity == "Torna al menu") || (quantity == "Torna all'emporio"))
@@ -37924,7 +37924,24 @@ bot.onText(/compra/i, function (message) {
 						}
 					};
 
-					bot.sendMessage(message.chat.id, "Seleziona la quantità di pozioni da acquistare", kb).then(function () {
+                    var value = 0;
+                    if (potion_id == "92")
+                        value = 1500;
+                    else if (potion_id == "93")
+                        value = 2500;
+                    else if (potion_id == "94")
+                        value = 5000;
+                    else {
+                        bot.sendMessage(message.chat.id, "Errore sconosciuto", store);
+                        return;
+                    }
+
+                    var price = parseInt(value);
+
+                    if (price_drop == 1)
+                        price -= Math.round(value / 100) * sconto;
+
+					bot.sendMessage(message.chat.id, "Seleziona la quantità di pozioni da acquistare, puoi acquistarne al massimo " + formatNumber(Math.floor(money/price)), kb).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							var quantity = answer.text;
 							if ((quantity == "Torna al menu") || (quantity == "Torna all'emporio"))
@@ -37936,23 +37953,6 @@ bot.onText(/compra/i, function (message) {
 
 							quantity = parseInt(quantity);
 							quantity = Math.floor(quantity);
-
-							var value = 0;
-							if (potion_id == "92")
-								value = 1500;
-							else if (potion_id == "93")
-								value = 2500;
-							else if (potion_id == "94")
-								value = 5000;
-							else {
-								bot.sendMessage(message.chat.id, "Errore sconosciuto", store);
-								return;
-							}
-
-							var price = parseInt(value);
-
-							if (price_drop == 1)
-								price -= Math.round(value / 100) * sconto;
 
 							price = price * quantity;
 
@@ -38006,8 +38006,19 @@ bot.onText(/compra/i, function (message) {
 						}
 					};
 
+                    var value = 0;
+                    if (name == "Piuma di Fenice")
+                        value = 10000;
+                    else if (name == "Cenere di Fenice")
+                        value = 25000;
+
+                    var price = parseInt(value);
+
+                    if (price_drop == 1)
+                        price -= Math.round(value / 100) * sconto;
+
 					var name = rows[0].name;
-					bot.sendMessage(message.chat.id, "Seleziona la quantità di " + name + " da acquistare", kb).then(function () {
+					bot.sendMessage(message.chat.id, "Seleziona la quantità di " + name + " da acquistare, puoi acquistarne al massimo " + formatNumber(Math.floor(money/price)), kb).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							var quantity = answer.text;
 							if ((quantity == "Torna al menu") || (quantity == "Torna all'emporio"))
@@ -38019,17 +38030,6 @@ bot.onText(/compra/i, function (message) {
 
 							quantity = parseInt(quantity);
 							quantity = Math.floor(quantity);
-
-							var value = 0;
-							if (name == "Piuma di Fenice")
-								value = 10000;
-							else if (name == "Cenere di Fenice")
-								value = 25000;
-
-							var price = parseInt(value);
-
-							if (price_drop == 1)
-								price -= Math.round(value / 100) * sconto;
 
 							price = price * quantity;
 
@@ -38089,7 +38089,7 @@ bot.onText(/compra/i, function (message) {
 				if (blackfriday == 1)
 					price_view -= Math.round((price_gem / 100) * 50);
 
-				bot.sendMessage(message.chat.id, "Seleziona la quantità di 💎 da acquistare, ogni 💎 costa " + formatNumber(price_view) + " §", kb).then(function () {
+				bot.sendMessage(message.chat.id, "Seleziona la quantità di 💎 da acquistare, ogni 💎 costa " + formatNumber(price_view) + " §, puoi acquistarne al massimo " + formatNumber(Math.floor(money/price_gem)), kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						var quantity = answer.text;
 						if ((quantity == "Torna al menu") || (quantity == "Torna all'emporio"))
@@ -55485,10 +55485,10 @@ function setEvents(element, index, array) {
 	var total_life = 0;
 	var mission_id = element.mission_id;
 
-	rand = Math.round(Math.random() * 46);
+	rand = Math.round(Math.random() * 47);
 
 	if (crazyMode == 1)
-		rand = Math.round(Math.random() * 50);
+		rand = Math.round(Math.random() * 51);
 
 	player_id = element.id;
 	chat_id = element.chat_id;
@@ -56101,16 +56101,21 @@ function setEvents(element, index, array) {
 				});
 			}
 		});
-	} else if (rand == 48) {
+    } else if (rand == 48) {
+        var chargeRand = Math.round(getRandomArbitrary(1, 20));
+        addDungeonEnergy(player_id, chargeRand);
+		text = "Durante la missione trovi un caffè appoggiato un un tronco d'albero, bevendolo recuperi " + chargeRand + " Cariche Esplorative!";
+		bot.sendMessage(chat_id, text);
+	} else if (rand == 49) {
 		addChest(player_id, 6);
 
 		text = "Durante la missione senti scorrere la follia dentro di te, al punto che senti l'anima esplodere e mostrare tutto il suo spirito d'avventura. Intraprendi una missione alla velocità della luce e questa missione ti fornisce uno Scrigno Epico!";
 		bot.sendMessage(chat_id, text);
-	} else if (rand == 49) {
+	} else if (rand == 50) {
 		setExp(player_id, 15);
 		text = "Durante la missione incontri un folle barcollante sul ciglio della strada, avvicinandoti scopri che si tratta di un elfo delle Lande Immaginarie, una razza ormai estinta, notandolo in fin di vita gli vai a comprare alcune pozioni, e lui ricambia donandoti 15 exp con un incantesimo";
 		bot.sendMessage(chat_id, text);
-	} else if (rand == 50) {	
+	} else if (rand == 51) {	
 		connection.query('SELECT item.id, item.name FROM inventory, item WHERE inventory.item_id = item.id AND item.rarity = "L" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0 ORDER BY RAND()', function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length == 0) {
