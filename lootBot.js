@@ -37740,7 +37740,7 @@ bot.onText(/compra/i, function (message) {
 					}
 				};
 
-				bot.sendMessage(message.chat.id, "Seleziona la quantità di pacchetti da acquistare (contengono 5 figurine), ogni pacchetto costa " + package + " 🌕, puoi acquistarne un massimo di " + formatNumber(Math.floor(moon_coint/package)), kb).then(function () {
+				bot.sendMessage(message.chat.id, "Seleziona la quantità di pacchetti da acquistare (contengono 5 figurine), ogni pacchetto costa " + package + " 🌕, puoi acquistarne un massimo di " + formatNumber(Math.floor(moon_coin/package)), kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						var quantity = answer.text;
 						if ((quantity == "Torna al menu") || (quantity == "Torna all'emporio"))
@@ -38005,19 +38005,22 @@ bot.onText(/compra/i, function (message) {
 							keyboard: [["1"], ["2"], ["3"], ["4"], ["5"], ["10"], ["Torna all'emporio"], ["Torna al menu"]]
 						}
 					};
+                    
+					var name = rows[0].name;
 
                     var value = 0;
                     if (name == "Piuma di Fenice")
                         value = 10000;
                     else if (name == "Cenere di Fenice")
                         value = 25000;
+                    else
+                        return;
 
                     var price = parseInt(value);
 
                     if (price_drop == 1)
                         price -= Math.round(value / 100) * sconto;
 
-					var name = rows[0].name;
 					bot.sendMessage(message.chat.id, "Seleziona la quantità di " + name + " da acquistare, puoi acquistarne al massimo " + formatNumber(Math.floor(money/price)), kb).then(function () {
 						answerCallbacks[message.chat.id] = function (answer) {
 							var quantity = answer.text;
@@ -60783,6 +60786,9 @@ function addItem(player_id, item_id, qnt = 1) {
 		console.log("ERRORE! addItem di " + qnt + "x " + item_id + " per player " + player_id);
 		return;
 	}
+    
+    if (item_id == 646)
+        setAchievement(player_id, 94, qnt);
 
 	var rows = connection_sync.query('UPDATE inventory SET quantity = quantity+' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 	if (rows.affectedRows == 0) {
