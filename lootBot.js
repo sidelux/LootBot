@@ -12207,6 +12207,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																bot.sendMessage(message.chat.id, "Per l'altissimo livello di meditazione hai ottenuto un *Pass Oro*!", mark);
 															}
 															
+                                                            setAchievement(player_id, 95, 1);
 															reduceDungeonEnergy(player_id, charges);
 															
 															bot.sendMessage(message.chat.id, "Inizi una profonda meditazione al costo di " + charges + " Cariche Esplorative", dNext);
@@ -13608,7 +13609,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																bot.sendMessage(message.chat.id, "Per l'altissimo livello di concentrazione hai ottenuto un *Pass Oro*!", mark);
 															}
 															
+                                                            setAchievement(player_id, 95, 1);
 															reduceDungeonEnergy(player_id, charges);
+                                                            
 															bot.sendMessage(message.chat.id, "Ti sei concentrato consumando " + charges + " Cariche Esplorative", dNext);
 															
 															return;

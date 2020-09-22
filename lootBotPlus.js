@@ -2143,7 +2143,7 @@ bot.onText(/^\/serveaiuto/, function (message, match) {
 				var reborn = rows[0].reborn;
 				var rank = rows[0].rank;
 
-				connection.query('SELECT P.nickname, P.reborn, P.rank FROM team_player T LEFT JOIN dungeon_status D ON T.player_id = D.player_id, player P WHERE T.player_id = P.id AND D.player_id IS NOT NULL AND P.reborn != 1 AND P.id != ' + player_id + ' AND T.team_id = ' + team_id + ' ORDER BY reborn ASC', function (err, rows, fields) {
+				connection.query('SELECT P.nickname, P.reborn, P.rank FROM team_player T LEFT JOIN dungeon_status D ON T.player_id = D.player_id, player P WHERE T.player_id = P.id AND D.player_id IS NOT NULL AND P.reborn != 1 AND P.id != ' + player_id + ' AND T.team_id = ' + team_id + ' AND D.pass = 0 ORDER BY reborn ASC', function (err, rows, fields) {
 					if (err) throw err;
 
 					var nicklist = "";
