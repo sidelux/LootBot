@@ -13731,7 +13731,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															if (cursed == 1)
 																need_charges = 40;
 															if (dungeon_energy < need_charges) {
-																bot.sendMessage(message.chat.id, "Devi avere almeno 20 Cariche Esplorative per tentare questa impresa", dNext);
+																bot.sendMessage(message.chat.id, "Devi avere almeno " + need_charges + " Cariche Esplorative per tentare questa impresa", dNext);
 																return;
 															}
 															
@@ -13780,12 +13780,6 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													answerCallbacks[message.chat.id] = function (answer) {
 														if (answer.text == "Raccogli") {
 
-															var dust = 50;
-															if (cursed == 1)
-																dust = 100;
-
-															addItem(player_id, 646, dust);
-
 															var charges = 10;
 															if (cursed == 1)
 																charges = 20;
@@ -13794,6 +13788,12 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																bot.sendMessage(message.chat.id, "Non hai abbastanza Cariche Esplorative per spolverare, te ne servono " + charges + "!", dNext);
 																return;
 															}
+
+															var dust = 50;
+															if (cursed == 1)
+																dust = 100;
+
+															addItem(player_id, 646, dust);
 
 															bot.sendMessage(message.chat.id, "Inizi a spolverare, consumi " + charges + " Cariche Esplorative, ma ottieni " + dust + " Polvere! Prosegui verso la porta un po' tossicchiante...", dNext);
 
