@@ -1081,7 +1081,7 @@ bot.onText(/^\/incremglobal/, function (message, match) {
 
 bot.onText(/^\/endglobal$/, function (message, match) {
 	if (message.from.id == 20471035) {
-		connection.query('SELECT I.id As id1, I.name As name1, I2.id As id2, I2.name As name2, I3.id As id3, I3.name As name3 FROM config C INNER JOIN item I ON C.global_item1 = I.id INNER JOIN item I2 ON C.global_item2 = I2.id INNER JOIN item I3 ON C.global_item3 = I3.id', function (err, rows, fields) {
+		connection.query('SELECT I.id As id1, I.name As name1, I2.id As id2, I2.name As name2, I3.id As id3, I3.name As name3, global_treshold, global_end_message FROM config C INNER JOIN item I ON C.global_item1 = I.id INNER JOIN item I2 ON C.global_item2 = I2.id INNER JOIN item I3 ON C.global_item3 = I3.id', function (err, rows, fields) {
 			if (err) throw err;
 
 			var item_1 = rows[0].name1;
@@ -1091,10 +1091,12 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 			var item_2id = rows[0].id2;
 			var item_3id = rows[0].id3;
 
-			var minValue = 5000;
-			var bonusText = "ottieni il doppio degli scrigni negli Assalti";
+			var minValue = rows[0].global_treshold;
+			var bonusText = rows[0].global_end_message;
 
 			console.log(item_1, item_2, item_3, item_1id, item_2id, item_3id);
+			console.log("minValue " + minValue);
+			console.log("bonusText " + bonusText);
 
 			connection.query('SELECT COUNT(player_id) As cnt FROM achievement_global', function (err, rows, fields) {
 				if (err) throw err;
@@ -54754,6 +54756,21 @@ function endDungeonRoom(player_id, boost_id, boost_mission) {
         return;
     }
 	reduceDungeonEnergy(player_id, 10);
+    
+    connection.query('SELECT chat_id, global_end FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+        if (err) throw err;
+        if (rows[0].global_end == 1) {
+            var chat_id = rows[0].chat_id;
+            var rand = Math.random()*100;
+            if (rand <= 5) {
+                connection.query('UPDATE player SET gems = gems+1 WHERE id = ' + player_id, function (err, rows, fields) {
+                    if (err) throw err;
+                    bot.sendMessage(chat_id, "Grazie al bonus globale hai ottenuto una Gemma 💎!");
+                    console.log("Gemma globale consegnata");
+                });
+            }
+        }
+    });
 }
 
 function reduceDungeonEnergy(player_id, quantity) {
@@ -57157,7 +57174,7 @@ function setFinishedTeamMission(element, index, array) {
 										}
 										*/
                                         
-								        // globalAchievement(rows[i].id, mission_time_count);
+								        globalAchievement(rows[i].id, mission_time_count);
 
 										bot.sendMessage(rows[i].chat_id, "Hai completato l'incarico insieme al tuo party come richiesto da " + mandator + "!\nEcco il rapporto dell'incarico:\n<i>" + endText + "</i>\n\nL'ufficio incarichi vi premia con: " + rewardText + extra, html);
 
