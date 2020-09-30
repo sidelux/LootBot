@@ -45481,7 +45481,7 @@ bot.onText(/^ricarica interventi/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					keyboard: [["1", "5", String(refilled)], ["Torna al giocatore"], ["Torna al menu"]]
+					keyboard: [["1", "5", String(refilled)], ["Crea Intruglio Revitalizzante, 1"], ["Torna al giocatore"], ["Torna al menu"]]
 				}
 			};
 			
@@ -45494,7 +45494,7 @@ bot.onText(/^ricarica interventi/i, function (message) {
 			
 			bot.sendMessage(message.chat.id, "Puoi ricaricare gli Interventi Divini in cambio di Intrugli Revitalizzanti, quanti ne vuoi ricaricare?\nAl momento ne puoi utilizzare ancora " + refill_left + " su " + att + ", e possiedi " + formatNumber(getItemCnt(player_id, 759)) + " intrugli. Per ricaricare di un utilizzo, consumerai " + qnt + " Intrugli", kb).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
-					if ((answer.text == "Torna al giocatore") || (answer.text == "Torna al menu"))
+					if ((answer.text == "Torna al giocatore") || (answer.text == "Torna al menu") || answer.text.indexOf("Crea") != -1)
 						return;
 					var num = parseInt(answer.text);
 					if (isNaN(num)) {
@@ -55491,7 +55491,7 @@ function setEvents(element, index, array) {
 	var total_life = 0;
 	var mission_id = element.mission_id;
 
-	rand = Math.round(Math.random() * 47);
+	rand = Math.round(Math.random() * 46);
 
 	if (crazyMode == 1)
 		rand = Math.round(Math.random() * 51);
@@ -57156,6 +57156,8 @@ function setFinishedTeamMission(element, index, array) {
 											extra = "\n\nQuantità incrementata di +" + extra_val + " per il bonus globale";
 										}
 										*/
+                                        
+								        // globalAchievement(rows[i].id, mission_time_count);
 
 										bot.sendMessage(rows[i].chat_id, "Hai completato l'incarico insieme al tuo party come richiesto da " + mandator + "!\nEcco il rapporto dell'incarico:\n<i>" + endText + "</i>\n\nL'ufficio incarichi vi premia con: " + rewardText + extra, html);
 
@@ -59692,7 +59694,6 @@ function setFinishedMission(element, index, array) {
 								if (mission_gem == 0) {
 									if (mission_chest >= 4)
 										setAchievement(element.id, 82, 1);
-									globalAchievement(element.id, 1);
 								}
 
 								var extra = "";
