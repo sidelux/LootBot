@@ -745,6 +745,8 @@ CREATE TABLE `config` (
   `global_item1` int(11) NOT NULL DEFAULT '0' COMMENT 'Più costosa',
   `global_item2` int(11) NOT NULL DEFAULT '0',
   `global_item3` int(11) NOT NULL COMMENT 'Meno costosa',
+  `global_treshold` int(100) NOT NULL,
+  `global_end_message` varchar(128) NOT NULL,
   `epic_var_record` int(11) NOT NULL DEFAULT '0',
   `epic_var_record_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `food` int(11) NOT NULL DEFAULT '0',

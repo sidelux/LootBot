@@ -54762,11 +54762,11 @@ function endDungeonRoom(player_id, boost_id, boost_mission) {
         if (rows[0].global_end == 1) {
             var chat_id = rows[0].chat_id;
             var rand = Math.random()*100;
-            if (rand <= 5) {
+            if (rand <= 3) {
                 connection.query('UPDATE player SET gems = gems+1 WHERE id = ' + player_id, function (err, rows, fields) {
                     if (err) throw err;
                     bot.sendMessage(chat_id, "Grazie al bonus globale hai ottenuto una Gemma 💎!");
-                    console.log("Gemma globale consegnata");
+                    console.log("Gemma globale consegnata a " + player_id);
                 });
             }
         }
