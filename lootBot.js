@@ -9886,7 +9886,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
                                         heart = "🖤";
                                     else if (player_life/player_total_life*100 < 60)
                                         heart = "🧡";
-                                    text += "\n" + heart + " *" + formatNumber(player_life) + "* hp ";
+                                    text += heart + " *" + formatNumber(player_life) + "* hp\n";
 
 									if (room_id == 1)
 										text += "Decidi di addentrarti nel dungeon. Nell'oscurità intravedi una strada e vari corridoi che si perdono a vista d'occhio. Quale direzione scegli di intraprendere?";
