@@ -8676,7 +8676,7 @@ bot.onText(/sacca$/i, function (message) {
 
 bot.onText(/^\/legenda$/i, function (message) {
 	var legend = "";
-	for (var i = -26; i < 10; i++)
+	for (var i = -27; i < 10; i++)
 		legend += "\n> " + dungeonToDesc(i) + " - " + dungeonToSym(i);
 	bot.sendMessage(message.chat.id, "Legenda simboli dungeon per la Mappatura:" + legend, back);
 });
@@ -8931,7 +8931,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 	if (message.text.length > 25)
 		return;
 
-	var max_rooms_neg = 26;		// Diventa negativo dopo
+	var max_rooms_neg = 27;		// Diventa negativo dopo
 
 	var dBack = {
 		parse_mode: "Markdown",
@@ -9647,6 +9647,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 								//	Stanza impolverata: -24
 								//	Vicolo cieco: -25
 								//	Negozio di figurine: -26
+								//	Brucaliffo: -27
 
 								var arr = [];
 								var p1 = Math.round((rooms * 3) / 100 * 60);
@@ -13949,6 +13950,90 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			}
 																		}
 																	});
+																}
+															});
+														} else if (answer.text == "Ignora") {
+															bot.sendMessage(message.chat.id, "Esci dal negozio...", dNext);
+
+															endDungeonRoom(player_id, boost_id, boost_mission);
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
+															return;
+														}
+													}
+												});
+                                            } else if (dir == -27) {
+												var dOptions = {
+													parse_mode: "Markdown",
+													reply_markup: {
+														resize_keyboard: true,
+														keyboard: [["Offri..."], ["Ignora"], ["Torna al menu"]]
+													}
+												};
+
+												bot.sendMessage(message.chat.id, "Tra una fitta coltre di fumo grigio appare un maestoso brucaliffo dall’aria sonnecchiata.\nSembra innoquo...", dOptions).then(function () {
+													answerCallbacks[message.chat.id] = function (answer) {
+														if (answer.text == "Offri...") {
+															bot.sendMessage(message.chat.id, "Scrivi il nome dell'oggetto da regalare al brucaliffo", dOptions).then(function () {
+																answerCallbacks[message.chat.id] = function (answer) {
+																	if (answer.text == "Torna al menu")
+																		return;
+                                                                    
+                                                                    connection.query('SELECT id, rarity FROM item WHERE name = "' + answer.text + '"', function (err, rows, fields) {
+                                                                        if (err) throw err;
+                                                                        
+                                                                        if (Object.keys(rows).length == 0) {
+                                                                            bot.sendMessage(message.chat.id, "L'oggetto specificato non esiste", dNext);
+																            return;
+                                                                        }
+                                                                        
+                                                                        var item_id = rows[0].id;
+                                                                        var rarity = rows[0].rarity;
+                                                                    
+                                                                        if (getItemCnt(player_id, item_id) == 0) {
+                                                                            bot.sendMessage(message.chat.id, "Non possiedi l'oggetto selezionato", dNext);
+																            return;
+                                                                        }
+
+                                                                        var dYesNo = {
+                                                                            parse_mode: "Markdown",
+                                                                            reply_markup: {
+                                                                                resize_keyboard: true,
+                                                                                keyboard: [["Si"], ["Torna al menu"]]
+                                                                            }
+                                                                        };
+
+                                                                        bot.sendMessage(message.chat.id, "Sei sicuro di voler regalare l'oggetto selezionato?", dYesNo).then(function () {
+                                                                            answerCallbacks[message.chat.id] = function (answer) {
+                                                                                if (answer.text.toLowerCase() == "si") {
+                                                                                    if (getItemCnt(player_id, item_id) == 0) {
+                                                                                        bot.sendMessage(message.chat.id, "Non possiedi l'oggetto selezionato", dNext);
+                                                                                        return;
+                                                                                    }
+                                                                                    
+                                                                                    delItem(player_id, item_id, 1);
+
+                                                                                    var rand = Math.random()*100;
+                                                                                    var prob = rarity*10;
+                                                                                    if (rand > prob) {
+                                                                                        var charges = rarity*2;
+                                                                                        addDungeonEnergy(player_id, charges);
+                                                                                        
+                                                                                        bot.sendMessage(message.chat.id, "Il brucaliffo si ritiene soddisfatto del tuo dono e ti regala " + charges + " Cariche Esplorative!", dNext);
+                                                                                    } else {
+                                                                                        if (rand < 10) {
+                                                                                            var charges = 5;
+                                                                                            reduceDungeonEnergy(player_id, charges);
+                                                                                            bot.sendMessage(message.chat.id, "Il brucaliffo non si ritiene soddisfatto del tuo dono al punto che si prende anche " + charges + " delle tue Cariche Esplorative...", dNext);
+                                                                                        } else {
+                                                                                            bot.sendMessage(message.chat.id, "Il brucaliffo non si ritiene soddisfatto del tuo dono e se ne va con un'aria affranta...", dNext);
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        });
+                                                                    });
 																}
 															});
 														} else if (answer.text == "Ignora") {
@@ -53123,6 +53208,8 @@ function dungeonToDesc(d) {
 		return "Vicolo cieco";
 	else if (d == -26)
 		return "Negozio di figurine";
+    else if (d == -27)
+		return "Brucaliffo";
 }
 
 function dungeonToSym(d) {
@@ -53202,6 +53289,8 @@ function dungeonToSym(d) {
 		return "⛔";
 	else if (d == -26)
 		return "🃏";
+    else if (d == -27)
+		return "🐛";
 }
 
 function findMissing(numArray) {
