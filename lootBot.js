@@ -9881,6 +9881,12 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 										dungeon_energy = 999;
 									}
 									text = "🛡 " + room_id + "/" + room_num + " ⏱ " + time_rem + " 🔋 " + dungeon_energy_text + "/" + max_dungeon_energy + "\n";
+                                    var heart = "❤️";
+                                    if (player_life/player_total_life*100 < 15)
+                                        heart = "🖤";
+                                    else if (player_life/player_total_life*100 < 60)
+                                        heart = "🧡";
+                                    text += "\n" + heart + " *" + formatNumber(player_life) + "* hp ";
 
 									if (room_id == 1)
 										text += "Decidi di addentrarti nel dungeon. Nell'oscurità intravedi una strada e vari corridoi che si perdono a vista d'occhio. Quale direzione scegli di intraprendere?";
@@ -30400,7 +30406,7 @@ bot.onText(/gnomorra/i, function (message) {
 
 				var total_plays = rows[0].cnt;
 
-				bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " alla <b>Gnomorra Lootiana</b>!\nPuoi sfidare un giocatore casuale oppure uno in particolare inserendo il suo nickname, il giocatore bersaglio deve accettare l'invito, la partita è divisa in 3 round.\n\n<b>Vittorie:</b> " + win + "\n<b>Sconfitte:</b> " + lose + "\n<b>Vittorie consecutive:</b> " + win_streak + " (Record: " + streak_record + ")\n\nPuoi ancora giocare " + (50-battle_limit) + " partite normali e " + (50-practice_limit) + " allenamenti, sono state giocate in totale " + formatNumber(total_plays) + " partite!", kb).then(function () {
+				bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " alla <b>Gnomorra Lootiana</b>!\nPuoi sfidare un giocatore casuale oppure uno in particolare inserendo il suo nickname, il giocatore bersaglio deve accettare l'invito, la partita è divisa in 3 round.\n\n<b>Vittorie:</b> " + win + "\n<b>Sconfitte:</b> " + lose + "\n<b>Vittorie consecutive:</b> " + win_streak + " (Record: " + streak_record + ")\n\nPuoi ancora giocare " + (50-battle_limit) + " partite normali e " + (50-practice_limit) + " allenamenti, sono state giocate in totale " + formatNumber(total_plays) + " partite!\n\nPer entrare in una partita già avviata usa il comando /gnomorra.", kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						if (answer.text.indexOf("qualcuno") != -1) {
 							bot.sendMessage(message.chat.id, "Cercherai un giocatore con abilità simili alle tue, procedi?", kbYesNo).then(function () {
@@ -57021,239 +57027,250 @@ function setFinishedTeamMission(element, index, array) {
 
 						var parts = rows[0].parts;
 						var mandator = rows[0].mandator;
+                        
+                        connection.query('SELECT COUNT(*) As cnt FROM mission_team_party_player WHERE party_id = ' + party_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
+				            if (err) throw err;
+                            
+                            var player_qnt = rows[0].cnt;
 
-						connection.query('SELECT AVG(complex) As diff, reward_code, duration, parts, progress_num FROM mission_team_list L, mission_team_requirement R WHERE L.requirement_id = R.requirement_id AND L.id = ' + assigned_to, function (err, rows, fields) {
-							if (err) throw err;
+                            connection.query('SELECT AVG(complex) As diff, reward_code, duration, parts, progress_num FROM mission_team_list L, mission_team_requirement R WHERE L.requirement_id = R.requirement_id AND L.id = ' + assigned_to, function (err, rows, fields) {
+                                if (err) throw err;
 
-							var complex = rows[0].diff;
-							var duration = rows[0].duration;
-							var parts = rows[0].parts;
-							var progress_num = rows[0].progress_num;
-							var rewardLevel = Math.ceil((totPnt/parts)/(3.5-complex/4))*Math.round(Math.log2(parts)+1)*2;
-							var rewardQuery = "";
-							var rewardStr = rows[0].reward_code.split(":");
+                                var complex = rows[0].diff;
+                                var duration = rows[0].duration;
+                                var parts = rows[0].parts;
+                                var progress_num = rows[0].progress_num;
+                                var rewardLevel = Math.ceil((totPnt/parts)/(3.5-complex/4))*Math.round(Math.log2(parts)+1)*2;
+                                var rewardQuery = "";
+                                var rewardStr = rows[0].reward_code.split(":");
 
-							var paPnt = 10;
-							if (luckyMode == 1) {
-								var d = new Date();
-								if (d.getDay() == 6)
-									paPnt = paPnt*2;
-								else if (d.getDay() == 0) {
-									var r = Math.random() * 100;
-									if (r < 50)
-										paPnt = 0;
-									else if ((r > 50) && (r < 75))
-										paPnt = paPnt*3;
-								}
-							}
+                                var paPnt = 10;
+                                if (luckyMode == 1) {
+                                    var d = new Date();
+                                    if (d.getDay() == 6)
+                                        paPnt = paPnt*2;
+                                    else if (d.getDay() == 0) {
+                                        var r = Math.random() * 100;
+                                        if (r < 50)
+                                            paPnt = 0;
+                                        else if ((r > 50) && (r < 75))
+                                            paPnt = paPnt*3;
+                                    }
+                                }
 
-							var expPnt = Math.floor((duration*(parts+1))/60/60);
-							var qnt = rewardLevel*rewardStr[0];
-							if (paPnt > 0)
-								rewardText += "\n> " + paPnt + " 🦋 (team)";
-							if (expPnt > 0)
-								rewardText += "\n> " + expPnt + " exp (a testa)";
-							var isExp = 0;
-							var isItem = 0;
-							var isChest = 0;
+                                var expPnt = Math.floor((duration*(parts+1))/60/60);
+                                var qnt = rewardLevel*rewardStr[0];
+                                if (paPnt > 0)
+                                    rewardText += "\n> " + paPnt + " 🦋 (team)";
+                                if (expPnt > 0)
+                                    rewardText += "\n> " + expPnt + " exp (a testa)";
+                                var isExp = 0;
+                                var isItem = 0;
+                                var isChest = 0;
 
-							if (crazyMode == 1)
-								qnt += qnt*0.5;
+                                if (crazyMode == 1)
+                                    qnt += qnt*0.5;
+                                
+                                if (player_qnt == 4)
+                                    qnt += qnt*0.1;
+                                else if (player_qnt == 5)
+                                    qnt += qnt*0.2;
 
-							// la query viene eseguita qnt volte
+                                // la query viene eseguita qnt volte
 
-							if (rewardStr[1].indexOf("item") != -1) {
-								var itemid = rewardStr[1].match(/\d+/g)[0];		// es: 1:item10
-								var item = connection_sync.query("SELECT name, rarity FROM item WHERE id = " + itemid);
-								qnt = Math.ceil(qnt);	// per gestire i 0.x nel db
-								rewardText += "\n> " + qnt + "x " + item[0].name + " (" + item[0].rarity + ") (a testa)";
-								isItem = 1;
-							} else if (rewardStr[1] == "mana1") {
-								rewardText += "\n> " + qnt + "x 🌊 Mana Blu (a testa)";
-								rewardQuery = "UPDATE event_mana_status M, player P SET M.mana_1 = M.mana_1+1 WHERE M.player_id = P.id AND P.id = %playerid%";
-							} else if (rewardStr[1] == "mana2") {
-								rewardText += "\n> " + qnt + "x ⚡️ Mana Giallo (a testa)";
-								rewardQuery = "UPDATE event_mana_status M, player P SET M.mana_2 = M.mana_2+1 WHERE M.player_id = P.id AND P.id = %playerid%";
-							} else if (rewardStr[1] == "mana3") {
-								rewardText += "\n> " + qnt + "x 🔥 Mana Rosso (a testa)";
-								rewardQuery = "UPDATE event_mana_status M, player P SET M.mana_3 = M.mana_3+1 WHERE M.player_id = P.id AND P.id = %playerid%";
-							} else if (rewardStr[1] == "mana") {
-								rewardText += "\n> " + qnt + "x 🌊⚡️🔥 Mana tutti i tipi (a testa)";
-								rewardQuery = "UPDATE event_mana_status M, player P SET M.mana_1 = M.mana_1+1, M.mana_2 = M.mana_2+1, M.mana_3 = M.mana_3+1 WHERE M.player_id = P.id AND P.id = %playerid%";
-							} else if (rewardStr[1] == "gems") {
-								qnt = Math.floor(qnt/3);
-								rewardText += "\n> " + qnt + "x 💎 (a testa)";
-								rewardQuery = "UPDATE player SET gems = gems+1 WHERE id = %playerid%";
-							} else if (rewardStr[1] == "dust") {
-								var itemid = 646;
-								rewardText += "\n> " + qnt + "x Polvere (a testa)";
-								isItem = 1;
-							} else if (rewardStr[1] == "exp") {
-								rewardText += "\n> " + qnt + " exp (a testa)";
-								rewardQuery = "";
-								isExp = 1;
-							} else if (rewardStr[1].indexOf("chest") != -1) {
-								var chestid = rewardStr[1].match(/\d+/g)[0];
-								var chest = connection_sync.query("SELECT name, rarity_shortname FROM chest WHERE id = " + chestid);
-								rewardText += "\n> " + qnt + "x " + chest[0].name + " (" + chest[0].rarity_shortname + ") (a testa)";
-								isChest = 1;
-							} else if (rewardStr[1] == "money") {
-								rewardText += "\n> " + formatNumber(qnt*1000) + " § (a testa)";
-								rewardQuery = "UPDATE player SET money = money+1000 WHERE id = %playerid%";
-							} else if (rewardStr[1] == "rune") {
-								var rand = Math.random()*100;
-								if (rand < (rewardLevel/2)) {	// max 10% circa
-									var itemid = 764;
-									qnt = 1;
-									rewardText += "\n> 1x Runa Necro (X) (a testa)";
-								} else {
-									var item = connection_sync.query("SELECT id, name, rarity FROM item WHERE name LIKE 'Runa%' AND rarity != 'X' ORDER BY RAND()");
-									var itemid = item[0].id;
-									qnt = Math.floor(rewardLevel/4)+1;
-									if (crazyMode == 1) {
-										qnt += qnt*0.5;
-										qnt = Math.ceil(qnt);
-									}
-									rewardText += "\n> " + qnt + "x " + item[0].name + " (" + item[0].rarity + ") (a testa)";
-								}
-								isItem = 1;
-							} else if (rewardStr[1] == "pietre") {
-								qnt = Math.round(qnt/2);
-								for (i = 4; i > 0; i--) {
-									if (qnt % (i+1) === 0)
-										break;
-								}
-								var val = (i+1);
-								qnt = qnt/val;
-								if (crazyMode == 1) {
-									qnt += qnt*0.5;
-									qnt = Math.ceil(qnt);
-								}
-								var item = connection_sync.query("SELECT id, name, rarity FROM item WHERE id = " + (68+val));
-								var itemid = item[0].id;
-								rewardText += "\n> " + qnt + "x " + item[0].name + " (" + item[0].rarity + ") (a testa)";
-								isItem = 1;
-							} else {
-								console.log("Errore premi");
-								return;
-							}
-							
-							if (crazyMode == 1)
-								rewardText += "\n\nTutti i premi sono aumentati del 50%, FOLLIA!";
+                                if (rewardStr[1].indexOf("item") != -1) {
+                                    var itemid = rewardStr[1].match(/\d+/g)[0];		// es: 1:item10
+                                    var item = connection_sync.query("SELECT name, rarity FROM item WHERE id = " + itemid);
+                                    qnt = Math.ceil(qnt);	// per gestire i 0.x nel db
+                                    rewardText += "\n> " + qnt + "x " + item[0].name + " (" + item[0].rarity + ") (a testa)";
+                                    isItem = 1;
+                                } else if (rewardStr[1] == "mana1") {
+                                    rewardText += "\n> " + qnt + "x 🌊 Mana Blu (a testa)";
+                                    rewardQuery = "UPDATE event_mana_status M, player P SET M.mana_1 = M.mana_1+1 WHERE M.player_id = P.id AND P.id = %playerid%";
+                                } else if (rewardStr[1] == "mana2") {
+                                    rewardText += "\n> " + qnt + "x ⚡️ Mana Giallo (a testa)";
+                                    rewardQuery = "UPDATE event_mana_status M, player P SET M.mana_2 = M.mana_2+1 WHERE M.player_id = P.id AND P.id = %playerid%";
+                                } else if (rewardStr[1] == "mana3") {
+                                    rewardText += "\n> " + qnt + "x 🔥 Mana Rosso (a testa)";
+                                    rewardQuery = "UPDATE event_mana_status M, player P SET M.mana_3 = M.mana_3+1 WHERE M.player_id = P.id AND P.id = %playerid%";
+                                } else if (rewardStr[1] == "mana") {
+                                    rewardText += "\n> " + qnt + "x 🌊⚡️🔥 Mana tutti i tipi (a testa)";
+                                    rewardQuery = "UPDATE event_mana_status M, player P SET M.mana_1 = M.mana_1+1, M.mana_2 = M.mana_2+1, M.mana_3 = M.mana_3+1 WHERE M.player_id = P.id AND P.id = %playerid%";
+                                } else if (rewardStr[1] == "gems") {
+                                    qnt = Math.floor(qnt/3);
+                                    rewardText += "\n> " + qnt + "x 💎 (a testa)";
+                                    rewardQuery = "UPDATE player SET gems = gems+1 WHERE id = %playerid%";
+                                } else if (rewardStr[1] == "dust") {
+                                    var itemid = 646;
+                                    rewardText += "\n> " + qnt + "x Polvere (a testa)";
+                                    isItem = 1;
+                                } else if (rewardStr[1] == "exp") {
+                                    rewardText += "\n> " + qnt + " exp (a testa)";
+                                    rewardQuery = "";
+                                    isExp = 1;
+                                } else if (rewardStr[1].indexOf("chest") != -1) {
+                                    var chestid = rewardStr[1].match(/\d+/g)[0];
+                                    var chest = connection_sync.query("SELECT name, rarity_shortname FROM chest WHERE id = " + chestid);
+                                    rewardText += "\n> " + qnt + "x " + chest[0].name + " (" + chest[0].rarity_shortname + ") (a testa)";
+                                    isChest = 1;
+                                } else if (rewardStr[1] == "money") {
+                                    rewardText += "\n> " + formatNumber(qnt*1000) + " § (a testa)";
+                                    rewardQuery = "UPDATE player SET money = money+1000 WHERE id = %playerid%";
+                                } else if (rewardStr[1] == "rune") {
+                                    var rand = Math.random()*100;
+                                    if (rand < (rewardLevel/2)) {	// max 10% circa
+                                        var itemid = 764;
+                                        qnt = 1;
+                                        rewardText += "\n> 1x Runa Necro (X) (a testa)";
+                                    } else {
+                                        var item = connection_sync.query("SELECT id, name, rarity FROM item WHERE name LIKE 'Runa%' AND rarity != 'X' ORDER BY RAND()");
+                                        var itemid = item[0].id;
+                                        qnt = Math.floor(rewardLevel/4)+1;
+                                        if (crazyMode == 1) {
+                                            qnt += qnt*0.5;
+                                            qnt = Math.ceil(qnt);
+                                        }
+                                        rewardText += "\n> " + qnt + "x " + item[0].name + " (" + item[0].rarity + ") (a testa)";
+                                    }
+                                    isItem = 1;
+                                } else if (rewardStr[1] == "pietre") {
+                                    qnt = Math.round(qnt/2);
+                                    for (i = 4; i > 0; i--) {
+                                        if (qnt % (i+1) === 0)
+                                            break;
+                                    }
+                                    var val = (i+1);
+                                    qnt = qnt/val;
+                                    if (crazyMode == 1) {
+                                        qnt += qnt*0.5;
+                                        qnt = Math.ceil(qnt);
+                                    }
+                                    var item = connection_sync.query("SELECT id, name, rarity FROM item WHERE id = " + (68+val));
+                                    var itemid = item[0].id;
+                                    rewardText += "\n> " + qnt + "x " + item[0].name + " (" + item[0].rarity + ") (a testa)";
+                                    isItem = 1;
+                                } else {
+                                    console.log("Errore premi");
+                                    return;
+                                }
 
-							//console.log("Reward incarico: " + rewardStr + " - " + qnt)
+                                if (crazyMode == 1)
+                                    rewardText += "\n\nTutti i premi sono aumentati del 50%, FOLLIA!";
 
-							connection.query('SELECT P.chat_id, T.team_id, P.id, TP.suspended, P.nickname, P.boost_id, P.boost_mission, global_end FROM mission_team_party_player T, player P, team_player TP WHERE TP.player_id = P.id AND T.player_id = P.id AND T.party_id = ' + party_id + ' AND T.team_id = ' + team_id, function (err, rows, fields) {
-								if (err) throw err;
+                                //console.log("Reward incarico: " + rewardStr + " - " + qnt)
 
-								var savedQnt = qnt;
-								var extra = "";
+                                connection.query('SELECT P.chat_id, T.team_id, P.id, TP.suspended, P.nickname, P.boost_id, P.boost_mission, global_end FROM mission_team_party_player T, player P, team_player TP WHERE TP.player_id = P.id AND T.player_id = P.id AND T.party_id = ' + party_id + ' AND T.team_id = ' + team_id, function (err, rows, fields) {
+                                    if (err) throw err;
 
-								var mission_time_count = Math.floor((duration*(parts+1))/60/60); // ore
+                                    var savedQnt = qnt;
+                                    var extra = "";
 
-								for (i = 0; i < Object.keys(rows).length; i++) {
-									if (rows[i].suspended == 0) {
+                                    var mission_time_count = Math.floor((duration*(parts+1))/60/60); // ore
 
-										qnt = savedQnt;
+                                    for (i = 0; i < Object.keys(rows).length; i++) {
+                                        if (rows[i].suspended == 0) {
 
-										var extra = "";
-										/*
-										if (rows[i].global_end == 1) {
-											if ((qnt >= 100) || (rewardStr[1] == "money"))
-												qnt += qnt*0.2;
-											else
-												qnt++;
-											if ((isItem == 1) && (itemid == 764))
-												qnt = 1;
-											qnt = Math.round(qnt);
-											var extra_val = (qnt-savedQnt);
-											if (rewardStr[1] == "money")
-												extra_val = extra_val*1000;
-											console.log("Incarico: " + rewardStr[1] + " " + extra_val);
-											extra = "\n\nQuantità incrementata di +" + extra_val + " per il bonus globale";
-										}
-										*/
-                                        
-								        globalAchievement(rows[i].id, mission_time_count);
+                                            qnt = savedQnt;
 
-										bot.sendMessage(rows[i].chat_id, "Hai completato l'incarico insieme al tuo party come richiesto da " + mandator + "!\nEcco il rapporto dell'incarico:\n<i>" + endText + "</i>\n\nL'ufficio incarichi vi premia con: " + rewardText + extra, html);
+                                            var extra = "";
+                                            /*
+                                            if (rows[i].global_end == 1) {
+                                                if ((qnt >= 100) || (rewardStr[1] == "money"))
+                                                    qnt += qnt*0.2;
+                                                else
+                                                    qnt++;
+                                                if ((isItem == 1) && (itemid == 764))
+                                                    qnt = 1;
+                                                qnt = Math.round(qnt);
+                                                var extra_val = (qnt-savedQnt);
+                                                if (rewardStr[1] == "money")
+                                                    extra_val = extra_val*1000;
+                                                console.log("Incarico: " + rewardStr[1] + " " + extra_val);
+                                                extra = "\n\nQuantità incrementata di +" + extra_val + " per il bonus globale";
+                                            }
+                                            */
 
-										if (isExp == 1)
-											setExp(rows[i].id, qnt);
-										else if (isItem == 1)
-											addItem(rows[i].id, itemid, qnt);
-										else if (isChest == 1)
-											addChest(rows[i].id, chestid, qnt);
-										else {
-											for (j = 0; j < qnt; j++) {
-												connection.query(rewardQuery.replace("%playerid%", rows[i].id), function (err, rows, fields) {
-													if (err) throw err;
-												});
-											};
-											if (rewardStr[1] == "mana")
-												setAchievement(rows[i].id, 81, qnt*3);
-										}
+                                            globalAchievement(rows[i].id, mission_time_count);
 
-										setAchievement(rows[i].id, 22, 1);
+                                            bot.sendMessage(rows[i].chat_id, "Hai completato l'incarico insieme al tuo party come richiesto da " + mandator + "!\nEcco il rapporto dell'incarico:\n<i>" + endText + "</i>\n\nL'ufficio incarichi vi premia con: " + rewardText + extra, html);
 
-										if (rows[i].boost_id == 5) {
-											var rand = Math.random()*100;
-											if (rand < 25)
-												expPnt = expPnt*2;
-											setBoost(rows[i].id, rows[i].boost_mission, rows[i].boost_id);
-										}
+                                            if (isExp == 1)
+                                                setExp(rows[i].id, qnt);
+                                            else if (isItem == 1)
+                                                addItem(rows[i].id, itemid, qnt);
+                                            else if (isChest == 1)
+                                                addChest(rows[i].id, chestid, qnt);
+                                            else {
+                                                for (j = 0; j < qnt; j++) {
+                                                    connection.query(rewardQuery.replace("%playerid%", rows[i].id), function (err, rows, fields) {
+                                                        if (err) throw err;
+                                                    });
+                                                };
+                                                if (rewardStr[1] == "mana")
+                                                    setAchievement(rows[i].id, 81, qnt*3);
+                                            }
 
-										setExp(rows[i].id, expPnt); // exp a tutti
+                                            setAchievement(rows[i].id, 22, 1);
 
-										if (villa == 1) {
-											var villaPnt = connection_sync.query('SELECT player_id, points FROM event_villa_status WHERE player_id = ' + rows[i].id);
-											if (Object.keys(villaPnt).length > 0) {
-												var points = parseInt(villaPnt[0].points);
-												connection_sync.query('UPDATE event_villa_status SET points = points+' + parts + ' WHERE player_id = ' + rows[i].id);
-												bot.sendMessage(rows[i].chat_id, "Hai ricevuto " + parts + " punti per l'evento della Villa di LastSoldier95! Ora ne possiedi *" + (points + parts) + "*!", mark);
-												//console.log("Consegnati " + parts + " punti a " + rows[i].nickname);
-											};
-										}
-									} else {
-										bot.sendMessage(rows[i].chat_id, "Hai completato l'incarico insieme al tuo party come richiesto da " + mandator + "!\nEcco il rapporto dell'incarico:\n<i>" + endText + "</i>\n\nNon ricevi ricompense poichè sei stato sospeso dall'amministratore", html);
-									}
-									connection.query('UPDATE player SET mission_party = 0, mission_team_count = mission_team_count+1 WHERE id = ' + rows[i].id, function (err, rows, fields) {
-										if (err) throw err;
-									});
-								}
+                                            if (rows[i].boost_id == 5) {
+                                                var rand = Math.random()*100;
+                                                if (rand < 25)
+                                                    expPnt = expPnt*2;
+                                                setBoost(rows[i].id, rows[i].boost_mission, rows[i].boost_id);
+                                            }
 
-								connection.query('SELECT player.chat_id, player.id FROM team_player, player WHERE team_player.player_id = player.id AND team_player.role IN (1,2) AND team_id = ' + team_id, function (err, rows, fields) {
-									if (err) throw err;
-									for (i = 0; i < Object.keys(rows).length; i++)		// In caso di più admin
-										bot.sendMessage(rows[i].chat_id, "Il Party " + party_id + " ha completato l'incarico assegnato!");
+                                            setExp(rows[i].id, expPnt); // exp a tutti
 
-									connection.query('UPDATE team SET mission_count = mission_count+1, point = point+' + paPnt + ', mission_time_count = mission_time_count + ' + mission_time_count + ', mission_week_count = mission_week_count+1 WHERE id = ' + team_id, function (err, rows, fields) {
-										if (err) throw err;
-									});
+                                            if (villa == 1) {
+                                                var villaPnt = connection_sync.query('SELECT player_id, points FROM event_villa_status WHERE player_id = ' + rows[i].id);
+                                                if (Object.keys(villaPnt).length > 0) {
+                                                    var points = parseInt(villaPnt[0].points);
+                                                    connection_sync.query('UPDATE event_villa_status SET points = points+' + parts + ' WHERE player_id = ' + rows[i].id);
+                                                    bot.sendMessage(rows[i].chat_id, "Hai ricevuto " + parts + " punti per l'evento della Villa di LastSoldier95! Ora ne possiedi *" + (points + parts) + "*!", mark);
+                                                    //console.log("Consegnati " + parts + " punti a " + rows[i].nickname);
+                                                };
+                                            }
+                                        } else {
+                                            bot.sendMessage(rows[i].chat_id, "Hai completato l'incarico insieme al tuo party come richiesto da " + mandator + "!\nEcco il rapporto dell'incarico:\n<i>" + endText + "</i>\n\nNon ricevi ricompense poichè sei stato sospeso dall'amministratore", html);
+                                        }
+                                        connection.query('UPDATE player SET mission_party = 0, mission_team_count = mission_team_count+1 WHERE id = ' + rows[i].id, function (err, rows, fields) {
+                                            if (err) throw err;
+                                        });
+                                    }
 
-									if (progress_num > 0) {	
-										if (progress_num == 3)
-											progress_num = 0;
-										connection.query('UPDATE mission_team_party SET progress = ' + progress_num + ' WHERE team_id = ' + team_id + ' AND party_id = ' + party_id, function (err, rows, fields) {
-											if (err) throw err;
-										});
-									}
+                                    connection.query('SELECT player.chat_id, player.id FROM team_player, player WHERE team_player.player_id = player.id AND team_player.role IN (1,2) AND team_id = ' + team_id, function (err, rows, fields) {
+                                        if (err) throw err;
+                                        for (i = 0; i < Object.keys(rows).length; i++)		// In caso di più admin
+                                            bot.sendMessage(rows[i].chat_id, "Il Party " + party_id + " ha completato l'incarico assegnato!");
 
-									// Pulizia (aggiorna anche l'altra)
-									connection.query('UPDATE mission_team_party SET part_id = 0, assigned_to = NULL, report_id = NULL, mission_start = NULL, mission_time_end = NULL, wait = 0, mission_time_limit = NULL, text_user = NULL WHERE team_id = ' + team_id + ' AND party_id = ' + party_id, function (err, rows, fields) {
-										if (err) throw err;
-									});
-									connection.query('UPDATE mission_team_party_player SET answ_id = 0 WHERE party_id = ' + party_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
-										if (err) throw err;
-									});
-									/*	// Mantenere per log?
-									connection.query('DELETE FROM mission_team_report WHERE team_id = ' + team_id + ' AND party_id = ' + party_id + ' AND report_id = ' + report_id, function (err, rows, fields) {
-										if (err) throw err;
-									});
-									*/
-								});
-							});
-						});
+                                        connection.query('UPDATE team SET mission_count = mission_count+1, point = point+' + paPnt + ', mission_time_count = mission_time_count + ' + mission_time_count + ', mission_week_count = mission_week_count+1 WHERE id = ' + team_id, function (err, rows, fields) {
+                                            if (err) throw err;
+                                        });
+
+                                        if (progress_num > 0) {	
+                                            if (progress_num == 3)
+                                                progress_num = 0;
+                                            connection.query('UPDATE mission_team_party SET progress = ' + progress_num + ' WHERE team_id = ' + team_id + ' AND party_id = ' + party_id, function (err, rows, fields) {
+                                                if (err) throw err;
+                                            });
+                                        }
+
+                                        // Pulizia (aggiorna anche l'altra)
+                                        connection.query('UPDATE mission_team_party SET part_id = 0, assigned_to = NULL, report_id = NULL, mission_start = NULL, mission_time_end = NULL, wait = 0, mission_time_limit = NULL, text_user = NULL WHERE team_id = ' + team_id + ' AND party_id = ' + party_id, function (err, rows, fields) {
+                                            if (err) throw err;
+                                        });
+                                        connection.query('UPDATE mission_team_party_player SET answ_id = 0 WHERE party_id = ' + party_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
+                                            if (err) throw err;
+                                        });
+                                        /*	// Mantenere per log?
+                                        connection.query('DELETE FROM mission_team_report WHERE team_id = ' + team_id + ' AND party_id = ' + party_id + ' AND report_id = ' + report_id, function (err, rows, fields) {
+                                            if (err) throw err;
+                                        });
+                                        */
+                                    });
+                                });
+                            });
+                        });
 					});
 				});
 			});
