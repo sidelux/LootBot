@@ -13972,7 +13972,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Tra una fitta coltre di fumo grigio appare un maestoso brucaliffo dall’aria sonnecchiata.\nSembra innoquo...", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, "Tra una fitta coltre di fumo grigio appare un maestoso brucaliffo dall'aria assonnata.\nSembra innocuo...", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = function (answer) {
 														if (answer.text == "Offri...") {
 															bot.sendMessage(message.chat.id, "Scrivi il nome dell'oggetto da regalare al brucaliffo", dOptions).then(function () {
@@ -13980,7 +13980,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	if (answer.text == "Torna al menu")
 																		return;
                                                                     
-                                                                    connection.query('SELECT id, rarity FROM item WHERE name = "' + answer.text + '"', function (err, rows, fields) {
+                                                                    connection.query('SELECT I.id, I.rarity, R.id As rarity FROM item I, rarity R WHERE R.shortname = I.rarity AND I.name = "' + answer.text + '"', function (err, rows, fields) {
                                                                         if (err) throw err;
                                                                         
                                                                         if (Object.keys(rows).length == 0) {
@@ -14017,12 +14017,18 @@ bot.onText(/dungeon|^dg$/i, function (message) {
                                                                                     var rand = Math.random()*100;
                                                                                     var prob = rarity*10;
                                                                                     if (rand > prob) {
-                                                                                        var charges = rarity*2;
-                                                                                        addDungeonEnergy(player_id, charges);
-                                                                                        
-                                                                                        bot.sendMessage(message.chat.id, "Il brucaliffo si ritiene soddisfatto del tuo dono e ti regala " + charges + " Cariche Esplorative!", dNext);
+                                                                                        if (dungeonRush == 0) {
+                                                                                            var charges = rarity*2;
+                                                                                            addDungeonEnergy(player_id, charges);
+                                                                                            bot.sendMessage(message.chat.id, "Il brucaliffo si ritiene soddisfatto del tuo dono e ti regala " + charges + " Cariche Esplorative!", dNext);
+                                                                                        } else {
+                                                                                            connection.query("UPDATE player SET life = total_life WHERE id = " + player_id, function(err, rows, fields) {
+                                                                                                if (err) throw err;
+                                                                                                bot.sendMessage(message.chat.id, "Il brucaliffo si ritiene soddisfatto del tuo dono e ti ricarica la vita al massimo!", dNext);
+                                                                                            });
+                                                                                        }
                                                                                     } else {
-                                                                                        if (rand < 10) {
+                                                                                        if ((rand < 10) && (dungeonRush == 0)) {
                                                                                             var charges = 5;
                                                                                             reduceDungeonEnergy(player_id, charges);
                                                                                             bot.sendMessage(message.chat.id, "Il brucaliffo non si ritiene soddisfatto del tuo dono al punto che si prende anche " + charges + " delle tue Cariche Esplorative...", dNext);
@@ -14939,6 +14945,11 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																		}
 																		if (answer.text.indexOf("Attacca") == -1)
 																			return;
+                                                                        
+                                                                        var player = connection_sync.query("SELECT life, total_life FROM player WHERE id = " + player_id);
+                                                                        
+                                                                        player_life = player[0].life;
+                                                                        player_total_life = player[0].total_life;
 
 																		if (magic != 0) {
 																			var shieldRand = Math.random()*100;
@@ -37071,7 +37082,7 @@ bot.onText(/emporio/i, function (message) {
 								}
 							};
 
-							bot.sendMessage(message.chat.id, "Seleziona l'oggetto da acquistare.", kb);
+							bot.sendMessage(message.chat.id, "*Emporio*\n💰 " + formatNumber(money) + "\n\n_Seleziona l'oggetto da acquistare..._", kb);
 						});
 					} else if (answer.text.toLowerCase() == "vendi") {
 						var kb = {
@@ -57164,6 +57175,8 @@ function setFinishedTeamMission(element, index, array) {
                                     qnt += qnt*0.1;
                                 else if (player_qnt == 5)
                                     qnt += qnt*0.2;
+                                
+                                qnt = Math.ceil(qnt);
 
                                 // la query viene eseguita qnt volte
 
