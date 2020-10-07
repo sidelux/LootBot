@@ -8957,7 +8957,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 		}
 	};
 
-	connection.query('SELECT account_id, id, life, total_life, ability, money, rank, reborn, exp, class, dungeon_skip, dungeon_count, boost_id, boost_mission, gender, holiday, dungeon_time, dungeon_energy FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, id, life, total_life, ability, money, rank, reborn, exp, class, dungeon_skip, dungeon_count, boost_id, boost_mission, gender, holiday, dungeon_time, dungeon_energy, paralyzed FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -8984,6 +8984,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 		var boost_id = rows[0].boost_id;
 		var boost_mission = rows[0].boost_mission;
 		var dungeon_energy = rows[0].dungeon_energy;
+        var player_paralyzed = rows[0].paralyzed;
 
 		var gender_text = "a";
 		var gender_text_g = "esploratrice";
@@ -9887,7 +9888,10 @@ bot.onText(/dungeon|^dg$/i, function (message) {
                                         heart = "🖤";
                                     else if (player_life/player_total_life*100 < 60)
                                         heart = "🧡";
-                                    text += heart + " *" + formatNumber(player_life) + "* hp\n";
+                                    var paralyzed = "";
+                                    if (player_paralyzed == 1)
+                                        paralyzed = " ⚡️";
+                                    text += heart + " *" + formatNumber(player_life) + "* hp" + paralyzed + "\n";
 
 									if (room_id == 1)
 										text += "Decidi di addentrarti nel dungeon. Nell'oscurità intravedi una strada e vari corridoi che si perdono a vista d'occhio. Quale direzione scegli di intraprendere?";
@@ -46763,8 +46767,6 @@ function getInfo(message, player, myhouse_id) {
 																								weapon2_crit += 4;
 																							if ((class_id == 6) && (reborn == 6))
 																								weapon3_crit += 4;
-																							if ((class_id == 8) && (reborn == 6))
-																								weapon3_crit += 8;
 																							if ((class_id == 8) && (reborn == 3))
 																								weapon3_crit += 2;
 																							if ((class_id == 8) && (reborn >= 4))
@@ -57553,7 +57555,7 @@ bot.onText(/^\/incarico/, function (message, match) {
 			var mission_time_end = new Date(rows[0].mission_time_end);
 			var short_date = addZero(mission_time_end.getHours()) + ":" + addZero(mission_time_end.getMinutes());
 			var mission_time_limit = new Date(rows[0].mission_time_limit);
-			var short_date_limit = addZero(mission_time_limit.getHours()) + ":" + addZero(mission_time_limit.getMinutes());
+			var short_date_limit = addZero(mission_time_limit.getHours()) + ":" + addZero(mission_time_limit.getMinutes()) + " del " + addZero(mission_time_limit.getDate()) + "/" + addZero(mission_time_limit.getMonth()+1) + "/" + addZero(mission_time_limit.getFullYear());
 			var new_part_id = part_id+1;
 
 			if (rows[0].wait == 0) {
