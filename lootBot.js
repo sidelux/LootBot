@@ -13431,7 +13431,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																	if (mana > 0) {
 																		if (rand < 40) {
-																			text = "Scegli di affrontare l'energia magica, ma con il tuo scudo riesci a proteggerti ed ad assorbire " + qnt + " Mana " + name + "!\nSuperata la prova prosegui il dungeon sospirando...";
+																			text = "Scegli di affrontare l'energia magica, con il tuo scudo riesci a proteggerti ed ad assorbire " + qnt + " Mana " + name + "!\nSuperata la prova prosegui il dungeon sospirando...";
 																		} else {
 																			text = "Scegli di affrontare l'energia magica, il tuo scudo non riesce a proteggerti e vieni investito dall'ondata, ma riesci comunque ad assorbire " + qnt + " Mana " + name + "!\nSuperata la prova prosegui il dungeon sospirando...";
 																			connection.query('UPDATE player SET life = ROUND(life-(life*' + life + ')) WHERE id = ' + player_id, function (err, rows, fields) {
@@ -42713,7 +42713,7 @@ bot.onText(/necro del destino/i, function (message) {
 																text += "> Re delle U (IN)";
 															}
 
-															if (((num == 1) || (num == 4)) && (done == 1)) {
+															if (((num == 1) || (num == 4) || (num == 9)) && (done == 1)) {
 																connection.query('UPDATE necro_game SET step = ' + last_step + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});

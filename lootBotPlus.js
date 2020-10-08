@@ -7798,53 +7798,43 @@ bot.onText(/^\/statoincarichi/, function (message, match) {
 			}
 			var team_id = rows[0].team_id;
 
-			connection.query('SELECT role FROM team_player WHERE team_id = ' + team_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
-				if (err) throw err;
+            connection.query('SELECT T.parts, T.title, T.duration, M.party_id, M.part_id, M.mission_time_end, M.mission_time_limit, M.wait FROM mission_team_list T, mission_team_party M WHERE T.ready = 1 AND T.id = M.assigned_to AND M.team_id = ' + team_id + ' ORDER BY T.progress_num ASC, T.duration ASC', function (err, rows, fields) {
+                if (err) throw err;
 
-				if (rows[0].role == 0){
-					bot.sendMessage(message.chat.id, "Solo l'amministratore o il vice possono utilizzare questa funzione");
-					return;
-				}
+                var text = "*Incarichi in corso:*\n\n";
+                if (Object.keys(rows).length > 0){
+                    var time_end;
+                    var time_next;
+                    for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+                        time_end = "";
+                        if (rows[i].mission_time_end != null){
+                            var d = new Date(rows[i].mission_time_end);
+                            var now = new Date();
+                            var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+                            var wait_text = "Prossima scelta alle";
+                            if (d.getTime() < now.getTime())
+                                wait_text = "Scelta in attesa dalle";
+                            var wait_icon = "";
+                            if (rows[i].wait == 1)
+                                wait_icon = " ❗️";
+                            time_end = wait_text + " " + long_date + wait_icon + "\n";
+                        }
+                        time_next = "";
+                        if (rows[i].mission_time_limit != null){
+                            var d = new Date(rows[i].mission_time_limit);
+                            var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+                            time_next = "Scadenza alle " + long_date + "\n";
+                        }
+                        text += "> Party " + rows[i].party_id + "\n" + 
+                            rows[i].title + " - " + rows[i].part_id + "/" + rows[i].parts + "\n" +
+                            time_end +
+                            time_next +
+                            "\n";
+                    }
+                } else
+                    text = "Nessun incarico in corso";
 
-				connection.query('SELECT T.parts, T.title, T.duration, M.party_id, M.part_id, M.mission_time_end, M.mission_time_limit, M.wait FROM mission_team_list T, mission_team_party M WHERE T.ready = 1 AND T.id = M.assigned_to AND M.team_id = ' + team_id + ' ORDER BY T.progress_num ASC, T.duration ASC', function (err, rows, fields) {
-					if (err) throw err;
-
-					var text = "*Incarichi in corso:*\n\n";
-					if (Object.keys(rows).length > 0){
-						var time_end;
-						var time_next;
-						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-							time_end = "";
-							if (rows[i].mission_time_end != null){
-								var d = new Date(rows[i].mission_time_end);
-								var now = new Date();
-								var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-								var wait_text = "Prossima scelta alle";
-								if (d.getTime() < now.getTime())
-									wait_text = "Scelta in attesa dalle";
-								var wait_icon = "";
-								if (rows[i].wait == 1)
-									wait_icon = " ❗️";
-								time_end = wait_text + " " + long_date + wait_icon + "\n";
-							}
-							time_next = "";
-							if (rows[i].mission_time_limit != null){
-								var d = new Date(rows[i].mission_time_limit);
-								var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-								time_next = "Scadenza alle " + long_date + "\n";
-							}
-							text += "> Party " + rows[i].party_id + "\n" + 
-								rows[i].title + " - " + rows[i].part_id + "/" + rows[i].parts + "\n" +
-								time_end +
-								time_next +
-								"\n";
-						}
-					} else
-						text = "Nessun incarico in corso";
-
-
-					bot.sendMessage(message.chat.id, text, mark);
-				});
+                bot.sendMessage(message.chat.id, text, mark);
 			});
 		});
 	});
