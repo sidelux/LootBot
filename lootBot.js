@@ -9476,11 +9476,6 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 						bot.sendMessage(message.chat.id, "Puoi tornare nei dungeon alle " + short_date + "!", dVarco);
 						return;
 					}
-					
-					if ((dungeon_energy < 10) && (dungeonRush == 0)) {
-						bot.sendMessage(message.chat.id, "Non hai abbastanza energia per proseguire il dungeon, ti servono 10 Cariche Esplorative!", dBack);
-						return;
-					}
 
 					var dungeon_id = parseInt(rows[0].dungeon_id);
 					var room_id = parseInt(rows[0].room_id);
@@ -10046,6 +10041,16 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 										answerCallbacks[message.chat.id] = function (answer) {
 											if (answer.text == "Torna al menu")
 												return;
+                                            if ((answer.text == "⬆️") || (answer.text.toLowerCase() == "su") || 
+                                                (answer.text == "⬅️") || (answer.text.toLowerCase() == "sinistra") || 
+                                                (answer.text.toLowerCase() == "sx") || (answer.text == "➡️") || 
+                                                (answer.text.toLowerCase() == "destra") || (answer.text.toLowerCase() == "dx")) {
+                                                var dungeon = connection_sync.query("SELECT dungeon_energy FROM player WHERE id = " + player_id);
+                                                if ((dungeon[0].dungeon_energy < 10) && (dungeonRush == 0)) {
+                                                    bot.sendMessage(message.chat.id, "Non hai abbastanza energia per proseguire il dungeon, ti servono 10 Cariche Esplorative!", dBack);
+                                                    return;
+                                                }
+                                            }
 											if ((answer.text == "⬆️") || (answer.text.toLowerCase() == "su")) {
 												dir = dir_top;
 												selected_dir = "top";
@@ -14192,13 +14197,23 @@ bot.onText(/usa varco/i, function (message) {
 		}
 
 		var d = new Date(dungeon_time);
+        var now = new Date();
+        var diff = Math.round(((now - d) / 1000) / 60); //minuti
+        
+        var needs = 1;
+        var needs_text = "Servirà *un* Varco Temporale per annullare l'attesa.\n";
+        if (diff > 120) {
+            needs = 2;
+            needs_text = "Serviranno *due* Varchi Temporali per annullare l'attesa.\n";
+        }
+        
 		var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
 		
 		var extra = "";
 		if (crazyMode == 0)
 			extra = ", puoi utilizzarli ancora " + (3-rows[0].dungeon_skip) + " volte prima che la struttura spazio-temporale si laceri";
 
-		bot.sendMessage(message.chat.id, "Puoi tornare nei dungeon alle " + short_date + "\nVuoi utilizzare un Varco Temporale per annullare l'attesa?\nNe possiedi " + getItemCnt(player_id, 645) + extra, dVarco).then(function () {
+		bot.sendMessage(message.chat.id, "Puoi tornare nei dungeon alle " + short_date + "\n" + needs_text + "Ne possiedi " + getItemCnt(player_id, 645) + extra, dVarco).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				if (answer.text.toLowerCase() == "si") {
 
@@ -14209,12 +14224,12 @@ bot.onText(/usa varco/i, function (message) {
 						}
 					}
 
-					if (getItemCnt(player_id, 645) == 0) {
-						bot.sendMessage(message.chat.id, "Non possiedi un Varco Temporale", back);
+					if (getItemCnt(player_id, 645) < needs) {
+						bot.sendMessage(message.chat.id, "Non possiedi abbastanza Varcchi Temporali", back);
 						return;
 					}
 
-					delItem(player_id, 645, 1);
+					delItem(player_id, 645, needs);
 					connection.query('UPDATE player SET dungeon_time = NULL, dungeon_skip = dungeon_skip+1 WHERE id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Entri in un varco che ti permette di avanzare nel tempo e farti entrare nuovamente nel dungeon!", dBack);
