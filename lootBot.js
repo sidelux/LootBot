@@ -9884,7 +9884,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
                                     else if (player_life/player_total_life*100 < 60)
                                         heart = "🧡";
                                     var paralyzed = "";
-                                    if (player_paralyzed == 1)
+                                    if (player_paralyzed > 0)
                                         paralyzed = " ⚡️";
                                     text += heart + " *" + formatNumber(player_life) + "* hp" + paralyzed + "\n";
 
@@ -12232,6 +12232,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															
 															return;
 														} else if (answer.text == "Termina Meditazione") {
+                                                            if (dungeon_energy < 10) {
+																bot.sendMessage(message.chat.id, "Non hai abbastanza Cariche Esplorative, ne servono 10 per terminare la meditazione", dNext);
+																return;
+															}
+                                                            
 															if ((param == null) || (param == 0)) {
 																bot.sendMessage(message.chat.id, "Affamato d’azione, decidi di non perdere tempo e prosegui senza esitare verso la prossima stanza...", dNext);
 															} else {
@@ -12252,11 +12257,6 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	addItem(player_id, 646, param);
 																	bot.sendMessage(message.chat.id, "Per la meditazione prolungata, il saggio della montagna ti premia con " + param + "x Polvere!", dNext);
 																}
-															}
-                                                            
-                                                            if (dungeon_energy < 10) {
-																bot.sendMessage(message.chat.id, "Non hai abbastanza Cariche Esplorative, ne servono 10 per terminare la meditazione", dNext);
-																return;
 															}
 
 															endDungeonRoom(player_id, boost_id, boost_mission);
@@ -13639,6 +13639,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															
 															return;
 														} else if (answer.text == "Termina Concentrazione") {
+                                                            if (dungeon_energy < 10) {
+																bot.sendMessage(message.chat.id, "Non hai abbastanza Cariche Esplorative, ne servono 10 per terminare la concentrazione", dNext);
+																return;
+															}
+                                                            
 															if ((param == null) || (param == 0)) {
 																bot.sendMessage(message.chat.id, "Ti senti talmente pronto da non necessitare di ulteriore concentrazione, prosegui così alla prossima stanza...", dNext);
 															} else {
@@ -13654,11 +13659,6 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	bot.sendMessage(message.chat.id, "Per la concentrazione prolungata ed una particolare dose di fortuna, il saggio dello Spirito Libero ti premia con " + param + " exp!", dNext);
 																	setExp(player_id, param);
 																}
-															}
-                                                            
-                                                            if (dungeon_energy < 10) {
-																bot.sendMessage(message.chat.id, "Non hai abbastanza Cariche Esplorative, ne servono 10 per terminare la concentrazione", dNext);
-																return;
 															}
 
 															endDungeonRoom(player_id, boost_id, boost_mission);
