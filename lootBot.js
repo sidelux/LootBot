@@ -9877,7 +9877,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 										dungeon_energy_text = "∞";
 										dungeon_energy = 999;
 									}
-									text = "🛡 " + room_id + "/" + room_num + " ⏱ " + time_rem + " 🔋 " + dungeon_energy_text + "/" + max_dungeon_energy + "\n";
+									text = "🛡 " + room_id + "/" + room_num + "\n⏱ " + time_rem + "\n🔋 " + dungeon_energy_text + "/" + max_dungeon_energy + "\n";
                                     var heart = "❤️";
                                     if (player_life/player_total_life*100 < 15)
                                         heart = "🖤";
@@ -12253,6 +12253,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	bot.sendMessage(message.chat.id, "Per la meditazione prolungata, il saggio della montagna ti premia con " + param + "x Polvere!", dNext);
 																}
 															}
+                                                            
+                                                            if (dungeon_energy < 10) {
+																bot.sendMessage(message.chat.id, "Non hai abbastanza Cariche Esplorative, ne servono 10 per terminare la meditazione", dNext);
+																return;
+															}
 
 															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET param = NULL, room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -13649,6 +13654,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	bot.sendMessage(message.chat.id, "Per la concentrazione prolungata ed una particolare dose di fortuna, il saggio dello Spirito Libero ti premia con " + param + " exp!", dNext);
 																	setExp(player_id, param);
 																}
+															}
+                                                            
+                                                            if (dungeon_energy < 10) {
+																bot.sendMessage(message.chat.id, "Non hai abbastanza Cariche Esplorative, ne servono 10 per terminare la concentrazione", dNext);
+																return;
 															}
 
 															endDungeonRoom(player_id, boost_id, boost_mission);
@@ -41115,7 +41125,7 @@ bot.onText(/evento della luna/i, function (message) {
 			"> La luce della Luna Dorata dona ai viaggiatori di *Dungeon* la possibilità di raddoppiare il loro Rango\n" +
 			"> Il *Contrabbandiere* ama molto la Luce della Luna Dorata e questo evento raro, in vista dell’aumento degli avventurieri, lo porta a valutare, in alcuni momenti, le sue offerte al doppio del prezzo\n" +
 			"> I mandanti degli Incarichi, se si sentono ispirati dalla Luna Dorata, possono raddoppiare la ricompensa di Punti Anima al suo completamento\n" +
-			"> Inoltre solo durante il weekend della luna, le Monete Lunari ottenute grazie alle donazioni sono raddoppiate e quelle ricchieste per fare il giro della Ruota sono dimezzate!\n" +
+			"> Inoltre solo durante il weekend della luna, le Monete Lunari ottenute grazie alle donazioni sono raddoppiate e quelle richieste per fare il giro della Ruota sono dimezzate!\n" +
 			"> *Ruota* della Luna Dorata\n" +
 			"\n*Vuoi accedere alla Ruota?*";
 	} else if (mode == 2) {
@@ -47137,8 +47147,9 @@ function mainMenu(message) {
 		if ((tap_end_time != null) && (tap_end_time >= now)) {
 			if (getItemCnt(player_id, 797) > 0) {
 				var diff = Math.round((tap_end_time - now) / 1000 / 60 / 24); //in ore
+                diff -= 2;  // per timezone
 				if (diff < 24)
-					msgtext += "\n🌍 Tappi in scadenza tra " + diff + " ore!";
+					msgtext += "\n❗️ Tappi in scadenza tra " + diff + " ore!";
 			}
 		}
 
