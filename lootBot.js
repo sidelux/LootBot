@@ -8691,6 +8691,14 @@ bot.onText(/^\/mappatura$|^\/mappaturasym$/i, function (message) {
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
+        
+        var kbBack = {
+            parse_mode: "HTML",
+            reply_markup: {
+                resize_keyboard: true,
+                keyboard: [["Torna al dungeon"], ["Torna al menu"]]
+            }
+        };
 
 		var emojiMode = 0;
 		if (message.text == "/mappaturasym")
@@ -8813,9 +8821,9 @@ bot.onText(/^\/mappatura$|^\/mappaturasym$/i, function (message) {
 							}
 							
 							if ((text + messages).length >= 4000)
-								bot.sendMessage(message.chat.id, text + "\nUsa il comando /legenda per consultare la legenda dei simboli", html);
+								bot.sendMessage(message.chat.id, text + "\nUsa il comando /legenda per consultare la legenda dei simboli", kbBack);
 							else
-								bot.sendMessage(message.chat.id, text + messages + "\nUsa il comando /legenda per consultare la legenda dei simboli", html);
+								bot.sendMessage(message.chat.id, text + messages + "\nUsa il comando /legenda per consultare la legenda dei simboli", kbBack);
 						});
 					});
 				});
@@ -14062,7 +14070,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																}
 															});
 														} else if (answer.text == "Ignora") {
-															bot.sendMessage(message.chat.id, "Esci dal negozio...", dNext);
+															bot.sendMessage(message.chat.id, "Magicamente si apre un varco nella nube di fumo. Il brucaliffo ti indica con un cenno che quella è l'uscita. Decidi di seguire la sua indicazione e di proseguire il dungeon...", dNext);
 
 															endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -15126,9 +15134,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																				setAchievement(player_id, 93, 1);
 																				danno = danno * (magicPow / 30);
 																				if (magicDouble == 1)
-																					magic_txt = " con un incantesimo (x2)";
+																					magic_txt = " con *" + magicToName(3) + "* (x2)";
 																				else
-																					magic_txt = " con un incantesimo";
+																					magic_txt = " con *" + magicToName(3) + "*";
 																				magic_kill = " con " + magicToName(3);
 																			}
 
@@ -15523,9 +15531,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																									refill = "Inoltre la tua salute è stata ricaricata fino al 50%!";
 																								}
 
-																								var plur = "o";
-																								if (rankPoint > 1)
-																									plur = "i";
+																								var plur = "i";
+																								if (rankPoint == 1)
+																									plur = "o";
 
 																								connection.query('SELECT min_rank FROM dungeon_list WHERE main = 1 AND min_rank > ' + dungeon_min_rank + ' ORDER BY min_rank ASC LIMIT 1', function (err, rows, fields) {
 																									if (err) throw err;
@@ -15540,8 +15548,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																										var getrank1 = 0;
 
 																										if (pass_id != 0) {
-																											var getrank2 = 0;																											
-																											if ((dungeon_min_rank <= rank) && (min_rank_succ >= rank)) {	// stessa fascia di rango
+																											var getrank2 = 0;
+                                                                                                            
+                                                                                                            if ((dungeon_min_rank <= rank) && (min_rank_succ >= rank)) {	// stessa fascia di rango
 																												getrank1 = 1;
 																												getrank2 = 1;
 																											} else if (rank - rows[0].rank >= 150)
