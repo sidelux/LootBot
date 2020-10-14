@@ -14063,6 +14063,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
                                                                                             bot.sendMessage(message.chat.id, "Il brucaliffo non si ritiene soddisfatto del tuo dono e se ne va con un'aria affranta...", dNext);
                                                                                         }
                                                                                     }
+                                                                                    
+                                                                                    endDungeonRoom(player_id, boost_id, boost_mission);
+                                                                                    connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+                                                                                        if (err) throw err;
+                                                                                    });
                                                                                 }
                                                                             }
                                                                         });
@@ -15154,6 +15159,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																			var heal = Math.round(((magicPow/350)*Math.abs(damage))*10);
 																			if (magic == 1)
 																				danno += heal;
+                                                                            if (heal+player_life > player_total_life)
+                                                                                heal = player_total_life-player_life;
 
 																			if (cursed == 1)	// dopo altrimenti la cura è più bassa
 																				damage = damage*2;
@@ -26924,9 +26931,9 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																					if (magic_rand > rand) {
 																						epic_var++;
 																						var heal = Math.round(mob_total_life*(players_num/400));
+                                                                                        if (heal+mob_life > mob_total_life)
+                                                                                            heal = mob_total_life-mob_life;
 																						mob_life += heal;
-																						if (mob_life > mob_total_life)
-																							mob_life = mob_total_life;
 																						player_text += "\nIl nemico lancia <b>" + magicToName(1) + "</b> e recupera " + formatNumber(heal) + " hp";
 																						setAchievement(playerid, 66, 1);
 																						if (((weapon2_id == 689) || (weapon2_enchant == 1)) || (weapon2_id == 790)) {
