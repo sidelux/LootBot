@@ -343,6 +343,8 @@ callNTimes(300000, function () { //Ogni 5 minuti
 	if ((d.getHours() > 9) && (d.getHours() < 22)) {
 		checkMana();
 		checkExtraDust();
+        if (dungeonRush == 0)
+            checkExtraCharge();
 	}
 	checkDragonBoost();
 });
@@ -10742,8 +10744,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													var dmg = Math.round(Math.random() * (player_life / 10 * 2) + 1);
 													trap = 1;
 												} else if (rand < 90) {
-													bot.sendMessage(message.chat.id, "Hai schivato con destrezza una trappola piazzata sul muro della stanza, ottieni 5 exp!", dNext);
-													setExp(player_id, 5);
+													bot.sendMessage(message.chat.id, "Hai schivato con destrezza una trappola piazzata sul muro della stanza, ottieni 3 exp!", dNext);
+													setExp(player_id, 3);
 												} else {
 													var dmg = Math.round(Math.random() * (player_life / 3 * 2) + 1);
 													trap = 1;
@@ -12501,7 +12503,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																addItem(player_id, 646, qnt*5);
 																text = "qualcosa che ti provoca un prurito fastidioso...";
 															} else if (rand < 199) {
-																setExp(player_id, 10, qnt);
+																setExp(player_id, 5, qnt);
 																text = "qualcosa che ti fa sentire un po' più esperto di prima...";
 															} else {
 																addItem(player_id, 200, qnt);
@@ -14007,7 +14009,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	if (answer.text == "Torna al menu")
 																		return;
                                                                     
-                                                                    connection.query('SELECT I.id, I.rarity, R.id As rarity FROM item I, rarity R WHERE R.shortname = I.rarity AND I.name = "' + answer.text + '"', function (err, rows, fields) {
+                                                                    connection.query('SELECT I.id, I.rarity, R.id As rarity FROM item I, rarity R WHERE R.shortname = I.rarity AND I.name = "' + answer.text + '" AND I.rarity IN ("C", "NC", "R", "UR", "L", "E")', function (err, rows, fields) {
                                                                         if (err) throw err;
                                                                         
                                                                         if (Object.keys(rows).length == 0) {
@@ -14045,7 +14047,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
                                                                                     var prob = rarity*10;
                                                                                     if (rand > prob) {
                                                                                         if (dungeonRush == 0) {
-                                                                                            var charges = rarity*2;
+                                                                                            var charges = rarity*3;
                                                                                             addDungeonEnergy(player_id, charges);
                                                                                             bot.sendMessage(message.chat.id, "Il brucaliffo si ritiene soddisfatto del tuo dono e ti regala " + charges + " Cariche Esplorative!", dNext);
                                                                                         } else {
@@ -31649,6 +31651,69 @@ bot.onText(/^spolvera/i, function (message) {
 	});
 });
 
+bot.onText(/^ricarica$/i, function (message) {
+	connection.query('SELECT id, class, reborn, holiday, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		if (Object.keys(rows).length == 0)
+			return;
+
+		var banReason = isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+		if (rows[0].holiday == 1) {
+			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back);
+			return;
+		}
+
+		var player_id = rows[0].id;
+
+		connection.query('SELECT extra_charge_time FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Devi essere in un dungeon per utilizzare questa funzione!", back);
+				return;
+			}
+
+			if (rows[0].extra_charge_time == null) {
+				bot.sendMessage(message.chat.id, "Non è disponibile nessun bonus di ricarica!", back);
+				return;
+			}
+
+			var now = new Date();
+			var end = new Date(rows[0].extra_charge_time);
+
+			if (now.getTime() > end.getTime()) {
+				connection.query('UPDATE dungeon_status SET extra_charge_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+					bot.sendMessage(message.chat.id, "Il bonus non è più disponibile, sei arrivato tardi!", back);
+				});
+				return;
+			}
+
+			var qnt = Math.round(getRandomArbitrary(5, 10));
+
+			bot.sendMessage(message.chat.id, "Raccogliere il bonus delle Cariche Esplorative?", yesno).then(function () {
+				answerCallbacks[message.chat.id] = function (answer) {
+					if (answer.text.toLowerCase() == "si") {
+						connection.query('UPDATE dungeon_status SET extra_charge_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+							if (err) throw err;
+                            connection.query('UPDATE player SET dungeon_energy = dungeon_energy+' + qnt + ' WHERE id = ' + player_id, function (err, rows, fields) {
+                                if (err) throw err;
+
+                                bot.sendMessage(message.chat.id, "Hai sfruttato il bonus ricarica ed ottenuto *" + qnt + "* Cariche Esplorative!", back);
+                            });
+						});
+					};
+				};
+			});
+		});
+	});
+});
+
 bot.onText(/Miniere di Mana|Raccolta|^miniera$|^miniere$/i, function (message) {
 
 	if (message.from.id != 20471035) {
@@ -33179,7 +33244,7 @@ bot.onText(/Il Tesoro di Arthur|Evento/i, function (message) {
 										if (err) throw err;
 									});
 									setExp(player_id, end_exp);
-									connection.query('SELECT COUNT(*) As num FROM `mission_event_status` WHERE event_end = 1', function (err, rows, fields) {
+									connection.query('SELECT COUNT(*) As num FROM mission_event_status WHERE event_end = 1', function (err, rows, fields) {
 										if (err) throw err;
 										bot.sendMessage(message.chat.id, "Evento completato!\n*" + text + "*\nUn enorme grazie per aver partecipato!\nSei l'utente numero " + rows[0].num + " ad aver completato l'evento.\nSi ringrazia @AlexCortinovis per aver ideato la storia e mi raccomando, se avete idee proponetele e magari la prossima storia sarà ideata da voi!\nCi vediamo al prossimo!", back);
 									});
@@ -56496,6 +56561,46 @@ function setMana(element, index, array) {
 	});
 }
 
+function checkExtraCharge() {
+	connection.query('SELECT player_id, chat_id FROM dungeon_status D, player P WHERE D.player_id = P.id AND extra_charge_time IS NULL AND extra_charge_cnt < 3', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length == 1)
+				console.log(getNow("it") + "\x1b[32m 1 evento cariche lanciato\x1b[0m");
+			else
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " eventi cariche lanciati\x1b[0m");
+			rows.forEach(setExtraCharge);
+		}
+	});
+}
+
+function setExtraCharge(element, index, array) {
+	var rand = Math.random()*100;
+	if (rand > 10)
+		return;
+	var player_id = element.player_id;
+	var chat_id = element.chat_id;
+
+	var d = new Date();
+	d.setMinutes(d.getMinutes() + 5);
+	var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+	var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
+
+	connection.query('UPDATE dungeon_status SET extra_charge_cnt = extra_charge_cnt+1, extra_charge_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+
+		var kb = {
+			parse_mode: "HTML",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Ricarica"], ["Torna al menu"]]
+			}
+		};
+
+		bot.sendMessage(chat_id, "Durante l'esplorazione del Dungeon trovi una piccola boccetta con al suo interno alcune piccole Cariche Esplorative!\nHai tempo fino alle " + short_date + " prima che le Cariche perdano la loro efficacia, ricarica!", kb);
+	});
+}
+
 function checkExtraDust() {
 	connection.query('SELECT player_id, chat_id FROM event_dust_status E, player P WHERE E.player_id = P.id AND extracting = 1 AND `generated` < max_qnt-10 AND boost_time IS NULL AND boost_cnt < 3', function (err, rows, fields) {
 		if (err) throw err;
@@ -58554,8 +58659,22 @@ function setFinishedLobbyEnd(element, index, array) {
 								trophies_count = trophies_actual;
 							trophies_query = "-" + trophies_count;
 						}
-						line = pos + "° " + rows[i].nickname + " (" + kill_text + trophies_query + " 🏆" + bonus + icons + ")\n";
-						// console.log(line);
+                        
+                        var exp = 0;
+                        if ((pos == 1) || (pos == 2))
+                            exp = 1;
+                        else if (pos == 3)
+                            exp = 2;
+                        else if (pos == 4)
+                            exp = 3;
+                        else
+                            exp = 5;
+                        if (rows[i].penality_restrict == 1)
+                            exp = 0;
+                        var exp_text = exp + " exp";
+                        setExp(rows[i].id, exp);
+                        
+						line = pos + "° " + rows[i].nickname + " (" + kill_text + trophies_query + " 🏆, " + exp_text + bonus + icons + ")\n";
 						list += line;
 
 						// aggiorna la history se c'erano due posizioni uguali per combattimento
