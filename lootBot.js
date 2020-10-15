@@ -9914,6 +9914,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 									}
 
 									if (Object.keys(rows).length == 0) {
+                                        var dungeon = connection_sync.query("SELECT dungeon_energy FROM player WHERE id = " + player_id);
+                                        if ((dungeon[0].dungeon_energy < 10) && (dungeonRush == 0)) {
+                                            bot.sendMessage(message.chat.id, "Non hai abbastanza energia per accedere alla stanza finale, ti servono 10 Cariche Esplorative!", dBack);
+                                            return;
+                                        }
 										bot.sendMessage(message.chat.id, "Sei arrivato alla stanza finale! Per uscire devi sconfiggere la Bestia del Dungeon.");
 
 										var monsterLev = (parseInt(room_num) + 10);
@@ -31652,7 +31657,7 @@ bot.onText(/^spolvera/i, function (message) {
 });
 
 bot.onText(/^ricarica$/i, function (message) {
-	connection.query('SELECT id, class, reborn, holiday, account_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, class, reborn, holiday, account_id, dungeon_energy FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0)
@@ -31670,6 +31675,7 @@ bot.onText(/^ricarica$/i, function (message) {
 		}
 
 		var player_id = rows[0].id;
+		var dungeon_energy = rows[0].dungeon_energy;
 
 		connection.query('SELECT extra_charge_time FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -31701,11 +31707,10 @@ bot.onText(/^ricarica$/i, function (message) {
 					if (answer.text.toLowerCase() == "si") {
 						connection.query('UPDATE dungeon_status SET extra_charge_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
-                            connection.query('UPDATE player SET dungeon_energy = dungeon_energy+' + qnt + ' WHERE id = ' + player_id, function (err, rows, fields) {
-                                if (err) throw err;
-
-                                bot.sendMessage(message.chat.id, "Hai sfruttato il bonus ricarica ed ottenuto *" + qnt + "* Cariche Esplorative!", back);
-                            });
+                            if (qnt+dungeon_energy > max_dungeon_energy)
+                                qnt = max_dungeon_energy-dungeon_energy;
+                            addDungeonEnergy(player_id, qnt);
+                            bot.sendMessage(message.chat.id, "Hai sfruttato il bonus ricarica ed ottenuto *" + qnt + "* Cariche Esplorative!", back);
 						});
 					};
 				};
@@ -58669,7 +58674,7 @@ function setFinishedLobbyEnd(element, index, array) {
                             exp = 3;
                         else
                             exp = 5;
-                        if (rows[i].penality_restrict == 1)
+                        if ((rows[i].penality_escape == 1) || (rows[i].penality_restrict == 1) || (lobby_training == 1))
                             exp = 0;
                         var exp_text = exp + " exp";
                         setExp(rows[i].id, exp);

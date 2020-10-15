@@ -1314,6 +1314,8 @@ CREATE TABLE `dungeon_status` (
   `notified` tinyint(1) NOT NULL DEFAULT '0',
   `pass` int(11) NOT NULL DEFAULT '0',
   `unlimited` tinyint(1) NOT NULL DEFAULT '0',
+  `extra_charge_cnt` int(11) NOT NULL DEFAULT '0',
+  `extra_charge_time` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `PLAYERID` (`player_id`),
   KEY `dungeon_id` (`dungeon_id`),
