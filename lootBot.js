@@ -9086,6 +9086,22 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 						var rank = getRankName(player_rank_b, 0);
 
+                        if (dungeon_time != null) {
+                            var d = new Date(dungeon_time);
+                            var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
+
+                            var dVarco = {
+                                parse_mode: "Markdown",
+                                reply_markup: {
+                                    resize_keyboard: true,
+                                    keyboard: [["Usa Varco Temporale"], ["Prosegui il dungeon"], ["Torna al menu"]]
+                                }
+                            };
+
+                            bot.sendMessage(message.chat.id, "Puoi tornare nei dungeon alle " + short_date + "!", dVarco);
+                            return;
+                        }
+
 						bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella *Sala di Ritrovo degli Esploratori*\n\nQui puoi accedere ad un dungeon già esistente, crearlo ed esplorarlo fino alla fine.\nIl tuo rango attuale è _" + rank + "_ (" + player_rank_b + ")\nSeleziona il dungeon da esplorare" + nightText + "\n\nPuoi usare anche i comandi 'su', 'destra', 'sinistra' o ancora 'sx' e 'dx' per muoverti nel dungeon.", dSelect).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
 
@@ -9121,22 +9137,6 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 											}
 										}
 									});
-									return;
-								}
-
-								if (dungeon_time != null) {
-									var d = new Date(dungeon_time);
-									var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
-
-									var dVarco = {
-										parse_mode: "Markdown",
-										reply_markup: {
-											resize_keyboard: true,
-											keyboard: [["Usa Varco Temporale"], ["Prosegui il dungeon"], ["Torna al menu"]]
-										}
-									};
-
-									bot.sendMessage(message.chat.id, "Puoi tornare nei dungeon alle " + short_date + "!", dVarco);
 									return;
 								}
 
@@ -13120,7 +13120,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																bot.sendMessage(message.chat.id, "Non fai che un passo, una voce mite ma ferma ti paralizza:\n«Io sono l'Alchimista dell'Ovest e ti chiedo, giovane " + gender_text_g + ": scambieresti il tuo *" + item1_name + "*" + item_poss + " per *" + item2_name + "*?»", dOptions).then(function () {
 																	answerCallbacks[message.chat.id] = function (answer) {
-																		if (answer.text == "Si") {
+																		if (answer.text.toLowerCase() == "si") {
 
 																			if (getItemCnt(player_id, item1) == 0) {
 																				bot.sendMessage(message.chat.id, "Non possiedi l'oggetto richiesto", dBack);
@@ -13367,7 +13367,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 														bot.sendMessage(message.chat.id, "Entri in una stanza completamente luccicante, quasi accecante, un curioso tipo barbuto si presenta come il Gioielliere, offre " + qnt + "x 💎 in cambio di un particolare oggetto, in questo caso: *" + item1_name + "*" + item_poss + ", accetti l'offerta?", dOptions).then(function () {
 															answerCallbacks[message.chat.id] = function (answer) {
-																if (answer.text == "Si") {
+																if (answer.text.toLowerCase()== "si") {
 
 																	if (getItemCnt(player_id, item1) == 0) {
 																		bot.sendMessage(message.chat.id, "Non possiedi l'oggetto richiesto", dBack);
@@ -17416,7 +17416,7 @@ bot.onText(/Dai un nome al drago/i, function (message) {
 								if (name == "Torna al menu")
 									return;
 
-								if ((name == "Si") || (name == "") || (name.indexOf("_") != -1)) {
+								if ((name.toLowerCase() == "si") || (name == "") || (name.indexOf("_") != -1)) {
 									bot.sendMessage(message.chat.id, "Il nome inserito non è valido, riprova.", back);
 									return;
 								}
@@ -23168,6 +23168,8 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 																			bot.sendMessage(message.chat.id, "Party non valido, riprova", kbBack);
 																			return;
 																		}
+                                                                        
+                                                                        console.log("mission progress", team_id, party_id, mission_progress, rows[0].progress);
 
 																		if (mission_progress > 0) {
 																			if ((rows[0].progress+1) < mission_progress) {
@@ -31248,7 +31250,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 									var cost = (10+(snowman_cnt*10));
 									bot.sendMessage(message.chat.id, "Costruire un Pupazzo di Neve ⛄️ ti costerà " + cost + " Palle di Neve, in più ti proteggerà dalle Palle di Neve avversarie, procedi?", kbYesNo).then(function () {
 										answerCallbacks[message.chat.id] = function (answer) {
-											if (answer.text == "Si") {
+											if (answer.text.toLowerCase() == "si") {
 												if (snowball < cost) {
 													bot.sendMessage(message.chat.id, "Non hai abbastanza Palle di Neve!", kbBack);
 													return;
@@ -44360,8 +44362,8 @@ bot.onText(/^protezione/i, function (message) {
 
 			bot.sendMessage(message.chat.id, "Il Campo di Forza ti fornirà protezione dalle Ispezioni per 24 ore, ma intanto non potrai ispezionare, confermi?\nNe possiedi ancora " + getItemCnt(player_id, 237), yesno).then(function () {
 				answerCallbacks[message.chat.id] = function (answer) {
-					var conf = answer.text;
-					if (conf == "Si") {
+					var conf = answer.text.toLowerCase();
+					if (conf == "si") {
 
 						if (getItemCnt(player_id, 237) == 0) {
 							bot.sendMessage(message.chat.id, "Ti serve il Campo di Forza.", back);
