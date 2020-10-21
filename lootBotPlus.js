@@ -5765,7 +5765,7 @@ bot.on('callback_query', function (message) {
 							return;
 						}
 
-						connection.query('SELECT nickname, account_id, market_ban FROM player WHERE id = ' + player_id2, function (err, rows, fields) {
+						connection.query('SELECT nickname, account_id, market_ban, money FROM player WHERE id = ' + player_id2, function (err, rows, fields) {
 							if (err) throw err;
 
 							var player2 = rows[0].nickname;
@@ -5789,6 +5789,12 @@ bot.on('callback_query', function (message) {
 								check.splice(index, 1);
 								return;
 							}
+                            
+                            if (total_price+rows[0].money > 1000000000) {
+                                bot.answerCallbackQuery(message.id, {text: 'Il giocatore raggiungerebbe il cap con questo acquisto'});
+								check.splice(index, 1);
+								return;
+                            }
 
 							connection.query('UPDATE player SET money = money + ' + total_price + ' WHERE id = ' + player_id2, function (err, rows, fields) {
 								if (err) throw err;

@@ -8288,6 +8288,8 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										var item_type = 0;
 										var item_power = 0;
 										text += "Hai trovato uno " + mapIdToSym(1) + " <b>Scrigno</b> con al suo interno:\n";
+                                        if ((conditions == 6) || (conditions == 8))
+                                            rand = 60;
 										if (rand < 50) {
 											money = Math.round(getRandomArbitrary(1000, 2000));
 											if (conditions == 5)
@@ -8323,6 +8325,8 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									} else if (objId == 2) {		// scrigno epico
 										var rand = Math.random()*100;
 										text += "Hai trovato uno " + mapIdToSym(2) + " <b>Scrigno Epico</b> con al suo interno:\n";
+                                        if ((conditions == 6) || (conditions == 8))
+                                            rand = 60;
 										if (rand < 60) {
 											money = Math.round(getRandomArbitrary(2000, 3000));
 											if (conditions == 5)
@@ -10222,7 +10226,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														keyboard: [["Usa Kit Fuga"], ["Non usare"], ["Torna al dungeon"]]
+														keyboard: [["Usa Kit Fuga"], ["Non usare"], ["Non fuggire"], ["Torna al dungeon"]]
 													}
 												};
 
@@ -10259,7 +10263,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																bot.sendMessage(message.chat.id, "Hai deciso di rinunciare al dungeon", back);
 															});
 															setAchievement(player_id, 51, 1);
-														}
+														} else {
+                                                            bot.sendMessage(message.chat.id, "Hai deciso di non fuggire, per questa volta.", dBack);
+                                                        }
 													}
 												});
 												return;
@@ -11132,7 +11138,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															parse_mode: "Markdown",
 															reply_markup: {
 																resize_keyboard: true,
-																keyboard: [["Usa Kit Fuga"], ["Non usare"], ["Torna al dungeon"]]
+																keyboard: [["Usa Kit Fuga"], ["Non usare"], ["Non fuggire"], ["Torna al dungeon"]]
 															}
 														};
 
@@ -11170,7 +11176,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			bot.sendMessage(message.chat.id, "Hai deciso di rinunciare al dungeon", back);
 																		});
 																		setAchievement(player_id, 51, 1);
-																	}
+																	} else {
+                                                                        bot.sendMessage(message.chat.id, "Hai deciso di non fuggire, per questa volta.", dBack);
+                                                                    }
 																}
 															});
 															return;
@@ -13188,7 +13196,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																					});
 																				});
 																			});
-																		} else if (answer.text == "No") {
+																		} else if (answer.text.toLowerCase() == "no") {
 
 																			bot.sendMessage(message.chat.id, "Ignori l'offerta e prosegui", dNext);
 
@@ -13387,7 +13395,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			if (err) throw err;
 																		});
 																	});
-																} else if (answer.text == "No") {
+																} else if (answer.text.toLowerCase() == "no") {
 
 																	bot.sendMessage(message.chat.id, "Ignori l'offerta del Gioielliere e prosegui", dNext);
 
@@ -13572,7 +13580,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			});
 																		}
 																	});
-																} else if (answer.text == "No") {
+																} else if (answer.text.toLowerCase() == "no") {
 
 																	bot.sendMessage(message.chat.id, "Ignori lo scambio del Mercante e prosegui", dNext);
 
@@ -13828,7 +13836,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																charges = 20;
 															
 															if (dungeon_energy < (charges+10)) {
-																bot.sendMessage(message.chat.id, "Non hai abbastanza Cariche Esplorative per spolverare, te ne servono " + charges + "!", dNext);
+																bot.sendMessage(message.chat.id, "Non hai abbastanza Cariche Esplorative per spolverare, te ne servono " + (charges+10) + "!", dNext);
 																return;
 															}
 
