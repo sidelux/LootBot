@@ -14026,7 +14026,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
                                                                         if (err) throw err;
                                                                         
                                                                         if (Object.keys(rows).length == 0) {
-                                                                            bot.sendMessage(message.chat.id, "L'oggetto specificato non esiste", dNext);
+                                                                            bot.sendMessage(message.chat.id, "L'oggetto specificato non esiste o non è valido, puoi regalare solo oggetti di rarità C-E", dNext);
 																            return;
                                                                         }
                                                                         
@@ -14263,7 +14263,7 @@ bot.onText(/usa varco/i, function (message) {
 					}
 
 					if (getItemCnt(player_id, 645) < needs) {
-						bot.sendMessage(message.chat.id, "Non possiedi abbastanza Varcchi Temporali", back);
+						bot.sendMessage(message.chat.id, "Non possiedi abbastanza Varchi Temporali", back);
 						return;
 					}
 
@@ -31718,7 +31718,16 @@ bot.onText(/^ricarica$/i, function (message) {
                             if (qnt+dungeon_energy > max_dungeon_energy)
                                 qnt = max_dungeon_energy-dungeon_energy;
                             addDungeonEnergy(player_id, qnt);
-                            bot.sendMessage(message.chat.id, "Hai sfruttato il bonus ricarica ed ottenuto *" + qnt + "* Cariche Esplorative!", back);
+                            
+                            var kb = {
+                                parse_mode: "Markdown",
+                                reply_markup: {
+                                    resize_keyboard: true,
+                                    keyboard: [["Torna al dungeon"], ["Torna al menu"]]
+                                }
+                            };
+                            
+                            bot.sendMessage(message.chat.id, "Hai sfruttato il bonus ricarica ed ottenuto *" + qnt + "* Cariche Esplorative!", kb);
 						});
 					};
 				};
