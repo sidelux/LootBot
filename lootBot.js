@@ -31717,6 +31717,10 @@ bot.onText(/^ricarica$/i, function (message) {
 							if (err) throw err;
                             if (qnt+dungeon_energy > max_dungeon_energy)
                                 qnt = max_dungeon_energy-dungeon_energy;
+                            if (qnt == 0) {
+                                bot.sendMessage(message.chat.id, "Hai già raggiunto il massimo di Cariche Esplorative possedute!", kb);
+                                return;
+                            }
                             addDungeonEnergy(player_id, qnt);
                             
                             var kb = {
@@ -41161,7 +41165,7 @@ bot.onText(/weekend della follia/i, function (message) {
 		"> Monete raddoppiate nelle ispezioni\n" +
 		"> Possibilità maggiore di trovare U Base e missioni U!\n" +
 		"> Eventi in missione particolari e curiosi\n" +
-		"> Il tempo di attesa tra una stanza e l'altra del dungeon è ridotto di 2 minuti\n" +
+		"> Le Cariche Esplorative per i dungeon fornite sono incrementate di 6\n" +
 		"> Uccidendo i mob nel dungeon otterrai scrigni più rari!\n" +
 		"> Nessun limite all'utilizzo di Varchi nei dungeon\n" +
 		"> Ottieni una gemma per ogni missione L/E iniziata nell'evento\n" +
@@ -47249,8 +47253,7 @@ function mainMenu(message) {
 		var now = new Date();
 		if ((tap_end_time != null) && (tap_end_time >= now)) {
 			if (getItemCnt(player_id, 797) > 0) {
-				var diff = Math.round((tap_end_time - now) / 1000 / 60 / 24); //in ore
-                diff -= 2;  // per timezone
+				var diff = Math.round((tap_end_time - now) / 1000 / 3600); //in ore
 				if (diff < 24)
 					msgtext += "\n❗️ Tappi in scadenza tra " + diff + " ore!";
 			}
