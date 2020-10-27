@@ -41161,7 +41161,7 @@ bot.onText(/weekend della follia/i, function (message) {
 	var bonus = "> Tutte le missioni velocizzate\n" +
 		"> Ricompense aumentate di scrigni ed exp nelle missioni\n" +
 		"> Danno raddoppiato in assalto e dungeon\n" +
-		"> Possibilità di ottenere 2 punti rango al completamento del dungeon\n" +
+		"> Possibilità di ottenere +1 punto rango al completamento del dungeon\n" +
 		"> Monete raddoppiate nelle ispezioni\n" +
 		"> Possibilità maggiore di trovare U Base e missioni U!\n" +
 		"> Eventi in missione particolari e curiosi\n" +

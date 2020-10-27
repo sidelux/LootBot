@@ -6947,8 +6947,11 @@ bot.onText(/^\/scambia/i, function (message) {
 			return;
 		}
 
-		if (message.reply_to_message != undefined)
+        var noBuyer = 0;
+		if (message.reply_to_message != undefined) {
 			text = text + "," + message.reply_to_message.from.username;
+            noBuyer = 1;
+        }
 
 		var elements = text.split(",");
 
@@ -6959,10 +6962,17 @@ bot.onText(/^\/scambia/i, function (message) {
 
 		item1 = elements[0].trim();
 		item2 = elements[1].trim();
-		buyer = elements[2].replace('@', '').trim();
-
-		if (Object.keys(elements).length == 4)
-			quantity = parseInt(elements[3].trim());
+        if (noBuyer == 1)
+            buyer = elements[3].replace('@', '').trim();
+        else
+            buyer = elements[2].replace('@', '').trim();
+		
+		if (Object.keys(elements).length == 4) {
+            if (noBuyer == 1)
+                quantity = parseInt(elements[2].trim());
+            else
+                quantity = parseInt(elements[3].trim());
+        }
 
 		if (item1 == "") {
 			bot.sendMessage(message.from.id, "Il parametro oggetto 1 è obbligatorio");
