@@ -119,9 +119,9 @@ bot.on('edited_message', function (message) {
 
 bot.on('message', function (message, match) {
 	if (message.text != undefined) {
-		
+
 		// Suggestions
-		
+
 		if (message.entities != undefined) {
 			var entities = message.entities;
 			let is_suggestion;
@@ -145,12 +145,12 @@ bot.on('message', function (message, match) {
 									disable_web_page_preview: true,
 									reply_markup: res_mess.toEdit.options.reply_markup
 								}).catch(function (err) {
-									bot.sendMessage(
-										16964514,
-										"👮Hey:\nC'è stato un problema!\n" + err.response.body.description +
-										"\nNella chat: " + res_mess.toSend.chat_id + "\n" + err.response.body
-									);
-								});
+								bot.sendMessage(
+									16964514,
+									"👮Hey:\nC'è stato un problema!\n" + err.response.body.description +
+									"\nNella chat: " + res_mess.toSend.chat_id + "\n" + err.response.body
+								);
+							});
 						}
 						if (typeof (res_mess.toSend) != "undefined") {
 							bot.sendMessage(
@@ -172,7 +172,7 @@ bot.on('message', function (message, match) {
 		}
 
 		// End suggestions
-		
+
 		if (message.text.startsWith("/") && !(message.text.startsWith("//"))) {
 			if (message.text.indexOf("@") == -1)
 				console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
@@ -218,7 +218,7 @@ bot.on('message', function (message, match) {
 				}
 			} else
 				banFromGroup = 1;
-			
+
 			if (banFromGroup == 1) {
 				var time = Math.round((Date.now()+ms("3 days"))/1000);
 				bot.kickChatMember(message.chat.id, message.from.id, {until_date: time}).then(function (result) {
@@ -670,7 +670,7 @@ bot.onText(/^\/comanditeam/, function (message) {
 					"/serveaiuto - Invia un messaggio taggando solo i membri in dungeon disponibili ad uno scambio nel dungeon\n" +
 					"/chiamateam - Invia un messaggio taggando tutti i membri del proprio team anche in privato\n" +
 					"/statoincarichi - Mostra un riepilogo di tutti gli incarichi in corso\n" +
-                    "/stanzeteam - Mostra la lista dei compagni di team e la stanza che hanno raggiunto nel dungeon", mark);
+					"/stanzeteam - Mostra la lista dei compagni di team e la stanza che hanno raggiunto nel dungeon", mark);
 });
 
 bot.onText(/^\/comandigenerali/, function (message) {
@@ -692,7 +692,7 @@ bot.onText(/^\/online/, function (message, match) {
 	connection.query('SELECT COUNT(*) As active FROM last_command WHERE TIMESTAMPDIFF(SECOND, time, NOW()) <= 60', function (err, rows, fields) {
 		if (err) throw err;
 		var act_minute = rows[0].active;
-		
+
 		var d = new Date();
 		var long_date = addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
 		bot.sendMessage(message.chat.id, "*👥 Loot players (LIVE)*\nOre " + addZero(d.getHours()) + ":" + addZero(d.getMinutes()) + " del " + long_date + "\n*" + act_minute + "* giocatori online ora", mark);
@@ -1022,7 +1022,7 @@ function validTeamMember(message, team_id, player_id, soglia) {
 				res = 1;
 		}
 	}
-	
+
 	bot.sendMessage(message.chat.id, "Media team: " + mediaTeam + "\nDev: " + dev + "\nRes: " + res);
 };
 
@@ -1476,7 +1476,7 @@ bot.onText(/^\/info$/, function (message) {
 			"Chat @: " + ((message.reply_to_message.chat.username == undefined) ? "???" : message.reply_to_message.chat.username) + "\n" +
 			"Chat Type: " + message.reply_to_message.chat.type + "\n" +
 			"Date: " + toDate("it", date) + "\n";
-		
+
 		if (message.reply_to_message.forward_sender_name != undefined)
 			reply += "Forward User: " + message.reply_to_message.forward_sender_name + "\n";
 		if (message.reply_to_message.forward_date != undefined) {
@@ -1484,7 +1484,7 @@ bot.onText(/^\/info$/, function (message) {
 			reply += "Forward Date: " + toDate("it", date);
 		}
 	}
-	
+
 	var date = new Date(message.date * 1000);
 	bot.sendMessage(message.chat.id, "Message ID: " + message.message_id + "\n" +
 					"User ID: " + message.from.id + "\n" +
@@ -1522,106 +1522,67 @@ bot.onText(/^\/gruppi/, function (message) {
 
 					bot.getChatMembersCount(-1001086845014).then(function (data) {
 						var c6 = data; //scuola
-						console.log("Next Notturno");
+						console.log("Next Scommesse");
 
-						bot.getChatMembersCount(-1001075644786).then(function (data) {
-							var c8 = data; //notturno
-							console.log("Next Scommesse");
+						bot.getChatMembersCount(-1001123874487).then(function (data) {
+							var c10 = data; //contrabbando
+							console.log("Next Raffles");
 
-							bot.getChatMembersCount(-1001124038417).then(function (data) {
-								var c9 = data; //scommesse
-								console.log("Next Contrabbandiere");
+							bot.getChatMembersCount(-1001131584245).then(function (data) {
+								var c11 = data; //raffles
+								console.log("Next Negozi");
 
-								bot.getChatMembersCount(-1001123874487).then(function (data) {
-									var c10 = data; //contrabbando
-									console.log("Next Raffles");
+								bot.getChatMembersCount(-1001097316494).then(function (data) {
+									var c12 = data; //negozi
+									console.log("Next Test");
 
-									bot.getChatMembersCount(-1001131584245).then(function (data) {
-										var c11 = data; //raffles
-										console.log("Next Negozi");
+									bot.getChatMembersCount(-1001050459665).then(function (data) {
+										var c13 = data; //testi
+										console.log("Next Gelateria");
 
-										bot.getChatMembersCount(-1001097316494).then(function (data) {
-											var c12 = data; //negozi
-											console.log("Next Test");
+										bot.getChatMembersCount(-1001127554674).then(function (data) {
+											var c14 = data; //gelateria
+											console.log("Next Ade");
 
-											bot.getChatMembersCount(-1001050459665).then(function (data) {
-												var c13 = data; //testi
-												console.log("Next Gelateria");
+											bot.getChatMembersCount(-1001167682606).then(function (data) {
+												var c17 = data; //music
+												console.log("Next Nabbi");
 
-												bot.getChatMembersCount(-1001127554674).then(function (data) {
-													var c14 = data; //gelateria
-													console.log("Next Ade");
+												if (message.chat.id < 0)
+													bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
 
-													bot.getChatMembersCount(-1001214216152).then(function (data) {
-														var c16 = data; //ade
-														console.log("Next Music");
+												bot.sendMessage(message.from.id, "<b>Ufficiali</b>\n" +
+																"Canale principale per aggiornamenti: @LootBotAvvisi\n" +
 
-														bot.getChatMembersCount(-1001167682606).then(function (data) {
-															var c17 = data; //music
-															console.log("Next Nabbi");
+																"\n<b>Bot</b>\n" +
+																"Liste oggetti e alberi automatici: @craftlootbot\n" +
+																"Qualcuno sempre a disposizione: @OracoloLootBot\n" +
+																"Calcolo Loot Combat Rating: @lootcrbot\n" +
+																"Tool per mercato e cronologie: @ToolsForLootBot\n" +
+																"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
+																"Tastiera per inviare facilmente i comandi del plus: @LootPlusKeyboardBot\n" +
 
-															bot.getChatMembersCount(-1001332170267).then(function (data) {
-																var c19 = data; //nabbi
-																console.log("Next Lootgames");
+																"\n<b>Altro</b>\n" +
+																"<a href='https://telegra.ph/Guida-alle-LootBot-API-04-06'>LootBot Api v2</a>\n" +
 
-																bot.getChatMembersCount(-1001487835665).then(function (data) {
-																	var c20 = data; //lootgames
-																	console.log("Next Uno Scommesse");
+																"\n<b>Gruppi</b>\n" +
+																"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
+																"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
+																"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
+																"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
+																"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
+																"<a href='https://t.me/joinchat/AVqFykBMfmvrULAUQv-MmQ'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
+																"<a href='https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
+																"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
+																"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
+																"<a href='https://t.me/joinchat/I-b0dhM-eO3tmxrz9rtMrg'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
+																"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ") - La musica ed il diverimento di Lootia!\n" +
 
-																	bot.getChatMembersCount(-1001482029556).then(function (data) {
-																		var c21 = data; //uno scommesse
-																		console.log("Next Edicola");
+																"\n<b>Canali</b>\n" +
+																"@Suggerimenti_per_LootBot - Gruppo dove i suggerimenti vengono postati e votati dagli utenti\n" +
+																"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
 
-																		if (message.chat.id < 0)
-																			bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
-
-																		bot.sendMessage(message.from.id, "<b>Ufficiali</b>\n" +
-																						"Canale principale per aggiornamenti: @LootBotAvvisi\n" +
-
-																						"\n<b>Bot</b>\n" +
-																						"Liste oggetti e alberi automatici: @craftlootbot\n" +
-																						"Qualcuno sempre a disposizione: @OracoloLootBot\n" +
-																						"Calcolo Loot Combat Rating: @lootcrbot\n" +
-																						"Tool per mercato e cronologie: @ToolsForLootBot\n" +
-																						"Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n" +
-																						"Tastiera per inviare facilmente i comandi del plus: @LootPlusKeyboardBot\n" +
-
-																						"\n<b>Altro</b>\n" +
-																						"<a href='https://telegra.ph/Guida-alle-LootBot-API-04-06'>LootBot Api v2</a>\n" +
-
-																						"\n<b>Gruppi</b>\n" +
-																						"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
-																						"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ") - Solo scambi!\n" +
-																						"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ") - Proponi testi!\n" +
-																						"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ") - Solo i vostri negozi!\n" +
-																						"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ") - Riservato alle Lotterie\n" +
-																						"<a href='https://t.me/joinchat/AVqFykBMfmvrULAUQv-MmQ'>Loot Flame</a> (" + c4 + ") - Nessun filtro, solo flame\n" +
-																						"@LootNotturno (" + c8 + ") - Per i giocatori notturni (Livello minimo: 15)\n" +
-																						"<a href='https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg'>LootBot School</a> (" + c6 + ") - Impara le basi del gioco per iniziare con una marcia in più!\n" +
-																						"@LootScommesse (" + c9 + ") - Scommetti sul contenuto degli scrigni\n" +
-																						"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ") - Chiedi aiuto per le richieste del contrabbandiere!\n" +
-																						"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ") - Gruppo OT con tanto di gelato (Livello minimo: 10)\n" +
-																						"<a href='https://t.me/joinchat/I-b0dhM-eO3tmxrz9rtMrg'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
-																						"@Adesmappers (" + c16 + ") - Gruppo creato allo scopo di aiutarsi per le mappe dei dungeon di loot!\n" +
-																						"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ") - La musica ed il diverimento di Lootia!\n" +
-																						"<a href='https://t.me/joinchat/B8_tHk9nThsWfDL-k-Fazw'>Loot Nabbi</a> (" + c19 + ") - Dedicato ai nabbi di Lootia!\n" +
-																						"<a href='https://t.me/joinchat/ByIyqhPdW14SZX4y7PiRbw'>Loot Gheims</a> (" + c20 + ") - Gruppo OT con giochi per tutti i gusti, specie giochi di ruolo\n" +
-																						"<a href='https://t.me/joinchat/HOnifBab5PT-2Qj2Lq0ZkQ'>Uno Scommesse</a> (" + c21 + ") - Vieni a scommettere o semplicemente giocare al famosissimo gioco Uno insieme a noi!\n" +
-
-																						"\n<b>Canali</b>\n" +
-																						"@lootstatistiche - Statistiche dettagliate di Loot!\n" +
-																						"@Suggerimenti_per_LootBot - Gruppo dove i suggerimenti vengono postati e votati dagli utenti\n" +
-																						"@wikilootbot - Guide essenziali e mirate per iniziare a giocare a Loot Bot!\n" +
-																						"@LootBotPolls - Sondaggi su qualsiasi cosa inerente a Loot!\n" +
-																						"@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n" +
-
-																						"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
-																	});
-																});
-															});
-														});
-													});
-												});
+																"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html);
 											});
 										});
 									});
@@ -1641,24 +1602,8 @@ bot.onText(/^\/mercatini/, function (message) {
 
 	bot.sendMessage(message.from.id, "<b>Valutazione Mercatini</b>\n@lootadvisor\n\n" +
 					"<b>Mercatini</b>\n" +
-					"@BeardedStore - Il primo negozio Barbuto di Lootia.\n" +
-					"@lootamazon - Qui si vende un po' di tutto a prezzo basso ed eventi vari.\n" +
-					"@Craftia - Il primo canale full-craftati di Loot.\n" +
-					"@emporiodelgargoyle - Canale specializzato in craftati da rarità R a UE a prezzo scrigno, lotterie ed eventi.\n" +
 					"@LEMPORIOdiLootbot - Il primo negozio di Loot!\n" +
-					"@dogestore - Such Prices! So Cheap! Much Items! #DogeCraft.\n" +
-					"@EdicolaDiLootia - Sempre più conveniente 👍.\n" +
-					"@Lootkea - L'IKEA di Loot dal 13/11/2016.\n" +
-					"@lootemporio - Lotterie e prezzi minori della ricerca!\n" +
-					"@latanadellupo - Entra qui per eventi, negozi e lotterie lupesche 🐺!\n" +
-					"@ShopdellaNebulosa - ✨Concorsi ed oggetti Draconici✨\n" +
 					"@ilvenditoreoscuro -  Il viandante più economico di Lootia!\n" +
-					"@spillat -  Il luogo in cui il Re papera dona cibo ai suoi sudditi.\n" +
-					"@pietredeldragoshop - Il tuo drago ha fame? Che aspetti, nutrilo da Pietredeldragoshop.\n" +
-					"@SethShop - 'SethNegozio', per chi non fosse bravo con l'inglese.\n" +
-					"@argonautashop - Piccole lotterie, pietre a basso prezzo e eventi carini.\n" +
-					"<a href='https://t.me/joinchat/AAAAAFfCIOoiRA2xApWn3A'>Scommesse sulle globali</a> - Scommetti sui risultati delle globali!\n" +
-					"<a href='https://t.me/joinchat/G5bsZ0ZL_eeCWEMf_88Qvg'>Scommesse/Scambi</a> - Tornei, giochi, dadi, tiro con arco di tutto e di più\n" +
 					"@ildracomante - Craftati del Contrabbandiere e divertenti giochi a premi\n" +
 
 					"\nVisita anche /gruppi. Per comparire qua chiedi all'amministratore.", html);
@@ -1767,24 +1712,24 @@ bot.onText(/^\/stanzeteam/, function (message, match) {
 
 			var nicklist = "";
 
-            if (Object.keys(rows).length > 0) {
-                var pass = "";
-                var cursed = "";
-                var rooms = "";
-                for (i = 0; i < Object.keys(rows).length; i++) {
-                    pass = "";
-                    if (rows[i].pass > 0)
-                        pass = " (Pass usato)";
-                    cursed = "";
-                    if (rows[i].cursed == 1)
-                        cursed = " 🧨";
-                    rooms = rows[i].room_id + "/" + rows[i].rooms;
-                    if (rows[i].room_id > rows[i].rooms)
-                        rooms = "(Boss)";
-                    nicklist += "> " + rows[i].nickname + ": " + rooms + cursed + ", Rango " + formatNumber(rows[i].rank) + pass + "\n";
-                }
-            } else
-                nicklist = "Nessun compagno in dungeon"
+			if (Object.keys(rows).length > 0) {
+				var pass = "";
+				var cursed = "";
+				var rooms = "";
+				for (i = 0; i < Object.keys(rows).length; i++) {
+					pass = "";
+					if (rows[i].pass > 0)
+						pass = " (Pass usato)";
+					cursed = "";
+					if (rows[i].cursed == 1)
+						cursed = " 🧨";
+					rooms = rows[i].room_id + "/" + rows[i].rooms;
+					if (rows[i].room_id > rows[i].rooms)
+						rooms = "(Boss)";
+					nicklist += "> " + rows[i].nickname + ": " + rooms + cursed + ", Rango " + formatNumber(rows[i].rank) + pass + "\n";
+				}
+			} else
+				nicklist = "Nessun compagno in dungeon"
 
 			bot.sendMessage(message.chat.id, "Compagni di team in dungeon:\n" + nicklist, html);
 		});
@@ -3127,7 +3072,7 @@ bot.onText(/^\/rune (.+)/i, function (message, match) {
 				end = "Coppia";
 				end_num = 1;
 				coup = num[0];
-				
+
 				var others = [num[2], num[3], num[4]];
 				if (i == 0)
 					coupSolo1 = others;
@@ -3138,7 +3083,7 @@ bot.onText(/^\/rune (.+)/i, function (message, match) {
 				end = "Coppia";
 				end_num = 1;
 				coup = num[1];
-				
+
 				var others = [num[0], num[3], num[4]];
 				if (i == 0)
 					coupSolo1 = others;
@@ -3149,7 +3094,7 @@ bot.onText(/^\/rune (.+)/i, function (message, match) {
 				end = "Coppia";
 				end_num = 1;
 				coup = num[2];
-				
+
 				var others = [num[0], num[1], num[4]];
 				if (i == 0)
 					coupSolo1 = others;
@@ -3160,7 +3105,7 @@ bot.onText(/^\/rune (.+)/i, function (message, match) {
 				end = "Coppia";
 				end_num = 1;
 				coup = num[3];
-				
+
 				var others = [num[0], num[1], num[2]];
 				if (i == 0)
 					coupSolo1 = others;
@@ -3470,7 +3415,7 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+),(.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p
 						bot.sendMessage(message.chat.id, "Questo oggetto non può essere messo all'asta");
 						return;
 					}
-					
+
 					var maxPrice = rows[0].value*100;
 					var minPrice = Math.round(rows[0].value/100);
 					if ((prezzo > parseInt(maxPrice)) || (prezzo < minPrice)) {
@@ -4334,7 +4279,7 @@ bot.onText(/^\/negoziodesc (.+),(.+)|^\/negoziodesc/, function (message, match) 
 			bot.sendMessage(message.chat.id, text, mark);
 			return;
 		}
-		
+
 		if (message.reply_to_message != undefined) {
 			var cod = message.reply_to_message.text.match(/[0-9]{7,11}/g);
 			if (cod != undefined)
@@ -4579,7 +4524,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				bot.sendMessage(message.chat.id, "Specifica almeno un codice negozio");
 				return;
 			}
-			
+
 			d.setDate(d.getDate() + 3);
 			long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
@@ -4594,7 +4539,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			var code = 0;
 			for (var i = 0; i < arrLen; i++) {
 				code = elements[i];
-				
+
 				var shopQuery = connection_sync.query('SELECT 1 FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id);
 				if (Object.keys(shopQuery).length > 0) {
 					connection.query('UPDATE public_shop SET time_end = "' + long_date + '", notified = 0, time_creation = NOW() WHERE code = ' + code, function (err, rows, fields) {
@@ -5164,7 +5109,7 @@ bot.on('callback_query', function (message) {
 			// console.log(err);
 		});
 	}
-	
+
 	connection.query('SELECT account_id, market_ban, money, id, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -5789,12 +5734,12 @@ bot.on('callback_query', function (message) {
 								check.splice(index, 1);
 								return;
 							}
-                            
-                            if (total_price+rows[0].money > 1000000000) {
-                                bot.answerCallbackQuery(message.id, {text: 'Il giocatore raggiungerebbe il cap con questo acquisto'});
+
+							if (total_price+rows[0].money > 1000000000) {
+								bot.answerCallbackQuery(message.id, {text: 'Il giocatore raggiungerebbe il cap con questo acquisto'});
 								check.splice(index, 1);
 								return;
-                            }
+							}
 
 							connection.query('UPDATE player SET money = money + ' + total_price + ' WHERE id = ' + player_id2, function (err, rows, fields) {
 								if (err) throw err;
@@ -5863,16 +5808,16 @@ bot.on('callback_query', function (message) {
 											if (notify == 1)
 												bot.sendMessage(chat_id2, message.from.username + " ha acquistato tutto il tuo negozio (" + code + ") per " + formatNumber(total_price) + " §!\nDi conseguenza le quantità relative agli oggetti acquistati sono state ridotte.");
 										});
-										
+
 										if (autodel == 1) {
 											connection.query('DELETE FROM public_shop WHERE code = "' + code + '"', function (err, rows, fields) {
-											if (err) throw err;
+												if (err) throw err;
 												bot.sendMessage(chat_id2, "Il negozio è stato automaticamente eliminato!");
 											});
 										}
-										
+
 										updateShop(message, code, undefined, 'Acquisto completato per ' + formatNumber(total_price) + ' §!');
-										
+
 										check.splice(index, 1);
 									});
 								});
@@ -6017,7 +5962,7 @@ bot.on('callback_query', function (message) {
 
 								if (quantity - 1 == 0)
 									bot.sendMessage(chat_id2, "Le scorte di " + item_name + " sono terminate!");
-								
+
 								var d2 = new Date();
 								var long_date = d2.getFullYear() + "-" + addZero(d2.getMonth() + 1) + "-" + addZero(d2.getDate()) + " " + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds());
 
@@ -6026,17 +5971,17 @@ bot.on('callback_query', function (message) {
 								});
 
 								console.log(getNow("it") + " - Acquisto da parte di " + message.from.username + " (" + shop_id + ", " + item_name + ", " + formatNumber(price) + " §)");
-								
+
 								connection.query('SELECT COUNT(id) As cnt FROM public_shop WHERE quantity > 0 AND code = "' + code + '"', function (err, rows, fields) {
 									if (err) throw err;
-								
+
 									if ((autodel == 1) && (rows[0].cnt == 0)) {
 										connection.query('DELETE FROM public_shop WHERE code = "' + code + '"', function (err, rows, fields) {
 											if (err) throw err;
 											bot.sendMessage(chat_id2, "Il negozio è stato automaticamente eliminato!");
 										});
 									}
-									
+
 									updateShop(message, code, undefined, 'Acquisto di ' + item_name + ' per ' + formatNumber(price) + ' §!');
 
 									check.splice(index, 1);
@@ -6947,11 +6892,11 @@ bot.onText(/^\/scambia/i, function (message) {
 			return;
 		}
 
-        var noBuyer = 0;
+		var noBuyer = 0;
 		if (message.reply_to_message != undefined) {
 			text = text + "," + message.reply_to_message.from.username;
-            noBuyer = 1;
-        }
+			noBuyer = 1;
+		}
 
 		var elements = text.split(",");
 
@@ -6962,17 +6907,17 @@ bot.onText(/^\/scambia/i, function (message) {
 
 		item1 = elements[0].trim();
 		item2 = elements[1].trim();
-        if (noBuyer == 1)
-            buyer = elements[3].replace('@', '').trim();
-        else
-            buyer = elements[2].replace('@', '').trim();
-		
+		if (noBuyer == 1)
+			buyer = elements[3].replace('@', '').trim();
+		else
+			buyer = elements[2].replace('@', '').trim();
+
 		if (Object.keys(elements).length == 4) {
-            if (noBuyer == 1)
-                quantity = parseInt(elements[2].trim());
-            else
-                quantity = parseInt(elements[3].trim());
-        }
+			if (noBuyer == 1)
+				quantity = parseInt(elements[2].trim());
+			else
+				quantity = parseInt(elements[3].trim());
+		}
 
 		if (item1 == "") {
 			bot.sendMessage(message.from.id, "Il parametro oggetto 1 è obbligatorio");
@@ -7813,50 +7758,50 @@ bot.onText(/^\/statoincarichi/, function (message, match) {
 				return;
 			}
 			var team_id = rows[0].team_id;
-            
-            connection.query('SELECT mission_day_count FROM team WHERE id = ' + team_id, function (err, rows, fields) {
+
+			connection.query('SELECT mission_day_count FROM team WHERE id = ' + team_id, function (err, rows, fields) {
 				if (err) throw err;
-                var mission_day_left = 10-rows[0].mission_day_count;
+				var mission_day_left = 10-rows[0].mission_day_count;
 
-                connection.query('SELECT T.parts, T.title, T.duration, M.party_id, M.part_id, M.mission_time_end, M.mission_time_limit, M.wait FROM mission_team_list T, mission_team_party M WHERE T.ready = 1 AND T.id = M.assigned_to AND M.team_id = ' + team_id + ' ORDER BY T.progress_num ASC, T.duration ASC', function (err, rows, fields) {
-                    if (err) throw err;
+				connection.query('SELECT T.parts, T.title, T.duration, M.party_id, M.part_id, M.mission_time_end, M.mission_time_limit, M.wait FROM mission_team_list T, mission_team_party M WHERE T.ready = 1 AND T.id = M.assigned_to AND M.team_id = ' + team_id + ' ORDER BY T.progress_num ASC, T.duration ASC', function (err, rows, fields) {
+					if (err) throw err;
 
-                    var text = "*Incarichi in corso:*\n\n";
-                    if (Object.keys(rows).length > 0){
-                        var time_end;
-                        var time_next;
-                        for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-                            time_end = "";
-                            if (rows[i].mission_time_end != null){
-                                var d = new Date(rows[i].mission_time_end);
-                                var now = new Date();
-                                var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-                                var wait_text = "Prossima scelta alle";
-                                if (d.getTime() < now.getTime())
-                                    wait_text = "Scelta in attesa dalle";
-                                var wait_icon = "";
-                                if (rows[i].wait == 1)
-                                    wait_icon = " ❗️";
-                                time_end = wait_text + " " + long_date + wait_icon + "\n";
-                            }
-                            time_next = "";
-                            if (rows[i].mission_time_limit != null){
-                                var d = new Date(rows[i].mission_time_limit);
-                                var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-                                time_next = "Scadenza alle " + long_date + "\n";
-                            }
-                            text += "> Party " + rows[i].party_id + "\n" + 
-                                rows[i].title + " - " + rows[i].part_id + "/" + rows[i].parts + "\n" +
-                                time_end +
-                                time_next +
-                                "\n";
-                        }
-                    } else
-                        text = "Nessun incarico in corso";
+					var text = "*Incarichi in corso:*\n\n";
+					if (Object.keys(rows).length > 0){
+						var time_end;
+						var time_next;
+						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+							time_end = "";
+							if (rows[i].mission_time_end != null){
+								var d = new Date(rows[i].mission_time_end);
+								var now = new Date();
+								var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+								var wait_text = "Prossima scelta alle";
+								if (d.getTime() < now.getTime())
+									wait_text = "Scelta in attesa dalle";
+								var wait_icon = "";
+								if (rows[i].wait == 1)
+									wait_icon = " ❗️";
+								time_end = wait_text + " " + long_date + wait_icon + "\n";
+							}
+							time_next = "";
+							if (rows[i].mission_time_limit != null){
+								var d = new Date(rows[i].mission_time_limit);
+								var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+								time_next = "Scadenza alle " + long_date + "\n";
+							}
+							text += "> Party " + rows[i].party_id + "\n" + 
+								rows[i].title + " - " + rows[i].part_id + "/" + rows[i].parts + "\n" +
+								time_end +
+								time_next +
+								"\n";
+						}
+					} else
+						text = "Nessun incarico in corso";
 
-                    bot.sendMessage(message.chat.id, text + "\n\nIl team può svolgere ancora " + mission_day_left + " incarichi", mark);
-                });
-            });
+					bot.sendMessage(message.chat.id, text + "\n\nIl team può svolgere ancora " + mission_day_left + " incarichi", mark);
+				});
+			});
 		});
 	});
 });
@@ -8644,7 +8589,7 @@ bot.onText(/^\/statistiche|^\/stats$/, function (message) {
 																																							var map_kills = 0;
 																																							if (rows[0].cnt != null)
 																																								map_kills = rows[0].cnt;
-																																								
+
 																																							connection.query('SELECT SUM(death_count) As cnt FROM player', function (err, rows, fields) {
 																																							if (err) throw err;
 																																								var death_count = 0;
@@ -8900,11 +8845,11 @@ bot.onText(/^\/lega/, function (message, match) {
 			next_pnt = 10000;
 		} else
 			league_name = "Lega delle Leggende";
-		
+
 		var next_pnt_text = "";
 		if (next_pnt != 0)
 			next_pnt_text = "\n<b>Aumento lega</b>: " + formatNumber(next_pnt) + " missioni";
-			
+
 		bot.sendMessage(message.chat.id, "Informazioni lega per " + message.from.username + ":\n<b>Lega Attuale</b>: " + league_name + next_pnt_text + "\n<b>Missioni completate</b>: " + formatNumber(mission_count), html);
 	});
 });
@@ -9113,13 +9058,13 @@ bot.onText(/^\/trofei/, function (message) {
 
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var trophies = rows[0].trophies;
 		var player_id = rows[0].id;
-		
+
 		connection.query('SELECT P.id FROM player P WHERE trophies > 0 ORDER BY trophies DESC', function (err, rows, fields) {
 			if (err) throw err;
-			
+
 			var pos = 1;
 			var found = 0;
 			var extra = "";
@@ -9130,7 +9075,7 @@ bot.onText(/^\/trofei/, function (message) {
 				}
 				pos++;
 			}
-			
+
 			if (found == 1)
 				extra = " ed hai raggiunto la posizione <b>" + pos + "</b> della classifica";
 
@@ -9148,35 +9093,35 @@ bot.onText(/^\/vette/, function (message) {
 
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var player_id = rows[0].id;
-		
+
 		connection.query('SELECT id FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length == 0) {
 				bot.sendMessage(message.chat.id, "Non possiedi il drago.");
 				return;
 			}
-			
+
 			connection.query('SELECT top_id FROM dragon_top_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, "Non hai effettuato l'accesso alle Vette.");
 					return;
 				}
-				
+
 				var top_id = rows[0].top_id;
-				
+
 				if (top_id == 0) {
 					bot.sendMessage(message.chat.id, "Accedi ad un Monte per utilizzare questo comando.");
 					return;
 				}
-				
+
 				connection.query('SELECT name FROM dragon_top_list WHERE id = ' + top_id, function (err, rows, fields) {
 					if (err) throw err;
-					
+
 					var top_name = rows[0].name;
-					
+
 					connection.query('SELECT rank FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 
@@ -9197,12 +9142,12 @@ bot.onText(/^\/imprese/, function (message) {
 
 		if (Object.keys(rows).length == 0)
 			return;
-		
+
 		var player_id = rows[0].id;
 		var reborn = rows[0].reborn;
 		var daily = rows[0].achievement_count;
 		var triplet = rows[0].achievement_count_all;
-		
+
 		connection.query('SELECT D.achievement_id, L.name, L.value, L.multiply, L.limit_reborn FROM achievement_daily D, achievement_list L WHERE D.achievement_id = L.id ORDER BY D.id', function (err, rows, fields) {
 			if (err) throw err;
 
@@ -9230,7 +9175,7 @@ bot.onText(/^\/imprese/, function (message) {
 						achievement += " ❌";
 					achievement += "\n";
 				}
-				
+
 				var options = {parse_mode: 'HTML'};
 				if (message.reply_to_message != undefined)
 					options = {parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id};
@@ -9417,11 +9362,11 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, function (message, match) {
 	for (var m = 0; m < Object.keys(oggetti).length; m++) {
 		ogg = oggetti[m].trim();
 		var items = connection_sync.query('SELECT id, name FROM item WHERE name LIKE "%' + ogg + '%"');
-		
+
 		for (var i = 0; i < Object.keys(items).length; i++) {	
 			var itemId = items[i].id;
 			var itemName = items[i].name;
-			
+
 			var lottery = connection_sync.query('SELECT player.nickname, public_lottery.price FROM public_lottery, player WHERE player.id = public_lottery.creator_id AND item_id = ' + itemId);
 
 			if (Object.keys(lottery).length > 0) {
@@ -9452,7 +9397,7 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, function (message, match) {
 			}
 		}
 	};
-		
+
 	if (Object.keys(text).length > 50) {
 		if (Object.keys(text).length < 4000)
 			bot.sendMessage(message.chat.id, text, html);
@@ -9575,15 +9520,15 @@ bot.onText(/^\/prezzo (.+)|^\/prezzo/, function (message, match) {
 
 	if (message.chat.id < 0)
 		bot.sendMessage(message.chat.id, "_Messaggio inviato in privato_", mark);
-	
+
 	connection.query('SELECT id, value FROM item WHERE name = "' + oggetto + '"', function (err, rows, fields) {
 		if (err) throw err;
-		
+
 		if (Object.keys(rows).length == 0) {
 			bot.sendMessage(message.chat.id, "L'oggetto inserito non esiste");
 			return;
 		}
-		
+
 		var item_id = rows[0].id;
 		var value = rows[0].value;
 
@@ -9725,7 +9670,7 @@ bot.onText(/^\/drago (.+),(.+)|^\/drago/, function (message, match) {
 				bot.sendMessage(message.chat.id, "Tipo del drago non riconosciuto (" + sim.bestMatch.rating + ")");
 				return;
 			}
-			
+
 			if (money < 50000) {
 				bot.sendMessage(message.chat.id, "Non hai abbastanza monete, ne servono 50.000!");
 				return;
@@ -9739,7 +9684,7 @@ bot.onText(/^\/drago (.+),(.+)|^\/drago/, function (message, match) {
 			connection.query('UPDATE player SET money = money-50000 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			
+
 			if (Object.keys(dragon).length > 25) {
 				bot.sendMessage(message.chat.id, "Troppi risultati, riprova con un nome più preciso");
 				return;
@@ -9753,7 +9698,7 @@ bot.onText(/^\/drago (.+),(.+)|^\/drago/, function (message, match) {
 		var text = "";
 		for (i = 0; i < player_id.length; i++) {
 			var rows = connection_sync.query('SELECT D.*, P.nickname, P.class, P.charm_id, P.reborn, P.dragon_description, P.power_dragon_dmg, P.power_dragon_def, P.power_dragon_crit FROM player P, dragon D WHERE P.id = D.player_id AND P.id = ' + player_id[i]);
-			
+
 			var power_dragon_dmg = rows[0].power_dragon_dmg;
 			var power_dragon_def = rows[0].power_dragon_def;
 			var power_dragon_crit = rows[0].power_dragon_crit;
@@ -9806,7 +9751,7 @@ bot.onText(/^\/drago (.+),(.+)|^\/drago/, function (message, match) {
 					rows[0].claws += rows[0].claws * 0.1;
 					rows[0].saddle += rows[0].saddle * 0.1;
 				}
-				
+
 				if ((class_id == 7) && (reborn == 3))
 					rows[0].critical += 5;
 				if ((class_id == 7) && (reborn >= 4))
@@ -9874,7 +9819,7 @@ bot.onText(/^\/figurine$/, function (message, match) {
 		}
 
 		var player_id = rows[0].id;
-		
+
 		connection.query('SELECT COUNT(I.id) As cnt FROM card_inventory I, card_list L WHERE I.card_id = L.id AND quantity > 0 AND player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 			var have = rows[0].cnt;
@@ -9956,7 +9901,7 @@ bot.onText(/^\/figurinel (.+)|^\/figurinel/, function (message, match) {
 				var text = message.from.username + ", possiedi " + formatNumber(have) + " figurine" + filterName + ":\n";
 				for (i = 0, len = Object.keys(rows).length; i < len; i++)
 					text += "> " + rows[i].name + " (" + rows[i].rarity + ", " + rows[i].quantity + ")\n";
-				
+
 				if (text.length >= 3500) {
 					bot.sendMessage(message.chat.id, message.from.username + ", il messaggio è troppo lungo, riprova con un filtro", html);
 					return;
@@ -10495,7 +10440,7 @@ bot.onText(/^\/zainob (.+)|^\/zainoc (.+)|^\/zainob|^\/zainoc/, function (messag
 		}
 
 		var bottext = "<b>" + message.from.username + "</b> possiedi (" + craftTxt + desc + "):\n";
-		
+
 		connection.query('SELECT inventory.player_id, item.name, rarity.id, rarity.shortname As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND item.craftable = ' + craftable + ' AND inventory.quantity > 0' + rarity + ' ORDER BY item.name ASC', function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
@@ -10848,16 +10793,16 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 			var top_win_text = "";
 			if (top_win > 0)
 				top_win_text = "Vittorie Vette: " + top_win + " (" + top_win_best + " Ð)\n";
-			
+
 			var map_win_text = "";
 			var map_win = connection_sync.query("SELECT COUNT(id) As cnt FROM map_history WHERE player_id = " + player_id + " AND position = 1");
 			if (map_win[0].cnt > 0)
 				map_win_text = "Vittorie Mappe: " + map_win[0].cnt + " (" + map_win_best + " 🏆)\n";
-			
+
 			var global_win_text = "";
 			if (global_win > 0)
 				global_win_text = "Vittorie Globali: " + global_win + "\n";
-			
+
 			var trophies_text = "";
 			if (total_trophies > 0)
 				trophies_text = "Trofei Mappe: " + trophies + " / " + total_trophies + "\n";
