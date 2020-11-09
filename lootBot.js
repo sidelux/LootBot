@@ -1825,6 +1825,8 @@ bot.onText(/\/start (.+)|\/start/i, function (message, match) {
 
 			connection.query('UPDATE player SET token_used = 1, token_streak = ' + token_streak + ', token_last_use = CURDATE()' + query + ' WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
+				if (token_streak == 0)
+					token_streak = 1;
 				bot.sendMessage(message.chat.id, "Hai ottenuto la ricompensa giornaliera n. " + token_streak + ":" + text, back);
 			});
 		});
@@ -52081,7 +52083,7 @@ function assaultIncrement(message, player_id, team_id) {
 					}
 				});
 
-				connection.query('SELECT 1 FROM assault_place_team, assault_place WHERE assault_place.id = assault_place_team.place_id AND team_id = ' + team_id + ' AND place_id = ' + my_place_id, function (err, rows, fields) {
+				connection.query('SELECT level, max_level FROM assault_place_team, assault_place WHERE assault_place.id = assault_place_team.place_id AND team_id = ' + team_id + ' AND place_id = ' + my_place_id, function (err, rows, fields) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length == 0) {
@@ -52090,7 +52092,8 @@ function assaultIncrement(message, player_id, team_id) {
 						return;
 					}
 
-					globalAchievement(player_id, 1);
+					var val = Math.round(rows[0].level*10/rows[0].max_level); // per globale
+					globalAchievement(player_id, val);
 				});
 			});
 		});
@@ -57464,7 +57467,8 @@ function setFinishedTeamMission(element, index, array) {
 									var savedQnt = qnt;
 									var extra = "";
 
-									var mission_time_count = Math.floor((duration*(parts+1))/60); // minuti
+									var mission_time_count_min = Math.floor((duration*(parts+1))/60); // minuti, per globale
+									var mission_time_count = Math.floor(mission_time_count_min/60); // ore
 
 									for (i = 0; i < Object.keys(rows).length; i++) {
 										if (rows[i].suspended == 0) {
