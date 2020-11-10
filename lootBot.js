@@ -12206,6 +12206,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														}
 													};
 												}
+												
+												var charges = (3 * param) + 3;
 
 												var text = "";
 												if (param == null) {
@@ -12216,6 +12218,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													if (param == 1)
 														plur = "a";
 													text = "Fin ora hai meditato " + param + " volt" + plur;
+													if (param <= 6)
+														text += "\n\nPer meditare ulteriormente ti serviranno " + charges + " Cariche Esplorative";
 												}
 
 												bot.sendMessage(message.chat.id, "Raggiungi una stanza con un'incisione profonda: Stanza della Meditazione, cosa vuoi fare?\n" + text, dOptions).then(function () {
@@ -12225,8 +12229,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																bot.sendMessage(message.chat.id, "Non puoi meditare troppo a lungo", dNext);
 																return;
 															}
-
-															var charges = (3 * param) + 3;
+															
 															if (cursed == 1)
 																charges += 5;
 															if (dungeon_energy < charges) {
