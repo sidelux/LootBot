@@ -2981,9 +2981,8 @@ bot.onText(/\/messaggio (.+)|\/messaggio/, function (message, match) {
 	connection.query('SELECT account_id, id, money, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
-		if (Object.keys(rows).length == 0) {
-			return;	
-		}
+		if (Object.keys(rows).length == 0)
+			return;
 
 		var banReason = isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -8973,7 +8972,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 		}
 	};
 
-	connection.query('SELECT account_id, id, life, total_life, ability, money, rank, reborn, exp, class, dungeon_skip, dungeon_count, boost_id, boost_mission, gender, holiday, dungeon_time, dungeon_energy, paralyzed FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT account_id, id, life, total_life, ability, money, rank, reborn, exp, class, dungeon_skip, dungeon_count, boost_id, boost_mission, gender, holiday, dungeon_time, dungeon_energy, paralyzed, gems FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = isBanned(rows[0].account_id);
@@ -9001,6 +9000,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 		var boost_mission = rows[0].boost_mission;
 		var dungeon_energy = rows[0].dungeon_energy;
 		var player_paralyzed = rows[0].paralyzed;
+		var gems = rows[0].gems;
 
 		var gender_text = "a";
 		var gender_text_g = "esploratrice";
@@ -13960,7 +13960,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																	var price = (rarity*5);
 
-																	bot.sendMessage(message.chat.id, "Sei sicuro di voler acquistare una Figurina casuale per " + price + " 💎?", dYesNo).then(function () {
+																	bot.sendMessage(message.chat.id, "Sei sicuro di voler acquistare una Figurina casuale per " + price + " 💎?\nAl momento ne possiedi " + formatNumber(gems), dYesNo).then(function () {
 																		answerCallbacks[message.chat.id] = function (answer) {
 																			if (answer.text.toLowerCase() == "si") {
 																				var p = connection_sync.query("SELECT gems FROM player WHERE id = " + player_id);
@@ -14714,7 +14714,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 												rows[0].claws += rows[0].claws * 0.5;
 												rows[0].saddle += rows[0].saddle * 0.5;
 											}
-											if ((class_id == 7) && (reborn == 5)) {
+											if ((class_id == 7) && (reborn >= 5)) {
 												rows[0].claws += rows[0].claws * 0.5;
 												rows[0].saddle += rows[0].saddle * 0.5;
 											}
@@ -14745,7 +14745,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 												dragon_crit += 5;
 											if ((class_id == 7) && (reborn >= 4))
 												dragon_crit += 7;
-											if ((class_id == 7) && (reborn == 5))
+											if ((class_id == 7) && (reborn >= 5))
 												critical += dragon_crit / 2;
 										}
 									}
@@ -20882,7 +20882,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 				dragon_claws += dragon_claws * 0.5;
 				dragon_saddle += dragon_saddle * 0.5;
 			}
-			if ((class_id == 7) && (reborn == 5)) {
+			if ((class_id == 7) && (reborn >= 5)) {
 				dragon_claws += dragon_claws * 0.5;
 				dragon_saddle += dragon_saddle * 0.5;
 			}
@@ -41385,6 +41385,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 
 							var skip1 = 0;
 							var skip2 = 0;
+							var skip3 = 0;
 							if ((lev == 100) && (reborn == 1))
 								skip1 = 1;
 							else if ((lev == 150) && (reborn == 2))
@@ -41399,6 +41400,8 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 								skip1 = 1;
 							if ((dragon_lev == 300) || ((dragon_lev == 200) && (evolved == 1)) || ((dragon_lev == 100) && (evolved == 0)))
 								skip2 = 1;
+							if (dragon_lev == 0)
+								skip3 = 1;
 
 							var rand2 = Math.random() * 100;
 							var magicN = "";
@@ -41442,6 +41445,13 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 												if (err) throw err;
 											});
 											bot.sendMessage(message.chat.id, "Avresti ottenuto 1 livello drago, ma hai raggiunto il cap, ritira!", kbBack);
+											return;
+										}
+										if (skip3 == 1) {
+											connection.query('UPDATE player SET moon_coin = moon_coin+' + price + ' WHERE id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+											});
+											bot.sendMessage(message.chat.id, "Avresti ottenuto 1 livello drago, ma non lo possiedi ancora, ritira!", kbBack);
 											return;
 										}
 										connection.query('UPDATE dragon SET exp = exp+70, level = level+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -42922,868 +42932,871 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo/i, function (message) {
 
 		connection.query('SELECT * FROM heist_progress WHERE from_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
-			if (Object.keys(rows).length > 0) {
-				var kb = {
-					parse_mode: "HTML",
-					reply_markup: {
-						resize_keyboard: true,
-						keyboard: [["Cambia Rune", "Tieni Combinazione"], ["Rinuncia", "Regole"], ["Torna al Rifugio"]]
-					}
-				};
 
-				var kbBack = {
-					parse_mode: "HTML",
-					reply_markup: {
-						resize_keyboard: true,
-						keyboard: [["Torna al Rifugio"], ["Torna al menu"]]
-					}
-				};
-
-				var rBack = {
-					parse_mode: "HTML",
-					reply_markup: {
-						resize_keyboard: true,
-						keyboard: [["Torna dallo Gnomo", "Torna al Rifugio"], ["Torna al menu"]]
-					}
-				};
-
-				var kbYesNo = {
-					parse_mode: "HTML",
-					reply_markup: {
-						resize_keyboard: true,
-						keyboard: [["Si"], ["Torna dallo gnomo"]]
-					}
-				};
-
-				var kbNum = {
-					parse_mode: "HTML",
-					reply_markup: {
-						resize_keyboard: true,
-						keyboard: [["1", "2", "3", "4", "5"], ["1,2", "1,3", "1,4", "1,5", "2,3"], ["2,4", "2,5", "3,4", "3,5", "4,5"], ["1,2,3,4,5"], ["Torna dallo gnomo"]]
-					}
-				};
-
-				var my_comb = "";
-				var travel = parseInt(rows[0].travel);
-				travel++;
-				var combi = String(rows[0].combination);
-				var isMatch = rows[0].isMatch;
-				var toId = rows[0].to_id;
-				var time_end = rows[0].time_end;
-
-				var now = new Date(rows[0].time_end);
-				var short_date_end = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
-
-				if (rows[0].wait_time != null) {
-					var now = new Date(rows[0].wait_time);
-					var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
-					bot.sendMessage(message.chat.id, "Il tuo gnomo sta ancora raccogliendo le rune, attendi fino alle " + short_date, back);
-					return;
+			var kbBack = {
+				parse_mode: "HTML",
+				reply_markup: {
+					resize_keyboard: true,
+					keyboard: [["Torna al Rifugio"], ["Torna al menu"]]
 				}
+			};
+			
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Il tuo gnomo non è appostato davanti a nessun rifugio", kbBack);
+				return;
+			}
+			
+			var kb = {
+				parse_mode: "HTML",
+				reply_markup: {
+					resize_keyboard: true,
+					keyboard: [["Cambia Rune", "Tieni Combinazione"], ["Rinuncia", "Regole"], ["Torna al Rifugio"]]
+				}
+			};
 
-				if (rows[0].my_combination == 0) {
-					for (i = 0; i < 5; i++)
-						my_comb += String(Math.round(Math.random() * 5 + 1));
+			var rBack = {
+				parse_mode: "HTML",
+				reply_markup: {
+					resize_keyboard: true,
+					keyboard: [["Torna dallo Gnomo", "Torna al Rifugio"], ["Torna al menu"]]
+				}
+			};
 
-					my_comb = String(my_comb);
+			var kbYesNo = {
+				parse_mode: "HTML",
+				reply_markup: {
+					resize_keyboard: true,
+					keyboard: [["Si"], ["Torna dallo gnomo"]]
+				}
+			};
 
-					var now = new Date();
-					now.setMinutes(now.getMinutes() + 5);
-					var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
-					var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
+			var kbNum = {
+				parse_mode: "HTML",
+				reply_markup: {
+					resize_keyboard: true,
+					keyboard: [["1", "2", "3", "4", "5"], ["1,2", "1,3", "1,4", "1,5", "2,3"], ["2,4", "2,5", "3,4", "3,5", "4,5"], ["1,2,3,4,5"], ["Torna dallo gnomo"]]
+				}
+			};
 
-					connection.query('UPDATE heist_progress SET my_combination = ' + my_comb + ', wait_time = "' + long_date + '", travel=travel+1 WHERE from_id = ' + player_id, function (err, rows, fields) {
-						if (err) throw err;
+			var my_comb = "";
+			var travel = parseInt(rows[0].travel);
+			travel++;
+			var combi = String(rows[0].combination);
+			var isMatch = rows[0].isMatch;
+			var toId = rows[0].to_id;
+			var time_end = rows[0].time_end;
 
-						bot.sendMessage(message.chat.id, "Il tuo gnomo è andato a recuperare alcune rune, dovrai attendere il suo ritorno alle " + short_date, back);
-					});
-					return;
-				} else
-					my_comb = String(rows[0].my_combination);
+			var now = new Date(rows[0].time_end);
+			var short_date_end = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
 
-				connection.query("SELECT chat_id, nickname FROM player WHERE id = " + toId, function (err, rows, fields) {
+			if (rows[0].wait_time != null) {
+				var now = new Date(rows[0].wait_time);
+				var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
+				bot.sendMessage(message.chat.id, "Il tuo gnomo sta ancora raccogliendo le rune, attendi fino alle " + short_date, back);
+				return;
+			}
+
+			if (rows[0].my_combination == 0) {
+				for (i = 0; i < 5; i++)
+					my_comb += String(Math.round(Math.random() * 5 + 1));
+
+				my_comb = String(my_comb);
+
+				var now = new Date();
+				now.setMinutes(now.getMinutes() + 5);
+				var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
+				var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
+
+				connection.query('UPDATE heist_progress SET my_combination = ' + my_comb + ', wait_time = "' + long_date + '", travel=travel+1 WHERE from_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 
-					var nick = rows[0].nickname;
-					var toChat = rows[0].chat_id;
-					var my_comb_arr = my_comb.split("");
+					bot.sendMessage(message.chat.id, "Il tuo gnomo è andato a recuperare alcune rune, dovrai attendere il suo ritorno alle " + short_date, back);
+				});
+				return;
+			} else
+				my_comb = String(rows[0].my_combination);
 
-					bot.sendMessage(message.chat.id, "Per entrare nel rifugio di <b>" + nick + "</b> devi possedere delle Rune di un valore più alto rispetto a quelle del guardiano del cancello, come procedi?\n\nLo gnomo torna dal rifugio con 5 Rune, su ogni runa è scritto un numero:\n\n💬 " + my_comb_arr.join(" ") + "\n\nPuoi cambiare le Rune ancora " + (4 - travel) + " volte, lo gnomo si stancherà di aspettare alle " + short_date_end, kb).then(function () {
-						answerCallbacks[message.chat.id] = function (answer) {
-							if (answer.text.toLowerCase() == "cambia rune") {
+			connection.query("SELECT chat_id, nickname FROM player WHERE id = " + toId, function (err, rows, fields) {
+				if (err) throw err;
 
-								if (travel >= 4) {
-									bot.sendMessage(message.chat.id, "Non puoi cambiare Rune più di 2 volte per ispezione!", rBack);
-									return;
-								}
+				var nick = rows[0].nickname;
+				var toChat = rows[0].chat_id;
+				var my_comb_arr = my_comb.split("");
 
-								bot.sendMessage(message.chat.id, "Inserisci le <b>posizioni</b> delle Rune che vuoi cambiare, separate da una virgola o scritti uno vicino all'altro. Dopo 5 minuti il tuo gnomo tornerà con le nuove rune.", kbNum).then(function () {
-									answerCallbacks[message.chat.id] = function (answer) {
-										if ((answer.text == "Torna al rifugio") || (answer.text == "Torna dallo gnomo"))
+				bot.sendMessage(message.chat.id, "Per entrare nel rifugio di <b>" + nick + "</b> devi possedere delle Rune di un valore più alto rispetto a quelle del guardiano del cancello, come procedi?\n\nLo gnomo torna dal rifugio con 5 Rune, su ogni runa è scritto un numero:\n\n💬 " + my_comb_arr.join(" ") + "\n\nPuoi cambiare le Rune ancora " + (4 - travel) + " volte, lo gnomo si stancherà di aspettare alle " + short_date_end, kb).then(function () {
+					answerCallbacks[message.chat.id] = function (answer) {
+						if (answer.text.toLowerCase() == "cambia rune") {
+
+							if (travel >= 4) {
+								bot.sendMessage(message.chat.id, "Non puoi cambiare Rune più di 2 volte per ispezione!", rBack);
+								return;
+							}
+
+							bot.sendMessage(message.chat.id, "Inserisci le <b>posizioni</b> delle Rune che vuoi cambiare, separate da una virgola o scritti uno vicino all'altro. Dopo 5 minuti il tuo gnomo tornerà con le nuove rune.", kbNum).then(function () {
+								answerCallbacks[message.chat.id] = function (answer) {
+									if ((answer.text == "Torna al rifugio") || (answer.text == "Torna dallo gnomo"))
+										return;
+
+									var numbers;
+									answer.text = answer.text.replace(/ /g,'');
+									if (answer.text.indexOf(",") != -1)
+										numbers = answer.text.trim().split(",").map(Number);
+									else
+										numbers = answer.text.trim().split("").map(Number);
+									var len = Object.keys(numbers).length;
+
+									if (len < 1) {
+										bot.sendMessage(message.chat.id, "Inserisci almeno un numero, riprova", rBack);
+										return;
+									}
+
+									if (len > 5) {
+										bot.sendMessage(message.chat.id, "Troppi numeri, massimo 5, riprova", rBack);
+										return;
+									}
+
+									var mark_comb = "";
+									for (i = 0; i < my_comb_arr.length; i++) {
+										if ((my_comb_arr[i] == NaN) || (my_comb_arr[i] > 6) || (my_comb_arr[i] < 1)) {
+											bot.sendMessage(message.chat.id, my_comb_arr[i] + " non valido, riprova", rBack);
 											return;
-
-										var numbers;
-										answer.text = answer.text.replace(/ /g,'');
-										if (answer.text.indexOf(",") != -1)
-											numbers = answer.text.trim().split(",").map(Number);
+										}
+										if (numbers.indexOf(i+1) != -1)
+											mark_comb += "<b>" + my_comb_arr[i] + "</b> ";
 										else
-											numbers = answer.text.trim().split("").map(Number);
-										var len = Object.keys(numbers).length;
+											mark_comb += my_comb_arr[i] + " ";
+									}
 
-										if (len < 1) {
-											bot.sendMessage(message.chat.id, "Inserisci almeno un numero, riprova", rBack);
-											return;
-										}
-
-										if (len > 5) {
-											bot.sendMessage(message.chat.id, "Troppi numeri, massimo 5, riprova", rBack);
-											return;
-										}
-
-										var mark_comb = "";
-										for (i = 0; i < my_comb_arr.length; i++) {
-											if ((my_comb_arr[i] == NaN) || (my_comb_arr[i] > 6) || (my_comb_arr[i] < 1)) {
-												bot.sendMessage(message.chat.id, my_comb_arr[i] + " non valido, riprova", rBack);
+									bot.sendMessage(message.chat.id, "🗯 " + mark_comb + "\n\nSicuro di voler cambiare le rune evidenziate?", kbYesNo).then(function () {
+										answerCallbacks[message.chat.id] = function (answer) {
+											if (answer.text.toLowerCase() != "si")
 												return;
-											}
-											if (numbers.indexOf(i+1) != -1)
-												mark_comb += "<b>" + my_comb_arr[i] + "</b> ";
-											else
-												mark_comb += my_comb_arr[i] + " ";
-										}
 
-										bot.sendMessage(message.chat.id, "🗯 " + mark_comb + "\n\nSicuro di voler cambiare le rune evidenziate?", kbYesNo).then(function () {
-											answerCallbacks[message.chat.id] = function (answer) {
-												if (answer.text.toLowerCase() != "si")
+											var check = 0;
+											var checkn = 0;
+
+											for (var i = 0; i < len; i++) {
+												numbers[i] = Math.round(numbers[i]);
+
+												if (isNaN(numbers[i])) {
+													bot.sendMessage(message.chat.id, "Almeno un numero non è valido, riprova", rBack);
 													return;
-
-												var check = 0;
-												var checkn = 0;
-
-												for (var i = 0; i < len; i++) {
-													numbers[i] = Math.round(numbers[i]);
-
-													if (isNaN(numbers[i])) {
-														bot.sendMessage(message.chat.id, "Almeno un numero non è valido, riprova", rBack);
+												}
+												if ((numbers[i] < 1) || (numbers[i] > 5)) {
+													bot.sendMessage(message.chat.id, numbers[i] + " non è valido, deve essere compreso tra 1 e 5", rBack);
+													return;
+												}
+												checkn = 0;
+												for (var j = 0; j < len; j++) {
+													if (numbers[i] == numbers[j]) {
+														checkn++;
+													}
+													if (checkn >= 2) {
+														bot.sendMessage(message.chat.id, numbers[i] + " non è valido, è già stato inserito", rBack);
 														return;
 													}
-													if ((numbers[i] < 1) || (numbers[i] > 5)) {
-														bot.sendMessage(message.chat.id, numbers[i] + " non è valido, deve essere compreso tra 1 e 5", rBack);
-														return;
-													}
-													checkn = 0;
-													for (var j = 0; j < len; j++) {
-														if (numbers[i] == numbers[j]) {
-															checkn++;
-														}
-														if (checkn >= 2) {
-															bot.sendMessage(message.chat.id, numbers[i] + " non è valido, è già stato inserito", rBack);
-															return;
-														}
-													}
-												}
-
-												var now = new Date();
-												now.setMinutes(now.getMinutes() + 5);
-												var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
-												var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
-
-												connection.query('UPDATE heist_progress SET changeComb = ' + numbers.join("") + ', wait_time = "' + long_date + '", travel = travel+1 WHERE from_id = ' + player_id, function (err, rows, fields) {
-													if (err) throw err;
-													bot.sendMessage(message.chat.id, "Lo gnomo è stato inviato a sostituire le rune richieste, tornerà alle " + short_date, rBack);
-												});
-											}
-										});
-									};
-								});
-
-							} else if (answer.text.toLowerCase() == "tieni combinazione") {
-
-								var num = [];
-								var end = "";
-								var end_num = 0;
-
-								var final1 = 0;
-								var final2 = 0;
-								var final_n1 = "";
-								var final_n2 = "";
-								var couple1 = 0;
-								var couple2 = 0;
-
-								var dcouple1 = 0;
-								var dcouple2 = 0;
-								var dcouple1b = 0;
-								var dcouple2b = 0;
-								var dcoupled1 = 0;
-								var dcoupled2 = 0;
-								var dcoupleSolo1 = 0;
-								var dcoupleSolo2 = 0;
-								var coupSolo1 = 0;
-								var coupSolo2 = 0;
-
-								var triple1 = 0;
-								var triple2 = 0;
-								var triple_a1 = 0;
-								var triple_a2 = 0;
-								var triple_b1 = 0;
-								var triple_b2 = 0;
-								var triple_d1 = 0;
-								var triple_d2 = 0;
-
-								var full1_d = 0;
-								var full1_t = 0;
-								var full1 = 0;
-								var full2 = 0;
-								var quad1 = 0;
-								var quad2 = 0;
-								var dquad1 = 0;
-								var dquad2 = 0;
-								var penta1 = 0;
-								var penta2 = 0;
-								var scalef1 = 0;
-								var scalef2 = 0;
-								var scales1 = 0;
-								var scales2 = 0;
-
-								for (i = 0; i < 2; i++) {
-									if (i == 0)
-										num = my_comb.split("");
-									else
-										num = combi.split("");
-									num.sort();
-
-									end = "";
-									end_num = 0;
-
-									//Cinque di un tipo
-									if ((num[0] == num[1]) && (num[1] == num[2]) && (num[2] == num[3]) && (num[3] == num[4])) {
-										end = "Cinque di un tipo";
-										end_num = 8;
-									}
-
-									if ((i == 0) && (end_num == 8))
-										penta1 = num[0];
-									else
-										penta2 = num[0];
-
-									if (end_num == 0) {
-										//Quattro di un tipo
-										var dquad = 0;
-										if ((num[0] == num[1]) && (num[1] == num[2]) && (num[2] == num[3])) {
-											end = "Quattro di un tipo";
-											end_num = 7;
-											dquad = num[4];
-										}
-										if ((num[1] == num[2]) && (num[2] == num[3]) && (num[3] == num[4])) {
-											end = "Quattro di un tipo";
-											end_num = 7;
-											dquad = num[0];
-										}
-
-										if ((i == 0) && (end_num == 7)) {
-											quad1 = num[1];
-											dquad1 = dquad;
-										} else {
-											quad2 = num[1];
-											dquad2 = dquad;
-										}
-									}
-
-									if (end_num == 0) {
-										//Scala di 6
-										if ((num[0] == 2) && (num[1] == 3) && (num[2] == 4) && (num[3] == 5) && (num[4] == 6)) {
-											end = "Scala di 6";
-											end_num = 6;
-										}
-
-										if ((i == 0) && (end_num == 6))
-											scales1 = num[0];
-										else
-											scales2 = num[0];
-									}
-
-									if (end_num == 0) {
-										//Scala di 5
-										if ((num[0] == 1) && (num[1] == 2) && (num[2] == 3) && (num[3] == 4) && (num[4] == 5)) {
-											end = "Scala di 5";
-											end_num = 5;
-										}
-
-										if ((i == 0) && (end_num == 5))
-											scalef1 = num[0];
-										else
-											scalef2 = num[0];
-									}
-
-									if (end_num == 0) {
-										//Full House
-										var full = 0;
-										var fullDouble = 0;
-										var fullTris = 0;
-										var array_full = [];
-
-										if ((num[0] == num[1]) && (num[1] == num[2])) {
-											full++;
-											fullTris = num[0];
-											array_full.push(num[3]);
-											array_full.push(num[4]);
-										} else if ((num[1] == num[2]) && (num[2] == num[3])) {
-											full++;
-											fullTris = num[1];
-											array_full.push(num[0]);
-											array_full.push(num[4]);
-										} else if ((num[2] == num[3]) && (num[3] == num[4])) {
-											full++;
-											fullTris = num[2];
-											array_full.push(num[0]);
-											array_full.push(num[1]);
-										}
-
-										if (full == 1) {
-											if (array_full[0] == array_full[1]) {
-												full++;
-												fullDouble = array_full[0];
-											}
-
-											if (fullDouble != fullTris) {
-												if (full == 2) {
-													end = "Full";
-													end_num = 4;
-												}
-												if ((i == 0) && (end_num == 4)) {
-													full1_d = fullDouble;
-													full1_t = fullTris;
-												} else {
-													if (fullTris == full1_t) {
-														full2 = fullDouble;
-														full1 = full1_d;
-													} else {
-														full2 = fullTris;
-														full1 = full1_t;
-													}
 												}
 											}
+
+											var now = new Date();
+											now.setMinutes(now.getMinutes() + 5);
+											var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
+											var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
+
+											connection.query('UPDATE heist_progress SET changeComb = ' + numbers.join("") + ', wait_time = "' + long_date + '", travel = travel+1 WHERE from_id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+												bot.sendMessage(message.chat.id, "Lo gnomo è stato inviato a sostituire le rune richieste, tornerà alle " + short_date, rBack);
+											});
 										}
+									});
+								};
+							});
+
+						} else if (answer.text.toLowerCase() == "tieni combinazione") {
+
+							var num = [];
+							var end = "";
+							var end_num = 0;
+
+							var final1 = 0;
+							var final2 = 0;
+							var final_n1 = "";
+							var final_n2 = "";
+							var couple1 = 0;
+							var couple2 = 0;
+
+							var dcouple1 = 0;
+							var dcouple2 = 0;
+							var dcouple1b = 0;
+							var dcouple2b = 0;
+							var dcoupled1 = 0;
+							var dcoupled2 = 0;
+							var dcoupleSolo1 = 0;
+							var dcoupleSolo2 = 0;
+							var coupSolo1 = 0;
+							var coupSolo2 = 0;
+
+							var triple1 = 0;
+							var triple2 = 0;
+							var triple_a1 = 0;
+							var triple_a2 = 0;
+							var triple_b1 = 0;
+							var triple_b2 = 0;
+							var triple_d1 = 0;
+							var triple_d2 = 0;
+
+							var full1_d = 0;
+							var full1_t = 0;
+							var full1 = 0;
+							var full2 = 0;
+							var quad1 = 0;
+							var quad2 = 0;
+							var dquad1 = 0;
+							var dquad2 = 0;
+							var penta1 = 0;
+							var penta2 = 0;
+							var scalef1 = 0;
+							var scalef2 = 0;
+							var scales1 = 0;
+							var scales2 = 0;
+
+							for (i = 0; i < 2; i++) {
+								if (i == 0)
+									num = my_comb.split("");
+								else
+									num = combi.split("");
+								num.sort();
+
+								end = "";
+								end_num = 0;
+
+								//Cinque di un tipo
+								if ((num[0] == num[1]) && (num[1] == num[2]) && (num[2] == num[3]) && (num[3] == num[4])) {
+									end = "Cinque di un tipo";
+									end_num = 8;
+								}
+
+								if ((i == 0) && (end_num == 8))
+									penta1 = num[0];
+								else
+									penta2 = num[0];
+
+								if (end_num == 0) {
+									//Quattro di un tipo
+									var dquad = 0;
+									if ((num[0] == num[1]) && (num[1] == num[2]) && (num[2] == num[3])) {
+										end = "Quattro di un tipo";
+										end_num = 7;
+										dquad = num[4];
+									}
+									if ((num[1] == num[2]) && (num[2] == num[3]) && (num[3] == num[4])) {
+										end = "Quattro di un tipo";
+										end_num = 7;
+										dquad = num[0];
 									}
 
-									if (end_num == 0) {
-										//Tre di un tipo
-										var triple = 0;
-										var triple_d = 0;
-										if ((num[0] == num[1]) && (num[1] == num[2])) {
-											end = "Tre di un tipo";
-											end_num = 3;
-											triple = num[0];
-
-											if (i == 0) {
-												triple_a1 = num[3];
-												triple_a2 = num[4];
-											} else {
-												triple_b1 = num[3];
-												triple_b2 = num[4];
-											}
-										}
-										if ((num[1] == num[2]) && (num[2] == num[3])) {
-											end = "Tre di un tipo";
-											end_num = 3;
-											triple = num[1];
-
-											if (i == 0) {
-												triple_a1 = num[0];
-												triple_a2 = num[4];
-											} else {
-												triple_b1 = num[0];
-												triple_b2 = num[4];
-											}
-										}
-										if ((num[2] == num[3]) && (num[3] == num[4])) {
-											end = "Tre di un tipo";
-											end_num = 3;
-											triple = num[2];
-
-											if (i == 0) {
-												triple_a1 = num[0];
-												triple_a2 = num[1];
-											} else {
-												triple_b1 = num[0];
-												triple_b2 = num[1];
-											}
-										}
-
-										if ((i == 0) && (end_num == 3))
-											triple1 = triple;
-										else {
-											triple2 = triple;
-
-											if (triple_a2 == triple_b2) {
-												if (triple_a1 >= triple_b1) {
-													triple_d1 = triple_a1;
-													triple_d2 = 0;
-												} else {
-													triple_d1 = 0;
-													triple_d2 = triple_b1;
-												}
-											} else {
-												if (triple_a2 >= triple_b2) {
-													triple_d1 = triple_a2;
-													triple_d2 = 0;
-												} else {
-													triple_d1 = 0;
-													triple_d2 = triple_b2;
-												}
-											}
-										}
-									}
-
-									if (end_num == 0) {
-										//Doppia Coppia
-										var double = 0;
-										var doubleN = 0;
-										var doubleN2 = 0;
-										if (num[0] == num[1]) {
-											double++;
-											doubleN = num[0];
-										}
-										if (num[1] == num[2]) {
-											double++;
-											if (double == 2)
-												doubleN2 = doubleN;
-											if (num[1] > doubleN)
-												doubleN = num[1];
-										}
-										if (num[2] == num[3]) {
-											double++;
-											if (double == 2)
-												doubleN2 = doubleN;
-											if (num[2] > doubleN)
-												doubleN = num[2];
-										}
-										if (num[3] == num[4]) {
-											double++;
-											if (double == 2)
-												doubleN2 = doubleN;
-											if (num[3] > doubleN)
-												doubleN = num[3];
-										}
-										if (double == 2) {
-											end = "Doppia Coppia";
-											end_num = 2;
-										}
-
-										var checkN = 0;
-
-										if ((i == 0) && (end_num == 2)) {
-											dcouple1 = doubleN;
-											dcouple1b = doubleN2;
-
-											for (k = 0; k < 5; k++) {
-												checkN = 0;
-												for (j = 0; j < 5; j++) {
-													if (num[k] == num[j])
-														checkN++;
-												}
-												if (checkN == 1)
-													dcoupleSolo1 = num[k];
-											}
-										} else {
-											dcouple2 = doubleN;
-											dcouple2b = doubleN2;
-
-											for (k = 0; k < 5; k++) {
-												checkN = 0;
-												for (j = 0; j < 5; j++) {
-													if (num[k] == num[j])
-														checkN++;
-												}
-												if (checkN == 1)
-													dcoupleSolo2 = num[k];
-											}
-										}
-									}
-
-									if (end_num == 0) {
-										//Coppia
-										var coup = 0;
-										if (num[0] == num[1]) {
-											end = "Coppia";
-											end_num = 1;
-											coup = num[0];
-
-											var others = [num[2], num[3], num[4]];
-											if (i == 0)
-												coupSolo1 = others;
-											else
-												coupSolo2 = others;
-										}
-										if (num[1] == num[2]) {
-											end = "Coppia";
-											end_num = 1;
-											coup = num[1];
-
-											var others = [num[0], num[3], num[4]];
-											if (i == 0)
-												coupSolo1 = others;
-											else
-												coupSolo2 = others;
-										}
-										if (num[2] == num[3]) {
-											end = "Coppia";
-											end_num = 1;
-											coup = num[2];
-
-											var others = [num[0], num[1], num[4]];
-											if (i == 0)
-												coupSolo1 = others;
-											else
-												coupSolo2 = others;
-										}
-										if (num[3] == num[4]) {
-											end = "Coppia";
-											end_num = 1;
-											coup = num[3];
-
-											var others = [num[0], num[1], num[2]];
-											if (i == 0)
-												coupSolo1 = others;
-											else
-												coupSolo2 = others;
-										}
-
-										if ((i == 0) && (end_num == 1))
-											couple1 = coup;
-										else
-											couple2 = coup;
-									}
-
-									if (i == 0) {
-										final1 = end_num;
-										final_n1 = end;
+									if ((i == 0) && (end_num == 7)) {
+										quad1 = num[1];
+										dquad1 = dquad;
 									} else {
-										final2 = end_num;
-										final_n2 = end;
+										quad2 = num[1];
+										dquad2 = dquad;
 									}
 								}
 
-								var text = "Punti 1: " + final1 + " (" + final_n1 + ")\nPunti 2: " + final2 + " (" + final_n2 + ")";
-								//console.log(text);
+								if (end_num == 0) {
+									//Scala di 6
+									if ((num[0] == 2) && (num[1] == 3) && (num[2] == 4) && (num[3] == 5) && (num[4] == 6)) {
+										end = "Scala di 6";
+										end_num = 6;
+									}
 
-								if ((final1 == 1) && (final2 == 1)) { //Coppia
-									if (couple1 == couple2) {
-										for (k = 0; k < coupSolo1.length; k++) {
-											if (coupSolo1[k] != coupSolo2[k]) {
-												if (coupSolo1[k] > coupSolo2[k])
-													final1++;
-												else
-													final2++;
+									if ((i == 0) && (end_num == 6))
+										scales1 = num[0];
+									else
+										scales2 = num[0];
+								}
+
+								if (end_num == 0) {
+									//Scala di 5
+									if ((num[0] == 1) && (num[1] == 2) && (num[2] == 3) && (num[3] == 4) && (num[4] == 5)) {
+										end = "Scala di 5";
+										end_num = 5;
+									}
+
+									if ((i == 0) && (end_num == 5))
+										scalef1 = num[0];
+									else
+										scalef2 = num[0];
+								}
+
+								if (end_num == 0) {
+									//Full House
+									var full = 0;
+									var fullDouble = 0;
+									var fullTris = 0;
+									var array_full = [];
+
+									if ((num[0] == num[1]) && (num[1] == num[2])) {
+										full++;
+										fullTris = num[0];
+										array_full.push(num[3]);
+										array_full.push(num[4]);
+									} else if ((num[1] == num[2]) && (num[2] == num[3])) {
+										full++;
+										fullTris = num[1];
+										array_full.push(num[0]);
+										array_full.push(num[4]);
+									} else if ((num[2] == num[3]) && (num[3] == num[4])) {
+										full++;
+										fullTris = num[2];
+										array_full.push(num[0]);
+										array_full.push(num[1]);
+									}
+
+									if (full == 1) {
+										if (array_full[0] == array_full[1]) {
+											full++;
+											fullDouble = array_full[0];
+										}
+
+										if (fullDouble != fullTris) {
+											if (full == 2) {
+												end = "Full";
+												end_num = 4;
+											}
+											if ((i == 0) && (end_num == 4)) {
+												full1_d = fullDouble;
+												full1_t = fullTris;
+											} else {
+												if (fullTris == full1_t) {
+													full2 = fullDouble;
+													full1 = full1_d;
+												} else {
+													full2 = fullTris;
+													full1 = full1_t;
+												}
 											}
 										}
-									} else if (couple1 > couple2)
+									}
+								}
+
+								if (end_num == 0) {
+									//Tre di un tipo
+									var triple = 0;
+									var triple_d = 0;
+									if ((num[0] == num[1]) && (num[1] == num[2])) {
+										end = "Tre di un tipo";
+										end_num = 3;
+										triple = num[0];
+
+										if (i == 0) {
+											triple_a1 = num[3];
+											triple_a2 = num[4];
+										} else {
+											triple_b1 = num[3];
+											triple_b2 = num[4];
+										}
+									}
+									if ((num[1] == num[2]) && (num[2] == num[3])) {
+										end = "Tre di un tipo";
+										end_num = 3;
+										triple = num[1];
+
+										if (i == 0) {
+											triple_a1 = num[0];
+											triple_a2 = num[4];
+										} else {
+											triple_b1 = num[0];
+											triple_b2 = num[4];
+										}
+									}
+									if ((num[2] == num[3]) && (num[3] == num[4])) {
+										end = "Tre di un tipo";
+										end_num = 3;
+										triple = num[2];
+
+										if (i == 0) {
+											triple_a1 = num[0];
+											triple_a2 = num[1];
+										} else {
+											triple_b1 = num[0];
+											triple_b2 = num[1];
+										}
+									}
+
+									if ((i == 0) && (end_num == 3))
+										triple1 = triple;
+									else {
+										triple2 = triple;
+
+										if (triple_a2 == triple_b2) {
+											if (triple_a1 >= triple_b1) {
+												triple_d1 = triple_a1;
+												triple_d2 = 0;
+											} else {
+												triple_d1 = 0;
+												triple_d2 = triple_b1;
+											}
+										} else {
+											if (triple_a2 >= triple_b2) {
+												triple_d1 = triple_a2;
+												triple_d2 = 0;
+											} else {
+												triple_d1 = 0;
+												triple_d2 = triple_b2;
+											}
+										}
+									}
+								}
+
+								if (end_num == 0) {
+									//Doppia Coppia
+									var double = 0;
+									var doubleN = 0;
+									var doubleN2 = 0;
+									if (num[0] == num[1]) {
+										double++;
+										doubleN = num[0];
+									}
+									if (num[1] == num[2]) {
+										double++;
+										if (double == 2)
+											doubleN2 = doubleN;
+										if (num[1] > doubleN)
+											doubleN = num[1];
+									}
+									if (num[2] == num[3]) {
+										double++;
+										if (double == 2)
+											doubleN2 = doubleN;
+										if (num[2] > doubleN)
+											doubleN = num[2];
+									}
+									if (num[3] == num[4]) {
+										double++;
+										if (double == 2)
+											doubleN2 = doubleN;
+										if (num[3] > doubleN)
+											doubleN = num[3];
+									}
+									if (double == 2) {
+										end = "Doppia Coppia";
+										end_num = 2;
+									}
+
+									var checkN = 0;
+
+									if ((i == 0) && (end_num == 2)) {
+										dcouple1 = doubleN;
+										dcouple1b = doubleN2;
+
+										for (k = 0; k < 5; k++) {
+											checkN = 0;
+											for (j = 0; j < 5; j++) {
+												if (num[k] == num[j])
+													checkN++;
+											}
+											if (checkN == 1)
+												dcoupleSolo1 = num[k];
+										}
+									} else {
+										dcouple2 = doubleN;
+										dcouple2b = doubleN2;
+
+										for (k = 0; k < 5; k++) {
+											checkN = 0;
+											for (j = 0; j < 5; j++) {
+												if (num[k] == num[j])
+													checkN++;
+											}
+											if (checkN == 1)
+												dcoupleSolo2 = num[k];
+										}
+									}
+								}
+
+								if (end_num == 0) {
+									//Coppia
+									var coup = 0;
+									if (num[0] == num[1]) {
+										end = "Coppia";
+										end_num = 1;
+										coup = num[0];
+
+										var others = [num[2], num[3], num[4]];
+										if (i == 0)
+											coupSolo1 = others;
+										else
+											coupSolo2 = others;
+									}
+									if (num[1] == num[2]) {
+										end = "Coppia";
+										end_num = 1;
+										coup = num[1];
+
+										var others = [num[0], num[3], num[4]];
+										if (i == 0)
+											coupSolo1 = others;
+										else
+											coupSolo2 = others;
+									}
+									if (num[2] == num[3]) {
+										end = "Coppia";
+										end_num = 1;
+										coup = num[2];
+
+										var others = [num[0], num[1], num[4]];
+										if (i == 0)
+											coupSolo1 = others;
+										else
+											coupSolo2 = others;
+									}
+									if (num[3] == num[4]) {
+										end = "Coppia";
+										end_num = 1;
+										coup = num[3];
+
+										var others = [num[0], num[1], num[2]];
+										if (i == 0)
+											coupSolo1 = others;
+										else
+											coupSolo2 = others;
+									}
+
+									if ((i == 0) && (end_num == 1))
+										couple1 = coup;
+									else
+										couple2 = coup;
+								}
+
+								if (i == 0) {
+									final1 = end_num;
+									final_n1 = end;
+								} else {
+									final2 = end_num;
+									final_n2 = end;
+								}
+							}
+
+							var text = "Punti 1: " + final1 + " (" + final_n1 + ")\nPunti 2: " + final2 + " (" + final_n2 + ")";
+							//console.log(text);
+
+							if ((final1 == 1) && (final2 == 1)) { //Coppia
+								if (couple1 == couple2) {
+									for (k = 0; k < coupSolo1.length; k++) {
+										if (coupSolo1[k] != coupSolo2[k]) {
+											if (coupSolo1[k] > coupSolo2[k])
+												final1++;
+											else
+												final2++;
+										}
+									}
+								} else if (couple1 > couple2)
+									final1++;
+								else
+									final2++;
+							}
+							if ((final1 == 2) && (final2 == 2)) { //Doppia Coppia
+								if (dcouple1 > dcouple2)
+									final1++;
+								else if (dcouple1 == dcouple2) {
+									if (dcouple1b > dcouple2b)
+										final1++;
+									else if (dcouple1b == dcouple2b) {
+										if (dcoupleSolo1 > dcoupleSolo2)
+											final1++;
+										else
+											final2++;
+									} else
+										final2++;
+								} else
+									final2++;
+							}
+							if ((final1 == 3) && (final2 == 3)) { //Tris
+								if (triple1 == triple2) {
+									if (triple_d1 > triple_d2)
+										final1++;
+									else
+										final2++;
+								} else {
+									if (triple1 > triple2)
 										final1++;
 									else
 										final2++;
 								}
-								if ((final1 == 2) && (final2 == 2)) { //Doppia Coppia
-									if (dcouple1 > dcouple2)
-										final1++;
-									else if (dcouple1 == dcouple2) {
-										if (dcouple1b > dcouple2b)
+							}
+							if ((final1 == 4) && (final2 == 4)) { //Full
+								if (full1 > full2)
+									final1++;
+								else
+									final2++;
+							}
+							if ((final1 == 5) && (final2 == 5)) { //Scala 5
+								if (scalef1 > scalef2)
+									final1++;
+								else
+									final2++;
+							}
+							if ((final1 == 6) && (final2 == 6)) { //Scala 6
+								if (scales1 > scales2)
+									final1++;
+								else
+									final2++;
+							}
+							if ((final1 == 7) && (final2 == 7)) { //Quattro uguali
+								if (quad1 > quad2)
+									final1++;
+								else {
+									if (quad1 == quad2) {
+										if (dquad1 > dquad2)
 											final1++;
-										else if (dcouple1b == dcouple2b) {
-											if (dcoupleSolo1 > dcoupleSolo2)
-												final1++;
-											else
-												final2++;
-										} else
+										else
 											final2++;
 									} else
 										final2++;
 								}
-								if ((final1 == 3) && (final2 == 3)) { //Tris
-									if (triple1 == triple2) {
-										if (triple_d1 > triple_d2)
-											final1++;
-										else
-											final2++;
-									} else {
-										if (triple1 > triple2)
-											final1++;
-										else
-											final2++;
-									}
-								}
-								if ((final1 == 4) && (final2 == 4)) { //Full
-									if (full1 > full2)
-										final1++;
-									else
-										final2++;
-								}
-								if ((final1 == 5) && (final2 == 5)) { //Scala 5
-									if (scalef1 > scalef2)
-										final1++;
-									else
-										final2++;
-								}
-								if ((final1 == 6) && (final2 == 6)) { //Scala 6
-									if (scales1 > scales2)
-										final1++;
-									else
-										final2++;
-								}
-								if ((final1 == 7) && (final2 == 7)) { //Quattro uguali
-									if (quad1 > quad2)
-										final1++;
-									else {
-										if (quad1 == quad2) {
-											if (dquad1 > dquad2)
-												final1++;
-											else
-												final2++;
-										} else
-											final2++;
-									}
-								}
-								if ((final1 == 8) && (final2 == 8)) { //Cinque uguali
-									if (penta1 > penta2)
-										final1++;
-									else
-										final2++;
-								}
+							}
+							if ((final1 == 8) && (final2 == 8)) { //Cinque uguali
+								if (penta1 > penta2)
+									final1++;
+								else
+									final2++;
+							}
 
-								if ((final1 == 0) && (final2 == 0)) {
-									var n1 = my_comb.split("").sort().join("");
-									var n2 = combi.split("").sort().join("");
-									if (n2 > n1)
-										final2++;
-									else
-										final1++;
-								}
+							if ((final1 == 0) && (final2 == 0)) {
+								var n1 = my_comb.split("").sort().join("");
+								var n2 = combi.split("").sort().join("");
+								if (n2 > n1)
+									final2++;
+								else
+									final1++;
+							}
 
-								if (final1 >= final2) {
-									var expText = "";
-									if (isMatch == 1) {
-										expText = " ed ottenuto 3 exp";
-										setAchievement(player_id, 13, 1);
-										setExp(player_id, 3);
-										connection.query('UPDATE player SET ability = ability+2 WHERE id = ' + player_id, function (err, rows, fields) {
-											if (err) throw err;
-										});
-										connection.query('UPDATE player SET ability = ability-1 WHERE ability > 0 AND id = ' + toId, function (err, rows, fields) {
-											if (err) throw err;
-										});
-									}
-									connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 5', function (err, rows, fields) {
+							if (final1 >= final2) {
+								var expText = "";
+								if (isMatch == 1) {
+									expText = " ed ottenuto 3 exp";
+									setAchievement(player_id, 13, 1);
+									setExp(player_id, 3);
+									connection.query('UPDATE player SET ability = ability+2 WHERE id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+									});
+									connection.query('UPDATE player SET ability = ability-1 WHERE ability > 0 AND id = ' + toId, function (err, rows, fields) {
+										if (err) throw err;
+									});
+								}
+								connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 5', function (err, rows, fields) {
+									if (err) throw err;
+
+									var abBonus = 0;
+									if (Object.keys(rows).length > 0)
+										abBonus = rows[0].ability_level * (rows[0].val / 10);
+
+									var money = ability * 10;
+
+									money += money * (abBonus / 10);
+									if (crazyMode == 1)
+										money = money * 2;
+									money = Math.round(money);
+
+									// globale
+									/*
+									if (global_end == 1)
+										money = 0;
+									*/
+
+									connection.query("SELECT money FROM player WHERE id = " + toId, function (err, rows, fields) {
 										if (err) throw err;
 
-										var abBonus = 0;
-										if (Object.keys(rows).length > 0)
-											abBonus = rows[0].ability_level * (rows[0].val / 10);
+										var noMoneyItemId = 0;
+										var noMoneyItemName = "";
+										var moneytxt = "<b>" + formatNumber(money) + " §</b>";
+										if (rows[0].money < money) {
+											var noItemQuery = connection_sync.query("SELECT item.id, item.name FROM inventory, item WHERE item.id = inventory.item_id AND quantity > 0 AND rarity IN ('NC','R','UR') AND craftable = 1 AND inventory.player_id = " + toId + " ORDER BY RAND() LIMIT 1");
+											if (Object.keys(noItemQuery).length > 0) {
+												noMoneyItemId = noItemQuery[0].id;
+												noMoneyItemName = noItemQuery[0].name;
+												moneytxt = "1x <b>" + noMoneyItemName + "</b>";
+											} else {
+												money = 0;
+												moneytxt = "<b>nulla</b>";
+											}
+										}
 
-										var money = ability * 10;
+										if (noMoneyItemId == 0) {
+											connection.query('UPDATE player SET money = money-' + money + ' WHERE id = ' + toId, function (err, rows, fields) {
+												if (err) throw err;
+												connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+												});
+											});
+										} else {
+											addItem(player_id, noMoneyItemId);
+											delItem(toId, noMoneyItemId);
+										}
 
-										money += money * (abBonus / 10);
-										if (crazyMode == 1)
-											money = money * 2;
-										money = Math.round(money);
-
-										// globale
-										/*
-										if (global_end == 1)
-											money = 0;
-										*/
-
-										connection.query("SELECT money FROM player WHERE id = " + toId, function (err, rows, fields) {
+										connection.query('DELETE FROM heist_progress WHERE from_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 
-											var noMoneyItemId = 0;
-											var noMoneyItemName = "";
-											var moneytxt = "<b>" + formatNumber(money) + " §</b>";
-											if (rows[0].money < money) {
-												var noItemQuery = connection_sync.query("SELECT item.id, item.name FROM inventory, item WHERE item.id = inventory.item_id AND quantity > 0 AND rarity IN ('NC','R','UR') AND craftable = 1 AND inventory.player_id = " + toId + " ORDER BY RAND() LIMIT 1");
-												if (Object.keys(noItemQuery).length > 0) {
-													noMoneyItemId = noItemQuery[0].id;
-													noMoneyItemName = noItemQuery[0].name;
-													moneytxt = "1x <b>" + noMoneyItemName + "</b>";
-												} else {
-													money = 0;
-													moneytxt = "<b>nulla</b>";
-												}
-											}
+											var key = 0;
+											var key_lost = 0;
+											/*
+											if (global_end == 1)
+												key += 5;
+											*/
 
-											if (noMoneyItemId == 0) {
-												connection.query('UPDATE player SET money = money-' + money + ' WHERE id = ' + toId, function (err, rows, fields) {
-													if (err) throw err;
-													connection.query('UPDATE player SET money = money+' + money + ' WHERE id = ' + player_id, function (err, rows, fields) {
-														if (err) throw err;
-													});
-												});
-											} else {
-												addItem(player_id, noMoneyItemId);
-												delItem(toId, noMoneyItemId);
-											}
-
-											connection.query('DELETE FROM heist_progress WHERE from_id = ' + player_id, function (err, rows, fields) {
+											connection.query('SELECT ability FROM player ORDER BY ability DESC LIMIT 1', function (err, rows, fields) {
 												if (err) throw err;
 
-												var key = 0;
-												var key_lost = 0;
-												/*
-												if (global_end == 1)
-													key += 5;
-												*/
+												var ability_top = rows[0].ability;
 
-												connection.query('SELECT ability FROM player ORDER BY ability DESC LIMIT 1', function (err, rows, fields) {
+												connection.query('SELECT ability FROM player WHERE id = ' + toId, function (err, rows, fields) {
 													if (err) throw err;
 
-													var ability_top = rows[0].ability;
+													if (isMatch == 1) {
+														var enemy_ability = rows[0].ability;
+														var prob = (Math.sqrt(ability)/Math.sqrt(ability_top)) - ((ability-enemy_ability)/ability);
+														/*
+														if (global_end == 1)
+															prob += 50;
+														*/
+														if (prob > Math.random())
+															key += 1;
 
-													connection.query('SELECT ability FROM player WHERE id = ' + toId, function (err, rows, fields) {
-														if (err) throw err;
+														var keys_query = connection_sync.query('SELECT mkeys FROM player WHERE id = ' + toId);
+														var rand = Math.random()*100;
+														if ((keys_query[0].mkeys > 0) && (rand < 30))
+															key_lost += 1;
+													}
 
-														if (isMatch == 1) {
-															var enemy_ability = rows[0].ability;
-															var prob = (Math.sqrt(ability)/Math.sqrt(ability_top)) - ((ability-enemy_ability)/ability);
-															/*
-															if (global_end == 1)
-																prob += 50;
-															*/
-															if (prob > Math.random())
-																key += 1;
-
-															var keys_query = connection_sync.query('SELECT mkeys FROM player WHERE id = ' + toId);
-															var rand = Math.random()*100;
-															if ((keys_query[0].mkeys > 0) && (rand < 30))
-																key_lost += 1;
-														}
-
-														var extra = "";
-														var extra2 = "";
-														if (key+key_lost > 0) {
-															extra = " e " + (key+key_lost) + "x Chiave Mistica 🗝";
-															if (key_lost > 0) {
-																extra += " (1 direttamente sgraffignata all'avversario!)";
-																extra2 = " ed 1x Chiave Mistica 🗝";
-															}
-															extra += "!";
-															setAchievement(player_id, 65, 1);
-														}
-
-														connection.query('UPDATE player SET mkeys = mkeys+' + (key+key_lost) + ' WHERE id = ' + player_id, function (err, rows, fields) {
-															if (err) throw err;
-														});
-
+													var extra = "";
+													var extra2 = "";
+													if (key+key_lost > 0) {
+														extra = " e " + (key+key_lost) + "x Chiave Mistica 🗝";
 														if (key_lost > 0) {
-															connection.query('UPDATE player SET mkeys = mkeys-' + (key_lost) + ' WHERE id = ' + toId, function (err, rows, fields) {
-																if (err) throw err;
-															});
-															setAchievement(player_id, 87, 1);
+															extra += " (1 direttamente sgraffignata all'avversario!)";
+															extra2 = " ed 1x Chiave Mistica 🗝";
 														}
+														extra += "!";
+														setAchievement(player_id, 65, 1);
+													}
 
-														bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è migliore di quella del guardiano (" + combi + ")!\nIn una stanzetta all'interno del rifugio hai trovato un sacchettino contenente " + moneytxt + expText + extra, kbBack);
-
-														bot.sendMessage(toChat, message.from.username + " è riuscito a sconfiggere il guardiano del tuo rifugio, purtroppo avendo lasciato incustodito un sacchettino, hai perso " + moneytxt + extra2, html);
+													connection.query('UPDATE player SET mkeys = mkeys+' + (key+key_lost) + ' WHERE id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
 													});
 
-													if (travel <= 2)
-														setAchievement(player_id, 8, 1);
-
-													var heistRand = Math.random() * 100;
-													if (heist_streak + 1 >= 10) {
-														var chestStreak = 4;
-														if (heistRand % 3 == 0)
-															chestStreak = 5;
-														if (heistRand % 6 == 0)
-															chestStreak = 6;
-														if (heistRand % 9 == 0)
-															chestStreak = 8;
-														if (heistRand % 50 == 0)
-															chestStreak = 7;
-														connection.query('UPDATE player SET heist_streak = 0 WHERE id = ' + player_id, function (err, rows, fields) {
-															if (err) throw err;
-															addChest(player_id, chestStreak);
-															connection.query('SELECT name FROM chest WHERE id = ' + chestStreak, function (err, rows, fields) {
-																if (err) throw err;
-																bot.sendMessage(message.chat.id, "Per aver sconfitto 10 guardiani hai ricevuto uno <b>" + rows[0].name + "</b>!", html);
-															});
-														});
-													} else {
-														connection.query('UPDATE player SET heist_streak = heist_streak+1 WHERE id = ' + player_id, function (err, rows, fields) {
+													if (key_lost > 0) {
+														connection.query('UPDATE player SET mkeys = mkeys-' + (key_lost) + ' WHERE id = ' + toId, function (err, rows, fields) {
 															if (err) throw err;
 														});
+														setAchievement(player_id, 87, 1);
 													}
+
+													bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è migliore di quella del guardiano (" + combi + ")!\nIn una stanzetta all'interno del rifugio hai trovato un sacchettino contenente " + moneytxt + expText + extra, kbBack);
+
+													bot.sendMessage(toChat, message.from.username + " è riuscito a sconfiggere il guardiano del tuo rifugio, purtroppo avendo lasciato incustodito un sacchettino, hai perso " + moneytxt + extra2, html);
 												});
+
+												if (travel <= 2)
+													setAchievement(player_id, 8, 1);
+
+												var heistRand = Math.random() * 100;
+												if (heist_streak + 1 >= 10) {
+													var chestStreak = 4;
+													if (heistRand % 3 == 0)
+														chestStreak = 5;
+													if (heistRand % 6 == 0)
+														chestStreak = 6;
+													if (heistRand % 9 == 0)
+														chestStreak = 8;
+													if (heistRand % 50 == 0)
+														chestStreak = 7;
+													connection.query('UPDATE player SET heist_streak = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+														addChest(player_id, chestStreak);
+														connection.query('SELECT name FROM chest WHERE id = ' + chestStreak, function (err, rows, fields) {
+															if (err) throw err;
+															bot.sendMessage(message.chat.id, "Per aver sconfitto 10 guardiani hai ricevuto uno <b>" + rows[0].name + "</b>!", html);
+														});
+													});
+												} else {
+													connection.query('UPDATE player SET heist_streak = heist_streak+1 WHERE id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+													});
+												}
 											});
 										});
 									});
+								});
 
-									var d = new Date();
-									var history_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+								var d = new Date();
+								var history_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-									connection.query('INSERT INTO heist_history (from_id, to_id, fail, time, matchmaking, after_rune) VALUES (' + player_id + ', ' + toId + ', 0, "' + history_date + '", ' + isMatch + ', 1)', function (err, rows, fields) {
+								connection.query('INSERT INTO heist_history (from_id, to_id, fail, time, matchmaking, after_rune) VALUES (' + player_id + ', ' + toId + ', 0, "' + history_date + '", ' + isMatch + ', 1)', function (err, rows, fields) {
+									if (err) throw err;
+								});
+
+								getSnowball(message.chat.id, message.from.username, player_id);
+							} else {
+								var expText = "";
+								if (isMatch == 1) {
+									expText = " (ottieni 1 exp)";
+									setExp(player_id, 1);
+									connection.query('UPDATE player SET ability = ability-2 WHERE ability > 0 AND id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 									});
+									connection.query('UPDATE player SET ability = ability+1 WHERE id = ' + toId, function (err, rows, fields) {
+										if (err) throw err;
+									});
+								}
 
-									getSnowball(message.chat.id, message.from.username, player_id);
-								} else {
-									var expText = "";
-									if (isMatch == 1) {
-										expText = " (ottieni 1 exp)";
-										setExp(player_id, 1);
-										connection.query('UPDATE player SET ability = ability-2 WHERE ability > 0 AND id = ' + player_id, function (err, rows, fields) {
+								connection.query('DELETE FROM heist_progress WHERE from_id = ' + player_id, function (err, rows, fields) {
+									if (err) throw err;
+									bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è peggiore di quella del guardiano (" + combi + ")! Il portone del rifugio si blocca ed il tuo gnomo è costretto a tornare indietro" + expText, kbBack);
+
+									bot.sendMessage(toChat, "Lo gnomo di <b>" + message.from.username + "</b> non è riuscito a sconfiggere il guardiano del tuo portone, così è stato respinto", html);
+								});
+
+								var d = new Date();
+								var history_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+								connection.query('INSERT INTO heist_history (from_id, to_id, fail, time, matchmaking, after_rune) VALUES (' + player_id + ', ' + toId + ', 1, "' + history_date + '", ' + isMatch + ', 1)', function (err, rows, fields) {
+									if (err) throw err;
+								});
+							}
+						} else if (answer.text == "Rinuncia") {
+							bot.sendMessage(message.chat.id, "Sicuro di voler rinunciare all'ispezione? Perderai 1 punto abilità", kbYesNo).then(function () {
+								answerCallbacks[message.chat.id] = function (answer) {
+									if (answer.text.toLowerCase() == "si") {
+										connection.query('DELETE FROM heist_progress WHERE from_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+											bot.sendMessage(message.chat.id, "Hai deciso di rinunciare all'ispezione", back);
+											bot.sendMessage(toChat, "<b>" + message.from.username + "</b> ha rinunciato all'ispezione nel tuo rifugio", html);
+										});
+
+										connection.query('UPDATE player SET ability = ability-1 WHERE id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 										});
 										connection.query('UPDATE player SET ability = ability+1 WHERE id = ' + toId, function (err, rows, fields) {
 											if (err) throw err;
 										});
+
+										var d = new Date();
+										var history_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+										connection.query('INSERT INTO heist_history (from_id, to_id, fail, time, matchmaking, after_rune) VALUES (' + player_id + ', ' + toId + ', 1, "' + history_date + '", ' + isMatch + ', 0)', function (err, rows, fields) {
+											if (err) throw err;
+										});
 									}
-
-									connection.query('DELETE FROM heist_progress WHERE from_id = ' + player_id, function (err, rows, fields) {
-										if (err) throw err;
-										bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è peggiore di quella del guardiano (" + combi + ")! Il portone del rifugio si blocca ed il tuo gnomo è costretto a tornare indietro" + expText, kbBack);
-
-										bot.sendMessage(toChat, "Lo gnomo di <b>" + message.from.username + "</b> non è riuscito a sconfiggere il guardiano del tuo portone, così è stato respinto", html);
-									});
-
-									var d = new Date();
-									var history_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-
-									connection.query('INSERT INTO heist_history (from_id, to_id, fail, time, matchmaking, after_rune) VALUES (' + player_id + ', ' + toId + ', 1, "' + history_date + '", ' + isMatch + ', 1)', function (err, rows, fields) {
-										if (err) throw err;
-									});
-								}
-							} else if (answer.text == "Rinuncia") {
-								bot.sendMessage(message.chat.id, "Sicuro di voler rinunciare all'ispezione? Perderai 1 punto abilità", kbYesNo).then(function () {
-									answerCallbacks[message.chat.id] = function (answer) {
-										if (answer.text.toLowerCase() == "si") {
-											connection.query('DELETE FROM heist_progress WHERE from_id = ' + player_id, function (err, rows, fields) {
-												if (err) throw err;
-												bot.sendMessage(message.chat.id, "Hai deciso di rinunciare all'ispezione", back);
-												bot.sendMessage(toChat, "<b>" + message.from.username + "</b> ha rinunciato all'ispezione nel tuo rifugio", html);
-											});
-
-											connection.query('UPDATE player SET ability = ability-1 WHERE id = ' + player_id, function (err, rows, fields) {
-												if (err) throw err;
-											});
-											connection.query('UPDATE player SET ability = ability+1 WHERE id = ' + toId, function (err, rows, fields) {
-												if (err) throw err;
-											});
-
-											var d = new Date();
-											var history_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-
-											connection.query('INSERT INTO heist_history (from_id, to_id, fail, time, matchmaking, after_rune) VALUES (' + player_id + ', ' + toId + ', 1, "' + history_date + '", ' + isMatch + ', 0)', function (err, rows, fields) {
-												if (err) throw err;
-											});
-										}
-									};
-								});
-							} else if (answer.text == "Regole") {
-								bot.sendMessage(message.chat.id, "Regole dello Scontro tra Rune:\nPer vincere contro il guardiano dovrai possedere una combinazione di rune con un valore più alto delle sue, in base a questo schema:\n- Coppia (2 uguali)\n- Doppia Coppia (2 coppie)\n- Tris (tre uguali)\n- Full (coppia e tris)\n- Scala (quella da 2 a 6 batte quella da 1 a 5)\n- 4 Uguali\n- 5 Uguali\n\nInoltre in caso di parità vincerà il difensore, c'è il concetto di Runa 'alta'\nPuoi cambiarne 1 o più inviando lo gnomo, oppure rinunciare, in questo caso verrà considerata come un'ispezione persa", rBack);
-							}
-						};
-					});
+								};
+							});
+						} else if (answer.text == "Regole") {
+							bot.sendMessage(message.chat.id, "Regole dello Scontro tra Rune:\nPer vincere contro il guardiano dovrai possedere una combinazione di rune con un valore più alto delle sue, in base a questo schema:\n- Coppia (2 uguali)\n- Doppia Coppia (2 coppie)\n- Tris (tre uguali)\n- Full (coppia e tris)\n- Scala (quella da 2 a 6 batte quella da 1 a 5)\n- 4 Uguali\n- 5 Uguali\n\nInoltre in caso di parità vincerà il difensore, c'è il concetto di Runa 'alta'\nPuoi cambiarne 1 o più inviando lo gnomo, oppure rinunciare, in questo caso verrà considerata come un'ispezione persa", rBack);
+						}
+					};
 				});
-			} else
-				bot.sendMessage(message.chat.id, "Il tuo gnomo non è appostato a nessun rifugio", back);
+			});
 		});
 	});
 });
@@ -46698,7 +46711,7 @@ function getInfo(message, player, myhouse_id) {
 																rows[0].claws += rows[0].claws * 0.5;
 																rows[0].saddle += rows[0].saddle * 0.5;
 															}
-															if ((class_id == 7) && (reborn == 5)) {
+															if ((class_id == 7) && (reborn >= 5)) {
 																rows[0].claws += rows[0].claws * 0.5;
 																rows[0].saddle += rows[0].saddle * 0.5;
 															}
@@ -46921,7 +46934,7 @@ function getInfo(message, player, myhouse_id) {
 																								weapon3_crit += 2;
 																							}
 
-																							if ((class_id == 7) && (reborn == 5))
+																							if ((class_id == 7) && (reborn >= 5))
 																								weapon_crit += Math.round(dragon_critical / 2);
 
 																							if ((class_id == 8) && (reborn == 2))
@@ -49711,6 +49724,11 @@ function setFinishedArena(element, index, array) {
 
 				connection.query('SELECT * FROM dragon WHERE id = ' + dragon2, function (err, rows, fields) {
 					if (err) throw err;
+					
+					if (Object.keys(rows).length == 0) {
+						console.log("Drago non trovato: " + dragon2);
+						return;
+					}
 
 					var enemyId = rows[0].player_id;
 					var name2 = rows[0].name;
@@ -52928,7 +52946,7 @@ function getPlayerDragon(player_id, class_id, reborn, charm_id) {
 				rows[0].claws += rows[0].claws * 0.5;
 				rows[0].saddle += rows[0].saddle * 0.5;
 			}
-			if ((class_id == 7) && (reborn == 5)) {
+			if ((class_id == 7) && (reborn >= 5)) {
 				rows[0].claws += rows[0].claws * 0.5;
 				rows[0].saddle += rows[0].saddle * 0.5;
 			}
@@ -52959,7 +52977,7 @@ function getPlayerDragon(player_id, class_id, reborn, charm_id) {
 				dragon_crit += 5;
 			if ((class_id == 7) && (reborn >= 4))
 				dragon_crit += 7;
-			if ((class_id == 7) && (reborn == 5))
+			if ((class_id == 7) && (reborn >= 5))
 				critical += dragon_crit / 2;
 		}
 	}

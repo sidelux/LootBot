@@ -9743,7 +9743,7 @@ bot.onText(/^\/drago (.+),(.+)|^\/drago/, function (message, match) {
 					rows[0].claws += rows[0].claws * 0.5;
 					rows[0].saddle += rows[0].saddle * 0.5;
 				}
-				if ((class_id == 7) && (reborn == 5)) {
+				if ((class_id == 7) && (reborn >= 5)) {
 					rows[0].claws += rows[0].claws * 0.5;
 					rows[0].saddle += rows[0].saddle * 0.5;
 				}
@@ -10978,7 +10978,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																rows[0].claws += rows[0].claws * 0.5;
 																rows[0].saddle += rows[0].saddle * 0.5;
 															}
-															if ((class_id == 7) && (reborn == 5)) {
+															if ((class_id == 7) && (reborn >= 5)) {
 																rows[0].claws += rows[0].claws * 0.5;
 																rows[0].saddle += rows[0].saddle * 0.5;
 															}
@@ -11201,7 +11201,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																								weapon3_crit += 2;
 																							}
 
-																							if ((class_id == 7) && (reborn == 5))
+																							if ((class_id == 7) && (reborn >= 5))
 																								weapon_crit += Math.round(dragon_critical / 2);
 
 																							if ((class_id == 8) && (reborn == 2))
