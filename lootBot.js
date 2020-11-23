@@ -12208,6 +12208,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												}
 												
 												var charges = (3 * param) + 3;
+												if (cursed == 1)
+													charges += 5;
 
 												var text = "";
 												if (param == null) {
@@ -12230,8 +12232,6 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																return;
 															}
 															
-															if (cursed == 1)
-																charges += 5;
 															if (dungeon_energy < charges) {
 																bot.sendMessage(message.chat.id, "Non hai abbastanza Cariche Esplorative, ne servono " + charges + " per meditare ulteriormente", dNext);
 																return;
@@ -12885,7 +12885,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		} else {
 																			connection.query('SELECT COUNT(id) As not_mapped FROM dungeon_map WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND (dir_top = 0 OR dir_right = 0 OR dir_left = 0) AND player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
-																				if (rows[0].not_mapped > 0) {	// se non sono tutte mappate
+																				if (rows[0].not_mapped == 0) {	// se non sono tutte mappate
 																					bot.sendMessage(message.chat.id, "L'anziano saggio sa già che tu conosci tutte le stanze davanti a te, ti ignora e prosegui la tua esplorazione", dNext);
 																					setAchievement(player_id, 74, 1);
 
@@ -21247,10 +21247,12 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																					connection.query('UPDATE dragon_top_rank SET rank = rank-1 WHERE rank > 0 AND dragon_id = ' + dragon_id, function (err, rows, fields) {
 																						if (err) throw err;
 																					});
+																					var rankUp = 0;
 																					if (enemy_top_id < max_top_id) {
 																						connection.query('UPDATE dragon_top_rank SET rank = rank+1 WHERE rank < ' + rank_cap + ' AND dragon_id = ' + enemy_dragon_id, function (err, rows, fields) {
 																							if (err) throw err;
 																						});
+																						rankUp = 1;
 																					}
 
 																					bot.sendMessage(message.chat.id, "Hai abbandonato la battaglia e hai perso 1 Ð!", kbBack);
@@ -21258,7 +21260,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																					if (extra != "")
 																						extra = " e" + extra;
 																					if (is_dummy == 0)
-																						bot.sendMessage(chat_id2, "Il tuo sfidante " + dragon_name + " ha abbandonato lo scontro, hai ottenuto 1 Ð" + extra + "!");
+																						bot.sendMessage(chat_id2, "Il tuo sfidante " + dragon_name + " ha abbandonato lo scontro, hai ottenuto " + rankUp + " Ð" + extra + "!");
 																				} else {
 																					bot.sendMessage(message.chat.id, "Hai abbandonato la battaglia!", kbBack);
 
