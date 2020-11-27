@@ -24,7 +24,7 @@ var eventStory = 0;
 var halloween = 0;
 var snowHouse = 0;
 var snowHouseEnd = 0;
-var blackfriday = 0;
+var blackfriday = 1;
 
 // Variabili globali
 var nightStart = 23;
@@ -476,6 +476,9 @@ bot.on('message', function (message) {
 				if (err) throw err;
 
 				if ((rows[0].payload != message.successful_payment.invoice_payload) || (rows[0].status != "WAIT")) {
+					console.log(rows[0].payload);
+					console.log(message.successful_payment.invoice_payload);
+					console.log(rows[0].status);
 					bot.sendMessage(message.chat.id, "Errore durante la verifica del pagamento, riprova", back);
 					return;
 				}
@@ -15324,7 +15327,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																						if (r >= rand) {
 																							enemy_magic = magicToName(1);
 																							heal_enemy = getRandomArbitrary(monster_total_life * 0.01, monster_total_life * 0.1);
-																							console.log("life " + monster_life + " - total_life " + monster_total_life + " - heal_enemy " + heal_enemy);
+																							// console.log("life " + monster_life + " - total_life " + monster_total_life + " - heal_enemy " + heal_enemy);
 																							if (monster_life + heal_enemy > monster_total_life)
 																								heal_enemy = monster_total_life - monster_life;
 																							console.log("heal_enemy " + heal_enemy);
@@ -38344,7 +38347,7 @@ bot.onText(/compra/i, function (message) {
 				if (blackfriday == 1)
 					price_view -= Math.round((price_gem / 100) * 50);
 
-				bot.sendMessage(message.chat.id, "Seleziona la quantità di 💎 da acquistare, ogni 💎 costa " + formatNumber(price_view) + " §, puoi acquistarne al massimo " + formatNumber(Math.floor(money/price_gem)), kb).then(function () {
+				bot.sendMessage(message.chat.id, "Seleziona la quantità di 💎 da acquistare, ogni 💎 costa " + formatNumber(price_view) + " §, puoi acquistarne al massimo " + formatNumber(Math.floor(money/price_view)), kb).then(function () {
 					answerCallbacks[message.chat.id] = function (answer) {
 						var quantity = answer.text;
 						if ((quantity == "Torna al menu") || (quantity == "Torna all'emporio"))
