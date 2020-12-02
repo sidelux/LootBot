@@ -2009,6 +2009,7 @@ bot.on('callback_query', function (message) {
 				label: "Donazione",
 				amount: parseInt(param.replace(".", ""))
 			}];
+			bot.answerCallbackQuery(message.id, {text: 'Clicca sul pulsante per continuare!'});
 			connection.query('INSERT INTO payments (player_id, payload, amount, status) VALUES (' + player_id + ', "' + payload + '", ' + param + ', "WAIT")', function (err, rows, fields) {
 				if (err) throw err;
 				bot.sendInvoice(chat_id, "Donazione", "Donazione di " + param + "€", payload, "350862534:LIVE:NTg4MzAxNGMzMzI5", "pay", "EUR", prices);
@@ -12901,50 +12902,53 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																				connection.query('UPDATE player SET mkeys = mkeys-' + keys + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
-
-																					var rand = Math.round(Math.random()*2);
-																					var sage_dir = "";
-																					var selected_dir = "";
-																					var text_dir = "";
-																					if (rand == 0) {
-																						selected_dir = "top";
-																						sage_dir = "dir_top";
-																						text_dir = "dritto";
-																					} else if (rand == 1) {
-																						selected_dir = "left";
-																						sage_dir = "dir_left";
-																						text_dir = "sinistra";
-																					} else if (rand == 2) {
-																						selected_dir = "right";
-																						sage_dir = "dir_right";
-																						text_dir = "destra";
-																					}
-
-																					connection.query('SELECT room_id, ' + sage_dir + ' As dir FROM dungeon_rooms WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND ' + sage_dir + ' < 11 ORDER BY RAND()', function (err, rows, fields) {
+																					
+																					connection.query('SELECT room_id, dir_top, dir_left, dir_right FROM dungeon_map WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND (dir_top = 0 OR dir_right = 0 OR dir_left = 0) AND player_id = ' +  + player_id + ' ORDER BY RAND()', function (err, rows, fields) {
 																						if (err) throw err;
-																						if (Object.keys(rows).length > 0) {
-																							bot.sendMessage(message.chat.id, "L'anziano si concentra e un'aura azzurrina si forma attorno a lui, dopo alcuni secondi spalanca gli occhi urlando: " + dungeonToDesc(rows[0].dir).toUpperCase() + " " + text_dir.toUpperCase() + " " + rows[0].room_id + "!!\nDopo di che se ne va a passo lento...", dNext);
 
-																							addToMapping(selected_dir, dungeon_id, player_id, rows[0].room_id);
-
-																							setAchievement(player_id, 74, 1);
-
-																							endDungeonRoom(player_id, boost_id, boost_mission);
-																							connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-																								if (err) throw err;
-																							});
-																						} else {
-																							bot.sendMessage(message.chat.id, "L'anziano purtroppo non riesce a vedere alcuna stanza particolare davanti a te, ti restituisce le 🗝 e ti congeda con un po' di malinconia sul volto...", dNext);
-
-																							connection.query('UPDATE player SET mkeys = mkeys+10 WHERE id = ' + player_id, function (err, rows, fields) {
-																								if (err) throw err;
-																							});
-
-																							endDungeonRoom(player_id, boost_id, boost_mission);
-																							connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-																								if (err) throw err;
-																							});
+																						var sage_dir = "";
+																						var selected_dir = "";
+																						var text_dir = "";
+																						if (rows[0].dir_top == 0) {
+																							selected_dir = "top";
+																							sage_dir = "dir_top";
+																							text_dir = "dritto";
+																						} else if (rows[0].dir_left == 0) {
+																							selected_dir = "left";
+																							sage_dir = "dir_left";
+																							text_dir = "sinistra";
+																						} else if (rows[0].dir_right == 0) {
+																							selected_dir = "right";
+																							sage_dir = "dir_right";
+																							text_dir = "destra";
 																						}
+
+																						connection.query('SELECT room_id, ' + sage_dir + ' As dir FROM dungeon_rooms WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND ' + sage_dir + ' < 11 ORDER BY RAND()', function (err, rows, fields) {
+																							if (err) throw err;
+																							if (Object.keys(rows).length > 0) {
+																								bot.sendMessage(message.chat.id, "L'anziano si concentra e un'aura azzurrina si forma attorno a lui, dopo alcuni secondi spalanca gli occhi urlando: " + dungeonToDesc(rows[0].dir).toUpperCase() + " " + text_dir.toUpperCase() + " " + rows[0].room_id + "!!\nDopo di che se ne va a passo lento...", dNext);
+
+																								addToMapping(selected_dir, dungeon_id, player_id, rows[0].room_id);
+
+																								setAchievement(player_id, 74, 1);
+
+																								endDungeonRoom(player_id, boost_id, boost_mission);
+																								connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																									if (err) throw err;
+																								});
+																							} else {
+																								bot.sendMessage(message.chat.id, "L'anziano purtroppo non riesce a vedere alcuna stanza particolare davanti a te, ti restituisce le 🗝 e ti congeda con un po' di malinconia sul volto...", dNext);
+
+																								connection.query('UPDATE player SET mkeys = mkeys+10 WHERE id = ' + player_id, function (err, rows, fields) {
+																									if (err) throw err;
+																								});
+
+																								endDungeonRoom(player_id, boost_id, boost_mission);
+																								connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																									if (err) throw err;
+																								});
+																							}
+																						});
 																					});
 																				});
 																			});
@@ -15330,7 +15334,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							// console.log("life " + monster_life + " - total_life " + monster_total_life + " - heal_enemy " + heal_enemy);
 																							if (monster_life + heal_enemy > monster_total_life)
 																								heal_enemy = monster_total_life - monster_life;
-																							console.log("heal_enemy " + heal_enemy);
+																							// console.log("heal_enemy " + heal_enemy);
 																							if (heal_enemy < 0)
 																								heal_enemy = 0;
 																							if (heal_enemy > 50000)
@@ -45243,11 +45247,11 @@ bot.onText(/missione/i, function (message) {
 							name += " (Estesa per malus globale)";
 							duration_extend += 25;
 						}
-						*/
 						if (global_end == 1) {
 							name += " (Ridotta per bonus globale)";
 							duration_reduce += 25;
 						}
+						*/
 
 						if (duration_reduce > 0)
 							duration -= (duration / 100 * duration_reduce);
@@ -52119,7 +52123,7 @@ function assaultIncrement(message, player_id, team_id) {
 					}
 
 					var val = Math.round(rows[0].level*10/rows[0].max_level); // per globale
-					globalAchievement(player_id, val);
+					
 				});
 			});
 		});
@@ -52445,12 +52449,10 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 									chest5 = Math.round(chest5);
 									chest6 = Math.round(chest6);
 
-									/*
 									if (rows[i].global_end == 1) {
 										paUpd += 7;
 										paView += 7;
 									}
-									*/
 
 									if (is_boss == 1) {
 										randProb = Math.random()*100;
@@ -61154,6 +61156,7 @@ function setExp(player_id, exp) {
 		}
 
 		setAchievement(player_id, 57, exp);
+		globalAchievement(player_id, exp);
 	});
 }
 
