@@ -24,7 +24,7 @@ var eventStory = 0;
 var halloween = 0;
 var snowHouse = 0;
 var snowHouseEnd = 0;
-var blackfriday = 1;
+var blackfriday = 0;
 
 // Variabili globali
 var nightStart = 23;
@@ -31033,7 +31033,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 	}
 
 	if ((snowHouse == 0) && (message.from.id != 20471035)) {
-		bot.sendMessage(message.chat.id, "I giocatori si stanno lentamente riunendo nel villaggio innevato... Pazienta!", back);
+		bot.sendMessage(message.chat.id, "I giocatori si stanno lentamente riunendo nel villaggio innevato...!", back);
 		// bot.sendMessage(message.chat.id, "La neve lentamente si scioglie...", back);
 		return;
 	}
