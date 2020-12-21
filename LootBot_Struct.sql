@@ -3003,6 +3003,7 @@ CREATE TABLE `player` (
   `total_trophies` int(11) NOT NULL DEFAULT '0',
   `last_season_trophies` int(11) NOT NULL DEFAULT '0',
   `map_count` int(11) NOT NULL DEFAULT '0',
+  `map_equip_change_power` tinyint(1) NOT NULL DEFAULT '1',
   `coupon_count` int(11) NOT NULL DEFAULT '0',
   `coupon_record` int(11) NOT NULL DEFAULT '0',
   `top_first` tinyint(1) NOT NULL DEFAULT '0',

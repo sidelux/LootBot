@@ -1736,7 +1736,7 @@ bot.onText(/^\/stanzeteam/, function (message, match) {
 	});
 });
 
-bot.onText(/^\/chiamaparty([0-9])( .+)?$/, function (message, match) {
+bot.onText(/^\/chiamaparty([0-9]+)( .+)?$/, function (message, match) {
 
 	if (!checkSpam(message))
 		return;
