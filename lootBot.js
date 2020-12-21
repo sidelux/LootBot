@@ -82,7 +82,7 @@ var config = require('./config.js');
 var mobGenerator = require('./mobGenerator.js');
 var TelegramBot = require('node-telegram-bot-api');
 var Schedule = require('node-schedule');
-var request = require('request');
+var request = require('request').defaults({strictSSL: false});
 var readline = require('readline');
 var mysql = require('mysql');
 var mysql_sync = require('sync-mysql');
@@ -1364,7 +1364,10 @@ bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
 					method: 'GET',
 					json: true
 				}, function(err, res, body) {
-					if (err) throw err;
+					if (err) {
+						bot.sendMessage(message.chat.id, "Al momento si verificano problemi di connettività con il servizio di ricompense, riprova più tardi. (1)", back);
+						throw err;
+					}
 
 					request.put({
 						uri: 'https://api.shorte.st/v1/data/url',
@@ -1375,7 +1378,10 @@ bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
 						body: {urlToShorten: body.shortenedUrl},
 						json: true
 					}, function(err, res, body) {
-						if (err) throw err;
+						if (err) {
+							bot.sendMessage(message.chat.id, "Al momento si verificano problemi di connettività con il servizio di ricompense, riprova più tardi. (2)", back);
+							throw err;
+						}
 
 						var rewardUrl = body.shortenedUrl;
 						if (unlocked == 1)
