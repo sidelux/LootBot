@@ -6898,7 +6898,7 @@ bot.onText(/attacca!/i, function (message) {
 			}
 		};
 
-		connection.query('SELECT M.lobby_id, M.enemy_id, M.my_turn, M.life, M.total_life, M.weapon_id, M.weapon2_id, M.weapon3_id, M.battle_heavy, M.battle_shield, M.battle_stunned, M.battle_turn_start, M.money, M.scrap, P.power_dmg, P.power_def, P.power_weapon, P.power_armor, P.power_shield FROM map_lobby M, player P WHERE P.id = M.player_id AND M.player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT M.lobby_id, M.enemy_id, M.my_turn, M.life, M.total_life, M.weapon_id, M.weapon2_id, M.weapon3_id, M.battle_heavy, M.battle_shield, M.battle_stunned, M.battle_turn_start, M.money, M.scrap, P.power_dmg, P.power_def, P.power_weapon, P.power_armor, P.power_shield, P.map_equip_change_power FROM map_lobby M, player P WHERE P.id = M.player_id AND M.player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
@@ -6916,6 +6916,7 @@ bot.onText(/attacca!/i, function (message) {
 			var enemy_id = rows[0].enemy_id;
 			var my_turn = rows[0].my_turn;
 			var enemy_player_id = enemy_id;
+			var enemy_map_equip_change_power = rows[0].map_equip_change_power;
 
 			if (enemy_id == null) {
 				bot.sendMessage(message.chat.id, "Non sei in combattimento", kbBack);
@@ -7483,7 +7484,7 @@ bot.onText(/attacca!/i, function (message) {
 									var weapon_name = weaponQuery[0].name;
 									if (enemy_weapon_id != null) {
 										var check = weapon > enemy_weapon;
-										if (map_equip_change_power == 0)
+										if (enemy_map_equip_change_power == 0)
 											check = weapon_crit > enemy_weapon_crit;
 										if (check) {
 											enemy_text += "\nArma <b>" + weapon_name + "</b> sgraffignata e sostituita!";
@@ -7503,7 +7504,7 @@ bot.onText(/attacca!/i, function (message) {
 									var weapon_name = weaponQuery[0].name;
 									if (enemy_weapon2_id != null) {
 										var check = weapon2 < enemy_weapon2;
-										if (map_equip_change_power == 0)
+										if (enemy_map_equip_change_power == 0)
 											check = weapon2_crit > enemy_weapon2_crit;
 										if (check) {
 											enemy_text += "\nArmatura <b>" + weapon_name + "</b> sgraffignata e sostituita!";
@@ -7523,7 +7524,7 @@ bot.onText(/attacca!/i, function (message) {
 									var weapon_name = weaponQuery[0].name;
 									if (enemy_weapon3_id != null) {
 										var check = weapon3 < enemy_weapon3;
-										if (map_equip_change_power == 0)
+										if (enemy_map_equip_change_power == 0)
 											check = weapon3_crit > enemy_weapon3_crit;
 										if (check) {
 											enemy_text += "\nScudo <b>" + weapon_name + "</b> sgraffignato e sostituito!";
@@ -15637,6 +15638,11 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																						if (danno >= monster_total_life)
 																							setAchievement(player_id, 84, 1);
+																						
+																						if (boost_id == 4) {
+																							exp = exp*1.5;
+																							setBoost(player_id, boost_mission, boost_id);
+																						}
 
 																						var exp_text = "";
 																						if (exp > 0)
@@ -19222,6 +19228,10 @@ bot.onText(/cassaforte/i, function (message, match) {
 															if (err) throw err;
 															bot.sendMessage(message.from.id, "Hai ritirato correttamente " + formatNumber(get) + " §!", kbBack);
 														});
+														
+														connection.query('INSERT INTO team_safe_get_log (team_id, player_id, money) VALUES (' + team_id + ',' + player_id + ',' + get + ')', function (err, rows, fields) {
+															if (err) throw err;
+														});
 													});
 												});
 											}
@@ -19238,8 +19248,18 @@ bot.onText(/cassaforte/i, function (message, match) {
 									var d = new Date(rows[i].insert_date);
 									text += "> " + rows[i].nickname + " - " + formatNumber(rows[i].money) + " § il " + toDate("it", d) + "\n";
 								}
+								
+								connection.query('SELECT P.nickname, L.money, L.insert_date FROM team_safe_get_log L, player P WHERE L.player_id = P.id AND L.team_id = ' + team_id + ' ORDER BY L.insert_date DESC LIMIT 50', function (err, rows, fields) {
+									if (err) throw err;
 
-								bot.sendMessage(message.from.id, text, kbBack);
+									text += "\nUltimi 50 ritiri:\n";
+									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+										var d = new Date(rows[i].insert_date);
+										text += "> " + rows[i].nickname + " - " + formatNumber(rows[i].money) + " § il " + toDate("it", d) + "\n";
+									}
+
+									bot.sendMessage(message.from.id, text, kbBack);
+								});
 							})
 						}
 					}
@@ -24140,7 +24160,7 @@ bot.onText(/^aggiungi membri al party (.+)/i, function (message, match) {
 								if (answer.text == "Torna al gestisci party")
 									return;
 
-								connection.query('SELECT id FROM player WHERE nickname = "' + answer.text + '"', function (err, rows, fields) {
+								connection.query('SELECT id, chat_id FROM player WHERE nickname = "' + answer.text + '"', function (err, rows, fields) {
 									if (err) throw err;
 
 									if (Object.keys(rows).length == 0) {
@@ -24149,6 +24169,7 @@ bot.onText(/^aggiungi membri al party (.+)/i, function (message, match) {
 									}
 
 									var player_add_id = rows[0].id;
+									var player_chat_id = rows[0].chat_id;
 
 									connection.query('SELECT 1 FROM team_player WHERE team_id = ' + team_id + ' AND player_id = ' + player_add_id, function (err, rows, fields) {
 										if (err) throw err;
@@ -24178,6 +24199,7 @@ bot.onText(/^aggiungi membri al party (.+)/i, function (message, match) {
 													if (err) throw err;
 
 													bot.sendMessage(message.chat.id, "Il giocatore è stato aggiunto al party!", kbBack);
+													bot.sendMessage(player_chat_id, "Sei stato aggiunto al party " + party_id + " da " + message.from.username, kbBack);
 												});
 											});
 										});
