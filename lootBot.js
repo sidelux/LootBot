@@ -22,8 +22,8 @@ var eventDust = 0;
 // Festività o disattivati
 var eventStory = 0;
 var halloween = 0;
-var snowHouse = 0;
-var snowHouseWait = 1;
+var snowHouse = 1;
+var snowHouseWait = 0;
 var snowHouseEnd = 0;
 var blackfriday = 0;
 
@@ -7454,7 +7454,7 @@ bot.onText(/attacca!/i, function (message) {
 
 									mapPlayerKilled(lobby_id, enemy_id, 2, null, 1);
 
-									getSnowball(message.chat.id, message.from.username, player_id);
+									getSnowball(message.chat.id, message.from.username, player_id, 1);
 								} else
 									enemy_query += ", life = life-" + dmg;
 
@@ -13636,18 +13636,18 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 														var split = param.split(":");
 														var item1 = split[0];
-														var stoneid = split[1];
+														var stone1 = split[1];
 
-														if (isNaN(stoneid)) {
-															stoneid = 72;
-															console.log("stone param: " + param);
+														if (isNaN(stone1)) {
+															stone1 = 72;
+															console.log("stone1 NaN: " + param);
 														}
 
-														connection.query('SELECT name FROM item WHERE id = ' + stoneid, function (err, rows, fields) {
+														connection.query('SELECT name FROM item WHERE id = ' + stone1, function (err, rows, fields) {
 															if (err) throw err;
 
 															var stone_name = rows[0].name;
-															var base_qnt = 77-stoneid;
+															var base_qnt = 77-stone1;
 
 															connection.query('SELECT name FROM item WHERE id = ' + item1, function (err, rows, fields) {
 																if (err) throw err;
@@ -13675,7 +13675,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	qnt = base_qnt*2;
 
 																var poss = "";
-																if (getItemCnt(player_id, stoneid) >= qnt)
+																if (getItemCnt(player_id, stone1) >= qnt)
 																	poss = " ✅";
 
 																bot.sendMessage(message.chat.id, "Entri in una stanza che non ha affatto le sembianze di una stanza, piuttosto un grosso parco, al centro una ragazza circondata da Draghi, si tratta di un *Mercante Draconico*, fornisce oggetti utili al proprio drago in cambio di " + qnt + "x " + stone_name + poss + ".\nStavolta vuole scambiare *" + item1_name + "*, accetti l'offerta?", dOptions).then(function () {
@@ -13688,14 +13688,14 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																					if (answer.text.toLowerCase() != "si")
 																						return;
 
-																					if (getItemCnt(player_id, stoneid) < qnt) {
+																					if (getItemCnt(player_id, stone1) < qnt) {
 																						bot.sendMessage(message.chat.id, "Non possiedi abbastanza copie della pietra richiesto", dBack);
 																						return;
 																					}
 
 																					bot.sendMessage(message.chat.id, "Accetti lo scambio del Mercante che ti ringrazia sorridendo e ti porge l'oggetto pattuito, prosegui velocemente alla stanza successiva...", dNext);
 
-																					delItem(player_id, stoneid, qnt);
+																					delItem(player_id, stone1, qnt);
 																					addItem(player_id, item1);
 																					setAchievement(player_id, 79, 1);
 
@@ -15657,7 +15657,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																						else if (chest == 0)
 																							bot.sendMessage(message.chat.id, "Hai ucciso il mostro, infliggendo " + formatNumber(danno) + " danni" + magic_kill + exp_text + ".\nFrugando tra le sue cose hai ottenuto *" + moneyText + "*!", dNext);
 
-																						getSnowball(message.chat.id, message.from.username, player_id);
+																						getSnowball(message.chat.id, message.from.username, player_id, 1);
 
 																						setAchievement(player_id, 3, 1);
 
@@ -31303,7 +31303,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 				connection.query('INSERT INTO event_snowball_status (player_id, snowball) VALUES (' + player_id + ', 5)', function (err, rows, fields) {
 					if (err) throw err;
 					
-					bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella <b>Casa nella Neve</b> 🌨, l'evento Natalizio! 🎄\nSi tratta in tutto per tutto di una competizione per chi riuscirà a costruire più <b>Pupazzi di Neve</b> in tutto il regno di Lootia. Con le <b>Palle di Neve</b> puoi costruirne sempre di più, oppure danneggiare quelli avversari per far perdere loro punti. Puoi accumulare la Neve attraverso Missioni, Ispezioni, Dungeon e Mappe.\nBuona fortuna!\nHai ricevuto <b>5 Palle di Neve</b> per l'iscrizione.", kb3);
+					bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella <b>Casa nella Neve</b> 🌨, l'evento Natalizio! 🎄\nSi tratta in tutto per tutto di una competizione per chi riuscirà a costruire più <b>Pupazzi di Neve</b> in tutto il regno di Lootia. Con le <b>Palle di Neve</b> puoi costruirne sempre di più, oppure danneggiare quelli avversari per far perdere loro punti. Puoi accumulare la Neve attraverso Missioni, Ispezioni, Dungeon, Mappe, Cave ed Incarichi.\nBuona fortuna!\nHai ricevuto <b>5 Palle di Neve</b> per l'iscrizione.", kb3);
 				});
 				console.log(message.from.username + " iscritto all'evento di natale");
 				return;
@@ -31331,7 +31331,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 
 						var snowman_cnt = parseInt(rows[0].cnt);
 
-						bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella tua <b>Casa nella Neve</b> 🌨!\nDurante questa settimana si svolge una gara che premierà chi riuscirà a costruire più Pupazzi di Neve degli altri partecipanti!\nPer costruirne un altro ti servono <b>" + (10+(snowman_cnt*10)) + " Palle di Neve</b>, puoi lanciarne una per danneggiare gli avversari oppure i loro pupazzi.\n\nPossiedi <b>" + snowball + "</b> Palle di Neve ❄️ e <b>" + formatNumber(snowman_cnt) + "</b> Pupazzi di Neve ⛄️!\nIn totale sono stati creati <b>" + formatNumber(snowman_cnt_tot) + "</b> Pupazzi e ci sono <b>" + formatNumber(snowball_tot) + "</b> Palle di Neve!\n\nC'è una probabilità di ottenerne altre tramite Missioni, Ispezioni, Dungeon e Mappe. Ogni Pupazzo ti fornirà 1 Palla di Neve per ogni azione.\n\nL'evento termina il 30 alle 12:00!", kb).then(function () {
+						bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella tua <b>Casa nella Neve</b> 🌨!\nDurante questa settimana si svolge una gara che premierà chi riuscirà a costruire più Pupazzi di Neve degli altri partecipanti!\nPer costruirne un altro ti servono <b>" + (10+(snowman_cnt*10)) + " Palle di Neve</b>, puoi lanciarne una per danneggiare gli avversari oppure i loro pupazzi.\n\nPossiedi <b>" + snowball + "</b> Palle di Neve ❄️ e <b>" + formatNumber(snowman_cnt) + "</b> Pupazzi di Neve ⛄️!\nIn totale sono stati creati <b>" + formatNumber(snowman_cnt_tot) + "</b> Pupazzi e ci sono <b>" + formatNumber(snowball_tot) + "</b> Palle di Neve!\n\nC'è una probabilità di ottenerne altre tramite Missioni, Ispezioni, Dungeon, Mappe, Cave ed Incarichi. Ogni Pupazzo ti fornirà 1 Palla di Neve per ogni azione.\n\nL'evento termina il 30 alle 12:00!", kb).then(function () {
 							answerCallbacks[message.chat.id] = function (answer) {
 								if (answer.text == "Lancia Palla di Neve ❄️") {
 									bot.sendMessage(message.chat.id, "Puoi lanciare una Palla di Neve ad un giocatore in particolare (scrivendo il nickname) oppure ad uno casuale, nel primo caso consumerai 2 Palle di Neve.\nNel caso in cui il bersaglio avesse un Pupazzo di Neve, quest'ultimo verrà colpito al posto del giocatore e danneggiato o distrutto. Può capitare inoltre che il giocatore avversario recuperi la tua Palla di Neve!", kb2).then(function () {
@@ -43951,7 +43951,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 									if (err) throw err;
 								});
 
-								getSnowball(message.chat.id, message.from.username, player_id);
+								getSnowball(message.chat.id, message.from.username, player_id, 1);
 							} else {
 								var expText = "";
 								if (isMatch == 1) {
@@ -46624,7 +46624,7 @@ function setMapCondition() {
 	});
 }
 
-function getSnowball(chat_id, nickname, player_id) {
+function getSnowball(chat_id, nickname, player_id, quantity) {
 	if ((snowHouse == 1) && (snowHouseEnd == 0)) {
 		var rand = Math.random()*100;
 		if (rand < 50) {
@@ -46633,7 +46633,7 @@ function getSnowball(chat_id, nickname, player_id) {
 				if (rows[0].cnt > 0) {
 					connection.query('SELECT COUNT(id) As cnt FROM event_snowball_list WHERE player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
-						var snowball = 1+parseInt(rows[0].cnt);
+						var snowball = quantity+parseInt(rows[0].cnt);
 						connection.query('UPDATE event_snowball_status SET snowball = snowball+' + snowball + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 							if (snowball > 1)
@@ -48093,6 +48093,7 @@ function printStart(message) {
 						'<b>Per iniziare</b> 🗡\n' +
 						'- Leggi i <a href="http://telegra.ph/Introduzione-a-Loot-Bot-12-15">Suggerimenti per i nuovi avventurieri</a>\n' +
 						'- Segui il canale @wikilootbot\n' +
+						'- Entra nella <a href="https://t.me/joinchat/AThc-z_EfojvcE8mbGw1Cw">Taverna</a> per scambiare opinioni, chiede aiuto e cercare un team\n' +
 						'- Visualizza i /gruppi e tutti i comandi avviando l\'importantissimo bot di supporto @lootplusbot\n' +
 						'- Entra nella <a href="https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg">Lootbot School</a> per imparare le basi\n' +
 						'- Cerca un team per imparare e collaborare, visita la <a href="https://t.me/LaBachecaDiLootia">Bacheca di Lootia</a>\n\n' +
@@ -57792,6 +57793,8 @@ function setFinishedTeamMission(element, index, array) {
 													//console.log("Consegnati " + parts + " punti a " + rows[i].nickname);
 												};
 											}
+											
+											getSnowball(rows[i].chat_id, rows[i].nickname, rows[i].id, (1+Math.floor(mission_time_count_min/45)))
 										} else {
 											bot.sendMessage(rows[i].chat_id, "Hai completato l'incarico insieme al tuo party come richiesto da " + mandator + "!\nEcco il rapporto dell'incarico:\n<i>" + endText + "</i>\n\nNon ricevi ricompense poichè sei stato sospeso dall'amministratore", html);
 										}
@@ -60422,7 +60425,7 @@ function setFinishedMission(element, index, array) {
 								else if ((boost_id == 4) || (boost_id == 5) || (boost_id == 7))
 									setBoost(element.id, boost_mission, boost_id);
 
-								getSnowball(chat_id, element.nickname, element.id);
+								getSnowball(chat_id, element.nickname, element.id, 1);
 								setAchievement(element.id, 1, 1);
 							});
 						});
@@ -60926,6 +60929,7 @@ function setFinishedCave(element, index, array) {
 		var stone_id = 0;
 		var charm_id = element.charm_id;
 
+		var base_caveid = parseInt(element.cave_id);
 		var caveid = parseInt(element.cave_id) + 2;
 
 		var extra = "";
@@ -61101,6 +61105,7 @@ function setFinishedCave(element, index, array) {
 
 					bot.sendMessage(chat_id, "Hai completato l'esplorazione della cava e hai ottenuto:" + msg + boost_text);
 					setAchievement(element.id, 54, (stone1e+stone2e+stone3e+stone4e+stone5e+stone6e));
+					getSnowball(chat_id, element.nickname, element.id, (3 + base_caveid));
 				}
 
 				var now = new Date();
