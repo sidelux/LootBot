@@ -3581,6 +3581,25 @@ CREATE TABLE `team_safe` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `team_safe_get_log`
+--
+
+DROP TABLE IF EXISTS `team_safe_get_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `team_safe_get_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `team_id` int(11) NOT NULL,
+  `player_id` int(11) NOT NULL,
+  `money` bigint(20) NOT NULL,
+  `insert_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `team_safe_log_team_id` (`team_id`),
+  KEY `team_safe_log_player_id` (`player_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `team_safe_log`
 --
 
