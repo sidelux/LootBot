@@ -1799,6 +1799,7 @@ bot.onText(/\/start (.+)|\/start/i, function (message, match) {
 			}
 
 			var token_streak = parseInt(rows[0].token_streak);
+			var token_view = token_streak;
 			var text = "";
 			var query = "";
 
@@ -1837,8 +1838,8 @@ bot.onText(/\/start (.+)|\/start/i, function (message, match) {
 			connection.query('UPDATE player SET token_used = 1, token_streak = ' + token_streak + ', token_last_use = CURDATE()' + query + ' WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (token_streak == 0)
-					token_streak = 1;
-				bot.sendMessage(message.chat.id, "Hai ottenuto la ricompensa giornaliera n. " + token_streak + ":" + text, back);
+					token_view = 1;
+				bot.sendMessage(message.chat.id, "Hai ottenuto la ricompensa giornaliera n. " + token_view + ":" + text, back);
 			});
 		});
 		return;
@@ -3916,12 +3917,12 @@ bot.onText(/descrizione drago/i, function (message) {
 });
 
 bot.onText(/soprannome/i, function (message) {
-	connection.query('SELECT id, exp, player_custom_nickname FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, exp, reborn, player_custom_nickname FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
 
-		if (Math.floor(rows[0].exp/10) < 1000) {
-			bot.sendMessage(message.chat.id, "Puoi impostare il soprannome solo al livello 1.000", back);
+		if ((rows[0].reborn < 6) && (Math.floor(rows[0].exp/10) < 1000)) {
+			bot.sendMessage(message.chat.id, "Puoi impostare il soprannome solo al livello 1.000 R4 o R5", back);
 			return;
 		}
 
@@ -15643,8 +15644,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																						if (danno >= monster_total_life)
 																							setAchievement(player_id, 84, 1);
 																						
-																						if (boost_id == 4) {
-																							exp = exp*1.5;
+																						if ((boost_id == 4) && (exp > 0)) {
+																							exp = Math.round(exp*3);
 																							setBoost(player_id, boost_mission, boost_id);
 																						}
 
