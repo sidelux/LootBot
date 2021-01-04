@@ -22,9 +22,9 @@ var eventDust = 0;
 // Festività o disattivati
 var eventStory = 0;
 var halloween = 0;
-var snowHouse = 1;
+var snowHouse = 0;
 var snowHouseWait = 0;
-var snowHouseEnd = 0;
+var snowHouseEnd = 1;
 var blackfriday = 0;
 
 // Variabili globali
@@ -1804,6 +1804,7 @@ bot.onText(/\/start (.+)|\/start/i, function (message, match) {
 			var query = "";
 
 			token_streak++;
+			token_view++;
 
 			if (token_streak <= 10) {
 				var qnt = token_streak;
@@ -31215,8 +31216,8 @@ bot.onText(/^\/endVillaggio/i, function (message) {
 			});
 			addChest(rows[i].id, 8, qnt);
 			if (rows[i].cnt >= 2) {
-				addItem(rows[i].id, 792);
-				text += " ed un *Alberello di Natale 2019* (IN)";
+				addItem(rows[i].id, 802);
+				text += " ed un *Alberello di Natale 2020* (IN)";
 			}
 			console.log(rows[i].nickname, text);
 			bot.sendMessage(rows[i].chat_id, text + "!", mark);
@@ -31227,7 +31228,7 @@ bot.onText(/^\/endVillaggio/i, function (message) {
 bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevato/i, function (message) {
 	// premi: /endVillaggio
 	if (snowHouseEnd == 1) {
-		bot.sendMessage(message.chat.id, "L'evento è terminato! A breve verranno distribuiti i premi, grazie per aver partecipato.", back);
+		bot.sendMessage(message.chat.id, "L'evento è terminato! A breve verranno distribuiti i premi, grazie per aver partecipato!", back);
 		return;
 	}
 
@@ -31385,11 +31386,6 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 											} else {
 												answer.text = answer.text.replace("@","");
 
-												if (answer.text.toLowerCase() == message.from.username) {
-													bot.sendMessage(message.chat.id, "Non lanciare le Palle di Neve a te stesso!", kbBack);
-													return;
-												}
-
 												var rows = connection_sync.query('SELECT event_snowball_list.id, event_snowball_list.player_id, player.chat_id, event_snowball_list.life, player.nickname FROM event_snowball_list, player WHERE event_snowball_list.player_id = player.id AND nickname = "' + answer.text + '" AND event_snowball_list.life > 0');
 
 												if (Object.keys(rows).length > 0) {
@@ -31399,6 +31395,11 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 													enemy_nickname = rows[0].nickname;
 													enemy_snowman_id = rows[0].id;
 													isSnowMan = 1;
+												}
+
+												if (player_id == enemy_player_id) {
+													bot.sendMessage(message.chat.id, "Non lanciare le Palle di Neve a te stesso!", kbBack);
+													return;
 												}
 
 												rows = connection_sync.query('SELECT event_snowball_status.player_id, player.chat_id, player.life, player.nickname FROM event_snowball_status, player WHERE event_snowball_status.player_id = player.id AND player.nickname = "' + answer.text + '"');
@@ -43909,6 +43910,9 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 													}
 
 													bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è migliore di quella del guardiano (" + combi + ")!\nIn una stanzetta all'interno del rifugio hai trovato un sacchettino contenente " + moneytxt + expText + extra, kbBack);
+													
+													if (isMatch == 1)
+														globalAchievement(player_id, 1);
 
 													bot.sendMessage(toChat, message.from.username + " è riuscito a sconfiggere il guardiano del tuo rifugio, purtroppo avendo lasciato incustodito un sacchettino, hai perso " + moneytxt + extra2, html);
 												});
@@ -48168,7 +48172,7 @@ function checkKeyboard() {
 	var d = new Date();
 	if (((d.getDay() == 3) && (d.getHours() > 9) && (d.getHours() < 22)) || (blackfriday == 1))
 		mainKeys.splice(0, 0, ['📃 Casa dei Giochi (Evento) 🎲']);
-	// if (snowHouse == 1)
+	if (snowHouse == 1)
 		mainKeys.splice(0, 0, ['🎄 Villaggio Innevato (Evento) 🌨']);
 	if (gnomorra == 1)
 		mainKeys.splice(0, 0, ['📄 Gnomorra Lootiana (Evento) 🈵']);
@@ -52641,10 +52645,8 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 									if (Object.keys(ability).length > 0)
 										money += money*((ability[0].ability_level*ability[0].val)/100);
 
-									/*
 									if (rows[i].global_end == 1)
 										money += money*0.05;
-									*/
 
 									money = Math.round(money);
 
@@ -52682,10 +52684,12 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 									chest5 = Math.round(chest5);
 									chest6 = Math.round(chest6);
 
+									/*
 									if (rows[i].global_end == 1) {
 										paUpd += 7;
 										paView += 7;
 									}
+									*/
 
 									if (is_boss == 1) {
 										randProb = Math.random()*100;
@@ -61413,7 +61417,6 @@ function setExp(player_id, exp) {
 		}
 
 		setAchievement(player_id, 57, exp);
-		globalAchievement(player_id, exp);
 	});
 }
 

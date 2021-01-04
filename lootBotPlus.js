@@ -2169,7 +2169,7 @@ bot.onText(/^\/token/, function (message) {
 				callback_data: "token_del"
 			}]);
 
-			bot.sendMessage(message.chat.id, "Richiedi il token per utilizzare le Api, in caso di utilizzo non consono, verrai bannato dal gioco. Tienitelo per te!\nToken attuale: <code>" + token + "</code>\n\nGuida: http://telegra.ph/Guida-alle-LootBot-API-04-06\nSwagger: https://app.swaggerhub.com/apis-docs/LucaDevelop/LootBotAPI/", {
+			bot.sendMessage(message.chat.id, "Richiedi il token per utilizzare le Api, in caso di utilizzo non consono, verrai bannato dal gioco. Tienitelo per te!\nToken attuale: <code>" + token + "</code>\n\nGuida: http://telegra.ph/Guida-alle-LootBot-API-04-06\nSwagger: https://app.swaggerhub.com/apis-docs/LucaDevelop/LootBotAPI/\nWrapper Python: https://pypi.org/project/LootBotApi/", {
 				parse_mode: 'HTML',
 				disable_web_page_preview: true,
 				reply_markup: {
