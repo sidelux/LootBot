@@ -2299,14 +2299,14 @@ bot.onText(/donatori ultimi 3 mesi|donatori complessivi/i, function (message) {
 
 bot.onText(/avvEstraz/, function (message) {
 	if (message.from.id == 20471035) {
-		bot.sendMessage("@EstrazioniLootteria", "L'estrazione inizierà a breve!");
+		bot.sendMessage("@EventiLootBot", "L'estrazione inizierà a breve!");
 		bot.sendMessage(message.chat.id, "Inviato");
 	};
 });
 
 bot.onText(/prossimaEstraz/, function (message) {
 	if (message.from.id == 20471035)
-		bot.sendMessage("@EstrazioniLootteria", "Acquista ora i biglietti per la Lootteria di oggi!");
+		bot.sendMessage("@EventiLootBot", "Acquista ora i biglietti per la Lootteria di oggi!");
 });
 
 bot.onText(/fineEstraz/, function (message) {
@@ -42666,13 +42666,13 @@ bot.onText(/lootteria/i, function (message) {
 		connection.query('SELECT extracted FROM `event_lottery_prize` WHERE day = ' + date.getDay(), function (err, rows, fields) {
 			if (err) throw err;
 			if (rows[0].extracted == 1) {
-				bot.sendMessage(message.chat.id, "L'estrazione è in corso o è terminata, segui @EstrazioniLootteria!", back)
+				bot.sendMessage(message.chat.id, "L'estrazione è in corso o è terminata, segui @EventiLootBot!", back)
 				return;
 			}
 			connection.query('SELECT COUNT(*) As num FROM event_lottery_coins WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
 				if (err) throw err;
 				var ticketNum = rows[0].num;
-				bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella Lootteria!\nAcquista biglietti per avere più probabilità di essere estratt" + gender_text + ", l'estrazione avverrà ogni sabato e domenica tra le 17 e le 20 e potrà essere seguita su @EstrazioniLootteria!\nPossiedi " + ticketNum + "/30 biglietti", kb);
+				bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella Lootteria!\nAcquista biglietti per avere più probabilità di essere estratt" + gender_text + ", l'estrazione avverrà ogni sabato e domenica tra le 17 e le 20 e potrà essere seguita su @EventiLootBot!\nPossiedi " + ticketNum + "/30 biglietti", kb);
 			});
 		});
 	});
@@ -54829,7 +54829,7 @@ function estrazione() {
 			console.log("Non ci sono più premi");
 			autoEstrazione = 0;
 
-			bot.sendMessage("@EstrazioniLootteria", "Estrazioni terminate!");
+			bot.sendMessage("@EventiLootBot", "Estrazioni terminate!");
 			return;
 		}
 
@@ -54952,7 +54952,7 @@ function estrazione() {
 
 					var tot = rows[0].tot;
 					text += "\n" + ext_id + " / " + tot;
-					bot.sendMessage("@EstrazioniLootteria", text, html);
+					bot.sendMessage("@EventiLootBot", text, html);
 					console.log("Estrazione " + ext_id + " terminata");
 
 					for (var i = 0, len = Object.keys(nick_extracted).length; i < len; i++) {
@@ -59774,12 +59774,20 @@ function checkGlobalMsg() {
 }
 
 function checkFestivalWait() {
-	connection.query('SELECT id FROM event_crafting_item WHERE wait_time < NOW() AND wait_time IS NOT NULL', function (err, rows, fields) {
+	connection.query('SELECT id, item_id FROM event_crafting_item WHERE wait_time < NOW() AND wait_time IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
-			connection.query('UPDATE event_crafting_item SET wait_time = NULL WHERE id = ' + rows[0].id, function (err, rows, fields) {
+			var event_id = rows[0].id;
+			connection.query('SELECT name FROM item WHERE id = ' + rows[0].item_id, function (err, rows, fields) {
 				if (err) throw err;
-				console.log("Tempo preparazione festival terminato");
+				var item_name = rows[0].name;
+				connection.query('UPDATE event_crafting_item SET wait_time = NULL WHERE id = ' + event_id, function (err, rows, fields) {
+					if (err) throw err;
+					console.log("Tempo preparazione festival terminato");
+					var today = new Date();
+					if ((today.getDay() == 6) || (today.getDay() == 0))
+						bot.sendMessage("@EventiLootBot", "<i>Crafting Festival</i> - E' ora possibile creare l'oggetto <b>" + item_name + "</b>", html);
+				});
 			});
 		}
 	});
