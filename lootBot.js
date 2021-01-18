@@ -11919,18 +11919,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		var lev = 0;
 																		if ((Object.keys(rows).length > 0) && (combat == 0)) {
 																			lev = rows[0].level;
-																			if ((rows[0].life > 0) || ((rows[0].life == 0) && (rows[0].sleep_h > 0))) {
-																				if (lev == 200)
-																					prob = 100;
-																				else if (lev >= 150)
-																					prob = 75;
-																				else if (lev >= 100)
-																					prob = 50;
-																				else if (lev >= 50)
-																					prob = 25;
-																				else
-																					prob = lev;
-																			}
+																			if ((rows[0].life > 0) || ((rows[0].life == 0) && (rows[0].sleep_h > 0)))
+																				prob = Math.round(lev/3.3); // 90% al 300
 																		}
 
 																		if (prob >= rand) {
