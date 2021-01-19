@@ -7393,9 +7393,9 @@ bot.onText(/attacca!/i, function (message) {
 									var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + enemy_weapon_id);
 									var weapon_name = weaponQuery[0].name;
 									if (weapon_id != null) {
-										var check = enemy_weapon > weapon;
+										var check = enemy_weapon > weapon || (weapon == enemy_weapon && enemy_weapon_crit > weapon_crit);;
 										if (map_equip_change_power == 0)
-											check = enemy_weapon_crit > weapon_crit;
+											check = enemy_weapon_crit > weapon_crit || (enemy_weapon_crit == weapon_crit && enemy_weapon > weapon);
 										if (check) {
 											text += "\nArma <b>" + weapon_name + "</b> sgraffignata e sostituita!";
 											item_query += ", weapon_id = " + enemy_weapon_id;
@@ -7413,9 +7413,9 @@ bot.onText(/attacca!/i, function (message) {
 									var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + enemy_weapon2_id);
 									var weapon_name = weaponQuery[0].name;
 									if (weapon2_id != null) {
-										var check = enemy_weapon2 < weapon2;
+										var check = enemy_weapon2 < weapon2 || (weapon2 == enemy_weapon2 && enemy_weapon2_crit > weapon2_crit);
 										if (map_equip_change_power == 0)
-											check = enemy_weapon2_crit > weapon2_crit;
+											check = enemy_weapon2_crit > weapon2_crit || (enemy_weapon2_crit == weapon2_crit && enemy_weapon2 > weapon2);
 										if (check) {
 											text += "\nArmatura <b>" + weapon_name + "</b> sgraffignata e sostituita!";
 											item_query += ", weapon2_id = " + enemy_weapon2_id;
@@ -7433,9 +7433,9 @@ bot.onText(/attacca!/i, function (message) {
 									var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + enemy_weapon3_id);
 									var weapon_name = weaponQuery[0].name;
 									if (weapon3_id != null) {
-										var check = enemy_weapon3 < weapon3;
+										var check = enemy_weapon3 < weapon3 || (weapon3 == enemy_weapon3 && enemy_weapon3_crit > weapon3_crit);
 										if (map_equip_change_power == 0)
-											check = enemy_weapon3_crit > weapon3_crit;
+											check = enemy_weapon3_crit > weapon3_crit || (enemy_weapon3_crit == weapon3_crit && enemy_weapon3 > weapon3);
 										if (check) {
 											text += "\nScudo <b>" + weapon_name + "</b> sgraffignato e sostituito!";
 											item_query += ", weapon3_id = " + enemy_weapon3_id;
@@ -7486,9 +7486,9 @@ bot.onText(/attacca!/i, function (message) {
 									var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + weapon_id);
 									var weapon_name = weaponQuery[0].name;
 									if (enemy_weapon_id != null) {
-										var check = weapon > enemy_weapon;
+										var check = weapon > enemy_weapon || (weapon == enemy_weapon && weapon_crit > enemy_weapon_crit);
 										if (enemy_map_equip_change_power == 0)
-											check = weapon_crit > enemy_weapon_crit;
+											check = weapon_crit > enemy_weapon_crit || (weapon_crit == enemy_weapon_crit && weapon > enemy_weapon);
 										if (check) {
 											enemy_text += "\nArma <b>" + weapon_name + "</b> sgraffignata e sostituita!";
 											enemy_item_query += ", weapon_id = " + weapon_id;
@@ -7506,9 +7506,9 @@ bot.onText(/attacca!/i, function (message) {
 									var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + weapon2_id);
 									var weapon_name = weaponQuery[0].name;
 									if (enemy_weapon2_id != null) {
-										var check = weapon2 < enemy_weapon2;
+										var check = weapon2 < enemy_weapon2 || (weapon2 == enemy_weapon2 && weapon2_crit > enemy_weapon2_crit);
 										if (enemy_map_equip_change_power == 0)
-											check = weapon2_crit > enemy_weapon2_crit;
+											check = weapon2_crit > enemy_weapon2_crit || (weapon2_crit == enemy_weapon2_crit && weapon2 < enemy_weapon2);
 										if (check) {
 											enemy_text += "\nArmatura <b>" + weapon_name + "</b> sgraffignata e sostituita!";
 											enemy_item_query += ", weapon2_id = " + weapon2_id;
@@ -7526,9 +7526,9 @@ bot.onText(/attacca!/i, function (message) {
 									var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + weapon3_id);
 									var weapon_name = weaponQuery[0].name;
 									if (enemy_weapon3_id != null) {
-										var check = weapon3 < enemy_weapon3;
+										var check = weapon3 < enemy_weapon3 || (weapon3 == enemy_weapon3 && weapon3_crit > enemy_weapon3_crit);
 										if (enemy_map_equip_change_power == 0)
-											check = weapon3_crit > enemy_weapon3_crit;
+											check = weapon3_crit > enemy_weapon3_crit || (weapon3_crit == enemy_weapon3_crit && weapon3 < enemy_weapon3);
 										if (check) {
 											enemy_text += "\nScudo <b>" + weapon_name + "</b> sgraffignato e sostituito!";
 											enemy_item_query += ", weapon3_id = " + weapon3_id;
@@ -7889,16 +7889,12 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										// modifica anche sotto
 										var item_query = "";
 										if (item_id != 0) {
-											var from_value = item_power;
-											if (map_equip_change_power == 0)
-												from_value = item_crit;
 											if (item_type == 1) { 
 												if (weapon_id != null) {
-													var check_value = "power";
+													var weapon = connection_sync.query("SELECT power, critical FROM item WHERE id = " + weapon_id);
+													var check = item_power > weapon[0].power || (item_power == weapon[0].power && item_crit > weapon[0].critical);
 													if (map_equip_change_power == 0)
-														check_value = "critical";
-													var weapon = connection_sync.query("SELECT " + check_value + " As val FROM item WHERE id = " + weapon_id);
-													var check = from_value > weapon[0].val;
+														check = item_crit > weapon[0].critical || (item_crit == weapon[0].critical && item_power > weapon[0].power);
 													if (check) {
 														text += "\nArma sostituita!";
 														item_query = ", weapon_id = '" + item_id + "'";
@@ -7909,13 +7905,10 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												}
 											} else if (item_type == 2) {
 												if (weapon2_id != null) {
-													var check_value = "power_armor";
+													var weapon2 = connection_sync.query("SELECT power_armor, critical FROM item WHERE id = " + weapon2_id);
+													var check = item_power < weapon2[0].power_armor || (item_power == weapon2[0].power_armor && item_crit > weapon[0].critical);
 													if (map_equip_change_power == 0)
-														check_value = "critical";
-													var weapon2 = connection_sync.query("SELECT " + check_value + " As val FROM item WHERE id = " + weapon2_id);
-													var check = from_value < weapon2[0].val;
-													if (map_equip_change_power == 0)
-														check = from_value > weapon2[0].val;
+														check = item_crit > weapon2[0].critical || (item_crit == weapon2[0].critical && item_power > weapon2[0].power_armor);
 													if (check) {
 														text += "\nArmatura sostituita!";
 														item_query = ", weapon2_id = '" + item_id + "'";
@@ -7926,13 +7919,10 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												}
 											} else if (item_type == 3) {
 												if (weapon3_id != null) {
-													var check_value = "power_shield";
+													var weapon3 = connection_sync.query("SELECT power_shield, critical FROM item WHERE id = " + weapon3_id);
+													var check = item_power < weapon3[0].power_shield || (item_power == weapon3[0].power_shield && item_crit > weapon[0].critical);
 													if (map_equip_change_power == 0)
-														check_value = "critical";
-													var weapon3 = connection_sync.query("SELECT " + check_value + " As val FROM item WHERE id = " + weapon3_id);
-													var check = from_value < weapon3[0].val;
-													if (map_equip_change_power == 0)
-														check = from_value > weapon3[0].val;
+														check = item_crit > weapon3[0].critical || (item_crit == weapon3[0].critical && item_power > weapon3[0].power_shield);
 													if (check) {
 														text += "\nScudo sostituito!";
 														item_query = ", weapon3_id = '" + item_id + "'";
@@ -8007,16 +7997,12 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										var item_query = "";
 										var scrap_query = "";
 										if (item_id != 0) {
-											var from_value = item_power;
-											if (map_equip_change_power == 0)
-												from_value = item_crit;
 											if (item_type == 1) { 
 												if (weapon_id != null) {
-													var check_value = "power";
+													var weapon = connection_sync.query("SELECT power, critical FROM item WHERE id = " + weapon_id);
+													var check = item_power > weapon[0].power || (item_power == weapon[0].power && item_crit > weapon[0].critical);
 													if (map_equip_change_power == 0)
-														check_value = "critical";
-													var weapon = connection_sync.query("SELECT " + check_value + " As val FROM item WHERE id = " + weapon_id);
-													var check = from_value > weapon[0].val;
+														check = item_crit > weapon[0].critical || (item_crit == weapon[0].critical && item_power > weapon[0].power);
 													if (check) {
 														text += "\nArma sostituita!";
 														item_query = ", weapon_id = '" + item_id + "'";
@@ -8030,13 +8016,10 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												}
 											} else if (item_type == 2) {
 												if (weapon2_id != null) {
-													var check_value = "power_armor";
+													var weapon2 = connection_sync.query("SELECT power_armor, critical FROM item WHERE id = " + weapon2_id);
+													var check = item_power < weapon2[0].power_armor || (item_power == weapon2[0].power_armor && item_crit > weapon2[0].critical);
 													if (map_equip_change_power == 0)
-														check_value = "critical";
-													var weapon2 = connection_sync.query("SELECT " + check_value + " As val FROM item WHERE id = " + weapon2_id);
-													var check = from_value < weapon2[0].val;
-													if (map_equip_change_power == 0)
-														check = from_value > weapon2[0].val;
+														check = item_crit > weapon2[0].critical || (item_crit == weapon2[0].critical && item_power < weapon2[0].power_armor);
 													if (check) {
 														text += "\nArmatura sostituita!";
 														item_query = ", weapon2_id = '" + item_id + "'";
@@ -8050,13 +8033,10 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												}
 											} else if (item_type == 3) {
 												if (weapon3_id != null) {
-													var check_value = "power_shield";
+													var weapon3 = connection_sync.query("SELECT power_shield, critical FROM item WHERE id = " + weapon3_id);
+													var check = item_power < weapon3[0].power_shield || (item_power == weapon3[0].power_shield && item_crit > weapon3[0].critical);
 													if (map_equip_change_power == 0)
-														check_value = "critical";
-													var weapon3 = connection_sync.query("SELECT " + check_value + " As val FROM item WHERE id = " + weapon3_id);
-													var check = from_value < weapon3[0].val;
-													if (map_equip_change_power == 0)
-														check = from_value > weapon3[0].val;
+														check = item_crit > weapon3[0].critical || (item_crit == weapon3[0].critical && item_power < weapon3[0].power_shield);
 													if (check) {
 														text += "\nScudo sostituito!";
 														item_query = ", weapon3_id = '" + item_id + "'";
@@ -8472,14 +8452,40 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											rarity = "R";
 											price = 2;
 										}
-										var bag = connection_sync.query("SELECT I1.power, I2.power_armor, I3.power_shield FROM map_lobby M LEFT JOIN item I1 ON M.weapon_id = I1.id LEFT JOIN item I2 ON M.weapon2_id = I2.id LEFT JOIN item I3 ON M.weapon3_id = I3.id WHERE player_id = " + player_id);
-										var weapon_power = (bag[0].power == null ? "1" : bag[0].power);
-										var weapon2_power = (bag[0].power_armor == null ? "-1" : bag[0].power_armor);
-										var weapon3_power = (bag[0].power_shield == null ? "-1" : bag[0].power_shield);
-										var item = connection_sync.query("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") AND rarity = '" + rarity + "' ORDER BY RAND()");
-										if (Object.keys(item).length == 0) {
-											// se non trova a causa della rarità, riprova senza il filtro
-											item = connection_sync.query("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") ORDER BY RAND()");
+										var bag = connection_sync.query("SELECT I1.power, I2.power_armor, I3.power_shield, I1.critical As critical1, I2.critical As critical2, I3.critical As critical3 FROM map_lobby M LEFT JOIN item I1 ON M.weapon_id = I1.id LEFT JOIN item I2 ON M.weapon2_id = I2.id LEFT JOIN item I3 ON M.weapon3_id = I3.id WHERE player_id = " + player_id);
+										if (map_equip_change_power == 1) {
+											var weapon_power = (bag[0].power == null ? "1" : bag[0].power);
+											var weapon2_power = (bag[0].power_armor == null ? "-1" : bag[0].power_armor);
+											var weapon3_power = (bag[0].power_shield == null ? "-1" : bag[0].power_shield);
+											var item = connection_sync.query("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") AND rarity = '" + rarity + "' ORDER BY RAND()");
+											if (Object.keys(item).length == 0) {
+												// se non trova a causa della rarità, riprova senza il filtro
+												item = connection_sync.query("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") ORDER BY RAND()");
+											}
+										} else {
+											var weapon_critical1 = (bag[0].critical1 == null ? "0" : bag[0].critical1);
+											var weapon_critical2 = (bag[0].critical2 == null ? "0" : bag[0].critical2);
+											var weapon_critical3 = (bag[0].critical3 == null ? "0" : bag[0].critical3);
+											var rand = Math.round(getRandomArbitrary(1, 3));
+											if (rand == 1) {
+												var item = connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical1 + " AND power > 1 AND rarity = '" + rarity + "' ORDER BY RAND()");
+												if (Object.keys(item).length == 0) {
+													// se non trova a causa della rarità, riprova senza il filtro
+													item = connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical1 + " AND power > 1 ORDER BY RAND()");
+												}
+											} else if (rand == 2) {
+												var item = connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < -1 AND rarity = '" + rarity + "' ORDER BY RAND()");
+												if (Object.keys(item).length == 0) {
+													// se non trova a causa della rarità, riprova senza il filtro
+													item = connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < -1 ORDER BY RAND()");
+												}
+											} else if (rand == 3) {
+												var item = connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < -1 AND rarity = '" + rarity + "' ORDER BY RAND()");
+												if (Object.keys(item).length == 0) {
+													// se non trova a causa della rarità, riprova senza il filtro
+													item = connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < -1 ORDER BY RAND()");
+												}
+											}
 										}
 										last_obj_query += ", last_obj_val = '" + item[0].id + ":" + price + "'";
 										isBuild = 1;
@@ -8499,14 +8505,40 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											rarity = "R";
 											price = 1000;
 										}
-										var bag = connection_sync.query("SELECT I1.power, I2.power_armor, I3.power_shield FROM map_lobby M LEFT JOIN item I1 ON M.weapon_id = I1.id LEFT JOIN item I2 ON M.weapon2_id = I2.id LEFT JOIN item I3 ON M.weapon3_id = I3.id WHERE player_id = " + player_id);
-										var weapon_power = (bag[0].power == null ? "1" : bag[0].power);
-										var weapon2_power = (bag[0].power_armor == null ? "-1" : bag[0].power_armor);
-										var weapon3_power = (bag[0].power_shield == null ? "-1" : bag[0].power_shield);
-										var item = connection_sync.query("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") AND rarity = '" + rarity + "' ORDER BY RAND()");
-										if (Object.keys(item).length == 0) {
-											// se non trova a causa della rarità, riprova senza il filtro
-											item = connection_sync.query("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") ORDER BY RAND()");
+										var bag = connection_sync.query("SELECT I1.power, I2.power_armor, I3.power_shield, I1.critical As critical1, I2.critical As critical2, I3.critical As critical3 FROM map_lobby M LEFT JOIN item I1 ON M.weapon_id = I1.id LEFT JOIN item I2 ON M.weapon2_id = I2.id LEFT JOIN item I3 ON M.weapon3_id = I3.id WHERE player_id = " + player_id);
+										if (map_equip_change_power == 1) {
+											var weapon_power = (bag[0].power == null ? "1" : bag[0].power);
+											var weapon2_power = (bag[0].power_armor == null ? "-1" : bag[0].power_armor);
+											var weapon3_power = (bag[0].power_shield == null ? "-1" : bag[0].power_shield);
+											var item = connection_sync.query("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") AND rarity = '" + rarity + "' ORDER BY RAND()");
+											if (Object.keys(item).length == 0) {
+												// se non trova a causa della rarità, riprova senza il filtro
+												item = connection_sync.query("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") ORDER BY RAND()");
+											}
+										} else {
+											var weapon_critical1 = (bag[0].critical1 == null ? "0" : bag[0].critical1);
+											var weapon_critical2 = (bag[0].critical2 == null ? "0" : bag[0].critical2);
+											var weapon_critical3 = (bag[0].critical3 == null ? "0" : bag[0].critical3);
+											var rand = Math.round(getRandomArbitrary(1, 3));
+											if (rand == 1) {
+												var item = connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical1 + " AND power > 1 AND rarity = '" + rarity + "' ORDER BY RAND()");
+												if (Object.keys(item).length == 0) {
+													// se non trova a causa della rarità, riprova senza il filtro
+													item = connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical1 + " AND power > 1 ORDER BY RAND()");
+												}
+											} else if (rand == 2) {
+												var item = connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < -1 AND rarity = '" + rarity + "' ORDER BY RAND()");
+												if (Object.keys(item).length == 0) {
+													// se non trova a causa della rarità, riprova senza il filtro
+													item = connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < -1 ORDER BY RAND()");
+												}
+											} else if (rand == 3) {
+												var item = connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < -1 AND rarity = '" + rarity + "' ORDER BY RAND()");
+												if (Object.keys(item).length == 0) {
+													// se non trova a causa della rarità, riprova senza il filtro
+													item = connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < -1 ORDER BY RAND()");
+												}
+											}
 										}
 										last_obj_query += ", last_obj_val = '" + item[0].id + ":" + price + "'";
 										isBuild = 1;
@@ -8568,16 +8600,12 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									// modifica anche sopra
 									var item_query = "";
 									if (item_id != 0) {
-										var from_value = item_power;
-										if (map_equip_change_power == 0)
-											from_value = item_crit;
 										if (item_type == 1) { 
 											if (weapon_id != null) {
-												var check_value = "power";
+												var weapon = connection_sync.query("SELECT power, critical FROM item WHERE id = " + weapon_id);
+												var check = item_power > weapon[0].power || (item_power == weapon[0].power && item_crit > weapon[0].critical);
 												if (map_equip_change_power == 0)
-													check_value = "critical";
-												var weapon = connection_sync.query("SELECT " + check_value + " As val FROM item WHERE id = " + weapon_id);
-												var check = from_value > weapon[0].val;
+													check = item_crit > weapon[0].critical || (item_crit == weapon[0].critical && item_power > weapon[0].power);
 												if (check) {
 													text += "\nArma sostituita!";
 													item_query = ", weapon_id = '" + item_id + "'";
@@ -8591,13 +8619,10 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											}
 										} else if (item_type == 2) {
 											if (weapon2_id != null) {
-												var check_value = "power_armor";
+												var weapon2 = connection_sync.query("SELECT power_armor, critical FROM item WHERE id = " + weapon2_id);
+												var check = item_power < weapon2[0].power_armor || (item_power == weapon2[0].power_armor && item_crit > weapon2[0].critical);
 												if (map_equip_change_power == 0)
-													check_value = "critical";
-												var weapon2 = connection_sync.query("SELECT " + check_value + " As val FROM item WHERE id = " + weapon2_id);
-												var check = from_value < weapon2[0].val;
-												if (map_equip_change_power == 0)
-													check = from_value > weapon2[0].val;
+													check = item_crit > weapon2[0].critical || (item_crit == weapon2[0].critical && item_power < weapon2[0].power_armor);
 												if (check) {
 													text += "\nArmatura sostituita!";
 													item_query = ", weapon2_id = '" + item_id + "'";
@@ -8611,13 +8636,10 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											}
 										} else if (item_type == 3) {
 											if (weapon3_id != null) {
-												var check_value = "power_shield";
+												var weapon3 = connection_sync.query("SELECT power_shield, critical FROM item WHERE id = " + weapon3_id);
+												var check = item_power < weapon3[0].power_shield || (item_power == weapon3[0].power_shield && item_crit > weapon3[0].critical);
 												if (map_equip_change_power == 0)
-													check_value = "critical";
-												var weapon3 = connection_sync.query("SELECT " + check_value + " As val FROM item WHERE id = " + weapon3_id);
-												var check = from_value < weapon3[0].val;
-												if (map_equip_change_power == 0)
-													check = from_value > weapon3[0].val;
+													check = item_crit > weapon3[0].critical || (item_crit == weapon3[0].critical && item_power < weapon3[0].power_shield);
 												if (check) {
 													text += "\nScudo sostituito!";
 													item_query = ", weapon3_id = '" + item_id + "'";
@@ -12345,7 +12367,10 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															}
 
 															var rand = Math.random() * 100;
-															if (rand < 4) {
+															var prob = 4;
+															if (cursed == 1)
+																prob = 8;
+															if (rand < prob) {
 																addItem(player_id, 610);
 																bot.sendMessage(message.chat.id, "Per l'altissimo livello di meditazione hai ottenuto un *Pass Oro*!", mark);
 															}
@@ -12959,106 +12984,113 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														keyboard: [["Consegna " + keys + " 🗝"], ["Ignora"], ["Torna al menu"]]
 													}
 												};
+												connection.query('SELECT mkeys FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+													bot.sendMessage(message.chat.id, "Al centro della stanza vedi un signore anziano con gli occhi sbarrati, si alza e ti porge la mano con un simbolo disegnato sopra: " + keys + " 🗝. Cosa fai?\nAttualmente ne possiedi " + formatNumber(rows[0].mkeys), dOptions).then(function () {
+														answerCallbacks[message.chat.id] = function (answer) {
+															if (answer.text.indexOf("Consegna") != -1) {
+																bot.sendMessage(message.chat.id, "Sicuro?", dYesNo).then(function () {
+																	answerCallbacks[message.chat.id] = function (answer) {
 
-												bot.sendMessage(message.chat.id, "Al centro della stanza vedi un signore anziano con gli occhi sbarrati, si alza e ti porge la mano con un simbolo disegnato sopra: " + keys + " 🗝. Cosa fai?", dOptions).then(function () {
-													answerCallbacks[message.chat.id] = function (answer) {
-														if (answer.text.indexOf("Consegna") != -1) {
-															bot.sendMessage(message.chat.id, "Sicuro?", dYesNo).then(function () {
-																answerCallbacks[message.chat.id] = function (answer) {
+																		if (answer.text.toLowerCase() != "si")
+																			return;
 
-																	if (answer.text.toLowerCase() != "si")
-																		return;
+																		connection.query('SELECT mkeys FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+																			if (err) throw err;
 
-																	connection.query('SELECT mkeys FROM player WHERE id = ' + player_id, function (err, rows, fields) {
-																		if (err) throw err;
+																			if (rows[0].mkeys < keys) {
+																				bot.sendMessage(message.chat.id, "Non hai abbastanza 🗝, ne servono " + keys + ", ignori l'anziano saggio e prosegui", dNext);
 
-																		if (rows[0].mkeys < keys) {
-																			bot.sendMessage(message.chat.id, "Non hai abbastanza 🗝, ne servono " + keys + ", ignori l'anziano saggio e prosegui", dNext);
-
-																			endDungeonRoom(player_id, boost_id, boost_mission);
-																			connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-																				if (err) throw err;
-																			});
-																		} else {
-																			connection.query('SELECT COUNT(id) As not_mapped FROM dungeon_map WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND (dir_top = 0 OR dir_right = 0 OR dir_left = 0) AND player_id = ' + player_id, function (err, rows, fields) {
-																				if (err) throw err;
-																				if (rows[0].not_mapped == 0) {	// se non sono tutte mappate
-																					bot.sendMessage(message.chat.id, "L'anziano saggio sa già che tu conosci tutte le stanze davanti a te, ti ignora e prosegui la tua esplorazione", dNext);
-																					setAchievement(player_id, 74, 1);
-
-																					endDungeonRoom(player_id, boost_id, boost_mission);
-																					connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-																						if (err) throw err;
-																					});
-																					return;
-																				}
-
-																				connection.query('UPDATE player SET mkeys = mkeys-' + keys + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																				endDungeonRoom(player_id, boost_id, boost_mission);
+																				connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
+																				});
+																			} else {
+																				connection.query('SELECT COUNT(id) As mapped FROM dungeon_map WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND (dir_top = 1 OR dir_right = 1 OR dir_left = 1) AND player_id = ' + player_id, function (err, rows, fields) {
+																					if (err) throw err;
+																					if (rows[0].mapped >= room_num-(room_id-1)) {
+																						bot.sendMessage(message.chat.id, "L'anziano saggio sa già che tu conosci tutte le stanze davanti a te, ti ignora e prosegui la tua esplorazione", dNext);
+																						setAchievement(player_id, 74, 1);
 
-																					connection.query('SELECT room_id, dir_top, dir_left, dir_right FROM dungeon_map WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND (dir_top = 0 OR dir_right = 0 OR dir_left = 0) AND player_id = ' +  + player_id + ' ORDER BY RAND()', function (err, rows, fields) {
+																						endDungeonRoom(player_id, boost_id, boost_mission);
+																						connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+																						return;
+																					}
+
+																					connection.query('UPDATE player SET mkeys = mkeys-' + keys + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 
-																						var sage_dir = "";
-																						var selected_dir = "";
-																						var text_dir = "";
-																						if (rows[0].dir_top == 0) {
-																							selected_dir = "top";
-																							sage_dir = "dir_top";
-																							text_dir = "dritto";
-																						} else if (rows[0].dir_left == 0) {
-																							selected_dir = "left";
-																							sage_dir = "dir_left";
-																							text_dir = "sinistra";
-																						} else if (rows[0].dir_right == 0) {
-																							selected_dir = "right";
-																							sage_dir = "dir_right";
-																							text_dir = "destra";
-																						}
-
-																						connection.query('SELECT room_id, ' + sage_dir + ' As dir FROM dungeon_rooms WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND ' + sage_dir + ' < 11 ORDER BY RAND()', function (err, rows, fields) {
+																						connection.query('SELECT room_id, dir_top, dir_left, dir_right FROM dungeon_map WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND (dir_top = 0 OR dir_right = 0 OR dir_left = 0) AND player_id = ' +  + player_id + ' ORDER BY RAND()', function (err, rows, fields) {
 																							if (err) throw err;
-																							if (Object.keys(rows).length > 0) {
-																								bot.sendMessage(message.chat.id, "L'anziano si concentra e un'aura azzurrina si forma attorno a lui, dopo alcuni secondi spalanca gli occhi urlando: " + dungeonToDesc(rows[0].dir).toUpperCase() + " " + text_dir.toUpperCase() + " " + rows[0].room_id + "!!\nDopo di che se ne va a passo lento...", dNext);
-
-																								addToMapping(selected_dir, dungeon_id, player_id, rows[0].room_id);
-
-																								setAchievement(player_id, 74, 1);
-
-																								endDungeonRoom(player_id, boost_id, boost_mission);
-																								connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-																									if (err) throw err;
-																								});
-																							} else {
-																								bot.sendMessage(message.chat.id, "L'anziano purtroppo non riesce a vedere alcuna stanza particolare davanti a te, ti restituisce le 🗝 e ti congeda con un po' di malinconia sul volto...", dNext);
-
-																								connection.query('UPDATE player SET mkeys = mkeys+10 WHERE id = ' + player_id, function (err, rows, fields) {
-																									if (err) throw err;
-																								});
-
-																								endDungeonRoom(player_id, boost_id, boost_mission);
-																								connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-																									if (err) throw err;
-																								});
+																							
+																							if (Object.keys(rows).length == 0) {
+																								bot.sendMessage(message.chat.id, "Errore individuazione stanza, contatta l'amministratore", dNext);
+																								return;
 																							}
+
+																							var sage_dir = "";
+																							var selected_dir = "";
+																							var text_dir = "";
+																							if (rows[0].dir_top == 0) {
+																								selected_dir = "top";
+																								sage_dir = "dir_top";
+																								text_dir = "dritto";
+																							} else if (rows[0].dir_left == 0) {
+																								selected_dir = "left";
+																								sage_dir = "dir_left";
+																								text_dir = "sinistra";
+																							} else if (rows[0].dir_right == 0) {
+																								selected_dir = "right";
+																								sage_dir = "dir_right";
+																								text_dir = "destra";
+																							}
+
+																							connection.query('SELECT room_id, ' + sage_dir + ' As dir FROM dungeon_rooms WHERE dungeon_id = ' + dungeon_id + ' AND room_id > ' + room_id + ' AND ' + sage_dir + ' < 11 ORDER BY RAND()', function (err, rows, fields) {
+																								if (err) throw err;
+																								if (Object.keys(rows).length > 0) {
+																									bot.sendMessage(message.chat.id, "L'anziano si concentra e un'aura azzurrina si forma attorno a lui, dopo alcuni secondi spalanca gli occhi urlando: " + dungeonToDesc(rows[0].dir).toUpperCase() + " " + text_dir.toUpperCase() + " " + rows[0].room_id + "!!\nDopo di che se ne va a passo lento...", dNext);
+
+																									addToMapping(selected_dir, dungeon_id, player_id, rows[0].room_id);
+
+																									setAchievement(player_id, 74, 1);
+
+																									endDungeonRoom(player_id, boost_id, boost_mission);
+																									connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																										if (err) throw err;
+																									});
+																								} else {
+																									bot.sendMessage(message.chat.id, "L'anziano purtroppo non riesce a vedere alcuna stanza particolare davanti a te, ti restituisce le 🗝 e ti congeda con un po' di malinconia sul volto...", dNext);
+
+																									connection.query('UPDATE player SET mkeys = mkeys+10 WHERE id = ' + player_id, function (err, rows, fields) {
+																										if (err) throw err;
+																									});
+
+																									endDungeonRoom(player_id, boost_id, boost_mission);
+																									connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																										if (err) throw err;
+																									});
+																								}
+																							});
 																						});
 																					});
 																				});
-																			});
-																		}
-																	});
-																}
-															});
-														} else if (answer.text == "Ignora") {
+																			}
+																		});
+																	}
+																});
+															} else if (answer.text == "Ignora") {
 
-															bot.sendMessage(message.chat.id, "Hai ignorato l'anziano saggio", dNext);
+																bot.sendMessage(message.chat.id, "Hai ignorato l'anziano saggio", dNext);
 
-															endDungeonRoom(player_id, boost_id, boost_mission);
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-																if (err) throw err;
-															});
+																endDungeonRoom(player_id, boost_id, boost_mission);
+																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+															}
 														}
-													}
+													});
 												});
 											} else if (dir == -13) {
 												var dOptions = {
@@ -13330,47 +13362,50 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												var keys = 1;
 												if (cursed == 1)
 													keys = 2;
-
-												bot.sendMessage(message.chat.id, "Sull'angolo della stanza noti un uomo magro con un cappello a forma di Bomba, si presenta come Bombarolo e chiede " + keys + "x Chiave Mistica 🗝 in cambio di una delle sue creazioni, cosa fai?", dOptions).then(function () {
-													answerCallbacks[message.chat.id] = function (answer) {
-														if (answer.text.indexOf("Consegna") != -1) {
-															connection.query('SELECT mkeys FROM player WHERE id = ' + player_id, function (err, rows, fields) {
-																if (err) throw err;
-
-																if (rows[0].mkeys < keys) {
-																	bot.sendMessage(message.chat.id, "Non hai abbastanza 🗝!", dBack);
-																	return;
-																}
-
-																connection.query('SELECT id, name FROM item WHERE cons_val > 0 AND category = 4 AND rarity IN ("C","NC","R","UR") ORDER BY RAND()', function (err, rows, fields) {
+												
+												connection.query('SELECT mkeys FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+													bot.sendMessage(message.chat.id, "Sull'angolo della stanza noti un uomo magro con un cappello a forma di Bomba, si presenta come Bombarolo e chiede " + keys + "x Chiave Mistica 🗝 in cambio di una delle sue creazioni, cosa fai?\nAttualmente ne possiedi " + formatNumber(rows[0].mkeys), dOptions).then(function () {
+														answerCallbacks[message.chat.id] = function (answer) {
+															if (answer.text.indexOf("Consegna") != -1) {
+																connection.query('SELECT mkeys FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 
-																	var item_id = rows[0].id;
-																	var item_name = rows[0].name;
+																	if (rows[0].mkeys < keys) {
+																		bot.sendMessage(message.chat.id, "Non hai abbastanza 🗝!", dBack);
+																		return;
+																	}
 
-																	bot.sendMessage(message.chat.id, "Decidi di donare " + keys + "x 🗝 al Bombarolo, che con grande felicità e fierezza ricambia regalandoti 1x *" + item_name + "*!", dNext);
-																	addItem(player_id, item_id);
-
-																	connection.query('UPDATE player SET mkeys = mkeys-' + keys + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																	connection.query('SELECT id, name FROM item WHERE cons_val > 0 AND category = 4 AND rarity IN ("C","NC","R","UR") ORDER BY RAND()', function (err, rows, fields) {
 																		if (err) throw err;
-																	});
 
-																	endDungeonRoom(player_id, boost_id, boost_mission);
-																	connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-																		if (err) throw err;
+																		var item_id = rows[0].id;
+																		var item_name = rows[0].name;
+
+																		bot.sendMessage(message.chat.id, "Decidi di donare " + keys + "x 🗝 al Bombarolo, che con grande felicità e fierezza ricambia regalandoti 1x *" + item_name + "*!", dNext);
+																		addItem(player_id, item_id);
+
+																		connection.query('UPDATE player SET mkeys = mkeys-' + keys + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																			if (err) throw err;
+																		});
+
+																		endDungeonRoom(player_id, boost_id, boost_mission);
+																		connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																			if (err) throw err;
+																		});
 																	});
 																});
-															});
-														} else if (answer.text == "Ignora") {
+															} else if (answer.text == "Ignora") {
 
-															bot.sendMessage(message.chat.id, "Ignori la richiesta e prosegui", dNext);
+																bot.sendMessage(message.chat.id, "Ignori la richiesta e prosegui", dNext);
 
-															endDungeonRoom(player_id, boost_id, boost_mission);
-															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-																if (err) throw err;
-															});
+																endDungeonRoom(player_id, boost_id, boost_mission);
+																connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+															}
 														}
-													}
+													});
 												});
 											} else if (dir == -17) {
 
@@ -13778,7 +13813,10 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															}
 
 															var rand = Math.random() * 100;
-															if (rand < 4) {
+															var prob = 4;
+															if (cursed == 1)
+																prob = 8;
+															if (rand < prob) {
 																addItem(player_id, 610);
 																bot.sendMessage(message.chat.id, "Per l'altissimo livello di concentrazione hai ottenuto un *Pass Oro*!", mark);
 															}
@@ -29715,7 +29753,7 @@ bot.onText(/^sostituzione oggetti/i, function (message) {
 		else
 			active = "Modalità Critico";
 
-		bot.sendMessage(message.chat.id, "Puoi scegliere due modalità per sostituire automaticamente gli oggetti nelle Mappe: Modalità Valore (considera solo il valore del danno) o Modalità Critico (considera solo il valore critico). Modificare l'impostazione attualmente impostata su *" + active + "*?", conf).then(function () {
+		bot.sendMessage(message.chat.id, "Puoi scegliere due modalità per sostituire automaticamente gli oggetti nelle Mappe: Modalità Valore (considera solo il valore del danno) o Modalità Critico (considera solo il valore critico). In entrambe le modalità a parità di valore viene verificato il secondo elemento per la sostituzione.\nModificare l'impostazione attualmente impostata su *" + active + "*?", conf).then(function () {
 			answerCallbacks[message.chat.id] = function (answer) {
 				var action = answer.text;
 				if (action == "Torna al Dungeon")
@@ -43180,7 +43218,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 				parse_mode: "HTML",
 				reply_markup: {
 					resize_keyboard: true,
-					keyboard: [["1", "2", "3", "4", "5"], ["1,2", "1,3", "1,4", "1,5", "2,3"], ["2,4", "2,5", "3,4", "3,5", "4,5"], ["1,2,3,4,5"], ["Torna dallo gnomo"]]
+					keyboard: [["1", "2", "3", "4", "5"], ["1,2", "1,3", "1,4", "1,5", "2,3"], ["2,4", "2,5", "3,4", "3,5", "4,5"], ["1,2,3,4,5"], ["1,3,5"], ["Torna dallo gnomo"]]
 				}
 			};
 
@@ -53691,7 +53729,7 @@ function dungeonToSym(d) {
 	else if (d == -20)
 		return "🏜";
 	else if (d == -21)
-		return "🧘‍♂";
+		return "🧘";
 	else if (d == -22)
 		return "⏳";
 	else if (d == -23)
@@ -58648,9 +58686,9 @@ function setBattleTimeElapsed(element, index, array) {
 						var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + weapon_id);
 						var weapon_name = weaponQuery[0].name;
 						if (enemy_weapon_id != null) {
-							var check = weapon > enemy_weapon;
+							var check = weapon > enemy_weapon || (weapon == enemy_weapon && critical > enemy_critical);
 							if (map_equip_change_power == 0)
-								check = critical > enemy_critical;
+								check = critical > enemy_critical || (critical == enemy_critical && weapon > enemy_weapon);
 							if (check) {
 								enemy_text += "\nArma <b>" + weapon_name + "</b> sgraffignata e sostituita!";
 								enemy_item_query += ", weapon_id = " + weapon_id;
@@ -58668,9 +58706,9 @@ function setBattleTimeElapsed(element, index, array) {
 						var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + weapon2_id);
 						var weapon_name = weaponQuery[0].name;
 						if (enemy_weapon2_id != null) {
-							var check = weapon2 < enemy_weapon2;
+							var check = weapon2 < enemy_weapon2 || (weapon2 == enemy_weapon2 && critical > enemy_critical);;
 							if (map_equip_change_power == 0)
-								check = critical > enemy_critical;
+								check = critical > enemy_critical || (critical == enemy_critical && weapon2 < enemy_weapon2);
 							if (check) {
 								enemy_text += "\nArmatura <b>" + weapon_name + "</b> sgraffignata e sostituita!";
 								enemy_item_query += ", weapon2_id = " + weapon2_id;
@@ -58688,9 +58726,9 @@ function setBattleTimeElapsed(element, index, array) {
 						var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + weapon3_id);
 						var weapon_name = weaponQuery[0].name;
 						if (enemy_weapon3_id != null) {
-							var check = weapon3 < enemy_weapon3;
+							var check = weapon3 < enemy_weapon3 || (weapon3 == enemy_weapon3 && critical > enemy_critical);
 							if (map_equip_change_power == 0)
-								check = critical > enemy_critical;
+								check = critical > enemy_critical || (critical == enemy_critical && weapon3 < enemy_weapon3);;
 							if (check) {
 								enemy_text += "\nScudo <b>" + weapon_name + "</b> sgraffignato e sostituito!";
 								enemy_item_query += ", weapon3_id = " + weapon3_id;
