@@ -7415,7 +7415,7 @@ bot.onText(/attacca!/i, function (message) {
 									if (weapon2_id != null) {
 										var check = enemy_weapon2 < weapon2 || (weapon2 == enemy_weapon2 && enemy_weapon2_crit > weapon2_crit);
 										if (map_equip_change_power == 0)
-											check = enemy_weapon2_crit > weapon2_crit || (enemy_weapon2_crit == weapon2_crit && enemy_weapon2 > weapon2);
+											check = enemy_weapon2_crit > weapon2_crit || (enemy_weapon2_crit == weapon2_crit && enemy_weapon2 < weapon2);
 										if (check) {
 											text += "\nArmatura <b>" + weapon_name + "</b> sgraffignata e sostituita!";
 											item_query += ", weapon2_id = " + enemy_weapon2_id;
@@ -7435,7 +7435,7 @@ bot.onText(/attacca!/i, function (message) {
 									if (weapon3_id != null) {
 										var check = enemy_weapon3 < weapon3 || (weapon3 == enemy_weapon3 && enemy_weapon3_crit > weapon3_crit);
 										if (map_equip_change_power == 0)
-											check = enemy_weapon3_crit > weapon3_crit || (enemy_weapon3_crit == weapon3_crit && enemy_weapon3 > weapon3);
+											check = enemy_weapon3_crit > weapon3_crit || (enemy_weapon3_crit == weapon3_crit && enemy_weapon3 < weapon3);
 										if (check) {
 											text += "\nScudo <b>" + weapon_name + "</b> sgraffignato e sostituito!";
 											item_query += ", weapon3_id = " + enemy_weapon3_id;
@@ -10847,7 +10847,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		connection.query('UPDATE player SET money = money+' + rand + ' WHERE id = ' + lucky_player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																			bot.sendMessage(lucky_chat_id, "Mentre percorri i corridoi del dungeon vedi un Varco Temporale, lasciato da un avventuriero, che si sta chiudendo. Temerario ci infili il braccio riuscendo ad agguantare un mucchietto di monete contenente " + formatNumber(rand) + "§");
-																			setAchievement(player_id, 83, rand);
+																			setAchievement(lucky_player_id, 83, rand);
 																		});
 																	}
 																});
@@ -13026,7 +13026,16 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																							if (err) throw err;
 																							
 																							if (Object.keys(rows).length == 0) {
-																								bot.sendMessage(message.chat.id, "Errore individuazione stanza, contatta l'amministratore", dNext);
+																								bot.sendMessage(message.chat.id, "L'anziano purtroppo non riesce a vedere alcuna stanza particolare davanti a te, ti restituisce le 🗝 e ti congeda con un po' di malinconia sul volto...", dNext);
+
+																								connection.query('UPDATE player SET mkeys = mkeys+10 WHERE id = ' + player_id, function (err, rows, fields) {
+																									if (err) throw err;
+																								});
+
+																								endDungeonRoom(player_id, boost_id, boost_mission);
+																								connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																									if (err) throw err;
+																								});
 																								return;
 																							}
 
@@ -58569,6 +58578,8 @@ function setBattleTimeElapsed(element, index, array) {
 	var weapon2 = 0;
 	var weapon3 = 0;
 	var critical = 0;
+	var critical2 = 0;
+	var critical3 = 0;
 
 	if (weapon_id != null) {
 		var weapon_info = connection_sync.query("SELECT power, critical FROM item WHERE id = " + weapon_id);
@@ -58578,12 +58589,12 @@ function setBattleTimeElapsed(element, index, array) {
 	if (weapon2_id != null) {
 		var weapon2_info = connection_sync.query("SELECT power_armor, critical FROM item WHERE id = " + weapon2_id);
 		weapon2 = weapon2_info[0].power_armor;
-		critical = weapon2_info[0].critical;
+		critical2 = weapon2_info[0].critical;
 	}
 	if (weapon3_id != null) {
 		var weapon3_info = connection_sync.query("SELECT power_shield, critical FROM item WHERE id = " + weapon3_id);
 		weapon3 = weapon3_info[0].power_shield;
-		critical = weapon3_info[0].critical;
+		critical3 = weapon3_info[0].critical;
 	}
 
 	var kbNext = {
@@ -58620,7 +58631,9 @@ function setBattleTimeElapsed(element, index, array) {
 				var enemy_weapon_id = rows[0].weapon_id;
 				var enemy_weapon2_id = rows[0].weapon2_id;
 				var enemy_weapon3_id = rows[0].weapon3_id;
-				var enemy_critical = rows[0].critical;
+				var enemy_critical = 0;
+				var enemy_critical2 = 0;
+				var enemy_critical3 = 0;
 				var battle_turn_active = rows[0].battle_turn_active;
 
 				if (enemy_weapon_id != null) {
@@ -58631,12 +58644,12 @@ function setBattleTimeElapsed(element, index, array) {
 				if (enemy_weapon2_id != null) {
 					var weapon2_info = connection_sync.query("SELECT power_armor, critical FROM item WHERE id = " + enemy_weapon2_id);
 					enemy_weapon2 = weapon2_info[0].power_armor;
-					enemy_critical = weapon2_info[0].critical;
+					enemy_critical2 = weapon2_info[0].critical;
 				}
 				if (enemy_weapon3_id != null) {
 					var weapon3_info = connection_sync.query("SELECT power_shield, critical FROM item WHERE id = " + enemy_weapon3_id);
 					enemy_weapon3 = weapon3_info[0].power_shield;
-					enemy_critical = weapon3_info[0].critical;
+					enemy_critical3 = weapon3_info[0].critical;
 				}
 
 				var query = "";
@@ -58706,9 +58719,9 @@ function setBattleTimeElapsed(element, index, array) {
 						var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + weapon2_id);
 						var weapon_name = weaponQuery[0].name;
 						if (enemy_weapon2_id != null) {
-							var check = weapon2 < enemy_weapon2 || (weapon2 == enemy_weapon2 && critical > enemy_critical);;
+							var check = weapon2 < enemy_weapon2 || (weapon2 == enemy_weapon2 && critical2 > enemy_critical2);;
 							if (map_equip_change_power == 0)
-								check = critical > enemy_critical || (critical == enemy_critical && weapon2 < enemy_weapon2);
+								check = critical2 > enemy_critical2 || (critical2 == enemy_critical2 && weapon2 < enemy_weapon2);
 							if (check) {
 								enemy_text += "\nArmatura <b>" + weapon_name + "</b> sgraffignata e sostituita!";
 								enemy_item_query += ", weapon2_id = " + weapon2_id;
@@ -58726,9 +58739,9 @@ function setBattleTimeElapsed(element, index, array) {
 						var weaponQuery = connection_sync.query("SELECT name FROM item WHERE id = " + weapon3_id);
 						var weapon_name = weaponQuery[0].name;
 						if (enemy_weapon3_id != null) {
-							var check = weapon3 < enemy_weapon3 || (weapon3 == enemy_weapon3 && critical > enemy_critical);
+							var check = weapon3 < enemy_weapon3 || (weapon3 == enemy_weapon3 && critical3 > enemy_critical3);
 							if (map_equip_change_power == 0)
-								check = critical > enemy_critical || (critical == enemy_critical && weapon3 < enemy_weapon3);;
+								check = critical3 > enemy_critical3 || (critical3 == enemy_critical3 && weapon3 < enemy_weapon3);;
 							if (check) {
 								enemy_text += "\nScudo <b>" + weapon_name + "</b> sgraffignato e sostituito!";
 								enemy_item_query += ", weapon3_id = " + weapon3_id;
@@ -59176,7 +59189,7 @@ function setSeasonEnd(element, index, array) {
 		text += "\n " + moon + "x Monete Lunari";
 
 	if (battle_season_test == 0) {
-		bot.sendMessage(chat_id, "Per i <b>" + trophies + "</b> 🏆 guadagnati combattendo nelle <b>Mappe di Lootia</b>, hai ottenuto:" + text + "\n\n<i>I premi sono in beta, potrebbero cambiare durante le prossime stagioni</i>", html);
+		bot.sendMessage(chat_id, "Per i <b>" + trophies + "</b> 🏆 guadagnati combattendo nelle <b>Mappe di Lootia</b>, hai ottenuto:" + text, html);
 
 		connection.query('UPDATE event_mana_status SET mana_1 = mana_1+' + mana + ', mana_2 = mana_2+' + mana + ', mana_3 = mana_3+' + mana + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
