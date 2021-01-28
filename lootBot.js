@@ -1552,6 +1552,7 @@ bot.onText(/^\/scorciatoia/, function (message, match) {
 					"> generatore - Apre il generatore\n" +
 					"> miniera/miniere - Apre le miniere di mana\n" +
 					"> stats - Apre le statistiche giocatore\n" +
+					"> ctb - Apre il contrabbandiere\n" +
 					"> clg - Apre il menu Contatta lo Gnomo");
 });
 
@@ -24242,7 +24243,7 @@ bot.onText(/^aggiungi membri al party (.+)/i, function (message, match) {
 													if (err) throw err;
 
 													bot.sendMessage(message.chat.id, "Il giocatore è stato aggiunto al party!", kbBack);
-													bot.sendMessage(player_chat_id, "Sei stato aggiunto al party " + party_id + " da " + message.from.username, kbBack);
+													bot.sendMessage(player_chat_id, "Sei stato aggiunto al party " + party_id + " da " + message.from.username);
 												});
 											});
 										});
@@ -33777,7 +33778,7 @@ bot.onText(/piazza di lootia|piazza/i, function (message) {
 	});
 });
 
-bot.onText(/contrabbandiere|vedi offerte/i, function (message) {
+bot.onText(/contrabbandiere|vedi offerte|ctb/i, function (message) {
 
 	if (message.text == "Classifica Contrabbandiere")
 		return;
