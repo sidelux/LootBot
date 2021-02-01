@@ -43948,9 +43948,6 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 													}
 
 													bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è migliore di quella del guardiano (" + combi + ")!\nIn una stanzetta all'interno del rifugio hai trovato un sacchettino contenente " + moneytxt + expText + extra, kbBack);
-													
-													if (isMatch == 1)
-														globalAchievement(player_id, 1);
 
 													bot.sendMessage(toChat, message.from.username + " è riuscito a sconfiggere il guardiano del tuo rifugio, purtroppo avendo lasciato incustodito un sacchettino, hai perso " + moneytxt + extra2, html);
 												});
@@ -52683,8 +52680,10 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 									if (Object.keys(ability).length > 0)
 										money += money*((ability[0].ability_level*ability[0].val)/100);
 
+									/*
 									if (rows[i].global_end == 1)
 										money += money*0.05;
+									*/
 
 									money = Math.round(money);
 
@@ -59031,6 +59030,7 @@ function setFinishedLobbyEnd(element, index, array) {
 
 						if (trophies_count >= 0) {
 							trophies_query = "+" + trophies_count;
+							globalAchievement(rows[i].id, trophies_count);
 						} else {
 							trophies_actual = rows[i].trophies;
 							trophies_count = Math.abs(trophies_count);
@@ -60988,12 +60988,10 @@ function setFinishedCave(element, index, array) {
 		var caveid = parseInt(element.cave_id) + 2;
 
 		var extra = "";
-		/*
 		if (global_end == 1) {
 			caveid += 1;
 			extra = " (aumentate grazie al bonus globale!)";
 		}
-		*/
 
 		if (crazyMode == 1) {
 			caveid += 1;
@@ -61427,12 +61425,13 @@ function setFinishedGnomorraInvite(element, index, array) {
 };
 
 function setExp(player_id, exp) {
-	connection.query('SELECT chat_id, exp, reborn FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+	connection.query('SELECT chat_id, exp, reborn, global_end FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 		if (err) throw err;
 
 		var chat_id = rows[0].chat_id;
 		var reborn = rows[0].reborn;
 		var my_exp = rows[0].exp;
+		var global_end = rows[0].global_end;
 
 		if (((reborn == 1) && (my_exp < 1000)) ||
 			((reborn == 2) && (my_exp < 1500)) ||
