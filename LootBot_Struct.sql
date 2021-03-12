@@ -2238,6 +2238,7 @@ CREATE TABLE `map_lobby_list` (
   `restrict_end` tinyint(1) NOT NULL DEFAULT 0,
   `flari_active` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `lobby_id` (`lobby_id`),
   KEY `map_lobby_list_lobby_id` (`lobby_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -2308,9 +2309,6 @@ CREATE TABLE `market_direct_history` (
   KEY `to_id` (`to_id`),
   KEY `buyer` (`buyer`),
   KEY `type` (`type`),
-  KEY `from_id_2` (`from_id`),
-  KEY `to_id_2` (`to_id`),
-  KEY `buyer_2` (`buyer`),
   CONSTRAINT `BUYERID_HISTD` FOREIGN KEY (`buyer`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FROMID_HISTD` FOREIGN KEY (`from_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `ITEMID_HISTD` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -2964,6 +2962,7 @@ CREATE TABLE `player` (
   `heist_count` int(3) NOT NULL DEFAULT 0,
   `heist_streak` int(11) NOT NULL DEFAULT 0,
   `heist_protection` timestamp NULL DEFAULT NULL,
+  `heist_protection_count` int(8) NOT NULL DEFAULT 0,
   `spy_count` int(3) NOT NULL DEFAULT 0,
   `heist_limit` int(3) NOT NULL DEFAULT 0,
   `capsule_limit` int(11) NOT NULL DEFAULT 0,
