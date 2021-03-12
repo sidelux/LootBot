@@ -14521,7 +14521,6 @@ bot.onText(/usa varco/i, function (message) {
 		var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
 
 		// togliere insieme agli altri crazyMode == 1
-		crazyMode = 0;
 
 		var extra = "";
 		if (crazyMode == 0)
