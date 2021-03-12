@@ -41581,7 +41581,8 @@ bot.onText(/weekend della follia/i, function (message) {
 
 		"\nI bonus possono cambiare di volta in volta!";
 
-	bot.sendMessage(message.chat.id, "*Follia!*\nQuesto evento dura tutto il weekend, fornendo questi *bonus*:\n\n" + bonus, back);
+	// bot.sendMessage(message.chat.id, "*Follia!*\nQuesto evento dura tutto il weekend, fornendo questi *bonus*:\n\n" + bonus, back);
+	bot.sendMessage(message.chat.id, "*Follia!*\nQuesto evento dura fino alla fine del mese, fornendo questi *bonus*:\n\n" + bonus, back);
 });
 
 bot.onText(/evento della luna/i, function (message) {
