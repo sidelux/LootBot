@@ -282,7 +282,8 @@ callNTimes(60000, function () { //Ogni 1 minuto
 	var d = new Date();
 	if ((d.getDay() != 6) && (d.getDay() != 0) && (luckyMode == 1))
 		luckyMode = 0;
-	if ((d.getDay() != 6) && (d.getDay() != 0) && (crazyMode == 1))
+	// if ((d.getDay() != 6) && (d.getDay() != 0) && (crazyMode == 1))
+	if (crazyMode == 1)
 		crazyMode = 0;
 	if ((d.getDay() != 6) && (d.getDay() != 0) && (wanted == 1))
 		wanted = 0;
