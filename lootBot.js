@@ -29253,10 +29253,12 @@ bot.onText(/Gestisci Membri/i, function (message) {
 														var motherId = rows[0].id;
 														var teamName = rows[0].name;
 
+														/*
 														if (crazyMode == 1) {
 															bot.sendMessage(message.chat.id, "Durante l'evento folle non puoi trasferire", kbBack);
 															return;
 														}
+														*/
 
 														if (player_id == playerId) {
 															bot.sendMessage(message.chat.id, "Non puoi trasferire te stesso", kbBack);
@@ -29378,10 +29380,12 @@ bot.onText(/Gestisci Membri/i, function (message) {
 
 														var teamName = rows[0].name;
 
+														/*
 														if (crazyMode == 1) {
 															bot.sendMessage(message.chat.id, "Durante l'evento folle non puoi trasferire", kbBack);
 															return;
 														}
+														*/
 
 														if (player_id == playerId) {
 															bot.sendMessage(message.chat.id, "Non puoi trasferire te stesso", kbBack);
@@ -38006,10 +38010,12 @@ bot.onText(/^vendi/i, function (message) {
 
 		if ((oggetto == "C") || (oggetto == "NC") || (oggetto == "R") || (oggetto == "UR") || (oggetto == "L") || (oggetto == "E")) {
 
+			/*
 			if (crazyMode == 1) {
 				bot.sendMessage(message.chat.id, "Durante il weekend folle non puoi vendere oggetti", back);
 				return;
 			}
+			*/
 
 			bot.sendMessage(message.chat.id, "Sei veramente sicuro di voler vendere tutta la rarità " + oggetto + " alla metà del valore?", yesno).then(function () {
 				answerCallbacks[message.chat.id] = async function (answer) {
@@ -38121,10 +38127,12 @@ bot.onText(/^vendi/i, function (message) {
 			return;
 		}
 
+		/*
 		if (crazyMode == 1) {
 			bot.sendMessage(message.chat.id, "Durante il weekend folle non puoi vendere oggetti", back);
 			return;
 		}
+		*/
 
 		connection.query('SELECT item.id, quantity FROM item, inventory WHERE inventory.item_id = item.id AND item.name = "' + oggetto + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
 			if (err) throw err;
@@ -38535,10 +38543,12 @@ bot.onText(/compra/i, function (message) {
 					});
 				});
 			} else if (oggetto.indexOf("Pozione") != -1) {
+				/*
 				if (crazyMode == 1) {
 					bot.sendMessage(message.chat.id, "Non puoi acquistare pozioni durante il weekend folle", store);
 					return;
 				}
+				*/
 				connection.query('SELECT id FROM item WHERE name = "' + oggetto + '"', function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length == 0) {
@@ -38617,10 +38627,12 @@ bot.onText(/compra/i, function (message) {
 					});
 				});
 			} else if ((oggetto.toLowerCase().indexOf("piuma di fenice") != -1) || (oggetto.toLowerCase().indexOf("cenere di fenice") != -1)) {
+				/*
 				if (crazyMode == 1) {
 					bot.sendMessage(message.chat.id, "Non puoi acquistare piume o ceneri durante il weekend folle", store);
 					return;
 				}
+				*/
 				connection.query('SELECT id, name FROM item WHERE name = "' + oggetto + '"', function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length == 0) {
