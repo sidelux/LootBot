@@ -14520,22 +14520,20 @@ bot.onText(/usa varco/i, function (message) {
 
 		var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
 
-		// togliere insieme agli altri crazyMode == 1
-
 		var extra = "";
-		if (crazyMode == 0)
+		// if (crazyMode == 0)
 			extra = ", puoi utilizzarli ancora " + (3-rows[0].dungeon_skip) + " volte prima che la struttura spazio-temporale si laceri";
 
 		bot.sendMessage(message.chat.id, "Puoi tornare nei dungeon alle " + short_date + "\n" + needs_text + "Ne possiedi " + await getItemCnt(player_id, 645) + extra, dVarco).then(function () {
 			answerCallbacks[message.chat.id] = async function (answer) {
 				if (answer.text.toLowerCase() == "si") {
 
-					if (crazyMode == 0) {
+					// if (crazyMode == 0) {
 						if (dungeon_skip >= 3) {
 							bot.sendMessage(message.chat.id, "Il Varco Temporale è surriscaldato, è possibile usarlo solamente 3 volte al giorno! Potrai usarlo nuovamente domani", back);
 							return;
 						}
-					}
+					// }
 
 					if (await getItemCnt(player_id, 645) < needs) {
 						bot.sendMessage(message.chat.id, "Non possiedi abbastanza Varchi Temporali", back);
@@ -25023,7 +25021,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																var active = 1;
 																if (selected == 2)
 																	active = 0;
-																connection.query('INSERT INTO assault_place_team (place_id, team_id, time_end, active, level) VALUES (' + selected + ',' + team_id + ', DATE_ADD(NOW(), INTERVAL ' + minutes + ' MINUTE), 1, 1)', function (err, rows, fields) {
+																connection.query('INSERT INTO assault_place_team (place_id, team_id, time_end, active, level) VALUES (' + selected + ',' + team_id + ', DATE_ADD(NOW(), INTERVAL ' + minutes + ' MINUTE), 1, 0)', function (err, rows, fields) {
 																	if (err) throw err;
 																	bot.sendMessage(message.chat.id, "Hai avviato la costruzione della postazione, torna tra " + minutes + " minuti per iniziare a potenziarla!", kbBack);
 																});

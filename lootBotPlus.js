@@ -9964,9 +9964,9 @@ bot.onText(/^\/figurina (.+)|^\/figurina/, function (message, match) {
 				var card = await connection_sync.query('SELECT quantity FROM card_inventory WHERE card_id = ' + rows[i].id + ' AND player_id = ' + player_id);
 				var poss = "";
 				if (Object.keys(card).length > 0) {
-					if (card[0].quantity == 1)
+					if (card[0].quantity >= 1)
 						poss = " ✅";
-					else if (card[0].quantity > 1)
+					if (card[0].quantity > 1)
 						poss += " " + card[0].quantity;
 				}
 
