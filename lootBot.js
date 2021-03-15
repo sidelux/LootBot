@@ -14057,8 +14057,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															var need_charges = 20;
 															if (cursed == 1)
 																need_charges = 40;
-															if (dungeon_energy < need_charges) {
-																bot.sendMessage(message.chat.id, "Devi avere almeno " + need_charges + " Cariche Esplorative per tentare questa impresa", dNext);
+															if (dungeon_energy < need_charges+10) {
+																bot.sendMessage(message.chat.id, "Devi avere almeno " + (need_charges+10) + " Cariche Esplorative per tentare questa impresa", dNext);
 																return;
 															}
 
