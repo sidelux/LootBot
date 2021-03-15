@@ -46579,10 +46579,8 @@ function checkTapTime() {
 				console.log(getNow("it") + "\x1b[32m 1 utenti con tappi arrugginiti\x1b[0m");
 			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " utenti con tappi arrugginiti\x1b[0m");
-			// rows.forEach(setTapTime);
-			for (const row of rows) {
-				await setTapTime(row)
-			}
+			
+			await Promise.all(rows.map(setTapTime))
 		}
 	});
 }
@@ -56212,10 +56210,8 @@ function checkEvents() {
 				console.log(getNow("it") + "\x1b[32m 1 evento da notificare\x1b[0m");
 			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " eventi da notificare\x1b[0m");
-			// rows.forEach(setEvents);
-			for (const row of rows) {
-				await setEvents(row)
-			}
+
+			await Promise.all(rows.map(setEvents))
 		}
 	});
 }
@@ -57355,10 +57351,8 @@ function checkAssaultsMob() {
 				console.log(getNow("it") + "\x1b[32m 1 mob assalto generato\x1b[0m");
 			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " mob assalto generati\x1b[0m");
-			// rows.forEach(setFinishedAssaultsMob);
-			for (const row of rows) {
-				await setFinishedAssaultsMob(row)
-			}
+
+			await Promise.all(rows.map(setFinishedAssaultsMob))
 		}
 	});
 };
@@ -58712,10 +58706,8 @@ function checkBattleTimeElapsed() {
 				console.log(getNow("it") + "\x1b[32m 1 timeout combattimento controllato\x1b[0m");
 			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " timeout combattimento controllati\x1b[0m");
-			// rows.forEach(setBattleTimeElapsed);
-			for (const row of rows) {
-				await setBattleTimeElapsed(row)
-			}
+
+			await Promise.all(rows.map(setBattleTimeElapsed))
 		}
 	});
 };
@@ -59315,10 +59307,8 @@ function checkMapSeasonEnd() {
 						console.log(getNow("it") + "\x1b[32m 1 premio stagione concluso\x1b[0m");
 					else
 						console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " premi stagione conclusi\x1b[0m");
-					// rows.forEach(setSeasonEnd);
-					for (const row of rows) {
-						await setSeasonEnd(row)
-					}
+
+					await Promise.all(rows.map(setSeasonEnd))
 				}
 			});
 		}
@@ -59939,7 +59929,7 @@ function deleteHistory() {
 }
 
 function checkCave() {
-	connection.query('SELECT nickname, reborn, boost_id, charm_id, id, cave_id, chat_id, boost_mission, cave_gem, global_end FROM player WHERE cave_time_end < NOW() AND cave_time_end IS NOT NULL', function (err, rows, fields) {
+	connection.query('SELECT nickname, reborn, boost_id, charm_id, id, cave_id, chat_id, boost_mission, cave_gem, global_end FROM player WHERE cave_time_end < NOW() AND cave_time_end IS NOT NULL', async function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
@@ -59947,7 +59937,7 @@ function checkCave() {
 				console.log(getNow("it") + "\x1b[32m 1 viaggio cava terminato\x1b[0m");
 			else
 				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " viaggi cava terminati\x1b[0m");
-			rows.forEach(setFinishedCave);
+			await Promise.all(rows.map(setFinishedCave))
 		}
 	});
 };
@@ -61127,217 +61117,197 @@ function setFinishedTravel(element, index, array) {
 	});
 }
 
-function setFinishedCave(element, index, array) {
-	var chat_id = element.chat_id;
-	var boost_id = element.boost_id;
-	var boost_mission = element.boost_mission;
-	var cave_gem = element.cave_gem;
-	var global_end = element.global_end;
+async function setFinishedCave(element, index, array) {
+	const chat_id = element.chat_id;
+	const cave_gem = element.cave_gem;
+	const global_end = element.global_end;
+
+	let boost_id = element.boost_id;
+	let boost_mission = element.boost_mission;
 
 	if ((boost_mission <= 0) && (boost_id != 0)) {
-		connection.query('UPDATE player SET boost_id = 0, boost_mission = 0 WHERE id = ' + element.id, function (err, rows, fields) {
-			if (err) throw err;
-		});
+		connection_sync.query('UPDATE player SET boost_id = 0, boost_mission = 0 WHERE id = ' + element.id)
 		boost_mission = 0;
 		boost_id = 0;
 	}
 
-	connection.query('SELECT * FROM cave WHERE id = ' + element.cave_id, function (err, rows, fields) {
-		if (err) throw err;
+	const charm_id = element.charm_id;
 
-		var rand = 0;
-		var stone_id = 0;
-		var charm_id = element.charm_id;
+	const base_caveid = parseInt(element.cave_id);
+	let caveid = parseInt(element.cave_id) + 2;
 
-		var base_caveid = parseInt(element.cave_id);
-		var caveid = parseInt(element.cave_id) + 2;
+	let extra = "";
+	/*
+	if (global_end == 1) {
+		caveid += 1;
+		extra = " (aumentate grazie al bonus globale!)";
+	}
+	*/
 
-		var extra = "";
-		/*
-		if (global_end == 1) {
-			caveid += 1;
-			extra = " (aumentate grazie al bonus globale!)";
+	if (crazyMode == 1) {
+		caveid += 1;
+		extra = " (+1 Pietra, follia!)";
+	}
+
+	if (charm_id == 603)
+		caveid += 2;
+
+	if (charm_id == 695)
+		caveid += 5;
+
+	if (luckyMode == 1) {
+		const d = new Date();
+		const rand = Math.random() * 100;
+		if (d.getDay() == 6) {
+			if (rand < 15)
+				caveid = caveid * 2;
+		} else if (d.getDay() == 0) {
+			if (rand < 10)
+				caveid = caveid * 2;
+			else if ((rand > 10) && (rand < 25))
+				caveid = 0;
 		}
-		*/
+	}
 
-		if (crazyMode == 1) {
-			caveid += 1;
-			extra = " (+1 Pietra, follia!)";
+	let boost_text = "";
+
+	// Calcolo Bonus Talento Scavatore Instancabile
+	const ab16rows = await connection_sync.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + element.id + ' AND ability_id = 16')
+	if (Object.keys(ab16rows).length > 0) {
+		const ab16Bonus = parseInt(ab16rows[0].ability_level) * ab16rows[0].val;
+		if ((Math.random() * 100 < ab16Bonus) && (luckyMode == 0)) {
+			setAchievement(element.id, 56, caveid);
+			caveid = caveid * 2;
+			boost_text += "\nRaddoppiate grazie al Talento!";
 		}
+	}
 
-		if (charm_id == 603)
-			caveid += 2;
+	// Calcolo Bonus Talento Esploratore Redditizio
+	const ab8rows = await connection_sync.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + element.id + ' AND ability_id = 8')
+	let ab8Bonus = 0;
+	if (Object.keys(ab8rows).length > 0)
+		ab8Bonus = parseInt(ab8rows[0].ability_level) * ab8rows[0].val;
 
-		if (charm_id == 695)
-			caveid += 5;
+	if (boost_id == 3) {
+		setAchievement(element.id, 56, caveid);
+		caveid = caveid * 2;
+		boost_text += "\nRaddoppiate grazie alla Bevanda Fiamma di Drago!";
+		setBoost(element.id, boost_mission, boost_id);
+	}
 
-		if (luckyMode == 1) {
-			var d = new Date();
-			var rand = Math.random() * 100;
-			if (d.getDay() == 6) {
-				if (rand < 15)
-					caveid = caveid * 2;
-			} else if (d.getDay() == 0) {
-				if (rand < 10)
-					caveid = caveid * 2;
-				else if ((rand > 10) && (rand < 25))
-					caveid = 0;
+	let totPnt = 0;
+	let stone_id = 0;
+	let stone1 = 0;
+	let stone2 = 0;
+	let stone3 = 0;
+	let stone4 = 0;
+	let stone5 = 0;
+	let stone6 = 0;
+	let stone1e = 0;
+	let stone2e = 0;
+	let stone3e = 0;
+	let stone4e = 0;
+	let stone5e = 0;
+	let stone6e = 0;
+
+	for (i = 0; i < caveid; i++) {
+		// Calcolo pietre
+		const rand = Math.round(Math.random() * 100);
+		if (rand <= 5) {
+			stone_id = 73;
+			stone6++;
+		} else if (rand <= 15) {
+			stone_id = 72;
+			stone5++;
+		} else if (rand <= 30) {
+			stone_id = 71;
+			stone4++;
+		} else if (rand <= 50) {
+			stone_id = 70;
+			stone3++;
+		} else if (rand <= 75) {
+			stone_id = 69;
+			stone2++;
+		} else if (rand <= 100) {
+			stone_id = 68;
+			stone1++;
+		}
+		// Calcolo pietre evolute
+		const rand2 = Math.random() * 100;
+		if ((rand2 < ab8Bonus) && (stone_id != 73)) {
+			stone_id++;
+
+			if (stone_id == 73) {
+				stone5--;
+				stone6e++;
+			} else if (stone_id == 72) {
+				stone4--;
+				stone5e++;
+			} else if (stone_id == 71) {
+				stone3--;
+				stone4e++;
+			} else if (stone_id == 70) {
+				stone2--;
+				stone3e++;
+			} else if (stone_id == 69) {
+				stone1--;
+				stone2e++;
 			}
 		}
 
-		var boost_text = "";
+		totPnt += (stone_id-67);
+		await addItem(element.id, stone_id);
+	}
 
-		connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + element.id + ' AND ability_id = 16', function (err, rows, fields) {
-			if (err) throw err;
+	connection_sync.query('UPDATE player SET cave_limit = 0, cave_id = 0, cave_time_end = NULL, cave_count = cave_count+1 WHERE id = ' + element.id)
 
-			var abBonus = 0;
-			if (Object.keys(rows).length > 0) {
-				var rand = Math.random() * 100;
-				abBonus = parseInt(rows[0].ability_level) * rows[0].val;
-				if ((rand < abBonus) && (luckyMode == 0)) {
-					setAchievement(element.id, 56, caveid);
-					caveid = caveid * 2;
-					boost_text += "\nRaddoppiate grazie al Talento!";
-				}
-			}
+	let msg = "";
+	
+	if (caveid == 0)
+		bot.sendMessage(chat_id, "Hai completato l'esplorazione della cava ma non hai ottenuto alcuna pietra!");
+	else {
+		if ((stone1+stone1e) > 0) {
+			msg += "\n> " + (stone1+stone1e) + "x Pietra Anima di Legno";
+			if (stone1e > 0)
+				msg += " (di cui " + stone1e + " evolute)";
+		}
+		if ((stone2+stone2e) > 0) {
+			msg += "\n> " + (stone2+stone2e) + "x Pietra Anima di Ferro";
+			if (stone2e > 0)
+				msg += " (di cui " + stone2e + " evolute)";
+		}
+		if ((stone3+stone3e) > 0) {
+			msg += "\n> " + (stone3+stone3e) + "x Pietra Anima Preziosa";
+			if (stone3e > 0)
+				msg += " (di cui " + stone3e + " evolute)";
+		}
+		if ((stone4+stone4e) > 0) {
+			msg += "\n> " + (stone4+stone4e) + "x Pietra Cuore di Diamante";
+			if (stone4e > 0)
+				msg += " (di cui " + stone4e + " evolute)";
+		}
+		if ((stone5+stone5e) > 0) {
+			msg += "\n> " + (stone5+stone5e) + "x Pietra Cuore Leggendario";
+			if (stone5e > 0)
+				msg += " (di cui " + stone5e + " evolute)";
+		}
+		if ((stone6+stone6e) > 0) {
+			msg += "\n> " + (stone6+stone6e) + "x Pietra Spirito Epico";
+			if (stone6e > 0)
+				msg += " (di cui " + stone6e + " evolute)";
+		}
+		msg += "\n\n" + caveid + " pietre per un totale di " + totPnt + " punti" + extra;
 
-			connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + element.id + ' AND ability_id = 8', async function (err, rows, fields) {
-				if (err) throw err;
+		bot.sendMessage(chat_id, "Hai completato l'esplorazione della cava e hai ottenuto:" + msg + boost_text);
+		setAchievement(element.id, 54, (stone1e+stone2e+stone3e+stone4e+stone5e+stone6e));
+		getSnowball(chat_id, element.nickname, element.id, (3 + base_caveid));
+	}
 
-				var abBonus = 0;
-				if (Object.keys(rows).length > 0)
-					abBonus = parseInt(rows[0].ability_level) * rows[0].val;
-
-				if (boost_id == 3) {
-					setAchievement(element.id, 56, caveid);
-					caveid = caveid * 2;
-					boost_text += "\nRaddoppiate grazie alla Bevanda Fiamma di Drago!";
-					setBoost(element.id, boost_mission, boost_id);
-				}
-
-				var rand2 = 0;
-				var totPnt = 0;
-
-				var itemsArray = [];
-				var msg = "";
-
-				var stone1 = 0;
-				var stone2 = 0;
-				var stone3 = 0;
-				var stone4 = 0;
-				var stone5 = 0;
-				var stone6 = 0;
-				var stone1e = 0;
-				var stone2e = 0;
-				var stone3e = 0;
-				var stone4e = 0;
-				var stone5e = 0;
-				var stone6e = 0;
-
-				for (i = 0; i < caveid; i++) {
-					evolved = 0;
-
-					rand = Math.round(Math.random() * 100);
-					if (rand <= 5) {
-						stone_id = 73;
-						stone6++;
-					} else if (rand <= 15) {
-						stone_id = 72;
-						stone5++;
-					} else if (rand <= 30) {
-						stone_id = 71;
-						stone4++;
-					} else if (rand <= 50) {
-						stone_id = 70;
-						stone3++;
-					} else if (rand <= 75) {
-						stone_id = 69;
-						stone2++;
-					} else if (rand <= 100) {
-						stone_id = 68;
-						stone1++;
-					}
-
-					rand2 = Math.random() * 100;
-					if ((rand2 < abBonus) && (stone_id != 73)) {
-						stone_id++;
-
-						if (stone_id == 73) {
-							stone5--;
-							stone6e++;
-						} else if (stone_id == 72) {
-							stone4--;
-							stone5e++;
-						} else if (stone_id == 71) {
-							stone3--;
-							stone4e++;
-						} else if (stone_id == 70) {
-							stone2--;
-							stone3e++;
-						} else if (stone_id == 69) {
-							stone1--;
-							stone2e++;
-						}
-					}
-
-					totPnt += (stone_id-67);
-					await addItem(element.id, stone_id);
-				}
-
-				connection.query('UPDATE player SET cave_limit = 0, cave_id = 0, cave_time_end = NULL, cave_count = cave_count+1 WHERE id = ' + element.id, function (err, rows, fields) {
-					if (err) throw err;
-				});
-
-				if (caveid == 0)
-					bot.sendMessage(chat_id, "Hai completato l'esplorazione della cava ma non hai ottenuto alcuna pietra!");
-				else {
-					if ((stone1+stone1e) > 0) {
-						msg += "\n> " + (stone1+stone1e) + "x Pietra Anima di Legno";
-						if (stone1e > 0)
-							msg += " (di cui " + stone1e + " evolute)";
-					}
-					if ((stone2+stone2e) > 0) {
-						msg += "\n> " + (stone2+stone2e) + "x Pietra Anima di Ferro";
-						if (stone2e > 0)
-							msg += " (di cui " + stone2e + " evolute)";
-					}
-					if ((stone3+stone3e) > 0) {
-						msg += "\n> " + (stone3+stone3e) + "x Pietra Anima Preziosa";
-						if (stone3e > 0)
-							msg += " (di cui " + stone3e + " evolute)";
-					}
-					if ((stone4+stone4e) > 0) {
-						msg += "\n> " + (stone4+stone4e) + "x Pietra Cuore di Diamante";
-						if (stone4e > 0)
-							msg += " (di cui " + stone4e + " evolute)";
-					}
-					if ((stone5+stone5e) > 0) {
-						msg += "\n> " + (stone5+stone5e) + "x Pietra Cuore Leggendario";
-						if (stone5e > 0)
-							msg += " (di cui " + stone5e + " evolute)";
-					}
-					if ((stone6+stone6e) > 0) {
-						msg += "\n> " + (stone6+stone6e) + "x Pietra Spirito Epico";
-						if (stone6e > 0)
-							msg += " (di cui " + stone6e + " evolute)";
-					}
-					msg += "\n\n" + caveid + " pietre per un totale di " + totPnt + " punti" + extra;
-
-					bot.sendMessage(chat_id, "Hai completato l'esplorazione della cava e hai ottenuto:" + msg + boost_text);
-					setAchievement(element.id, 54, (stone1e+stone2e+stone3e+stone4e+stone5e+stone6e));
-					getSnowball(chat_id, element.nickname, element.id, (3 + base_caveid));
-				}
-
-				var now = new Date();
-				var rand = Math.random() * 200;
-				if ((now.getHours() == 11) && (rand < 3) && (element.reborn >= 3)) {
-					await addItem(element.id, 201);
-					bot.sendMessage(chat_id, "Hai ottenuto un Respiro di Morte! Che fortuna!");
-				}
-				setAchievement(element.id, 11, 1);
-			});
-		});
-	});
+	if ((new Date().getHours() == 11) && (Math.random() * 200 < 3) && (element.reborn >= 3)) {
+		await addItem(element.id, 201);
+		bot.sendMessage(chat_id, "Hai ottenuto un Respiro di Morte! Che fortuna!");
+	}
+	setAchievement(element.id, 11, 1);
 }
 
 function setFinishedBoost(element, index, array) {
