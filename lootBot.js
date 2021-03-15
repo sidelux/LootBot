@@ -371,7 +371,7 @@ callNTimes(3600000, function () { //Ogni ora
 
 console.log('Avvio bot...');
 
-const max_duration_query = 500
+const max_duration_query = 1000
 
 var db_connection = mysql.createPool({
 	host: config.dbhost,
