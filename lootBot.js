@@ -49067,7 +49067,7 @@ function cercaTermine(message, param, player_id) {
 							});
 						});
 
-						connection.query('SELECT SUM(quantity) As num, (SELECT SUM(quantity) FROM inventory) As tot FROM inventory WHERE item_id = ' + item_id, function (err, rows, fields) {
+						connection.query('SELECT IFNULL(SUM(quantity), 0) As num, (SELECT IFNULL(SUM(quantity), 0) FROM inventory) As tot FROM inventory WHERE item_id = ' + item_id, function (err, rows, fields) {
 							if (err) throw err;
 
 							var calc_spread_tot = Math.round((rows[0].num / rows[0].tot) * 100 * 1000) / 1000;
