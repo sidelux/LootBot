@@ -398,8 +398,11 @@ var connection_sync = {
   db_connection.query(str, function (err, res, fields) {
     const duration = new Date() - startTime
     if (duration > max_duration_query) console.log("SYNC QUERY", str, "EXECUTED IN", duration, "ms")
-    if (err) reject(err)
-    else resolve(res)
+    if (err) {
+			reject(err)
+		} else {
+			resolve(res)
+		}
   })
 })
 }
@@ -61210,6 +61213,8 @@ async function setFinishedCave(element, index, array) {
 	let stone5e = 0;
 	let stone6e = 0;
 
+	const stones = {}
+
 	for (i = 0; i < caveid; i++) {
 		// Calcolo pietre
 		const rand = Math.round(Math.random() * 100);
@@ -61256,8 +61261,17 @@ async function setFinishedCave(element, index, array) {
 		}
 
 		totPnt += (stone_id-67);
-		await addItem(element.id, stone_id);
+		
+		// Mi segno quali pietre ho ottenuto
+		if (!stones[stone_id]) {
+			stones[stone_id] = 1
+		} else {
+			stones[stone_id]++
+		}
 	}
+
+	// Aggiungo tutte le stones ottenute
+	Object.keys(stones).map(new_stone_id => addItem(element.id, new_stone_id, stones[new_stone_id]))
 
 	connection_sync.query('UPDATE player SET cave_limit = 0, cave_id = 0, cave_time_end = NULL, cave_count = cave_count+1 WHERE id = ' + element.id)
 
