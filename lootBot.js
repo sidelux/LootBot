@@ -389,22 +389,19 @@ var connection = {
 			if (duration > max_duration_query) console.log("QUERY", q, "EXECUTED IN", duration, "ms")
 			fn(err, res, fields)
 		})
-	}
-}
-
-var connection_sync = {
- query: async (str, values) => new Promise((resolve, reject) => {
-  const startTime = new Date()
-  db_connection.query(str, function (err, res, fields) {
-    const duration = new Date() - startTime
-    if (duration > max_duration_query) console.log("SYNC QUERY", str, "EXECUTED IN", duration, "ms")
-    if (err) {
-			reject(err)
-		} else {
-			resolve(res)
-		}
-  })
-})
+	},
+	queryAsync: async (str, values) => new Promise((resolve, reject) => {
+		const startTime = new Date()
+		db_connection.query(str, function (err, res, fields) {
+			const duration = new Date() - startTime
+			if (duration > max_duration_query) console.log("SYNC QUERY", str, "EXECUTED IN", duration, "ms")
+			if (err) {
+				reject(err)
+			} else {
+				resolve(res)
+			}
+		})
+	})
 }
 
 process.on('SIGINT', function() {
@@ -1274,11 +1271,11 @@ bot.onText(/^\/refreshSpread/i, async function (message) {
 
 			for (var i = 0, len = Object.keys(rowsItem).length; i < len; i++) {
 				var item_id = rowsItem[i].id;
-				var rows = await connection_sync.query('SELECT (SELECT COUNT(id) FROM player) As player, COUNT(id) As cnt FROM inventory WHERE item_id = ' + item_id);
+				var rows = await connection.queryAsync('SELECT (SELECT COUNT(id) FROM player) As player, COUNT(id) As cnt FROM inventory WHERE item_id = ' + item_id);
 
 				var calc_spread = Math.round((rows[0].cnt / rows[0].player) * 100);
 
-				var rows = await connection_sync.query('SELECT SUM(quantity) As num, (SELECT SUM(quantity) FROM inventory) As tot FROM inventory WHERE item_id = ' + item_id);
+				var rows = await connection.queryAsync('SELECT SUM(quantity) As num, (SELECT SUM(quantity) FROM inventory) As tot FROM inventory WHERE item_id = ' + item_id);
 
 				var calc_spread_tot = Math.round((rows[0].num / rows[0].tot) * 100 * 1000) / 1000;
 
@@ -1853,7 +1850,7 @@ bot.onText(/\/start (.+)|\/start/i, async function (message, match) {
 				}
 			} else {
 				var qnt = 1;
-				var item = await connection_sync.query('SELECT id, name FROM item WHERE rarity = "U" AND craftable = 0 ORDER BY RAND()');
+				var item = await connection.queryAsync('SELECT id, name FROM item WHERE rarity = "U" AND craftable = 0 ORDER BY RAND()');
 				await addItem(player_id, item[0].id, qnt);
 				text = "\n> " + qnt + "x " + item[0].name;
 
@@ -2126,7 +2123,7 @@ bot.on('callback_query', function (message) {
 						}]);
 
 						if (param != "update")
-							await connection_sync.query('UPDATE mission_team_party_player SET answ_id = ' + param + ' WHERE player_id = ' + player_id);
+							await connection.queryAsync('UPDATE mission_team_party_player SET answ_id = ' + param + ' WHERE player_id = ' + player_id);
 
 						connection.query('SELECT answ_id FROM mission_team_party_player WHERE team_id = ' + team_id + ' AND party_id = ' + party_id + ' AND answ_id != 0', function (err, rows, fields) {
 							if (err) throw err;
@@ -2209,7 +2206,7 @@ bot.on('callback_query', function (message) {
 								else
 									question = question.replaceAll("%casuale%", text_user);
 
-								var team = await connection_sync.query('SELECT name FROM team WHERE id = ' + team_id);
+								var team = await connection.queryAsync('SELECT name FROM team WHERE id = ' + team_id);
 								question = question.replaceAll("%team%", team[0].name);
 
 								var newtext = "<b>Incarico in corso</b>\n\n<i>" + last_answer + question + "</i>" + text;
@@ -6500,9 +6497,9 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 													max_lobby_count = 1;
 
 												if (Object.keys(rows).length < max_lobby_count) {
-													var max_lobby = await connection_sync.query('SELECT MAX(lobby_id) As mx FROM map_lobby WHERE lobby_id IS NOT NULL');
+													var max_lobby = await connection.queryAsync('SELECT MAX(lobby_id) As mx FROM map_lobby WHERE lobby_id IS NOT NULL');
 													if (max_lobby[0].mx == null) {
-														var max_lobby = await connection_sync.query('SELECT MAX(map_lobby_id) As mx FROM map_history');
+														var max_lobby = await connection.queryAsync('SELECT MAX(map_lobby_id) As mx FROM map_history');
 														if (max_lobby[0].mx == null)
 															lobby_id = 1;
 														else
@@ -7017,17 +7014,17 @@ bot.onText(/attacca!/i, function (message) {
 			var weapon3_crit = 0;
 
 			if (weapon_id != null) {
-				var weapon_info = await connection_sync.query("SELECT power, critical FROM item WHERE id = " + weapon_id);
+				var weapon_info = await connection.queryAsync("SELECT power, critical FROM item WHERE id = " + weapon_id);
 				weapon = weapon_info[0].power;
 				weapon_crit = weapon_info[0].critical;
 			}
 			if (weapon2_id != null) {
-				var weapon2_info = await connection_sync.query("SELECT power_armor, critical FROM item WHERE id = " + weapon2_id);
+				var weapon2_info = await connection.queryAsync("SELECT power_armor, critical FROM item WHERE id = " + weapon2_id);
 				weapon2 = weapon2_info[0].power_armor;
 				weapon2_crit = weapon2_info[0].critical;
 			}
 			if (weapon3_id != null) {
-				var weapon3_info = await connection_sync.query("SELECT power_shield, critical FROM item WHERE id = " + weapon3_id);
+				var weapon3_info = await connection.queryAsync("SELECT power_shield, critical FROM item WHERE id = " + weapon3_id);
 				weapon3 = weapon3_info[0].power_shield;
 				weapon3_crit = weapon3_info[0].critical;
 			}
@@ -7133,19 +7130,19 @@ bot.onText(/attacca!/i, function (message) {
 					var enemy_weapon3_name = "";
 
 					if (enemy_weapon_id != null) {
-						var enemy_weapon_info = await connection_sync.query("SELECT name, power, critical FROM item WHERE id = " + enemy_weapon_id);
+						var enemy_weapon_info = await connection.queryAsync("SELECT name, power, critical FROM item WHERE id = " + enemy_weapon_id);
 						enemy_weapon = enemy_weapon_info[0].power;
 						enemy_weapon_crit = enemy_weapon_info[0].critical;
 						enemy_weapon_name = enemy_weapon_info[0].name;
 					}
 					if (enemy_weapon2_id != null) {
-						var enemy_weapon2_info = await connection_sync.query("SELECT name, power_armor, critical FROM item WHERE id = " + enemy_weapon2_id);
+						var enemy_weapon2_info = await connection.queryAsync("SELECT name, power_armor, critical FROM item WHERE id = " + enemy_weapon2_id);
 						enemy_weapon2 = enemy_weapon2_info[0].power_armor;
 						enemy_weapon2_crit = enemy_weapon2_info[0].critical;
 						enemy_weapon2_name = enemy_weapon2_info[0].name;
 					}
 					if (enemy_weapon3_id != null) {
-						var enemy_weapon3_info = await connection_sync.query("SELECT name, power_shield, critical FROM item WHERE id = " + enemy_weapon3_id);
+						var enemy_weapon3_info = await connection.queryAsync("SELECT name, power_shield, critical FROM item WHERE id = " + enemy_weapon3_id);
 						enemy_weapon3 = enemy_weapon3_info[0].power_shield;
 						enemy_weapon3_crit = enemy_weapon3_info[0].critical;
 						enemy_weapon3_name = enemy_weapon3_info[0].name;
@@ -7468,7 +7465,7 @@ bot.onText(/attacca!/i, function (message) {
 											var item_query = "";
 											var enemy_item_query = "";
 
-											var weaponQuery = await connection_sync.query("SELECT name FROM item WHERE id = " + enemy_weapon_id);
+											var weaponQuery = await connection.queryAsync("SELECT name FROM item WHERE id = " + enemy_weapon_id);
 											var weapon_name = weaponQuery[0].name;
 											if (weapon_id != null) {
 												var check = enemy_weapon > weapon || (weapon == enemy_weapon && enemy_weapon_crit > weapon_crit);;
@@ -7488,7 +7485,7 @@ bot.onText(/attacca!/i, function (message) {
 												enemy_item_query += ", weapon_id = NULL";
 											}
 
-											var weaponQuery = await connection_sync.query("SELECT name FROM item WHERE id = " + enemy_weapon2_id);
+											var weaponQuery = await connection.queryAsync("SELECT name FROM item WHERE id = " + enemy_weapon2_id);
 											var weapon_name = weaponQuery[0].name;
 											if (weapon2_id != null) {
 												var check = enemy_weapon2 < weapon2 || (weapon2 == enemy_weapon2 && enemy_weapon2_crit > weapon2_crit);
@@ -7508,7 +7505,7 @@ bot.onText(/attacca!/i, function (message) {
 												enemy_item_query += ", weapon2_id = NULL";
 											}
 
-											var weaponQuery = await connection_sync.query("SELECT name FROM item WHERE id = " + enemy_weapon3_id);
+											var weaponQuery = await connection.queryAsync("SELECT name FROM item WHERE id = " + enemy_weapon3_id);
 											var weapon_name = weaponQuery[0].name;
 											if (weapon3_id != null) {
 												var check = enemy_weapon3 < weapon3 || (weapon3 == enemy_weapon3 && enemy_weapon3_crit > weapon3_crit);
@@ -7561,7 +7558,7 @@ bot.onText(/attacca!/i, function (message) {
 											var item_query = "";
 											var enemy_item_query = "";
 
-											var weaponQuery = await connection_sync.query("SELECT name FROM item WHERE id = " + weapon_id);
+											var weaponQuery = await connection.queryAsync("SELECT name FROM item WHERE id = " + weapon_id);
 											var weapon_name = weaponQuery[0].name;
 											if (enemy_weapon_id != null) {
 												var check = weapon > enemy_weapon || (weapon == enemy_weapon && weapon_crit > enemy_weapon_crit);
@@ -7581,7 +7578,7 @@ bot.onText(/attacca!/i, function (message) {
 												item_query += ", weapon_id = NULL";
 											}
 
-											var weaponQuery = await connection_sync.query("SELECT name FROM item WHERE id = " + weapon2_id);
+											var weaponQuery = await connection.queryAsync("SELECT name FROM item WHERE id = " + weapon2_id);
 											var weapon_name = weaponQuery[0].name;
 											if (enemy_weapon2_id != null) {
 												var check = weapon2 < enemy_weapon2 || (weapon2 == enemy_weapon2 && weapon2_crit > enemy_weapon2_crit);
@@ -7601,7 +7598,7 @@ bot.onText(/attacca!/i, function (message) {
 												item_query += ", weapon2_id = NULL";
 											}
 
-											var weaponQuery = await connection_sync.query("SELECT name FROM item WHERE id = " + weapon3_id);
+											var weaponQuery = await connection.queryAsync("SELECT name FROM item WHERE id = " + weapon3_id);
 											var weapon_name = weaponQuery[0].name;
 											if (enemy_weapon3_id != null) {
 												var check = weapon3 < enemy_weapon3 || (weapon3 == enemy_weapon3 && weapon3_crit > enemy_weapon3_crit);
@@ -7694,7 +7691,7 @@ bot.onText(/printMap (.+)/i, async function (message, match) {
 			}
 
 			var mapMatrix = JSON.parse(rows[0].map_json);
-			var checkEnemy = await connection_sync.query('SELECT player_id, nickname, chat_id, posX, posY FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND enemy_id IS NULL AND lobby_id = ' + lobby_id);
+			var checkEnemy = await connection.queryAsync('SELECT player_id, nickname, chat_id, posX, posY FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND enemy_id IS NULL AND lobby_id = ' + lobby_id);
 			var map = printMap(mapMatrix, 0, 0, 0, 0, 0, checkEnemy, 10, 1);
 
 			bot.sendMessage(message.chat.id, map, mark);
@@ -7837,7 +7834,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 				var next_restrict_time = rows[0].next_restrict_time;
 				var mapMatrix = JSON.parse(rows[0].map_json);
 				var conditions = rows[0].conditions;
-				var checkEnemy = await connection_sync.query('SELECT player_id, nickname, chat_id, posX, posY FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND enemy_id IS NULL AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
+				var checkEnemy = await connection.queryAsync('SELECT player_id, nickname, chat_id, posX, posY FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND enemy_id IS NULL AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
 				var map = printMap(mapMatrix, posX, posY, pulsePosX, pulsePosY, killed, checkEnemy, conditions, 0);
 
 				connection.query('SELECT COUNT(H.player_id) As cnt FROM map_lobby_list L, map_history H WHERE L.id = H.map_lobby_id AND L.lobby_id = ' + lobby_id, async function (err, rows, fields) {
@@ -7972,7 +7969,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										if (item_id != 0) {
 											if (item_type == 1) { 
 												if (weapon_id != null) {
-													var weapon = await connection_sync.query("SELECT power, critical FROM item WHERE id = " + weapon_id);
+													var weapon = await connection.queryAsync("SELECT power, critical FROM item WHERE id = " + weapon_id);
 													var check = item_power > weapon[0].power || (item_power == weapon[0].power && item_crit > weapon[0].critical);
 													if (map_equip_change_power == 0)
 														check = item_crit > weapon[0].critical || (item_crit == weapon[0].critical && item_power > weapon[0].power);
@@ -7986,7 +7983,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												}
 											} else if (item_type == 2) {
 												if (weapon2_id != null) {
-													var weapon2 = await connection_sync.query("SELECT power_armor, critical FROM item WHERE id = " + weapon2_id);
+													var weapon2 = await connection.queryAsync("SELECT power_armor, critical FROM item WHERE id = " + weapon2_id);
 													var check = item_power < weapon2[0].power_armor || (item_power == weapon2[0].power_armor && item_crit > weapon[0].critical);
 													if (map_equip_change_power == 0)
 														check = item_crit > weapon2[0].critical || (item_crit == weapon2[0].critical && item_power > weapon2[0].power_armor);
@@ -8000,7 +7997,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												}
 											} else if (item_type == 3) {
 												if (weapon3_id != null) {
-													var weapon3 = await connection_sync.query("SELECT power_shield, critical FROM item WHERE id = " + weapon3_id);
+													var weapon3 = await connection.queryAsync("SELECT power_shield, critical FROM item WHERE id = " + weapon3_id);
 													var check = item_power < weapon3[0].power_shield || (item_power == weapon3[0].power_shield && item_crit > weapon[0].critical);
 													if (map_equip_change_power == 0)
 														check = item_crit > weapon3[0].critical || (item_crit == weapon3[0].critical && item_power > weapon3[0].power_shield);
@@ -8080,7 +8077,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										if (item_id != 0) {
 											if (item_type == 1) { 
 												if (weapon_id != null) {
-													var weapon = await connection_sync.query("SELECT power, critical FROM item WHERE id = " + weapon_id);
+													var weapon = await connection.queryAsync("SELECT power, critical FROM item WHERE id = " + weapon_id);
 													var check = item_power > weapon[0].power || (item_power == weapon[0].power && item_crit > weapon[0].critical);
 													if (map_equip_change_power == 0)
 														check = item_crit > weapon[0].critical || (item_crit == weapon[0].critical && item_power > weapon[0].power);
@@ -8097,7 +8094,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												}
 											} else if (item_type == 2) {
 												if (weapon2_id != null) {
-													var weapon2 = await connection_sync.query("SELECT power_armor, critical FROM item WHERE id = " + weapon2_id);
+													var weapon2 = await connection.queryAsync("SELECT power_armor, critical FROM item WHERE id = " + weapon2_id);
 													var check = item_power < weapon2[0].power_armor || (item_power == weapon2[0].power_armor && item_crit > weapon2[0].critical);
 													if (map_equip_change_power == 0)
 														check = item_crit > weapon2[0].critical || (item_crit == weapon2[0].critical && item_power < weapon2[0].power_armor);
@@ -8114,7 +8111,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												}
 											} else if (item_type == 3) {
 												if (weapon3_id != null) {
-													var weapon3 = await connection_sync.query("SELECT power_shield, critical FROM item WHERE id = " + weapon3_id);
+													var weapon3 = await connection.queryAsync("SELECT power_shield, critical FROM item WHERE id = " + weapon3_id);
 													var check = item_power < weapon3[0].power_shield || (item_power == weapon3[0].power_shield && item_crit > weapon3[0].critical);
 													if (map_equip_change_power == 0)
 														check = item_crit > weapon3[0].critical || (item_crit == weapon3[0].critical && item_power < weapon3[0].power_shield);
@@ -8162,7 +8159,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										bot.sendMessage(message.chat.id, "Hai deciso di teletrasportati in un luogo inesplorato!", kbBack);
 									});
 								} else if (answer.text.toLowerCase().indexOf("affronta") != -1) {
-									var checkEnemy = await connection_sync.query('SELECT player_id, nickname, chat_id, posX, posY FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND enemy_id IS NULL AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
+									var checkEnemy = await connection.queryAsync('SELECT player_id, nickname, chat_id, posX, posY FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND enemy_id IS NULL AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
 									var randomPos = getRandomPosEnemy(mapMatrix, checkEnemy);
 									posX = randomPos[0];
 									posY = randomPos[1];
@@ -8229,7 +8226,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 					};
 
 					var wait_text = "";
-					var time = await connection_sync.query("SELECT wait_time FROM map_lobby WHERE player_id = " + player_id);
+					var time = await connection.queryAsync("SELECT wait_time FROM map_lobby WHERE player_id = " + player_id);
 					if (time[0].wait_time != null) {
 						var now = new Date();
 						var wait_time = new Date(time[0].wait_time);
@@ -8302,7 +8299,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 								if (answer.text.toLowerCase().indexOf("sacca") != -1)
 									return;
 
-								var time = await connection_sync.query("SELECT wait_time FROM map_lobby WHERE player_id = " + player_id);
+								var time = await connection.queryAsync("SELECT wait_time FROM map_lobby WHERE player_id = " + player_id);
 								if (time[0].wait_time != null) {
 									var now = new Date();
 									var wait_time = new Date(time[0].wait_time);
@@ -8392,7 +8389,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									var wait_time = 2;
 									var isParalyzed = 0;
 
-									var checkEnemy = await connection_sync.query('SELECT player_id, nickname, chat_id, enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + posX + ' AND posY = ' + posY + ' AND killed = 0 AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
+									var checkEnemy = await connection.queryAsync('SELECT player_id, nickname, chat_id, enemy_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + posX + ' AND posY = ' + posY + ' AND killed = 0 AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
 									if (Object.keys(checkEnemy).length > 0) {
 										var checkEnemyNickname = "";
 										var checkEnemyPlayerId = -1;
@@ -8449,7 +8446,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												rarity = "R";
 											else
 												rarity = "NC";
-											var item = await connection_sync.query("SELECT id, name, rarity, power, power_armor, power_shield, critical FROM item WHERE (power > 1 OR power_armor < -1 OR power_shield < -1) AND rarity = '" + rarity + "' ORDER BY RAND()");
+											var item = await connection.queryAsync("SELECT id, name, rarity, power, power_armor, power_shield, critical FROM item WHERE (power > 1 OR power_armor < -1 OR power_shield < -1) AND rarity = '" + rarity + "' ORDER BY RAND()");
 											item_crit = item[0].critical;
 											if (item[0].power > 0) {
 												item_type = 1;
@@ -8486,7 +8483,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												rarity = "UE";
 											else
 												rarity = "E";
-											var item = await connection_sync.query("SELECT id, name, rarity, power, power_armor, power_shield, critical FROM item WHERE (power > 1 OR power_armor < -1 OR power_shield < -1) AND rarity = '" + rarity + "' ORDER BY RAND()");
+											var item = await connection.queryAsync("SELECT id, name, rarity, power, power_armor, power_shield, critical FROM item WHERE (power > 1 OR power_armor < -1 OR power_shield < -1) AND rarity = '" + rarity + "' ORDER BY RAND()");
 											item_crit = item[0].critical;
 											if (item[0].power > 0) {
 												item_type = 1;
@@ -8539,15 +8536,15 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											rarity = "R";
 											price = 2;
 										}
-										var bag = await connection_sync.query("SELECT I1.power, I2.power_armor, I3.power_shield, I1.critical As critical1, I2.critical As critical2, I3.critical As critical3 FROM map_lobby M LEFT JOIN item I1 ON M.weapon_id = I1.id LEFT JOIN item I2 ON M.weapon2_id = I2.id LEFT JOIN item I3 ON M.weapon3_id = I3.id WHERE player_id = " + player_id);
+										var bag = await connection.queryAsync("SELECT I1.power, I2.power_armor, I3.power_shield, I1.critical As critical1, I2.critical As critical2, I3.critical As critical3 FROM map_lobby M LEFT JOIN item I1 ON M.weapon_id = I1.id LEFT JOIN item I2 ON M.weapon2_id = I2.id LEFT JOIN item I3 ON M.weapon3_id = I3.id WHERE player_id = " + player_id);
 										if (map_equip_change_power == 1) {
 											var weapon_power = (bag[0].power == null ? "1" : bag[0].power);
 											var weapon2_power = (bag[0].power_armor == null ? "-1" : bag[0].power_armor);
 											var weapon3_power = (bag[0].power_shield == null ? "-1" : bag[0].power_shield);
-											var item = await connection_sync.query("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") AND rarity = '" + rarity + "' ORDER BY RAND()");
+											var item = await connection.queryAsync("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") AND rarity = '" + rarity + "' ORDER BY RAND()");
 											if (Object.keys(item).length == 0) {
 												// se non trova a causa della rarità, riprova senza il filtro
-												item = await connection_sync.query("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") ORDER BY RAND()");
+												item = await connection.queryAsync("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") ORDER BY RAND()");
 											}
 										} else {
 											var weapon_critical1 = (bag[0].critical1 == null ? "0" : bag[0].critical1);
@@ -8555,22 +8552,22 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											var weapon_critical3 = (bag[0].critical3 == null ? "0" : bag[0].critical3);
 											var rand = Math.round(getRandomArbitrary(1, 3));
 											if (rand == 1) {
-												var item = await connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical1 + " AND power > 1 AND rarity = '" + rarity + "' ORDER BY RAND()");
+												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical1 + " AND power > 1 AND rarity = '" + rarity + "' ORDER BY RAND()");
 												if (Object.keys(item).length == 0) {
 													// se non trova a causa della rarità, riprova senza il filtro
-													item = await connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical1 + " AND power > 1 ORDER BY RAND()");
+													item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical1 + " AND power > 1 ORDER BY RAND()");
 												}
 											} else if (rand == 2) {
-												var item = await connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < -1 AND rarity = '" + rarity + "' ORDER BY RAND()");
+												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < -1 AND rarity = '" + rarity + "' ORDER BY RAND()");
 												if (Object.keys(item).length == 0) {
 													// se non trova a causa della rarità, riprova senza il filtro
-													item = await connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < -1 ORDER BY RAND()");
+													item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < -1 ORDER BY RAND()");
 												}
 											} else if (rand == 3) {
-												var item = await connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < -1 AND rarity = '" + rarity + "' ORDER BY RAND()");
+												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < -1 AND rarity = '" + rarity + "' ORDER BY RAND()");
 												if (Object.keys(item).length == 0) {
 													// se non trova a causa della rarità, riprova senza il filtro
-													item = await connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < -1 ORDER BY RAND()");
+													item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < -1 ORDER BY RAND()");
 												}
 											}
 										}
@@ -8592,15 +8589,15 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											rarity = "R";
 											price = 1000;
 										}
-										var bag = await connection_sync.query("SELECT I1.power, I2.power_armor, I3.power_shield, I1.critical As critical1, I2.critical As critical2, I3.critical As critical3 FROM map_lobby M LEFT JOIN item I1 ON M.weapon_id = I1.id LEFT JOIN item I2 ON M.weapon2_id = I2.id LEFT JOIN item I3 ON M.weapon3_id = I3.id WHERE player_id = " + player_id);
+										var bag = await connection.queryAsync("SELECT I1.power, I2.power_armor, I3.power_shield, I1.critical As critical1, I2.critical As critical2, I3.critical As critical3 FROM map_lobby M LEFT JOIN item I1 ON M.weapon_id = I1.id LEFT JOIN item I2 ON M.weapon2_id = I2.id LEFT JOIN item I3 ON M.weapon3_id = I3.id WHERE player_id = " + player_id);
 										if (map_equip_change_power == 1) {
 											var weapon_power = (bag[0].power == null ? "1" : bag[0].power);
 											var weapon2_power = (bag[0].power_armor == null ? "-1" : bag[0].power_armor);
 											var weapon3_power = (bag[0].power_shield == null ? "-1" : bag[0].power_shield);
-											var item = await connection_sync.query("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") AND rarity = '" + rarity + "' ORDER BY RAND()");
+											var item = await connection.queryAsync("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") AND rarity = '" + rarity + "' ORDER BY RAND()");
 											if (Object.keys(item).length == 0) {
 												// se non trova a causa della rarità, riprova senza il filtro
-												item = await connection_sync.query("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") ORDER BY RAND()");
+												item = await connection.queryAsync("SELECT id FROM item WHERE (power > " + weapon_power + " OR power_armor < " + weapon2_power + " OR power_shield < " + weapon3_power + ") ORDER BY RAND()");
 											}
 										} else {
 											var weapon_critical1 = (bag[0].critical1 == null ? "0" : bag[0].critical1);
@@ -8608,22 +8605,22 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											var weapon_critical3 = (bag[0].critical3 == null ? "0" : bag[0].critical3);
 											var rand = Math.round(getRandomArbitrary(1, 3));
 											if (rand == 1) {
-												var item = await connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical1 + " AND power > 1 AND rarity = '" + rarity + "' ORDER BY RAND()");
+												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical1 + " AND power > 1 AND rarity = '" + rarity + "' ORDER BY RAND()");
 												if (Object.keys(item).length == 0) {
 													// se non trova a causa della rarità, riprova senza il filtro
-													item = await connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical1 + " AND power > 1 ORDER BY RAND()");
+													item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical1 + " AND power > 1 ORDER BY RAND()");
 												}
 											} else if (rand == 2) {
-												var item = await connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < -1 AND rarity = '" + rarity + "' ORDER BY RAND()");
+												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < -1 AND rarity = '" + rarity + "' ORDER BY RAND()");
 												if (Object.keys(item).length == 0) {
 													// se non trova a causa della rarità, riprova senza il filtro
-													item = await connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < -1 ORDER BY RAND()");
+													item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < -1 ORDER BY RAND()");
 												}
 											} else if (rand == 3) {
-												var item = await connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < -1 AND rarity = '" + rarity + "' ORDER BY RAND()");
+												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < -1 AND rarity = '" + rarity + "' ORDER BY RAND()");
 												if (Object.keys(item).length == 0) {
 													// se non trova a causa della rarità, riprova senza il filtro
-													item = await connection_sync.query("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < -1 ORDER BY RAND()");
+													item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < -1 ORDER BY RAND()");
 												}
 											}
 										}
@@ -8689,7 +8686,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									if (item_id != 0) {
 										if (item_type == 1) { 
 											if (weapon_id != null) {
-												var weapon = await connection_sync.query("SELECT power, critical FROM item WHERE id = " + weapon_id);
+												var weapon = await connection.queryAsync("SELECT power, critical FROM item WHERE id = " + weapon_id);
 												var check = item_power > weapon[0].power || (item_power == weapon[0].power && item_crit > weapon[0].critical);
 												if (map_equip_change_power == 0)
 													check = item_crit > weapon[0].critical || (item_crit == weapon[0].critical && item_power > weapon[0].power);
@@ -8706,7 +8703,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											}
 										} else if (item_type == 2) {
 											if (weapon2_id != null) {
-												var weapon2 = await connection_sync.query("SELECT power_armor, critical FROM item WHERE id = " + weapon2_id);
+												var weapon2 = await connection.queryAsync("SELECT power_armor, critical FROM item WHERE id = " + weapon2_id);
 												var check = item_power < weapon2[0].power_armor || (item_power == weapon2[0].power_armor && item_crit > weapon2[0].critical);
 												if (map_equip_change_power == 0)
 													check = item_crit > weapon2[0].critical || (item_crit == weapon2[0].critical && item_power < weapon2[0].power_armor);
@@ -8723,7 +8720,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											}
 										} else if (item_type == 3) {
 											if (weapon3_id != null) {
-												var weapon3 = await connection_sync.query("SELECT power_shield, critical FROM item WHERE id = " + weapon3_id);
+												var weapon3 = await connection.queryAsync("SELECT power_shield, critical FROM item WHERE id = " + weapon3_id);
 												var check = item_power < weapon3[0].power_shield || (item_power == weapon3[0].power_shield && item_crit > weapon3[0].critical);
 												if (map_equip_change_power == 0)
 													check = item_crit > weapon3[0].critical || (item_crit == weapon3[0].critical && item_power < weapon3[0].power_shield);
@@ -8848,7 +8845,7 @@ bot.onText(/sacca$/i, function (message) {
 				var weapon2_crit = 0;
 				var weapon3_crit = 0;
 
-				var map_lobby = await connection_sync.query('SELECT flari_active FROM map_lobby_list WHERE lobby_id = ' + lobby_id);
+				var map_lobby = await connection.queryAsync('SELECT flari_active FROM map_lobby_list WHERE lobby_id = ' + lobby_id);
 
 				var flari_line = "";
 				if (map_lobby[0].flari_active == 0) {
@@ -8859,15 +8856,15 @@ bot.onText(/sacca$/i, function (message) {
 					flari_line = "\nFlaridion: " + formatNumber(power_dmg) + " attacco, " + formatNumber(power_def) + " difesa";
 
 				if (weapon_id != null) {
-					var weapon = await connection_sync.query("SELECT name, power, critical FROM item WHERE id = " + weapon_id);
+					var weapon = await connection.queryAsync("SELECT name, power, critical FROM item WHERE id = " + weapon_id);
 					weapon_crit = weapon[0].critical;
 				}
 				if (weapon2_id != null) {
-					var weapon2 = await connection_sync.query("SELECT name, power_armor, critical FROM item WHERE id = " + weapon2_id);
+					var weapon2 = await connection.queryAsync("SELECT name, power_armor, critical FROM item WHERE id = " + weapon2_id);
 					weapon2_crit = weapon2[0].critical;
 				}
 				if (weapon3_id != null) {
-					var weapon3 = await connection_sync.query("SELECT name, power_shield, critical FROM item WHERE id = " + weapon3_id);
+					var weapon3 = await connection.queryAsync("SELECT name, power_shield, critical FROM item WHERE id = " + weapon3_id);
 					weapon3_crit = weapon3[0].critical;
 				}
 
@@ -9718,7 +9715,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 					var finish_time = new Date(rows[0].finish_time);
 					var unlimited = rows[0].unlimited;
 
-					var comment = await connection_sync.query('SELECT creator_id FROM dungeon_list WHERE id = ' + dungeon_id);
+					var comment = await connection.queryAsync('SELECT creator_id FROM dungeon_list WHERE id = ' + dungeon_id);
 
 					if (comment[0].creator_id == player_id) {
 						var dNav = {
@@ -10135,7 +10132,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 									}
 
 									if (Object.keys(rows).length == 0) {
-										var dungeon = await connection_sync.query("SELECT dungeon_energy FROM player WHERE id = " + player_id);
+										var dungeon = await connection.queryAsync("SELECT dungeon_energy FROM player WHERE id = " + player_id);
 										if ((dungeon[0].dungeon_energy < 10) && (dungeonRush == 0)) {
 											bot.sendMessage(message.chat.id, "Non hai abbastanza energia per accedere alla stanza finale, ti servono 10 Cariche Esplorative!", dBack);
 											return;
@@ -10245,13 +10242,13 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 									var mapped;
 									var mapped_type = "giocatore";
-									var team_mapping = await connection_sync.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id);
+									var team_mapping = await connection.queryAsync('SELECT team_id FROM team_player WHERE player_id = ' + player_id);
 									if (Object.keys(team_mapping).length > 0) {
 										// usa il max per unire le mappature fatte di tutti i giocatori del team
-										mapped = await connection_sync.query('SELECT MAX(dir_top) As dir_top, MAX(dir_right) As dir_right, MAX(dir_left) As dir_left FROM dungeon_map M, team T, team_player TP WHERE M.player_id = TP.player_id AND TP.team_id = T.id AND room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND T.id = ' + team_mapping[0].team_id + ' GROUP BY room_id');
+										mapped = await connection.queryAsync('SELECT MAX(dir_top) As dir_top, MAX(dir_right) As dir_right, MAX(dir_left) As dir_left FROM dungeon_map M, team T, team_player TP WHERE M.player_id = TP.player_id AND TP.team_id = T.id AND room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND T.id = ' + team_mapping[0].team_id + ' GROUP BY room_id');
 										mapped_type = "team";
 									} else
-										mapped = await connection_sync.query('SELECT dir_top, dir_right, dir_left FROM dungeon_map WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id);
+										mapped = await connection.queryAsync('SELECT dir_top, dir_right, dir_left FROM dungeon_map WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id);
 
 									if (Object.keys(mapped).length > 0) {
 										var mapped_left = "-";
@@ -10281,7 +10278,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												(answer.text == "⬅️") || (answer.text.toLowerCase() == "sinistra") || 
 												(answer.text.toLowerCase() == "sx") || (answer.text == "➡️") || 
 												(answer.text.toLowerCase() == "destra") || (answer.text.toLowerCase() == "dx")) {
-												var dungeon = await connection_sync.query("SELECT dungeon_energy FROM player WHERE id = " + player_id);
+												var dungeon = await connection.queryAsync("SELECT dungeon_energy FROM player WHERE id = " + player_id);
 												if ((dungeon[0].dungeon_energy < 10) && (dungeonRush == 0) && ((((boost_id == 8) && (boost_mission == 0)) || (boost_id != 8)))) {
 													bot.sendMessage(message.chat.id, "Non hai abbastanza energia per proseguire il dungeon, ti servono 10 Cariche Esplorative!", dBack);
 													return;
@@ -12333,7 +12330,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													if (item_qnt > 0)
 														item_poss = " ✅";
 													else {
-														var material_result = await connection_sync.query('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item_id);
+														var material_result = await connection.queryAsync('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item_id);
 
 														if (Object.keys(material_result).length > 0) {
 															if (await getItemCnt(player_id, material_result[0].material_1) > 0 &&
@@ -13344,7 +13341,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															if (item1qnt > 0)
 																item_poss = " ✅";
 															else {
-																var material_result = await connection_sync.query('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item1);
+																var material_result = await connection.queryAsync('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item1);
 
 																if (Object.keys(material_result).length > 0) {
 																	if (await getItemCnt(player_id, material_result[0].material_1) > 0 &&
@@ -13594,7 +13591,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													if (item1qnt > 0)
 														item_poss = " ✅";
 													else {
-														var material_result = await connection_sync.query('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item1);
+														var material_result = await connection.queryAsync('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item1);
 
 														if (Object.keys(material_result).length > 0) {
 															if (await getItemCnt(player_id, material_result[0].material_1) > 0 &&
@@ -13974,7 +13971,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												var text = "Entrando nella stanza pesti una leva nascosta, la maledizione Unna t'ha colpito!\n\n_Scricchiolando_ la leva emette un rumore inquietante...\n";
 
 												if ((day == 1) || (day == 2)) {				// lunedì-martedì
-													var exist = await connection_sync.query("SELECT 1 FROM event_dust_status WHERE extracting = 1 AND player_id = " + player_id);
+													var exist = await connection.queryAsync("SELECT 1 FROM event_dust_status WHERE extracting = 1 AND player_id = " + player_id);
 													if (Object.keys(exist).length > 0) {
 														connection.query('UPDATE event_dust_status SET `generated` = ROUND(`generated`/2), notified = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
@@ -13983,7 +13980,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													} else
 														text += "Ma per stavolta nulla accade!";
 												} else if ((day == 4) || (day == 5)) { 		// giovedì-venerdì
-													var exist = await connection_sync.query("SELECT mana_1, mana_2, mana_3 FROM event_mana_status WHERE time_start IS NOT NULL AND player_id = " + player_id);
+													var exist = await connection.queryAsync("SELECT mana_1, mana_2, mana_3 FROM event_mana_status WHERE time_start IS NOT NULL AND player_id = " + player_id);
 													if (Object.keys(exist).length > 0) {
 														var qnt = 50;
 														if (exist[0].mana_1 > qnt) {
@@ -14014,7 +14011,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													if (money < 0)
 														query = " - " + Math.abs(money);
 
-													var p = await connection_sync.query("SELECT money FROM player WHERE id = " + player_id);
+													var p = await connection.queryAsync("SELECT money FROM player WHERE id = " + player_id);
 													if ((p[0].money-Math.abs(money) > 0) && (money > 0)) {
 														connection.query('UPDATE player SET money = money' + query + ' WHERE id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
@@ -14234,7 +14231,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	bot.sendMessage(message.chat.id, "Sei sicuro di voler acquistare una Figurina casuale per " + price + " 💎?\nAl momento ne possiedi " + formatNumber(gems), dYesNo).then(function () {
 																		answerCallbacks[message.chat.id] = async function (answer) {
 																			if (answer.text.toLowerCase() == "si") {
-																				var p = await connection_sync.query("SELECT gems FROM player WHERE id = " + player_id);
+																				var p = await connection.queryAsync("SELECT gems FROM player WHERE id = " + player_id);
 																				if (p[0].gems < price) {
 																					bot.sendMessage(message.chat.id, "Non hai abbastanza 💎", dNext);
 																					return;
@@ -14247,7 +14244,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																				connection.query('SELECT id, name, rarity FROM card_list WHERE rarity = ' + rarity + ' ORDER BY RAND()', async function (err, rows, fields) {
 																					if (err) throw err;
 
-																					var inv = await connection_sync.query('SELECT 1 FROM card_inventory WHERE card_id = ' + rows[0].id + ' AND player_id = ' + player_id);
+																					var inv = await connection.queryAsync('SELECT 1 FROM card_inventory WHERE card_id = ' + rows[0].id + ' AND player_id = ' + player_id);
 																					if (Object.keys(inv).length == 0) {
 																						connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + rows[0].id + ')', function (err, rows, fields) {
 																							if (err) throw err;
@@ -15179,7 +15176,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																else if (player_life/player_total_life*100 < 60)
 																	heart = "🧡";
 
-																var rows = await connection_sync.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 6');
+																var rows = await connection.queryAsync('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 6');
 
 																var att = 0;
 																if (Object.keys(rows).length > 0) {
@@ -15281,7 +15278,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																		if (answer.text.indexOf("Attacca") == -1)
 																			return;
 
-																		var player = await connection_sync.query("SELECT life, total_life FROM player WHERE id = " + player_id);
+																		var player = await connection.queryAsync("SELECT life, total_life FROM player WHERE id = " + player_id);
 
 																		player_life = player[0].life;
 																		player_total_life = player[0].total_life;
@@ -19671,7 +19668,7 @@ bot.onText(/^\/deposita (.+)|^\/deposita/i, function (message, match) {
 					continue;
 				}
 
-				var item = await connection_sync.query('SELECT id, name FROM item WHERE ((craftable = 1 AND rarity IN ("NC", "R", "UR", "L", "E")) OR (name LIKE "Pietra%" AND rarity = "D")) AND name = "' + itemName + '" AND cons = 0');
+				var item = await connection.queryAsync('SELECT id, name FROM item WHERE ((craftable = 1 AND rarity IN ("NC", "R", "UR", "L", "E")) OR (name LIKE "Pietra%" AND rarity = "D")) AND name = "' + itemName + '" AND cons = 0');
 
 				if (Object.keys(item).length == 0) {
 					text += "*" + itemName + "*: Non consentito\n";
@@ -19694,7 +19691,7 @@ bot.onText(/^\/deposita (.+)|^\/deposita/i, function (message, match) {
 
 				await delItem(player_id, item_id, quantity, 1);
 
-				var deposit = await connection_sync.query('SELECT 1 FROM team_store WHERE item_id = ' + item_id + ' AND team_id = ' + team_id + ' AND player_id = ' + player_id);
+				var deposit = await connection.queryAsync('SELECT 1 FROM team_store WHERE item_id = ' + item_id + ' AND team_id = ' + team_id + ' AND player_id = ' + player_id);
 
 				if (Object.keys(deposit).length == 0) {
 					connection.query('INSERT INTO team_store (team_id, player_id, item_id, quantity) VALUES (' + team_id + ',' + player_id + ',' + item_id + ', ' + quantity + ')', function (err, rows, fields) {
@@ -20635,7 +20632,7 @@ bot.onText(/^scruta/i, function (message) {
 				}
 
 				if (enemy_dragon_id == null) {
-					var another = await connection_sync.query("SELECT dragon_id FROM dragon_top_status WHERE enemy_dragon_id = " + dragon_id);
+					var another = await connection.queryAsync("SELECT dragon_id FROM dragon_top_status WHERE enemy_dragon_id = " + dragon_id);
 					if (Object.keys(another).length == 0) {
 						bot.sendMessage(message.chat.id, "Errore id drago avversario (" + dragon_id + ")", kbBack);
 						return;
@@ -20665,7 +20662,7 @@ bot.onText(/^scruta/i, function (message) {
 							enemy_nickname = rows[0].nickname;
 						} else {
 							if (class_id == 7) {
-								var classRow = await connection_sync.query('SELECT name FROM class WHERE id = 7');
+								var classRow = await connection.queryAsync('SELECT name FROM class WHERE id = 7');
 								enemy_class = classRow[0].name + " " + classSym(classRow[0].name);
 							} else
 								enemy_class = "-";
@@ -21014,7 +21011,7 @@ bot.onText(/^Risorse/i, function (message) {
 										};
 									} else {
 										// Ricontrollo valori per impedire l'uso di oggetti a cavallo della sconfitta
-										var combat = await connection_sync.query('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id);
+										var combat = await connection.queryAsync('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id);
 
 										inCombat = 0;
 										iscritto = Object.keys(combat).length;
@@ -21024,7 +21021,7 @@ bot.onText(/^Risorse/i, function (message) {
 												inCombat = 1;
 										}
 
-										var combat2 = await connection_sync.query('SELECT dragon.name, dragon.type FROM dragon, dragon_top_status WHERE dragon.id = dragon_top_status.dragon_id AND enemy_dragon_id = ' + dragon_id);
+										var combat2 = await connection.queryAsync('SELECT dragon.name, dragon.type FROM dragon, dragon_top_status WHERE dragon.id = dragon_top_status.dragon_id AND enemy_dragon_id = ' + dragon_id);
 
 										combatSubito = Object.keys(combat2).length;
 
@@ -21416,7 +21413,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 									enemy_charm_id = 695;
 									if (class_id == 7) {
 										class_id2 = 7;
-										var classRow = await connection_sync.query('SELECT name FROM class WHERE id = ' + class_id2);
+										var classRow = await connection.queryAsync('SELECT name FROM class WHERE id = ' + class_id2);
 										enemy_class = classRow[0].name + " " + classSym(classRow[0].name);
 									} else
 										enemy_class = "-";
@@ -22985,7 +22982,7 @@ bot.onText(/team/i, function (message) {
 
 											assault_line = "";
 											if (rows[i].place_id != null) {
-												var place_name = await connection_sync.query("SELECT name FROM assault_place WHERE id = " + rows[i].place_id);
+												var place_name = await connection.queryAsync("SELECT name FROM assault_place WHERE id = " + rows[i].place_id);
 												assault_line = "🐺 Assegnato a " + assaultEmojiList[rows[i].place_id-1] + " " + place_name[0].name + "\n";
 											}
 
@@ -23275,7 +23272,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 								else
 									daynight = "";
 
-								var rowsCnt = await connection_sync.query('SELECT AVG(complex) As cnt FROM mission_team_requirement WHERE requirement_id = ' + rows[i].requirement_id);
+								var rowsCnt = await connection.queryAsync('SELECT AVG(complex) As cnt FROM mission_team_requirement WHERE requirement_id = ' + rows[i].requirement_id);
 								text += "<b>" + rows[i].title + "</b>" + assigned + "\nMandante: " + rows[i].mandator + "\n<i>" + truncate(rows[i].description, 100) + "</i>\nDurata: " + toTime(rows[i].duration*(rows[i].parts+1)) + " (" + toTime(rows[i].duration) + "/scelta) ⏳\nDifficoltà: " + Math.round(rowsCnt[0].cnt*10)/10 + "/10 📈" + daynight + progress + "\n\n";
 								iKeys.push([rows[i].title]);
 							}
@@ -23731,7 +23728,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 																						if (reqValMax == "all")
 																							reqValMax = partyLen;
 																						for (var j = 0; j < partyLen; j++) {
-																							var trasmo = await connection_sync.query("SELECT 1 FROM necro_change WHERE player_id = " + rows[j].player_id);
+																							var trasmo = await connection.queryAsync("SELECT 1 FROM necro_change WHERE player_id = " + rows[j].player_id);
 																							if (Object.keys(trasmo).length == 1)
 																								reqVal++;
 																						}
@@ -24191,7 +24188,7 @@ bot.onText(/^party$|gestisci party|torna ai party/i, function (message) {
 												}
 
 												for (var i = 0; i < cnt; i++) {
-													var rows = await connection_sync.query('SELECT P.id, P.chat_id FROM player P WHERE P.nickname = "' + nickArray[i] + '"');
+													var rows = await connection.queryAsync('SELECT P.id, P.chat_id FROM player P WHERE P.nickname = "' + nickArray[i] + '"');
 													if (Object.keys(rows).length == 0) {
 														bot.sendMessage(message.chat.id, nickArray[i] + " non esiste", kbBack3);
 														return;
@@ -24201,7 +24198,7 @@ bot.onText(/^party$|gestisci party|torna ai party/i, function (message) {
 												}
 
 												for (var i = 0; i < cnt; i++) {
-													rows = await connection_sync.query('SELECT id FROM team_player WHERE team_id = ' + team_id + ' AND player_id = ' + idArray[i]);
+													rows = await connection.queryAsync('SELECT id FROM team_player WHERE team_id = ' + team_id + ' AND player_id = ' + idArray[i]);
 													if (Object.keys(rows).length == 0) {
 														bot.sendMessage(message.chat.id, nickArray[i] + " non è un membro del tuo team", kbBack3);
 														return;
@@ -24209,20 +24206,20 @@ bot.onText(/^party$|gestisci party|torna ai party/i, function (message) {
 												}
 
 												for (var i = 0; i < cnt; i++) {
-													rows = await connection_sync.query('SELECT id FROM mission_team_party_player WHERE player_id = ' + idArray[i]);
+													rows = await connection.queryAsync('SELECT id FROM mission_team_party_player WHERE player_id = ' + idArray[i]);
 													if (Object.keys(rows).length > 0) {
 														bot.sendMessage(message.chat.id, nickArray[i] + " è già impegnato in un party", kbBack3);
 														return;
 													}
 												}
 
-												rows = await connection_sync.query('SELECT COUNT(id) As cnt FROM mission_team_party_player WHERE team_id = ' + team_id + ' AND party_id = ' + miss);
+												rows = await connection.queryAsync('SELECT COUNT(id) As cnt FROM mission_team_party_player WHERE team_id = ' + team_id + ' AND party_id = ' + miss);
 												if (rows[0].cnt >= 5) {
 													bot.sendMessage(message.chat.id, "Il party ha già raggiunto il limite di 5 persone", kbBack3);
 													return;
 												}
 
-												await connection_sync.query('INSERT INTO mission_team_party (team_id, party_id) VALUES (' + team_id + ',' + miss + ')');
+												await connection.queryAsync('INSERT INTO mission_team_party (team_id, party_id) VALUES (' + team_id + ',' + miss + ')');
 
 												for (var i = 0; i < cnt; i++) {
 													connection.query('INSERT INTO mission_team_party_player (team_id, party_id, player_id) VALUES (' + team_id + ',' + miss + ',' + idArray[i] + ')', function (err, rows, fields) {
@@ -24761,8 +24758,8 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 										text += "<i>Nessun membro in questa postazione</i>\n";
 								}
 
-								var tot_level = await connection_sync.query('SELECT SUM(max_level) As cnt FROM assault_place');
-								var my_tot_level = await connection_sync.query('SELECT SUM(level) As cnt FROM assault_place_team WHERE team_id = ' + team_id);
+								var tot_level = await connection.queryAsync('SELECT SUM(max_level) As cnt FROM assault_place');
+								var my_tot_level = await connection.queryAsync('SELECT SUM(level) As cnt FROM assault_place_team WHERE team_id = ' + team_id);
 								if (tot_level[0].cnt == my_tot_level[0].cnt) {
 									setAchievement(player_id, 44, 999);
 									setAchievement(player_id, 19, 999);
@@ -24772,7 +24769,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 									text += "\nAncora <b>1</b> membro deve scegliere la propria postazione!";
 								else if (team_players-selected_count > 0) {
 									if ((team_players-selected_count) < 5) {
-										var no_place = await connection_sync.query("SELECT nickname FROM player P, team_player TP LEFT JOIN assault_place_player_id A ON TP.player_id = A.player_id WHERE TP.player_id = P.id AND A.place_id IS NULL AND TP.team_id = " + team_id);
+										var no_place = await connection.queryAsync("SELECT nickname FROM player P, team_player TP LEFT JOIN assault_place_player_id A ON TP.player_id = A.player_id WHERE TP.player_id = P.id AND A.place_id IS NULL AND TP.team_id = " + team_id);
 										var left = "";
 										for (var i = 0, len = Object.keys(no_place).length; i < len; i++)
 											left += no_place[i].nickname + ", ";
@@ -25069,7 +25066,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																	myqnt = await getItemCnt(player_id, rows[i].id);
 																	storeqnt = 0;
 
-																	var checkStore = await connection_sync.query('SELECT IFNULL(SUM(quantity), 0) As cnt FROM team_store WHERE team_id = ' + team_id + ' AND item_id = ' + rows[i].id);
+																	var checkStore = await connection.queryAsync('SELECT IFNULL(SUM(quantity), 0) As cnt FROM team_store WHERE team_id = ' + team_id + ' AND item_id = ' + rows[i].id);
 																	if (Object.keys(checkStore).length > 0)
 																		storeqnt = checkStore[0].cnt;
 
@@ -25177,7 +25174,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																						var cnt = await getItemCnt(player_id, rows[i].item_id);
 																						var storeCnt = 0;
 
-																						var checkStore = await connection_sync.query('SELECT IFNULL(SUM(quantity), 0) As cnt FROM team_store WHERE team_id = ' + team_id + ' AND item_id = ' + rows[i].item_id);
+																						var checkStore = await connection.queryAsync('SELECT IFNULL(SUM(quantity), 0) As cnt FROM team_store WHERE team_id = ' + team_id + ' AND item_id = ' + rows[i].item_id);
 																						if (Object.keys(checkStore).length > 0)
 																							storeCnt = checkStore[0].cnt;
 
@@ -25215,7 +25212,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																						// console.log(i, storeCntToRemove[i], cntToRemove[i]);
 																						if (storeCntToRemove[i] > 0) {
 																							// console.log("delItemStore " + rows[i].item_id + " " + storeCntToRemove[i]);
-																							var storeItem = await connection_sync.query('SELECT id, quantity FROM team_store WHERE team_id = ' + team_id + ' AND item_id = ' + rows[i].item_id);
+																							var storeItem = await connection.queryAsync('SELECT id, quantity FROM team_store WHERE team_id = ' + team_id + ' AND item_id = ' + rows[i].item_id);
 																							quantityReq = storeCntToRemove[i];
 
 																							for (var k = 0, len2 = Object.keys(storeItem).length; k < len2; k++) {
@@ -25561,10 +25558,10 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 															class_bonus_val = (rows[0].cnt*5);
 														}
 
-														var players_num = await connection_sync.query("SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE team_id = " + team_id);
+														var players_num = await connection.queryAsync("SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE team_id = " + team_id);
 														var mob_damage = mobDamage(boss_count, players_num[0].cnt, boss_num, 1, mob_turn, assault_lost, 1);
-														var place = await connection_sync.query('SELECT level FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id);
-														var players = await connection_sync.query('SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE place_id = 5 AND team_id = ' + team_id);
+														var place = await connection.queryAsync('SELECT level FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id);
+														var players = await connection.queryAsync('SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE place_id = 5 AND team_id = ' + team_id);
 														var wall_max_life = mob_damage * place[0].level * players[0].cnt;
 														wall_max_life += wall_max_life*(class_bonus_val/100);
 														wall_max_life = Math.round(wall_max_life);
@@ -25576,12 +25573,12 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 														text += "A questo livello fornisce <b>" + formatNumber(wall_max_life) + "</b> salute alle mura per protezione, possiede ancora la capacità di proteggere da <b>" + formatNumber(life) + "</b> danni (" + perc + "%)\nSi ripara automaticamente fino al 50% di salute alla sconfitta di un nemico, ma puoi comunque ripararla usando oggetti base (scrivi il nome se non lo vedi nella lista)." + class_bonus + "\n";
 
 														if (total_life != wall_max_life) {
-															await connection_sync.query("UPDATE assault_place_team SET total_life = " + wall_max_life + " WHERE team_id = " + team_id + " AND place_id = 5");
+															await connection.queryAsync("UPDATE assault_place_team SET total_life = " + wall_max_life + " WHERE team_id = " + team_id + " AND place_id = 5");
 															console.log("Salute mura adeguata (diversa da db) " + formatNumber(wall_max_life) + " - " + formatNumber(total_life));
 														}
 
 														if (life > wall_max_life) {
-															await connection_sync.query("UPDATE assault_place_team SET life = " + wall_max_life + " WHERE team_id = " + team_id + " AND place_id = 5");
+															await connection.queryAsync("UPDATE assault_place_team SET life = " + wall_max_life + " WHERE team_id = " + team_id + " AND place_id = 5");
 															console.log("Salute mura adeguata (superato il max) " + formatNumber(life));
 														}
 
@@ -26098,7 +26095,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 														else if (miniboost_count == 1)
 															text += "\n\nE' stato attivato <b>1</b> incremento";
 
-														var miniboost_query = await connection_sync.query("SELECT COUNT(id) As cnt FROM assault_place_miniboost WHERE player_id = " + player_id);
+														var miniboost_query = await connection.queryAsync("SELECT COUNT(id) As cnt FROM assault_place_miniboost WHERE player_id = " + player_id);
 														if (miniboost_query[0].cnt == 1)
 															text += " 💢";
 
@@ -26119,7 +26116,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	return;
 
 																// ricontrollo eletto
-																var check = await connection_sync.query('SELECT role FROM assault_place_player_id WHERE team_id = ' + team_id + ' AND player_id = ' + player_id);
+																var check = await connection.queryAsync('SELECT role FROM assault_place_player_id WHERE team_id = ' + team_id + ' AND player_id = ' + player_id);
 
 																if (Object.keys(check).length == 0)
 																	return;
@@ -26390,11 +26387,11 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																var miniboost_text = "";
 																var miniboost_arr = []; // dove l'indice è la postazione, partendo da 0
-																var place_cnt = await connection_sync.query("SELECT 1 FROM assault_place");
+																var place_cnt = await connection.queryAsync("SELECT 1 FROM assault_place");
 																for (var i = 0, len = Object.keys(place_cnt).length; i < len; i++)
 																	miniboost_arr[i] = 0;
 
-																var miniboost = await connection_sync.query("SELECT APM.place_id, AP.name, COUNT(APM.place_id) As cnt FROM assault_place_miniboost APM, assault_place AP WHERE APM.place_id = AP.id AND APM.team_id = " + team_id + " GROUP BY APM.place_id ORDER BY APM.place_id");
+																var miniboost = await connection.queryAsync("SELECT APM.place_id, AP.name, COUNT(APM.place_id) As cnt FROM assault_place_miniboost APM, assault_place AP WHERE APM.place_id = AP.id AND APM.team_id = " + team_id + " GROUP BY APM.place_id ORDER BY APM.place_id");
 																if ((Object.keys(miniboost).length > 0) && (miniboost[0].place_id != null)) {
 																	miniboost_text = "💢 Incrementi attivati:";
 																	var minitext = "";
@@ -26451,14 +26448,14 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																final_report += miniboost_text;
 
-																var players_num = await connection_sync.query("SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE team_id = " + team_id);
+																var players_num = await connection.queryAsync("SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE team_id = " + team_id);
 																players_num = players_num[0].cnt;
 
 																// console.log("Fase 0: " + tot_damage);
 
 																// Fase 1, piattaforma di lancio
 
-																var place2 = await connection_sync.query("SELECT level, active FROM assault_place_team WHERE place_id = 2 AND team_id = " + team_id);
+																var place2 = await connection.queryAsync("SELECT level, active FROM assault_place_team WHERE place_id = 2 AND team_id = " + team_id);
 
 																if ((Object.keys(place2).length > 0) && (place2[0].level > 0)) {
 																	var place2_level = place2[0].level;
@@ -26466,13 +26463,13 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	epic_var++;
 
 																	if (place2_active == 1) {
-																		var place2_class_bonus = await connection_sync.query("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND APP.team_id = " + team_id + " AND AP.class_bonus = P.class AND AP.id = 2");
+																		var place2_class_bonus = await connection.queryAsync("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND APP.team_id = " + team_id + " AND AP.class_bonus = P.class AND AP.id = 2");
 
 																		var cons_text = "";
 																		var calc_damage = 0;
 																		var cnt = 0;
 																		var lap_qnt = 5;
-																		var cons = await connection_sync.query("SELECT AP.item_id, I.cons_val, I.name, AP.id, AP.player_id, P.chat_id FROM assault_place_cons AP, item I, player P WHERE AP.player_id = P.id AND AP.item_id = I.id AND AP.team_id = " + team_id + " ORDER BY AP.id");
+																		var cons = await connection.queryAsync("SELECT AP.item_id, I.cons_val, I.name, AP.id, AP.player_id, P.chat_id FROM assault_place_cons AP, item I, player P WHERE AP.player_id = P.id AND AP.item_id = I.id AND AP.team_id = " + team_id + " ORDER BY AP.id");
 																		if (Object.keys(cons).length > 0) {
 																			for (var i = 0; i < Object.keys(cons).length; i++) {
 																				if (cnt >= lap_qnt)
@@ -26529,7 +26526,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																// Fase 2, torre dello stregone
 
-																var place1 = await connection_sync.query("SELECT level, active FROM assault_place_team WHERE place_id = 1 AND team_id = " + team_id);
+																var place1 = await connection.queryAsync("SELECT level, active FROM assault_place_team WHERE place_id = 1 AND team_id = " + team_id);
 
 																if ((Object.keys(place1).length > 0) && (place1[0].level > 0)) {
 																	var place1_level = place1[0].level;
@@ -26537,12 +26534,12 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	epic_var++;
 
 																	if (place1_active == 1) {
-																		var player = await connection_sync.query('SELECT COUNT(AP.id) As cnt FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND place_id = 1');
+																		var player = await connection.queryAsync('SELECT COUNT(AP.id) As cnt FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND place_id = 1');
 
-																		var place1_class_bonus = await connection_sync.query("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 1");
+																		var place1_class_bonus = await connection.queryAsync("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 1");
 
 																		var avg_dmg = 0;
-																		var avg_players = await connection_sync.query("SELECT P.exp, P.weapon, P.weapon_enchant, P.charm_id, P.power_dmg, P.class, P.reborn FROM assault_place_magic AP, player P WHERE AP.player_id = P.id AND AP.team_id = " + team_id);
+																		var avg_players = await connection.queryAsync("SELECT P.exp, P.weapon, P.weapon_enchant, P.charm_id, P.power_dmg, P.class, P.reborn FROM assault_place_magic AP, player P WHERE AP.player_id = P.id AND AP.team_id = " + team_id);
 																		if (Object.keys(avg_players).length > 0) {
 																			var avg_tot = 0;
 																			for (var i = 0, len = Object.keys(avg_players).length; i < len; i++) {
@@ -26551,7 +26548,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			avg_dmg = avg_tot/Object.keys(avg_players).length;
 																		}
 
-																		var magic = await connection_sync.query("SELECT P.chat_id, P.class, P.reborn, AP.player_id, AP.id, AP.type, AP.power FROM assault_place_magic AP, player P WHERE AP.player_id = P.id AND AP.team_id = " + team_id + " ORDER BY AP.id");
+																		var magic = await connection.queryAsync("SELECT P.chat_id, P.class, P.reborn, AP.player_id, AP.id, AP.type, AP.power FROM assault_place_magic AP, player P WHERE AP.player_id = P.id AND AP.team_id = " + team_id + " ORDER BY AP.id");
 																		if (Object.keys(magic).length > 0) {
 																			var magic_player_id = magic[0].player_id;
 																			var magic_class_id = magic[0].class;
@@ -26563,7 +26560,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			var magic_effect = "";
 																			var magic_turn = 0;
 
-																			var ability = await connection_sync.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + magic_player_id + ' AND ability_id = 10');
+																			var ability = await connection.queryAsync('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + magic_player_id + ' AND ability_id = 10');
 
 																			var abBonus = 0;
 																			var magicDouble = 0;
@@ -26691,16 +26688,16 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																// Fase 2.5, campo militare
 
-																var place7 = await connection_sync.query("SELECT level FROM assault_place_team WHERE place_id = 7 AND team_id = " + team_id);
+																var place7 = await connection.queryAsync("SELECT level FROM assault_place_team WHERE place_id = 7 AND team_id = " + team_id);
 
 																var military_bonus = 0;
 																if ((Object.keys(place7).length > 0) && (place7[0].level > 0)) {
 																	epic_var++;
 																	var place7_level = place7[0].level;
 
-																	var place7_class_bonus = await connection_sync.query("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 7");
+																	var place7_class_bonus = await connection.queryAsync("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 7");
 
-																	var player = await connection_sync.query('SELECT COUNT(AP.id) As cnt FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND place_id = 7');
+																	var player = await connection.queryAsync('SELECT COUNT(AP.id) As cnt FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND place_id = 7');
 
 																	military_bonus = place7_level+(player[0].cnt*5);
 																	military_bonus += military_bonus*(0.02*place7_class_bonus[0].cnt);
@@ -26713,11 +26710,11 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																// Fase 3, artiglieria leggera
 
-																var mob = await connection_sync.query("SELECT team_paralyzed, team_critic FROM assault WHERE team_id = " + team_id);
+																var mob = await connection.queryAsync("SELECT team_paralyzed, team_critic FROM assault WHERE team_id = " + team_id);
 																var team_paralyzed = mob[0].team_paralyzed;
 																var team_critic = mob[0].team_critic;
 
-																var place4 = await connection_sync.query("SELECT level FROM assault_place_team WHERE place_id = 4 AND team_id = " + team_id);
+																var place4 = await connection.queryAsync("SELECT level FROM assault_place_team WHERE place_id = 4 AND team_id = " + team_id);
 
 																var full_damage = 0;
 
@@ -26725,9 +26722,9 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	epic_var++;
 																	var place4_level = place4[0].level;
 
-																	var place4_class_bonus = await connection_sync.query("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 4");
+																	var place4_class_bonus = await connection.queryAsync("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 4");
 
-																	var player = await connection_sync.query('SELECT P.* FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND place_id = 4 ORDER BY AP.id');
+																	var player = await connection.queryAsync('SELECT P.* FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND place_id = 4 ORDER BY AP.id');
 
 																	if (Object.keys(player).length > 0) {
 																		var playerid = 0;
@@ -27004,7 +27001,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		if (magic_effect != "")
 																			magic_effect = "\nInoltre vengono scagliati incantesimi dalla postazione" + magic_effect;
 
-																		await connection_sync.query("UPDATE assault SET team_paralyzed = " + team_paralyzed + ", team_critic = " + team_critic + " WHERE team_id = " + team_id);
+																		await connection.queryAsync("UPDATE assault SET team_paralyzed = " + team_paralyzed + ", team_critic = " + team_critic + " WHERE team_id = " + team_id);
 
 																		full_damage = Math.round(full_damage);
 
@@ -27029,7 +27026,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																var debug = 0;	// per debuggare danni
 
-																var mob = await connection_sync.query("SELECT mob_paralyzed, mob_critic, team_reduce FROM assault WHERE team_id = " + team_id);
+																var mob = await connection.queryAsync("SELECT mob_paralyzed, mob_critic, team_reduce FROM assault WHERE team_id = " + team_id);
 																var mob_paralyzed = mob[0].mob_paralyzed;
 																var mob_critic = mob[0].mob_critic;
 																var team_reduce = mob[0].team_reduce;
@@ -27040,7 +27037,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	console.log("danni totali: " + mob_damage);
 
 																var place5_damage = 0;
-																var place5 = await connection_sync.query("SELECT level, life, total_life FROM assault_place_team WHERE place_id = 5 AND team_id = " + team_id);
+																var place5 = await connection.queryAsync("SELECT level, life, total_life FROM assault_place_team WHERE place_id = 5 AND team_id = " + team_id);
 
 																var place5_text = "";
 																var isWall = 0;
@@ -27049,7 +27046,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																if ((Object.keys(place5).length > 0) && (place5[0].level > 0)) {	
 																	epic_var++;
-																	var place5_class_bonus = await connection_sync.query("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 5");
+																	var place5_class_bonus = await connection.queryAsync("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 5");
 
 																	if (place5_total_damage > 0) {
 																		epic_var++;
@@ -27081,7 +27078,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			place5_text = ", le mura attutiscono <b>" + formatNumber(place5_damage) + "</b> danni " + resist;
 																		else
 																			place5_text = ", le mura non attutiscono danni " + resist;
-																		await connection_sync.query("UPDATE assault_place_team SET life = " + life + " WHERE place_id = 5 AND team_id = " + team_id);
+																		await connection.queryAsync("UPDATE assault_place_team SET life = " + life + " WHERE place_id = 5 AND team_id = " + team_id);
 																	}
 																} else
 																	final_report += assaultEmojiList[4] + " Le mura non sono state costruite, nessuna protezione aggiuntiva!\n\n";
@@ -27101,13 +27098,13 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	var player_place1_perc = 0;
 																	var player_place6_perc = 0;
 
-																	var wall_players = await connection_sync.query('SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE killed = 0 AND place_id = 5 AND team_id = ' + team_id);
+																	var wall_players = await connection.queryAsync('SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE killed = 0 AND place_id = 5 AND team_id = ' + team_id);
 																	if ((Object.keys(place5).length > 0) && (place5[0].level > 0) && (wall_players[0].cnt > 0)) {
 																		player_place5_perc = 50;
 																		total_perc -= player_place5_perc;
 																	}
 
-																	var perc_players = await connection_sync.query('SELECT place_id, COUNT(id) As cnt FROM assault_place_player_id WHERE killed = 0 AND place_id IN (5,3,4,1,6) AND team_id = ' + team_id + ' GROUP BY place_id HAVING cnt > 0');
+																	var perc_players = await connection.queryAsync('SELECT place_id, COUNT(id) As cnt FROM assault_place_player_id WHERE killed = 0 AND place_id IN (5,3,4,1,6) AND team_id = ' + team_id + ' GROUP BY place_id HAVING cnt > 0');
 
 																	var perc_place_cnt = Object.keys(perc_players).length;
 																	var perc = Math.round(total_perc/perc_place_cnt);
@@ -27117,7 +27114,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			console.log(perc_players[i].place_id, perc);
 																	}
 
-																	var player = await connection_sync.query('SELECT P.*, place_id, (SELECT COUNT(id) FROM assault_place_player_id WHERE place_id = AP.place_id AND team_id = AP.team_id) As cnt FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND place_id IN (5,3,4,1,6) AND killed = 0 ORDER BY FIELD(place_id,5,3,4,1,6), RAND()');
+																	var player = await connection.queryAsync('SELECT P.*, place_id, (SELECT COUNT(id) FROM assault_place_player_id WHERE place_id = AP.place_id AND team_id = AP.team_id) As cnt FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND place_id IN (5,3,4,1,6) AND killed = 0 ORDER BY FIELD(place_id,5,3,4,1,6), RAND()');
 
 																	if (Object.keys(player).length > 0) {
 																		var playerid = 0;
@@ -27154,7 +27151,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		var diff_damage = 0;
 																		var this_perc = 0;
 																		var tot_perc = 0;
-																		var place_cnt = await connection_sync.query('SELECT place_id FROM assault_place_team WHERE place_id IN (5,3,4,1,6) AND team_id = ' + team_id);
+																		var place_cnt = await connection.queryAsync('SELECT place_id FROM assault_place_team WHERE place_id IN (5,3,4,1,6) AND team_id = ' + team_id);
 																		for (var i = 0, len = Object.keys(place_cnt).length; i < len; i++)
 																			tot_perc += eval("player_place" + place_cnt[i].place_id + "_perc");
 
@@ -27317,7 +27314,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																					if (magic_rand > rand) {
 																						epic_var++;
 																						var turn = Math.round(getRandomArbitrary(3, 6));
-																						await connection_sync.query("UPDATE assault SET team_paralyzed = " + turn + " WHERE team_id = " + team_id);
+																						await connection.queryAsync("UPDATE assault SET team_paralyzed = " + turn + " WHERE team_id = " + team_id);
 																						var ally = "alleati";
 																						if (turn == 1)
 																							ally = "alleato";
@@ -27375,7 +27372,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																					if (magic_rand > rand) {
 																						epic_var++;
 																						var turn = Math.round(getRandomArbitrary(3, 6));
-																						await connection_sync.query("UPDATE assault SET mob_critic = " + turn + " WHERE team_id = " + team_id);
+																						await connection.queryAsync("UPDATE assault SET mob_critic = " + turn + " WHERE team_id = " + team_id);
 																						var ally = "alleati";
 																						if (turn == 1)
 																							ally = "alleato";
@@ -27439,11 +27436,11 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				setAchievement(playerid, 30, divided_damage_att);
 																			}
 
-																			await connection_sync.query("UPDATE player SET life = " + player_life + " WHERE id = " + playerid);
+																			await connection.queryAsync("UPDATE player SET life = " + player_life + " WHERE id = " + playerid);
 																			epic_var++;
 																		}
 
-																		await connection_sync.query("UPDATE assault SET mob_paralyzed = " + mob_paralyzed + ", mob_critic = " + mob_critic + ", team_reduce = " + team_reduce + " WHERE team_id = " + team_id);
+																		await connection.queryAsync("UPDATE assault SET mob_paralyzed = " + mob_paralyzed + ", mob_critic = " + mob_critic + ", team_reduce = " + team_reduce + " WHERE team_id = " + team_id);
 
 																		if (player_text == "")
 																			player_text = "\n> Ma nessuno viene colpito";
@@ -27475,19 +27472,19 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																// Fase 5, artiglieria pesante
 
-																var mob = await connection_sync.query("SELECT team_paralyzed, team_critic FROM assault WHERE team_id = " + team_id);
+																var mob = await connection.queryAsync("SELECT team_paralyzed, team_critic FROM assault WHERE team_id = " + team_id);
 																var team_paralyzed = mob[0].team_paralyzed;
 																var team_critic = mob[0].team_critic;
 
-																var place3 = await connection_sync.query("SELECT level FROM assault_place_team WHERE place_id = 3 AND team_id = " + team_id);
+																var place3 = await connection.queryAsync("SELECT level FROM assault_place_team WHERE place_id = 3 AND team_id = " + team_id);
 
 																if ((Object.keys(place3).length > 0) && (place3[0].level > 0)) {
 																	epic_var++;
 																	var place3_level = place3[0].level;
 
-																	var place3_class_bonus = await connection_sync.query("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 3");
+																	var place3_class_bonus = await connection.queryAsync("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 3");
 
-																	var player = await connection_sync.query('SELECT P.* FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND place_id = 3 ORDER BY AP.id');
+																	var player = await connection.queryAsync('SELECT P.* FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND place_id = 3 ORDER BY AP.id');
 
 																	if (Object.keys(player).length > 0) {
 																		var playerid = 0;
@@ -27764,7 +27761,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		if (magic_effect != "")
 																			magic_effect = "\nInoltre vengono scagliati incantesimi dalla postazione" + magic_effect;
 
-																		await connection_sync.query("UPDATE assault SET team_paralyzed = " + team_paralyzed + ", team_critic = " + team_critic + " WHERE team_id = " + team_id);
+																		await connection.queryAsync("UPDATE assault SET team_paralyzed = " + team_paralyzed + ", team_critic = " + team_critic + " WHERE team_id = " + team_id);
 
 																		full_damage = Math.round(full_damage);
 
@@ -27787,22 +27784,22 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																// Fase 6, nido del drago
 
-																var place6 = await connection_sync.query("SELECT level FROM assault_place_team WHERE place_id = 6 AND team_id = " + team_id);
+																var place6 = await connection.queryAsync("SELECT level FROM assault_place_team WHERE place_id = 6 AND team_id = " + team_id);
 
 																if ((Object.keys(place6).length > 0) && (place6[0].level > 0)) {
 																	epic_var++;
 																	var place6_level = place6[0].level;
 
-																	var place6_class_bonus = await connection_sync.query("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 6");
+																	var place6_class_bonus = await connection.queryAsync("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 6");
 
-																	var player = await connection_sync.query('SELECT P.* FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND place_id = 6 ORDER BY AP.id');
+																	var player = await connection.queryAsync('SELECT P.* FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND place_id = 6 ORDER BY AP.id');
 
 																	var prob = place6_level;
 																	var rand = Math.random()*100;
 																	var damage = 0;
 
 																	for (var i = 0, len = Object.keys(player).length; i < len; i++) {
-																		var dragon = await connection_sync.query('SELECT level FROM dragon WHERE player_id = ' + player[i].id);
+																		var dragon = await connection.queryAsync('SELECT level FROM dragon WHERE player_id = ' + player[i].id);
 																		if (Object.keys(dragon).length > 0)
 																			damage += Math.floor(dragon[0].level/50);
 																		prob += 5;
@@ -27849,7 +27846,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																// Fase 7, fabbrica di energia
 
-																var place8 = await connection_sync.query("SELECT level FROM assault_place_team WHERE place_id = 8 AND team_id = " + team_id);
+																var place8 = await connection.queryAsync("SELECT level FROM assault_place_team WHERE place_id = 8 AND team_id = " + team_id);
 
 																var place8_level = 0;	// importante per fase dopo
 
@@ -27857,9 +27854,9 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	epic_var++;
 																	place8_level = place8[0].level;
 
-																	var place8_class_bonus = await connection_sync.query("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 8");
+																	var place8_class_bonus = await connection.queryAsync("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 8");
 
-																	var player = await connection_sync.query('SELECT COUNT(AP.id) As cnt FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND place_id = 8');
+																	var player = await connection.queryAsync('SELECT COUNT(AP.id) As cnt FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND place_id = 8');
 
 																	var perc = place8_level+(player[0].cnt*5);
 																	perc += perc*(0.2*place8_class_bonus[0].cnt);
@@ -27869,14 +27866,14 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																	perc = Math.round(perc*10)/10;
 
-																	player = await connection_sync.query('SELECT P.id, P.life, P.total_life FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND life > 0 ORDER BY AP.id');
+																	player = await connection.queryAsync('SELECT P.id, P.life, P.total_life FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 0 AND life > 0 ORDER BY AP.id');
 
 																	var life = 0;
 																	for (var i = 0, len = Object.keys(player).length; i < len; i++) {
 																		life = player[i].life+(player[i].total_life*(perc/100));
 																		if (life > player[i].total_life)
 																			life = player[i].total_life;
-																		await connection_sync.query('UPDATE player SET life = ' + life + ' WHERE id = ' + player[i].id);
+																		await connection.queryAsync('UPDATE player SET life = ' + life + ' WHERE id = ' + player[i].id);
 																		epic_var++;
 																	}
 
@@ -27888,7 +27885,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																// Fase 8, intrugli e pozioni
 
-																var player = await connection_sync.query('SELECT P.chat_id, P.id, P.life, P.total_life, P.nickname, P.reborn, P.class, P.refilled, AP.killed FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' ORDER BY AP.id');
+																var player = await connection.queryAsync('SELECT P.chat_id, P.id, P.life, P.total_life, P.nickname, P.reborn, P.class, P.refilled, AP.killed FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' ORDER BY AP.id');
 
 																if (Object.keys(player).length > 0) {
 																	epic_var++;
@@ -27899,7 +27896,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																			reviveUsed = 0;
 
-																			var revive = await connection_sync.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player[i].id + ' AND ability_id = 6');
+																			var revive = await connection.queryAsync('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player[i].id + ' AND ability_id = 6');
 
 																			if ((Object.keys(revive).length > 0) && (revive[0].ability_level > 0)) {
 																				var att = Math.ceil(revive[0].ability_level / 2);
@@ -27908,8 +27905,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				if (player[i].refilled < att) {
 																					var refill = Math.floor(player[i].total_life * (revive[0].ability_level / 10));
 
-																					await connection_sync.query('UPDATE player SET refilled = refilled+1, life = ' + refill + ' WHERE id = ' + player[i].id);
-																					await connection_sync.query('UPDATE assault_place_player_id SET killed = 0 WHERE player_id = ' + player[i].id);
+																					await connection.queryAsync('UPDATE player SET refilled = refilled+1, life = ' + refill + ' WHERE id = ' + player[i].id);
+																					await connection.queryAsync('UPDATE assault_place_player_id SET killed = 0 WHERE player_id = ' + player[i].id);
 
 																					var extra = " (" + (att-(player[i].refilled+1)) + " residui)";
 
@@ -27924,8 +27921,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			}
 
 																			if ((await getItemCnt(player[i].id, 759) > 0) && (reviveUsed == 0)) {
-																				await connection_sync.query('UPDATE player SET life = total_life WHERE id = ' + player[i].id);
-																				await connection_sync.query('UPDATE assault_place_player_id SET killed = 0 WHERE player_id = ' + player[i].id);
+																				await connection.queryAsync('UPDATE player SET life = total_life WHERE id = ' + player[i].id);
+																				await connection.queryAsync('UPDATE assault_place_player_id SET killed = 0 WHERE player_id = ' + player[i].id);
 																				await delItem(player[i].id, 759, 1);
 																				if (player[i].life == 0)
 																					player_text += "\n> " + player[i].nickname + " torna in salute con l'intruglio revitalizzante";
@@ -27934,7 +27931,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				epic_var++;
 																			}
 																		} else if ((player[i].life < player[i].total_life) && (player[i].killed == 0)) {
-																			var potion = await connection_sync.query('SELECT cons_val FROM item WHERE id IN (92,93,94) ORDER BY id');
+																			var potion = await connection.queryAsync('SELECT cons_val FROM item WHERE id IN (92,93,94) ORDER BY id');
 																			var perc1 = potion[0].cons_val/100;
 																			var perc2 = potion[1].cons_val/100;
 																			var perc3 = potion[2].cons_val/100;
@@ -27978,7 +27975,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				if (player_life > player_total_life)
 																					player_life = player_total_life;
 
-																				await connection_sync.query('UPDATE player SET life = ' + player_life + ' WHERE id = ' + player[i].id);
+																				await connection.queryAsync('UPDATE player SET life = ' + player_life + ' WHERE id = ' + player[i].id);
 
 																				var potSum = pot1+pot2+pot3;
 																				if (potSum == 0)
@@ -28005,7 +28002,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																// Fase 9, stampa infermeria
 
-																var player = await connection_sync.query('SELECT P.nickname FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 1 ORDER BY AP.id');
+																var player = await connection.queryAsync('SELECT P.nickname FROM assault_place_player_id AP, player P WHERE AP.player_id = P.id AND AP.team_id = ' + team_id + ' AND killed = 1 ORDER BY AP.id');
 
 																if (Object.keys(player).length > 0) {
 																	epic_var++;
@@ -28037,7 +28034,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		rand = Math.random()*100;
 
 																		if (rand < 50) {
-																			var place2 = await connection_sync.query("SELECT level FROM assault_place_team WHERE place_id = 2 AND team_id = " + team_id + " AND active = 1");
+																			var place2 = await connection.queryAsync("SELECT level FROM assault_place_team WHERE place_id = 2 AND team_id = " + team_id + " AND active = 1");
 																			if ((Object.keys(place2).length > 0) && (place2[0].level > 1)) {
 																				connection.query("UPDATE assault_place_team SET level = level-1 WHERE place_id = 2 AND team_id = " + team_id, function (err, rows, fields) {
 																					if (err) throw err;
@@ -28045,7 +28042,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				final_report += "La <b>Piattaforma di Lancio</b> è stata indebolita dallo scontro appena svolto, ha perso 1 livello";
 																			}
 																		} else {
-																			var place7 = await connection_sync.query("SELECT level FROM assault_place_team WHERE place_id = 7 AND team_id = " + team_id + " AND active = 1");
+																			var place7 = await connection.queryAsync("SELECT level FROM assault_place_team WHERE place_id = 7 AND team_id = " + team_id + " AND active = 1");
 																			if ((Object.keys(place7).length > 0) && (place7[0].level > 1)) {
 																				connection.query("UPDATE assault_place_team SET level = level-1 WHERE place_id = 7 AND team_id = " + team_id, function (err, rows, fields) {
 																					if (err) throw err;
@@ -28058,7 +28055,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																// Fine turno
 
-																var player = await connection_sync.query('SELECT P.chat_id, APP.role FROM assault_place_player_id APP, player P, team_player TP WHERE TP.player_id = P.id AND APP.player_id = P.id AND (TP.notification = 1 OR APP.role = 1) AND APP.team_id = ' + team_id + ' ORDER BY APP.id');
+																var player = await connection.queryAsync('SELECT P.chat_id, APP.role FROM assault_place_player_id APP, player P, team_player TP WHERE TP.player_id = P.id AND APP.player_id = P.id AND (TP.notification = 1 OR APP.role = 1) AND APP.team_id = ' + team_id + ' ORDER BY APP.id');
 																for (var i = 0, len = Object.keys(player).length; i < len; i++)
 																	bot.sendMessage(player[i].chat_id, final_report, html);
 
@@ -30127,7 +30124,7 @@ bot.onText(/cambia admin/i, function (message) {
 						if (child_team != null) {
 							var iKeysChild = [];
 							var childAdmin = "";
-							var child_members = await connection_sync.query('SELECT player.nickname, role FROM team_player, player WHERE team_player.player_id = player.id AND team_id = ' + child_team);
+							var child_members = await connection.queryAsync('SELECT player.nickname, role FROM team_player, player WHERE team_player.player_id = player.id AND team_id = ' + child_team);
 							for (var i = 0, len = Object.keys(child_members).length; i < len; i++) {
 								if (child_members[i].role == 0)
 									iKeysChild.push([child_members[i].nickname]);
@@ -31524,7 +31521,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 											var isSnowMan = 0;
 
 											if (answer.text == "Casuale") {
-												var rows = await connection_sync.query('SELECT event_snowball_status.player_id, player.chat_id, player.life, player.nickname FROM event_snowball_status, player WHERE event_snowball_status.player_id = player.id AND event_snowball_status.player_id != ' + player_id + ' AND player.life > 0 ORDER BY RAND()');
+												var rows = await connection.queryAsync('SELECT event_snowball_status.player_id, player.chat_id, player.life, player.nickname FROM event_snowball_status, player WHERE event_snowball_status.player_id = player.id AND event_snowball_status.player_id != ' + player_id + ' AND player.life > 0 ORDER BY RAND()');
 
 												if (Object.keys(rows).length > 0) {
 													enemy_player_id = rows[0].player_id;
@@ -31533,7 +31530,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 													enemy_nickname = rows[0].nickname;
 												}
 
-												rows = await connection_sync.query('SELECT event_snowball_list.id, event_snowball_list.player_id, player.chat_id, event_snowball_list.life, player.nickname FROM event_snowball_list, player WHERE event_snowball_list.player_id = player.id AND player_id = ' + enemy_player_id + ' AND event_snowball_list.life > 0 ORDER BY RAND()');
+												rows = await connection.queryAsync('SELECT event_snowball_list.id, event_snowball_list.player_id, player.chat_id, event_snowball_list.life, player.nickname FROM event_snowball_list, player WHERE event_snowball_list.player_id = player.id AND player_id = ' + enemy_player_id + ' AND event_snowball_list.life > 0 ORDER BY RAND()');
 
 												if (Object.keys(rows).length > 0) {
 													enemy_player_id = rows[0].player_id;
@@ -31560,7 +31557,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 											} else {
 												answer.text = answer.text.replace("@","");
 
-												var rows = await connection_sync.query('SELECT event_snowball_list.id, event_snowball_list.player_id, player.chat_id, event_snowball_list.life, player.nickname FROM event_snowball_list, player WHERE event_snowball_list.player_id = player.id AND nickname = "' + answer.text + '" AND event_snowball_list.life > 0');
+												var rows = await connection.queryAsync('SELECT event_snowball_list.id, event_snowball_list.player_id, player.chat_id, event_snowball_list.life, player.nickname FROM event_snowball_list, player WHERE event_snowball_list.player_id = player.id AND nickname = "' + answer.text + '" AND event_snowball_list.life > 0');
 
 												if (Object.keys(rows).length > 0) {
 													enemy_player_id = rows[0].player_id;
@@ -31576,7 +31573,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 													return;
 												}
 
-												rows = await connection_sync.query('SELECT event_snowball_status.player_id, player.chat_id, player.life, player.nickname FROM event_snowball_status, player WHERE event_snowball_status.player_id = player.id AND player.nickname = "' + answer.text + '"');
+												rows = await connection.queryAsync('SELECT event_snowball_status.player_id, player.chat_id, player.life, player.nickname FROM event_snowball_status, player WHERE event_snowball_status.player_id = player.id AND player.nickname = "' + answer.text + '"');
 
 												if (isSnowMan == 0) {
 													if (Object.keys(rows).length == 0) {
@@ -34007,7 +34004,7 @@ bot.onText(/contrabbandiere|vedi offerte|ctb/i, function (message) {
 				if (qnt > 0)
 					poss = " ✅";
 				else {
-					var material_result = await connection_sync.query('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item_id);
+					var material_result = await connection.queryAsync('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item_id);
 					if (await getItemCnt(player_id, material_result[0].material_1) > 0 &&
 						await getItemCnt(player_id, material_result[0].material_2) > 0 &&
 						await getItemCnt(player_id, material_result[0].material_3) > 0) {
@@ -34192,7 +34189,7 @@ bot.onText(/contrabbandiere|vedi offerte|ctb/i, function (message) {
 												bonus = ", aumentati grazie al Coupon";
 												var rand = Math.random() * 100;
 												if (rand < 20) {
-													var coupon = await connection_sync.query("SELECT coupon_count FROM player WHERE id = " + player_id);
+													var coupon = await connection.queryAsync("SELECT coupon_count FROM player WHERE id = " + player_id);
 													var coupon_txt = (coupon[0].coupon_count+1) + " utilizzi";
 													if (coupon[0].coupon_count+1 == 1)
 														coupon_txt = "appena un utilizzo";
@@ -35477,7 +35474,7 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 																	}
 																}
 															} else {
-																var new_card = await connection_sync.query('SELECT id, name, rarity FROM card_list WHERE rarity BETWEEN ' + (rarity-1) + ' AND ' + (rarity+1) + ' ORDER BY RAND()');
+																var new_card = await connection.queryAsync('SELECT id, name, rarity FROM card_list WHERE rarity BETWEEN ' + (rarity-1) + ' AND ' + (rarity+1) + ' ORDER BY RAND()');
 
 																connection.query('SELECT 1 FROM card_inventory WHERE card_id = ' + new_card[0].id + ' AND player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
@@ -35547,14 +35544,14 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 
 													for (i = 0; i < split.length; i++) {
 														split[i] = split[i].trim();
-														var card = await connection_sync.query('SELECT id, rarity, name FROM card_list WHERE name = "' + split[i] + '"');
+														var card = await connection.queryAsync('SELECT id, rarity, name FROM card_list WHERE name = "' + split[i] + '"');
 
 														if (Object.keys(card).length == 0) {
 															bot.sendMessage(message.chat.id, "La figurina <b>" + split[i] + "</b> non esiste", kbBack);
 															return;
 														}
 
-														var inv = await connection_sync.query('SELECT quantity FROM card_inventory WHERE card_id = ' + card[0].id + ' AND player_id = ' + player_id);
+														var inv = await connection.queryAsync('SELECT quantity FROM card_inventory WHERE card_id = ' + card[0].id + ' AND player_id = ' + player_id);
 
 														if (Object.keys(inv).length == 0) {
 															bot.sendMessage(message.chat.id, "Non possiedi la figurina <b>" + card[0].name + "</b>", kbBack);
@@ -35699,14 +35696,14 @@ bot.onText(/^\/accettaf/i, function (message) {
 						var player2RaritySum = 0;
 						for (i = 0; i < split.length; i++) {
 							split[i] = split[i].trim();
-							var card = await connection_sync.query('SELECT id, rarity, name FROM card_list WHERE name = "' + split[i] + '"');
+							var card = await connection.queryAsync('SELECT id, rarity, name FROM card_list WHERE name = "' + split[i] + '"');
 
 							if (Object.keys(card).length == 0) {
 								bot.sendMessage(message.chat.id, "La figurina <b>" + split[i] + "</b> non esiste", kbBack);
 								return;
 							}
 
-							var inv = await connection_sync.query('SELECT quantity FROM card_inventory WHERE card_id = ' + card[0].id + ' AND player_id = ' + player_id);
+							var inv = await connection.queryAsync('SELECT quantity FROM card_inventory WHERE card_id = ' + card[0].id + ' AND player_id = ' + player_id);
 
 							if (Object.keys(inv).length == 0) {
 								bot.sendMessage(message.chat.id, "Non possiedi la figurina <b>" + card[0].name + "</b>", kbBack);
@@ -35809,7 +35806,7 @@ bot.onText(/^\/concludif/i, function (message) {
 						if (err) throw err;
 
 						for (i = 0, len = Object.keys(rows).length; i < len; i++) {
-							var exists = await connection_sync.query('SELECT quantity FROM card_inventory WHERE card_id = ' + rows[i].id + ' AND player_id = ' + player_id);
+							var exists = await connection.queryAsync('SELECT quantity FROM card_inventory WHERE card_id = ' + rows[i].id + ' AND player_id = ' + player_id);
 
 							if (Object.keys(exists).length == 0) {
 								bot.sendMessage(message.chat.id, "Non possiedi la figurina " + rows[i].name + "!", kbBack);
@@ -35826,7 +35823,7 @@ bot.onText(/^\/concludif/i, function (message) {
 							if (err) throw err;
 
 							for (i = 0, len = Object.keys(rows).length; i < len; i++) {
-								var exists = await connection_sync.query('SELECT quantity FROM card_inventory WHERE card_id = ' + rows[i].id + ' AND player_id = ' + player_to);
+								var exists = await connection.queryAsync('SELECT quantity FROM card_inventory WHERE card_id = ' + rows[i].id + ' AND player_id = ' + player_to);
 
 								if (Object.keys(exists).length == 0) {
 									bot.sendMessage(message.chat.id, "Il destinatario non possiede la figurina " + rows[i].name + "!", kbBack);
@@ -35846,7 +35843,7 @@ bot.onText(/^\/concludif/i, function (message) {
 								var text_to = "";
 								for (i = 0, len = Object.keys(rows).length; i < len; i++) {
 									if (rows[i].player == 1) {
-										var inv = await connection_sync.query('SELECT 1 FROM card_inventory WHERE card_id = ' + rows[i].id + ' AND player_id = ' + player_to);
+										var inv = await connection.queryAsync('SELECT 1 FROM card_inventory WHERE card_id = ' + rows[i].id + ' AND player_id = ' + player_to);
 										if (Object.keys(inv).length == 0) {
 											connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_to + ', ' + rows[i].id + ')', function (err, rows, fields) {
 												if (err) throw err;
@@ -35863,7 +35860,7 @@ bot.onText(/^\/concludif/i, function (message) {
 
 										text_to += "\n> " + rows[i].name + " (" + rows[i].rarity + ")";
 									} else {
-										var inv = await connection_sync.query('SELECT 1 FROM card_inventory WHERE card_id = ' + rows[i].id + ' AND player_id = ' + player_id);
+										var inv = await connection.queryAsync('SELECT 1 FROM card_inventory WHERE card_id = ' + rows[i].id + ' AND player_id = ' + player_id);
 										if (Object.keys(inv).length == 0) {
 											connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + rows[i].id + ')', function (err, rows, fields) {
 												if (err) throw err;
@@ -36158,10 +36155,10 @@ bot.onText(/zaino/i, function (message) {
 			bottext += "Necrospiriti: " + formatNumber(rows[0].necro_pnt) + " 💠\n";
 		if (rows[0].gain_exp > 0)
 			bottext += "Esperienza accumulata: " + formatNumber(rows[0].gain_exp) + " ✨\n";
-		var dust = await connection_sync.query('SELECT IFNULL(SUM(quantity), 0) As quantity FROM inventory WHERE item_id = 646 AND player_id = ' + player_id);
+		var dust = await connection.queryAsync('SELECT IFNULL(SUM(quantity), 0) As quantity FROM inventory WHERE item_id = 646 AND player_id = ' + player_id);
 		if (dust[0].quantity > 0)
 			bottext += "Polvere: " + formatNumber(dust[0].quantity) + " ♨️\n";
-		var inventory_val = await connection_sync.query('SELECT SUM(I.value*IV.quantity) As val FROM item I, inventory IV WHERE I.id = IV.item_id AND IV.player_id = ' + player_id);
+		var inventory_val = await connection.queryAsync('SELECT SUM(I.value*IV.quantity) As val FROM item I, inventory IV WHERE I.id = IV.item_id AND IV.player_id = ' + player_id);
 		bottext += "Valore zaino: " + formatNumber(inventory_val[0].val) + " §\n";
 		bottext += "\n";
 
@@ -37598,7 +37595,7 @@ bot.onText(/emporio/i, function (message) {
 
 							iKeys.push(["Compra Pacchetto di Figurine (" + formatNumber(stickerPackPrice) + " 🌕)"]);
 
-							var tap_query = await connection_sync.query("SELECT value FROM item WHERE id = 797");
+							var tap_query = await connection.queryAsync("SELECT value FROM item WHERE id = 797");
 							iKeys.push(["Compra Tappo (" + formatNumber(tap_price) + " §)"]);
 
 							iKeys.push(["Torna all'emporio"]);
@@ -38411,7 +38408,7 @@ bot.onText(/compra/i, function (message) {
 											var card_quantity = quantity*5;
 
 											for (i = 0; i < card_quantity; i++) {
-												var inv = await connection_sync.query('SELECT 1 FROM card_inventory WHERE card_id = ' + rows[i].id + ' AND player_id = ' + player_id);
+												var inv = await connection.queryAsync('SELECT 1 FROM card_inventory WHERE card_id = ' + rows[i].id + ' AND player_id = ' + player_id);
 												if (Object.keys(inv).length == 0) {
 													connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + rows[i].id + ')', function (err, rows, fields) {
 														if (err) throw err;
@@ -40556,7 +40553,7 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 								charm_id = rows[0].charm_id;
 
 							var search_query = "LIKE '%" + oggetto + "%'";
-							var s = await connection_sync.query("SELECT COUNT(id) As cnt FROM item WHERE name = '" + oggetto + "'");
+							var s = await connection.queryAsync("SELECT COUNT(id) As cnt FROM item WHERE name = '" + oggetto + "'");
 							if (s[0].cnt == 1)
 								search_query = "= '" + oggetto + "'";
 
@@ -40606,7 +40603,7 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 					} else {
 						var oggetto_sql = oggetto.replace(/'/g, "\\'");
 						var search_query = "LIKE '%" + oggetto_sql + "%'";
-						var s = await connection_sync.query("SELECT COUNT(id) As cnt FROM item WHERE name = '" + oggetto_sql + "'");
+						var s = await connection.queryAsync("SELECT COUNT(id) As cnt FROM item WHERE name = '" + oggetto_sql + "'");
 						if (s[0].cnt == 1)
 							search_query = "= '" + oggetto_sql + "'";
 
@@ -41287,9 +41284,9 @@ bot.onText(/^apri/i, function (message) {
 								var itemQnt = [];
 
 								for (i = 0; i < chestQnt; i++) {
-									var rows = await connection_sync.query('SELECT shortname FROM rarity WHERE id > 2 AND id < 7 ORDER BY RAND()');
+									var rows = await connection.queryAsync('SELECT shortname FROM rarity WHERE id > 2 AND id < 7 ORDER BY RAND()');
 									var rarity = rows[0].shortname;
-									var rows = await connection_sync.query('SELECT I.name, I.id, I.estimate FROM item I INNER JOIN (SELECT id FROM item WHERE craftable = 0 AND rarity = "' + rarity + '" ORDER BY estimate DESC LIMIT 10) I2 ON I.id = I2.id ORDER BY RAND()');
+									var rows = await connection.queryAsync('SELECT I.name, I.id, I.estimate FROM item I INNER JOIN (SELECT id FROM item WHERE craftable = 0 AND rarity = "' + rarity + '" ORDER BY estimate DESC LIMIT 10) I2 ON I.id = I2.id ORDER BY RAND()');
 									var qnt = 0;
 									if (rarity == "R")
 										qnt = 20;
@@ -41456,9 +41453,9 @@ bot.onText(/^apri/i, function (message) {
 								chest_id = rows[j].chest_id;
 
 								if (chest_id == 10)	// cangiante
-									itemSql = await connection_sync.query('SELECT id, name, rarity FROM item WHERE rarity IN ("C", "NC", "R", "UR", "L", "E", "D", "U") AND id NOT IN (92, 93, 94) AND craftable = 0');
+									itemSql = await connection.queryAsync('SELECT id, name, rarity FROM item WHERE rarity IN ("C", "NC", "R", "UR", "L", "E", "D", "U") AND id NOT IN (92, 93, 94) AND craftable = 0');
 								else
-									itemSql = await connection_sync.query('SELECT id, name, rarity FROM item WHERE rarity = "' + chest_rarity + '" AND id NOT IN (92, 93, 94) AND craftable = 0');
+									itemSql = await connection.queryAsync('SELECT id, name, rarity FROM item WHERE rarity = "' + chest_rarity + '" AND id NOT IN (92, 93, 94) AND craftable = 0');
 
 								currentRarity = [];
 
@@ -43163,7 +43160,7 @@ bot.onText(/necro del destino/i, function (message) {
 										}
 
 										if ((num == 6) || (num == 7) || (num == 8)) {
-											var necro_lock = await connection_sync.query('SELECT 1 FROM necro_change WHERE player_id = ' + player_id);
+											var necro_lock = await connection.queryAsync('SELECT 1 FROM necro_change WHERE player_id = ' + player_id);
 											if (Object.keys(necro_lock).length == 0) {
 												bot.sendMessage(message.chat.id, "Puoi riscattare questa ricompensa solo dopo aver sbloccato la Trasmogrificazione", kbBack);
 												return;
@@ -43223,7 +43220,7 @@ bot.onText(/necro del destino/i, function (message) {
 
 															var text = "Hai speso " + cost + " 💠 ed ottenuto:\n";
 															if (num == 1) {
-																var rows = await connection_sync.query('SELECT id, name, rarity FROM item WHERE rarity NOT IN ("C","NC","X","S","IN","A","U") OR id = 764 ORDER BY RAND()');
+																var rows = await connection.queryAsync('SELECT id, name, rarity FROM item WHERE rarity NOT IN ("C","NC","X","S","IN","A","U") OR id = 764 ORDER BY RAND()');
 																await addItem(player_id, rows[0].id);
 																await addItem(player_id, rows[1].id);
 																text += "> " + rows[0].name + " (" + rows[0].rarity + ")\n";
@@ -43237,7 +43234,7 @@ bot.onText(/necro del destino/i, function (message) {
 																await addItem(player_id, 753);
 																text += "> Amuleto del Necrospirito (IN)";
 															} else if (num == 4) {
-																var rows = await connection_sync.query('SELECT id, name FROM item WHERE id IN (264, 266, 272) ORDER BY RAND()');
+																var rows = await connection.queryAsync('SELECT id, name FROM item WHERE id IN (264, 266, 272) ORDER BY RAND()');
 																await addItem(player_id, rows[0].id);
 																text += "> " + rows[0].name + " (S)\n";
 															} else if (num == 5) {
@@ -44012,7 +44009,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 										var noMoneyItemName = "";
 										var moneytxt = "<b>" + formatNumber(money) + " §</b>";
 										if (rows[0].money < money) {
-											var noItemQuery = await connection_sync.query("SELECT item.id, item.name FROM inventory, item WHERE item.id = inventory.item_id AND quantity > 0 AND rarity IN ('NC','R','UR') AND craftable = 1 AND inventory.player_id = " + toId + " ORDER BY RAND() LIMIT 1");
+											var noItemQuery = await connection.queryAsync("SELECT item.id, item.name FROM inventory, item WHERE item.id = inventory.item_id AND quantity > 0 AND rarity IN ('NC','R','UR') AND craftable = 1 AND inventory.player_id = " + toId + " ORDER BY RAND() LIMIT 1");
 											if (Object.keys(noItemQuery).length > 0) {
 												noMoneyItemId = noItemQuery[0].id;
 												noMoneyItemName = noItemQuery[0].name;
@@ -44063,7 +44060,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 														if (prob > Math.random())
 															key += 1;
 
-														var keys_query = await connection_sync.query('SELECT mkeys FROM player WHERE id = ' + toId);
+														var keys_query = await connection.queryAsync('SELECT mkeys FROM player WHERE id = ' + toId);
 														var rand = Math.random()*100;
 														if ((keys_query[0].mkeys > 0) && (rand < 30))
 															key_lost += 1;
@@ -44518,7 +44515,7 @@ bot.onText(/matchmaking|^mm$/i, function (message) {
 							var rand;
 
 							for(i = 0; i < 15; i++) {
-								var rows = await connection_sync.query("SELECT nickname, exp, team_player.team_id FROM player, team_player WHERE player.heist_limit+(SELECT COUNT(id) FROM heist WHERE to_id = player.id) < " + heist_limit + " AND player.account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) AND team_player.player_id = player.id AND team_player.team_id NOT IN (" + team_id + ") AND heist_protection IS NULL AND ability BETWEEN " + (myab - offset) + " AND " + (myab + offset2) + " AND player.id != " + from_id + " AND money > 0 AND exp > " + minexp + " AND holiday = 0 AND player.id != " + last_mm + " ORDER BY ability DESC, heist_limit ASC, RAND() LIMIT " + limit);
+								var rows = await connection.queryAsync("SELECT nickname, exp, team_player.team_id FROM player, team_player WHERE player.heist_limit+(SELECT COUNT(id) FROM heist WHERE to_id = player.id) < " + heist_limit + " AND player.account_id NOT IN (SELECT account_id FROM banlist) AND player.id NOT IN (1,3) AND team_player.player_id = player.id AND team_player.team_id NOT IN (" + team_id + ") AND heist_protection IS NULL AND ability BETWEEN " + (myab - offset) + " AND " + (myab + offset2) + " AND player.id != " + from_id + " AND money > 0 AND exp > " + minexp + " AND holiday = 0 AND player.id != " + last_mm + " ORDER BY ability DESC, heist_limit ASC, RAND() LIMIT " + limit);
 
 								if (Object.keys(rows).length < 10) {
 									offset += i*100;
@@ -44674,13 +44671,13 @@ bot.onText(/inserisci il nickname|ispeziona (.+)/i, function (message, match) {
 
 								var to_id = rows[0].id;
 
-								var rows = await connection_sync.query('SELECT id FROM heist_history WHERE from_id = ' + from_id + ' AND to_id = ' + to_id + ' AND time LIKE "' + time + '%"');
+								var rows = await connection.queryAsync('SELECT id FROM heist_history WHERE from_id = ' + from_id + ' AND to_id = ' + to_id + ' AND time LIKE "' + time + '%"');
 								if ((Object.keys(rows).length > 2) && (wanted == 0)) {
 									bot.sendMessage(message.chat.id, "Hai ispezionato troppe volte questo giocatore oggi, riprova domani.");
 									return;
 								}
 
-								var rows = await connection_sync.query('SELECT id FROM heist_history WHERE from_id = ' + from_id + ' AND to_id = ' + to_id + ' AND time > DATE_SUB("' + time + '", INTERVAL 7 DAY)');
+								var rows = await connection.queryAsync('SELECT id FROM heist_history WHERE from_id = ' + from_id + ' AND to_id = ' + to_id + ' AND time > DATE_SUB("' + time + '", INTERVAL 7 DAY)');
 								if ((Object.keys(rows).length > 10) && (wanted == 0)) {
 									bot.sendMessage(message.chat.id, "Hai ispezionato troppe volte questo giocatore durante gli ultimi 7 giorni.");
 									return;
@@ -44739,13 +44736,13 @@ bot.onText(/inserisci il nickname|ispeziona (.+)/i, function (message, match) {
 
 									var to_id = rows[0].id;
 
-									var rows = await connection_sync.query('SELECT id FROM heist_history WHERE from_id = ' + from_id + ' AND to_id = ' + to_id + ' AND time LIKE "' + time + '%"');
+									var rows = await connection.queryAsync('SELECT id FROM heist_history WHERE from_id = ' + from_id + ' AND to_id = ' + to_id + ' AND time LIKE "' + time + '%"');
 									if ((Object.keys(rows).length > 2) && (wanted == 0)) {
 										bot.sendMessage(message.chat.id, "Hai ispezionato troppe volte questo giocatore oggi, riprova domani.");
 										return;
 									}
 
-									var rows = await connection_sync.query('SELECT id FROM heist_history WHERE from_id = ' + from_id + ' AND to_id = ' + to_id + ' AND time > DATE_SUB("' + time + '", INTERVAL 7 DAY)');
+									var rows = await connection.queryAsync('SELECT id FROM heist_history WHERE from_id = ' + from_id + ' AND to_id = ' + to_id + ' AND time > DATE_SUB("' + time + '", INTERVAL 7 DAY)');
 									if ((Object.keys(rows).length > 10) && (wanted == 0)) {
 										bot.sendMessage(message.chat.id, "Hai ispezionato troppe volte questo giocatore durante gli ultimi 7 giorni.");
 										return;
@@ -45008,7 +45005,7 @@ bot.onText(/^prelevazione/i, function (message) {
 											chest = 6;
 									}
 
-									var chestQuery = await connection_sync.query("SELECT value FROM chest WHERE id = " + chest);
+									var chestQuery = await connection.queryAsync("SELECT value FROM chest WHERE id = " + chest);
 									money = chestQuery[0].value;
 
 									connection.query("SELECT player.id, nickname, house_id, chat_id FROM player, team_player WHERE team_player.player_id = player.id AND reborn >= " + reborn + " AND market_ban = 0 AND capsule_limit < 5 AND heist_protection IS NULL AND money > " + money + " AND player.id != 3 AND player.id != " + from_id + " AND team_player.team_id != " + team_id + " ORDER BY RAND() LIMIT 1", async function (err, rows, fields) {
@@ -46947,7 +46944,7 @@ function getInfo(message, player, myhouse_id) {
 				top_win_text = "Vittorie Vette: " + top_win + " (" + top_win_best + " Ð)\n";
 
 			var map_win_text = "";
-			var map_win = await connection_sync.query("SELECT COUNT(id) As cnt FROM map_history WHERE player_id = " + player_id + " AND position = 1");
+			var map_win = await connection.queryAsync("SELECT COUNT(id) As cnt FROM map_history WHERE player_id = " + player_id + " AND position = 1");
 			if (map_win[0].cnt > 0)
 				map_win_text = "Vittorie Mappe: " + map_win[0].cnt + " (" + map_win_best + " 🏆)\n";
 
@@ -47680,9 +47677,9 @@ function mainMenu(message) {
 			msgtext += "\n⚡️ Sei paralizzat" + gender_text + " ancora per <b>" + rows[0].paralyzed + " turn" + plur + "</b>";
 		}
 
-		var global = await connection_sync.query('SELECT global_cap FROM config WHERE global_eventon = 1 AND global_eventhide = 0');
+		var global = await connection.queryAsync('SELECT global_cap FROM config WHERE global_eventon = 1 AND global_eventhide = 0');
 		if (Object.keys(global).length > 0) {
-			var rows = await connection_sync.query('SELECT SUM(value) As val FROM achievement_global');
+			var rows = await connection.queryAsync('SELECT SUM(value) As val FROM achievement_global');
 			if (Object.keys(global).length > 0)
 				msgtext += "\n🌍 Impresa globale: " + Math.floor(rows[0].val/global[0].global_cap*100) + "%";
 		}
@@ -47697,7 +47694,7 @@ function mainMenu(message) {
 		}
 
 		if (mission_party > 0) {
-			var rows = await connection_sync.query('SELECT p1.mission_time_end, p1.wait, p1.part_id, p0.parts, p0.duration FROM mission_team_list p0, mission_team_party p1, mission_team_party_player p2 WHERE p0.id = p1.assigned_to AND p1.party_id = p2.party_id AND p1.team_id = p2.team_id AND p2.player_id = ' + player_id);
+			var rows = await connection.queryAsync('SELECT p1.mission_time_end, p1.wait, p1.part_id, p0.parts, p0.duration FROM mission_team_list p0, mission_team_party p1, mission_team_party_player p2 WHERE p0.id = p1.assigned_to AND p1.party_id = p2.party_id AND p1.team_id = p2.team_id AND p2.player_id = ' + player_id);
 			if (Object.keys(rows).length > 0) {
 				var wait_time = new Date(rows[0].mission_time_end);
 				if (rows[0].wait == 1) {
@@ -47732,7 +47729,7 @@ function mainMenu(message) {
 					else if (phase == 3)
 						dayDesc = "Assalto Completato (" + toTime(diff) + ")";
 				}
-				var team_boost = await connection_sync.query('SELECT boost_id FROM team WHERE id = ' + rows[0].team_id);
+				var team_boost = await connection.queryAsync('SELECT boost_id FROM team WHERE id = ' + rows[0].team_id);
 				var team_boost_sym = "";
 				if (team_boost == 1)
 					team_boost_sym = " - 🥊";
@@ -47744,7 +47741,7 @@ function mainMenu(message) {
 					team_boost_sym = " - 💍";
 				msgtext += "\n🐺 " + dayDesc + team_boost_sym;
 
-				var rows = await connection_sync.query('SELECT APP.role, APP.team_id, APP.place_id, IFNULL(level,0) As level, time_end FROM assault_place_player_id APP LEFT JOIN assault_place_team APT ON APP.place_id = APT.place_id AND APT.team_id = APP.team_id WHERE APP.player_id = ' + player_id);
+				var rows = await connection.queryAsync('SELECT APP.role, APP.team_id, APP.place_id, IFNULL(level,0) As level, time_end FROM assault_place_player_id APP LEFT JOIN assault_place_team APT ON APP.place_id = APT.place_id AND APT.team_id = APP.team_id WHERE APP.player_id = ' + player_id);
 				if (Object.keys(rows).length > 0) {
 					var working = "";
 					var increm = "";
@@ -47754,11 +47751,11 @@ function mainMenu(message) {
 					}
 					var role = rows[0].role;
 					if ((phase == 2) && (role == 1)) {
-						var electedIncrem = await connection_sync.query("SELECT COUNT(id) As cnt FROM assault_place_miniboost WHERE team_id = " + rows[0].team_id);
+						var electedIncrem = await connection.queryAsync("SELECT COUNT(id) As cnt FROM assault_place_miniboost WHERE team_id = " + rows[0].team_id);
 						increm = " - " + electedIncrem[0].cnt + " 💢";
 					}
 					msgtext += " - " + assaultEmojiList[rows[0].place_id-1] + " Lv " + rows[0].level + working + increm;
-					var rows = await connection_sync.query("SELECT 1 FROM assault_place_miniboost WHERE team_id = " + rows[0].team_id + " AND player_id = " + player_id);
+					var rows = await connection.queryAsync("SELECT 1 FROM assault_place_miniboost WHERE team_id = " + rows[0].team_id + " AND player_id = " + player_id);
 					if ((Object.keys(rows).length > 0) && (role == 0))
 						msgtext += " 💢";
 				}
@@ -47768,7 +47765,7 @@ function mainMenu(message) {
 				if (err) throw err;
 				if (Object.keys(rows).length > 0) {
 					if (rows[0].killed == 1) {
-						var players = await connection_sync.query('SELECT COUNT(id) As cnt FROM map_lobby WHERE killed = 0 AND lobby_id = ' + rows[0].lobby_id);
+						var players = await connection.queryAsync('SELECT COUNT(id) As cnt FROM map_lobby WHERE killed = 0 AND lobby_id = ' + rows[0].lobby_id);
 						msgtext += "\n🗺 Partita terminata ⚰️ " + players[0].cnt + "/" + lobby_total_space;
 					} else if (rows[0].enemy_id != null) {
 						var turn = "a te!";
@@ -47797,9 +47794,9 @@ function mainMenu(message) {
 						}
 						msgtext += "\n🗺 Attesa mappa " + min + " minut" + plur + restrict_text;
 					} else if (rows[0].lobby_id != null) {
-						var lobby = await connection_sync.query('SELECT 1 FROM map_lobby_list WHERE lobby_id = ' + rows[0].lobby_id);
+						var lobby = await connection.queryAsync('SELECT 1 FROM map_lobby_list WHERE lobby_id = ' + rows[0].lobby_id);
 						if (Object.keys(lobby).length == 0) {
-							var wait = await connection_sync.query('SELECT COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id = ' + rows[0].lobby_id);
+							var wait = await connection.queryAsync('SELECT COUNT(lobby_id) As cnt FROM map_lobby WHERE lobby_id = ' + rows[0].lobby_id);
 							msgtext += "\n🗺 Lobby in attesa... " + wait[0].cnt + "/" + lobby_total_space + " giocatori";
 						} else {
 							var restrict_text = "";
@@ -47962,7 +47959,7 @@ function mainMenu(message) {
 												if (Object.keys(rows).length > 0) {
 													var allcomplete = 1;
 													for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-														var ach = await connection_sync.query('SELECT completed FROM achievement_status WHERE player_id = ' + player_id + ' AND achievement_id = ' + rows[i].achievement_id);
+														var ach = await connection.queryAsync('SELECT completed FROM achievement_status WHERE player_id = ' + player_id + ' AND achievement_id = ' + rows[i].achievement_id);
 														if (Object.keys(ach).length > 0) {
 															if (ach[0].completed == 1)
 																achievement += "✅ ";
@@ -47979,7 +47976,7 @@ function mainMenu(message) {
 													if (allcomplete == 1)
 														achievement = "🏁";
 
-													var ach_now = await connection_sync.query('SELECT name, progress, value, ROUND(progress/IF(multiply=0, value, value*GREATEST(' + reborn + ', limit_reborn))*100) As perc, multiply, limit_reborn FROM achievement_daily, achievement_list, achievement_status WHERE achievement_daily.achievement_id = achievement_list.id AND achievement_status.achievement_id = achievement_list.id AND player_id = ' + player_id + ' AND completed = 0 ORDER BY perc DESC');
+													var ach_now = await connection.queryAsync('SELECT name, progress, value, ROUND(progress/IF(multiply=0, value, value*GREATEST(' + reborn + ', limit_reborn))*100) As perc, multiply, limit_reborn FROM achievement_daily, achievement_list, achievement_status WHERE achievement_daily.achievement_id = achievement_list.id AND achievement_status.achievement_id = achievement_list.id AND player_id = ' + player_id + ' AND completed = 0 ORDER BY perc DESC');
 													var ach_line = "";
 													var reborn_ach = reborn;
 													if (Object.keys(ach_now).length > 0) {
@@ -48097,7 +48094,7 @@ function mainMenu(message) {
 																	msgtext = msgtext + "\n🍶 Produzione bevanda alle " + addZero(dragon.getHours()) + ":" + addZero(dragon.getMinutes());
 															}
 
-															var dragon = await connection_sync.query('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id);
+															var dragon = await connection.queryAsync('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id);
 
 															if (Object.keys(dragon).length > 0) {
 																if (dragon[0].combat == 1)
@@ -48117,7 +48114,7 @@ function mainMenu(message) {
 																			err = 1;
 																		if ((checkDragonTopOn == 1) && (err == 0)) {
 																			if (dragon_life > 0) {
-																				var dragon_status = await connection_sync.query('SELECT wait_time FROM dragon_top_status WHERE player_id = ' + player_id);
+																				var dragon_status = await connection.queryAsync('SELECT wait_time FROM dragon_top_status WHERE player_id = ' + player_id);
 																				if (dragon_status[0].wait_time != null) {
 																					var dragon_status_time = new Date(dragon_status[0].wait_time);
 																					msgtext = msgtext + "\n💤 Il drago riposa dopo uno scontro fino alle " + addZero(dragon_status_time.getHours()) + ":" + addZero(dragon_status_time.getMinutes());
@@ -49517,7 +49514,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 		var player_class = rows[0].class;
 
 		// per contare anche quelli in viaggio nelle subite
-		var limitProgress = await connection_sync.query("SELECT COUNT(id) As cnt FROM heist WHERE to_id = " + to_id);
+		var limitProgress = await connection.queryAsync("SELECT COUNT(id) As cnt FROM heist WHERE to_id = " + to_id);
 		heist_limit += limitProgress[0].cnt;
 
 		var match = {
@@ -50004,7 +50001,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 async function validTeamMember(team_id, player_id) {
 	return 1;
 
-	const rows = await connection_sync.query('SELECT P.id As player_id, T.kill_num, T.name, P.reborn, P.nickname, FLOOR(P.exp/10) As level FROM team T, team_player TP, player P WHERE T.id = TP.team_id AND TP.player_id = P.id AND T.id = ' + team_id + ' ORDER BY P.reborn, P.exp DESC');
+	const rows = await connection.queryAsync('SELECT P.id As player_id, T.kill_num, T.name, P.reborn, P.nickname, FLOOR(P.exp/10) As level FROM team T, team_player TP, player P WHERE T.id = TP.team_id AND TP.player_id = P.id AND T.id = ' + team_id + ' ORDER BY P.reborn, P.exp DESC');
 
 	var mediaTeam = 0;
 	for (var i = 0, len = Object.keys(rows).length; i < len; i++)
@@ -50674,7 +50671,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 				var today = new Date();
 				if ((eventFestival == 1) && (quantity > 1)) {
 					if ((today.getDay() == 6) || (today.getDay() == 0)) {
-						var item = await connection_sync.query('SELECT item_id, wait_time, completed FROM event_crafting_item ORDER BY id DESC LIMIT 1');
+						var item = await connection.queryAsync('SELECT item_id, wait_time, completed FROM event_crafting_item ORDER BY id DESC LIMIT 1');
 						if ((Object.keys(item).length > 0) && (item[0].item_id == matR) && (item[0].wait_time == null) && (item[0].completed == 0)) {
 							bot.sendMessage(message.chat.id, "Non puoi creare più copie dell'oggetto richiesto per il festival!", back);
 							return;
@@ -51069,14 +51066,14 @@ function setAchievementProgress(player_id, type) {
 };
 
 async function achievementDetail(player_id, chat_id, type, subtype, reward, msg) {
-	var rows = await connection_sync.query('SELECT COUNT(id) As cnt FROM achievement_progressive_status WHERE subtype = ' + subtype + ' AND type = ' + type + ' AND player_id = ' + player_id);
+	var rows = await connection.queryAsync('SELECT COUNT(id) As cnt FROM achievement_progressive_status WHERE subtype = ' + subtype + ' AND type = ' + type + ' AND player_id = ' + player_id);
 	if (Object.keys(rows).length > 0) {
 		if (rows[0].cnt == 0) {
 			bot.sendMessage(chat_id, msg + " e ottenuto <i>" + formatNumber(reward) + "</i> §!", html);
 			connection.query('UPDATE player SET money = money + ' + reward + ' WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			await connection_sync.query('INSERT INTO achievement_progressive_status (player_id, type, subtype) VALUES (' + player_id + ',' + type + ',' + subtype + ')');
+			await connection.queryAsync('INSERT INTO achievement_progressive_status (player_id, type, subtype) VALUES (' + player_id + ',' + type + ',' + subtype + ')');
 		}
 	}
 };
@@ -51851,7 +51848,7 @@ bot.onText(/refreshMerchant/i, function (message, match) {
 });
 
 async function merchantPrice(item_id) {
-	const rows = await connection_sync.query('SELECT id, base_sum, price_sum, name, value FROM item WHERE id = ' + item_id);
+	const rows = await connection.queryAsync('SELECT id, base_sum, price_sum, name, value FROM item WHERE id = ' + item_id);
 
 	var val = parseInt(rows[0].base_sum);
 	var price_sum = parseInt(rows[0].price_sum);
@@ -52167,14 +52164,14 @@ function gnomorraGame(player_id, enemy_player_id, type) {
 												// nulla perchè la partita non è terminata
 
 												if (win == 1) {
-													await connection_sync.query('UPDATE event_gnomorra SET round_sel = 0, round_win = round_win+1 WHERE player_id = ' + player_id);
-													await connection_sync.query('UPDATE event_gnomorra SET round_sel = 0 WHERE player_id = ' + enemy_player_id);
+													await connection.queryAsync('UPDATE event_gnomorra SET round_sel = 0, round_win = round_win+1 WHERE player_id = ' + player_id);
+													await connection.queryAsync('UPDATE event_gnomorra SET round_sel = 0 WHERE player_id = ' + enemy_player_id);
 												} else if (win == 2) {
-													await connection_sync.query('UPDATE event_gnomorra SET round_sel = 0 WHERE player_id = ' + player_id);
-													await connection_sync.query('UPDATE event_gnomorra SET round_sel = 0, round_win = round_win+1 WHERE player_id = ' + enemy_player_id);
+													await connection.queryAsync('UPDATE event_gnomorra SET round_sel = 0 WHERE player_id = ' + player_id);
+													await connection.queryAsync('UPDATE event_gnomorra SET round_sel = 0, round_win = round_win+1 WHERE player_id = ' + enemy_player_id);
 												} else {
-													await connection_sync.query('UPDATE event_gnomorra SET round_sel = 0 WHERE player_id = ' + player_id);
-													await connection_sync.query('UPDATE event_gnomorra SET round_sel = 0 WHERE player_id = ' + enemy_player_id);
+													await connection.queryAsync('UPDATE event_gnomorra SET round_sel = 0 WHERE player_id = ' + player_id);
+													await connection.queryAsync('UPDATE event_gnomorra SET round_sel = 0 WHERE player_id = ' + enemy_player_id);
 												}
 
 												gnomorraGame(player_id, enemy_player_id, type);
@@ -52353,7 +52350,7 @@ async function getTeamMembers(answerText) {
 		query = '= "' + answerText + '"';
 	}
 
-	var rows = await connection_sync.query('SELECT id, name, players, max_players, slogan, boss_count, kill_num, child_team FROM team WHERE name ' + query);
+	var rows = await connection.queryAsync('SELECT id, name, players, max_players, slogan, boss_count, kill_num, child_team FROM team WHERE name ' + query);
 	var search1 = Object.keys(rows).length;
 	var res1 = rows;
 
@@ -52364,7 +52361,7 @@ async function getTeamMembers(answerText) {
 			terms += rows[i].name + "\n";
 	}
 
-	var rows = await connection_sync.query('SELECT id, name, players, max_players, slogan, boss_count, kill_num, story, child_team FROM team WHERE name LIKE "' + answerText + '"');
+	var rows = await connection.queryAsync('SELECT id, name, players, max_players, slogan, boss_count, kill_num, story, child_team FROM team WHERE name LIKE "' + answerText + '"');
 
 	var search2 = Object.keys(rows).length;
 	var res2 = rows;
@@ -52392,7 +52389,7 @@ async function getTeamMembers(answerText) {
 	var child_id = rows[0].child_team;
 	var child_team = "";
 	if (rows[0].child_team != null) {
-		var child = await connection_sync.query("SELECT name FROM team WHERE id = " + rows[0].child_team);
+		var child = await connection.queryAsync("SELECT name FROM team WHERE id = " + rows[0].child_team);
 		child_team = "<b>Accademia</b>: " + child[0].name + "\n";
 	}
 
@@ -52402,7 +52399,7 @@ async function getTeamMembers(answerText) {
 
 	var text = "Il team <b>" + team_name + "</b>:\n" + slogan + child_team + "<b>Boss uccisi</b>: " + formatNumber(rows[0].boss_count) + "\n<b>Assalti</b>: " + rows[0].kill_num + "\n<b>Membri</b>: " + rows[0].players + "/" + rows[0].max_players + "\n\n";
 
-	var rows = await connection_sync.query('SELECT player.nickname, player.reborn, player.exp, team_player.role FROM team_player, player WHERE player.id = team_player.player_id AND team_id = ' + team_id + ' ORDER BY team_player.role = 0, team_player.role, player.reborn DESC, player.exp DESC');
+	var rows = await connection.queryAsync('SELECT player.nickname, player.reborn, player.exp, team_player.role FROM team_player, player WHERE player.id = team_player.player_id AND team_id = ' + team_id + ' ORDER BY team_player.role = 0, team_player.role, player.reborn DESC, player.exp DESC');
 	var stars = "";
 	var admin = "";
 	for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
@@ -52424,7 +52421,7 @@ async function getTeamMembers(answerText) {
 	var main_cnt = 0;
 	var main_id = team_id;
 	while (end == 0) {
-		main = await connection_sync.query('SELECT id FROM team WHERE child_team = ' + main_id);
+		main = await connection.queryAsync('SELECT id FROM team WHERE child_team = ' + main_id);
 		if (Object.keys(main).length == 0)
 			end = 1;
 		else {
@@ -52447,7 +52444,7 @@ async function getTeamMembers(answerText) {
 	var first_child = null;
 	var child_id = main_id;
 	while (end == 0) {
-		acc = await connection_sync.query('SELECT id, name, child_team FROM team WHERE id = ' + child_id);
+		acc = await connection.queryAsync('SELECT id, name, child_team FROM team WHERE id = ' + child_id);
 		if (Object.keys(acc).length == 0)
 			end = 1;
 		else {
@@ -52610,11 +52607,11 @@ async function applyMagic(team_id, magic_type, magic_power, damage) {
 	if (magic_type == 1) {
 		magic_name = magicToName(1);
 		magic_effect = magicDesc(1, magic_turn);
-		await connection_sync.query("UPDATE assault SET team_reduce = " + (magic_turn*2) + " WHERE team_id = " + team_id);
+		await connection.queryAsync("UPDATE assault SET team_reduce = " + (magic_turn*2) + " WHERE team_id = " + team_id);
 	} else if (magic_type == 2) {
 		magic_name = magicToName(2);
 		magic_effect = magicDesc(2, magic_turn);
-		await connection_sync.query("UPDATE assault SET mob_paralyzed = " + magic_turn + " WHERE team_id = " + team_id);
+		await connection.queryAsync("UPDATE assault SET mob_paralyzed = " + magic_turn + " WHERE team_id = " + team_id);
 	} else if (magic_type == 3) {
 		magic_name = magicToName(3);
 		magic_effect = magicDesc(3, damage);
@@ -52622,7 +52619,7 @@ async function applyMagic(team_id, magic_type, magic_power, damage) {
 	} else if (magic_type == 4) {
 		magic_name = magicToName(4);
 		magic_effect = magicDesc(4, magic_turn, 1);
-		await connection_sync.query("UPDATE assault SET team_critic = " + magic_turn + " WHERE team_id = " + team_id);
+		await connection.queryAsync("UPDATE assault SET team_critic = " + magic_turn + " WHERE team_id = " + team_id);
 	}
 
 	return [magic_name, magic_effect, damage];
@@ -52632,7 +52629,7 @@ async function finalMagic1(team_id, magic_power) {
 	var magic_turn = Math.round(magic_power/100)+2;
 	var magic_name = magicToName(1);
 	var magic_effect = magicDesc(1, magic_turn);
-	await connection_sync.query("UPDATE assault SET team_reduce = " + magic_turn + " WHERE team_id = " + team_id);
+	await connection.queryAsync("UPDATE assault SET team_reduce = " + magic_turn + " WHERE team_id = " + team_id);
 
 	return [magic_name, magic_effect];
 }
@@ -52641,7 +52638,7 @@ async function finalMagic2(team_id, magic_power) {
 	var magic_turn = Math.round(magic_power/100);
 	var magic_name = magicToName(2);
 	var magic_effect = magicDesc(2, magic_turn);
-	await connection_sync.query("UPDATE assault SET mob_paralyzed = " + magic_turn + " WHERE team_id = " + team_id);
+	await connection.queryAsync("UPDATE assault SET mob_paralyzed = " + magic_turn + " WHERE team_id = " + team_id);
 
 	return [magic_name, magic_effect];
 }
@@ -52659,7 +52656,7 @@ async function finalMagic4(team_id, magic_power) {
 	var magic_turn = Math.round(magic_power/100);
 	var magic_name = magicToName(4);
 	var magic_effect = magicDesc(4, magic_turn, 2);
-	await connection_sync.query("UPDATE assault SET team_critic = " + magic_turn + " WHERE team_id = " + team_id);
+	await connection.queryAsync("UPDATE assault SET team_critic = " + magic_turn + " WHERE team_id = " + team_id);
 
 	return [magic_name, magic_effect];
 }
@@ -52818,7 +52815,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 									capsule = 0;
 									paView = paPnt;
 
-									var ability = await connection_sync.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + rows[i].id + ' AND ability_id = 12');
+									var ability = await connection.queryAsync('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + rows[i].id + ' AND ability_id = 12');
 
 									// calcoli ricompense
 									money = 100000*(1+boss_num)
@@ -52988,38 +52985,38 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 									}
 
 									if ((is_boss == 0) && (rows[i].reborn > 2)) {
-										var card = await connection_sync.query('SELECT id, rarity FROM card_list WHERE name = "' + mob_name + '"');
+										var card = await connection.queryAsync('SELECT id, rarity FROM card_list WHERE name = "' + mob_name + '"');
 										if (Object.keys(card).length == 0) {
 											var randVal = Math.random()*100;
 											if (randVal < 50) {
 												var card_rarity = generateCardRarity();
-												var max = await connection_sync.query('SELECT MAX(id) As mx FROM card_list');
+												var max = await connection.queryAsync('SELECT MAX(id) As mx FROM card_list');
 												var new_id = (max[0].mx+1);
 												if (new_id > 5000) {
 													// console.log("Limite 5000 figurine raggiunto, salto la creazione di nuove");
 												} else {
-													await connection_sync.query('INSERT INTO card_list (id, name, rarity) VALUES (' + new_id + ', "' + mob_name + '", ' + card_rarity + ')');
+													await connection.queryAsync('INSERT INTO card_list (id, name, rarity) VALUES (' + new_id + ', "' + mob_name + '", ' + card_rarity + ')');
 													console.log("Figurina creata: " + mob_name + " (" + card_rarity + ") [" + new_id + "] da utente " + rows[i].id);
 
-													await connection_sync.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + rows[i].id + ', ' + new_id + ')');
+													await connection.queryAsync('INSERT INTO card_inventory (player_id, card_id) VALUES (' + rows[i].id + ', ' + new_id + ')');
 
 													bot.sendMessage(rows[i].chat_id, "Hai creato ed ottenuto la figurina 🃏 *" + mob_name + " (" + card_rarity + ")*! Creane altre per ampliare la collezione!", mark);
 												}
 											}
 										} else {
-											var tot = await connection_sync.query('SELECT COUNT(id) As cnt FROM card_list');
-											var have_tot = await connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE quantity > 0 AND player_id = ' + rows[i].id);
+											var tot = await connection.queryAsync('SELECT COUNT(id) As cnt FROM card_list');
+											var have_tot = await connection.queryAsync('SELECT COUNT(id) As cnt FROM card_inventory WHERE quantity > 0 AND player_id = ' + rows[i].id);
 
 											var randVal = Math.random()*100;
 											var prob = (100-card[0].rarity*10)*0.5;	// 1 => 45, 9 => 5
 											if (prob == 0)
 												prob = 1;
 											if (randVal < prob) {
-												var have = await connection_sync.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE player_id = ' + rows[i].id + ' AND card_id = ' + card[0].id);
+												var have = await connection.queryAsync('SELECT COUNT(id) As cnt FROM card_inventory WHERE player_id = ' + rows[i].id + ' AND card_id = ' + card[0].id);
 												if (have[0].cnt == 0)
-													await connection_sync.query('INSERT INTO card_inventory (player_id, card_id, quantity) VALUES (' + rows[i].id + ', ' + card[0].id + ', 1)');
+													await connection.queryAsync('INSERT INTO card_inventory (player_id, card_id, quantity) VALUES (' + rows[i].id + ', ' + card[0].id + ', 1)');
 												else
-													await connection_sync.query('UPDATE card_inventory SET quantity = quantity+1 WHERE player_id = ' + rows[i].id + ' AND card_id = ' + card[0].id);
+													await connection.queryAsync('UPDATE card_inventory SET quantity = quantity+1 WHERE player_id = ' + rows[i].id + ' AND card_id = ' + card[0].id);
 												// console.log("Figurina ottenuta: " + mob_name);
 
 												bot.sendMessage(rows[i].chat_id, "Hai trovato la figurina 🃏 *" + mob_name + " (" + card[0].rarity + ")*! Ne possiedi " + (have_tot[0].cnt+1) + "/" + tot[0].cnt, mark);
@@ -53117,14 +53114,14 @@ async function playerKilled(team_id, player_id, place_id, is_boss) {
 	connection.query("UPDATE player SET death_count = death_count+1 WHERE id = " + player_id, function (err, rows, fields) {
 		if (err) throw err;
 	});
-	await connection_sync.query("UPDATE assault_place_player_id SET killed = 1 WHERE player_id = " + player_id);
+	await connection.queryAsync("UPDATE assault_place_player_id SET killed = 1 WHERE player_id = " + player_id);
 	var rand = Math.random()*100;
 	var prob = 20;
 	if (((is_boss == 0) && (rand <= prob)) || ((is_boss == 1) && (rand <= (prob+30)))) {
-		var rows = await connection_sync.query("SELECT level, active FROM assault_place_team WHERE place_id = " + place_id + " AND team_id = " + team_id);
+		var rows = await connection.queryAsync("SELECT level, active FROM assault_place_team WHERE place_id = " + place_id + " AND team_id = " + team_id);
 		if ((rows[0].level > 1) && (rows[0].active == 1)) {
-			await connection_sync.query("UPDATE assault_place_team SET level = level-1 WHERE level > 1 AND place_id = " + place_id + " AND team_id = " + team_id);
-			var rows = await connection_sync.query("SELECT id, name FROM assault_place WHERE id = " + place_id);
+			await connection.queryAsync("UPDATE assault_place_team SET level = level-1 WHERE level > 1 AND place_id = " + place_id + " AND team_id = " + team_id);
+			var rows = await connection.queryAsync("SELECT id, name FROM assault_place WHERE id = " + place_id);
 			return "\nLa postazione " + assaultEmojiList[rows[0].id-1] + " <b>" + rows[0].name + "</b> è retrocessa di un livello!";
 		}
 	}
@@ -53132,7 +53129,7 @@ async function playerKilled(team_id, player_id, place_id, is_boss) {
 }
 
 async function checkAllKilled(team_id) {
-	var players = await connection_sync.query("SELECT 1 FROM assault_place_player_id WHERE killed = 0 AND place_id IN (5,3,4,1,6) AND team_id = " + team_id);
+	var players = await connection.queryAsync("SELECT 1 FROM assault_place_player_id WHERE killed = 0 AND place_id IN (5,3,4,1,6) AND team_id = " + team_id);
 	if (Object.keys(players).length == 0)
 		return 1;
 	else
@@ -53344,7 +53341,7 @@ async function getPlayerCritics(player_id, weapon_crit, weapon2_crit, weapon3_cr
 		critical_shield += 2;
 	}
 
-	var rows = await connection_sync.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 1');
+	var rows = await connection.queryAsync('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 1');
 
 	if (Object.keys(rows).length > 0) {
 		abBonus = rows[0].ability_level * rows[0].val;
@@ -53363,16 +53360,16 @@ async function getPlayerDragon(player_id, class_id, reborn, charm_id) {
 	var critical = 0;
 	var combat = 0;
 
-	var combat_query = await connection_sync.query('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id);
+	var combat_query = await connection.queryAsync('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id);
 	if (Object.keys(combat_query).length > 0)
 		combat = combat_query[0].combat;
 
-	var power_dragon = await connection_sync.query('SELECT power_dragon_dmg, power_dragon_def, power_dragon_crit FROM player WHERE id = ' + player_id);
+	var power_dragon = await connection.queryAsync('SELECT power_dragon_dmg, power_dragon_def, power_dragon_crit FROM player WHERE id = ' + player_id);
 	var power_dragon_dmg = power_dragon[0].power_dragon_dmg;
 	var power_dragon_def = power_dragon[0].power_dragon_def;
 	var power_dragon_crit = power_dragon[0].power_dragon_crit;
 
-	var rows = await connection_sync.query('SELECT damage, critical, defence, claws, saddle, life, sleep_h FROM dragon WHERE player_id = ' + player_id);
+	var rows = await connection.queryAsync('SELECT damage, critical, defence, claws, saddle, life, sleep_h FROM dragon WHERE player_id = ' + player_id);
 	if ((Object.keys(rows).length > 0) && (combat == 0)) {
 		if ((rows[0].life > 0) || ((rows[0].life == 0) && (rows[0].sleep_h > 0))) {
 			if ((class_id == 7) && (reborn > 1)) {
@@ -53437,7 +53434,7 @@ function truncate(text, maxlen) {
 }
 
 async function idToClass(classId) {
-	const rows = await connection_sync.query("SELECT name FROM class WHERE id = " + classId);
+	const rows = await connection.queryAsync("SELECT name FROM class WHERE id = " + classId);
 	return rows[0].name;
 }
 
@@ -53950,13 +53947,13 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 		var enemy;
 		var updateEnemy = 0;
 		if (rows[0].enemy_id != null)
-			enemy = await connection_sync.query('SELECT M.player_id, P.chat_id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND player_id = ' + rows[0].enemy_id);	// sono io il player_id
+			enemy = await connection.queryAsync('SELECT M.player_id, P.chat_id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND player_id = ' + rows[0].enemy_id);	// sono io il player_id
 		else
-			enemy = await connection_sync.query('SELECT M.player_id, P.chat_id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND enemy_id = ' + player_id);	// sono io l'enemy_id
+			enemy = await connection.queryAsync('SELECT M.player_id, P.chat_id, M.posX, M.posY FROM map_lobby M, player P WHERE M.player_id = P.id AND enemy_id = ' + player_id);	// sono io l'enemy_id
 		if (Object.keys(enemy).length > 0) {
 			// sync perchè sotto viene reinterrogato
 			// Assegno uccisione all'enemy
-			await connection_sync.query('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_turn_start = NULL, battle_time_elapsed = 0, battle_turn_lost = 0, battle_turn_active = 0, battle_shield = 0, battle_heavy = 0, battle_stunned = 0 WHERE player_id = ' + enemy[0].player_id);
+			await connection.queryAsync('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_turn_start = NULL, battle_time_elapsed = 0, battle_turn_lost = 0, battle_turn_active = 0, battle_shield = 0, battle_heavy = 0, battle_stunned = 0 WHERE player_id = ' + enemy[0].player_id);
 			enemy_pos_x = enemy[0].posX;
 			enemy_pos_y = enemy[0].posY;
 			enemy_id = enemy[0].player_id;
@@ -54002,7 +53999,7 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 				var lobby_training = rows[0].lobby_training;
 
 				if ((updateEnemy == 1) && (lobby_training == 0)){
-					await connection_sync.query('UPDATE map_lobby SET battle_time_elapsed = 0, match_kills = match_kills+1, global_kills = global_kills+1 WHERE player_id = ' + enemy_id);
+					await connection.queryAsync('UPDATE map_lobby SET battle_time_elapsed = 0, match_kills = match_kills+1, global_kills = global_kills+1 WHERE player_id = ' + enemy_id);
 				}
 
 				connection.query('SELECT COUNT(id) As cnt FROM map_history WHERE map_lobby_id = ' + map_lobby_id,  function (err, rows, fields) {
@@ -54900,11 +54897,11 @@ async function reloadAchievement() {
 	let map_query = "(0, 1)";
 	if (checkDragonTopOn == 1) map_query = "(0)";
 
-	const newAchievements = await connection_sync.query('SELECT id, name, item_rarity, type FROM (SELECT * FROM achievement_list WHERE enabled = 1 AND only_map IN ' + map_query + ' ORDER BY RAND()) as t WHERE id NOT IN (SELECT achievement_id FROM achievement_daily) GROUP BY type ORDER BY RAND() LIMIT 3')
+	const newAchievements = await connection.queryAsync('SELECT id, name, item_rarity, type FROM (SELECT * FROM achievement_list WHERE enabled = 1 AND only_map IN ' + map_query + ' ORDER BY RAND()) as t WHERE id NOT IN (SELECT achievement_id FROM achievement_daily) GROUP BY type ORDER BY RAND() LIMIT 3')
 
 	// Clear current daily achievement and statuses
-	await connection_sync.query('DELETE FROM achievement_daily')
-	await connection_sync.query('DELETE FROM achievement_status')
+	await connection.queryAsync('DELETE FROM achievement_daily')
+	await connection.queryAsync('DELETE FROM achievement_status')
 
 	for (var i = 0, len = Object.keys(newAchievements).length; i < len; i++) {
 		const rarity = newAchievements[i].item_rarity;
@@ -54912,10 +54909,10 @@ async function reloadAchievement() {
 		const type = newAchievements[i].type;
 
 		if ((rarity != 0) && (type == 12)) {
-			const newDailys = await connection_sync.query('SELECT item.id FROM item, rarity WHERE rarity.shortname = item.rarity AND rarity.id = ' + rarity + ' AND craftable = 1 ORDER BY RAND()')
-			await connection_sync.query('INSERT INTO achievement_daily (id, achievement_id, item_id) VALUES (' + (i + 1) + ',' + id + ',' + newDailys[0].id + ')')
+			const newDailys = await connection.queryAsync('SELECT item.id FROM item, rarity WHERE rarity.shortname = item.rarity AND rarity.id = ' + rarity + ' AND craftable = 1 ORDER BY RAND()')
+			await connection.queryAsync('INSERT INTO achievement_daily (id, achievement_id, item_id) VALUES (' + (i + 1) + ',' + id + ',' + newDailys[0].id + ')')
 		} else {
-			await connection_sync.query('INSERT INTO achievement_daily (id, achievement_id, item_id) VALUES (' + (i + 1) + ',' + id + ',' + rarity + ')')
+			await connection.queryAsync('INSERT INTO achievement_daily (id, achievement_id, item_id) VALUES (' + (i + 1) + ',' + id + ',' + rarity + ')')
 		}
 	}
 };
@@ -55480,17 +55477,17 @@ async function endDungeonRoom(player_id, boost_id, boost_mission) {
 }
 
 async function reduceDungeonEnergy(player_id, quantity) {
-	var player = await connection_sync.query('SELECT dungeon_energy FROM player WHERE id = ' + player_id);
+	var player = await connection.queryAsync('SELECT dungeon_energy FROM player WHERE id = ' + player_id);
 	if (player[0].dungeon_energy < quantity)
 		quantity = player[0].dungeon_energy;
-	await connection_sync.query('UPDATE player SET dungeon_energy = dungeon_energy-' + quantity + ' WHERE id = ' + player_id);
+	await connection.queryAsync('UPDATE player SET dungeon_energy = dungeon_energy-' + quantity + ' WHERE id = ' + player_id);
 }
 
 async function addDungeonEnergy(player_id, quantity) {
-	var player = await connection_sync.query('SELECT dungeon_energy FROM player WHERE id = ' + player_id);
+	var player = await connection.queryAsync('SELECT dungeon_energy FROM player WHERE id = ' + player_id);
 	if (player[0].dungeon_energy+quantity > max_dungeon_energy)
 		quantity = max_dungeon_energy-player[0].dungeon_energy;
-	await connection_sync.query('UPDATE player SET dungeon_energy = dungeon_energy+' + quantity + ' WHERE id = ' + player_id);
+	await connection.queryAsync('UPDATE player SET dungeon_energy = dungeon_energy+' + quantity + ' WHERE id = ' + player_id);
 }
 
 function refreshManaBoost() {
@@ -55782,9 +55779,9 @@ async function dragonDummyStart(top_id, chat_id, my_rank, dragon_id, player_id, 
 	d.setMinutes(d.getMinutes() + 20);
 	var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-	var name_list = await connection_sync.query("SELECT name FROM dragon_name_list ORDER BY RAND()");
+	var name_list = await connection.queryAsync("SELECT name FROM dragon_name_list ORDER BY RAND()");
 	var dummy_name = name_list[0].name;
-	var mid_lev = await connection_sync.query("SELECT AVG(D.level) As lev FROM dragon_top_status S, dragon D WHERE S.dragon_id = D.id AND S.top_id = " + top_id + " AND S.is_dummy = 0");
+	var mid_lev = await connection.queryAsync("SELECT AVG(D.level) As lev FROM dragon_top_status S, dragon D WHERE S.dragon_id = D.id AND S.top_id = " + top_id + " AND S.is_dummy = 0");
 	mid_lev = Math.round(mid_lev[0].lev);
 	var tmp = my_level > mid_lev ? (my_level+mid_lev)/2 : mid_lev;
 	var min = tmp - 5;
@@ -55806,16 +55803,16 @@ async function dragonDummyStart(top_id, chat_id, my_rank, dragon_id, player_id, 
 		equip_rarity = "'E','UE'";
 	else
 		equip_rarity = "'UE'";
-	var claws_list = await connection_sync.query("SELECT id, dragon_power FROM item WHERE name LIKE 'Artigli %' AND rarity IN (" + equip_rarity + ") ORDER BY RAND()");
+	var claws_list = await connection.queryAsync("SELECT id, dragon_power FROM item WHERE name LIKE 'Artigli %' AND rarity IN (" + equip_rarity + ") ORDER BY RAND()");
 	var dummy_claws_id = claws_list[0].id;
 	var dummy_claws = claws_list[0].dragon_power;
-	var saddle_list = await connection_sync.query("SELECT id, dragon_power FROM item WHERE name LIKE 'Sella %' AND rarity IN (" + equip_rarity + ") ORDER BY RAND()");
+	var saddle_list = await connection.queryAsync("SELECT id, dragon_power FROM item WHERE name LIKE 'Sella %' AND rarity IN (" + equip_rarity + ") ORDER BY RAND()");
 	var dummy_saddle_id = saddle_list[0].id;
 	var dummy_saddle = Math.abs(claws_list[0].dragon_power);
 	var arms_list = 0;
 	var dummy_arms_id = 0;
 	if (dummy_level > 150) {
-		arms_list = await connection_sync.query("SELECT id FROM item WHERE name LIKE 'Stemma %' AND rarity = 'UE' ORDER BY RAND()");
+		arms_list = await connection.queryAsync("SELECT id FROM item WHERE name LIKE 'Stemma %' AND rarity = 'UE' ORDER BY RAND()");
 		dummy_arms_id = arms_list[0].id;
 	}
 	var dummy_evolved = 0;
@@ -57201,7 +57198,7 @@ function setFinishedAssaults(element, index, array) {
 			//console.log("Team " + team_id + " Fase 1 -> 2");
 
 			// pulizia postazioni vuote ma costruite
-			var place = await connection_sync.query('SELECT AP.name, APT.level, APT.place_id, (SELECT COUNT(id) FROM assault_place_player_id WHERE place_id = APT.place_id AND team_id = ' + team_id + ') As players FROM assault_place_team APT, assault_place AP WHERE APT.place_id = AP.id AND team_id = ' + team_id + ' AND level > 0 HAVING players = 0');
+			var place = await connection.queryAsync('SELECT AP.name, APT.level, APT.place_id, (SELECT COUNT(id) FROM assault_place_player_id WHERE place_id = APT.place_id AND team_id = ' + team_id + ') As players FROM assault_place_team APT, assault_place AP WHERE APT.place_id = AP.id AND team_id = ' + team_id + ' AND level > 0 HAVING players = 0');
 
 			if (Object.keys(place).length > 0) {
 				text += "Le seguenti postazioni sono state distrutte perchè lasciate incustodite:\n";
@@ -57233,7 +57230,7 @@ function setFinishedAssaults(element, index, array) {
 			}
 
 			// pulizia postazioni piene ma non costruite
-			var place = await connection_sync.query('SELECT AP.name, APT.level, APT.place_id, (SELECT COUNT(id) FROM assault_place_player_id WHERE place_id = APT.place_id AND team_id = ' + team_id + ') As players FROM assault_place_team APT, assault_place AP WHERE APT.place_id = AP.id AND team_id = ' + team_id + ' AND level = 0 HAVING players > 0');
+			var place = await connection.queryAsync('SELECT AP.name, APT.level, APT.place_id, (SELECT COUNT(id) FROM assault_place_player_id WHERE place_id = APT.place_id AND team_id = ' + team_id + ') As players FROM assault_place_team APT, assault_place AP WHERE APT.place_id = AP.id AND team_id = ' + team_id + ' AND level = 0 HAVING players > 0');
 
 			if (Object.keys(place).length > 0) {
 				text += "Le seguenti postazioni sono state distrutte perchè occupate ma non costruite:\n";
@@ -57252,9 +57249,9 @@ function setFinishedAssaults(element, index, array) {
 				text += "\n";
 			}
 
-			var elected = await connection_sync.query('SELECT player_id FROM assault_place_player_id WHERE role = 1 AND team_id = ' + team_id);
+			var elected = await connection.queryAsync('SELECT player_id FROM assault_place_player_id WHERE role = 1 AND team_id = ' + team_id);
 			if (Object.keys(elected).length == 0) {
-				var player = await connection_sync.query('SELECT P.id, P.nickname FROM player P, assault_place_player_id AP WHERE P.id = AP.player_id AND team_id = ' + team_id + ' ORDER BY reborn DESC, exp DESC, RAND()');
+				var player = await connection.queryAsync('SELECT P.id, P.nickname FROM player P, assault_place_player_id AP WHERE P.id = AP.player_id AND team_id = ' + team_id + ' ORDER BY reborn DESC, exp DESC, RAND()');
 
 				if (Object.keys(player).length > 0) {
 					var nickname = player[0].nickname;
@@ -57272,7 +57269,7 @@ function setFinishedAssaults(element, index, array) {
 					assaultEnd(team_id);
 				}
 			} else {
-				var player = await connection_sync.query('SELECT id, nickname FROM player WHERE id = ' + elected[0].player_id);
+				var player = await connection.queryAsync('SELECT id, nickname FROM player WHERE id = ' + elected[0].player_id);
 
 				var nickname = player[0].nickname;
 			}
@@ -57305,7 +57302,7 @@ function setFinishedAssaults(element, index, array) {
 			//console.log("Team " + team_id + " Fase 3 -> Fase 1");
 			generateMobWeakness(team_id, 4);
 
-			var regen = await connection_sync.query('SELECT team_id, place_id, level FROM assault_place_team WHERE team_id = ' + team_id);
+			var regen = await connection.queryAsync('SELECT team_id, place_id, level FROM assault_place_team WHERE team_id = ' + team_id);
 			if (Object.keys(regen).length > 0) {
 				//console.log("Rigenerazione requisiti postazione in base ai livelli attuali per team " + team_id);
 				for (var i = 0, len = Object.keys(regen).length; i < len; i++)
@@ -57351,11 +57348,11 @@ async function setFinishedAssaultsMob(element, index, array) {
 	var mob_name;
 	var is_boss;
 
-	var team = await connection_sync.query('SELECT players, boss_count FROM team WHERE id = ' + team_id);		
+	var team = await connection.queryAsync('SELECT players, boss_count FROM team WHERE id = ' + team_id);		
 	var team_players = team[0].players;
 	var boss_count = team[0].boss_count;
 
-	var boss = await connection_sync.query('SELECT name, total_life FROM boss WHERE id = ' + boss_num);
+	var boss = await connection.queryAsync('SELECT name, total_life FROM boss WHERE id = ' + boss_num);
 	var mob_life = boss[0].total_life*(Math.sqrt(boss_count+1));
 	mob_life = mob_life*0.8;
 
@@ -57407,7 +57404,7 @@ function checkAssaultsItem() {
 };
 
 async function regenItems(team_id, place_id, level) {
-	await connection_sync.query('DELETE FROM assault_place_item WHERE team_id = ' + team_id + ' AND place_id = ' + place_id);
+	await connection.queryAsync('DELETE FROM assault_place_item WHERE team_id = ' + team_id + ' AND place_id = ' + place_id);
 	if (place_id == 6) {
 		var itemId = [68,69,70,71,72,73];
 		var itemQuantity = [0,0,0,0,0,0];
@@ -57434,7 +57431,7 @@ async function regenItems(team_id, place_id, level) {
 
 		for (var j = 0; j < Object.keys(itemId).length; j++) {
 			if (itemQuantity[j] > 0)
-				await connection_sync.query("INSERT INTO assault_place_item (team_id, place_id, item_id, quantity) VALUES (" + team_id + "," + place_id + "," + itemId[j] + "," + itemQuantity[j] + ")");
+				await connection.queryAsync("INSERT INTO assault_place_item (team_id, place_id, item_id, quantity) VALUES (" + team_id + "," + place_id + "," + itemId[j] + "," + itemQuantity[j] + ")");
 		}
 	} else if (place_id == 7) {
 		var rarityName = ["NC","R","UR","L","E"];
@@ -57463,11 +57460,11 @@ async function regenItems(team_id, place_id, level) {
 		var items;
 		var quantity = 0;
 		for (var k = 0; k < rarityQuantity.length; k++) {
-			items = await connection_sync.query("SELECT id FROM item WHERE rarity = '" + rarityName[k] + "' AND cons = 0 AND craftable = 1 AND ((power > 0 OR power_armor < 0 OR power_shield < 0) AND dragon_power = 0) AND cons = 0 AND id NOT IN (SELECT item_id FROM assault_place_item WHERE team_id = " + team_id + " AND place_id = " + place_id + ") ORDER BY RAND() LIMIT " + rarityQuantity[k]);
+			items = await connection.queryAsync("SELECT id FROM item WHERE rarity = '" + rarityName[k] + "' AND cons = 0 AND craftable = 1 AND ((power > 0 OR power_armor < 0 OR power_shield < 0) AND dragon_power = 0) AND cons = 0 AND id NOT IN (SELECT item_id FROM assault_place_item WHERE team_id = " + team_id + " AND place_id = " + place_id + ") ORDER BY RAND() LIMIT " + rarityQuantity[k]);
 			//quantity = Math.round(((rarityQuantity.length+1)-i)/2)+player_num; // ipoteticamente max 6, min 3
 			quantity = Math.round(Math.random()*2+2);
 			for (var j = 0; j < Object.keys(items).length; j++)
-				await connection_sync.query("INSERT INTO assault_place_item (team_id, place_id, item_id, quantity) VALUES (" + team_id + "," + place_id + "," + items[j].id + "," + quantity + ")");
+				await connection.queryAsync("INSERT INTO assault_place_item (team_id, place_id, item_id, quantity) VALUES (" + team_id + "," + place_id + "," + items[j].id + "," + quantity + ")");
 		}
 	} else if (place_id == 8) {
 		var rarityName = ["L","E"];
@@ -57496,11 +57493,11 @@ async function regenItems(team_id, place_id, level) {
 		var items;
 		var quantity = 0;
 		for (var k = 0; k < rarityQuantity.length; k++) {
-			items = await connection_sync.query("SELECT id FROM item WHERE rarity = '" + rarityName[k] + "' AND cons = 0 AND craftable = 1 AND power = 0 AND power_armor = 0 AND power_shield = 0 AND dragon_power = 0 AND name NOT LIKE 'Talismano%' AND id NOT IN (SELECT item_id FROM assault_place_item WHERE team_id = " + team_id + " AND place_id = " + place_id + ") ORDER BY RAND() LIMIT " + rarityQuantity[k]);
+			items = await connection.queryAsync("SELECT id FROM item WHERE rarity = '" + rarityName[k] + "' AND cons = 0 AND craftable = 1 AND power = 0 AND power_armor = 0 AND power_shield = 0 AND dragon_power = 0 AND name NOT LIKE 'Talismano%' AND id NOT IN (SELECT item_id FROM assault_place_item WHERE team_id = " + team_id + " AND place_id = " + place_id + ") ORDER BY RAND() LIMIT " + rarityQuantity[k]);
 			//quantity = Math.round(((rarityQuantity.length+1)-i)/2)+player_num; // ipoteticamente max 6, min 3
 			quantity = Math.round(Math.random()*2+2);
 			for (var j = 0; j < Object.keys(items).length; j++)
-				await connection_sync.query("INSERT INTO assault_place_item (team_id, place_id, item_id, quantity) VALUES (" + team_id + "," + place_id + "," + items[j].id + "," + quantity + ")");
+				await connection.queryAsync("INSERT INTO assault_place_item (team_id, place_id, item_id, quantity) VALUES (" + team_id + "," + place_id + "," + items[j].id + "," + quantity + ")");
 		}
 	} else {
 		var rarityName = ["NC","R","UR","L","E"];
@@ -57529,27 +57526,27 @@ async function regenItems(team_id, place_id, level) {
 		var items;
 		var quantity = 0;
 		for (var k = 0; k < rarityQuantity.length; k++) {
-			items = await connection_sync.query("SELECT id FROM item WHERE rarity = '" + rarityName[k] + "' AND cons = 0 AND craftable = 1 AND power = 0 AND power_armor = 0 AND power_shield = 0 AND dragon_power = 0 AND name NOT LIKE 'Talismano%' AND id NOT IN (SELECT item_id FROM assault_place_item WHERE team_id = " + team_id + " AND place_id = " + place_id + ") ORDER BY RAND() LIMIT " + rarityQuantity[k]);
+			items = await connection.queryAsync("SELECT id FROM item WHERE rarity = '" + rarityName[k] + "' AND cons = 0 AND craftable = 1 AND power = 0 AND power_armor = 0 AND power_shield = 0 AND dragon_power = 0 AND name NOT LIKE 'Talismano%' AND id NOT IN (SELECT item_id FROM assault_place_item WHERE team_id = " + team_id + " AND place_id = " + place_id + ") ORDER BY RAND() LIMIT " + rarityQuantity[k]);
 			//quantity = Math.round(((rarityQuantity.length+1)-i)/2)+player_num; // ipoteticamente max 6, min 3
 			quantity = Math.round(Math.random()*2+2);
 			for (var j = 0; j < Object.keys(items).length; j++)
-				await connection_sync.query("INSERT INTO assault_place_item (team_id, place_id, item_id, quantity) VALUES (" + team_id + "," + place_id + "," + items[j].id + "," + quantity + ")");
+				await connection.queryAsync("INSERT INTO assault_place_item (team_id, place_id, item_id, quantity) VALUES (" + team_id + "," + place_id + "," + items[j].id + "," + quantity + ")");
 		}
 	}
 
 	var extra_life = "";
 	if (place_id == 5) {
-		var class_bonus = await connection_sync.query("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 5");
+		var class_bonus = await connection.queryAsync("SELECT COUNT(APP.id) As cnt FROM assault_place AP, assault_place_player_id APP, player P WHERE P.id = APP.player_id AND APP.place_id = AP.id AND AP.class_bonus = P.class AND APP.team_id = " + team_id + " AND AP.id = 5");
 		var class_bonus_val = 0;
 		if (class_bonus[0].cnt > 0)
 			class_bonus_val = class_bonus[0].cnt*5;
 
-		var team = await connection_sync.query('SELECT boss_count FROM team WHERE id = ' + team_id);
-		var assault = await connection_sync.query('SELECT boss_num, mob_turn, lost FROM assault WHERE team_id = ' + team_id);
-		var players_num = await connection_sync.query("SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE team_id = " + team_id);
+		var team = await connection.queryAsync('SELECT boss_count FROM team WHERE id = ' + team_id);
+		var assault = await connection.queryAsync('SELECT boss_num, mob_turn, lost FROM assault WHERE team_id = ' + team_id);
+		var players_num = await connection.queryAsync("SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE team_id = " + team_id);
 		var mob_damage = mobDamage(team[0].boss_count, players_num[0].cnt, assault[0].boss_num, 1, assault[0].mob_turn, assault[0].lost, 1);
-		//var place = await connection_sync.query('SELECT level FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id);
-		var players = await connection_sync.query('SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE place_id = 5 AND team_id = ' + team_id);
+		//var place = await connection.queryAsync('SELECT level FROM assault_place_team WHERE place_id = 5 AND team_id = ' + team_id);
+		var players = await connection.queryAsync('SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE place_id = 5 AND team_id = ' + team_id);
 		var wall_max_life = mob_damage * (level+1) * players[0].cnt;
 		wall_max_life += wall_max_life*(class_bonus_val/100);
 		wall_max_life = Math.round(wall_max_life);
@@ -57824,7 +57821,7 @@ function setFinishedTeamMission(element, index, array) {
 
 								if (rewardStr[1].indexOf("item") != -1) {
 									var itemid = rewardStr[1].match(/\d+/g)[0];		// es: 1:item10
-									var item = await connection_sync.query("SELECT name, rarity FROM item WHERE id = " + itemid);
+									var item = await connection.queryAsync("SELECT name, rarity FROM item WHERE id = " + itemid);
 									qnt = Math.ceil(qnt);	// per gestire i 0.x nel db
 									rewardText += "\n> " + qnt + "x " + item[0].name + " (" + item[0].rarity + ") (a testa)";
 									isItem = 1;
@@ -57854,7 +57851,7 @@ function setFinishedTeamMission(element, index, array) {
 									isExp = 1;
 								} else if (rewardStr[1].indexOf("chest") != -1) {
 									var chestid = rewardStr[1].match(/\d+/g)[0];
-									var chest = await connection_sync.query("SELECT name, rarity_shortname FROM chest WHERE id = " + chestid);
+									var chest = await connection.queryAsync("SELECT name, rarity_shortname FROM chest WHERE id = " + chestid);
 									rewardText += "\n> " + qnt + "x " + chest[0].name + " (" + chest[0].rarity_shortname + ") (a testa)";
 									isChest = 1;
 								} else if (rewardStr[1] == "money") {
@@ -57867,7 +57864,7 @@ function setFinishedTeamMission(element, index, array) {
 										qnt = 1;
 										rewardText += "\n> 1x Runa Necro (X) (a testa)";
 									} else {
-										var item = await connection_sync.query("SELECT id, name, rarity FROM item WHERE name LIKE 'Runa%' AND rarity != 'X' ORDER BY RAND()");
+										var item = await connection.queryAsync("SELECT id, name, rarity FROM item WHERE name LIKE 'Runa%' AND rarity != 'X' ORDER BY RAND()");
 										var itemid = item[0].id;
 										qnt = Math.floor(rewardLevel/4)+1;
 										if (crazyMode == 1) {
@@ -57889,7 +57886,7 @@ function setFinishedTeamMission(element, index, array) {
 										qnt += qnt*0.5;
 										qnt = Math.ceil(qnt);
 									}
-									var item = await connection_sync.query("SELECT id, name, rarity FROM item WHERE id = " + (68+val));
+									var item = await connection.queryAsync("SELECT id, name, rarity FROM item WHERE id = " + (68+val));
 									var itemid = item[0].id;
 									rewardText += "\n> " + qnt + "x " + item[0].name + " (" + item[0].rarity + ") (a testa)";
 									isItem = 1;
@@ -57965,10 +57962,10 @@ function setFinishedTeamMission(element, index, array) {
 											setExp(rows[i].id, expPnt); // exp a tutti
 
 											if (villa == 1) {
-												var villaPnt = await connection_sync.query('SELECT player_id, points FROM event_villa_status WHERE player_id = ' + rows[i].id);
+												var villaPnt = await connection.queryAsync('SELECT player_id, points FROM event_villa_status WHERE player_id = ' + rows[i].id);
 												if (Object.keys(villaPnt).length > 0) {
 													var points = parseInt(villaPnt[0].points);
-													await connection_sync.query('UPDATE event_villa_status SET points = points+' + parts + ' WHERE player_id = ' + rows[i].id);
+													await connection.queryAsync('UPDATE event_villa_status SET points = points+' + parts + ' WHERE player_id = ' + rows[i].id);
 													bot.sendMessage(rows[i].chat_id, "Hai ricevuto " + parts + " punti per l'evento della Villa di LastSoldier95! Ora ne possiedi *" + (points + parts) + "*!", mark);
 													//console.log("Consegnati " + parts + " punti a " + rows[i].nickname);
 												};
@@ -58070,7 +58067,7 @@ function setFinishedTeamMission(element, index, array) {
 						} else
 							question = question.replace("%casuale%", text_user);
 
-						var team = await connection_sync.query('SELECT name FROM team WHERE id = ' + team_id);
+						var team = await connection.queryAsync('SELECT name FROM team WHERE id = ' + team_id);
 						question = question.replace(new RegExp("%team%", "g"), team[0].name);
 
 						for (i = 0; i < Object.keys(rows).length; i++) {
@@ -58472,7 +58469,7 @@ function reloadFestival(manualFinish) {
 									var value = await merchantPrice(item_id);
 									var increm = 0;
 									if (manualFinish == 1) {
-										var rows = await connection_sync.query('SELECT increm FROM event_crafting_item ORDER BY id DESC');
+										var rows = await connection.queryAsync('SELECT increm FROM event_crafting_item ORDER BY id DESC');
 										if (Object.keys(rows).length > 0) {
 											var pastIncrem = parseInt(rows[0].increm);
 											if (pastIncrem < 200)
@@ -58721,17 +58718,17 @@ async function setBattleTimeElapsed(element, index, array) {
 	var critical3 = 0;
 
 	if (weapon_id != null) {
-		var weapon_info = await connection_sync.query("SELECT power, critical FROM item WHERE id = " + weapon_id);
+		var weapon_info = await connection.queryAsync("SELECT power, critical FROM item WHERE id = " + weapon_id);
 		weapon = weapon_info[0].power;
 		critical = weapon_info[0].critical;
 	}
 	if (weapon2_id != null) {
-		var weapon2_info = await connection_sync.query("SELECT power_armor, critical FROM item WHERE id = " + weapon2_id);
+		var weapon2_info = await connection.queryAsync("SELECT power_armor, critical FROM item WHERE id = " + weapon2_id);
 		weapon2 = weapon2_info[0].power_armor;
 		critical2 = weapon2_info[0].critical;
 	}
 	if (weapon3_id != null) {
-		var weapon3_info = await connection_sync.query("SELECT power_shield, critical FROM item WHERE id = " + weapon3_id);
+		var weapon3_info = await connection.queryAsync("SELECT power_shield, critical FROM item WHERE id = " + weapon3_id);
 		weapon3 = weapon3_info[0].power_shield;
 		critical3 = weapon3_info[0].critical;
 	}
@@ -58776,17 +58773,17 @@ async function setBattleTimeElapsed(element, index, array) {
 				var battle_turn_active = rows[0].battle_turn_active;
 
 				if (enemy_weapon_id != null) {
-					var weapon_info = await connection_sync.query("SELECT power, critical FROM item WHERE id = " + enemy_weapon_id);
+					var weapon_info = await connection.queryAsync("SELECT power, critical FROM item WHERE id = " + enemy_weapon_id);
 					enemy_weapon = weapon_info[0].power;
 					enemy_critical = weapon_info[0].critical;
 				}
 				if (enemy_weapon2_id != null) {
-					var weapon2_info = await connection_sync.query("SELECT power_armor, critical FROM item WHERE id = " + enemy_weapon2_id);
+					var weapon2_info = await connection.queryAsync("SELECT power_armor, critical FROM item WHERE id = " + enemy_weapon2_id);
 					enemy_weapon2 = weapon2_info[0].power_armor;
 					enemy_critical2 = weapon2_info[0].critical;
 				}
 				if (enemy_weapon3_id != null) {
-					var weapon3_info = await connection_sync.query("SELECT power_shield, critical FROM item WHERE id = " + enemy_weapon3_id);
+					var weapon3_info = await connection.queryAsync("SELECT power_shield, critical FROM item WHERE id = " + enemy_weapon3_id);
 					enemy_weapon3 = weapon3_info[0].power_shield;
 					enemy_critical3 = weapon3_info[0].critical;
 				}
@@ -58835,7 +58832,7 @@ async function setBattleTimeElapsed(element, index, array) {
 						var enemy_scrap_query = "";
 						var enemy_item_query = "";
 
-						var weaponQuery = await connection_sync.query("SELECT name FROM item WHERE id = " + weapon_id);
+						var weaponQuery = await connection.queryAsync("SELECT name FROM item WHERE id = " + weapon_id);
 						var weapon_name = weaponQuery[0].name;
 						if (enemy_weapon_id != null) {
 							var check = weapon > enemy_weapon || (weapon == enemy_weapon && critical > enemy_critical);
@@ -58855,7 +58852,7 @@ async function setBattleTimeElapsed(element, index, array) {
 							item_query += ", weapon_id = NULL";
 						}
 
-						var weaponQuery = await connection_sync.query("SELECT name FROM item WHERE id = " + weapon2_id);
+						var weaponQuery = await connection.queryAsync("SELECT name FROM item WHERE id = " + weapon2_id);
 						var weapon_name = weaponQuery[0].name;
 						if (enemy_weapon2_id != null) {
 							var check = weapon2 < enemy_weapon2 || (weapon2 == enemy_weapon2 && critical2 > enemy_critical2);;
@@ -58875,7 +58872,7 @@ async function setBattleTimeElapsed(element, index, array) {
 							item_query += ", weapon2_id = NULL";
 						}
 
-						var weaponQuery = await connection_sync.query("SELECT name FROM item WHERE id = " + weapon3_id);
+						var weaponQuery = await connection.queryAsync("SELECT name FROM item WHERE id = " + weapon3_id);
 						var weapon_name = weaponQuery[0].name;
 						if (enemy_weapon3_id != null) {
 							var check = weapon3 < enemy_weapon3 || (weapon3 == enemy_weapon3 && critical3 > enemy_critical3);
@@ -59052,7 +59049,7 @@ function setFullLobby(element, index, array) {
 
 					bot.sendMessage(rows[i].chat_id, "La mappa è stata generata!\nEntra in battaglia e conquista la vittoria!", kb);
 
-					var art = await connection_sync.query('SELECT COUNT(id) As cnt FROM artifacts WHERE player_id = ' + rows[i].id);
+					var art = await connection.queryAsync('SELECT COUNT(id) As cnt FROM artifacts WHERE player_id = ' + rows[i].id);
 					if (art[0].cnt < 5)
 						flari_active = 0;
 				}
@@ -59104,7 +59101,7 @@ function setFinishedLobbyEnd(element, index, array) {
 					winner_match_kills = rows[0].match_kills;
 
 					// aggiunge il primo in classifica se era l'unico rimasto vivo
-					await connection_sync.query('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + winner_player_id + ', 1, ' + winner_match_kills + ')');
+					await connection.queryAsync('INSERT INTO map_history (map_lobby_id, lobby_training, player_id, position, kills) VALUES (' + map_lobby_id + ', ' + lobby_training + ', ' + winner_player_id + ', 1, ' + winner_match_kills + ')');
 				}
 
 				connection.query('SELECT M.id As mapId, P.id, P.chat_id, P.nickname, P.trophies, M.position, M.kills, M.life, M.penality_escape, M.penality_restrict, P.map_count, P.global_end FROM map_history M, player P WHERE M.player_id = P.id AND map_lobby_id = ' + map_lobby_id + ' ORDER BY position ASC, life DESC, kills DESC, insert_date DESC', async function (err, rows, fields) {
@@ -59209,11 +59206,11 @@ function setFinishedLobbyEnd(element, index, array) {
 							setAchievement(rows[i].id, 88, 1);
 
 						if ((villa == 1) && (trophies_count > 0)){
-							var villaPnt = await connection_sync.query('SELECT player_id, points FROM event_villa_status WHERE player_id = ' + rows[i].id);
+							var villaPnt = await connection.queryAsync('SELECT player_id, points FROM event_villa_status WHERE player_id = ' + rows[i].id);
 							if (Object.keys(villaPnt).length > 0) {
 								var points = parseInt(villaPnt[0].points);
 								var pnt = trophies_count;
-								await connection_sync.query('UPDATE event_villa_status SET points = points+' + pnt + ' WHERE player_id = ' + rows[i].id);
+								await connection.queryAsync('UPDATE event_villa_status SET points = points+' + pnt + ' WHERE player_id = ' + rows[i].id);
 								bot.sendMessage(rows[i].chat_id, "Hai ricevuto " + pnt + " punti per l'evento della Villa di LastSoldier95! Ora ne possiedi *" + (points + pnt) + "*!", mark);
 								//console.log("Consegnati " + parts + " punti a " + rows[i].nickname);
 							};
@@ -60249,7 +60246,7 @@ function setFinishedMission(element, index, array) {
 					if ((rand >= 5) && (rand <= rand_c) && (boost_id == 0)) {
 						var rand2 = Math.round(Math.random() * 8);
 
-						var ability = await connection_sync.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + element.id + ' AND ability_id = 19');
+						var ability = await connection.queryAsync('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + element.id + ' AND ability_id = 19');
 
 						var abBonusStone = 0;
 						if (Object.keys(ability).length > 0)
@@ -60565,7 +60562,7 @@ function setFinishedMission(element, index, array) {
 
 								if (chest_bonus_id > 0) {
 									await addChest(element.id, chest_bonus_id);
-									var chest_info = await connection_sync.query("SELECT name FROM chest WHERE id = " + chest_bonus_id);
+									var chest_info = await connection.queryAsync("SELECT name FROM chest WHERE id = " + chest_bonus_id);
 									chest_bonus = "\nPer la tua appartenenza alla _" + league_name + "_, ottieni uno *" + chest_info[0].name + "* aggiuntivo!";
 									// console.log("Premio leghe missioni: " + chest_info[0].name);
 								}
@@ -61110,7 +61107,7 @@ async function setFinishedCave(element, index, array) {
 	let boost_mission = element.boost_mission;
 
 	if ((boost_mission <= 0) && (boost_id != 0)) {
-		connection_sync.query('UPDATE player SET boost_id = 0, boost_mission = 0 WHERE id = ' + element.id)
+		connection.queryAsync('UPDATE player SET boost_id = 0, boost_mission = 0 WHERE id = ' + element.id)
 		boost_mission = 0;
 		boost_id = 0;
 	}
@@ -61156,7 +61153,7 @@ async function setFinishedCave(element, index, array) {
 	let boost_text = "";
 
 	// Calcolo Bonus Talento Scavatore Instancabile
-	const ab16rows = await connection_sync.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + element.id + ' AND ability_id = 16')
+	const ab16rows = await connection.queryAsync('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + element.id + ' AND ability_id = 16')
 	if (Object.keys(ab16rows).length > 0) {
 		const ab16Bonus = parseInt(ab16rows[0].ability_level) * ab16rows[0].val;
 		if ((Math.random() * 100 < ab16Bonus) && (luckyMode == 0)) {
@@ -61167,7 +61164,7 @@ async function setFinishedCave(element, index, array) {
 	}
 
 	// Calcolo Bonus Talento Esploratore Redditizio
-	const ab8rows = await connection_sync.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + element.id + ' AND ability_id = 8')
+	const ab8rows = await connection.queryAsync('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + element.id + ' AND ability_id = 8')
 	let ab8Bonus = 0;
 	if (Object.keys(ab8rows).length > 0)
 		ab8Bonus = parseInt(ab8rows[0].ability_level) * ab8rows[0].val;
@@ -61254,7 +61251,7 @@ async function setFinishedCave(element, index, array) {
 	// Aggiungo tutte le stones ottenute
 	Object.keys(stones).map(new_stone_id => addItem(element.id, new_stone_id, stones[new_stone_id]))
 
-	connection_sync.query('UPDATE player SET cave_limit = 0, cave_id = 0, cave_time_end = NULL, cave_count = cave_count+1 WHERE id = ' + element.id)
+	connection.queryAsync('UPDATE player SET cave_limit = 0, cave_id = 0, cave_time_end = NULL, cave_count = cave_count+1 WHERE id = ' + element.id)
 
 	let msg = "";
 	
@@ -61613,9 +61610,9 @@ async function addItem(player_id, item_id, qnt = 1) {
 	if (item_id == 646)
 		setAchievement(player_id, 94, qnt);
 
-	var rows = await connection_sync.query('UPDATE inventory SET quantity = quantity+' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
+	var rows = await connection.queryAsync('UPDATE inventory SET quantity = quantity+' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 	if (rows.affectedRows == 0) {
-		await connection_sync.query('INSERT INTO inventory (player_id, item_id, quantity) VALUES (' + player_id + ',' + item_id + ', ' + qnt + ')');
+		await connection.queryAsync('INSERT INTO inventory (player_id, item_id, quantity) VALUES (' + player_id + ',' + item_id + ', ' + qnt + ')');
 	}
 }
 
@@ -61631,7 +61628,7 @@ async function delItem(player_id, item_id, qnt = 1, sync = 0) {
 			if (err) throw err;
 		});
 	} else {
-		await connection_sync.query('UPDATE inventory SET quantity = quantity-' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
+		await connection.queryAsync('UPDATE inventory SET quantity = quantity-' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 	}
 }
 
@@ -61642,11 +61639,11 @@ function delAllItem(player_id, item_id) {
 }
 
 async function delAllInventory(player_id) {
-	await connection_sync.query('DELETE FROM inventory WHERE player_id = ' + player_id);
+	await connection.queryAsync('DELETE FROM inventory WHERE player_id = ' + player_id);
 }
 
 async function getItemCnt(player_id, item_id) {
-	var item = await connection_sync.query('SELECT quantity FROM inventory WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
+	var item = await connection.queryAsync('SELECT quantity FROM inventory WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 	if (Object.keys(item).length == 0)
 		return 0;
 	else
@@ -61662,9 +61659,9 @@ async function addChest(player_id, chest_id, qnt = 1) {
 		return;
 	}
 
-	var rows = await connection_sync.query('UPDATE inventory_chest SET quantity = quantity+' + qnt + ' WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
+	var rows = await connection.queryAsync('UPDATE inventory_chest SET quantity = quantity+' + qnt + ' WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
 	if (rows.affectedRows == 0) {
-		await connection_sync.query('INSERT INTO inventory_chest (player_id, chest_id, quantity) VALUES (' + player_id + ',' + chest_id + ', ' + qnt + ')');
+		await connection.queryAsync('INSERT INTO inventory_chest (player_id, chest_id, quantity) VALUES (' + player_id + ',' + chest_id + ', ' + qnt + ')');
 	}
 }
 
@@ -61686,11 +61683,11 @@ function delAllChest(player_id, chest_id) {
 }
 
 async function delAllChestInventory(player_id) {
-	await connection_sync.query('DELETE FROM inventory_chest WHERE player_id = ' + player_id);
+	await connection.queryAsync('DELETE FROM inventory_chest WHERE player_id = ' + player_id);
 }
 
 async function getChestCnt(player_id, chest_id) {
-	var item = await connection_sync.query('SELECT quantity FROM inventory_chest WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
+	var item = await connection.queryAsync('SELECT quantity FROM inventory_chest WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
 	if (Object.keys(item).length == 0)
 		return 0;
 	else
@@ -61698,7 +61695,7 @@ async function getChestCnt(player_id, chest_id) {
 }
 
 async function isBanned(account_id) {
-	var banned = await connection_sync.query('SELECT reason FROM banlist WHERE account_id = ' + account_id);
+	var banned = await connection.queryAsync('SELECT reason FROM banlist WHERE account_id = ' + account_id);
 	if (Object.keys(banned).length == 0)
 		return null;
 	else {
