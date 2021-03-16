@@ -37570,7 +37570,7 @@ bot.onText(/emporio/i, function (message) {
 							var potionL = 5000;
 							var plume = 10000;
 							var dust = 25000;
-							var package = 2;
+							var stickerPackPrice = 2;
 
 							if (price_drop == 1) {
 								iKeys.push(["Compra Pozione Piccola (" + formatNumber(parseInt(potionS - Math.round((potionS / 100) * sconto))) + " §)"]);
@@ -37596,7 +37596,7 @@ bot.onText(/emporio/i, function (message) {
 							else
 								iKeys.push(["Compra Gemma (300.000 §)"]);
 
-							iKeys.push(["Compra Pacchetto di Figurine (" + formatNumber(package) + " 🌕)"]);
+							iKeys.push(["Compra Pacchetto di Figurine (" + formatNumber(stickerPackPrice) + " 🌕)"]);
 
 							var tap_query = await connection_sync.query("SELECT value FROM item WHERE id = 797");
 							iKeys.push(["Compra Tappo (" + formatNumber(tap_price) + " §)"]);
@@ -38371,7 +38371,7 @@ bot.onText(/compra/i, function (message) {
 					}
 				});
 			} else if (oggetto.indexOf("Pacchetto") != -1) {
-				var package = 2;
+				var stickerPackPrice = 2;
 
 				var kb = {
 					parse_mode: "Markdown",
@@ -38381,7 +38381,7 @@ bot.onText(/compra/i, function (message) {
 					}
 				};
 
-				bot.sendMessage(message.chat.id, "Seleziona la quantità di pacchetti da acquistare (contengono 5 figurine), ogni pacchetto costa " + package + " 🌕, puoi acquistarne un massimo di " + formatNumber(Math.floor(moon_coin/package)), kb).then(function () {
+				bot.sendMessage(message.chat.id, "Seleziona la quantità di pacchetti da acquistare (contengono 5 figurine), ogni pacchetto costa " + stickerPackPrice + " 🌕, puoi acquistarne un massimo di " + formatNumber(Math.floor(moon_coin/stickerPackPrice)), kb).then(function () {
 					answerCallbacks[message.chat.id] = async function (answer) {
 						var quantity = answer.text;
 						if ((quantity == "Torna al menu") || (quantity == "Torna all'emporio"))
@@ -38391,7 +38391,7 @@ bot.onText(/compra/i, function (message) {
 							return;
 						}
 
-						var price = package*quantity;
+						var price = stickerPackPrice*quantity;
 
 						bot.sendMessage(message.chat.id, "Sei sicuro di voler acquistare " + quantity + "x Pacchetti per " + formatNumber(price) + " 🌕?", storeYesNo).then(function () {
 							answerCallbacks[message.chat.id] = async function (answer) {
