@@ -155,14 +155,14 @@ var j21 = Schedule.scheduleJob('59 23 1 * *', function () {
 	saveActiveMonthly();
 });
 
-var j3 = Schedule.scheduleJob('01 00 * * *', function () { //00:01 notte
+var j3 = Schedule.scheduleJob('01 00 * * *', async function () { //00:01 notte
 	var d = new Date();
 	if ((d.getDay() != 5) && (d.getDay() != 4))
 		autoMana();
 	if (d.getDay() != 2)
 		autoDust();
 	if ((d.getDay() != 6) && (d.getDay() != 0))
-		reloadAchievement();
+		await reloadAchievement();
 	else
 		resetAchievement();
 	craftDay();
@@ -384,7 +384,7 @@ var db_connection = mysql.createPool({
 var connection = {
 	query: function (q, fn) {
 		const startTime = new Date()
-		db_connection.query(q, function (err, res, fields) {
+		return db_connection.query(q, function (err, res, fields) {
 			const duration = new Date() - startTime
 			if (duration > max_duration_query) console.log("QUERY", q, "EXECUTED IN", duration, "ms")
 			fn(err, res, fields)
@@ -3262,7 +3262,7 @@ bot.onText(/resetach/i, function (message) {
 		bot.sendMessage(message.chat.id, "Sicuro?", yesno).then(function () {
 			answerCallbacks[message.chat.id] = async function (answer) {
 				if (answer.text.toLowerCase() == "si") {
-					reloadAchievement();
+					await reloadAchievement();
 					bot.sendMessage(message.chat.id, "Fatto!", back);
 				};
 			};
@@ -54896,47 +54896,28 @@ function resetGnomorra() {
 	});
 }
 
-function reloadAchievement() {
-	var map_query = "(0, 1)";
-	if (checkDragonTopOn == 1)
-		map_query = "(0)";
+async function reloadAchievement() {
+	let map_query = "(0, 1)";
+	if (checkDragonTopOn == 1) map_query = "(0)";
 
-	connection.query('SELECT id, name, item_rarity, type FROM (SELECT * FROM achievement_list WHERE enabled = 1 AND only_map IN ' + map_query + ' ORDER BY RAND()) as t WHERE id NOT IN (SELECT achievement_id FROM achievement_daily) GROUP BY type ORDER BY RAND() LIMIT 3', function (err, rows, fields) {
-		if (err) throw err;
+	const newAchievements = await connection_sync.query('SELECT id, name, item_rarity, type FROM (SELECT * FROM achievement_list WHERE enabled = 1 AND only_map IN ' + map_query + ' ORDER BY RAND()) as t WHERE id NOT IN (SELECT achievement_id FROM achievement_daily) GROUP BY type ORDER BY RAND() LIMIT 3')
 
-		connection.query('DELETE FROM achievement_daily', function (err, rows, fields) {
-			if (err) throw err;
-		});
-		connection.query('DELETE FROM achievement_status', function (err, rows, fields) {
-			if (err) throw err;
-		});
+	// Clear current daily achievement and statuses
+	await connection_sync.query('DELETE FROM achievement_daily')
+	await connection_sync.query('DELETE FROM achievement_status')
 
-		var rarity = 0;
-		var id = 0;
-		var type = 0;
+	for (var i = 0, len = Object.keys(newAchievements).length; i < len; i++) {
+		const rarity = newAchievements[i].item_rarity;
+		const id = newAchievements[i].id;
+		const type = newAchievements[i].type;
 
-		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-			rarity = rows[i].item_rarity;
-			id = rows[i].id;
-			type = rows[i].type;
-
-			if ((rarity != 0) && (type == 12)) {
-				connection.query('SELECT item.id FROM item, rarity WHERE rarity.shortname = item.rarity AND rarity.id = ' + rarity + ' AND craftable = 1 ORDER BY RAND()', function (err, rows, fields) {
-					if (err) throw err;
-					connection.query('INSERT INTO achievement_daily (id, achievement_id, item_id) VALUES (' + (this.i + 1) + ',' + this.id + ',' + rows[0].id + ')', function (err, rows, fields) {
-						if (err) throw err;
-					});
-				}.bind({
-					i: i,
-					id: id
-				}));
-			} else {
-				connection.query('INSERT INTO achievement_daily (id, achievement_id, item_id) VALUES (' + (i + 1) + ',' + id + ',' + rarity + ')', function (err, rows, fields) {
-					if (err) throw err;
-				});
-			}
+		if ((rarity != 0) && (type == 12)) {
+			const newDailys = await connection_sync.query('SELECT item.id FROM item, rarity WHERE rarity.shortname = item.rarity AND rarity.id = ' + rarity + ' AND craftable = 1 ORDER BY RAND()')
+			await connection_sync.query('INSERT INTO achievement_daily (id, achievement_id, item_id) VALUES (' + (i + 1) + ',' + id + ',' + newDailys[0].id + ')')
+		} else {
+			await connection_sync.query('INSERT INTO achievement_daily (id, achievement_id, item_id) VALUES (' + (i + 1) + ',' + id + ',' + rarity + ')')
 		}
-	});
+	}
 };
 
 function craftWeek() {
