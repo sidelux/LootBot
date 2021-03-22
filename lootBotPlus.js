@@ -8651,8 +8651,8 @@ bot.onText(/^\/oggetti (.+)|^\/oggetti/, async function (message, match) {
   const results = await Promise.all(oggetti
     .map(oggetto => {
       oggetto = oggetto.trim()
-      let part = 'like "%' + ogg + '%"'
-      if (ogg.indexOf('*') != -1) {
+      let part = 'like "%' + oggetto + '%"'
+      if (oggetto.indexOf('*') != -1) {
         oggetto = oggetto.replace('*', '')
         part = '= "' + oggetto + '"'
       }
