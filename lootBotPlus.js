@@ -75,6 +75,7 @@ const dbConnection = mysql.createPool({
 })
 
 const connection = {
+  end: dbConnection.end,
   query: function (q, fn) {
     const startTime = new Date()
     dbConnection.query(q, function (err, res, fields) {

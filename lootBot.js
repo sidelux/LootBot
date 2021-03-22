@@ -373,7 +373,7 @@ console.log('Avvio bot...');
 
 const max_duration_query = 1000
 
-var db_connection = mysql.createPool({
+const dbConnection = mysql.createPool({
 	host: config.dbhost,
 	user: config.dbuser,
 	password: config.dbpassword,
@@ -381,10 +381,11 @@ var db_connection = mysql.createPool({
 	connectionLimit: 100
 });
 
-var connection = {
+const connection = {
+  end: dbConnection.end,
 	query: function (q, fn) {
 		const startTime = new Date()
-		return db_connection.query(q, function (err, res, fields) {
+		return dbConnection.query(q, function (err, res, fields) {
 			const duration = new Date() - startTime
 			if (duration > max_duration_query) console.log("QUERY", q, "EXECUTED IN", duration, "ms")
 			fn(err, res, fields)
@@ -392,7 +393,7 @@ var connection = {
 	},
 	queryAsync: async (str, values) => new Promise((resolve, reject) => {
 		const startTime = new Date()
-		db_connection.query(str, function (err, res, fields) {
+		dbConnection.query(str, function (err, res, fields) {
 			const duration = new Date() - startTime
 			if (duration > max_duration_query) console.log("SYNC QUERY", str, "EXECUTED IN", duration, "ms")
 			if (err) {
@@ -406,13 +407,13 @@ var connection = {
 
 process.on('SIGINT', function() {
 	console.log("Spegnimento bot...");
-	db_connection.end();
+	connection.end();
 	process.exit();
 });
 
 process.on('SIGTERM', function() {
 	console.log("Spegnimento bot...");
-	db_connection.end();
+	connection.end();
 	process.exit();
 });
 
