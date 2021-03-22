@@ -520,9 +520,9 @@ bot.on("inline_query", async function (query) {
 		var d = new Date(rows[0].time_end);
 		var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
 
-		var protected = "";
+		var isProtected = "";
 		if (rows[0].protected == 1)
-			protected = " 🚫";
+		isProtected = " 🚫";
 		var description = "";
 		if (rows[0].description != null)
 			description = "\n<i>" + rows[0].description + "</i>";
@@ -537,7 +537,7 @@ bot.on("inline_query", async function (query) {
 			if (qntTot == 1)
 				plur = "o";
 
-			var text = "<b>Negozio di " + rows[0].nickname + "</b>\nAggiornato alle " + short_date + "\nScadrà alle " + long_date + "\nContiene " + formatNumber(qntTot) + " oggett" + plur + protected + description;
+			var text = "<b>Negozio di " + rows[0].nickname + "</b>\nAggiornato alle " + short_date + "\nScadrà alle " + long_date + "\nContiene " + formatNumber(qntTot) + " oggett" + plur + isProtected + description;
 			var desc;
 			if (last == 0)
 				desc = total_qnt + " oggetti in vendita\n" + item_list;
@@ -3952,14 +3952,14 @@ bot.onText(/^\/privacy (.+)|^\/privacy/, function (message, match) {
 					return;
 				}
 
-				var public = rows[0].public;
+				var isPublic = rows[0].public;
 
-				if (public == 0) {
+				if (isPublic == 0) {
 					connection.query('UPDATE public_shop SET public = 1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Tutti i negozi impostati come _pubblici_!", mark);
 					});
-				} else if (public == 1) {
+				} else if (isPublic == 1) {
 					connection.query('UPDATE public_shop SET public = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Tutti i negozi impostati come _privati_!", mark);
@@ -3988,14 +3988,14 @@ bot.onText(/^\/privacy (.+)|^\/privacy/, function (message, match) {
 				return;
 			}
 
-			var public = rows[0].public;
+			var isPublic = rows[0].public;
 
-			if (public == 0) {
+			if (isPublic == 0) {
 				connection.query('UPDATE public_shop SET public = 1 WHERE code = ' + code, function (err, rows, fields) {
 					if (err) throw err;
 					bot.sendMessage(message.chat.id, "Il negozio è stato impostato _pubblico_!", mark);
 				});
-			} else if (public == 1) {
+			} else if (isPublic == 1) {
 				connection.query('UPDATE public_shop SET public = 0 WHERE code = ' + code, function (err, rows, fields) {
 					if (err) throw err;
 					bot.sendMessage(message.chat.id, "Il negozio è stato impostato _privato_!", mark);
@@ -4139,14 +4139,14 @@ bot.onText(/^\/protetto (.+)|^\/protetto/, function (message, match) {
 					return;
 				}
 
-				var protected = rows[0].protected;
+				var isProtected = rows[0].protected;
 
-				if (protected == 0) {
+				if (isProtected == 0) {
 					connection.query('UPDATE public_shop SET protected = 1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Applicata la protezione a tutti i negozi!", mark);
 					});
-				} else if (protected == 1) {
+				} else if (isProtected == 1) {
 					connection.query('UPDATE public_shop SET protected = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Rimossa la protezione da tutti i negozi!", mark);
@@ -4169,19 +4169,19 @@ bot.onText(/^\/protetto (.+)|^\/protetto/, function (message, match) {
 				return;
 			}
 
-			var protected = rows[0].protected;
+			var isProtected = rows[0].protected;
 
 			code = parseInt(code);
 			if (isNaN(code)){
 				bot.sendMessage(message.chat.id, "Codice negozio non valido");
 				return;
 			}
-			if (protected == 0) {
+			if (isProtected == 0) {
 				connection.query('UPDATE public_shop SET protected = 1 WHERE code = ' + code, function (err, rows, fields) {
 					if (err) throw err;
 					bot.sendMessage(message.chat.id, "Hai applicato la protezione al negozio!", mark);
 				});
-			} else if (protected == 1) {
+			} else if (isProtected == 1) {
 				connection.query('UPDATE public_shop SET protected = 0 WHERE code = ' + code, function (err, rows, fields) {
 					if (err) throw err;
 					bot.sendMessage(message.chat.id, "Hai rimosso la protezione al negozio!", mark);
@@ -4507,7 +4507,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 
 		var privacy = 0;
 		var massive = 1;
-		var protected = 0;
+		var isProtected = 0;
 		var autodel = 0;
 		if (text.indexOf("#") != -1) {
 			privacy = 1;
@@ -4521,7 +4521,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			text = text.replace("!", "");
 		}
 		if (text.indexOf("*") != -1) {
-			protected = 1;
+			isProtected = 1;
 			text = text.replace("*", "");
 		}
 		if (text.indexOf("?") != -1) {
@@ -4883,12 +4883,12 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 								if (func == "add") {
 									privacy = paramQuery[0].public;
 									massive = paramQuery[0].massive;
-									protected = paramQuery[0].protected;
+									isProtected = paramQuery[0].protected;
 									autodel = paramQuery[0].autodel;
 								}
 
 								// serve sincrono altrimenti non riesce a controllare l'esistenza dell'oggetto
-								await connection_sync.query('INSERT INTO public_shop (player_id, code, item_id, price, quantity, time_end, public, massive, protected, autodel) VALUES (' + player_id + ',' + code + ',' + item_id + ',' + price + ',' + quantity + ',"' + long_date + '",' + privacy + ',' + massive + ', ' + protected + ', ' + autodel + ')');
+								await connection_sync.query('INSERT INTO public_shop (player_id, code, item_id, price, quantity, time_end, public, massive, protected, autodel) VALUES (' + player_id + ',' + code + ',' + item_id + ',' + price + ',' + quantity + ',"' + long_date + '",' + privacy + ',' + massive + ', ' + isProtected + ', ' + autodel + ')');
 
 								text += "Oggetto aggiunto: " + quantity + "x " + item_name + " a " + formatNumber(price) + " §\n";
 								cnt++;
@@ -4908,7 +4908,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 							text += "\nAcquisto massivo: _Disabilitato_";
 						else
 							text += "\nAcquisto massivo: _Obbligato_";
-						text += "\nProtezione negozio: " + ((protected == 1) ? "_Abilitata_" : "_Disabilitata_");
+						text += "\nProtezione negozio: " + ((isProtected == 1) ? "_Abilitata_" : "_Disabilitata_");
 						text += "\nAuto cancellazione negozio: " + ((autodel == 1) ? "_Abilitata_" : "_Disabilitata_");
 					}
 				}
@@ -9260,83 +9260,58 @@ bot.onText(/^\/oggetto (.+)|^\/oggetto/, function (message, match) {
 	});
 });
 
-bot.onText(/^\/oggetti (.+)|^\/oggetti/, function (message, match) {
-
-	var oggetto = match[1];
-	var oggetti = [];
-	if (oggetto == undefined) {
+bot.onText(/^\/oggetti (.+)|^\/oggetti/, async function (message, match) {
+	const inputMatch = match[1];
+	if (inputMatch == undefined) {
 		bot.sendMessage(message.chat.id, "Inserisci il nome parziale dell'oggetto (es. /oggetti Spada Anti) per visualizzare la lista e la quantità, per una ricerca precisa usa l'asterisco");
 		return;
 	}
-
-	if (reg.test(oggetto) == false) {
+	if (reg.test(inputMatch) == false) {
 		bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
 		return;
 	}
 
-	var options = {parse_mode: 'HTML'};
-	if (message.reply_to_message != undefined)
-		options = {parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id};
+	const options = { parse_mode: 'HTML' };
+	if (message.reply_to_message != undefined) options['reply_to_message_id'] = message.reply_to_message.message_id;
 
-	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
-		if (err) throw err;
+	const players = await connection_sync.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"')
+	const player_id = players[0].id;
+		
+	let oggetti = [];
+	if (inputMatch.indexOf(",") != -1) {
+		oggetti = inputMatch.split(",");
+		oggetti = cleanArray(oggetti);
+	} else
+		oggetti.push(inputMatch);
 
-		var player_id = rows[0].id;
-		var text = "";
-		var intro = "";
-		var name = "";
-		var rarity = "";
-		var posseduti = 0;
+	var len = Object.keys(oggetti).length;
 
-		if (oggetto.indexOf(",") != -1) {
-			oggetti = oggetto.split(",");
-			oggetti = cleanArray(oggetti);
-		} else
-			oggetti.push(oggetto);
-
-		var len = Object.keys(oggetti).length;
-		var ogg = "";
-		var query = "";
-		var part = "";
-
-		intro += "<b>" + message.from.username + "</b> possiedi:";
-
-		for (var i = 0; i < len; i++) {
-			ogg = oggetti[i].trim();
-			part = 'like "%' + ogg + '%"';
+	const results = await Promise.all(oggetti
+		.map(oggetto => {
+			oggetto = oggetto.trim()
+			let part = 'like "%' + ogg + '%"';
 			if (ogg.indexOf("*") != -1) {
 				ogg = ogg.replace("*", "");
 				part = '= "' + ogg + '"';
 			}
+			const query = 'SELECT item.name, item.rarity, inventory.quantity As num FROM item, inventory WHERE item.name ' + part + ' AND inventory.item_id = item.id AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0';
+			return connection_sync.query(query)
+		}))
 
-			query = 'SELECT item.name, item.rarity, inventory.quantity As num FROM item, inventory WHERE item.name ' + part + ' AND inventory.item_id = item.id AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0';
-			connection.query(query, function (err, rows, fields) {
-				if (err) throw err;
+	let text = "";
+	for (const resultRows of results) {
+		if (resultRows.length > 4000) {
+			bot.sendMessage(message.chat.id, "Troppi risultati, prova con un filtro più limitato")
+			break
+		}
+		for (const result of resultRows) text += `\n> ${result.name} (${result.rarity}, ${formatNumber(result.num)})`
+	}
 
-				if (Object.keys(rows).length > 0) {
-					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-						name = rows[i].name;
-						rarity = rows[i].rarity;
-						posseduti = rows[i].num;
-						text += "\n> " + name + " (" + rarity + ", " + formatNumber(posseduti) + ")";
-					}
-				}
-
-				if (this.i + 1 == this.len) {
-					if (Object.keys(text).length > 0) {
-						if (Object.keys(text).length < 4000)
-							bot.sendMessage(message.chat.id, intro + text, options);
-						else
-							bot.sendMessage(message.chat.id, "Troppi risultati, prova con un filtro più limitato");
-					} else
-						bot.sendMessage(message.chat.id, "Non possiedi nessun oggetto con i filtri specificati");
-				}
-			}.bind({
-				i: i,
-				len: len
-			}));
-		};
-	});
+	if (text.length > 0) {
+		bot.sendMessage(message.chat.id, `<b>${message.from.username}</b> possiedi: ${text}`, options)
+	} else {
+		bot.sendMessage(message.chat.id, "Non possiedi nessun oggetto con i filtri specificati")
+	}
 });
 
 bot.onText(/^\/ricerca (.+)|^\/ricerca/, async function (message, match) {
@@ -11453,9 +11428,9 @@ async function updateShop(message, code, isId, customQueryMessage){
 		var d = new Date(rows[0].time_end);
 		var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
 
-		var protected = "";
+		var isProtected = "";
 		if (rows[0].protected == 1)
-			protected = " 🚫";
+			isProtected = " 🚫";
 		var description = "";
 		if (rows[0].description != null)
 			description = "\n<i>" + rows[0].description + "</i>";
@@ -11464,7 +11439,7 @@ async function updateShop(message, code, isId, customQueryMessage){
 		if (qntTot == 1)
 			plur = "o";
 
-		var text = "<b>Negozio di " + rows[0].nickname + "</b>\nAggiornato alle " + short_date + "\nScadrà alle " + long_date + "\nContiene " + formatNumber(qntTot) + " oggett" + plur + protected + description;
+		var text = "<b>Negozio di " + rows[0].nickname + "</b>\nAggiornato alle " + short_date + "\nScadrà alle " + long_date + "\nContiene " + formatNumber(qntTot) + " oggett" + plur + isProtected + description;
 
 		bot.editMessageText(text, {
 			inline_message_id: message.inline_message_id,
