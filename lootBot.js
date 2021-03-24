@@ -45928,7 +45928,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 								end = (i + 1);
 						}
 						if (progMob[end] == undefined)
-							text += "Cave esplorate completate ✅\n";
+							text += "Mob sconfitti completati ✅\n";
 						else
 							text += formatNumber(mob_count) + " su " + formatNumber(progMob[end]) + " mob sconfitti (" + formatNumber(progMobRew[end]) + ")\n";
 
