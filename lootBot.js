@@ -70,6 +70,8 @@ var progOffers = [50, 200, 500, 1000, 2000, 3000, 5000, 10000];
 var progOffersRew = [50000, 100000, 250000, 500000, 1000000, 2500000, 5000000, 10000000];
 var progCave = [25, 50, 100, 250, 500, 1000, 1500, 3000];
 var progCaveRew = [10000, 20000, 50000, 100000, 200000, 500000, 1000000, 3000000];
+var progMob = [100, 500, 1000, 2000, 5000, 10000, 20000, 50000];
+var progMobRew = [10000, 20000, 50000, 100000, 200000, 500000, 1000000, 3000000];
 var assaultEmojiList = ["⚡️","☄","⚔","🗡","🏰","🐲","🥁","🔋","🐺","✨","☠️","💉"];
 
 var re = new RegExp("^[0-9]*$");
@@ -6049,7 +6051,7 @@ bot.onText(/statistiche|^stats$/i, function (message) {
 			keyboard: [["Torna al giocatore"], ["Torna al menu"]]
 		}
 	};
-	connection.query('SELECT id, mission_count, achievement_count, achievement_count_all, dungeon_count, cave_count, travel_count, global_event, kill_streak_ok, gain_exp, mission_team_count, creation_date, top_rank_count, total_trophies, power_used, death_count FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, mission_count, achievement_count, achievement_count_all, dungeon_count, cave_count, travel_count, global_event, kill_streak_ok, gain_exp, mission_team_count, creation_date, top_rank_count, total_trophies, power_used, death_count, mob_count FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
 		var missioni = rows[0].mission_count;
@@ -6060,6 +6062,7 @@ bot.onText(/statistiche|^stats$/i, function (message) {
 		var gain_exp = rows[0].gain_exp;
 		var mission_team_count = rows[0].mission_team_count;
 		var cave_count = rows[0].cave_count;
+		var mob_count = rows[0].mob_count;
 		var travel_count = rows[0].travel_count;
 		var top_rank_count = rows[0].top_rank_count;
 		var total_trophies = rows[0].total_trophies;
@@ -6194,6 +6197,7 @@ bot.onText(/statistiche|^stats$/i, function (message) {
 																											"*Imprese giornaliere*: " + formatNumber(imprese) + "\n" +
 																											"*Dungeon*: " + formatNumber(dungeon_tot) + "\n" +
 																											"*Cave*: " + formatNumber(cave_count) + "\n" +
+																											"*Mob*: " + formatNumber(mob_count) + "\n" +
 																											"*Viaggi*: " + formatNumber(travel_count) + "\n" +
 																											"*Incarichi*: " + mission_team_count + "\n" +
 
@@ -15801,6 +15805,10 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																						setAchievement(player_id, 3, 1);
 																						globalAchievement(player_id, 1);
 
+																						connection.query('UPDATE player SET mob_count = mob_count+1 WHERE id = ' + player_id, function (err, rows, fields) {
+																							if (err) throw err;
+																						});
+
 																						if (boss_battle == 1) {
 																							connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
@@ -24961,7 +24969,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 												});
 											}
 										} else if (answer.text.toLowerCase().indexOf("rapporto") != -1) {
-											connection.query("SELECT mob_num, place_weak, place_strong, is_boss FROM assault_mob_weak WHERE team_id = " + team_id + " ORDER BY id", function (err, rows, fields) {
+											connection.query("SELECT mob_num, place_weak, place_strong, is_boss FROM assault_mob_weak WHERE team_id = " + team_id + " ORDER BY is_boss ASC, id", function (err, rows, fields) {
 												if (err) throw err;
 
 												if (Object.keys(rows).length == 0) {
@@ -44797,7 +44805,9 @@ bot.onText(/^protezione/i, function (message) {
 				return;
 			}
 
-			bot.sendMessage(message.chat.id, "Il Campo di Forza ti fornirà protezione dalle Ispezioni per 24 ore, ma intanto non potrai ispezionare, confermi?\nNe possiedi ancora " + await getItemCnt(player_id, 237), yesno).then(function () {
+			const heist_protection_count_limit = 2;
+
+			bot.sendMessage(message.chat.id, "Il Campo di Forza ti fornirà protezione dalle Ispezioni per 24 ore, ma intanto non potrai ispezionare, confermi?\nNe possiedi ancora " + await getItemCnt(player_id, 237) + " puoi utilizzarne ancora " + (heist_protection_count_limit-heist_protection_count), yesno).then(function () {
 				answerCallbacks[message.chat.id] = async function (answer) {
 					var conf = answer.text.toLowerCase();
 					if (conf == "si") {
@@ -45764,7 +45774,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 	if (message.text.toLowerCase().indexOf("completate") != -1)
 		return;
 
-	connection.query('SELECT id, account_id, achievement_count, achievement_count_all, dungeon_count, mission_count, craft_count, mission_team_count, exp, reborn, cave_count FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
+	connection.query('SELECT id, account_id, achievement_count, achievement_count_all, dungeon_count, mission_count, craft_count, mission_team_count, exp, reborn, cave_count, mob_count FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = await isBanned(rows[0].account_id);
@@ -45784,6 +45794,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 		var mission_team_count = rows[0].mission_team_count;
 		var reb = rows[0].reborn;
 		var cave_count = rows[0].cave_count;
+		var mob_count = rows[0].mob_count;
 
 		helpMsg(message.chat.id, player_id, 1);
 
@@ -45910,6 +45921,16 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 							text += "Cave esplorate completate ✅\n";
 						else
 							text += formatNumber(cave_count) + " su " + formatNumber(progCave[end]) + " cave esplorate (" + formatNumber(progCaveRew[end]) + " §)\n";
+
+						end = 0;
+						for (var i = 0, len = Object.keys(progMob).length; i < len; i++) {
+							if (mob_count >= progMob[i])
+								end = (i + 1);
+						}
+						if (progMob[end] == undefined)
+							text += "Cave esplorate completate ✅\n";
+						else
+							text += formatNumber(mob_count) + " su " + formatNumber(progMob[end]) + " mob sconfitti (" + formatNumber(progMobRew[end]) + ")\n";
 
 						var time_end = new Date(global_date);
 						var now = new Date();
@@ -50996,17 +51017,13 @@ function checkFestival(chat_id, player_id, item_id) {
 }
 
 function checkAllProgress(player_id) {
-	setAchievementProgress(player_id, 1);
-	setAchievementProgress(player_id, 2);
-	setAchievementProgress(player_id, 3);
-	setAchievementProgress(player_id, 4);
-	setAchievementProgress(player_id, 5);
-	setAchievementProgress(player_id, 6);
-	setAchievementProgress(player_id, 7);
+	for (var i = 1; i < 9; i++) {
+		setAchievementProgress(player_id, i);
+	}
 }
 
 function setAchievementProgress(player_id, type) {
-	connection.query('SELECT id, chat_id, exp, reborn, mission_count, dungeon_count, craft_count, mission_team_count, cave_count FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+	connection.query('SELECT id, chat_id, exp, reborn, mission_count, dungeon_count, craft_count, mission_team_count, cave_count, mob_count FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
@@ -51018,6 +51035,7 @@ function setAchievementProgress(player_id, type) {
 		var craft = rows[0].craft_count;
 		var mission_team_count = rows[0].mission_team_count;
 		var cave_count = rows[0].cave_count;
+		var mob_count = rows[0].mob_count;
 
 		connection.query('SELECT total_cnt FROM merchant_offer WHERE player_id = ' + player_id, async function (err, rows, fields) {
 			if (err) throw err;
@@ -51060,6 +51078,11 @@ function setAchievementProgress(player_id, type) {
 				for (var i = 0, len = Object.keys(progCave).length; i < len; i++) {
 					if (cave_count >= progCave[i])
 						await achievementDetail(player_id, chat_id, type, i, progCaveRew[i], "Hai esplorato " + formatNumber(progCave[i]) + " cave");
+				}
+			} else if (type == 8) {
+				for (var i = 0, len = Object.keys(progMob).length; i < len; i++) {
+					if (mob_count >= progMob[i])
+						await achievementDetail(player_id, chat_id, type, i, progMobRew[i], "Hai sconfitto " + formatNumber(progMob[i]) + " mob");
 				}
 			}
 		});
