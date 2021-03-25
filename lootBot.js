@@ -45858,9 +45858,9 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 								end = (i + 1);
 						}
 						if (progLev[end] == undefined)
-							text += "Imprese per livello completate ✅\n";
+							text += "> Imprese per livello completate ✅\n";
 						else
-							text += "Livello " + formatNumber(getRealLevel(reb, lev)) + " su " + formatNumber(progLev[end]) + " totali (" + formatNumber(progLevRew[end]) + " §)\n";
+							text += "> Livello " + formatNumber(getRealLevel(reb, lev)) + " su " + formatNumber(progLev[end]) + " totali (" + formatNumber(progLevRew[end]) + " §)\n";
 
 						end = 0;
 						for (var i = 0, len = Object.keys(progMis).length; i < len; i++) {
@@ -45868,9 +45868,9 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 								end = (i + 1);
 						}
 						if (progMis[end] == undefined)
-							text += "Imprese per missioni completate ✅\n";
+							text += "> Imprese per missioni completate ✅\n";
 						else
-							text += formatNumber(mission_count) + " su " + formatNumber(progMis[end]) + " missioni completate (" + formatNumber(progMisRew[end]) + " §)\n";
+							text += "> " + formatNumber(mission_count) + " su " + formatNumber(progMis[end]) + " missioni completate (" + formatNumber(progMisRew[end]) + " §)\n";
 
 						end = 0;
 						for (var i = 0, len = Object.keys(progDung).length; i < len; i++) {
@@ -45878,9 +45878,9 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 								end = (i + 1);
 						}
 						if (progDung[end] == undefined)
-							text += "Imprese per dungeon completate ✅\n";
+							text += "> Imprese per dungeon completate ✅\n";
 						else
-							text += formatNumber(dungeon_count) + " su " + formatNumber(progDung[end]) + " dungeon completati (" + formatNumber(progDungRew[end]) + " §)\n";
+							text += "> " + formatNumber(dungeon_count) + " su " + formatNumber(progDung[end]) + " dungeon completati (" + formatNumber(progDungRew[end]) + " §)\n";
 
 						end = 0;
 						for (var i = 0, len = Object.keys(progCraft).length; i < len; i++) {
@@ -45888,9 +45888,9 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 								end = (i + 1);
 						}
 						if (progCraft[end] == undefined)
-							text += "Imprese di creazione completate ✅\n";
+							text += "> Imprese di creazione completate ✅\n";
 						else
-							text += formatNumber(craft_count) + " su " + formatNumber(progCraft[end]) + " punti creazione ottenuti (" + formatNumber(progCraftRew[end]) + " §)\n";
+							text += "> " + formatNumber(craft_count) + " su " + formatNumber(progCraft[end]) + " punti creazione ottenuti (" + formatNumber(progCraftRew[end]) + " §)\n";
 
 						end = 0;
 						for (var i = 0, len = Object.keys(progMissionTeam).length; i < len; i++) {
@@ -45898,9 +45898,9 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 								end = (i + 1);
 						}
 						if (progMissionTeam[end] == undefined)
-							text += "Imprese per incarichi completate ✅\n";
+							text += "> Imprese per incarichi completate ✅\n";
 						else
-							text += formatNumber(mission_team_count) + " su " + formatNumber(progMissionTeam[end]) + " incarichi completati (" + formatNumber(progMissionTeamRew[end]) + " §)\n";
+							text += "> " + formatNumber(mission_team_count) + " su " + formatNumber(progMissionTeam[end]) + " incarichi completati (" + formatNumber(progMissionTeamRew[end]) + " §)\n";
 
 						end = 0;
 						for (var i = 0, len = Object.keys(progOffers).length; i < len; i++) {
@@ -45908,9 +45908,9 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 								end = (i + 1);
 						}
 						if (progOffers[end] == undefined)
-							text += "Offerte contrabbandiere accettate completate ✅\n";
+							text += "> Offerte contrabbandiere accettate completate ✅\n";
 						else
-							text += formatNumber(offers_count) + " su " + formatNumber(progOffers[end]) + " offerte contrabbandiere accettate (" + formatNumber(progOffersRew[end]) + " §)\n";
+							text += "> " + formatNumber(offers_count) + " su " + formatNumber(progOffers[end]) + " offerte contrabbandiere accettate (" + formatNumber(progOffersRew[end]) + " §)\n";
 
 						end = 0;
 						for (var i = 0, len = Object.keys(progCave).length; i < len; i++) {
@@ -45918,9 +45918,9 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 								end = (i + 1);
 						}
 						if (progCave[end] == undefined)
-							text += "Cave esplorate completate ✅\n";
+							text += "> Cave esplorate completate ✅\n";
 						else
-							text += formatNumber(cave_count) + " su " + formatNumber(progCave[end]) + " cave esplorate (" + formatNumber(progCaveRew[end]) + " §)\n";
+							text += "> " + formatNumber(cave_count) + " su " + formatNumber(progCave[end]) + " cave esplorate (" + formatNumber(progCaveRew[end]) + " §)\n";
 
 						end = 0;
 						for (var i = 0, len = Object.keys(progMob).length; i < len; i++) {
@@ -45928,9 +45928,9 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 								end = (i + 1);
 						}
 						if (progMob[end] == undefined)
-							text += "Mob sconfitti completati ✅\n";
+							text += "> Mob sconfitti completati ✅\n";
 						else
-							text += formatNumber(mob_count) + " su " + formatNumber(progMob[end]) + " mob sconfitti (" + formatNumber(progMobRew[end]) + ")\n";
+							text += "> " + formatNumber(mob_count) + " su " + formatNumber(progMob[end]) + " mob sconfitti (" + formatNumber(progMobRew[end]) + ")\n";
 
 						var time_end = new Date(global_date);
 						var now = new Date();

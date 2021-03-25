@@ -2906,6 +2906,7 @@ CREATE TABLE `player` (
   `cave_time_end` timestamp NULL DEFAULT NULL,
   `cave_limit` int(11) NOT NULL DEFAULT 0,
   `cave_count` int(11) NOT NULL DEFAULT 0,
+  `mob_count` int(11) NOT NULL DEFAULT 0,
   `travel_count` int(11) NOT NULL DEFAULT 0,
   `gems` int(3) NOT NULL DEFAULT 0,
   `necro_pnt` int(11) NOT NULL DEFAULT 0,
