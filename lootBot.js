@@ -29614,8 +29614,6 @@ bot.onText(/^accademia/i, function (message) {
 					} else
 						iKeys = [["Scollega Accademia"], ["Annulla"]];
 
-
-					iKeys.splice(0, 0, ["Scollega Accademia"]);
 					var kb = {
 						parse_mode: "Markdown",
 						reply_markup: {
