@@ -206,7 +206,7 @@ var j6 = Schedule.scheduleJob('00 10 * * 6', function () { //10:00
 });
 
 var j7 = Schedule.scheduleJob('00 10 * * 1', function () { //10:00
-	// deactivateEvent();
+	deactivateEvent();
 });
 
 var j8 = Schedule.scheduleJob('0 * * * *', function () { //ogni ora
@@ -6051,7 +6051,7 @@ bot.onText(/statistiche|^stats$/i, function (message) {
 			keyboard: [["Torna al giocatore"], ["Torna al menu"]]
 		}
 	};
-	connection.query('SELECT id, mission_count, achievement_count, achievement_count_all, dungeon_count, cave_count, travel_count, global_event, kill_streak_ok, gain_exp, mission_team_count, creation_date, top_rank_count, total_trophies, power_used, death_count, mob_count FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, mission_count, achievement_count, achievement_count_all, dungeon_count, cave_count, travel_count, global_event, kill_streak_ok, gain_exp, mission_team_count, creation_date, top_rank_count, total_trophies, power_used, death_count, mob_count, market_pack_u FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 		var player_id = rows[0].id;
 		var missioni = rows[0].mission_count;
@@ -6069,7 +6069,7 @@ bot.onText(/statistiche|^stats$/i, function (message) {
 		var triplet = rows[0].achievement_count_all;
 		var power_used = rows[0].power_used;
 		var death_count = rows[0].death_count;
-		var market_pack_perc = rows[0].market_pack_perc;
+		var market_pack_u = rows[0].market_pack_u;
 
 		var registrazione = "";
 		if (rows[0].creation_date != null)
@@ -6133,10 +6133,10 @@ bot.onText(/statistiche|^stats$/i, function (message) {
 												connection.query('SELECT COUNT(*) As cnt FROM search_history WHERE player_id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
 													var ricerche = rows[0].cnt;
-													connection.query('SELECT SUM(quantity) As cnt FROM market_direct_history WHERE from_id = ' + player_id, function (err, rows, fields) {
+													connection.query('SELECT IFNULL(SUM(quantity), 0) As cnt FROM market_direct_history WHERE from_id = ' + player_id, function (err, rows, fields) {
 														if (err) throw err;
 														var vendite = rows[0].cnt;
-														connection.query('SELECT SUM(quantity) As cnt FROM market_direct_history WHERE to_id = ' + player_id, function (err, rows, fields) {
+														connection.query('SELECT IFNULL(SUM(quantity), 0) As cnt FROM market_direct_history WHERE to_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 															var acquisti = rows[0].cnt;
 															connection.query('SELECT COUNT(*) As cnt FROM market_history WHERE from_id = ' + player_id, function (err, rows, fields) {
@@ -6192,7 +6192,7 @@ bot.onText(/statistiche|^stats$/i, function (message) {
 																											"*Triplette*: " + formatNumber(triplet) + "\n" +
 																											"*Flaridion utilizzati*: " + formatNumber(power_used) + "\n" +
 																											"*Uccisioni subite*: " + formatNumber(death_count) + "\n" +
-																											"*Pacchetti U acquistati*: " + formatNumber(market_pack_perc) + "\n" +
+																											"*Pacchetti U acquistati*: " + formatNumber(market_pack_u) + "\n" +
 
 																											"\n⚔️ *Hai completato*:\n" +
 																											"*Missioni*: " + formatNumber(missioni) + "\n" +
