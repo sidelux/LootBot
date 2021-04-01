@@ -6069,6 +6069,7 @@ bot.onText(/statistiche|^stats$/i, function (message) {
 		var triplet = rows[0].achievement_count_all;
 		var power_used = rows[0].power_used;
 		var death_count = rows[0].death_count;
+		var market_pack_perc = rows[0].market_pack_perc;
 
 		var registrazione = "";
 		if (rows[0].creation_date != null)
@@ -6191,6 +6192,7 @@ bot.onText(/statistiche|^stats$/i, function (message) {
 																											"*Triplette*: " + formatNumber(triplet) + "\n" +
 																											"*Flaridion utilizzati*: " + formatNumber(power_used) + "\n" +
 																											"*Uccisioni subite*: " + formatNumber(death_count) + "\n" +
+																											"*Pacchetti U acquistati*: " + formatNumber(market_pack_perc) + "\n" +
 
 																											"\n⚔️ *Hai completato*:\n" +
 																											"*Missioni*: " + formatNumber(missioni) + "\n" +
@@ -15803,7 +15805,6 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																						getSnowball(message.chat.id, message.from.username, player_id, 1);
 
 																						setAchievement(player_id, 3, 1);
-																						globalAchievement(player_id, 1);
 
 																						connection.query('UPDATE player SET mob_count = mob_count+1 WHERE id = ' + player_id, function (err, rows, fields) {
 																							if (err) throw err;
@@ -34591,7 +34592,7 @@ bot.onText(/offerte giornaliere|mercante pazzo|^mercante$/i, function (message) 
 													setAchievement(player_id, 45, 1);
 
 													if (rarity_id == 9) {
-														connection.query('UPDATE player SET market_pack_perc = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+														connection.query('UPDATE player SET market_pack_perc = 0, market_pack_u = market_pack_u+1 WHERE id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 														});
 													}
@@ -35180,8 +35181,10 @@ bot.onText(/utilizza polvere/i, function (message) {
 									nec += Math.round(estimate / 10000);
 								}
 
+								/*
 								if (global_end == 1)
 									nec = Math.round(nec/2);
+								*/
 
 								bot.sendMessage(message.chat.id, "Quante copie dell'oggetto vuoi creare? Una copia di questo oggetto ti costerà " + nec + " unità di Polvere", kbNum).then(function () {
 									answerCallbacks[message.chat.id] = async function (answer) {
@@ -43142,7 +43145,7 @@ bot.onText(/necro del destino/i, function (message) {
 							bot.sendMessage(message.chat.id, "Con i Necrospiriti 💠 puoi acquistare diversi oggetti:" +
 											"\n1 -> 2 Oggetti Casuali (fino a UE inclusa Runa Necro) (" + (1*multiplier) + ")" + (step >= 1 ? " ✅ ⚠️" : "") +
 											"\n2 -> 50 💎 (5)" + (step >= 2 ? " ✅" : "") +
-											"\n3 -> Amuleto del Necrospirito (10)" + (step >= 3 ? " ✅" : "") +
+											"\n3 -> Amuleto del Necrospirito (IN) (10)" + (step >= 3 ? " ✅" : "") +
 											"\n4 -> 1 Frutto del Set Frutta (S) (" + (15*multiplier) + ")" + (step >= 4 ? " ✅ ⚠️": "") +
 											"\n5 -> Salmone (S) (25)" + (step >= 5 ? " ✅" : "") +
 											"\n6 -> Trasmogrificazione in Necrolama di Phoenix (25)" + (step >= 6 ? " ✅" : "") +
@@ -45962,11 +45965,9 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 										cap = "???";
 
 									// pesce d'aprile
-									/*
-									globalVal = Math.round(getRandomArbitrary(1, 999999));
-									cap = Math.round(getRandomArbitrary(999999, 9999999999));
-									global_desc = "oggetti U ottenuti in qualsiasi modo";
-									*/
+									globalVal = Math.round(getRandomArbitrary(1, 999));
+									cap = Math.round(getRandomArbitrary(99, 9999));
+									global_desc = "monete lunari ottenute tramite donazioni";
 									// fine
 
 									text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> " + global_desc + "\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
@@ -52912,7 +52913,6 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											chest7 += 3;
 									}
 
-									/*
 									if (rows[i].global_end == 1) {
 										chest1 = chest1*2;
 										chest2 = chest2*2;
@@ -52924,7 +52924,6 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 										chest8 = chest8*2;
 										chest9 = chest9*2;
 									}
-									*/
 
 									/*
 									if (rows[i].global_end == 1)
@@ -61311,6 +61310,9 @@ async function setFinishedCave(element, index, array) {
 				msg += " (di cui " + stone6e + " evolute)";
 		}
 		msg += "\n\n" + caveid + " pietre per un totale di " + totPnt + " punti" + extra;
+
+		if (cave_gem == 0)
+			globalAchievement(element.id, caveid);
 
 		bot.sendMessage(chat_id, "Hai completato l'esplorazione della cava e hai ottenuto:" + msg + boost_text);
 		setAchievement(element.id, 54, (stone1e+stone2e+stone3e+stone4e+stone5e+stone6e));
