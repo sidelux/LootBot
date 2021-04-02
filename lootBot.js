@@ -284,10 +284,8 @@ callNTimes(60000, function () { //Ogni 1 minuto
 	var d = new Date();
 	if ((d.getDay() != 6) && (d.getDay() != 0) && (luckyMode == 1))
 		luckyMode = 0;
-	/*
 	if ((d.getDay() != 6) && (d.getDay() != 0) && (crazyMode == 1))
 		crazyMode = 0;
-	*/
 	if ((d.getDay() != 6) && (d.getDay() != 0) && (wanted == 1))
 		wanted = 0;
 	if ((d.getDay() > 3) && (d.getDay() < 6) && (villa == 1))
@@ -14765,10 +14763,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 		var crit_bool = 0;
 		var crit_txt = "";
 
-		/*
 		if (crazyMode == 1)
 			danno = danno * 2;
-		*/
 
 		var magic = 0;
 		var magicId = 0;
@@ -29262,12 +29258,10 @@ bot.onText(/Gestisci Membri/i, function (message) {
 														var motherId = rows[0].id;
 														var teamName = rows[0].name;
 
-														/*
 														if (crazyMode == 1) {
 															bot.sendMessage(message.chat.id, "Durante l'evento folle non puoi trasferire", kbBack);
 															return;
 														}
-														*/
 
 														if (player_id == playerId) {
 															bot.sendMessage(message.chat.id, "Non puoi trasferire te stesso", kbBack);
@@ -29389,12 +29383,10 @@ bot.onText(/Gestisci Membri/i, function (message) {
 
 														var teamName = rows[0].name;
 
-														/*
 														if (crazyMode == 1) {
 															bot.sendMessage(message.chat.id, "Durante l'evento folle non puoi trasferire", kbBack);
 															return;
 														}
-														*/
 
 														if (player_id == playerId) {
 															bot.sendMessage(message.chat.id, "Non puoi trasferire te stesso", kbBack);
@@ -38019,12 +38011,10 @@ bot.onText(/^vendi/i, function (message) {
 
 		if ((oggetto == "C") || (oggetto == "NC") || (oggetto == "R") || (oggetto == "UR") || (oggetto == "L") || (oggetto == "E")) {
 
-			/*
 			if (crazyMode == 1) {
 				bot.sendMessage(message.chat.id, "Durante il weekend folle non puoi vendere oggetti", back);
 				return;
 			}
-			*/
 
 			bot.sendMessage(message.chat.id, "Sei veramente sicuro di voler vendere tutta la rarità " + oggetto + " alla metà del valore?", yesno).then(function () {
 				answerCallbacks[message.chat.id] = async function (answer) {
@@ -38136,12 +38126,10 @@ bot.onText(/^vendi/i, function (message) {
 			return;
 		}
 
-		/*
 		if (crazyMode == 1) {
 			bot.sendMessage(message.chat.id, "Durante il weekend folle non puoi vendere oggetti", back);
 			return;
 		}
-		*/
 
 		connection.query('SELECT item.id, quantity FROM item, inventory WHERE inventory.item_id = item.id AND item.name = "' + oggetto + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
 			if (err) throw err;
@@ -38552,12 +38540,10 @@ bot.onText(/compra/i, function (message) {
 					});
 				});
 			} else if (oggetto.indexOf("Pozione") != -1) {
-				/*
 				if (crazyMode == 1) {
 					bot.sendMessage(message.chat.id, "Non puoi acquistare pozioni durante il weekend folle", store);
 					return;
 				}
-				*/
 				connection.query('SELECT id FROM item WHERE name = "' + oggetto + '"', function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length == 0) {
@@ -38636,12 +38622,10 @@ bot.onText(/compra/i, function (message) {
 					});
 				});
 			} else if ((oggetto.toLowerCase().indexOf("piuma di fenice") != -1) || (oggetto.toLowerCase().indexOf("cenere di fenice") != -1)) {
-				/*
 				if (crazyMode == 1) {
 					bot.sendMessage(message.chat.id, "Non puoi acquistare piume o ceneri durante il weekend folle", store);
 					return;
 				}
-				*/
 				connection.query('SELECT id, name FROM item WHERE name = "' + oggetto + '"', function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length == 0) {
@@ -41569,14 +41553,14 @@ bot.onText(/weekend della follia/i, function (message) {
 
 	var bonus = "> Tutte le missioni velocizzate\n" +
 		"> Ricompense aumentate di scrigni ed exp nelle missioni\n" +
-		// "> Danno raddoppiato in assalto, dungeon e mappe\n" +
+		"> Danno raddoppiato in assalto, dungeon e mappe\n" +
 		"> Possibilità di ottenere +1 punto rango al completamento del dungeon\n" +
-		// "> Monete raddoppiate nelle ispezioni\n" +
+		"> Monete raddoppiate nelle ispezioni\n" +
 		"> Possibilità maggiore di trovare U Base e missioni U!\n" +
 		"> Eventi in missione particolari e curiosi\n" +
 		"> Le Cariche Esplorative per i dungeon fornite sono incrementate di 6\n" +
 		"> Uccidendo i mob nel dungeon otterrai scrigni più rari!\n" +
-		// "> Nessun limite all'utilizzo di Varchi nei dungeon\n" +
+		"> Nessun limite all'utilizzo di Varchi nei dungeon\n" +
 		"> Ottieni una gemma per ogni missione L/E iniziata nell'evento\n" +
 		"> I tempi delle ispezioni sono ridotti (non quelle iniziate dal plus)\n" +
 		"> La probabilità di trovare bevande e oggetti speciali in missione è aumentata\n" +
@@ -41590,8 +41574,7 @@ bot.onText(/weekend della follia/i, function (message) {
 
 		"\nI bonus possono cambiare di volta in volta!";
 
-	// bot.sendMessage(message.chat.id, "*Follia!*\nQuesto evento dura tutto il weekend, fornendo questi *bonus*:\n\n" + bonus, back);
-	bot.sendMessage(message.chat.id, "*Follia!*\nQuesto evento dura fino alla fine del mese, fornendo questi *bonus*:\n\n" + bonus, back);
+	bot.sendMessage(message.chat.id, "*Follia!*\nQuesto evento dura tutto il weekend, fornendo questi *bonus*:\n\n" + bonus, back);
 });
 
 bot.onText(/evento della luna/i, function (message) {
@@ -44000,10 +43983,8 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 									var money = ability * 10;
 
 									money += money * (abBonus / 10);
-									/*
 									if (crazyMode == 1)
 										money = money * 2;
-									*/
 									money = Math.round(money);
 
 									// globale
@@ -45964,11 +45945,11 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 									if (global_hide == 1)
 										cap = "???";
 
-									// pesce d'aprile
-									globalVal = Math.round(getRandomArbitrary(1, 999));
-									cap = Math.round(getRandomArbitrary(99, 9999));
-									global_desc = "monete lunari ottenute tramite donazioni";
-									// fine
+									if ((new Date().getDate() == 1) && (new Date().getMonth() == 3)) {
+										globalVal = Math.round(getRandomArbitrary(1, 999));
+										cap = Math.round(getRandomArbitrary(99, 9999));
+										global_desc = "monete lunari ottenute tramite donazioni";
+									}
 
 									text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> " + global_desc + "\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
 								}
@@ -53258,10 +53239,8 @@ function getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class
 	else if (charm_id == 698)
 		danno += 50;
 
-	/*
 	if (crazyMode == 1)
 		danno = danno * 2;
-	*/
 
 	danno = parseInt(danno);
 

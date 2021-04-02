@@ -2888,6 +2888,7 @@ CREATE TABLE `player` (
   `paralyzed` int(11) NOT NULL DEFAULT 0,
   `market_pack` int(11) NOT NULL DEFAULT 0,
   `market_pack_perc` decimal(6,2) NOT NULL DEFAULT 0.00,
+  `market_pack_u` int(11) NOT NULL DEFAULT 0,
   `refilled` tinyint(1) NOT NULL DEFAULT 0,
   `mission_id` int(3) NOT NULL DEFAULT 0,
   `mission_gem` int(11) NOT NULL DEFAULT 0,
