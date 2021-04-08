@@ -599,6 +599,20 @@ bot.on('message', async function (message) {
 			});
 		}
 
+		if ((day == 4) && (month == 3) && (hour >= 9) && (year == 2021)) {
+			connection.query('SELECT COUNT(*) As cnt FROM one_time_gift WHERE player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				if (rows[0].cnt == 0) {
+					connection.query('INSERT INTO one_time_gift (player_id) VALUES (' + player_id + ')', async function (err, rows, fields) {
+						if (err) throw err;
+						await addItem(player_id, 803);
+						bot.sendMessage(message.chat.id, "Buona Pasqua 🐣!\nPer la tua presenza costante nel gioco, hai ricevuto una nuova IN non commerciabile: un *Ovetto di Pasqua 2021 (IN)*!", mark);
+						console.log("One time gift a " + message.from.username);
+					});
+				}
+			});
+		}
+
 		if ((day == 15) && (month == 4) && (hour >= 9) && (hour <= 22)) {
 			connection.query('SELECT COUNT(*) As cnt FROM one_time_gift WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -6178,18 +6192,18 @@ bot.onText(/statistiche|^stats$/i, function (message) {
 																											registrazione +
 																											"*Ricerche*: " + ricerche + " (ultimi 30g)\n" +
 																											"*Utenti invitati*: " + invitati + "\n" +
-																											"*Talenti sbloccati*: " + formatNumber(abilita) + "\n" +
-																											"*Assalti personali nel team attuale*: " + formatNumber(scalate) + "\n" +
+																											"*Talenti acquisiti*: " + formatNumber(abilita) + "\n" +
+																											"*Assalti completati*: " + formatNumber(scalate) + "\n" +
 																											"*3 assalti completati*: " + scalateOk + "\n" +
-																											"*Oggetti posseduti*: " + formatNumber(oggetti) + "\n" +
-																											"*Imprese globali (partecipando attivamente)*: " + global_event + "\n" +
+																											"*Oggetti nello zaino*: " + formatNumber(oggetti) + "\n" +
+																											"*Leader in imprese Globali*: " + global_event + "\n" +
 																											"*Esperienza accumulata*: " + formatNumber(gain_exp) + "\n" +
-																											"*Offerte contrabbandiere accettate*: " + formatNumber(contrabbandiere) + "\n" +
+																											"*Oggetti contrabbandati*: " + formatNumber(contrabbandiere) + "\n" +
 																											"*Livelli Talenti raggiunti*: " + talenti + "\n" +
 																											"*Ð accumulate*: " + formatNumber(top_rank_count) + "\n" +
 																											"*Triplette*: " + formatNumber(triplet) + "\n" +
 																											"*Flaridion utilizzati*: " + formatNumber(power_used) + "\n" +
-																											"*Uccisioni subite*: " + formatNumber(death_count) + "\n" +
+																											"*Colpi mortali subiti*: " + formatNumber(death_count) + "\n" +
 																											"*Pacchetti U acquistati*: " + formatNumber(market_pack_u) + "\n" +
 
 																											"\n⚔️ *Hai completato*:\n" +
@@ -14338,7 +14352,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																					var prob = rarity*10;
 																					if (rand > prob) {
 																						if (dungeonRush == 0) {
-																							var charges = rarity*3;
+																							var charges = rarity*10;
 																							await addDungeonEnergy(player_id, charges);
 																							bot.sendMessage(message.chat.id, "Il brucaliffo si ritiene soddisfatto del tuo dono e ti regala " + charges + " Cariche Esplorative!", dNext);
 																						} else {
@@ -15305,7 +15319,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																			});
 																		}
 
-																		if ((magic != 0) && (player_paralyzed == 0))
+																		if ((player_paralyzed == 0) && ((automagic != 0) || (magic != 0)))
 																			setAchievement(player_id, 6, 1);
 
 																		var meParalyzed = 0;
@@ -19217,7 +19231,7 @@ bot.onText(/cassaforte/i, function (message, match) {
 					parse_mode: "HTML",
 					reply_markup: {
 						resize_keyboard: true,
-						keyboard: [['Deposita'], ['Torna al team'], ['Torna al menu']]
+						keyboard: [['Deposita'], ['Log'], ['Torna al team'], ['Torna al menu']]
 					}
 				};
 			} else {

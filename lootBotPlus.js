@@ -9163,7 +9163,7 @@ bot.onText(/^\/figurine$/, function (message, match) {
   })
 })
 
-bot.onText(/^\/figurinel (.+)|^\/figurinel/, function (message, match) {
+bot.onText(/^\/figurinel (\w+)(\s\d+)?|^\/figurinel/, function (message, match) {
   let rarityFilter = ''
   let nameFilter = ''
   let quantityFilter = ''
@@ -9190,6 +9190,15 @@ bot.onText(/^\/figurinel (.+)|^\/figurinel/, function (message, match) {
 
       filterName = ' di rarità ' + match[1]
       rarityFilter = ' AND rarity = ' + match[1]
+    }
+    if (match[2] != undefined) {
+      if ((match[2] < 1) || (match[2] > 10)) {
+        bot.sendMessage(message.chat.id, 'La rarità deve essere compresa tra 1 e 10!')
+        return
+      }
+
+      filterName = ' di rarità ' + match[2]
+      rarityFilter = ' AND rarity = ' + match[2]
     }
   }
 
