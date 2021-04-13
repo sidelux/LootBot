@@ -15784,6 +15784,15 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 
 																						getSnowball(message.chat.id, message.from.username, player_id, 1);
 
+																						if (villa == 1) {
+																							var villaPnt = await connection.queryAsync('SELECT player_id, points FROM event_villa_status WHERE player_id = ' + player_id);
+																							if (Object.keys(villaPnt).length > 0) {
+																								var points = parseInt(villaPnt[0].points);
+																								await connection.queryAsync('UPDATE event_villa_status SET points = points+2 WHERE player_id = ' + player_id);
+																								bot.sendMessage(message.chat.id, "Hai ricevuto 2 punti per l'evento della Villa di LastSoldier95! Ora ne possiedi *" + (points + 2) + "*!", mark);
+																							};
+																						}
+
 																						setAchievement(player_id, 3, 1);
 
 																						connection.query('UPDATE player SET mob_count = mob_count+1 WHERE id = ' + player_id, function (err, rows, fields) {
@@ -30656,7 +30665,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 				if (Object.keys(rows).length == 0) {
 					connection.query('INSERT INTO event_villa_status (player_id) VALUES (' + player_id + ')', function (err, rows, fields) {
 						if (err) throw err;
-						bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella *Villa di LastSoldier95* 🏰!\nDurante questa settimana, questo facoltoso cavaliere ti premierà per il completamento di *più missioni o incarichi possibili*, più ne verranno completati, più il padrone di casa sarà soddisfatto.\nTi suggerisce anche un modo per coinvolgere più avventurieri possibili regalando loro *Casse Misteriose*!\nEgli ti assegna una Bevanda Energetica Plus per partire con più carica, puoi accettarla ma solo entrando immediatamente nella Villa la otterrai, buona fortuna!", kb1).then(function () {
+						bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella *Villa di LastSoldier95* 🏰!\nDurante questa settimana, questo facoltoso cavaliere ti premierà per il completamento di *più missioni, incarichi, mob e partite nelle mappe possibili*, più ne verranno completati, più il padrone di casa sarà soddisfatto.\nTi suggerisce anche un modo per coinvolgere più avventurieri possibili regalando loro *Casse Misteriose*!\nEgli ti assegna una Bevanda Energetica Plus per partire con più carica, puoi accettarla ma solo entrando immediatamente nella Villa la otterrai, buona fortuna!", kb1).then(function () {
 							answerCallbacks[message.chat.id] = async function (answer) {
 								if (answer.text.toLowerCase().indexOf("villa") != -1) {
 									connection.query('UPDATE player SET boost_id = 1, boost_mission = 6 WHERE id = ' + player_id, function (err, rows, fields) {
@@ -30677,7 +30686,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 				if (gift == 1)
 					plur = "a";
 
-				var text = "Benvenut" + gender_text + " nella *Villa di LastSoldier95* 🏰!\nSvolgi missioni, incarichi e partite nelle Mappe da questo momento ed ogni 5 punti otterrai la possibilità di inviare una *Cassa Misteriosa* 📦 ad un altro avventuriero (compresi gli oggetti U)!\n\nHai a disposizione *" + gift + "* Cass" + plur + " da inviare (" + rows[0].points + " punti)\nFin ora sono state inviate *" + formatNumber(count) + "* Casse, tu ne hai inviate *" + mycount + "* e ricevute *" + mycountrec + "*\n\nNota: Se non invierai tutte le casse entro martedì sera, il padrone di casa se le riprenderà scontento del tuo operato" + bonusText;
+				var text = "Benvenut" + gender_text + " nella *Villa di LastSoldier95* 🏰!\nSvolgi missioni, incarichi, sconfiggi mob e completa partite nelle Mappe da questo momento ed ogni 5 punti otterrai la possibilità di inviare una *Cassa Misteriosa* 📦 ad un altro avventuriero (compresi gli oggetti U)!\n\nHai a disposizione *" + gift + "* Cass" + plur + " da inviare (" + rows[0].points + " punti)\nFin ora sono state inviate *" + formatNumber(count) + "* Casse, tu ne hai inviate *" + mycount + "* e ricevute *" + mycountrec + "*\n\nNota: Se non invierai tutte le casse entro martedì sera, il padrone di casa se le riprenderà scontento del tuo operato" + bonusText;
 				bot.sendMessage(message.chat.id, text, kb).then(function () {
 					answerCallbacks[message.chat.id] = async function (answer) {
 						if (answer.text.indexOf("Cassa") != -1) {
@@ -57876,6 +57885,8 @@ function setFinishedTeamMission(element, index, array) {
 											
 											getSnowball(rows[i].chat_id, rows[i].nickname, rows[i].id, (1+Math.floor(mission_time_count_min/45)))
 										} else {
+											if (endText.length > 3500)
+												endText = endText.substr(0, 35000) + "...";
 											bot.sendMessage(rows[i].chat_id, "Hai completato l'incarico insieme al tuo party come richiesto da " + mandator + "!\nEcco il rapporto dell'incarico:\n<i>" + endText + "</i>\n\nNon ricevi ricompense poichè sei stato sospeso dall'amministratore", html);
 										}
 										connection.query('UPDATE player SET mission_party = 0, mission_team_count = mission_team_count+1 WHERE id = ' + rows[i].id, function (err, rows, fields) {
