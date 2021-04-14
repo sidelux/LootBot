@@ -9109,8 +9109,8 @@ bot.onText(/^\/figurinel (\w+)(\s\d+)?|^\/figurinel/, function (message, match) 
         return
       }
 
-      filterName = ' di rarità ' + match[2]
-      rarityFilter = ' AND rarity = ' + match[2]
+      filterName += ' di rarità ' + match[2]
+      rarityFilter += ' AND rarity = ' + match[2]
     }
   }
 
@@ -9377,7 +9377,7 @@ bot.onText(/^\/spia$/, function (message) {
     let spy_description = ''
     if (rows[0].spy_description != null) { spy_description = '\nPortano con sè un messaggio su una pergamena: <i>' + rows[0].spy_description + '</i>' }
 
-    if (rows[0].money < 500) {
+    if (rows[0].money < 5000) {
       bot.sendMessage(account_id, 'Non hai abbastanza monete')
       return
     }
@@ -9414,7 +9414,8 @@ bot.onText(/^\/spia$/, function (message) {
 
         getInfo(message, player, myhouse, 1, account_id)
 
-        connection.query('UPDATE player SET spy_count = spy_count+1, money=money-500 WHERE id = ' + player_id, function (err, rows, fields) {
+        await reduceMoney(player_id, 5000);
+        connection.query('UPDATE player SET spy_count = spy_count+1 WHERE id = ' + player_id, function (err, rows, fields) {
           if (err) throw err
         })
 
