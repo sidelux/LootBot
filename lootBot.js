@@ -7888,8 +7888,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												bot.sendMessage(message.chat.id, "Non hai abbastanza monete nella sacca!", kbBack);
 												return;
 											}
-											await reduceMoney(player_id, price);
-											connection.query('UPDATE map_lobby SET life = total_life, last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+											connection.query('UPDATE map_lobby SET money = money-' + price + ', life = total_life, last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 												bot.sendMessage(message.chat.id, "Hai recuperato tutta la salute!", kbBack);
 											});
@@ -7914,8 +7913,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												bot.sendMessage(message.chat.id, "Non hai abbastanza monete nella sacca!", kbBack);
 												return;
 											}
-											await reduceMoney(player_id, price);
-											connection.query('UPDATE map_lobby SET life = life+ROUND(total_life*' + (perc/100) + '), last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+											connection.query('UPDATE map_lobby SET money = money-' + price + ', life = life+ROUND(total_life*' + (perc/100) + '), last_obj = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 												bot.sendMessage(message.chat.id, "Hai recuperato il " + perc +"% della salute!", kbBack);
 											});
@@ -8139,8 +8137,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											}
 										}
 
-										await reduceMoney(player_id, price);
-										connection.query('UPDATE map_lobby SET last_obj = NULL, last_obj_val = NULL' + item_query + scrap_query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+										connection.query('UPDATE map_lobby SET money = money-' + price + ', last_obj = NULL, last_obj_val = NULL' + item_query + scrap_query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 											bot.sendMessage(message.chat.id, "Hai completato l'acquisto!" + text, kbBack);
 										});
@@ -8767,8 +8764,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									else if (life_gain > 0)
 										life_query = ', life = life+' + life_gain;
 
-									await addMoney(player_id, money);
-									connection.query('UPDATE map_lobby SET battle_turn_start = NOW(), wait_time = "' + long_date + '", battle_timeout = "' + long_date_turn + '", battle_timeout_limit = "' + long_date_battle + '", posX = ' + posX + ', posY = ' + posY + item_query + last_obj_query + scrap_query + enemy_query + pulse_query + life_query + boost_query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+									connection.query('UPDATE map_lobby SET money = money + ' + money + ', battle_turn_start = NOW(), wait_time = "' + long_date + '", battle_timeout = "' + long_date_turn + '", battle_timeout_limit = "' + long_date_battle + '", posX = ' + posX + ', posY = ' + posY + item_query + last_obj_query + scrap_query + enemy_query + pulse_query + life_query + boost_query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 
 										if (isBuild)
