@@ -177,7 +177,7 @@ var j3 = Schedule.scheduleJob('01 00 * * *', async function () { //00:01 notte
 	if (d.getDay() == 1) {
 		craftWeek();
 		resetTeamWeekly();
-		cleanInactive6();
+		cleanInactive12();
 	}
 	changeTapPrice();
 });
@@ -241,7 +241,7 @@ callNTimes(40000, function () { //40 secondi
 		checkDragonSearchCd();
 });
 
-callNTimes(60000, function () { //Ogni 1 minuto
+callNTimes(30000, function () { //Ogni 30 secondi
 	if (eventStory == 1)
 		checkEventMissions();
 	checkDragonArena();
@@ -318,7 +318,7 @@ callNTimes(60000, function () { //Ogni 1 minuto
 	}
 });
 
-callNTimes(120000, function () { //Ogni 2 minuti
+callNTimes(60000, function () { //Ogni 1 minuto
 	checkProtection();
 	checkDungeonNotification();
 	checkDungeonNotificationIstance();
@@ -335,7 +335,7 @@ callNTimes(120000, function () { //Ogni 2 minuti
 	checkCardTrade();
 });
 
-callNTimes(300000, function () { //Ogni 5 minuti
+callNTimes(120000, function () { //Ogni 2 minuti
 	checkTeamCd();
 	checkTravels();
 	checkEnchant();
@@ -1023,21 +1023,21 @@ bot.onText(/^\/cleanInactive$/, function (message, match) {
 	};
 });
 
-bot.onText(/^\/cleanInactive6$/, function (message, match) {
+bot.onText(/^\/cleanInactive12$/, function (message, match) {
 	if (message.from.id == 20471035) {
 		connection.query("SELECT COUNT(P.nickname) As cnt FROM last_command L RIGHT JOIN player P ON L.account_id = P.account_id WHERE time < NOW() - INTERVAL 6 MONTH", function (err, rows, fields) {
 			if (err) throw err;
-			bot.sendMessage(message.chat.id, "Inattivi da + di 6 mesi: " + rows[0].cnt + "\nContinuo?", yesno).then(function () {
+			bot.sendMessage(message.chat.id, "Inattivi da + di 12 mesi: " + rows[0].cnt + "\nContinuo?", yesno).then(function () {
 				answerCallbacks[message.chat.id] = async function (answer) {
 					if (answer.text.toLowerCase() == "si") {
-						connection.query("SELECT P.id, P.nickname, L.time FROM last_command L RIGHT JOIN player P ON L.account_id = P.account_id WHERE time < NOW() - INTERVAL 6 MONTH", function (err, rows, fields) {
+						connection.query("SELECT P.id, P.nickname, L.time FROM last_command L RIGHT JOIN player P ON L.account_id = P.account_id WHERE time < NOW() - INTERVAL 12 MONTH", function (err, rows, fields) {
 							if (err) throw err;
 							for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 								console.log(rows[i].id + "  - " + rows[i].nickname + " inattivo dal " + rows[i].time);
 							bot.sendMessage(message.chat.id, "Continuare con la cancellazione?", yesno).then(function () {
 								answerCallbacks[message.chat.id] = async function (answer) {
 									if (answer.text.toLowerCase() == "si") {
-										cleanInactive6();
+										cleanInactive12();
 										bot.sendMessage(message.chat.id, "Fin.", back);
 									};
 								};
@@ -46570,8 +46570,8 @@ function setTapPrice(element, index, array) {
 	});
 }
 
-function cleanInactive6() {
-	connection.query("SELECT P.id, P.nickname, L.time FROM last_command L RIGHT JOIN player P ON L.account_id = P.account_id WHERE time < NOW() - INTERVAL 6 MONTH", function (err, rows, fields) {
+function cleanInactive12() {
+	connection.query("SELECT P.id, P.nickname, L.time FROM last_command L RIGHT JOIN player P ON L.account_id = P.account_id WHERE time < NOW() - INTERVAL 12 MONTH", function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
@@ -48234,7 +48234,7 @@ function printStart(message) {
 						'- Importante! Leggi il <a href="http://telegra.ph/Regolamento-di-LOOT-01-13">Regolamento Completo di Loot</a>.\n\n' +
 						'<b>Inattività</b> 🔎\n' +
 						'- Dopo 60 giorni di inattività il tuo account sarà automaticamente inserito in modalità vacanza.\n' +
-						'- Dopo 6 mesi di inattività il tuo account sarà eliminato senza possibilità di ripristinarlo.\n' +
+						'- Dopo 12 mesi di inattività il tuo account sarà eliminato senza possibilità di ripristinarlo.\n' +
 						'- Come ultima attività si intende un qualsiasi comando inviato tramite il bot principale o il Plus.\n\n' +
 						'<b>Link Utili</b> 📃\n' +
 						'- Per aiutarmi a mantenere il server, <a href="https://www.paypal.me/EdoardoCortese">fai una donazione</a>, riceverai delle Monete Lunari 🌕!\n\n' +
