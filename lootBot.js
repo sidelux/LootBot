@@ -19297,7 +19297,9 @@ bot.onText(/cassaforte/i, function (message, match) {
 																if (err) throw err;
 															});
 														} else {
-															await addMoney(player_id, deposit);
+															connection.query('UPDATE team_safe SET money = money+' + deposit + ' WHERE team_id = ' + team_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
 														}
 
 														bot.sendMessage(message.from.id, "Hai depositato correttamente " + formatNumber(deposit) + " §!", kbBack);
@@ -19386,7 +19388,9 @@ bot.onText(/cassaforte/i, function (message, match) {
 																		});
 																		quantityReq -= rows[k].money;
 																	} else {
-																		await reduceMoney(rows[k].id, quantityReq);
+																		connection.query('UPDATE team_safe SET money = money-' + quantityReq + ' WHERE id = ' + rows[k].id, function (err, rows, fields) {
+																			if (err) throw err;
+																		});
 																		break;
 																	}
 																}
