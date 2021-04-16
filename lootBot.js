@@ -19770,11 +19770,18 @@ bot.onText(/^\/pagateam (.+)|^\/pagateam/i, function (message, match) {
 		var player_id = rows[0].id;
 		var money = rows[0].money;
 
-		connection.query('SELECT team_id FROM team_player WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
+		connection.query('SELECT team_id, pay_next_time FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
 				bot.sendMessage(message.from.id, "Devi essere in un team per utilizzare questo comando");
+				return;
+			}
+
+			var now = new Date();
+			var pay_next_time = new Date(rows[0].pay_next_time);
+			if (now < pay_next_time) {
+				bot.sendMessage(message.from.id, "Attendi qualche minuto prima di usare di nuovo il comando!");
 				return;
 			}
 
@@ -19818,7 +19825,10 @@ bot.onText(/^\/pagateam (.+)|^\/pagateam/i, function (message, match) {
 				}
 
 				await reduceMoney(player_id, total_price_reduce);
-				bot.sendMessage(message.chat.id, "Hai inviato correttamente *" + formatNumber(total_price_reduce) + " §* al team!", mark);
+				connection.query('UPDATE team_player SET pay_next_time = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE player_id = ' + player_id, function (err, rows, fields) {
+					if (err) throw err;
+					bot.sendMessage(message.chat.id, "Hai inviato correttamente *" + formatNumber(total_price_reduce) + " §* al team!", mark);
+				});
 			});
 		});
 	});
