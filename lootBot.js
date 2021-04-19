@@ -27285,7 +27285,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																					if (magic_rand > rand) {
 																						epic_var++;
 																						var heal = Math.round(mob_total_life*(players_num/400));
-																						if (heal+mob_life > mob_total_life)
+																						if (heal+mob_life > (mob_total_life*2))
 																							heal = mob_total_life-mob_life;
 																						mob_life += heal;
 																						player_text += "\nIl nemico lancia <b>" + magicToName(1) + "</b> e recupera " + formatNumber(heal) + " hp";

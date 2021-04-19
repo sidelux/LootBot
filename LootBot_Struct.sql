@@ -3523,6 +3523,7 @@ CREATE TABLE `team_player` (
   `suspended` int(11) NOT NULL DEFAULT 0,
   `notification` int(11) NOT NULL DEFAULT 1,
   `kill_streak` int(11) NOT NULL DEFAULT 0,
+  `pay_next_time` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `player_id` (`player_id`),
   KEY `team_id` (`team_id`),
