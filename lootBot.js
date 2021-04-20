@@ -438,6 +438,9 @@ bot.on('message', async function (message) {
 	}
 	*/
 
+	if (message.from.id == 20471035)
+		console.log(message);
+
 	if (message.text != undefined) {
 		if (message.via_bot != undefined) {
 			if (message.via_bot.is_bot == 1) {
@@ -46415,6 +46418,10 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 																	connection.query('UPDATE player SET cave_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', cave_time_end = "' + long_date + '", cave_gem = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
+
+																	connection.query('INSERT INTO cave_history (player_id, cave_id) VALUES (' + player_id + ', ' + rows[0].id + ')', function (err, rows, fields) {
+																		if (err) throw err;
+																	});
 																}
 															});
 														} else {
@@ -61233,6 +61240,10 @@ async function setFinishedCave(element, index, array) {
 		bot.sendMessage(chat_id, "Hai ottenuto un Respiro di Morte! Che fortuna!");
 	}
 	setAchievement(element.id, 11, 1);
+
+	connection.query('UPDATE cave_history SET end_time = NOW() WHERE player_id = ' + element.id + ' AND end_time IS NULL', function (err, rows, fields) {
+		if (err) throw err;
+	});
 }
 
 function setFinishedBoost(element, index, array) {
