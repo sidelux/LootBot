@@ -671,6 +671,25 @@ CREATE TABLE `cave` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `cave_history`
+--
+
+DROP TABLE IF EXISTS `cave_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `cave_history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `player_id` int(11) NOT NULL,
+  `cave_id` int(11) NOT NULL,
+  `start_time` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `end_time` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `cave_history_player_id` (`player_id`),
+  CONSTRAINT `cave_history_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `chest`
 --
 

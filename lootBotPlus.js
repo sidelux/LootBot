@@ -570,7 +570,8 @@ bot.onText(/^\/comandigiocatore/, function (message) {
           '/posizione - Indica la posizione in classifica globale e se si otterrà il relativo punto partecipazione\n' +
           '/figurine - Visualizza un riassunto delle figurine possedute raggruppate per rarità\n' +
           "/figurinel - Visualizza le figurine possedute (specifica anche la rarità, il nome parziale, 'doppie', rarità o raritàinv)\n" +
-          '/figurina - Visualizza i dettagli delle figurine', mark)
+          '/figurina - Visualizza i dettagli delle figurine\n' +
+          '/figurinem - Visualizza le figurine mancanti per la rarità indicata', mark)
 })
 
 bot.onText(/^\/comandioggetto/, function (message) {
@@ -9075,6 +9076,48 @@ bot.onText(/^\/figurine$/, function (message, match) {
   })
 })
 
+bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
+  if (match[1] == undefined) {
+    bot.sendMessage(message.chat.id, 'Specifica la rarità alla fine del comando, da 1 a 10')
+    return
+  }
+  if ((match[1] < 1) || (match[1] > 10)) {
+    bot.sendMessage(message.chat.id, 'La rarità deve essere compresa tra 1 e 10!')
+    return
+  }
+
+  const rarity = match[1];
+
+  connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+    if (err) throw err
+    if (Object.keys(rows).length == 0) {
+      bot.sendMessage(message.chat.id, 'Non sei registrato!')
+      return
+    }
+
+    const player_id = rows[0].id
+
+    connection.query('SELECT name, rarity FROM card_list WHERE id NOT IN (SELECT card_id FROM card_inventory WHERE player_id = ' + player_id + ') AND rarity = ' + rarity, function (err, rows, fields) {
+      if (err) throw err
+
+      if (Object.keys(rows).length == 0) {
+        bot.sendMessage(message.chat.id, message.from.username + ', possiedi tutte le figurine per rarità ' + rarity + '!', html)
+        return
+      }
+
+      let text = message.from.username + ', ti mancano ' + formatNumber(Object.keys(rows).length) + ' figurine per rarità ' + rarity + ':\n'
+      for (i = 0, len = Object.keys(rows).length; i < len; i++) { text += '> ' + rows[i].name + ' (' + rows[i].rarity + ')\n' }
+
+      if (text.length >= 3500) {
+        bot.sendMessage(message.chat.id, message.from.username + ', troppi risultati, prova con una rarità diversa', html)
+        return
+      }
+
+      bot.sendMessage(message.chat.id, text, html)
+    })
+  });
+});
+
 bot.onText(/^\/figurinel (\w+)(\s\d+)?|^\/figurinel/, function (message, match) {
   let rarityFilter = ''
   let nameFilter = ''
@@ -9139,7 +9182,7 @@ bot.onText(/^\/figurinel (\w+)(\s\d+)?|^\/figurinel/, function (message, match) 
         for (i = 0, len = Object.keys(rows).length; i < len; i++) { text += '> ' + rows[i].name + ' (' + rows[i].rarity + ', ' + rows[i].quantity + ')\n' }
 
         if (text.length >= 3500) {
-          bot.sendMessage(message.chat.id, message.from.username + ', il messaggio è troppo lungo, riprova con un filtro', html)
+          bot.sendMessage(message.chat.id, message.from.username + ', troppi risultati, riprova con un filtro', html)
           return
         }
 
