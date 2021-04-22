@@ -14342,6 +14342,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																						}
 																					}
 
+																					setAchievement(player_id, 96, 1);
 																					await endDungeonRoom(player_id, boost_id, boost_mission);
 																					connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
