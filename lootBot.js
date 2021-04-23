@@ -1313,7 +1313,7 @@ bot.onText(/^\/refreshEstimate/i, function (message) {
 		connection.query('UPDATE item SET estimate = value WHERE estimate < value', function (err, rows, fields) {
 			if (err) throw err;
 
-			connection.query('SELECT id, name, estimate FROM item', function (err, rows, fields) {
+			connection.query('SELECT id, name, estimate FROM item', async function (err, rows, fields) {
 				if (err) throw err;
 
 				var id = 0;
@@ -1325,36 +1325,27 @@ bot.onText(/^\/refreshEstimate/i, function (message) {
 					est = rows[i].estimate;
 					n = rows[i].name;
 
-					connection.query('SELECT DISTINCT(from_id), price FROM market_direct_history WHERE time BETWEEN date_sub(NOW(),INTERVAL 1 WEEK) AND NOW() AND price != (SELECT value FROM item WHERE id = ' + id + ') AND item_id = ' + id + ' AND type = 2', function (err, rows, fields) {
-						if (err) throw err;
-						var price = 0;
-						var arr = [];
-						if (Object.keys(rows).length > 1) {
-							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-								if ((rows[i].price < (this.est) * 3) && (rows[i].price > (this.est / 3)))
-									arr.push(rows[i].price);
-							}
-
-							if (arr.length > 1) {
-								price = estimate(arr);
-
-								if (!isNaN(price)) {
-									connection.query('UPDATE item SET estimate = ' + price + ' WHERE id = ' + this.id, function (err, rows, fields) {
-										if (err) throw err;
-									});
-									console.log("Estimate per " + this.n + ": " + price);
-								} else {
-									console.log("Estimate per " + this.n + ": scartato per isNaN");
-								}
-							} else {
-								console.log("Estimate per " + this.n + ": scartato, pochi valori");
-							}
+					const market_direct_history = await connection.queryAsync('SELECT DISTINCT(from_id), price FROM market_direct_history WHERE time BETWEEN date_sub(NOW(),INTERVAL 1 WEEK) AND NOW() AND price != (SELECT value FROM item WHERE id = ' + id + ') AND item_id = ' + id + ' AND type = 2')
+					var price = 0;
+					var arr = [];
+					if (Object.keys(market_direct_history).length > 1) {
+						for (var i = 0, len = Object.keys(market_direct_history).length; i < len; i++) {
+							if ((market_direct_history[i].price < (est) * 3) && (market_direct_history[i].price > (est / 3)))
+								arr.push(market_direct_history[i].price);
 						}
-					}.bind({
-						id: id,
-						est: est,
-						n: n
-					}));
+						if (arr.length > 1) {
+							price = estimate(arr);
+
+							if (!isNaN(price)) {
+								await connection.queryAsync('UPDATE item SET estimate = ' + price + ' WHERE id = ' + id)
+								console.log("Estimate per " + n + ": " + price);
+							} else {
+								console.log("Estimate per " + n + ": scartato per isNaN");
+							}
+						} else {
+							console.log("Estimate per " + n + ": scartato, pochi valori");
+						}
+					}
 				}
 			});
 		});
@@ -9829,7 +9820,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 						if (err) throw err;
 
 						if (Object.keys(rows).length == 0) {
-							connection.query('SELECT rooms, id FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
+							connection.query('SELECT rooms, id FROM dungeon_list WHERE id = ' + dungeon_id, async function (err, rows, fields) {
 								if (err) throw err;
 
 								if (Object.keys(rows).length == 0) {
@@ -9942,35 +9933,27 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 									top = arr1[i];
 									right = arr2[i];
 									left = arr3[i];
-									connection.query('INSERT INTO dungeon_rooms (room_id, dungeon_id, player_id, dir_top, dir_right, dir_left) VALUES (' + (i + 1) + ',' + dungeon_id + ',' + player_id + ',' + top + ',' + right + ',' + left + ')', function (err, rows, fields) {
-										if (err) throw err;
-									});
+									await connection.queryAsync('INSERT INTO dungeon_rooms (room_id, dungeon_id, player_id, dir_top, dir_right, dir_left) VALUES (' + (i + 1) + ',' + dungeon_id + ',' + player_id + ',' + top + ',' + right + ',' + left + ')')
 									if ((top == 4) || (right == 4) || (left == 4)) {
 										var randC = Math.random()*100;
 										var craftable = "craftable = 0 AND";
 										if (randC < 10)	// sia craftati che non col 10%
 											craftable = "";
-										connection.query('SELECT id, value, estimate FROM item WHERE ' + craftable + ' rarity NOT IN ("UE","A","H","S","D","U","IN","X") ORDER BY RAND() LIMIT 3', function (err, rows, fields) {
-											if (err) throw err;
+										const craftableRarity = await connection.queryAsync('SELECT id, value, estimate FROM item WHERE ' + craftable + ' rarity NOT IN ("UE","A","H","S","D","U","IN","X") ORDER BY RAND() LIMIT 3')
 
-											var item1 = rows[0].id;
-											var item2 = rows[1].id;
-											var item3 = rows[2].id;
+										var item1 = craftableRarity[0].id;
+										var item2 = craftableRarity[1].id;
+										var item3 = craftableRarity[2].id;
 
-											var est1 = parseInt(rows[0].estimate);
-											var est2 = parseInt(rows[1].estimate);
-											var est3 = parseInt(rows[2].estimate);
+										var est1 = parseInt(craftableRarity[0].estimate);
+										var est2 = parseInt(craftableRarity[1].estimate);
+										var est3 = parseInt(craftableRarity[2].estimate);
 
-											var price1 = Math.round(Math.random() * (est1 * 0.1) + (est1));
-											var price2 = Math.round(Math.random() * (est2 * 0.1) + (est2));
-											var price3 = Math.round(Math.random() * (est3 * 0.1) + (est3));
+										var price1 = Math.round(Math.random() * (est1 * 0.1) + (est1));
+										var price2 = Math.round(Math.random() * (est2 * 0.1) + (est2));
+										var price3 = Math.round(Math.random() * (est3 * 0.1) + (est3));
 
-											connection.query('INSERT INTO dungeon_market (room_id, dungeon_id, item_1, item_2, item_3, price_1, price_2, price_3) VALUES (' + (this.i + 1) + ',' + dungeon_id + ',' + item1 + ',' + item2 + ',' + item3 + ',' + price1 + ',' + price2 + ',' + price3 + ')', function (err, rows, fields) {
-												if (err) throw err;
-											});
-										}.bind({
-											i: i
-										}));
+										await connection.queryAsync('INSERT INTO dungeon_market (room_id, dungeon_id, item_1, item_2, item_3, price_1, price_2, price_3) VALUES (' + (i + 1) + ',' + dungeon_id + ',' + item1 + ',' + item2 + ',' + item3 + ',' + price1 + ',' + price2 + ',' + price3 + ')')
 									}
 									if ((top == -4) || (right == -4) || (left == -4)) {
 										var rand_trade = Math.random()*100;
@@ -9978,32 +9961,18 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 										if (rand_trade > 15)
 											craftable = 0;
 
-										connection.query('SELECT id FROM item WHERE craftable =  ' + craftable + ' AND rarity NOT IN ("UE","A","H","S","D","U","IN","X") ORDER BY RAND() LIMIT 2', function (err, rows, fields) {
-											if (err) throw err;
-
-											var item1 = rows[0].id;
-											var item2 = rows[1].id;
-
-											connection.query('INSERT INTO dungeon_trade (room_id, dungeon_id, item_1, item_2) ' +
-															 'VALUES (' + (this.i + 1) + ',' + dungeon_id + ',' + item1 + ',' + item2 + ')',
-															 function (err, rows, fields) {
-												if (err) throw err;
-											});
-										}.bind({
-											i: i
-										}));
+										const craftableRarity = await connection.queryAsync('SELECT id FROM item WHERE craftable =  ' + craftable + ' AND rarity NOT IN ("UE","A","H","S","D","U","IN","X") ORDER BY RAND() LIMIT 2')
+										var item1 = craftableRarity[0].id;
+										var item2 = craftableRarity[1].id;
+										await connection.queryAsync('INSERT INTO dungeon_trade (room_id, dungeon_id, item_1, item_2) VALUES (' + (i + 1) + ',' + dungeon_id + ',' + item1 + ',' + item2 + ')')
 									}
 									if ((top == -11) || (right == -11) || (left == -11)) {
-										connection.query('SELECT COUNT(id) As cnt FROM dungeon_well WHERE dungeon_id = ' + dungeon_id, function (err, rows, fields) {
-											if (err) throw err;
+										const dungeon_well = await connection.queryAsync('SELECT COUNT(id) As cnt FROM dungeon_well WHERE dungeon_id = ' + dungeon_id)
 
-											if (rows[0].cnt == 0) {
-												var rand = Math.round(Math.random() * (player_rank * 100)) + (player_rank * 100);
-												connection.query('INSERT INTO dungeon_well (dungeon_id, amount) VALUES (' + dungeon_id + ',' + rand + ')', function (err, rows, fields) {
-													if (err) throw err;
-												});
-											};
-										});
+										if (dungeon_well[0].cnt == 0) {
+											var rand = Math.round(Math.random() * (player_rank * 100)) + (player_rank * 100);
+											await connection.queryAsync('INSERT INTO dungeon_well (dungeon_id, amount) VALUES (' + dungeon_id + ',' + rand + ')')
+										}
 									}
 								}
 
@@ -33964,10 +33933,10 @@ bot.onText(/contrabbandiere|vedi offerte|ctb/i, function (message) {
 					}
 				};
 
-				connection.query('INSERT INTO merchant_offer (player_id) VALUES (' + player_id + ')', function (err, rows, fields) {
+				connection.query('INSERT INTO merchant_offer (player_id) VALUES (' + player_id + ')', async function (err, rows, fields) {
 					if (err) throw err;
 					bot.sendMessage(message.chat.id, "Sei stato aggiunto alla *Lista Iscrizioni* del Contrabbandiere, accetta i suoi incarichi per ottenere dei pagamenti in cambio delle tue dimostrazioni di creazione!", kb);
-					refreshMerchant(player_id);
+					await refreshMerchant(player_id);
 				});
 			} else {
 
@@ -34106,9 +34075,9 @@ bot.onText(/contrabbandiere|vedi offerte|ctb/i, function (message) {
 																bot.sendMessage(message.chat.id, "Non hai abbastanza 💎", kbBack);
 																return;
 															}
-															connection.query('UPDATE player SET gems = gems-1 WHERE id = ' + player_id, function (err, rows, fields) {
+															connection.query('UPDATE player SET gems = gems-1 WHERE id = ' + player_id, async function (err, rows, fields) {
 																if (err) throw err;
-																refreshMerchant(player_id);
+																await refreshMerchant(player_id);
 																bot.sendMessage(message.chat.id, "E' arrivata la nuova offerta!", kbBack);
 															});
 														});
@@ -34135,10 +34104,10 @@ bot.onText(/contrabbandiere|vedi offerte|ctb/i, function (message) {
 															return;
 														}
 
-														connection.query('UPDATE merchant_offer SET time_end = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+														connection.query('UPDATE merchant_offer SET time_end = "' + long_date + '" WHERE player_id = ' + player_id, async function (err, rows, fields) {
 															if (err) throw err;
 
-															refreshMerchant(player_id);
+															await refreshMerchant(player_id);
 															bot.sendMessage(message.chat.id, "Hai chiesto una nuova offerta, dovrai attendere fino alle " + short_date + "!", kbBack);
 														});
 													}
@@ -34245,11 +34214,11 @@ bot.onText(/contrabbandiere|vedi offerte|ctb/i, function (message) {
 
 												await delItem(player_id, item_id, 1);
 												await addMoney(player_id, price);
-												connection.query('UPDATE merchant_offer SET time_end = "' + long_date + '", total_cnt = total_cnt+1, day_cnt = day_cnt+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+												connection.query('UPDATE merchant_offer SET time_end = "' + long_date + '", total_cnt = total_cnt+1, day_cnt = day_cnt+1 WHERE player_id = ' + player_id, async function (err, rows, fields) {
 													if (err) throw err;
 
 													bot.sendMessage(message.chat.id, "Vendita completata! Hai venduto *" + name + "* per *" + formatNumber(price) + "* §" + bonus + bonus_text + extra, back);
-													refreshMerchant(player_id);
+													await refreshMerchant(player_id);
 													setAchievement(player_id, 49, 1);
 												});
 											});
@@ -51804,8 +51773,8 @@ function calcPnt(base_id, item_id) {
 	});
 }
 
-bot.onText(/refreshMerchant/i, function (message, match) {
-	refreshMerchant(0);
+bot.onText(/refreshMerchant/i, async function (message, match) {
+	await refreshMerchant(0);
 	bot.sendMessage(message.chat.id, "Fatto!");
 	return;
 });
@@ -51823,42 +51792,21 @@ async function merchantPrice(item_id) {
 	return Math.round(price);
 }
 
-function refreshMerchant(player_id) {
+async function refreshMerchant(player_id) {
 	if (player_id == 0) {
-		connection.query('SELECT id FROM merchant_offer', function (err, rows, fields) {
-			if (err) throw err;
-
-			var id = 0;
-			var val = 0;
-			var perc = 0;
-			var price = 0;
-			var name = "";
-			var price_sum = 0;
-			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-				id = rows[i].id;
-				connection.query('SELECT item_id FROM merchant_offer WHERE id = ' + id, function (err, rows, fields) {
-					if (err) throw err;
-					connection.query('SELECT id, base_sum, price_sum, name, value FROM item WHERE estimate > 0 AND id != ' + rows[0].item_id + ' AND rarity IN ("C","NC","R","UR","L","E") AND craftable = 1 AND base_sum > 0 AND price_sum > 0 ORDER BY RAND()', function (err, rows, fields) {
-						if (err) throw err;
-						val = parseInt(rows[0].base_sum);
-						price_sum = parseInt(rows[0].price_sum);
-
-						price = val + price_sum;// + rows[0].value;
-						price = price * (1.5 + (Math.random() * 0.5));
-
-						name = rows[0].name;
-						connection.query('UPDATE merchant_offer SET item_id = ' + rows[0].id + ', price = ' + price + ' WHERE id = ' + this.id, function (err, rows, fields) {
-							if (err) throw err;
-						});
-					}.bind({
-						id: this.id
-					}));
-				}.bind({
-					id: id
-				}));
-			}
-			//console.log("Contrabbandiere auto per " + Object.keys(rows).length + " player");
-		});
+		const merchant_offer = await connection.query('SELECT id FROM merchant_offer')
+		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+			const id = rows[i].id;
+			const offer_id = await connection.queryAsync('SELECT item_id FROM merchant_offer WHERE id = ' + id)
+			const estimates = await connection.queryAsync('SELECT id, base_sum, price_sum, name, value FROM item WHERE estimate > 0 AND id != ' + offer_id[0].item_id + ' AND rarity IN ("C","NC","R","UR","L","E") AND craftable = 1 AND base_sum > 0 AND price_sum > 0 ORDER BY RAND()')
+			const val = parseInt(estimates[0].base_sum);
+			const price_sum = parseInt(estimates[0].price_sum);
+			let price = val + price_sum;// + rows[0].value;
+			price = price * (1.5 + (Math.random() * 0.5));
+			const name = estimates[0].name;
+			await connection.queryAsync('UPDATE merchant_offer SET item_id = ' + estimates[0].id + ', price = ' + price + ' WHERE id = ' + id)
+		}
+		//console.log("Contrabbandiere auto per " + Object.keys(rows).length + " player");
 	} else {
 		connection.query('SELECT item_id FROM merchant_offer WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -59392,7 +59340,7 @@ function checkTopSeasonEnd() {
 					} else
 						console.log("Data prossima chiusura vette: " + next_season_end);
 
-					connection.query('SELECT id FROM dragon_top_list ORDER BY id', function (err, rows, fields) {
+					connection.query('SELECT id FROM dragon_top_list ORDER BY id', async function (err, rows, fields) {
 						if (err) throw err;
 						var top_id = 0;
 						var mana = 0;
@@ -59407,40 +59355,35 @@ function checkTopSeasonEnd() {
 
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 							top_id = rows[i].id;
-							connection.query('SELECT D.player_id, D.rank, P.chat_id, P.top_rank_count, P.top_win_best FROM dragon_top_rank D, player P, dragon D2 WHERE P.id = D2.player_id AND D.player_id = P.id AND D.top_id = ' + top_id + ' ORDER BY D.rank DESC, D2.level ASC, P.id ASC', async function (err, rows, fields) {
-								if (err) throw err;
+							const dragon_top_rank = await connection.queryAsync('SELECT D.player_id, D.rank, P.chat_id, P.top_rank_count, P.top_win_best FROM dragon_top_rank D, player P, dragon D2 WHERE P.id = D2.player_id AND D.player_id = P.id AND D.top_id = ' + top_id + ' ORDER BY D.rank DESC, D2.level ASC, P.id ASC')
 
-								if (Object.keys(rows).length > 0) {
+								if (Object.keys(dragon_top_rank).length > 0) {
 									var acc = 0;
-									for (var j = 0, len = Object.keys(rows).length; j < len; j++) {
-										acc = ((10*this.top_id)+rows[j].rank);
+									for (var j = 0, len = Object.keys(dragon_top_rank).length; j < len; j++) {
+										acc = ((10*this.top_id)+dragon_top_rank[j].rank);
 										// console.log("Accumulati: " + acc + " per " + rows[j].player_id);
 										if (test == 0) {
-											connection.query('UPDATE player SET top_rank_count = top_rank_count+' + acc + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
-												if (err) throw err;
-											});
+											await connection.queryAsync('UPDATE player SET top_rank_count = top_rank_count+' + acc + ' WHERE id = ' + dragon_top_rank[j].player_id)
 										}
-										if ((rows[j].rank < 12) && (this.top_id == 1)) {
+										if ((dragon_top_rank[j].rank < 12) && (this.top_id == 1)) {
 											if (test == 0)
-												bot.sendMessage(rows[j].chat_id, "Per il tuo posizionamento nelle *Vette dei Draghi*, essendo rimasto al primo Monte e di basso rango, non hai ricevuto alcun premio aggiuntivo! La prossima volta prova ad impegnarti di più :(", mark);
+												bot.sendMessage(dragon_top_rank[j].chat_id, "Per il tuo posizionamento nelle *Vette dei Draghi*, essendo rimasto al primo Monte e di basso rango, non hai ricevuto alcun premio aggiuntivo! La prossima volta prova ad impegnarti di più :(", mark);
 											continue; // per non dare altri premi
 										}
 
 										if ((j == 0) && (test == 0)) {											
-											if (rows[j].rank > rows[j].top_win_best) {
-												connection.query('UPDATE player SET top_win_best = ' + rows[j].rank + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
-													if (err) throw err;
-												});
+											if (dragon_top_rank[j].rank > dragon_top_rank[j].top_win_best) {
+												await connection.queryAsync('UPDATE player SET top_win_best = ' + dragon_top_rank[j].rank + ' WHERE id = ' + dragon_top_rank[j].player_id)
 											}
 										}
 
 										mana = Math.round(Math.pow(this.top_id, multi) * 200);
-										chest = Math.floor(this.top_id*Math.log2(rows[j].rank));
+										chest = Math.floor(this.top_id*Math.log2(dragon_top_rank[j].rank));
 										if (chest < 0)
 											chest = 0;
-										if (rows[j].rank > 50)
-											rows[j].rank = 50;
-										dust = Math.round(rows[j].rank * (Math.pow(this.top_id, multi) * 8));
+										if (dragon_top_rank[j].rank > 50)
+											dragon_top_rank[j].rank = 50;
+										dust = Math.round(dragon_top_rank[j].rank * (Math.pow(this.top_id, multi) * 8));
 
 										if ((this.top_id == max_top_id) && (j < 8))
 											moon_qnt = 4-Math.floor(j/2);
@@ -59448,20 +59391,16 @@ function checkTopSeasonEnd() {
 											moon_qnt = 0;
 
 										if ((j == 0) && (test == 0)) {
-											connection.query('UPDATE player SET top_win = top_win+1 WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
-												if (err) throw err;
-											});
+											await connection.queryAsync('UPDATE player SET top_win = top_win+1 WHERE id = ' + dragon_top_rank[j].player_id)
 										}
 
 										// console.log(rows[j].player_id, mana, chest, dust, moon_qnt);
 
 										if (test == 0) {
-											connection.query('UPDATE event_mana_status SET mana_1 = mana_1+' + mana + ', mana_2 = mana_2+' + mana + ', mana_3 = mana_3+' + mana + ' WHERE player_id = ' + rows[j].player_id, function (err, rows, fields) {
-												if (err) throw err;
-											});
-											await addItem(rows[j].player_id, 646, dust);
-											await addChest(rows[j].player_id, 9, chest);
-											setAchievement(rows[j].player_id, 81, (mana*3));
+											await connection.queryAsync('UPDATE event_mana_status SET mana_1 = mana_1+' + mana + ', mana_2 = mana_2+' + mana + ', mana_3 = mana_3+' + mana + ' WHERE player_id = ' + dragon_top_rank[j].player_id)
+											await addItem(dragon_top_rank[j].player_id, 646, dust);
+											await addChest(dragon_top_rank[j].player_id, 9, chest);
+											setAchievement(dragon_top_rank[j].player_id, 81, (mana*3));
 										}
 
 										chestText = "";
@@ -59471,24 +59410,19 @@ function checkTopSeasonEnd() {
 										extra_text = "";
 										if (moon_qnt > 0) {
 											if (test == 0) {
-												connection.query('UPDATE player SET moon_coin = moon_coin+' + moon_qnt + ' WHERE id = ' + rows[j].player_id, function (err, rows, fields) {
-													if (err) throw err;
-												});
+												await connection.queryAsync('UPDATE player SET moon_coin = moon_coin+' + moon_qnt + ' WHERE id = ' + dragon_top_rank[j].player_id)
 											}
 											extra_text = "\n> " + moon_qnt + "x Monete Lunari";
 										}
 
-										text = "Per il tuo posizionamento nelle *Vette dei Draghi*, hai accumulato *" + formatNumber(acc) + " Ð* (" + formatNumber(parseInt(rows[j].top_rank_count)+acc) + " totali) hai ricevuto:\n> " + formatNumber(mana) + " Mana per tipo\n> " + formatNumber(dust) + " unità di Polvere" + chestText + extra_text + "\n\nI premi durante le prossime stagioni potrebbero cambiare, grazie per aver partecipato!";
+										text = "Per il tuo posizionamento nelle *Vette dei Draghi*, hai accumulato *" + formatNumber(acc) + " Ð* (" + formatNumber(parseInt(dragon_top_rank[j].top_rank_count)+acc) + " totali) hai ricevuto:\n> " + formatNumber(mana) + " Mana per tipo\n> " + formatNumber(dust) + " unità di Polvere" + chestText + extra_text + "\n\nI premi durante le prossime stagioni potrebbero cambiare, grazie per aver partecipato!";
 
 										if (test == 0)
-											bot.sendMessage(rows[j].chat_id, text, mark);
+											bot.sendMessage(dragon_top_rank[j].chat_id, text, mark);
 										else
 											console.log(text);
 									}
 								}
-							}.bind({
-								top_id: top_id
-							}));
 						}
 
 						if (test == 0) {
