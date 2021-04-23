@@ -1593,7 +1593,8 @@ bot.onText(/^\/scorciatoia/, function (message, match) {
 					"> miniera/miniere - Apre le miniere di mana\n" +
 					"> stats - Apre le statistiche giocatore\n" +
 					"> ctb - Apre il contrabbandiere\n" +
-					"> clg - Apre il menu Contatta lo Gnomo");
+					"> clg - Apre il menu Contatta lo Gnomo\n" +
+					"> rimod - Apre il rimodulatore di Flaridion");
 });
 
 bot.onText(/^\/marketban (.+)/, function (message, match) {
@@ -3463,7 +3464,7 @@ bot.onText(/^Nascita/i, function (message) {
 	});
 });
 
-bot.onText(/Rimodulatore di Flaridion|Torna al rimodulatore|^rimodulatore$/i, function (message) {
+bot.onText(/Rimodulatore di Flaridion|Torna al rimodulatore|^rimodulatore$|^rimod$/i, function (message) {
 	connection.query('SELECT COUNT(id) As cnt FROM artifacts WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
 		if (err) throw err;
 
