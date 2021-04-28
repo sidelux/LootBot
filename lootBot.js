@@ -13789,7 +13789,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																					bot.sendMessage(message.chat.id, "Accetti lo scambio del Mercante che ti ringrazia sorridendo e ti porge l'oggetto pattuito, prosegui velocemente alla stanza successiva...", dNext);
 
 																					await delItem(player_id, stone1, qnt);
-																					await addItem(player_id, item1);
+																					await addItem(player_id, item1, qnt);
 																					setAchievement(player_id, 79, 1);
 
 																					var rand = Math.random()*100;
@@ -60907,7 +60907,11 @@ function setFinishedHeist(element, index, array) {
 									bot.sendMessage(fromChat, "Il tuo gnomo è arrivato al rifugio nemico, il guardiano del cancello ti propone uno strano gioco con le <b>Rune</b>, hai tempo fino alle " + short_time + " per partecipare!", html);
 									connection.query('SELECT chat_id FROM player WHERE id = ' + toId, function (err, rows, fields) {
 										if (err) throw err;
-										bot.sendMessage(rows[0].chat_id, "Lo gnomo di <b>" + fromNick + "</b> è riuscito ad arrivare davanti al tuo rifugio!", html);
+										if (isMatch == 1) {
+											bot.sendMessage(rows[0].chat_id, "Lo gnomo di <b>" + fromNick + "</b> è riuscito a trovare il tuo rifugio!", html);
+										} else {
+											bot.sendMessage(rows[0].chat_id, "Lo gnomo di <b>" + fromNick + "</b> è riuscito ad arrivare davanti al tuo rifugio!", html);
+										}
 									});
 								});
 							}
