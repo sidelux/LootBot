@@ -1585,7 +1585,8 @@ bot.onText(/^\/scorciatoia/, function (message, match) {
 					"> stats - Apre le statistiche giocatore\n" +
 					"> ctb - Apre il contrabbandiere\n" +
 					"> clg - Apre il menu Contatta lo Gnomo\n" +
-					"> rimod - Apre il rimodulatore di Flaridion");
+					"> rimod - Apre il rimodulatore di Flaridion\n" +
+					"> znc - Apre lo Zaino Completo");
 });
 
 bot.onText(/^\/marketban (.+)/, function (message, match) {
@@ -16488,6 +16489,7 @@ bot.onText(/Ritorna/i, function (message) {
 		var cave_id = rows[0].cave_id;
 		var cave_limit = rows[0].cave_limit;
 		var travel_limit = rows[0].travel_limit;
+		var gems = rows[0].gems;
 
 		if (rows[0].exp < 5) {
 			bot.sendMessage(message.chat.id, "Non hai abbastanza exp!", kbBack)
@@ -16502,37 +16504,45 @@ bot.onText(/Ritorna/i, function (message) {
 			}
 		};
 
-		bot.sendMessage(message.chat.id, "Sicuro di voler annullare il viaggio? Ti costerà 5 exp", yesno).then(function () {
+		var travel_warning = "";
+		var travel_extra_text = "";
+		var travel_extra = 0;
+		var travel_extra_query = "";
+		const gems_price = 5;
+		if ((travel_limit > 1) || (cave_limit > 1)) {
+			travel_warning = " e dato che sei già tornato troppe volte, proseguendo consumerai anche " + gems_price + " 💎";
+			travel_extra = 1;
+			travel_extra_text = ", " + gems_price + " 💎";
+			travel_extra_query = ", gems = gems-" + gems_price;
+		}
+
+		bot.sendMessage(message.chat.id, "Sicuro di voler annullare il viaggio? Ti costerà 5 exp" + travel_warning, yesno).then(function () {
 			answerCallbacks[message.chat.id] = async function (answer) {
 				if (answer.text.toLowerCase() == "si") {
-					if (travel_id != 0) {
-						if (travel_limit > 1) {
-							bot.sendMessage(message.chat.id, "Sei già ritornato da un viaggio troppe volte!", kbBack)
+					if (travel_extra == 1) {
+						if (gems < gems_price) {
+							bot.sendMessage(message.chat.id, "Non hai abbastanza 💎, te ne servono " + gems_price + "!", kbBack);
 							return;
 						}
-
+					}
+					if (travel_id != 0) {
 						setAchievement(player_id, 59, 1);
 
 						connection.query('SELECT duration FROM travel WHERE id = ' + travel_id, function (err, rows, fields) {
 							if (err) throw err;
-							connection.query('UPDATE player SET travel_id = 0, travel_time_end = NULL, exp = exp-5, travel_limit = travel_limit+1 WHERE id = ' + player_id, function (err, rows, fields) {
+							connection.query('UPDATE player SET travel_id = 0, travel_time_end = NULL, exp = exp-5, travel_limit = travel_limit+1' + travel_extra_query + ' WHERE id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
-								bot.sendMessage(message.chat.id, "Hai sacrificato 5 exp e sei rientrato dal viaggio senza averlo completato.", kbBack);
+								bot.sendMessage(message.chat.id, "Hai sacrificato 5 exp" + travel_extra_text + " e sei rientrato dal viaggio senza averlo completato.", kbBack);
 							});
 						});
 					} else if (cave_id != 0) {
-						if (cave_limit > 1) {
-							bot.sendMessage(message.chat.id, "Sei già ritornato da una cava troppe volte!", kbBack)
-							return;
-						}
-
 						setAchievement(player_id, 59, 1);
 
 						connection.query('SELECT duration FROM cave WHERE id = ' + cave_id, function (err, rows, fields) {
 							if (err) throw err;
-							connection.query('UPDATE player SET cave_id = 0, cave_time_end = NULL, exp = exp-5, cave_limit = cave_limit+1 WHERE id = ' + player_id, function (err, rows, fields) {
+							connection.query('UPDATE player SET cave_id = 0, cave_time_end = NULL, exp = exp-5, cave_limit = cave_limit+1' + travel_extra_query + ' WHERE id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
-								bot.sendMessage(message.chat.id, "Hai sacrificato 5 exp e sei rientrato dalla cava senza averla completata.", kbBack);
+								bot.sendMessage(message.chat.id, "Hai sacrificato 5 exp" + travel_extra_text + " e sei rientrato dalla cava senza averla completata.", kbBack);
 							});
 						});
 					}
@@ -22484,6 +22494,9 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 
 																							await addMoney(player_id, money);
 
+																							setAchievement(player_id, 88, 1);
+																							setAchievement(player_id, 90, 1);
+
 																							bot.sendMessage(message.chat.id, "Hai sconfitto <b>" + enemy_dragon_name + "</b>, hai ottenuto " + rank + " Ð" + extra + bonus_money, kbBack);
 
 																							if (is_dummy == 0) {
@@ -26206,7 +26219,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	return;
 
 																if (answer.text.toLowerCase().indexOf("partecipanti") != -1) {
-																	connection.query('SELECT P.id As player_id, P.nickname, P.life, P.total_life, A.name, AP.place_id, AP.role, APT.level, AP.killed, APT.active, IF(APM.id IS NULL, 0, 1) As miniboost, C.name As class_name FROM class C, player P, assault_place_player_id AP LEFT JOIN assault_place_miniboost APM ON (AP.player_id = APM.player_id), assault_place A, assault_place_team APT WHERE C.id = P.class AND APT.place_id = A.id AND APT.team_id = AP.team_id AND AP.team_id = ' + team_id + ' AND P.id = AP.player_id AND A.id = AP.place_id ORDER BY AP.place_id', function (err, rows, fields) {
+																	connection.query('SELECT P.id As player_id, P.nickname, P.life, P.total_life, A.name, AP.place_id, AP.role, APT.level, AP.killed, APT.active, IF(APM.id IS NULL, 0, 1) As miniboost, C.name As class_name FROM class C, player P, assault_place_player_id AP LEFT JOIN assault_place_miniboost APM ON (AP.player_id = APM.player_id), assault_place A, assault_place_team APT WHERE C.id = P.class AND APT.place_id = A.id AND APT.team_id = AP.team_id AND AP.team_id = ' + team_id + ' AND P.id = AP.player_id AND A.id = AP.place_id ORDER BY AP.place_id', async function (err, rows, fields) {
 																		if (err) throw err;
 
 																		var text = "Lista dei partecipanti a questo assalto:\n";
@@ -26237,7 +26250,18 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																			if (rows[i].killed == 1)
 																				killed_text = " " + assaultEmojiList[11];
 
-																			text += "> " + rows[i].nickname + " " + classSym(rows[i].class_name) + " - " + formatNumber(rows[i].life) + "/" + formatNumber(rows[i].total_life) + role_text + killed_text + miniboost + "\n";
+																			var weapon = await connection.queryAsync("SELECT weapon_id FROM player WHERE id = " + rows[i].player_id);
+																			var weapon_color = "";
+																			if (weapon[0].weapon_id == 638)
+																				weapon_color = " ⚡️";
+																			else if (weapon[0].weapon_id == 639)
+																				weapon_color = " 🔥";
+																			else if (weapon[0].weapon_id == 640)
+																				weapon_color = " 💧";
+																			else if (weapon[0].weapon_id == 754)
+																				weapon_color = " ✨";
+
+																			text += "> " + rows[i].nickname + " " + classSym(rows[i].class_name) + " - " + formatNumber(rows[i].life) + "/" + formatNumber(rows[i].total_life) + role_text + killed_text + miniboost + weapon_color + "\n";
 																		}
 
 																		text += "\nState affrontando tutti insieme il boss n. " + boss_num + "!";
@@ -32224,12 +32248,10 @@ bot.onText(/Miniere di Mana|Raccolta|^miniera$|^miniere$/i, function (message) {
 
 						var extra_mana = "";
 						// modifica anche il ritiro automatico
-						/*
 						if (global_end == 1) {
-							quantity = quantity*3;
+							quantity = quantity*2;
 							extra_mana = " (aumentata grazie al bonus globale)";
 						}
-						*/
 
 						quantity = Math.floor(quantity);
 
@@ -36166,7 +36188,7 @@ bot.onText(/zaino/i, function (message) {
 	});
 });
 
-bot.onText(/zaino completo/i, function (message) {
+bot.onText(/zaino completo|^znc$/i, function (message) {
 
 	var backpackB = {
 		parse_mode: "HTML",
@@ -38475,7 +38497,7 @@ bot.onText(/compra/i, function (message) {
 													});
 
 													await reduceMoney(player_id, price);
-													await addChest(player_id, chest_id, quantity);
+													await addChest(player_id, chest_id, quantity, 1);
 													bot.sendMessage(message.chat.id, "Acquisto completato con successo! Hai speso " + formatNumber(price) + " §" + bonus_text, chest);
 												});
 											});
@@ -52801,6 +52823,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											chest7 += 3;
 									}
 
+									/*
 									if (rows[i].global_end == 1) {
 										chest1 = chest1*2;
 										chest2 = chest2*2;
@@ -52812,6 +52835,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 										chest8 = chest8*2;
 										chest9 = chest9*2;
 									}
+									*/
 
 									/*
 									if (rows[i].global_end == 1)
@@ -53883,7 +53907,7 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 			if (cause == 1)
 				text = "Un giocatore è stato ucciso da una trappola!";
 			else if (cause == 2)
-				text = "Un giocatore è stato ucciso da un altro giocatore!";
+				text = "Un giocatore è stato ucciso in combattimento!";
 			else if (cause == 3) {
 				text = "Un giocatore è stato ucciso a causa del restringimento della mappa!";
 				if (enemy_id == -1)	// se non combattimento
@@ -54718,12 +54742,10 @@ function autoMana() {
 
 				var extra_mana = "";
 				// modifiche anche il ritiro manuale
-				/*
 				if (rows[i].global_end == 1) {
-					rows[i].quantity = rows[i].quantity*3;
+					rows[i].quantity = rows[i].quantity*2;
 					extra_mana = " (aumentato grazie al bonus globale)";
 				}
-				*/
 
 				rows[i].quantity = Math.floor(rows[i].quantity);
 
@@ -61167,9 +61189,6 @@ async function setFinishedCave(element, index, array) {
 		}
 		msg += "\n\n" + caveid + " pietre per un totale di " + totPnt + " punti" + extra;
 
-		if (cave_gem == 0)
-			globalAchievement(element.id, caveid);
-
 		bot.sendMessage(chat_id, "Hai completato l'esplorazione della cava e hai ottenuto:" + msg + boost_text);
 		setAchievement(element.id, 54, (stone1e+stone2e+stone3e+stone4e+stone5e+stone6e));
 		getSnowball(chat_id, element.nickname, element.id, (3 + base_caveid));
@@ -61536,7 +61555,7 @@ async function getItemCnt(player_id, item_id) {
 
 // Gestione scrigni
 
-async function addChest(player_id, chest_id, qnt = 1) {
+async function addChest(player_id, chest_id, qnt = 1, shop = 0) {
 	qnt = parseInt(qnt);
 	if (isNaN(qnt)) {
 		console.log("ERRORE! addChest di " + qnt + "x " + chest_id + " per player " + player_id);
@@ -61547,6 +61566,9 @@ async function addChest(player_id, chest_id, qnt = 1) {
 	if (rows.affectedRows == 0) {
 		await connection.queryAsync('INSERT INTO inventory_chest (player_id, chest_id, quantity) VALUES (' + player_id + ',' + chest_id + ', ' + qnt + ')');
 	}
+
+	if (shop == 0)
+		globalAchievement(player_id, qnt);
 }
 
 function delChest(player_id, chest_id, qnt = 1) {
