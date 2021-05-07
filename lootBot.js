@@ -5812,7 +5812,7 @@ bot.onText(/vedi la carta/i, function (message) {
 								if (chest_id > 0) {
 									txt = "\nIn base alle " + streak + " vittorie consecutive hai vinto *" + qnt + "x " + chest_name + "*!";
 
-									await addChest(player_id, chest_id, qnt);
+									await addChest(player_id, chest_id, qnt, 1);
 
 									connection.query('UPDATE game_house_stats SET win = win+1, pay = pay+ ' + price + ' WHERE player_id = ' + player_id + ' AND type = 3', function (err, rows, fields) {
 										if (err) throw err;
@@ -60452,7 +60452,10 @@ function setFinishedMission(element, index, array) {
 								}
 
 								if (chest_bonus_id > 0) {
-									await addChest(element.id, chest_bonus_id);
+									if (mission_gem == 1)
+										await addChest(element.id, chest_bonus_id, 1, 1);
+									else
+										await addChest(element.id, chest_bonus_id);
 									var chest_info = await connection.queryAsync("SELECT name FROM chest WHERE id = " + chest_bonus_id);
 									chest_bonus = "\nPer la tua appartenenza alla _" + league_name + "_, ottieni uno *" + chest_info[0].name + "* aggiuntivo!";
 									// console.log("Premio leghe missioni: " + chest_info[0].name);
@@ -60460,7 +60463,10 @@ function setFinishedMission(element, index, array) {
 
 								bot.sendMessage(chat_id, "Missione completata! Hai ottenuto:\n" + crazyText + "*" + rows[0].name + "* (" + rows[0].rarity_shortname + ")" + evolved_text + ", *" + formatNumber(money) + "* § e *" + exp + "* exp " + extra + "!" + chest_bonus + rarity_miss, mark);
 
-								await addChest(element.id, chest_id);
+								if (mission_gem == 1)
+									await addChest(element.id, chest_id, 1, 1);
+								else
+									await addChest(element.id, chest_id);
 								setExp(element.id, exp);
 
 								if (mission_count+1 >= 5) {
