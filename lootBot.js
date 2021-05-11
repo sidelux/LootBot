@@ -16540,15 +16540,15 @@ bot.onText(/Ritorna/i, function (message) {
 		bot.sendMessage(message.chat.id, "Sicuro di voler annullare il viaggio? Ti costerà 5 exp" + travel_warning, yesno).then(function () {
 			answerCallbacks[message.chat.id] = async function (answer) {
 				if (answer.text.toLowerCase() == "si") {
-					var count_query_travel = "";
-					var count_query_cave = "";
+					var count_query_travel = ", travel_limit = travel_limit+1";
+					var count_query_cave = ", cave_limit = cave_limit+1";
 					if (travel_extra == 1) {
 						if (gems < gems_price) {
 							bot.sendMessage(message.chat.id, "Non hai abbastanza 💎, te ne servono " + gems_price + "!", kbBack);
 							return;
 						}
-						count_query_travel = ", travel_limit = travel_limit+1";
-						count_query_cave = ", cave_limit = cave_limit+1";
+						count_query_travel = "";
+						count_query_cave = "";
 					}
 					if (travel_id != 0) {
 						setAchievement(player_id, 59, 1);
@@ -22146,6 +22146,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																}
 																var high_dmg = 0;
 																if ((wait_dmg > 0) && (skip == 0)) {
+																	console.log(player_id + " wait_dmg " + wait_dmg);
 																	if ((wait_dmg == 1) && (ice == 0)) {
 																		high_dmg = damage;
 																		damage += high_dmg;
@@ -22693,6 +22694,8 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																		if (enemy_protection > 0)
 																			moveEffect = "Ridotti a causa della protezione!\n";
 																		if (high_dmg > 0) {
+																			console.log(player_id + " high_dmg " + high_dmg);
+																			console.log(player_id + " over " + over);
 																			if (over == 0)
 																				moveEffect += "Dei quali " + formatNumber(high_dmg) + " per colpo pesante!\n";
 																			else
