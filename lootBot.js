@@ -5721,7 +5721,7 @@ bot.onText(/vedi la carta/i, function (message) {
 				if (Object.keys(rows).length > 0)
 					record = rows[0].record;
 
-				await addMoney(player_id, price);
+				await reduceMoney(player_id, price);
 				connection.query('UPDATE house_game_3 SET card = ' + card + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 					bot.sendMessage(message.chat.id, "Sequenza di vittorie: *" + streak + "*\nIl Pirata tira fuori la carta stropicciata e legge ad alta voce il numero scritto sopra:\n\n*" + card + "*\n\nSecondo te la carta successiva sarà...", kbChoice2).then(function () {
@@ -16527,29 +16527,41 @@ bot.onText(/Ritorna/i, function (message) {
 
 		var travel_warning = "";
 		var travel_extra_text = "";
+		var cave_extra_text = "";
 		var travel_extra = 0;
+		var cave_extra = 0;
 		var travel_extra_query = "";
+		var cave_extra_query = "";
 		const gems_price = 5;
-		if ((travel_limit > 1) || (cave_limit > 1)) {
-			travel_warning = " e dato che sei già tornato troppe volte, proseguendo consumerai anche " + gems_price + " 💎";
+		if (travel_limit > 1) {
 			travel_extra = 1;
-			travel_extra_text = ", " + gems_price + " 💎";
 			travel_extra_query = ", gems = gems-" + gems_price;
+			travel_extra_text = ", " + gems_price + " 💎";
 		}
+		if (cave_limit > 1) {
+			cave_extra = 1;
+			cave_extra_query = ", gems = gems-" + gems_price;
+			cave_extra_text = ", " + gems_price + " 💎";
+		}
+		if (((travel_extra == 1) && (travel_id != 0)) || ((cave_extra == 1) && (cave_id != 0)))
+			travel_warning = " e dato che sei già tornato troppe volte, proseguendo consumerai anche " + gems_price + " 💎";
 
 		bot.sendMessage(message.chat.id, "Sicuro di voler annullare il viaggio? Ti costerà 5 exp" + travel_warning, yesno).then(function () {
 			answerCallbacks[message.chat.id] = async function (answer) {
 				if (answer.text.toLowerCase() == "si") {
 					var count_query_travel = ", travel_limit = travel_limit+1";
 					var count_query_cave = ", cave_limit = cave_limit+1";
-					if (travel_extra == 1) {
+					if ((travel_extra == 1) || (cave_extra == 1)) {
 						if (gems < gems_price) {
 							bot.sendMessage(message.chat.id, "Non hai abbastanza 💎, te ne servono " + gems_price + "!", kbBack);
 							return;
 						}
-						count_query_travel = "";
-						count_query_cave = "";
 					}
+					if (travel_extra == 1)
+						count_query_travel = "";
+					if (cave_extra == 1)
+						count_query_cave = "";
+
 					if (travel_id != 0) {
 						setAchievement(player_id, 59, 1);
 
@@ -16565,9 +16577,9 @@ bot.onText(/Ritorna/i, function (message) {
 
 						connection.query('SELECT duration FROM cave WHERE id = ' + cave_id, function (err, rows, fields) {
 							if (err) throw err;
-							connection.query('UPDATE player SET cave_id = 0, cave_time_end = NULL, exp = exp-5' + count_query_cave + travel_extra_query + ' WHERE id = ' + player_id, function (err, rows, fields) {
+							connection.query('UPDATE player SET cave_id = 0, cave_time_end = NULL, exp = exp-5' + count_query_cave + cave_extra_query + ' WHERE id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
-								bot.sendMessage(message.chat.id, "Hai sacrificato 5 exp" + travel_extra_text + " e sei rientrato dalla cava senza averla completata.", kbBack);
+								bot.sendMessage(message.chat.id, "Hai sacrificato 5 exp" + cave_extra_text + " e sei rientrato dalla cava senza averla completata.", kbBack);
 							});
 						});
 					}
@@ -38223,9 +38235,11 @@ bot.onText(/^vendi/i, function (message) {
 								var d = new Date();
 								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 								for (var i = 0; i < quantity; i++) {
+									/*
 									connection.query('INSERT INTO market_direct_history(item_id, price, time, from_id, type) VALUES (' + item_id + ',' + singleValue + ',"' + long_date + '",' + player_id + ',3)', function (err, rows, fields) {
 										if (err) throw err;
 									});
+									*/
 								};
 
 								await delItem(player_id, item_id, quantity);
@@ -45913,7 +45927,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 						if (progMob[end] == undefined)
 							text += "> Mob sconfitti completati ✅\n";
 						else
-							text += "> " + formatNumber(mob_count) + " su " + formatNumber(progMob[end]) + " mob sconfitti (" + formatNumber(progMobRew[end]) + ")\n";
+							text += "> " + formatNumber(mob_count) + " su " + formatNumber(progMob[end]) + " mob sconfitti (" + formatNumber(progMobRew[end]) + " §)\n";
 
 						var time_end = new Date(global_date);
 						var now = new Date();
@@ -60309,7 +60323,10 @@ function setFinishedMission(element, index, array) {
 
 					if (chest8 == 1) {
 						// if (await getChestCnt(element.id, 8) == 0) {
-						await addChest(element.id, 8);
+						if (mission_gem == 1)
+							await addChest(element.id, 8, 1, 1);
+						else
+							await addChest(element.id, 8);
 						bot.sendMessage(chat_id, "Hai trovato uno Scrigno Mistico! Che fortuna!");
 						achPnt++;
 						// }
@@ -60423,19 +60440,28 @@ function setFinishedMission(element, index, array) {
 									num++;
 									crazyText = num + "x ";
 
-									await addChest(element.id, chest_id);
+									if (mission_gem == 1)
+										await addChest(element.id, chest_id, 1, 1);
+									else
+										await addChest(element.id, chest_id);
 								}
 								if (double == 1) {
 									num++;
 									crazyText = num + "x ";
 
-									await addChest(element.id, chest_id);
+									if (mission_gem == 1)
+										await addChest(element.id, chest_id, 1, 1);
+									else
+										await addChest(element.id, chest_id);
 								}
 								if (crazyMode == 1) {
 									num++;
 									crazyText = num + "x ";
 
-									await addChest(element.id, chest_id);
+									if (mission_gem == 1)
+										await addChest(element.id, chest_id, 1, 1);
+									else
+										await addChest(element.id, chest_id);
 								}
 
 								if (crazyMode == 1) {
@@ -60445,7 +60471,10 @@ function setFinishedMission(element, index, array) {
 										bot.sendMessage(chat_id, "Sei stato veramente molto fortunato ed hai ottenuto un Necronucleo! Woah!");
 									}
 									if ((chest_id == 6) && (rand > 90)) {
-										await addChest(element.id, 7);
+										if (mission_gem == 1)
+											await addChest(element.id, 7, 1, 1);
+										else
+											await addChest(element.id, 7);
 
 										bot.sendMessage(chat_id, "FOLLE! Hai trovato uno *Scrigno Capsula*!", mark);
 										return;
@@ -60965,7 +60994,10 @@ function setFinishedHeist(element, index, array) {
 									if (rows[0].heist_description != null)
 										heist_description = "\nLeggi malinconicamente un cartello affisso su un albero con su scritto: <i>" + rows[0].heist_description + "</i>";
 									bot.sendMessage(fromChat, "Il tuo gnomo non è riuscito a raggiungere il rifugio nemico, dannazione!", kb2);
-									bot.sendMessage(rows[0].chat_id, "Lo gnomo di <b>" + fromNick + "</b> è stato respinto dal tuo guardiano del cancello!", html);
+									if (isMatch == 1)
+										bot.sendMessage(rows[0].chat_id, "Lo gnomo di <b>" + fromNick + "</b> è stato respinto dal tuo guardiano!", html);
+									else
+										bot.sendMessage(rows[0].chat_id, "Lo gnomo di <b>" + fromNick + "</b> è stato acciuffato dal tuo guardiano!", html);
 								});
 
 								var d = new Date();
@@ -61037,7 +61069,7 @@ function setFinishedTravel(element, index, array) {
 					if (err) throw err;
 					var chest_id = mission_chest;
 
-					var qnt = element.travel_id*20;
+					var qnt = ((element.travel_id-1)*50)+100;
 					var exp = element.travel_id*10;
 
 					var double_text = "";

@@ -244,7 +244,7 @@ bot.on('message', function (message, match) {
       if (err) throw err
       if (Object.keys(rows).length == 0) {
         bot.getChatMembersCount(message.chat.id).then(function (cnt) {
-          connection.query('INSERT INTO plus_groups (name, chat_id, members) VALUES ("' + connection.escape(message.chat.title) + '","' + message.chat.id + '",' + cnt + ')', function (err, rows, fields) {
+          connection.query('INSERT INTO plus_groups (name, chat_id, members) VALUES ("' + dbConnection.escape(message.chat.title) + '","' + message.chat.id + '",' + cnt + ')', function (err, rows, fields) {
             if (err) throw err
             console.log('Gruppo aggiunto: ' + message.chat.title)
           })
@@ -568,6 +568,7 @@ bot.onText(/^\/comandigiocatore/, function (message) {
           '/imprese - Visualizza lo stato delle imprese giornaliere\n' +
           "/abilità - Visualizza informazioni sull'abilità del giocatore\n" +
           '/posizione - Indica la posizione in classifica globale e se si otterrà il relativo punto partecipazione\n' +
+          '/posizioneteam - Indica la posizione in classifica globale di tutti i membri del team\n' +
           '/figurine - Visualizza un riassunto delle figurine possedute raggruppate per rarità\n' +
           "/figurinel - Visualizza le figurine possedute (specifica anche la rarità, il nome parziale, 'doppie', rarità o raritàinv)\n" +
           '/figurina - Visualizza i dettagli delle figurine\n' +
@@ -8219,7 +8220,7 @@ bot.onText(/^\/abilità/, function (message, match) {
   })
 })
 
-bot.onText(/^\/posizione/, function (message, match) {
+bot.onText(/^\/posizione$/, function (message, match) {
   connection.query('SELECT id, global_event FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
     if (err) throw err
 
@@ -8277,6 +8278,92 @@ bot.onText(/^\/posizione/, function (message, match) {
           bot.sendMessage(message.chat.id, message.from.username + ', hai raggiunto la posizione <b>' + formatNumber(pos) + '</b> con <b>' + formatNumber(pnt) + "</b> punti nell'Impresa Globale in corso!" + text, html)
         })
       })
+    })
+  })
+})
+
+bot.onText(/^\/posizioneteam/, function (message, match) {
+  connection.query('SELECT id, global_event FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+    if (err) throw err
+
+    if (Object.keys(rows).length == 0) { return }
+
+    const player_id = rows[0].id
+    const global_event = rows[0].global_event
+
+    connection.query('SELECT global_eventwait FROM config', function (err, rows, fields) {
+      if (err) throw err
+
+      if (rows[0].global_eventwait == 1) {
+        bot.sendMessage(message.chat.id, "La funzione è disponibile solo quando l'impresa globale è in corso")
+        return
+      }
+
+      connection.query('SELECT team_id, player_id FROM team_player WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+        if (err) throw err
+    
+        if (Object.keys(rows).length == 0) {
+          bot.sendMessage(message.from.id, 'Non sei in team')
+          return
+        }
+    
+        const team_id = rows[0].team_id
+
+        connection.query('SELECT P.nickname, T.player_id FROM team_player T, player P WHERE T.player_id = P.id AND team_id = ' + team_id + ' ORDER BY nickname', function (err, rows_team, fields) {
+          if (err) throw err
+
+          connection.query('SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
+            if (err) throw err
+
+            class player {
+              constructor(nickname, pos, pnt) {
+                this.nickname = nickname
+                this.pos = pos
+                this.pnt = pnt
+              }
+            }
+
+            var arrayPlayers = []
+            var pos = 0
+            var pnt = 0
+            for (let i = 0, len = Object.keys(rows_team).length; i < len; i++) {
+              for (let j = 0, len = Object.keys(rows).length; j < len; j++) {
+                if (rows[j].id == rows_team[i].player_id) {
+                  pos = j + 1
+                  pnt = rows[j].cnt
+                  arrayPlayers.push(new player(rows_team[i].nickname, pos, pnt))
+                }
+              }
+              if (pos == 0)
+                arrayPlayers.push(new player(rows_team[i].nickname, 0, 0))
+              else {
+                pos = 0
+                pnt = 0
+              }
+            }
+
+            function compare(a, b) {
+              if (a.pnt < b.pnt) return -1;
+              if (a.pnt > b.pnt) return 1;
+              return 0;
+            }
+
+            arrayPlayers.sort(compare);
+            arrayPlayers.reverse(compare);
+
+            var text = "Posizione in globale dei membri del team:\n";
+            for (let i = 0, len = arrayPlayers.length; i < len; i++) {
+              if (arrayPlayers[i].pos == 0) {
+                text += "> <b>" + arrayPlayers[i].nickname + "</b> non presente in classifica\n"
+              } else {
+                text += "> <b>" + arrayPlayers[i].nickname + "</b> alla posizione <i>" + arrayPlayers[i].pos + "</i> con " + formatNumber(arrayPlayers[i].pnt) + " punti\n"
+              }
+            }
+
+            bot.sendMessage(message.chat.id, text, html)
+          })
+        });
+      });
     })
   })
 })
