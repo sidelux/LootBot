@@ -14504,19 +14504,19 @@ bot.onText(/usa varco/i, function (message) {
 		var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
 
 		var extra = "";
-		// if (crazyMode == 0)
+		if (crazyMode == 0)
 			extra = ", puoi utilizzarli ancora " + (3-rows[0].dungeon_skip) + " volte prima che la struttura spazio-temporale si laceri";
 
 		bot.sendMessage(message.chat.id, "Puoi tornare nei dungeon alle " + short_date + "\n" + needs_text + "Ne possiedi " + await getItemCnt(player_id, 645) + extra, dVarco).then(function () {
 			answerCallbacks[message.chat.id] = async function (answer) {
 				if (answer.text.toLowerCase() == "si") {
 
-					// if (crazyMode == 0) {
+					if (crazyMode == 0) {
 						if (dungeon_skip >= 3) {
 							bot.sendMessage(message.chat.id, "Il Varco Temporale è surriscaldato, è possibile usarlo solamente 3 volte al giorno! Potrai usarlo nuovamente domani", back);
 							return;
 						}
-					// }
+					}
 
 					if (await getItemCnt(player_id, 645) < needs) {
 						bot.sendMessage(message.chat.id, "Non possiedi abbastanza Varchi Temporali", back);
@@ -51881,13 +51881,13 @@ async function merchantPrice(item_id) {
 async function refreshMerchant(player_id) {
 	if (player_id == 0) {
 		const merchant_offer = await connection.query('SELECT id FROM merchant_offer')
-		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-			const id = rows[i].id;
+		for (var i = 0, len = Object.keys(merchant_offer).length; i < len; i++) {
+			const id = merchant_offer[i].id;
 			const offer_id = await connection.queryAsync('SELECT item_id FROM merchant_offer WHERE id = ' + id)
 			const estimates = await connection.queryAsync('SELECT id, base_sum, price_sum, name, value FROM item WHERE estimate > 0 AND id != ' + offer_id[0].item_id + ' AND rarity IN ("C","NC","R","UR","L","E") AND craftable = 1 AND base_sum > 0 AND price_sum > 0 ORDER BY RAND()')
 			const val = parseInt(estimates[0].base_sum);
 			const price_sum = parseInt(estimates[0].price_sum);
-			let price = val + price_sum;// + rows[0].value;
+			let price = val + price_sum;
 			price = price * (1.5 + (Math.random() * 0.5));
 			const name = estimates[0].name;
 			await connection.queryAsync('UPDATE merchant_offer SET item_id = ' + estimates[0].id + ', price = ' + price + ' WHERE id = ' + id)
@@ -51901,7 +51901,7 @@ async function refreshMerchant(player_id) {
 				var val = parseInt(rows[0].base_sum);
 				var price_sum = parseInt(rows[0].price_sum);
 
-				var price = val + price_sum;// + rows[0].value;
+				var price = val + price_sum;
 				price = price * (1.5 + (Math.random() * 0.5));
 
 				var name = rows[0].name;

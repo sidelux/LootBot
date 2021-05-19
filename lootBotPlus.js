@@ -244,7 +244,7 @@ bot.on('message', function (message, match) {
       if (err) throw err
       if (Object.keys(rows).length == 0) {
         bot.getChatMembersCount(message.chat.id).then(function (cnt) {
-          connection.query('INSERT INTO plus_groups (name, chat_id, members) VALUES ("' + dbConnection.escape(message.chat.title) + '","' + message.chat.id + '",' + cnt + ')', function (err, rows, fields) {
+          connection.query('INSERT INTO plus_groups (name, chat_id, members) VALUES ("' + (message.chat.title).replace(/[^\p{L}\p{N}\p{P}\p{Z}]/gu, '') + '","' + message.chat.id + '",' + cnt + ')', function (err, rows, fields) {
             if (err) throw err
             console.log('Gruppo aggiunto: ' + message.chat.title)
           })
@@ -8349,7 +8349,7 @@ bot.onText(/^\/posizioneteam/, function (message, match) {
             }
 
             arrayPlayers.sort(compare);
-            arrayPlayers.reverse(compare);
+            arrayPlayers.reverse();
 
             var text = "Posizione in globale dei membri del team:\n";
             for (let i = 0, len = arrayPlayers.length; i < len; i++) {
