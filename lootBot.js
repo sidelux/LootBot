@@ -53,7 +53,7 @@ var battle_timeout_limit_min = 20;
 var battle_timeout_elapsed = 600;
 var battle_season_test = 0;
 var dragon_limit_search = 15;
-var map_condition_max = 10;
+var map_condition_max = 11;
 var max_dungeon_energy = 60;
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
 var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750, 2500, 3000, 3750, 4250];
@@ -6409,6 +6409,9 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 								} else if (map_conditions == 10) {
 									conditions += "👀 Tutto chiaro";
 									conditions_desc = "La mappa è sempre completamente visibile";
+								} else if (map_conditions == 11) {
+									conditions += "🔄 Inversa";
+									conditions_desc = "Le statistiche dei giocatori relative al livello sono invertite";
 								}
 
 								var open = "<b>" + map_daily_diff + "</b> 💥 partite avviabili oggi";
@@ -6455,8 +6458,8 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 													bot.sendMessage(message.chat.id, "Puoi accedere ad una lobby solamente di giorno, dalle " + nightEnd + ":00 alle " + nightStart + ":00", kbBack);
 													return;
 												}
-												if (d.getDay() == 0) {
-													bot.sendMessage(message.chat.id, "Puoi accedere ad una lobby solamente dal lunedì al sabato", kbBack);
+												if ((d.getDay() == 0) && (crazyMode == 0)){
+													bot.sendMessage(message.chat.id, "Puoi accedere ad una lobby solamente dal lunedì al sabato e durante il weekend folle", kbBack);
 													return;
 												}
 											}
@@ -7186,6 +7189,13 @@ bot.onText(/attacca!/i, function (message) {
 						reborn = 5;
 						enemy_exp = 10000;
 						enemy_reborn = 5;
+					}
+
+					if (conditions == 11) {
+						exp = Math.max(25000-exp, 1);
+						reborn = Math.max(5-reborn, 1);
+						enemy_exp = Math.max(25000-enemy_exp, 1);
+						enemy_reborn = Math.max(5-enemy_reborn, 1);
 					}
 
 					var damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn, 1);
@@ -14272,7 +14282,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												bot.sendMessage(message.chat.id, "Tra una fitta coltre di fumo grigio appare un maestoso brucaliffo dall'aria assonnata.\nSembra innocuo...", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Offri...") {
-															bot.sendMessage(message.chat.id, "Scrivi il nome dell'oggetto da regalare al brucaliffo", dOptions).then(function () {
+															bot.sendMessage(message.chat.id, "Scrivi il nome dell'oggetto da regalare al brucaliffo").then(function () {
 																answerCallbacks[message.chat.id] = async function (answer) {
 																	if (answer.text == "Torna al menu")
 																		return;
@@ -28448,51 +28458,64 @@ bot.onText(/potenziamenti anima/i, function (message) {
 				if (rows[0].role > 0)
 					isAdmin = 1;
 
-				connection.query('SELECT boost_id, level FROM team_boost WHERE team_id = ' + team_id, function (err, rows, fields) {
+				connection.query('SELECT level, closed, details, point, boost_id FROM team WHERE id = ' + team_id, function (err, rows, fields) {
 					if (err) throw err;
-					var boost_list = "";
-					var maxlevel = 11;
-					if (Object.keys(rows).length > 0) {
-						boost_list += "Potenziamenti permanenti:\n";
-						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-							if ((rows[i].boost_id == 1) && (rows[i].level > 0)) {
-								if (rows[i].level >= maxlevel)
-									boost_list += "> *Unione Fatale*";
-								else
-									boost_list += "> Unione Fatale";
-								boost_list += " (Livello " + rows[i].level + ", +" + (3 * rows[i].level) + "%)\n";
-							}
-							if ((rows[i].boost_id == 2) && (rows[i].level > 0)) {
-								if (rows[i].level >= maxlevel)
-									boost_list += "> *Bottino Ricco*";
-								else
-									boost_list += "> Bottino Ricco";
-								boost_list += " (Livello " + rows[i].level + ", +" + (3 * rows[i].level) + "%)\n";
-							}
-							if ((rows[i].boost_id == 3) && (rows[i].level > 0)) {
-								if (rows[i].level >= maxlevel)
-									boost_list += "> *Formazione Impenetrabile*";
-								else
-									boost_list += "> Formazione Impenetrabile";
-								boost_list += " (Livello " + rows[i].level + ", +" + (3 * rows[i].level) + "%)\n";
-							}
-							if ((rows[i].boost_id == 4) && (rows[i].level > 0)) {
-								if (rows[i].level >= maxlevel)
-									boost_list += "> *Scrigni Redditizi*";
-								else
-									boost_list += "> Scrigni Redditizi";
-								boost_list += " (Livello " + rows[i].level + ", +" + (3 * rows[i].level) + "%)\n";
+					var level = rows[0].level;
+					var closed = rows[0].closed;
+					var details = rows[0].details;
+					var point = rows[0].point;
+					var boost_id = rows[0].boost_id;
+
+					connection.query('SELECT boost_id, level FROM team_boost WHERE team_id = ' + team_id, function (err, rows, fields) {
+						if (err) throw err;
+						var boost_list = "";
+						var boost_tmp = "";
+						var maxlevel = 11;
+						if (Object.keys(rows).length > 0) {
+							boost_list += "Potenziamenti permanenti:\n";
+							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+								if ((rows[i].boost_id == 1) && (rows[i].level > 0)) {
+									if (rows[i].level >= maxlevel)
+										boost_list += "> *Unione Fatale*";
+									else
+										boost_list += "> Unione Fatale";
+									boost_tmp = "";
+									if (boost_id == 1)
+										boost_tmp = " + 50% ⏳";
+									boost_list += " (Livello " + rows[i].level + ", +" + (3 * rows[i].level) + "%" + boost_tmp + ")\n";
+								}
+								if ((rows[i].boost_id == 2) && (rows[i].level > 0)) {
+									if (rows[i].level >= maxlevel)
+										boost_list += "> *Bottino Ricco*";
+									else
+										boost_list += "> Bottino Ricco";
+									boost_tmp = "";
+									if (boost_id == 2)
+										boost_tmp = " +50% ⏳";
+									boost_list += " (Livello " + rows[i].level + ", +" + (3 * rows[i].level) + "%" + boost_tmp + ")\n";
+								}
+								if ((rows[i].boost_id == 3) && (rows[i].level > 0)) {
+									if (rows[i].level >= maxlevel)
+										boost_list += "> *Formazione Impenetrabile*";
+									else
+										boost_list += "> Formazione Impenetrabile";
+									boost_tmp = "";
+									if (boost_id == 3)
+										boost_tmp = " -50% ⏳";
+									boost_list += " (Livello " + rows[i].level + ", +" + (3 * rows[i].level) + "%" + boost_tmp + ")\n";
+								}
+								if ((rows[i].boost_id == 4) && (rows[i].level > 0)) {
+									if (rows[i].level >= maxlevel)
+										boost_list += "> *Scrigni Redditizi*";
+									else
+										boost_list += "> Scrigni Redditizi";
+									boost_tmp = "";
+									if (boost_id == 4)
+										boost_tmp = " +10% ⏳";
+									boost_list += " (Livello " + rows[i].level + ", +" + (3 * rows[i].level) + "%" + boost_tmp + ")\n";
+								}
 							}
 						}
-					}
-
-					connection.query('SELECT level, closed, details, point, boost_id FROM team WHERE id = ' + team_id, function (err, rows, fields) {
-						if (err) throw err;
-						var level = rows[0].level;
-						var closed = rows[0].closed;
-						var details = rows[0].details;
-						var point = rows[0].point;
-						var boost_id = rows[0].boost_id;
 
 						if (isAdmin == 0) {
 							bot.sendMessage(message.chat.id, "Il team possiede *" + point + "* 🦋. Puoi ottenerne altri sconfiggendo i boss oppure partecipando agli eventi di team. Solo l'amministratore può procedere con i potenziamenti.\n\n" + boost_list, team)
@@ -28870,7 +28893,7 @@ bot.onText(/Entra in uno esistente|^Pagina (.+)/i, function (message, match) {
 				limMax = 50 * thisPage;
 			}
 
-			connection.query('SELECT name, players, max_players FROM team WHERE closed = 0 AND players < max_players AND ' + getRealLevel(reborn, lev) + ' >= min_lev ORDER BY name LIMIT ' + limMin + ', ' + limMax, function (err, rows, fields) {
+			connection.query('SELECT name, players, max_players, (max_players-players) As cnt FROM team WHERE closed = 0 AND players < max_players AND ' + getRealLevel(reborn, lev) + ' >= min_lev ORDER BY cnt ASC LIMIT ' + limMin + ', ' + limMax, function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, "Non ci sono più team disponibili o hanno raggiunto il limite di membri.", back);
@@ -41592,7 +41615,7 @@ bot.onText(/weekend della follia/i, function (message) {
 		"> Gli incantamenti iniziati nel folle durano 1 settimana\n" +
 		"> Possono essere acquistati 3 pacchetti delle Offerte Giornaliere\n" +
 		"> Le ricompense degli incarichi sono aumentate del 50%\n" +
-		"> E' possibile giocare 2 partite in più nelle Mappe\n" +
+		"> E' possibile giocare 2 partite in più nelle Mappe (aperte anche di domenica)\n" +
 		"> Le Cave forniscono una Pietra del Drago in più al loro completamento\n" +
 		"> I costi dell'annullamento bevanda attiva sono raddoppiati\n" +
 
@@ -48176,11 +48199,11 @@ function mainMenu(message) {
 																msgtext = msgtext + "\n🍹 Bevanda Livellante attiva per " + boost_end + " mission" + plur;
 														}
 														if (boost_id == 3) {
-															var plur = "i";
+															var plur = "e";
 															if (boost_end == 1)
-																plur = "io";
+																plur = "a";
 															if (boost_end > 0)
-																msgtext = msgtext + "\n🍹 Bevanda Fiamma di Drago attiva per " + boost_end + " viagg" + plur;
+																msgtext = msgtext + "\n🍹 Bevanda Fiamma di Drago attiva per " + boost_end + " cav" + plur;
 														}
 														if (boost_id == 5) {
 															var plur = "i";
@@ -51880,7 +51903,7 @@ async function merchantPrice(item_id) {
 
 async function refreshMerchant(player_id) {
 	if (player_id == 0) {
-		const merchant_offer = await connection.query('SELECT id FROM merchant_offer')
+		const merchant_offer = await connection.queryAsync('SELECT id FROM merchant_offer')
 		for (var i = 0, len = Object.keys(merchant_offer).length; i < len; i++) {
 			const id = merchant_offer[i].id;
 			const offer_id = await connection.queryAsync('SELECT item_id FROM merchant_offer WHERE id = ' + id)
@@ -57933,9 +57956,10 @@ function setFinishedTeamMission(element, index, array) {
 
 											if (rows[i].boost_id == 5) {
 												var rand = Math.random()*100;
-												if (rand < 25)
+												if (rand < 25) {
 													expPnt = expPnt*2;
-												setBoost(rows[i].id, rows[i].boost_mission, rows[i].boost_id);
+													setBoost(rows[i].id, rows[i].boost_mission, rows[i].boost_id);
+												}
 											}
 
 											setExp(rows[i].id, expPnt); // exp a tutti
