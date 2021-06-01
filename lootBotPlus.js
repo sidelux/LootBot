@@ -244,7 +244,7 @@ bot.on('message', function (message, match) {
       if (err) throw err
       if (Object.keys(rows).length == 0) {
         bot.getChatMembersCount(message.chat.id).then(function (cnt) {
-          connection.query('INSERT INTO plus_groups (name, chat_id, members) VALUES ("' + (message.chat.title).replace(/[^\p{L}\p{N}\p{P}\p{Z}]/gu, '') + '","' + message.chat.id + '",' + cnt + ')', function (err, rows, fields) {
+          connection.query('INSERT INTO plus_groups (name, chat_id, members) VALUES ("' + (message.chat.title).replace(/[^\p{L}\p{N}\p{P}\p{Z}]/gu, '').replaceAll("'", "").replaceAll('"', '') + '","' + message.chat.id + '",' + cnt + ')', function (err, rows, fields) {
             if (err) throw err
             console.log('Gruppo aggiunto: ' + message.chat.title)
           })
@@ -8229,7 +8229,7 @@ bot.onText(/^\/posizione$/, function (message, match) {
     const player_id = rows[0].id
     const global_event = rows[0].global_event
 
-    connection.query('SELECT global_eventwait FROM config', function (err, rows, fields) {
+    connection.query('SELECT global_eventwait, global_cap FROM config', function (err, rows, fields) {
       if (err) throw err
 
       if (rows[0].global_eventwait == 1) {
@@ -8237,29 +8237,28 @@ bot.onText(/^\/posizione$/, function (message, match) {
         return
       }
 
-      connection.query('(SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY A.value DESC LIMIT 100) UNION (SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 ORDER BY A.value DESC LIMIT 100)', function (err, rows, fields) {
-        if (err) throw err
+      const global_cap = rows[0].global_cap;
 
-        let found = 0
-        let text = '\nSe dovesse riuscire, <b>NON verrà</b> considerata nelle tue statistiche!'
-        for (let i = 0, len = Object.keys(rows).length; i < len; i++) {
-          if (rows[i].id == player_id) {
-            found = 1
-            break
-          }
-        }
+      connection.query('SELECT SUM(value) As tot FROM achievement_global WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
+				if (err) throw err;
 
-        if (found == 1) { text = '\nSe dovesse riuscire, <b>verrà considerata</b> nelle tue statistiche!' } else {
-          if (global_event >= 5) { text += ', considerato il tuo status dovrai impegnarti piu di un normale Lootiano!' }
-        }
+        if ((Object.keys(rows).length == 0) && (player_id != 1)) {
+					bot.sendMessage(message.chat.id, "Contribuisci all'obbiettivo dell'impresa globale per visualizzarne la classifica");
+					return;
+				}
+
+        const my_pnt = rows[0].tot;
+				const global_limit_perc = 0.15+(reborn*0.03);
+				const global_limit_val = Math.round(global_cap*global_limit_perc/100);
+
+				var limit_msg = "";
+				if (my_pnt >= global_limit_val)
+					limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>verrà considerata</b> nelle tue statistiche! (Beta)";
+				else
+					limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>NON verrà</b> considerata nelle tue statistiche. (Beta)";
 
         connection.query('SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
           if (err) throw err
-
-          if (Object.keys(rows).length == 0) {
-            bot.sendMessage(message.chat.id, 'Non sei ancora presente nella classifica')
-            return
-          }
 
           let pos = 0
           let pnt = 0
@@ -8275,7 +8274,7 @@ bot.onText(/^\/posizione$/, function (message, match) {
             return
           }
 
-          bot.sendMessage(message.chat.id, message.from.username + ', hai raggiunto la posizione <b>' + formatNumber(pos) + '</b> con <b>' + formatNumber(pnt) + "</b> punti nell'Impresa Globale in corso!" + text, html)
+          bot.sendMessage(message.chat.id, message.from.username + ', hai raggiunto la posizione <b>' + formatNumber(pos) + '</b> con <b>' + formatNumber(pnt) + "</b> punti nell'Impresa Globale in corso!" + limit_msg, html)
         })
       })
     })
@@ -9184,7 +9183,7 @@ bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
 
     const player_id = rows[0].id
 
-    connection.query('SELECT name, rarity FROM card_list WHERE id NOT IN (SELECT card_id FROM card_inventory WHERE player_id = ' + player_id + ') AND rarity = ' + rarity, function (err, rows, fields) {
+    connection.query('SELECT name, rarity FROM card_list WHERE id NOT IN (SELECT card_id FROM card_inventory WHERE player_id = ' + player_id + ' AND quantity > 0) AND rarity = ' + rarity, function (err, rows, fields) {
       if (err) throw err
 
       if (Object.keys(rows).length == 0) {

@@ -1144,85 +1144,96 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 			console.log("minValue " + minValue);
 			console.log("bonusText " + bonusText);
 
-			connection.query('SELECT COUNT(player_id) As cnt FROM achievement_global', function (err, rows, fields) {
+			connection.query('SELECT global_cap FROM config', function (err, rows, fields) {
 				if (err) throw err;
 
-				var tot = rows[0].cnt;
+				const global_cap = rows[0].global_cap;
 
-				connection.query('SELECT SUM(value) As val FROM achievement_global', function (err, rows, fields) {
+				console.log("cap " + global_cap);
+
+				connection.query('SELECT COUNT(player_id) As cnt FROM achievement_global', function (err, rows, fields) {
 					if (err) throw err;
-					bot.sendMessage(message.chat.id, "Il valore attuale è " + formatNumber(rows[0].val) + " per " + formatNumber(tot) + " persone, sicuro di chiudere l'impresa? Ricorda il messaggio e il valore del bonus", yesno).then(function () {
-						answerCallbacks[message.chat.id] = async function (answer) {
-							if (answer.text.toLowerCase() == "si") {
 
-								connection.query('UPDATE player SET global_end = 0', function (err, rows, fields) {
-									if (err) throw err;
+					const tot = rows[0].cnt;
 
-									connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (SELECT account_id FROM banlist) HAVING val > 0 ORDER BY val DESC', async function (err, rows, fields) {
+					connection.query('SELECT SUM(value) As val FROM achievement_global', function (err, rows, fields) {
+						if (err) throw err;
+						bot.sendMessage(message.chat.id, "Il valore attuale è " + formatNumber(rows[0].val) + " per " + formatNumber(tot) + " persone, sicuro di chiudere l'impresa? Ricorda il messaggio e il valore del bonus", yesno).then(function () {
+							answerCallbacks[message.chat.id] = async function (answer) {
+								if (answer.text.toLowerCase() == "si") {
+
+									connection.query('UPDATE player SET global_end = 0', function (err, rows, fields) {
 										if (err) throw err;
 
-										var text = "";
+										connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val, P.reborn FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (SELECT account_id FROM banlist) HAVING val > 0 ORDER BY val DESC', async function (err, rows, fields) {
+											if (err) throw err;
 
-										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-											text = "";
-											if (rows[i].val >= (rows[0].val / 3)) {
-												await addItem(rows[i].player_id, item_1id);
-												text += "> " + item_1 + "\n";
+											var text = "";
+											var global_limit_perc = 0;
+											var global_limit_val = 0;
+
+											for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+												text = "";
+												if (rows[i].val >= (rows[0].val / 3)) {
+													await addItem(rows[i].player_id, item_1id);
+													text += "> " + item_1 + "\n";
+												}
+												if (rows[i].val >= (rows[0].val / 10)) {
+													await addItem(rows[i].player_id, item_2id);
+													text += "> " + item_2 + "\n";
+												}
+												await addItem(rows[i].player_id, item_3id);
+												text += "> " + item_3 + "\n";
+
+												if (rows[i].val >= minValue) {
+													connection.query('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
+														if (err) throw err;
+													});
+													text += "> Bonus completamento: *" + bonusText + "*!\n";
+												}
+
+												// punto globale
+												global_limit_perc = 0.15+(rows[i].reborn*0.03);
+												global_limit_val = Math.round(global_cap*global_limit_perc/100);
+
+												if (rows[i].val >= global_limit_val) {
+													if (i < 25) {
+														await addChest(rows[i].player_id, 7);
+														text += "> Scrigno Capsula extra per la top 25\n";
+													}
+													connection.query('UPDATE player SET global_event = global_event+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
+														if (err) throw err;
+													});
+													text += "> Punto globale\n";
+												}
+
+												if (i == 0) {
+													connection.query('UPDATE player SET global_win = global_win+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
+														if (err) throw err;
+													});
+												}
+
+												text += "\n*Grazie per aver partecipato!*";
+
+												bot.sendMessage(rows[i].chat_id, "Per il completamento dell'*Impresa Globale* hai ricevuto:\n" + text, mark);
 											}
-											if (rows[i].val >= (rows[0].val / 10)) {
-												await addItem(rows[i].player_id, item_2id);
-												text += "> " + item_2 + "\n";
-											}
-											await addItem(rows[i].player_id, item_3id);
-											text += "> " + item_3 + "\n";
+										});
 
-											if (rows[i].val >= minValue) {
-												connection.query('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
-													if (err) throw err;
-												});
-												text += "> Bonus completamento: *" + bonusText + "*!\n";
-											}
+										connection.query('DELETE FROM global_hourly', function (err, rows, fields) {
+											if (err) throw err;
+										});
 
-											text += "\n*Grazie per aver partecipato!*";
+										connection.query('UPDATE config SET global_eventon = 0, global_eventwait = 1, global_eventhide = 1', function (err, rows, fields) {
+											if (err) throw err;
+										});
 
-											bot.sendMessage(rows[i].chat_id, "Per il completamento dell'*Impresa Globale* hai ricevuto:\n" + text, mark);
-										}
+										bot.sendMessage(message.chat.id, "Fatto!", back);
+
+										getGlobalPDF(message);
 									});
-									connection.query('(SELECT A.player_id, chat_id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY A.value DESC LIMIT 100) UNION (SELECT A.player_id, chat_id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 ORDER BY A.value DESC LIMIT 100)', async function (err, rows, fields) {
-										if (err) throw err;
-										var extra = "";
-										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-											extra = "";
-											if (i < 25) {
-												await addChest(rows[i].player_id, 7);
-												extra = " ed ottieni uno Scrigno Capsula extra";
-											}
-											connection.query('UPDATE player SET global_event = global_event+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
-												if (err) throw err;
-											});
-											if (i == 0) {
-												connection.query('UPDATE player SET global_win = global_win+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
-													if (err) throw err;
-												});
-											}
-											bot.sendMessage(rows[i].chat_id, "Per il tuo posizionamento in classifica la tua impresa globale viene conteggiata nelle statistiche" + extra + "!", mark);
-										}
-									});
-
-									connection.query('DELETE FROM global_hourly', function (err, rows, fields) {
-										if (err) throw err;
-									});
-
-									connection.query('UPDATE config SET global_eventon = 0, global_eventwait = 1, global_eventhide = 1', function (err, rows, fields) {
-										if (err) throw err;
-									});
-
-									bot.sendMessage(message.chat.id, "Fatto!", back);
-
-									getGlobalPDF(message);
-								});
+								}
 							}
-						}
+						});
 					});
 				});
 			});
@@ -8956,13 +8967,16 @@ bot.onText(/^\/mappatura$|^\/mappaturasym$/i, function (message) {
 			var room_id = rows[0].room_id;
 			var last_selected_dir = rows[0].last_selected_dir;
 
-			connection.query('SELECT name, rooms, finish_date FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
+			connection.query('SELECT name, rooms, finish_date, cursed FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 				if (err) throw err;
 
 				var istance_name = rows[0].name;
 				var istance_rooms = rows[0].rooms;
 				var finish_date = new Date(rows[0].finish_date);
 				var long_date = addZero(finish_date.getDate()) + "/" + addZero(finish_date.getMonth() + 1) + "/" + finish_date.getFullYear() + " " + addZero(finish_date.getHours()) + ':' + addZero(finish_date.getMinutes());
+				var cursed = "";
+				if (rows[0].cursed == 1)
+					cursed = " 🧨";
 
 				connection.query('SELECT P.nickname, M.message FROM dungeon_map_msg M, player P WHERE M.player_id = P.id AND M.dungeon_id = ' + dungeon_id, function (err, rows, fields) {
 					if (err) throw err;
@@ -8992,7 +9006,7 @@ bot.onText(/^\/mappatura$|^\/mappaturasym$/i, function (message) {
 								return;
 							}
 
-							var text = "Mappatura " + mapping_type + " per l'istanza <b>" + istance_name + "</b> (Scadenza: " + long_date + "):";
+							var text = "Mappatura " + mapping_type + " per l'istanza <b>" + istance_name + "</b>" + cursed + " (Scadenza: " + long_date + "):";
 							var current_room;
 							var found;
 							var rowId;
@@ -32311,10 +32325,12 @@ bot.onText(/Miniere di Mana|Raccolta|^miniera$|^miniere$/i, function (message) {
 
 						var extra_mana = "";
 						// modifica anche il ritiro automatico
+						/*
 						if (global_end == 1) {
 							quantity = quantity*2;
 							extra_mana = " (aumentata grazie al bonus globale)";
 						}
+						*/
 
 						quantity = Math.floor(quantity);
 
@@ -46379,10 +46395,9 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 										if (rows[i].name.indexOf("Cava") != -1) {
 											if ((class_id == 7) && (reborn > 1))
 												rows[i].duration -= rows[i].duration*0.05;
-											/*
+											// anche sotto
 											if (global_end == 1)
 												rows[i].duration -= rows[i].duration*0.2;
-											*/
 										}
 
 										rows[i].duration -= rows[i].duration*(dragon_level/300);
@@ -46474,10 +46489,9 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 
 																	rows[0].duration -= rows[0].duration*(dragon_level/300);
 
-																	/*
+																	// anche sopra
 																	if (global_end == 1)
 																		rows[0].duration -= rows[0].duration*0.2;
-																	*/
 
 																	var now = new Date();
 																	now.setMinutes(now.getMinutes() + rows[0].duration);
@@ -51582,7 +51596,7 @@ function getRankAch(message, size) {
 	var mypos = 0;
 	var size = 20;
 
-	connection.query('SELECT global_eventwait FROM config', function (err, rows, fields) {
+	connection.query('SELECT global_eventwait, global_cap FROM config', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (rows[0].global_eventwait == 1) {
@@ -51590,13 +51604,15 @@ function getRankAch(message, size) {
 			return;
 		}
 
-		connection.query('SELECT top_min, global_event, id, global_event FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		const global_cap = rows[0].global_cap;
+
+		connection.query('SELECT top_min, global_event, id, global_event, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 			if (err) throw err;
 
 			var global_event = rows[0].global_event;
 			var top_min = rows[0].top_min;
 			var player_id = rows[0].id;
-			var global_event = rows[0].global_event;
+			var reborn = rows[0].reborn;
 
 			var kb = {
 				parse_mode: "HTML",
@@ -51606,11 +51622,9 @@ function getRankAch(message, size) {
 				}
 			};
 
-			var query = '(SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) ORDER BY A.value DESC LIMIT 100) UNION (SELECT P.id FROM player P, achievement_global A WHERE P.id = A.player_id AND P.account_id NOT IN (SELECT account_id FROM banlist) AND P.global_event < 5 ORDER BY A.value DESC LIMIT 100)';
-
 			var top_query = 'SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC';
 
-			connection.query('SELECT 1 FROM achievement_global WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
+			connection.query('SELECT SUM(value) As tot FROM achievement_global WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
 				if (err) throw err;
 
 				if ((Object.keys(rows).length == 0) && (player_id != 1)) {
@@ -51618,113 +51632,72 @@ function getRankAch(message, size) {
 					return;
 				}
 
-				connection.query(query, function (err, rows, fields) {
-					if (err) throw err;
+				const my_pnt = rows[0].tot;
+				const global_limit_perc = 0.15+(reborn*0.03);
+				const global_limit_val = Math.round(global_cap*global_limit_perc/100);
 
-					var global_limit = Object.keys(rows).length;
+				var limit_msg = "";
+				if (my_pnt >= global_limit_val)
+					limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>verrà considerata</b> nelle tue statistiche! (Beta)";
+				else
+					limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>NON verrà</b> considerata nelle tue statistiche. (Beta)";
 
-					var limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>verrà considerata</b> nelle tue statistiche, insieme agli altri " + formatNumber(global_limit-1) + " avventurieri!";
-
-					var limit_msg_2 = "\nA questo punteggio la partecipazione all'impresa <b>NON verrà</b> considerata nelle tue statistiche, impegnati di più per aumentare i tuoi punti, raggiungi gli altri " + formatNumber(global_limit) + " avventurieri!";
-
-					connection.query('UPDATE config SET global_limitcnt = ' + global_limit, function (err, rows, fields) {
+				if (top_min == 1) {
+					connection.query(top_query, function (err, rows, fields) {
 						if (err) throw err;
+
+						if (Object.keys(rows).length == 0) {
+							bot.sendMessage(message.chat.id, "La classifica è ancora vuota", keyrank);
+							return;
+						}
+
+						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+							if (c < size + 1)
+								text += c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].cnt) + ")\n";
+							if (rows[i].id == player_id) {
+								mypnt = rows[i].cnt;
+								mypos = c;
+							}
+							c++;
+						}
+						text += "\nTu:\n" + mypos + "° " + message.from.username + " (" + formatNumber(mypnt) + ")";
+
+						bot.sendMessage(message.chat.id, text + limit_msg, kb);
 					});
+				} else {
+					connection.query(top_query, function (err, rows, fields) {
+						if (err) throw err;
 
-					if (global_event >= 5)
-						global_limit = 100;
+						if (Object.keys(rows).length == 0) {
+							bot.sendMessage(message.chat.id, "La classifica è ancora vuota", keyrank);
+							return;
+						}
 
-					if (top_min == 1) {
-						connection.query(top_query, function (err, rows, fields) {
-							if (err) throw err;
+						var range = 5;
 
-							if (Object.keys(rows).length == 0) {
-								bot.sendMessage(message.chat.id, "La classifica è ancora vuota", keyrank);
-								return;
-							}
+						var nickname = [];
+						var point = [];
+						var mypos = 0;
 
-							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-								if (c < size + 1)
-									text += c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].cnt) + ")\n";
-								if (rows[i].id == player_id) {
-									mypnt = rows[i].cnt;
-									mypos = c;
-								}
-								c++;
-							}
-							text += "\nTu:\n" + mypos + "° " + message.from.username + " (" + formatNumber(mypnt) + ")";
+						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+							nickname.push(rows[i].nickname);
+							point.push(rows[i].cnt);
+							if (player_id == rows[i].id)
+								mypos = i;
+						}
 
-							connection.query(query, function (err, rows, fields) {
-								if (err) throw err;
-
-								var found = 0;
-								for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-									if (rows[i].id == player_id) {
-										found = 1;
-										break;
-									}
-								}
-
-								if (found == 1)
-									text += limit_msg;
+						for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
+							if (nickname[i] != undefined) {
+								if (i == mypos)
+									text += (i + 1) + "° <b>" + nickname[i] + "</b> (" + formatNumber(point[i]) + ")\n";
 								else
-									text += limit_msg_2;
-
-								bot.sendMessage(message.chat.id, text, kb);
-							});
-						});
-					} else {
-						connection.query(top_query, function (err, rows, fields) {
-							if (err) throw err;
-
-							if (Object.keys(rows).length == 0) {
-								bot.sendMessage(message.chat.id, "La classifica è ancora vuota", keyrank);
-								return;
+									text += (i + 1) + "° " + nickname[i] + " (" + formatNumber(point[i]) + ")\n";
 							}
+						}
 
-							var range = 5;
-
-							var nickname = [];
-							var point = [];
-							var mypos = 0;
-
-							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-								nickname.push(rows[i].nickname);
-								point.push(rows[i].cnt);
-								if (player_id == rows[i].id)
-									mypos = i;
-							}
-
-							for (var i = (mypos - range); i < (mypos + (range + 1)); i++) {
-								if (nickname[i] != undefined) {
-									if (i == mypos)
-										text += (i + 1) + "° <b>" + nickname[i] + "</b> (" + formatNumber(point[i]) + ")\n";
-									else
-										text += (i + 1) + "° " + nickname[i] + " (" + formatNumber(point[i]) + ")\n";
-								}
-							}
-
-							connection.query(query, function (err, rows, fields) {
-								if (err) throw err;
-
-								var found = 0;
-								for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-									if (rows[i].id == player_id) {
-										found = 1;
-										break;
-									}
-								}
-
-								if (found == 1)
-									text += limit_msg;
-								else
-									text += limit_msg_2;
-
-								bot.sendMessage(message.chat.id, text, kb);
-							});
-						});
-					}
-				});
+						bot.sendMessage(message.chat.id, text + limit_msg, kb);
+					});
+				}
 			});
 		});
 	});
@@ -54837,10 +54810,12 @@ function autoMana() {
 
 				var extra_mana = "";
 				// modifiche anche il ritiro manuale
+				/*
 				if (rows[i].global_end == 1) {
 					rows[i].quantity = rows[i].quantity*2;
 					extra_mana = " (aumentato grazie al bonus globale)";
 				}
+				*/
 
 				rows[i].quantity = Math.floor(rows[i].quantity);
 
@@ -57932,8 +57907,6 @@ function setFinishedTeamMission(element, index, array) {
 
 											bot.sendMessage(rows[i].chat_id, "Hai completato l'incarico insieme al tuo party come richiesto da " + mandator + "!\nEcco il rapporto dell'incarico:\n<i>" + endText + "</i>\n\nL'ufficio incarichi vi premia con: " + rewardText + extra, html);
 
-											console.log("messaggio incarico concluso");
-
 											if (isExp == 1)
 												setExp(rows[i].id, qnt);
 											else if (isItem == 1)
@@ -57949,8 +57922,6 @@ function setFinishedTeamMission(element, index, array) {
 												if (rewardStr[1] == "mana")
 													setAchievement(rows[i].id, 81, qnt*3);
 											}
-
-											console.log("ricompense distribuite");
 
 											setAchievement(rows[i].id, 22, 1);
 
@@ -61686,9 +61657,6 @@ async function addChest(player_id, chest_id, qnt = 1, shop = 0) {
 	if (rows.affectedRows == 0) {
 		await connection.queryAsync('INSERT INTO inventory_chest (player_id, chest_id, quantity) VALUES (' + player_id + ',' + chest_id + ', ' + qnt + ')');
 	}
-
-	if (shop == 0)
-		globalAchievement(player_id, qnt);
 }
 
 function delChest(player_id, chest_id, qnt = 1) {
@@ -61730,6 +61698,8 @@ async function addMoney(player_id, qnt) {
 	}
 
 	await connection.queryAsync('UPDATE player SET money = money + ' + qnt + ' WHERE id = ' + player_id);
+
+	globalAchievement(player_id, qnt);
 }
 
 async function reduceMoney(player_id, qnt) {
