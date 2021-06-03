@@ -28310,11 +28310,14 @@ bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^❤️$|^cc$|^cp$/i, fu
 			var pot1 = 0;
 			var pot2 = 0;
 			var pot3 = 0;
+
 			while (player_life < player_total_life) {
-				if ((player_life+Math.round(player_total_life*perc3) <= player_total_life) && (pot3bag-pot3 > 0)) {
+				if (((player_life+Math.round(player_total_life*perc3) <= player_total_life) && (pot3bag-pot3 > 0)) || 
+				((pot2bag-pot2 == 0) && (pot3bag-pot3 > 0) && (mode == 0))) {
 					player_life += Math.round(player_total_life*perc3);
 					pot3++;
-				} else if ((player_life+Math.round(player_total_life*perc2) <= player_total_life) && (pot2bag-pot2 > 0)) {
+				} else if (((player_life+Math.round(player_total_life*perc2) <= player_total_life) && (pot2bag-pot2 > 0)) || 
+				((pot1bag-pot1 == 0) && (pot2bag-pot2 > 0) && (mode == 0))) {
 					player_life += Math.round(player_total_life*perc2);
 					pot2++;
 				} else if (pot1bag-pot1 > 0) {

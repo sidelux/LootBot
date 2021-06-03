@@ -8282,6 +8282,45 @@ bot.onText(/^\/posizione$/, function (message, match) {
   })
 })
 
+bot.onText(/^\/partecipanti/, function (message, match) {
+  if (message.chat.id == -1001142821592) {
+    connection.query('SELECT id, global_event FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+      if (err) throw err
+
+      if (Object.keys(rows).length == 0) { return }
+
+      const player_id = rows[0].id
+
+      connection.query('SELECT global_cap FROM config', function (err, rows, fields) {
+        if (err) throw err
+
+        const global_cap = rows[0].global_cap;
+
+        connection.query('SELECT P.reborn, COUNT(P.reborn) As cnt FROM achievement_global A, player P WHERE A.player_id = P.id GROUP BY reborn', async function (err, rows, fields) {
+          if (err) throw err
+
+          var tot = 0;
+          var tot_ok = 0;
+          var text = "";
+          var global_limit_perc;
+          var global_limit_val;
+          var players;
+          for (let i = 0, len = Object.keys(rows).length; i < len; i++) {
+            tot += rows[i].cnt;
+            global_limit_perc = 0.15+(rows[i].reborn*0.03);
+            global_limit_val = Math.round(global_cap*global_limit_perc/100);
+            players = await connection.queryAsync("SELECT COUNT(A.id) As tot FROM achievement_global A, player P WHERE A.player_id = P.id AND A.value >= " + global_limit_val + " AND P.reborn = " + rows[i].reborn);
+            text += "R" + (rows[i].reborn-1) + " (" + formatNumber(global_limit_val) + "): " + rows[i].cnt + " (" + players[0].tot + ")\n";
+            tot_ok += players[0].tot;
+          }
+
+          bot.sendMessage(message.chat.id, "Totali: " + tot + " (" + tot_ok + ")\n" + text);
+        });
+      });
+    });
+  }
+});
+
 bot.onText(/^\/posizioneteam/, function (message, match) {
   connection.query('SELECT id, global_event FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
     if (err) throw err
