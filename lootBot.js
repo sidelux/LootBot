@@ -53,7 +53,7 @@ var battle_timeout_limit_min = 20;
 var battle_timeout_elapsed = 600;
 var battle_season_test = 0;
 var dragon_limit_search = 15;
-var map_condition_max = 11;
+var map_condition_max = 12;
 var max_dungeon_energy = 60;
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
 var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750, 2500, 3000, 3750, 4250];
@@ -6423,6 +6423,9 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 								} else if (map_conditions == 11) {
 									conditions += "🔄 Inversa";
 									conditions_desc = "Le statistiche dei giocatori relative al livello sono invertite";
+								} else if (map_conditions == 12) {
+									conditions += "⛑ Duro a morire";
+									conditions_desc = "Le caselle vuote ricaricano il doppio di salute";
 								}
 
 								var open = "<b>" + map_daily_diff + "</b> 💥 partite avviabili oggi";
@@ -8442,6 +8445,8 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									if ((objId == 0) || ((objId == 8) && (isEnemy == 0)))	{			// vuoto o partenze
 										var life_gain_text = "";
 										life_gain = total_life*0.05;
+										if (conditions == 12)
+											life_gain = life_gain*2;
 										if (life+life_gain > total_life)
 											life_gain = total_life-life;
 										if (life_gain > 0)
@@ -28248,7 +28253,7 @@ bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^❤️$|^cc$|^cp$/i, fu
 	if ((message.text.toLowerCase().indexOf("parziale") != -1) || (message.text == "❣️") || (message.text.toLowerCase() == "cp"))
 		mode = 1;
 
-	connection.query('SELECT id, holiday, account_id, life, total_life FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
+	connection.query('SELECT id, holiday, account_id, life, total_life, paralyzed FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
 		if (err) throw err;
 		var banReason = await isBanned(rows[0].account_id);
 		if (banReason != null) {
@@ -28264,6 +28269,7 @@ bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^❤️$|^cc$|^cp$/i, fu
 		var player_id = rows[0].id;
 		var player_life = rows[0].life;
 		var player_total_life = rows[0].total_life;
+		var paralyzed = rows[0].paralyzed;
 
 		if (player_life >= player_total_life) {
 			bot.sendMessage(message.chat.id, "Non necessiti di cure", kbBack);
@@ -28274,6 +28280,13 @@ bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^❤️$|^cc$|^cp$/i, fu
 			bot.sendMessage(message.chat.id, "Torna in vita prima di recuperare salute", revive);
 			return;
 		}
+
+		/*
+		if (paralyzed > 0) {
+			bot.sendMessage(message.chat.id, "Non è possibile utilizzare le Pozioni se sei paralizzato", kbBack);
+			return;
+		}
+		*/
 
 		connection.query('SELECT cons_val FROM item WHERE id IN (92,93,94) ORDER BY id', async function (err, rows, fields) {
 			if (err) throw err;
@@ -42405,7 +42418,7 @@ bot.onText(/^pozioni|^🍵$/i, function (message) {
 });
 
 bot.onText(/Torna in Vita/i, function (message) {
-	connection.query('SELECT id, life, total_life, refilled, gender, class, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, life, total_life, refilled, gender, class, reborn, paralyzed FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
@@ -42414,6 +42427,14 @@ bot.onText(/Torna in Vita/i, function (message) {
 		var refilled = rows[0].refilled;
 		var class_id = rows[0].class;
 		var reborn = rows[0].reborn;
+		var paralyzed = rows[0].paralyzed;
+
+		/*
+		if (paralyzed > 0) {
+			bot.sendMessage(message.chat.id, "Non è possibile utilizzare le Pozioni se sei paralizzato", back);
+			return;
+		}
+		*/
 
 		var gender_text = "a";
 		if (rows[0].gender == "M")
@@ -50960,8 +50981,10 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 														};
 
 														var extra_craft = "";
-														if (craftexp > 0)
+														if (craftexp > 0) {
 															extra_craft = " ed ottenuto *" + craftexp + "* PC";
+															globalAchievement(player_id, craftexp);
+														}
 
 														var resQuantity = await getItemCnt(player_id, matR);
 														if (quantity == 1)
@@ -61698,8 +61721,6 @@ async function addMoney(player_id, qnt) {
 	}
 
 	await connection.queryAsync('UPDATE player SET money = money + ' + qnt + ' WHERE id = ' + player_id);
-
-	globalAchievement(player_id, qnt);
 }
 
 async function reduceMoney(player_id, qnt) {

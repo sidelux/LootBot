@@ -8221,13 +8221,14 @@ bot.onText(/^\/abilità/, function (message, match) {
 })
 
 bot.onText(/^\/posizione$/, function (message, match) {
-  connection.query('SELECT id, global_event FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+  connection.query('SELECT id, global_event, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
     if (err) throw err
 
     if (Object.keys(rows).length == 0) { return }
 
     const player_id = rows[0].id
     const global_event = rows[0].global_event
+    const reborn = rows[0].reborn;
 
     connection.query('SELECT global_eventwait, global_cap FROM config', function (err, rows, fields) {
       if (err) throw err
@@ -8239,7 +8240,7 @@ bot.onText(/^\/posizione$/, function (message, match) {
 
       const global_cap = rows[0].global_cap;
 
-      connection.query('SELECT SUM(value) As tot FROM achievement_global WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
+      connection.query('SELECT SUM(value) As tot FROM achievement_global WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 
         if ((Object.keys(rows).length == 0) && (player_id != 1)) {
