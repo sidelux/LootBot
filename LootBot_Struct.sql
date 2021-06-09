@@ -3577,7 +3577,8 @@ SET character_set_client = utf8;
 /*!50001 CREATE TABLE `team_public` (
   `team_id` tinyint NOT NULL,
   `name` tinyint NOT NULL,
-  `child_team` tinyint NOT NULL
+  `child_team` tinyint NOT NULL,
+  `pnt` tinyint NOT NULL
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
@@ -4007,7 +4008,7 @@ CREATE TABLE `travel` (
 /*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `team_public` AS select `t1`.`id` AS `team_id`,`t1`.`name` AS `name`,(select `team`.`name` from `team` where `team`.`id` = `t1`.`child_team`) AS `child_team` from `team` `t1` */;
+/*!50001 VIEW `team_public` AS select `t1`.`id` AS `team_id`,`t1`.`name` AS `name`,(select `team`.`name` from `team` where `team`.`id` = `t1`.`child_team`) AS `child_team`,500 * `t1`.`mission_time_count` + `t1`.`craft_count` + 3000 * `t1`.`boss_count` + 125000 * (`A`.`completed` + `t1`.`kill_num`) + `t1`.`dungeon_room_count` AS `pnt` from (`team` `t1` left join `assault` `A` on(`t1`.`id` = `A`.`team_id`)) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;

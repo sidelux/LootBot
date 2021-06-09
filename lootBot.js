@@ -1597,7 +1597,8 @@ bot.onText(/^\/scorciatoia/, function (message, match) {
 					"> ctb - Apre il contrabbandiere\n" +
 					"> clg - Apre il menu Contatta lo Gnomo\n" +
 					"> rimod - Apre il rimodulatore di Flaridion\n" +
-					"> znc - Apre lo Zaino Completo");
+					"> znc - Apre lo Zaino Completo\n" +
+					"> globale - Apre la classifica della globale in corso");
 });
 
 bot.onText(/^\/marketban (.+)/, function (message, match) {
@@ -13794,14 +13795,19 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																};
 
 																var qnt = base_qnt;
-																if (cursed == 1)
+																var get_qnt = 1;
+																var get_qnt_text = "1 copia";
+																if (cursed == 1) {
 																	qnt = base_qnt*2;
+																	get_qnt = 2;
+																	get_qnt_text = "2 copie";
+																}
 
 																var poss = "";
 																if (await getItemCnt(player_id, stone1) >= qnt)
 																	poss = " ✅";
 
-																bot.sendMessage(message.chat.id, "Entri in una stanza che non ha affatto le sembianze di una stanza, piuttosto un grosso parco, al centro una ragazza circondata da Draghi, si tratta di un *Mercante Draconico*, fornisce oggetti utili al proprio drago in cambio di " + qnt + "x " + stone_name + poss + ".\nStavolta vuole scambiare *" + item1_name + "*, accetti l'offerta?", dOptions).then(function () {
+																bot.sendMessage(message.chat.id, "Entri in una stanza che non ha affatto le sembianze di una stanza, piuttosto un grosso parco, al centro una ragazza circondata da Draghi, si tratta di un *Mercante Draconico*, fornisce oggetti utili al proprio drago in cambio di " + qnt + "x " + stone_name + poss + ".\nStavolta vuole scambiare " + get_qnt_text + " di *" + item1_name + "*, accetti l'offerta?", dOptions).then(function () {
 																	answerCallbacks[message.chat.id] = async function (answer) {
 																		if (answer.text.toLowerCase() == "si") {
 
@@ -13816,10 +13822,10 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																						return;
 																					}
 
-																					bot.sendMessage(message.chat.id, "Accetti lo scambio del Mercante che ti ringrazia sorridendo e ti porge l'oggetto pattuito, prosegui velocemente alla stanza successiva...", dNext);
+																					bot.sendMessage(message.chat.id, "Accetti lo scambio del Mercante che ti ringrazia sorridendo e ti porge " + get_qnt_text + " dell'oggetto pattuito, prosegui velocemente alla stanza successiva...", dNext);
 
 																					await delItem(player_id, stone1, qnt);
-																					await addItem(player_id, item1, qnt);
+																					await addItem(player_id, item1, get_qnt);
 																					setAchievement(player_id, 79, 1);
 
 																					var rand = Math.random()*100;
@@ -37427,7 +37433,7 @@ bot.onText(/^Potenziamenti Flaridion$/i, function (message) {
 	getRankAt(message, 20);
 });
 
-bot.onText(/^Impresa Globale$/i, function (message) {
+bot.onText(/^Impresa Globale$|^globale$/i, function (message) {
 	getRankAch(message, 20);
 });
 
@@ -51622,7 +51628,7 @@ function getRankAch(message, size) {
 	var mypos = 0;
 	var size = 20;
 
-	connection.query('SELECT global_eventwait, global_cap FROM config', function (err, rows, fields) {
+	connection.query('SELECT global_eventwait, global_cap, global_eventhide FROM config', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (rows[0].global_eventwait == 1) {
@@ -51631,6 +51637,7 @@ function getRankAch(message, size) {
 		}
 
 		const global_cap = rows[0].global_cap;
+		const global_eventhide = rows[0].global_eventhide;
 
 		connection.query('SELECT top_min, global_event, id, global_event, reborn FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 			if (err) throw err;
@@ -51653,7 +51660,7 @@ function getRankAch(message, size) {
 			connection.query('SELECT SUM(value) As tot FROM achievement_global WHERE player_id = ' + rows[0].id, function (err, rows, fields) {
 				if (err) throw err;
 
-				if ((Object.keys(rows).length == 0) && (player_id != 1)) {
+				if ((rows[0].tot == 0) && (player_id != 1)) {
 					bot.sendMessage(message.chat.id, "Contribuisci all'obbiettivo dell'impresa globale per visualizzarne la classifica", keyrank);
 					return;
 				}
@@ -51663,10 +51670,12 @@ function getRankAch(message, size) {
 				const global_limit_val = Math.round(global_cap*global_limit_perc/100);
 
 				var limit_msg = "";
-				if (my_pnt >= global_limit_val)
-					limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>verrà considerata</b> nelle tue statistiche! (Beta)";
-				else
-					limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>NON verrà</b> considerata nelle tue statistiche. (Beta)";
+				if (global_eventhide == 0) {
+					if (my_pnt >= global_limit_val)
+						limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>verrà considerata</b> nelle tue statistiche! (Beta)";
+					else
+						limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>NON verrà</b> considerata nelle tue statistiche. (Beta)";
+				}
 
 				if (top_min == 1) {
 					connection.query(top_query, function (err, rows, fields) {
