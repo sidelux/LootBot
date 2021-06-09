@@ -8590,7 +8590,9 @@ bot.onText(/^\/imprese/, function (message) {
 
 			let achievement = ''
 			let reb_lim = reborn
+			var achievement_on = 0;
 			if (Object.keys(rows).length > 0) {
+				achievement_on = 1;
 				for (let i = 0, len = Object.keys(rows).length; i < len; i++) {
 					achievement += '<b>' + rows[i].name + '</b>:'
 					const ach = await connection.queryAsync('SELECT completed, progress FROM achievement_status WHERE player_id = ' + player_id + ' AND achievement_id = ' + rows[i].achievement_id)
@@ -8607,11 +8609,14 @@ bot.onText(/^\/imprese/, function (message) {
 					} else { achievement += ' ❌' }
 					achievement += '\n'
 				}
+			}
 
-				let options = { parse_mode: 'HTML' }
-				if (message.reply_to_message != undefined) { options = { parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id } }
+			let options = { parse_mode: 'HTML' }
+			if (message.reply_to_message != undefined) { options = { parse_mode: 'HTML', reply_to_message_id: message.reply_to_message.message_id } }
+			if (achievement_on == 1)
 				bot.sendMessage(message.chat.id, message.from.username + ', ecco il tuo progresso nelle imprese di oggi:\n' + achievement + 'Hai completato ' + formatNumber(daily) + ' imprese giornaliere e ottenuto ' + formatNumber(triplet) + ' triplette', options)
-			};
+			else
+				bot.sendMessage(message.chat.id, message.from.username + ', hai completato ' + formatNumber(daily) + ' imprese giornaliere e ottenuto ' + formatNumber(triplet) + ' triplette', options)
 		})
 	})
 })
