@@ -9325,7 +9325,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 								iKeys.push(["Azzera il Rango ⚠️"]);
 						}
 
-						iKeys.push(["Notifiche cariche dungeon 🛡"]);
+						iKeys.push(["Notifiche cariche esplorative 🛡"]);
 						iKeys.push(["Torna al menu"]);
 
 						var dSelect = {
@@ -10544,110 +10544,116 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			return;
 																		}
 
+																		var rebornDiff = "= 0";
+																		if (passId == 608)
+																			rebornDiff = "= 0";
+																		else if (passId == 609)
+																			rebornDiff = "<= 1";
+																		else if (passId == 610)
+																			rebornDiff = "<= 2";
+
 																		connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																			if (Object.keys(rows).length == 0) {
 																				bot.sendMessage(message.chat.id, "Devi essere in un team per utilizzare questa funzionalità.", dBack);
 																				return;
-																			} else {
-																				var team_id = rows[0].team_id;
-																				connection.query('SELECT nickname, dungeon_id FROM team_player, player LEFT JOIN dungeon_status ON player.id = dungeon_status.player_id WHERE player.id = team_player.player_id AND team_id = ' + rows[0].team_id + ' AND player.id != ' + player_id + ' AND dungeon_time IS NULL AND dungeon_id IS NULL', function (err, rows, fields) {
-																					if (err) throw err;
-																					if (Object.keys(rows).length == 0) {
-																						bot.sendMessage(message.chat.id, "Nessun compagno di team disponibile.", dBack);
-																						return;
-																					} else {
-																						var iKeys2 = [];
-																						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-																							iKeys2.push([rows[i].nickname]);
+																			}
+																			var team_id = rows[0].team_id;
+																			connection.query('SELECT nickname, dungeon_id FROM team_player, player LEFT JOIN dungeon_status ON player.id = dungeon_status.player_id WHERE player.id = team_player.player_id AND team_id = ' + rows[0].team_id + ' AND player.id != ' + player_id + ' AND dungeon_time IS NULL AND dungeon_id IS NULL AND ' + player_reborn + '-reborn ' + rebornDiff, function (err, rows, fields) {
+																				if (err) throw err;
+																				if (Object.keys(rows).length == 0) {
+																					bot.sendMessage(message.chat.id, "Nessun compagno di team disponibile.", dBack);
+																					return;
+																				} else {
+																					var iKeys2 = [];
+																					for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+																						iKeys2.push([rows[i].nickname]);
+																					iKeys2.push(["Torna al dungeon"]);
+
+																					var dTeam = {
+																						parse_mode: "Markdown",
+																						reply_markup: {
+																							resize_keyboard: true,
+																							keyboard: iKeys2
 																						}
-																						iKeys2.push(["Torna al dungeon"]);
+																					};
 
-																						var dTeam = {
-																							parse_mode: "Markdown",
-																							reply_markup: {
-																								resize_keyboard: true,
-																								keyboard: iKeys2
-																							}
-																						};
+																					bot.sendMessage(message.chat.id, "Seleziona il compagno di team con cui scambiarti, ricorda che questo utente non deve essere in un dungeon.", dTeam).then(function () {
+																						answerCallbacks[message.chat.id] = async function (answer) {
+																							connection.query('SELECT nickname, rank, dungeon_time, player.reborn, player.id, player.chat_id FROM team_player, player WHERE player.nickname = "' + answer.text + '" AND player.id = team_player.player_id AND team_id = ' + team_id + ' AND player_id != ' + player_id, function (err, rows, fields) {
+																								if (err) throw err;
+																								if (Object.keys(rows).length == 0) {
+																									bot.sendMessage(message.chat.id, "Utente non valido.", dBack);
+																									return;
+																								} else {
+																									var new_playerid = rows[0].id;
+																									var chat_id = rows[0].chat_id;
+																									var pass_reborn = rows[0].reborn;
+																									var pass_rank = rows[0].rank;
 
-																						bot.sendMessage(message.chat.id, "Seleziona il compagno di team con cui scambiarti, ricorda che questo utente non deve essere in un dungeon.", dTeam).then(function () {
-																							answerCallbacks[message.chat.id] = async function (answer) {
-																								connection.query('SELECT nickname, rank, dungeon_time, player.reborn, player.id, player.chat_id FROM team_player, player WHERE player.nickname = "' + answer.text + '" AND player.id = team_player.player_id AND team_id = ' + team_id + ' AND player_id != ' + player_id, function (err, rows, fields) {
-																									if (err) throw err;
-																									if (Object.keys(rows).length == 0) {
-																										bot.sendMessage(message.chat.id, "Utente non valido.", dBack);
-																										return;
-																									} else {
-																										var new_playerid = rows[0].id;
-																										var chat_id = rows[0].chat_id;
-																										var pass_reborn = rows[0].reborn;
-																										var pass_rank = rows[0].rank;
-
-																										if (passId == 608) {
-																											if (player_reborn != pass_reborn) {
-																												bot.sendMessage(message.chat.id, "Puoi usare questo pass solo verso utenti con rinascita pari alla tua", dBack);
-																												return;
-																											}
-																										} else if (passId == 609) {
-																											if (pass_reborn - player_reborn > 1) {
-																												bot.sendMessage(message.chat.id, "Puoi usare questo pass solo verso utenti con rinascita più alta di 1 rispetto alla tua, o uguale", dBack);
-																												return;
-																											}
-																										} else if (passId == 610) {
-																											if (pass_reborn - player_reborn > 2) {
-																												bot.sendMessage(message.chat.id, "Puoi usare questo pass solo verso utenti con rinascita più alta di 2 rispetto alla tua, più alta di 1, o uguale", dBack);
-																												return;
-																											}
+																									if (passId == 608) {
+																										if (player_reborn != pass_reborn) {
+																											bot.sendMessage(message.chat.id, "Puoi usare questo pass solo verso utenti con rinascita pari alla tua", dBack);
+																											return;
 																										}
+																									} else if (passId == 609) {
+																										if (pass_reborn - player_reborn > 1) {
+																											bot.sendMessage(message.chat.id, "Puoi usare questo pass solo verso utenti con rinascita più alta di 1 rispetto alla tua, o uguale", dBack);
+																											return;
+																										}
+																									} else if (passId == 610) {
+																										if (pass_reborn - player_reborn > 2) {
+																											bot.sendMessage(message.chat.id, "Puoi usare questo pass solo verso utenti con rinascita più alta di 2 rispetto alla tua, più alta di 1, o uguale", dBack);
+																											return;
+																										}
+																									}
 
-																										bot.sendMessage(message.chat.id, "Sei sicuro?", dYesNo).then(function () {
-																											answerCallbacks[message.chat.id] = async function (answer) {
-																												if (answer.text.toLowerCase() == "si") {
-																													if (rows[0].dungeon_time != null) {
-																														bot.sendMessage(message.chat.id, "L'utente è in attesa dungeon", dBack);
+																									bot.sendMessage(message.chat.id, "Sei sicuro?", dYesNo).then(function () {
+																										answerCallbacks[message.chat.id] = async function (answer) {
+																											if (answer.text.toLowerCase() == "si") {
+																												if (rows[0].dungeon_time != null) {
+																													bot.sendMessage(message.chat.id, "L'utente è in attesa dungeon", dBack);
+																													return;
+																												}
+
+																												if (await getItemCnt(player_id, passId) == 0) {
+																													bot.sendMessage(message.chat.id, "Non possiedi il pass selezionato.", dBack);
+																													return;
+																												}
+
+																												connection.query('SELECT id FROM dungeon_status WHERE player_id = ' + new_playerid, async function (err, rows, fields) {
+																													if (err) throw err;
+																													if (Object.keys(rows).length > 0) {
+																														bot.sendMessage(message.chat.id, "L'utente selezionato è attualmente in un dungeon", dBack);
 																														return;
 																													}
+																													await delItem(player_id, passId, 1);
 
-																													if (await getItemCnt(player_id, passId) == 0) {
-																														bot.sendMessage(message.chat.id, "Non possiedi il pass selezionato.", dBack);
-																														return;
-																													}
-
-																													connection.query('SELECT id FROM dungeon_status WHERE player_id = ' + new_playerid, async function (err, rows, fields) {
+																													connection.query('UPDATE dungeon_status SET pass = ' + player_id + ', player_id = ' + new_playerid + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 																														if (err) throw err;
-																														if (Object.keys(rows).length > 0) {
-																															bot.sendMessage(message.chat.id, "L'utente selezionato è attualmente in un dungeon", dBack);
-																															return;
-																														}
-																														await delItem(player_id, passId, 1);
 
-																														connection.query('UPDATE dungeon_status SET pass = ' + player_id + ', player_id = ' + new_playerid + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+																														var d = new Date();
+																														d.setHours(d.getHours() + wait_dungeon);
+																														var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+																														connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 																															if (err) throw err;
-
-																															var d = new Date();
-																															d.setHours(d.getHours() + wait_dungeon);
-																															var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
-
-																															connection.query('UPDATE player SET dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
-																																if (err) throw err;
-																																bot.sendMessage(message.chat.id, "Hai completato lo scambio con il compagno di team!", back);
-																																bot.sendMessage(chat_id, message.from.username + " ha richiesto lo scambio con te nel dungeon!", dBack_html);
-																																setAchievement(player_id, 46, 1);
-																																setAchievement(new_playerid, 67, 1);
-																															});
+																															bot.sendMessage(message.chat.id, "Hai completato lo scambio con il compagno di team!", back);
+																															bot.sendMessage(chat_id, message.from.username + " ha richiesto lo scambio con te nel dungeon!", dBack_html);
+																															setAchievement(player_id, 46, 1);
+																															setAchievement(new_playerid, 67, 1);
 																														});
 																													});
-																												}
+																												});
 																											}
-																										});
-																									}
-																								});
-																							};
-																						});
-																					}
-																				});
-																			}
+																										}
+																									});
+																								}
+																							});
+																						};
+																					});
+																				}
+																			});
 																		});
 																	}
 																});
@@ -30010,7 +30016,7 @@ bot.onText(/^sostituzione oggetti/i, function (message) {
 	});
 });
 
-bot.onText(/^notifiche cariche dungeon/i, function (message) {
+bot.onText(/^notifiche cariche esplorative/i, function (message) {
 	connection.query('SELECT account_id, holiday, id FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
 		if (err) throw err;
 
@@ -38155,7 +38161,7 @@ bot.onText(/^vendi/i, function (message) {
 
 											connection.query('UPDATE inventory, item SET inventory.quantity = 0 WHERE inventory.item_id = item.id AND rarity = "' + oggetto + '" AND player_id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await reduceMoney(player_id, total);
+												await addMoney(player_id, total);
 												bot.sendMessage(message.chat.id, "Hai venduto tutta la rarità *" + oggetto + "* per *" + formatNumber(total) + "* §!", store);
 
 												/*
@@ -47740,6 +47746,7 @@ function mainMenu(message) {
 		var boost_id = rows[0].boost_id;
 		var market_pack = rows[0].market_pack;
 		var heist_protection = rows[0].heist_protection;
+		var heist_count = rows[0].heist_count;
 
 		var mission_time_end = rows[0].mission_time_end;
 		var mission_special_time_end = rows[0].mission_special_time_end;
@@ -48038,6 +48045,16 @@ function mainMenu(message) {
 											if (Object.keys(rows).length > 0) {
 												var heist_end = new Date(rows[0].datetime);
 												msgtext = msgtext + "\n🔦 Gnomo in ispezione fino alle " + addZero(heist_end.getHours()) + ":" + addZero(heist_end.getMinutes());
+											} else {
+												var heist_count_limit = ((10 - heist_count) < 0 ? 0 : (10 - heist_count));
+												if (heist_count_limit == 0) {
+													msgtext += "\n🔦 nessuna ispezione possibile oggi";
+												} else {
+													var plur = "i";
+													if (heist_count_limit == 1)
+														plur = "e";
+													msgtext += "\n🔦 " + heist_count_limit + " ispezion" + plur + " possibil" + plur + " oggi";
+												}
 											}
 
 											connection.query('SELECT achievement_id FROM achievement_daily ORDER BY id', async function (err, rows, fields) {
