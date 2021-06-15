@@ -13120,6 +13120,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																									if (err) throw err;
 																								});
 
+																								setAchievement(player_id, 74, 1);
+
 																								await endDungeonRoom(player_id, boost_id, boost_mission);
 																								connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
@@ -13163,6 +13165,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																									connection.query('UPDATE player SET mkeys = mkeys+10 WHERE id = ' + player_id, function (err, rows, fields) {
 																										if (err) throw err;
 																									});
+
+																									setAchievement(player_id, 74, 1);
 
 																									await endDungeonRoom(player_id, boost_id, boost_mission);
 																									connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
