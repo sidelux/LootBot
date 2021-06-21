@@ -5393,7 +5393,7 @@ bot.on('callback_query', async function (message) {
 				return
 			}
 
-			connection.query('SELECT nickname, account_id, market_ban FROM player WHERE id = ' + player_id2, async function (err, rows, fields) {
+			connection.query('SELECT nickname, account_id, market_ban, money FROM player WHERE id = ' + player_id2, async function (err, rows, fields) {
 				if (err) throw err
 
 				const player2 = rows[0].nickname
@@ -5426,6 +5426,12 @@ bot.on('callback_query', async function (message) {
 
 				if (player_id == player_id2) {
 					bot.answerCallbackQuery(message.id, { text: 'Non puoi acquistare da te stesso!' })
+					check.splice(index, 1)
+					return
+				}
+
+				if (price + rows[0].money > 1000000000) {
+					bot.answerCallbackQuery(message.id, { text: 'Il giocatore raggiungerebbe il cap con questo acquisto' })
 					check.splice(index, 1)
 					return
 				}
