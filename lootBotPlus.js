@@ -9194,7 +9194,7 @@ bot.onText(/^\/figurine$/, function (message, match) {
 			if (err) throw err
 			const have = rows[0].cnt
 
-			connection.query('SELECT rarity, COUNT(I.id) As cnt FROM card_inventory I, card_list L WHERE I.card_id = L.id AND quantity > 0 AND player_id = ' + player_id + ' GROUP BY rarity', function (err, rows, fields) {
+			connection.query('SELECT rarity, COUNT(I.id) As cnt, (SELECT COUNT(id) FROM card_list WHERE rarity = L.rarity) As tot FROM card_inventory I, card_list L WHERE I.card_id = L.id AND quantity > 0 AND player_id = ' + player_id + ' GROUP BY rarity', function (err, rows, fields) {
 				if (err) throw err
 
 				if (Object.keys(rows).length == 0) {
@@ -9203,7 +9203,13 @@ bot.onText(/^\/figurine$/, function (message, match) {
 				}
 
 				let text = message.from.username + ', possiedi ' + formatNumber(have) + ' figurine suddivise per rarità:\n'
-				for (i = 0, len = Object.keys(rows).length; i < len; i++) { text += '> Rarità ' + rows[i].rarity + ': ' + rows[i].cnt + '\n' }
+				var all = "";
+				for (i = 0, len = Object.keys(rows).length; i < len; i++) {
+					all = "";
+					if (rows[i].cnt == rows[i].tot)
+						all = " ✅";
+					text += '> Rarità ' + rows[i].rarity + ': ' + rows[i].cnt + all + '\n'
+				}
 
 				if (text.length >= 3500) {
 					bot.sendMessage(message.chat.id, message.from.username + ', il messaggio è troppo lungo, riprova con /figurinel', html)

@@ -1115,6 +1115,11 @@ bot.onText(/^\/globalcap (.+)|^\/globalcap/, function (message, match) {
 	}
 });
 
+bot.onText(/^\/checkcards/, function (message, match) {
+	if (message.from.id == 20471035)
+		checkAllCardsProgress(1);
+});
+
 bot.onText(/^\/incremglobal/, function (message, match) {
 	if (message.from.id == 20471035) {
 		var next_global_end = moment().startOf('month').add(1, 'months').format('YYYY-MM-DD') + " 12:00:00";
@@ -1560,7 +1565,8 @@ bot.onText(/^\/comandi/, function (message, match) {
 						"/globaldesc (imposta descrizione globale)\n" +
 						"/globalcap (imposta cap)\n" +
 						"/incremglobal (sposta fine globale di un mese)\n" +
-						"/destroylobby lobby_id (distrugge la lobby uccidendo tutti i giocatori)\n");
+						"/destroylobby lobby_id (distrugge la lobby uccidendo tutti i giocatori)\n" +
+						"/checkcards (controlla i premi per le figurine)");
 	} else
 		bot.sendMessage(message.chat.id, "Piacerebbe :D");
 });
@@ -6492,11 +6498,13 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 													return;
 												}
 											}
-											if (lobby_wait_end != null) {
-												var d = new Date(lobby_wait_end);
-												var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
-												bot.sendMessage(message.chat.id, "Devi attendere fino alle " + short_date + " per accedere ad una nuova lobby", kbStop);
-												return;
+											if (trainingLobby == 0) {
+												if (lobby_wait_end != null) {
+													var d = new Date(lobby_wait_end);
+													var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
+													bot.sendMessage(message.chat.id, "Devi attendere fino alle " + short_date + " per accedere ad una nuova lobby", kbStop);
+													return;
+												}
 											}
 
 											var max_lobby_count = 3;
@@ -14259,10 +14267,12 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																					if (Object.keys(inv).length == 0) {
 																						connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + rows[0].id + ')', function (err, rows, fields) {
 																							if (err) throw err;
+																							checkAllCardsProgress(player_id);
 																						});
 																					} else {
 																						connection.query('UPDATE card_inventory SET quantity = quantity + 1 WHERE player_id = ' + player_id + ' AND card_id = ' + rows[0].id, function (err, rows, fields) {
 																							if (err) throw err;
+																							checkAllCardsProgress(player_id);
 																						});
 																					}
 
@@ -14273,10 +14283,12 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																						if (Object.keys(inv).length == 0) {
 																							connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + rows[1].id + ')', function (err, rows, fields) {
 																								if (err) throw err;
+																								checkAllCardsProgress(player_id);
 																							});
 																						} else {
 																							connection.query('UPDATE card_inventory SET quantity = quantity + 1 WHERE player_id = ' + player_id + ' AND card_id = ' + rows[1].id, function (err, rows, fields) {
 																								if (err) throw err;
+																								checkAllCardsProgress(player_id);
 																							});
 																						}
 																						cursed_text += " e la figurina 🃏 *" + rows[1].name + "* (" + rows[1].rarity + ")";
@@ -26173,6 +26185,15 @@ bot.onText(/riprendi battaglia/i, function (message) {
 														if (miniboost_query[0].cnt == 1)
 															text += " 💢";
 
+														if (team_boost_id == 1)
+															text += "\nPotenziamento temporaneo attivo: Unione Fatale";
+														else if (team_boost_id == 2)
+															text += "\nPotenziamento temporaneo attivo: Bottino Ricco";
+														else if (team_boost_id == 3)
+															text += "\nPotenziamento temporaneo attivo: Formazione Impenetrabile";
+														else if (team_boost_id == 4)
+															text += "\nPotenziamento temporaneo attivo: Scrigni Redditizi";
+
 														var gender_mob = "";
 														if (!is_boss) {
 															gender_mob = " un";
@@ -35480,7 +35501,7 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 								}
 							};
 
-							bot.sendMessage(message.chat.id, text + "\nPuoi ampliare la tua collezione scambiandole con gli altri giocatori ed ottenerle nell'_Emporio_!", kb).then(function () {
+							bot.sendMessage(message.chat.id, text + "\nPuoi ampliare la tua collezione scambiandole con gli altri giocatori ed ottenerle nell'_Emporio_!\nSe hai già richiesto la ricompensa per una rarità completata, potrai scambiarne solo le doppie", kb).then(function () {
 								answerCallbacks[message.chat.id] = async function (answer) {
 									if (answer.text == "Torna al menu")
 										return;
@@ -35574,10 +35595,12 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 																	if (Object.keys(rows).length == 0) {
 																		connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + new_card[0].id + ')', function (err, rows, fields) {
 																			if (err) throw err;
+																			checkAllCardsProgress(player_id);
 																		});
 																	} else {
 																		connection.query('UPDATE card_inventory SET quantity = quantity + 1 WHERE player_id = ' + player_id + ' AND card_id = ' + new_card[0].id, function (err, rows, fields) {
 																			if (err) throw err;
+																			checkAllCardsProgress(player_id);
 																		});
 																	}
 																});
@@ -35653,6 +35676,12 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 
 														if (inv[0].quantity < 1) {
 															bot.sendMessage(message.chat.id, "Non possiedi abbastanza copie per la figurina <b>" + card[0].name + "</b>", kbBack);
+															return;
+														}
+
+														var check_locked = await connection.queryAsync('SELECT 1 FROM card_rarity_reward WHERE rarity = ' + card[0].rarity + ' AND player_id = ' + player_id);
+														if ((inv[0].quantity == 1) && (Object.keys(check_locked).length == 1)) {
+															bot.sendMessage(message.chat.id, "Hai già richiesto la ricompensa per le figurine di questa rarità, puoi scambiarle solo se ne possiedi di doppie", kbBack);
 															return;
 														}
 
@@ -35940,10 +35969,12 @@ bot.onText(/^\/concludif/i, function (message) {
 										if (Object.keys(inv).length == 0) {
 											connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_to + ', ' + rows[i].id + ')', function (err, rows, fields) {
 												if (err) throw err;
+												checkAllCardsProgress(player_to);
 											});
 										} else {
 											connection.query('UPDATE card_inventory SET quantity = quantity + 1 WHERE player_id = ' + player_to + ' AND card_id = ' + rows[i].id, function (err, rows, fields) {
 												if (err) throw err;
+												checkAllCardsProgress(player_to);
 											});
 										}
 
@@ -35957,10 +35988,12 @@ bot.onText(/^\/concludif/i, function (message) {
 										if (Object.keys(inv).length == 0) {
 											connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + rows[i].id + ')', function (err, rows, fields) {
 												if (err) throw err;
+												checkAllCardsProgress(player_id);
 											});
 										} else {
 											connection.query('UPDATE card_inventory SET quantity = quantity + 1 WHERE player_id = ' + player_id + ' AND card_id = ' + rows[i].id, function (err, rows, fields) {
 												if (err) throw err;
+												checkAllCardsProgress(player_id);
 											});
 										}
 
@@ -38513,10 +38546,12 @@ bot.onText(/compra/i, function (message) {
 												if (Object.keys(inv).length == 0) {
 													connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + rows[i].id + ')', function (err, rows, fields) {
 														if (err) throw err;
+														checkAllCardsProgress(player_id);
 													});
 												} else {
 													connection.query('UPDATE card_inventory SET quantity = quantity + 1 WHERE player_id = ' + player_id + ' AND card_id = ' + rows[i].id, function (err, rows, fields) {
 														if (err) throw err;
+														checkAllCardsProgress(player_id);
 													});
 												}
 
@@ -51097,10 +51132,74 @@ function checkFestival(chat_id, player_id, item_id) {
 	});
 }
 
+function checkAllCardsProgress(player_id) {
+	// if (player_id != 1) return;
+	connection.query('SELECT chat_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+		for (var i = 1; i < 11; i++)
+			checkCardProgress(player_id, rows[0].chat_id, i);
+	});
+}
+
+function checkCardProgress(player_id, chat_id, rarity) {
+	connection.query('SELECT COUNT(id) As tot FROM card_list WHERE rarity = ' + rarity, function (err, rows, fields) {
+		if (err) throw err;
+		var tot = rows[0].tot;
+
+		// if (player_id == 1) tot = 1;
+
+		connection.query('SELECT COUNT(CI.id) As cnt FROM card_inventory CI, card_list CL WHERE CI.card_id = CL.id AND CL.rarity = ' + rarity + ' AND CI.quantity > 0 AND CI.player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+			var cnt = rows[0].cnt;
+
+			// console.log(player_id, rarity, tot, cnt);
+			if (tot == cnt) {
+				connection.query('SELECT 1 FROM card_rarity_reward WHERE player_id = ' + player_id + ' AND rarity = ' + rarity, function (err, rows, fields) {
+					if (err) throw err;
+					if (Object.keys(rows).length == 0) {
+						connection.query('INSERT INTO card_rarity_reward (player_id, rarity) VALUES (' + player_id + ', ' + rarity + ')', function (err, rows, fields) {
+							if (err) throw err;
+							var gems = 0;
+							if (rarity == 1)
+								gems = 100;
+							else if (rarity == 2)
+								gems = 200;
+							else if (rarity == 3)
+								gems = 300;
+							else if (rarity == 4)
+								gems = 400;
+							else if (rarity == 5)
+								gems = 500;
+							else if (rarity == 6)
+								gems = 1000;
+							else if (rarity == 7)
+								gems = 1500;
+							else if (rarity == 8)
+								gems = 2000;
+							else if (rarity == 9)
+								gems = 2500;
+							else if (rarity == 10)
+								gems = 3000;
+
+							bot.sendMessage(chat_id, "Hai completato la collezione di Figurine di rarità " + rarity + " e ottenuto <b>" + formatNumber(gems) + "</b> 💎!", html);
+
+							connection.query('UPDATE player SET gems = gems+' + gems + ' WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+							});
+
+							console.log("Ricompensa figurine rarità " + rarity + " consegnata a " + player_id);
+						});
+					} else 
+						console.log("Ricompensa figurine rarità " + rarity + " saltata per " + player_id);
+				});
+			}
+		});
+	});
+}
+
 function checkAllProgress(player_id) {
-	for (var i = 1; i < 9; i++) {
+	for (var i = 1; i < 9; i++)
 		setAchievementProgress(player_id, i);
-	}
 }
 
 function setAchievementProgress(player_id, type) {
@@ -53055,6 +53154,8 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 
 													await connection.queryAsync('INSERT INTO card_inventory (player_id, card_id) VALUES (' + rows[i].id + ', ' + new_id + ')');
 
+													checkAllCardsProgress(rows[i].id);
+
 													bot.sendMessage(rows[i].chat_id, "Hai creato ed ottenuto la figurina 🃏 *" + mob_name + " (" + card_rarity + ")*! Creane altre per ampliare la collezione!", mark);
 												}
 											}
@@ -53073,6 +53174,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 												else
 													await connection.queryAsync('UPDATE card_inventory SET quantity = quantity+1 WHERE player_id = ' + rows[i].id + ' AND card_id = ' + card[0].id);
 												// console.log("Figurina ottenuta: " + mob_name);
+												checkAllCardsProgress(rows[i].id);
 
 												bot.sendMessage(rows[i].chat_id, "Hai trovato la figurina 🃏 *" + mob_name + " (" + card[0].rarity + ")*! Ne possiedi " + (have_tot[0].cnt+1) + "/" + tot[0].cnt, mark);
 											}
