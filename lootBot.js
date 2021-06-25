@@ -1604,7 +1604,8 @@ bot.onText(/^\/scorciatoia/, function (message, match) {
 					"> clg - Apre il menu Contatta lo Gnomo\n" +
 					"> rimod - Apre il rimodulatore di Flaridion\n" +
 					"> znc - Apre lo Zaino Completo\n" +
-					"> globale - Apre la classifica della globale in corso");
+					"> globale - Apre la classifica della globale in corso\n" +
+					"> msn - Apre il menu missioni");
 });
 
 bot.onText(/^\/marketban (.+)/, function (message, match) {
@@ -45523,7 +45524,7 @@ bot.onText(/itinerario propizio|itinerari|regioni/i, function (message) {
 	});
 });
 
-bot.onText(/missione/i, function (message) {
+bot.onText(/missione|^msn$/i, function (message) {
 	connection.query('SELECT account_id, holiday, mission_special_id, mission_party, id, boost_id, boost_mission, charm_id, life, exp, reborn, money, class, global_end, travel_id, cave_id, mission_special_time_end FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
 		if (err) throw err;
 

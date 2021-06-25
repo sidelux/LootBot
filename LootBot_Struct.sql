@@ -616,6 +616,23 @@ CREATE TABLE `card_list` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `card_rarity_reward`
+--
+
+DROP TABLE IF EXISTS `card_rarity_reward`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `card_rarity_reward` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `player_id` int(11) NOT NULL,
+  `rarity` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `card_rarity_reward_player` (`player_id`),
+  CONSTRAINT `card_rarity_reward_player` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `card_trade`
 --
 
