@@ -23057,11 +23057,11 @@ bot.onText(/team/i, function (message) {
 											else if (rows[i].mission_party == 1)
 												act = "🏃 Incarico";
 
-											last = "Nascosto";
-											if (rows[i].role == 0) {
+											// last = "Nascosto";
+											// if (rows[i].role == 0) {
 												d = new Date(rows[i].time);
 												last = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds()) + " " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
-											}
+											// }
 
 											suspended = "";
 											if (rows[i].suspended == 1)
@@ -43171,7 +43171,7 @@ bot.onText(/necro del destino/i, function (message) {
 										if (answer.text == "Torna al menu")
 											return;
 										else if (answer.text == "Tutti") {
-											bot.sendMessage(message.chat.id, "Sei sicuro di voler scambiare tutti le U?", yesno).then(function () {
+											bot.sendMessage(message.chat.id, "Sei sicuro di voler scambiare tutte le U?", yesno).then(function () {
 												answerCallbacks[message.chat.id] = async function (answer) {
 													if (answer.text.toLowerCase() == "si") {
 														connection.query('SELECT item.id, inventory.quantity As cnt FROM inventory, item WHERE inventory.item_id = item.id AND item.rarity = "U" AND inventory.quantity > 0 AND inventory.player_id = ' + player_id, async function (err, rows, fields) {
