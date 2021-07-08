@@ -3611,7 +3611,7 @@ bot.onText(/Rimodulatore di Flaridion|Torna al rimodulatore|^rimodulatore$|^rimo
 						var price_money = 1000000;
 						var price_exp = 30;
 
-						bot.sendMessage(message.chat.id, "Ogni Flaridion ti costerà *" + formatNumber(price_money) + "* § e *" + price_exp + "* exp accumulata, hai a disposizione *" + formatNumber(my_money) + "* § e *" + gain_exp + "* exp accumulata, quanti ne vuoi acquistare?", kbNum).then(function () {
+						bot.sendMessage(message.chat.id, "Ogni Flaridion ti costerà *" + formatNumber(price_money) + "* § e *" + price_exp + "* exp accumulata, hai a disposizione *" + formatNumber(my_money) + "* § e *" + formatNumber(gain_exp) + "* exp accumulata, quanti ne vuoi acquistare?\nNe puoi acquistare al massimo *" + formatNumber(Math.floor(Math.min(my_money/price_money, gain_exp/price_exp))) + "*", kbNum).then(function () {
 							answerCallbacks[message.chat.id] = async function (answer) {
 								if ((answer.text == "Torna al rimodulatore") || (answer.text == "Torna al menu"))
 									return;
@@ -30364,9 +30364,9 @@ bot.onText(/cambia admin/i, function (message) {
 																}
 																connection.query('UPDATE team_player SET role = 0 WHERE role = 1 AND team_id = ' + team_id, function (err, rows, fields) {
 																	if (err) throw err;
-																});
-																connection.query('UPDATE team_player SET role = 1 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
-																	if (err) throw err;
+																	connection.query('UPDATE team_player SET role = 1 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
+																		if (err) throw err;
+																	});
 																});
 																bot.sendMessage(message.chat.id, "Cambio admin completato!", kbBack);
 																bot.sendMessage(rows[0].chat_id, "Sei stato nominato Amministratore del Team!", kbBack);
@@ -41490,9 +41490,9 @@ bot.onText(/^apri/i, function (message) {
 				};
 			}
 
-			var alltxt = "Sicuro di voler aprire tutti gli scrigni?\nNe possiedi " + formatNumber(qnt) + " su un massimo di " + formatNumber(maxChest) + " apribili contemporaneamente, procedendo saranno aperti partendo dalla rarità più bassa";
+			var alltxt = "Sicuro di voler aprire tutti gli scrigni?\nNe possiedi " + formatNumber(qnt) + " su un massimo di " + formatNumber(maxChest) + " apribili contemporaneamente, procedendo saranno aperti partendo dalla rarità più bassa escludendo quelli Mistici";
 			if (qnt < 5000)
-				alltxt = "Sicuro di voler aprire tutti gli scrigni?\nNe possiedi " + formatNumber(qnt);
+				alltxt = "Sicuro di voler aprire tutti gli scrigni?\nNe verranno aperti " + formatNumber(qnt) + " escludendo quelli Mistici";
 
 			if (scrigno != "tutti")
 				alltxt = "Possiedi " + formatNumber(qnt) + "x *" + scrigno + "*, quanti ne vuoi aprire?";
@@ -46472,8 +46472,10 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 											if ((class_id == 7) && (reborn > 1))
 												rows[i].duration -= rows[i].duration*0.05;
 											// anche sotto
+											/*
 											if (global_end == 1)
 												rows[i].duration -= rows[i].duration*0.2;
+											*/
 										}
 
 										rows[i].duration -= rows[i].duration*(dragon_level/300);
@@ -46566,8 +46568,10 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 																	rows[0].duration -= rows[0].duration*(dragon_level/300);
 
 																	// anche sopra
+																	/*
 																	if (global_end == 1)
 																		rows[0].duration -= rows[0].duration*0.2;
+																	*/
 
 																	var now = new Date();
 																	now.setMinutes(now.getMinutes() + rows[0].duration);
@@ -51049,7 +51053,6 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 														var extra_craft = "";
 														if (craftexp > 0) {
 															extra_craft = " ed ottenuto *" + craftexp + "* PC";
-															globalAchievement(player_id, craftexp);
 														}
 
 														var resQuantity = await getItemCnt(player_id, matR);
@@ -52984,10 +52987,8 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 									if (Object.keys(ability).length > 0)
 										money += money*((ability[0].ability_level*ability[0].val)/100);
 
-									/*
 									if (rows[i].global_end == 1)
-										money += money*0.05;
-									*/
+										money += money;
 
 									money = Math.round(money);
 
@@ -55493,6 +55494,23 @@ function rimodPrice(actualLevel, nextLevel, unitPrice) {
 function funz(x) {
 	return 1 + (Math.pow(x, 1.8)) / 100000;
 }
+
+/* // max level with money and exp
+function rimodMaxBuy(money, exp, actualLevel, unitPrice) {
+	var price_money = 1000000;
+	var price_exp = 30;
+	var price_flari = 0;
+	while (done == 0) {
+		price_flari += rimodPrice(actualLevel, actualLevel+1, unitPrice);
+		if ((price_flari*price_money > money) || (price_flari*price_exp > exp)) {
+			done = 1;
+			break;
+		}
+		actualLevel++;
+	}
+	return actualLevel;
+}
+*/
 
 function refreshLife() {
 	var query = "";
@@ -60758,6 +60776,8 @@ function setFinishedMission(element, index, array) {
 
 								getSnowball(chat_id, element.nickname, element.id, 1);
 								setAchievement(element.id, 1, 1);
+								if (mission_gem == 0)
+									globalAchievement(element.id, 1);
 							});
 						});
 					});
