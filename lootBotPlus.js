@@ -645,6 +645,7 @@ bot.onText(/^\/comanditeam/, function (message) {
 		"/incremento - Invia un messaggio taggando solo i membri del proprio team che devono ancora attivare l'incremento nell'assalto anche in privato\n" +
 		'/chiedoaiuto - Invia un messaggio taggando solo i membri non in dungeon disponibili ad uno scambio nel dungeon\n' +
 		'/serveaiuto - Invia un messaggio taggando solo i membri in dungeon disponibili ad uno scambio nel dungeon\n' +
+		'/cambialama <colore> - Invia un messaggio taggando solo i membri che vengono invitati a cambiare tipo di lama equipaggiata\n' +
 		'/chiamateam - Invia un messaggio taggando tutti i membri del proprio team anche in privato\n' +
 		'/statoincarichi - Mostra un riepilogo di tutti gli incarichi in corso\n' +
 		'/stanzeteam - Mostra la lista dei compagni di team e la stanza che hanno raggiunto nel dungeon', mark)
@@ -1941,6 +1942,64 @@ bot.onText(/^\/chiedoaiuto/, function (message, match) {
 					bot.sendMessage(message.chat.id, '<b>' + message.from.username + '</b> (R' + (reborn - 1) + ', Rango ' + formatNumber(rank) + '), in esplorazione del dungeon ' + dungeon_name + ' stanza ' + dungeon_room + '/' + dungeon_tot_room + ' (crollerà il ' + finish_date + ') chiede aiuto ai suoi compagni di team:\n' + nicklist, html)
 				})
 			})
+		})
+	})
+})
+
+bot.onText(/^\/cambialama (.+)|^\/cambialama/, function (message, match) {
+	if (!checkSpam(message)) { return }
+
+	if (message.chat.id > 0) {
+		bot.sendMessage(message.from.id, 'Questo comando può essere usato solo nei gruppi')
+		return
+	}
+
+	if (match[1] == undefined) { 
+		bot.sendMessage(message.from.id, 'Specifica il colore della lama dopo il comando: gialla, rossa, blu o bianca')
+		return
+	}
+
+	const color = match[1];
+
+	if ((color != "gialla") && (color != "rossa") && (color != "blu") && (color != "bianca")) {
+		bot.sendMessage(message.from.id, 'Specifica uno dei seguenti colori: gialla, rossa, blu o bianca')
+		return
+	}
+
+	var item_id = 0;
+	if (color == "gialla")
+		item_id = 638;
+	else if (color == "rossa")
+		item_id = 639;
+	else if (color == "blu")
+		item_id = 640;
+	else if (color == "bianca")
+		item_id = 754;
+
+	connection.query('SELECT player_id, team_id FROM team_player WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+		if (err) throw err
+
+		if (Object.keys(rows).length == 0) {
+			bot.sendMessage(message.from.id, "Puoi usare questo comando solo se sei all'interno di un team!")
+			return
+		}
+
+		const team_id = rows[0].team_id
+		const player_id = rows[0].player_id
+
+		connection.query('SELECT P.nickname FROM team_player T, player P WHERE T.player_id = P.id AND P.weapon_id = ' + item_id + ' AND P.id != ' + player_id + ' AND T.team_id = ' + team_id, function (err, rows, fields) {
+			if (err) throw err
+
+			let nicklist = ''
+
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, 'Nessun compagno di team ha equipaggiato il tipo di lama specificato!')
+				return
+			}
+
+			for (i = 0; i < Object.keys(rows).length; i++) { nicklist += '> @' + rows[i].nickname + '\n' }
+
+			bot.sendMessage(message.chat.id, '<b>' + message.from.username + '</b> invita i suoi compagni con la lama ' + color + ' a cambiarla:\n' + nicklist, html)
 		})
 	})
 })
