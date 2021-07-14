@@ -21592,7 +21592,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 										status += "Scaglie: " + scale + "\n";
 										if ((charm_id != 695) && (charm_id != 602)) {
 											const charm_name = await connection.queryAsync("SELECT name FROM item WHERE id = " + charm_id);
-											status += charm_name[0].name + " equipaggiato\n";
+											status += "📿 " + charm_name[0].name + "\n";
 										}
 										if ((flari_active == 1) && (is_dummy == 0))
 											status += "Flaridion attivi 🔗\n";
@@ -35490,7 +35490,7 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 						if (err) throw err;
 						var have_tot = rows[0].cnt;
 
-						connection.query('SELECT name, player_id, rarity, quantity FROM card_list LEFT JOIN card_inventory ON card_list.id = card_inventory.card_id AND player_id = ' + player_id + ' AND quantity > 0 ORDER BY player_id DESC, name LIMIT ' + cardLimit + ' OFFSET ' + limitTo, function (err, rows, fields) {
+						connection.query('SELECT name, player_id, rarity, quantity FROM card_list LEFT JOIN card_inventory ON card_list.id = card_inventory.card_id AND player_id = ' + player_id + ' AND quantity > 0 ORDER BY name, rarity DESC, name LIMIT ' + cardLimit + ' OFFSET ' + limitTo, function (err, rows, fields) {
 							if (err) throw err;
 
 							var text = "Attualmente sono disponibili *" + formatNumber(tot) + "* figurine, ne possiedi *" + have + "* diverse e fin ora ne sono state trovate *" + formatNumber(have_tot) + "*.\nTra parentesi è mostrata la rarità, più il valore è alto più è difficile ottenerla negli _Assalti_.\n\n_Pagina " + page + "_\n\n";	

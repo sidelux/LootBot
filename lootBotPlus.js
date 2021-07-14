@@ -9267,7 +9267,7 @@ bot.onText(/^\/figurine$/, function (message, match) {
 					all = "";
 					if (rows[i].cnt == rows[i].tot)
 						all = " ✅";
-					text += '> Rarità ' + rows[i].rarity + ': ' + rows[i].cnt + all + '\n'
+					text += '> ' + rows[i].rarity + ': ' + rows[i].cnt + "/" + rows[i].tot + all + '\n'
 				}
 
 				if (text.length >= 3500) {
