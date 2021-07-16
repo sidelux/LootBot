@@ -6437,7 +6437,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 									conditions_desc = "La mappa è sempre completamente visibile";
 								} else if (map_conditions == 11) {
 									conditions += "🔄 Inversa";
-									conditions_desc = "Le statistiche dei giocatori relative al livello sono invertite";
+									conditions_desc = "Le statistiche dei giocatori relative al livello sono invertite tra i due combattenti";
 								} else if (map_conditions == 12) {
 									conditions += "⛑ Duro a morire";
 									conditions_desc = "Le caselle vuote ricaricano il doppio di salute";
@@ -7223,10 +7223,14 @@ bot.onText(/attacca!/i, function (message) {
 					}
 
 					if (conditions == 11) {
-						exp = Math.max(25000-exp, 1);
-						reborn = Math.max(5-reborn, 1);
-						enemy_exp = Math.max(25000-enemy_exp, 1);
-						enemy_reborn = Math.max(5-enemy_reborn, 1);
+						var exp_tmp = exp;
+						var enemy_exp_tmp = enemy_exp;
+						var reborn_tmp = reborn;
+						var enemy_reborn_tmp = enemy_reborn;
+						exp = enemy_exp_tmp
+						reborn = enemy_reborn_tmp
+						enemy_exp = exp_tmp;
+						enemy_reborn = reborn_tmp;
 					}
 
 					var damage = getPlayerDamage(exp, weapon, weapon_enchant, charm_id, power_dmg, class_id, reborn, 1);
