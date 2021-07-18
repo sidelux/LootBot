@@ -6447,7 +6447,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 								var d = new Date();
 								if ((d.getHours() < nightEnd) || (d.getHours() >= nightStart))
 									open = "⛔️ Chiuse per pausa notturna";
-								if (d.getDay() == 0)
+								if ((d.getDay() == 0) && (crazyMode == 0))
 									open = "⛔️ Chiuse per pausa domenicale";
 								if (checkDragonTopOn == 1)
 									open = "⛔️ Chiuse per Vette in corso";

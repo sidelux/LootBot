@@ -9302,7 +9302,7 @@ bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
 
 		const player_id = rows[0].id
 
-		connection.query('SELECT name, rarity FROM card_list WHERE id NOT IN (SELECT card_id FROM card_inventory WHERE player_id = ' + player_id + ' AND quantity > 0) AND rarity = ' + rarity, function (err, rows, fields) {
+		connection.query('SELECT name, rarity FROM card_list WHERE id NOT IN (SELECT card_id FROM card_inventory WHERE player_id = ' + player_id + ' AND quantity > 0) AND rarity = ' + rarity + ' ORDER BY name, rarity', function (err, rows, fields) {
 			if (err) throw err
 
 			if (Object.keys(rows).length == 0) {
