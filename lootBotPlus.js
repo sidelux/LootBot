@@ -9282,16 +9282,14 @@ bot.onText(/^\/figurine$/, function (message, match) {
 })
 
 bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
-	if (match[1] == undefined) {
-		bot.sendMessage(message.chat.id, 'Specifica la rarità alla fine del comando, da 1 a 10')
-		return
+	var rarity = -1;
+	if (match[1] != undefined) {
+		if ((match[1] < 1) || (match[1] > 10)) {
+			bot.sendMessage(message.chat.id, 'La rarità deve essere compresa tra 1 e 10!')
+			return
+		} else
+			rarity = match[1];
 	}
-	if ((match[1] < 1) || (match[1] > 10)) {
-		bot.sendMessage(message.chat.id, 'La rarità deve essere compresa tra 1 e 10!')
-		return
-	}
-
-	const rarity = match[1];
 
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err
@@ -9302,24 +9300,54 @@ bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
 
 		const player_id = rows[0].id
 
-		connection.query('SELECT name, rarity FROM card_list WHERE id NOT IN (SELECT card_id FROM card_inventory WHERE player_id = ' + player_id + ' AND quantity > 0) AND rarity = ' + rarity + ' ORDER BY name, rarity', function (err, rows, fields) {
-			if (err) throw err
+		if (rarity != -1) {
+			connection.query('SELECT name, rarity FROM card_list WHERE id NOT IN (SELECT card_id FROM card_inventory WHERE player_id = ' + player_id + ' AND quantity > 0) AND rarity = ' + rarity + ' ORDER BY name, rarity', function (err, rows, fields) {
+				if (err) throw err
 
-			if (Object.keys(rows).length == 0) {
-				bot.sendMessage(message.chat.id, message.from.username + ', possiedi tutte le figurine per rarità ' + rarity + '!', html)
-				return
-			}
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, message.from.username + ', possiedi tutte le figurine per rarità ' + rarity + '!', html)
+					return
+				}
 
-			let text = message.from.username + ', ti mancano ' + formatNumber(Object.keys(rows).length) + ' figurine per rarità ' + rarity + ':\n'
-			for (i = 0, len = Object.keys(rows).length; i < len; i++) { text += '> ' + rows[i].name + ' (' + rows[i].rarity + ')\n' }
+				let text = message.from.username + ', ti mancano ' + formatNumber(Object.keys(rows).length) + ' figurine per rarità ' + rarity + ':\n'
+				for (i = 0, len = Object.keys(rows).length; i < len; i++) { text += '> ' + rows[i].name + ' (' + rows[i].rarity + ')\n' }
 
-			if (text.length >= 3500) {
-				bot.sendMessage(message.chat.id, message.from.username + ', troppi risultati, prova con una rarità diversa', html)
-				return
-			}
+				if (text.length >= 3500) {
+					bot.sendMessage(message.chat.id, message.from.username + ', troppi risultati, prova con una rarità diversa', html)
+					return
+				}
 
-			bot.sendMessage(message.chat.id, text, html)
-		})
+				bot.sendMessage(message.chat.id, text, html)
+			})
+		} else {
+			connection.query('SELECT rarity, COUNT(I.id) As cnt FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = ' + player_id + ' GROUP BY rarity', function (err, inventory_cards, fields) {
+				if (err) throw err
+
+				if (Object.keys(inventory_cards).length == 0) {
+					bot.sendMessage(message.chat.id, message.from.username + ', possiedi tutte le figurine!', html)
+					return
+				}
+
+				connection.query('SELECT rarity, COUNT(id) As cnt FROM card_list GROUP BY rarity', function (err, rows, fields) {
+					if (err) throw err
+
+					let text = message.from.username + ', ti mancano le seguenti figurine suddivise per rarità:\n'
+					var currentRarity = 0;
+					var inventoryValue = 0;
+					for (i = 0; i < Object.keys(rows).length; i++) { 
+						currentRarity = rows[i].rarity;
+						inventoryValue = 0;
+						for (j = 0; j < Object.keys(inventory_cards).length; j++) { 
+							if (currentRarity == inventory_cards[j].rarity)
+								inventoryValue = inventory_cards[j].cnt
+						}
+						text += '> ' + rows[i].rarity + ': ' + (rows[i].cnt-inventoryValue) + '\n' 
+					}
+
+					bot.sendMessage(message.chat.id, text, html)
+				})
+			});
+		}
 	});
 });
 
