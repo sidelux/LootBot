@@ -95,6 +95,7 @@ var bodyParser = require('body-parser');
 var iniBuilder = require('ini-builder');
 var moment = require('moment');
 var PDFDocument = require('./pdfkit-tables.js');
+var captcha = require("nodejs-captcha");
 
 // Eventi
 var crazyMode;					// nulla
@@ -1373,6 +1374,35 @@ bot.onText(/^\/refreshEstimate/i, function (message) {
 			});
 		});
 	};
+});
+
+bot.onText(/\/captcha/i, function (message, match) {
+	if (message.from.id == 20471035) {
+		var newCaptcha = captcha();
+		var value = newCaptcha.value
+		var base64data = newCaptcha.image.replace(/^data:image\/jpeg;base64,/, "");
+		var fileName = "captcha/" + message.from.id + ".jpeg";
+
+		fs.writeFile(fileName, base64data, 'base64', function(err) {
+			if (err)
+				console.log(err);
+			bot.sendPhoto(message.chat.id, fileName, {caption: "Risolvi il captcha per continuare"}).then(function (data) {
+				fs.unlink(fileName, function (err) {
+					if (err) throw err;
+				});
+				answerCallbacks[message.chat.id] = async function (answer) {
+					var resp = answer.text;
+
+					console.log(resp, value);
+					if (resp == value) {
+						bot.sendMessage(message.chat.id, "Ok!", back);
+					} else {
+						bot.sendMessage(message.chat.id, "Sbagliato!", back);
+					}
+				};
+			});
+		});
+	}
 });
 
 bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
@@ -49872,10 +49902,16 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 
 					if (custom_gnome_1 != null)
 						custom_gnome_1 = custom_gnome_1 + " ";
-					else if (custom_gnome_2 != null)
+					else
+						custom_gnome_1 = "";
+					if (custom_gnome_2 != null)
 						custom_gnome_2 = custom_gnome_2 + " ";
-					else if (custom_gnome_3 != null)
+					else
+						custom_gnome_2 = "";
+					if (custom_gnome_3 != null)
 						custom_gnome_3 = custom_gnome_3 + " ";
+					else
+						custom_gnome_3 = "";
 
 					iKeys.push(["Invia " + custom_gnome_1 + "Piedelesto"]);
 					iKeys.push(["Invia " + custom_gnome_3 + "Occhiofurbo"]);
