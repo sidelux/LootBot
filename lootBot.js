@@ -4100,7 +4100,18 @@ bot.onText(/^nomi gnomi/i, function (message) {
 			}
 		};
 
-		bot.sendMessage(message.chat.id, "A quale gnomo vuoi modificare il nome?", back).then(function () {
+		var custom_gnome_1 = rows[0].custom_gnome_1;
+		var custom_gnome_2 = rows[0].custom_gnome_2;
+		var custom_gnome_3 = rows[0].custom_gnome_3;
+
+		if (custom_gnome_1 == null)
+			custom_gnome_1 = "<i>Non impostato</i>";
+		if (custom_gnome_2 == null)
+			custom_gnome_2 = "<i>Non impostato</i>";
+		if (custom_gnome_3 == null)
+			custom_gnome_3 = "<i>Non impostato</i>";
+
+		bot.sendMessage(message.chat.id, "A quale gnomo vuoi modificare il nome?\n\nAttualmente i nomi impostati sono:\nPiedelesto: " + custom_gnome_1 + "\nOcchiofurbo: " + custom_gnome_3 + "\nTestacalda: " + custom_gnome_2, kb).then(function () {
 			answerCallbacks[message.chat.id] = async function (answer) {
 				var gnome = 0;
 				var gnome_name = answer.text;
@@ -14085,8 +14096,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												var text = "Entrando nella stanza pesti una leva nascosta, la maledizione Unna t'ha colpito!\n\n_Scricchiolando_ la leva emette un rumore inquietante...\n";
 
 												if ((day == 1) || (day == 2)) {				// lunedì-martedì
-													var exist = await connection.queryAsync("SELECT 1 FROM event_dust_status WHERE extracting = 1 AND player_id = " + player_id);
-													if (Object.keys(exist).length > 0) {
+													var generated = await connection.queryAsync("SELECT `generated` FROM event_dust_status WHERE extracting = 1 AND player_id = " + player_id);
+													if ((Object.keys(generated).length > 0) && (generated[0].generated > 0)) {
 														connection.query('UPDATE event_dust_status SET `generated` = ROUND(`generated`/2), notified = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 														});
@@ -44633,7 +44644,7 @@ bot.onText(/Ispezioni Passate/i, function (message) {
 });
 
 bot.onText(/matchmaking|^mm$/i, function (message) {
-	connection.query('SELECT account_id, holiday, heist_protection, exp, reborn, ability, id, weapon, life, house_id, money, heist_count, last_mm, global_end, boost_id, boost_mission, travel_id, cave_id FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
+	connection.query('SELECT account_id, holiday, heist_protection, exp, reborn, ability, id, weapon, life, house_id, money, heist_count, last_mm, global_end, boost_id, boost_mission, travel_id, cave_id, custom_gnome_1, custom_gnome_2, custom_gnome_3 FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = await isBanned(rows[0].account_id);
@@ -44666,6 +44677,9 @@ bot.onText(/matchmaking|^mm$/i, function (message) {
 		var global_end = rows[0].global_end;
 		var boost_id = rows[0].boost_id;
 		var boost_mission = rows[0].boost_mission;
+		var custom_gnome_1 = rows[0].custom_gnome_1;
+		var custom_gnome_2 = rows[0].custom_gnome_2;
+		var custom_gnome_3 = rows[0].custom_gnome_3;
 
 		var travel = rows[0].travel_id;
 		var cave = rows[0].cave_id;
@@ -44759,7 +44773,7 @@ bot.onText(/matchmaking|^mm$/i, function (message) {
 									offset2 += i*100;
 								} else {
 									rand = Math.floor(Math.random() * Object.keys(rows).length);
-									attack(rows[rand].nickname, message, from_id, weapon_bonus, 2000, 1, global_end, boost_id, boost_mission);
+									attack(rows[rand].nickname, message, from_id, weapon_bonus, 2000, 1, global_end, boost_id, boost_mission, custom_gnome_1, custom_gnome_2, custom_gnome_3);
 									found = 1;
 									break;
 								}
@@ -44776,7 +44790,7 @@ bot.onText(/matchmaking|^mm$/i, function (message) {
 });
 
 bot.onText(/inserisci il nickname|ispeziona (.+)/i, function (message, match) {
-	connection.query('SELECT account_id, holiday, heist_protection, exp, reborn, id, weapon, life, house_id, money, heist_count, global_end, boost_id, boost_mission, travel_id, cave_id FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
+	connection.query('SELECT account_id, holiday, heist_protection, exp, reborn, id, weapon, life, house_id, money, heist_count, global_end, boost_id, boost_mission, travel_id, cave_id, custom_gnome_1, custom_gnome_2, custom_gnome_3 FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = await isBanned(rows[0].account_id);
@@ -44817,6 +44831,9 @@ bot.onText(/inserisci il nickname|ispeziona (.+)/i, function (message, match) {
 		var global_end = rows[0].global_end;
 		var boost_id = rows[0].boost_id;
 		var boost_mission = rows[0].boost_mission;
+		var custom_gnome_1 = rows[0].custom_gnome_1;
+		var custom_gnome_2 = rows[0].custom_gnome_2;
+		var custom_gnome_3 = rows[0].custom_gnome_3;
 
 		if ((lev < 15) && (reborn == 1)) {
 			bot.sendMessage(message.chat.id, "Il tuo livello è ancora troppo basso.", back);
@@ -44920,7 +44937,7 @@ bot.onText(/inserisci il nickname|ispeziona (.+)/i, function (message, match) {
 									return;
 								}
 
-								attack(nickname, message, from_id, weapon_bonus, 3000, 0, global_end, boost_id, boost_mission);
+								attack(nickname, message, from_id, weapon_bonus, 3000, 0, global_end, boost_id, boost_mission, custom_gnome_1, custom_gnome_2, custom_gnome_3);
 							} else
 								bot.sendMessage(message.chat.id, "Giocatore non trovato, riprova.", back);
 						});
@@ -44985,7 +45002,7 @@ bot.onText(/inserisci il nickname|ispeziona (.+)/i, function (message, match) {
 										return;
 									}
 
-									attack(nickname, message, from_id, weapon_bonus, 3000, 0, global_end, boost_id, boost_mission);
+									attack(nickname, message, from_id, weapon_bonus, 3000, 0, global_end, boost_id, boost_mission, custom_gnome_1, custom_gnome_2, custom_gnome_3);
 								} else
 									bot.sendMessage(message.chat.id, "Giocatore non trovato, riprova.", back);
 							});
@@ -49795,8 +49812,8 @@ function helpMsg(chat_id, player_id, type) {
 	});
 }
 
-function attack(nickname, message, from_id, weapon_bonus, cost, source, global_end, boost_id, boost_mission) {
-	connection.query('SELECT exp, ability, chat_id, heist_count, heist_limit, heist_protection, house_id, custom_name_h, id, money, global_end, player_custom_nickname, class, custom_gnome_1, custom_gnome_2, custom_gnome_3 FROM player WHERE nickname = "' + nickname + '"', async function (err, rows, fields) {
+function attack(nickname, message, from_id, weapon_bonus, cost, source, global_end, boost_id, boost_mission, custom_gnome_1, custom_gnome_2, custom_gnome_3) {
+	connection.query('SELECT exp, ability, chat_id, heist_count, heist_limit, heist_protection, house_id, custom_name_h, id, money, global_end, player_custom_nickname, class FROM player WHERE nickname = "' + nickname + '"', async function (err, rows, fields) {
 		if (err) throw err;
 		var chat_id_nickname = rows[0].chat_id;
 		var isMatch = source;
@@ -61482,26 +61499,42 @@ function setFinishedHeist(element, index, array) {
 								}
 							};
 
+							var gnome_name = "";
+							if (method == 1) {
+								if (custom_gnome_1 != null)
+									gnome_name = custom_gnome_1 + " ";
+								gnome_name += "Piedelesto";
+							} else if (method == 3) {
+								if (custom_gnome_3 != null)
+									gnome_name = custom_gnome_3 + " ";
+								gnome_name += "Occhiofurbo";
+							} else if (method == 2) {
+								if (custom_gnome_2 != null)
+									gnome_name = custom_gnome_2 + " ";
+								gnome_name += "Testacalda";
+							}
+
+							var to_gnome_name = "";
+							if (toMethod == 1) {
+								if (to_custom_gnome_1 != null)
+									to_gnome_name = to_custom_gnome_1 + " ";
+								to_gnome_name += "Piedelesto";
+							} else if (toMethod == 3) {
+								if (to_custom_gnome_3 != null)
+									to_gnome_name = to_custom_gnome_3 + " ";
+								to_gnome_name += "Occhiofurbo";
+							} else if (toMethod == 2) {
+								if (to_custom_gnome_2 != null)
+									to_gnome_name = to_custom_gnome_2 + " ";
+								to_gnome_name += "Testacalda";
+							}
+
 							if (fail == 1) {
 								connection.query('SELECT chat_id, heist_description FROM player WHERE id = ' + toId, function (err, rows, fields) {
 									if (err) throw err;
 									var heist_description = "";
 									if (rows[0].heist_description != null)
 										heist_description = "\nLeggi malinconicamente un cartello affisso su un albero con su scritto: <i>" + rows[0].heist_description + "</i>";
-									var gnome_name = "";
-									if (method == 1) {
-										if (custom_gnome_1 != null)
-											gnome_name = custom_gnome_1 + " ";
-										gnome_name += "Piedelesto";
-									} else if (method == 3) {
-										if (custom_gnome_3 != null)
-											gnome_name = custom_gnome_3 + " ";
-										gnome_name += "Occhiofurbo";
-									} else if (method == 2) {
-										if (custom_gnome_2 != null)
-											gnome_name = custom_gnome_2 + " ";
-										gnome_name += "Testacalda";
-									}
 									bot.sendMessage(fromChat, "Il tuo gnomo <i>" + gnome_name + "</i> non è riuscito a raggiungere il rifugio nemico, dannazione!", kb2);
 									if (isMatch == 1)
 										bot.sendMessage(rows[0].chat_id, "Lo gnomo <i>" + gnome_name + "</i> di <b>" + fromNick + "</b> è stato respinto dal tuo guardiano!", html);
@@ -61531,24 +61564,9 @@ function setFinishedHeist(element, index, array) {
 
 								connection.query('INSERT INTO heist_progress (from_id, to_id, combination, time_end, isMatch, method) VALUES (' + fromId + ',' + toId + ',' + combi + ', "' + long_date + '",' + isMatch + ', ' + method + ')', function (err, rows, fields) {
 									if (err) throw err;
-									bot.sendMessage(fromChat, "Il tuo gnomo è arrivato al rifugio nemico, il guardiano del cancello ti propone uno strano gioco con le <b>Rune</b>, hai tempo fino alle " + short_time + " per partecipare!", html);
+									bot.sendMessage(fromChat, "Il tuo gnomo <i>" + gnome_name + "</i> è arrivato al rifugio nemico, il guardiano del cancello ti propone uno strano gioco con le <b>Rune</b>, hai tempo fino alle " + short_time + " per partecipare!", html);
 									connection.query('SELECT chat_id FROM player WHERE id = ' + toId, function (err, rows, fields) {
 										if (err) throw err;
-
-										var gnome_name = "";
-										if (toMethod == 1) {
-											if (to_custom_gnome_1 != null)
-												gnome_name = to_custom_gnome_1 + " ";
-											gnome_name += "Piedelesto";
-										} else if (toMethod == 3) {
-											if (to_custom_gnome_3 != null)
-												gnome_name = to_custom_gnome_3 + " ";
-											gnome_name += "Occhiofurbo";
-										} else if (toMethod == 2) {
-											if (to_custom_gnome_2 != null)
-												gnome_name = to_custom_gnome_2 + " ";
-											gnome_name += "Testacalda";
-										}
 
 										if (isMatch == 1) {
 											bot.sendMessage(rows[0].chat_id, "Lo gnomo <i>" + gnome_name + "</i> di <b>" + fromNick + "</b> è riuscito a trovare il tuo rifugio!", html);
