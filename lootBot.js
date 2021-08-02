@@ -37779,7 +37779,7 @@ bot.onText(/emporio/i, function (message) {
 		price_drop_msg = "*Oggi il prezzo è ridotto del " + sconto + "% per tutti gli scrigni e le pozioni!*\n";
 	}
 
-	connection.query('SELECT id, holiday, money, account_id, mission_id, tap_price FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
+	connection.query('SELECT id, holiday, money, account_id, mission_id, tap_price, global_end FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
 		if (err) throw err;
 
 		var banReason = await isBanned(rows[0].account_id);
@@ -37796,6 +37796,7 @@ bot.onText(/emporio/i, function (message) {
 		var player_id = rows[0].id;
 		var money = rows[0].money;
 		var tap_price = rows[0].tap_price;
+		var global_end = rows[0].global_end;
 
 		helpMsg(message.chat.id, player_id, 6);
 
@@ -37860,8 +37861,12 @@ bot.onText(/emporio/i, function (message) {
 							}
 							if (blackfriday == 1)
 								iKeys.push(["Compra Gemma (" + formatNumber(parseInt(300000 - Math.round((300000 / 100) * 50))) + " §)"]);
-							else
-								iKeys.push(["Compra Gemma (300.000 §)"]);
+							else {
+								if (global_end == 1)
+									iKeys.push(["Compra Gemma (225.000 §)"]);
+								else
+									iKeys.push(["Compra Gemma (300.000 §)"]);
+							}
 
 							iKeys.push(["Compra Pacchetto di Figurine (" + formatNumber(stickerPackPrice) + " 🌕)"]);
 
@@ -38483,7 +38488,7 @@ bot.onText(/^vendi/i, function (message) {
 });
 
 bot.onText(/compra/i, function (message) {
-	connection.query('SELECT exp, reborn, holiday, money, id, moon_coin, tap_price FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT exp, reborn, holiday, money, id, moon_coin, tap_price, global_end FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (rows[0].holiday == 1) {
@@ -38497,6 +38502,7 @@ bot.onText(/compra/i, function (message) {
 		var player_id = rows[0].id;
 		var moon_coin = rows[0].moon_coin;
 		var tap_price = rows[0].tap_price;
+		var global_end = rows[0].global_end;
 
 		var oggetto = message.text.substring(message.text.indexOf(" ") + 1);
 		var price_drop = 0;
@@ -38980,6 +38986,9 @@ bot.onText(/compra/i, function (message) {
 				}
 
 				var price_gem = 300000;
+				if (global_end == 1)
+					price_gem = 225000;
+
 				var price_view = price_gem;
 
 				if (blackfriday == 1)
@@ -53179,8 +53188,10 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 									if (Object.keys(ability).length > 0)
 										money += money*((ability[0].ability_level*ability[0].val)/100);
 
+									/*
 									if (rows[i].global_end == 1)
 										money += money;
+									*/
 
 									money = Math.round(money);
 
@@ -61085,8 +61096,10 @@ function setFinishedMission(element, index, array) {
 
 								getSnowball(chat_id, element.nickname, element.id, 1);
 								setAchievement(element.id, 1, 1);
+								/*
 								if (mission_gem == 0)
 									globalAchievement(element.id, 1);
+								*/
 							});
 						});
 					});
