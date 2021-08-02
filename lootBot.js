@@ -46200,7 +46200,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 
 						var d = new Date();
 						if (d.getMonth()+1 == 8)
-							text += "Questo mese nessuna globale! Goditi le vacanze 🏖\n";
+							text += "Questo mese nessuna globale!\nGoditi le vacanze 🏖\n";
 						else {
 							if ((global == 1) && (diffM < 0) && (globalVal < global_cap))
 								text += "Impresa fallita! 🚫\nSe non hai partecipato attivamente, riceverai un malus il primo giorno del mese!\n";
