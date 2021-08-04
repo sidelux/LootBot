@@ -1339,6 +1339,7 @@ CREATE TABLE `dungeon_status` (
   `last_dir` int(11) DEFAULT NULL,
   `last_selected_dir` varchar(8) DEFAULT NULL,
   `monster_life` int(11) NOT NULL DEFAULT 0,
+  `monster_total_life` int(11) NOT NULL DEFAULT 0,
   `monster_id` int(11) NOT NULL DEFAULT 0,
   `monster_paralyzed` int(11) NOT NULL DEFAULT 0,
   `monster_critic` int(11) NOT NULL DEFAULT 0,
