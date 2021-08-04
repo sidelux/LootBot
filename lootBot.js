@@ -41752,6 +41752,10 @@ bot.onText(/^apri/i, function (message) {
 												perc = 15;
 											else if (reborn == 5)
 												perc = 20;
+											else if (reborn == 6)
+												perc = 25;
+											else
+												perc = 30;
 										} else
 											perc = 60;
 
