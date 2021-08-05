@@ -14498,7 +14498,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																					var rand = Math.random()*100;
 																					var prob = rarity*10;
-																					if (rand > prob) {
+																					if (rand <= prob) {
 																						if (dungeonRush == 0) {
 																							var charges = rarity*10;
 																							await addDungeonEnergy(player_id, charges);
@@ -15869,7 +15869,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																					var money = 0;
 																					var moneyText = "";
 																					var rand = Math.random() * 100;
-																					var exp = 1;
+																					var exp = Math.ceil(monster_total_life/200000);
 
 																					if (cursed == 1)
 																						exp = 0;

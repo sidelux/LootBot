@@ -1567,6 +1567,22 @@ CREATE TABLE `event_halloween_status` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `event_history`
+--
+
+DROP TABLE IF EXISTS `event_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `event_history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `event_name` varchar(16) NOT NULL,
+  `event_start` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `event_end` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `event_lottery_coins`
 --
 
@@ -1640,6 +1656,23 @@ CREATE TABLE `event_mana_zone` (
   `type` int(2) NOT NULL,
   `mana_name` varchar(32) NOT NULL,
   `rate` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `event_rotation`
+--
+
+DROP TABLE IF EXISTS `event_rotation`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `event_rotation` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `event_name` varchar(16) NOT NULL,
+  `completed` tinyint(1) NOT NULL DEFAULT 0,
+  `last_complete` timestamp NULL DEFAULT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -1776,6 +1809,33 @@ CREATE TABLE `game_house_stats` (
   KEY `player_id` (`player_id`),
   CONSTRAINT `PLAYERID_GAME` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `global_history`
+--
+
+DROP TABLE IF EXISTS `global_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `global_history` (
+  `id` int(11) NOT NULL,
+  `description` varchar(256) NOT NULL,
+  `cap` bigint(32) NOT NULL,
+  `item1` int(11) NOT NULL,
+  `item2` int(11) NOT NULL,
+  `item3` int(11) NOT NULL,
+  `treshold` int(100) NOT NULL,
+  `end_message` varchar(128) NOT NULL,
+  `close_date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `completed` tinyint(1) NOT NULL,
+  KEY `history_item_id_1` (`item1`),
+  KEY `history_item_id_2` (`item2`),
+  KEY `history_item_id_3` (`item3`),
+  CONSTRAINT `history_item_id_1` FOREIGN KEY (`item1`) REFERENCES `item` (`id`),
+  CONSTRAINT `history_item_id_2` FOREIGN KEY (`item2`) REFERENCES `item` (`id`),
+  CONSTRAINT `history_item_id_3` FOREIGN KEY (`item3`) REFERENCES `item` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
