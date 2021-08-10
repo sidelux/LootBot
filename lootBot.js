@@ -168,6 +168,7 @@ var j3 = Schedule.scheduleJob('01 00 * * *', async function () { //00:01 notte
 	else
 		resetAchievement();
 	craftDay();
+	expDay();
 	resetTeamMission();
 	resetGnomorra();
 	refreshHeists();
@@ -176,6 +177,7 @@ var j3 = Schedule.scheduleJob('01 00 * * *', async function () { //00:01 notte
 	refreshDustBoost();
 	if (d.getDay() == 1) {
 		craftWeek();
+		expWeek();
 		resetTeamWeekly();
 		cleanInactive12();
 	}
@@ -10984,7 +10986,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		bot.sendMessage(message.chat.id, "Errore selezione mostro: " + monsterLev, back);
 																		return;
 																	}
-																	connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + rows[0].life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + rows[0].life + ', monster_total_life = ' + rows[0].life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 																	bot.sendMessage(message.chat.id, "Hai trovato uno Scrigno! Ma appena lo tocchi esso assume le sembianze di un *" + rows[0].name + "* di livello *" + rows[0].level + "*, puoi sfidarlo per ottenere il suo bottino e proseguire, oppure scappare.", dBattle).then(function () {
@@ -11327,7 +11329,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		bot.sendMessage(message.chat.id, "Errore selezione mostro", back);
 																		return;
 																	}
-																	connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + rows[0].life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + rows[0].life + ', monster_total_life = ' + rows[0].life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 
@@ -11694,7 +11696,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		bot.sendMessage(message.chat.id, "Errore selezione mostro", back);
 																		return;
 																	}
-																	connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + rows[0].life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + rows[0].life + ', monster_total_life = ' + rows[0].life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 																	var mName = rows[0].name;
@@ -11985,7 +11987,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			bot.sendMessage(message.chat.id, "Errore selezione mostro: " + monsterLev, back);
 																			return;
 																		}
-																		connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + rows[0].life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																		connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + rows[0].life + ', monster_total_life = ' + rows[0].life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
 																		bot.sendMessage(message.chat.id, "Ti avvicini alla fontana per esaminarla meglio, appena provi a toccare l'acqua dal suo interno esce un *" + rows[0].name + "* di livello *" + rows[0].level + "*, puoi sfidarlo per ottenere il suo bottino e proseguire, oppure scappare.", dBattle).then(function () {
@@ -15869,7 +15871,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																					var money = 0;
 																					var moneyText = "";
 																					var rand = Math.random() * 100;
-																					var exp = Math.ceil(monster_total_life/200000);
+																					var exp = Math.max(Math.ceil(monster_total_life/100000), 1);
 
 																					if (cursed == 1)
 																						exp = 0;
@@ -55335,6 +55337,18 @@ function craftDay() {
 	});
 }
 
+function expWeek() {
+	connection.query('UPDATE player SET exp_week = 0', function (err, rows, fields) {
+		if (err) throw err;
+	});
+}
+
+function expDay() {
+	connection.query('UPDATE player SET exp_day = 0', function (err, rows, fields) {
+		if (err) throw err;
+	});
+}
+
 function lacrima(player_id, chat_id) {
 	connection.query('SELECT id FROM artifacts WHERE player_id = ' + player_id + ' AND item_id = 614', function (err, rows, fields) {
 		if (err) throw err;
@@ -62168,7 +62182,7 @@ function setExp(player_id, exp) {
 			((reborn == 4) && (my_exp < 3000)) ||
 			((reborn == 5) && (my_exp < 10000)) ||
 			((reborn == 6) && (my_exp < 25000))) {
-			connection.query('UPDATE player SET exp = exp+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
+			connection.query('UPDATE player SET exp = exp+' + exp + ', exp_week = exp_week+' + exp + ', exp_day = exp_day+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
 		}

@@ -561,6 +561,7 @@ bot.onText(/^\/comandigiocatore/, function (message) {
 		'/trofei - Mostra i trofei nella stagione in corso delle Mappe\n' +
 		'/vette - Mostra il monte e le Ð raggiunte nelle Vette in corso\n' +
 		'/creazioni - Mostra i punti creazione ottenuti\n' +
+		'/exp - Mostra l\'esperienza ottenuta\n' +
 		'/spia - Spia un giocatore mostrando la scheda giocatore\n' +
 		'/ispeziona - Ispeziona un giocatore, puoi anche specificare il nome dello gnomo da inviare\n' +
 		'/rango - Visualizza informazioni sul rango del giocatore\n' +
@@ -8206,6 +8207,16 @@ bot.onText(/^\/creazioni/, function (message, match) {
 		if (Object.keys(rows).length == 0) { return }
 
 		bot.sendMessage(message.chat.id, message.from.username + ', hai ottenuto <b>' + formatNumber(rows[0].craft_count) + '</b> punti creazione totali, <b>' + formatNumber(rows[0].craft_week) + '</b> settimanali e <b>' + formatNumber(rows[0].craft_day) + '</b> giornalieri', html)
+	})
+})
+
+bot.onText(/^\/exp/, function (message, match) {
+	connection.query('SELECT id, exp_week, exp_day FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err
+
+		if (Object.keys(rows).length == 0) { return }
+
+		bot.sendMessage(message.chat.id, message.from.username + ', hai ottenuto <b>' + formatNumber(rows[0].exp_day) + '</b> exp oggi e <b>' + formatNumber(rows[0].exp_week) + '</b> exp questa settimana', html)
 	})
 })
 

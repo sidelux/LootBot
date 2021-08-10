@@ -1576,10 +1576,10 @@ DROP TABLE IF EXISTS `event_history`;
 CREATE TABLE `event_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `event_name` varchar(16) NOT NULL,
-  `event_start` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `event_start` timestamp NULL DEFAULT NULL,
   `event_end` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1827,7 +1827,7 @@ CREATE TABLE `global_history` (
   `item3` int(11) NOT NULL,
   `treshold` int(100) NOT NULL,
   `end_message` varchar(128) NOT NULL,
-  `close_date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `close_date` timestamp NULL DEFAULT NULL,
   `completed` tinyint(1) NOT NULL,
   KEY `history_item_id_1` (`item1`),
   KEY `history_item_id_2` (`item2`),
@@ -3029,6 +3029,8 @@ CREATE TABLE `player` (
   `craft_count` int(8) NOT NULL DEFAULT 0,
   `craft_week` int(11) NOT NULL DEFAULT 0,
   `craft_day` int(11) NOT NULL DEFAULT 0,
+  `exp_day` int(11) NOT NULL DEFAULT 0,
+  `exp_week` int(11) NOT NULL DEFAULT 0,
   `weapon` int(3) DEFAULT 0,
   `weapon_id` int(3) NOT NULL DEFAULT 0,
   `weapon_crit` int(3) NOT NULL DEFAULT 0,
