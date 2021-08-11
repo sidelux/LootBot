@@ -9331,7 +9331,7 @@ bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
 				bot.sendMessage(message.chat.id, text, html)
 			})
 		} else {
-			connection.query('SELECT rarity, COUNT(I.id) As cnt FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = ' + player_id + ' GROUP BY rarity', function (err, inventory_cards, fields) {
+			connection.query('SELECT rarity, COUNT(I.id) As cnt FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = ' + player_id + ' AND I.quantity > 0 GROUP BY rarity', function (err, inventory_cards, fields) {
 				if (err) throw err
 
 				if (Object.keys(inventory_cards).length == 0) {

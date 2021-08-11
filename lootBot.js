@@ -14886,6 +14886,9 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 			danno += power_dmg;
 		}
 
+		if (dungeonRush == 1)
+			danno = danno*2;
+
 		var charm_id = rows[0].charm_id;
 		var player_exp = rows[0].exp;
 		var player_life = rows[0].life;
@@ -15951,6 +15954,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							setBoost(player_id, boost_mission, boost_id);
 																						}
 
+																						if (exp > 10)
+																							exp = 10;
 																						var exp_text = "";
 																						if (exp > 0)
 																							exp_text =  " ed ottenuto " + exp + " exp";
@@ -41823,6 +41828,7 @@ bot.onText(/dungeon rush/i, function (message) {
 	var bonus = "> Cariche Esplorative illimitate nei dungeon\n" +
 		"> Cure con le Pozioni disattivate\n" +
 		"> Cura automatica del 15% ogni 10 minuti\n" +
+		"> Danno raddoppiato contro i mob\n" +
 
 		"\nI bonus possono cambiare di volta in volta!";
 
@@ -62182,7 +62188,7 @@ function setExp(player_id, exp) {
 			((reborn == 4) && (my_exp < 3000)) ||
 			((reborn == 5) && (my_exp < 10000)) ||
 			((reborn == 6) && (my_exp < 25000))) {
-			connection.query('UPDATE player SET exp = exp+' + exp + ', exp_week = exp_week+' + exp + ', exp_day = exp_day+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
+			connection.query('UPDATE player SET exp = exp+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
 		}
@@ -62209,6 +62215,9 @@ function setExp(player_id, exp) {
 		}
 
 		setAchievement(player_id, 57, exp);
+		connection.query('UPDATE player SET exp_week = exp_week+' + exp + ', exp_day = exp_day+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
 	});
 }
 
