@@ -15896,6 +15896,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																					if (boss_battle == 1) {
 																						chest_id++;
 																						exp++;
+																						if (cursed == 1)
+																							exp = 3;
 																					}
 																					if (crazyMode == 1) {
 																						if (chest_id < 6)

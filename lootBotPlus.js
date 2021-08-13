@@ -663,7 +663,7 @@ bot.onText(/^\/comandigenerali/, function (message) {
 		'/token - Permette di ottenere un token per accedere alle Loot Bot API\n' +
 		'/notifiche - Permette di disattivare le notifiche di una particolare sezione del bot\n' +
 		'/calcola - Gestisce calcoli anche avanzati utilizzando funzioni (in inglese)\n' +
-		'/suggerimenti comandi - Visualizza la lista dei comandi disponibili per effettuare suggerimenti\n' +
+		'/suggerimento comandi - Visualizza la lista dei comandi disponibili per effettuare suggerimenti\n' +
 		"/online - Visualzza i giocatori che hanno inviato un comando nell'ultimo minuto", mark)
 })
 
