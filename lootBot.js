@@ -17320,10 +17320,10 @@ bot.onText(/^Incanta|Torna all'incantamento/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								keyboard: [["Estendi Arma"], ["Torna all'incantamento"],["Torna al menu"]]
+								keyboard: [["Estendi Arma"], ["Annulla Arma"], ["Torna all'incantamento"],["Torna al menu"]]
 							}
 						};
-						bot.sendMessage(message.chat.id, "L'incantamento su questo oggetto è ancora efficace fino alle " + short_date + ", puoi estenderlo di due ore al costo di 1 💎", kbExt);
+						bot.sendMessage(message.chat.id, "L'incantamento su questo oggetto è ancora efficace fino alle " + short_date + ", puoi estenderlo di due ore al costo di 1 💎 o annullarlo al costo di 5 💎", kbExt);
 						return;
 					}
 				}
@@ -17337,10 +17337,10 @@ bot.onText(/^Incanta|Torna all'incantamento/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								keyboard: [["Estendi Armatura"], ["Torna all'incantamento"],["Torna al menu"]]
+								keyboard: [["Estendi Armatura"], ["Annulla Armatura"], ["Torna all'incantamento"],["Torna al menu"]]
 							}
 						};
-						bot.sendMessage(message.chat.id, "L'incantamento su questo oggetto è ancora efficace fino alle " + short_date + ", puoi estenderlo di due ore al costo di 1 💎", kbExt);
+						bot.sendMessage(message.chat.id, "L'incantamento su questo oggetto è ancora efficace fino alle " + short_date + ", puoi estenderlo di due ore al costo di 1 💎 o annullarlo al costo di 5 💎", kbExt);
 						return;
 					}
 				}
@@ -17354,10 +17354,10 @@ bot.onText(/^Incanta|Torna all'incantamento/i, function (message) {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
-								keyboard: [["Estendi Scudo"], ["Torna all'incantamento"],["Torna al menu"]]
+								keyboard: [["Estendi Scudo"], ["Annulla Scudo"], ["Torna all'incantamento"],["Torna al menu"]]
 							}
 						};
-						bot.sendMessage(message.chat.id, "L'incantamento su questo oggetto è ancora efficace fino alle " + short_date + ", puoi estenderlo di due ore al costo di 1 💎", kbExt);
+						bot.sendMessage(message.chat.id, "L'incantamento su questo oggetto è ancora efficace fino alle " + short_date + ", puoi estenderlo di due ore al costo di 1 💎 o annullarlo al costo di 5 💎", kbExt);
 						return;
 					}
 				}
@@ -17600,6 +17600,121 @@ bot.onText(/^estendi (.+)/i, function (message, match) {
 							connection.query('UPDATE player SET gems = gems-1, weapon3_enchant_end = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
 								bot.sendMessage(message.chat.id, "L'incantamento dello scudo è stato esteso fino alle " + short_date, kbBack);
+							});
+						}
+					});
+				}
+			}
+		});
+	});
+});
+
+bot.onText(/^annulla (.+)/i, function (message, match) {
+	if (match[1] == undefined)
+		return;
+	if (match[1] == "protezione")
+		return;
+	connection.query('SELECT account_id, holiday, id, gems, weapon_enchant, weapon2_enchant, weapon3_enchant, weapon_enchant_end, weapon2_enchant_end, weapon3_enchant_end, weapon_enchant_bonus, weapon2_enchant_bonus, weapon3_enchant_bonus, power_weapon, power_armor, power_shield FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
+		if (err) throw err;
+
+		var banReason = await isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+
+		if (rows[0].holiday == 1) {
+			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back)
+			return;
+		}
+
+		var player_id = rows[0].id;
+		var gems = rows[0].gems;
+
+		var weapon = match[1].toLowerCase();
+
+		var kbBack = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Torna all'incantamento"],["Torna al menu"]]
+			}
+		};
+
+		var kbYesNo = {
+			parse_mode: "Markdown",
+			reply_markup: {
+				resize_keyboard: true,
+				keyboard: [["Si"], ["Torna all'incantamento"],["Torna al menu"]]
+			}
+		};
+
+		var weapon_desc = "";
+		if (weapon == "arma") {
+			if (rows[0].weapon_enchant == 0) {
+				bot.sendMessage(message.chat.id, "Per poter annullare l'incantamento, l'arma deve essere incantata", kbBack)
+				return;
+			}
+			weapon_desc = "dell'arma";
+		} else if (weapon == "armatura") {
+			if (rows[0].weapon2_enchant == 0) {
+				bot.sendMessage(message.chat.id, "Per poter annullare l'incantamento, l'armatura deve essere incantata", kbBack)
+				return;
+			}
+			weapon_desc = "dell'armatura";
+		} else if (weapon == "scudo") {
+			if (rows[0].weapon3_enchant == 0) {
+				bot.sendMessage(message.chat.id, "Per poter annullare l'incantamento, lo scudo deve essere incantato", kbBack)
+				return;
+			}
+			weapon_desc = "dello scudo";
+		} else {
+			bot.sendMessage(message.chat.id, "Tipo di equipaggiamento non valido", kbBack);
+			return;
+		}
+
+		bot.sendMessage(message.chat.id, "Puoi annullare l'incantamento attuale " + weapon_desc + ", ti costerà 5 💎, procedi?", kbYesNo).then(function () {
+			answerCallbacks[message.chat.id] = async function (answer) {
+				if (answer.text.toLowerCase() == "si") {
+
+					if (gems < 5) {
+						bot.sendMessage(message.chat.id, "Non hai abbastanza 💎", kbBack);
+						return;
+					}
+
+					connection.query('SELECT weapon_enchant, weapon2_enchant, weapon3_enchant, weapon_enchant_end, weapon2_enchant_end, weapon3_enchant_end FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+						if (err) throw err;
+
+						if (weapon == "arma") {
+							if (rows[0].weapon_enchant == 0) {
+								bot.sendMessage(message.chat.id, "L'arma non è incantata", kbBack);
+								return;
+							}
+
+							connection.query('UPDATE player SET gems = gems-5, weapon_enchant_end = NULL, weapon_enchant = 0, weapon_enchant_bonus = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+								bot.sendMessage(message.chat.id, "L'incantamento dell'arma è stato annullato", kbBack);
+							});
+						} else if (weapon == "armatura") {
+							if (rows[0].weapon2_enchant == 0) {
+								bot.sendMessage(message.chat.id, "L'armatura non è incantata", kbBack);
+								return;
+							}
+
+							connection.query('UPDATE player SET gems = gems-5, weapon2_enchant_end = NULL, weapon2_enchant = 0, weapon2_enchant_bonus = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+								bot.sendMessage(message.chat.id, "L'incantamento dell'armatura è stato annullato", kbBack);
+							});
+						} else if (weapon == "scudo") {
+							if (rows[0].weapon3_enchant == 0) {
+								bot.sendMessage(message.chat.id, "Lo scudo non è incantato", kbBack);
+								return;
+							}
+
+							connection.query('UPDATE player SET gems = gems-5, weapon3_enchant_end = NULL, weapon3_enchant = 0, weapon3_enchant_bonus = 0 WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+								bot.sendMessage(message.chat.id, "L'incantamento dello scudo è stato annullato", kbBack);
 							});
 						}
 					});
