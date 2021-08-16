@@ -22472,7 +22472,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																}
 																var high_dmg = 0;
 																if ((wait_dmg > 0) && (skip == 0)) {
-																	console.log(player_id + " wait_dmg " + wait_dmg);
+																	// console.log(player_id + " wait_dmg " + wait_dmg);
 																	if ((wait_dmg == 1) && (ice == 0)) {
 																		high_dmg = damage;
 																		damage += high_dmg;
@@ -23020,8 +23020,8 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																		if (enemy_protection > 0)
 																			moveEffect = "Ridotti a causa della protezione!\n";
 																		if (high_dmg > 0) {
-																			console.log(player_id + " high_dmg " + high_dmg);
-																			console.log(player_id + " over " + over);
+																			// console.log(player_id + " high_dmg " + high_dmg);
+																			// console.log(player_id + " over " + over);
 																			if (over == 0)
 																				moveEffect += "Dei quali " + formatNumber(high_dmg) + " per colpo pesante!\n";
 																			else
@@ -50258,9 +50258,9 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 													connection.query('INSERT INTO heist (from_id, to_id, datetime, rate, grade, matchmaking, method) VALUES (' + from_id + ',' + to_id + ',"' + long_date + '",' + rate + ',' + grade + ',' + isMatch + ', ' + method + ')', function (err, rows, fields) {
 														if (err) throw err;
 														if (isWanted == 0)
-															bot.sendMessage(message.chat.id, "Hai inviato il tuo gnomo esploratore all'ispezione del rifugio selezionato, torna alle " + short_date + " per risolvere il dilemma del rifugio e cercare di ottenere una 🗝", abort_heist);
+															bot.sendMessage(message.chat.id, "Hai inviato il tuo gnomo " + type + " all'ispezione del rifugio selezionato, torna alle " + short_date + " per risolvere il dilemma del rifugio e cercare di ottenere una 🗝", abort_heist);
 														else
-															bot.sendMessage(message.chat.id, "Hai inviato il tuo gnomo esploratore alla cattura del ricercato, torna alle " + short_date + " per scoprirne l'esito", back);
+															bot.sendMessage(message.chat.id, "Hai inviato il tuo gnomo " + type + " alla cattura del ricercato, torna alle " + short_date + " per scoprirne l'esito", back);
 													});
 													if (isWanted == 0) {
 														connection.query('UPDATE player SET heist_count = heist_count+1 WHERE id = ' + from_id, function (err, rows, fields) {
@@ -59517,6 +59517,43 @@ function setFixPlayerKilled(element, index, array) {
 	});
 }
 
+function checkFillLobby() {
+	connection.query('SELECT M.lobby_id, COUNT(M.lobby_id) As cnt FROM map_lobby M LEFT JOIN map_lobby_list L ON M.lobby_id = L.lobby_id WHERE M.lobby_id IS NOT NULL AND L.id IS NULL GROUP BY M.lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY M.id', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length == 1)
+				console.log(getNow("it") + "\x1b[32m 1 lobby da riempire\x1b[0m");
+			else
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " lobby da riempire\x1b[0m");
+			rows.forEach(setFillLobby);
+		}
+	});
+}
+
+async function setFullLobby(element, index, array) {
+	const lobby_id = element.lobby_id;
+	const players = element.cnt;
+
+	// todo, bot mappe
+
+	if (lobby_total_space-players <= Math.floor(lobby_total_space/2)) {
+		const bot_quantity = lobby_total_space-players;
+		var nickname;
+		var exp;
+		for (let i = 0; i < bot_quantity; i++) {
+			nickname = mobGenerator.generate();
+			exp = await connection.queryAsync('SELECT ROUND(AVG(exp)) As avg_exp FROM map_lobby M, player P WHERE M.player_id = P.id AND is_bot = 0 AND lobby_id = ' + lobby_id);
+			connection.query('INSERT INTO map_bot (nickname, exp) VALUES ("' + nickname + '", ' + exp[0].avg_exp + ')', function (err, rows, fields) {
+				if (err) throw err;
+				const bot_id = rows.insertId;
+				connection.query('INSERT INTO map_lobby (is_bot, lobby_id) VALUES (1, ' + lobby_id + ')', function (err, rows, fields) {
+					if (err) throw err;
+				});
+			});
+		}
+	}
+};
+
 function checkFullLobby() {
 	connection.query('SELECT M.lobby_id, M.lobby_training, COUNT(M.lobby_id) As cnt FROM map_lobby M LEFT JOIN map_lobby_list L ON M.lobby_id = L.lobby_id WHERE M.lobby_id IS NOT NULL AND L.id IS NULL GROUP BY M.lobby_id HAVING cnt = ' + lobby_total_space + ' ORDER BY M.id', function (err, rows, fields) {
 		if (err) throw err;
@@ -59546,7 +59583,7 @@ function setFullLobby(element, index, array) {
 		connection.query('INSERT INTO map_lobby_list (lobby_id, lobby_training, map_json, turn_number, next_restrict_time, conditions) VALUES (' + lobby_id + ', ' + lobby_training + ', "' + JSON.stringify(mapMatrix) + '", 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE), ' + map_conditions + ')', function (err, rows, fields) {
 			if (err) throw err;
 
-			connection.query('SELECT P.id, P.chat_id, P.exp FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, async function (err, rows, fields) {
+			connection.query('SELECT P.id, P.chat_id, P.exp, P.is_bot FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, async function (err, rows, fields) {
 				if (err) throw err;
 
 				var kb = {
@@ -59576,17 +59613,19 @@ function setFullLobby(element, index, array) {
 						if (err) throw err;
 					});
 
-					if (lobby_training == 0) {
+					if ((lobby_training == 0) && (rows[i].is_bot == 0)) {
 						connection.query('UPDATE player SET map_count = map_count+1 WHERE id = ' + rows[i].id, function (err, rows, fields) {
 							if (err) throw err;
 						});
 					}
 
-					bot.sendMessage(rows[i].chat_id, "La mappa è stata generata!\nEntra in battaglia e conquista la vittoria!", kb);
+					if (rows[i].is_bot == 0) {
+						bot.sendMessage(rows[i].chat_id, "La mappa è stata generata!\nEntra in battaglia e conquista la vittoria!", kb);
 
-					var art = await connection.queryAsync('SELECT COUNT(id) As cnt FROM artifacts WHERE player_id = ' + rows[i].id);
-					if (art[0].cnt < 5)
-						flari_active = 0;
+						var art = await connection.queryAsync('SELECT COUNT(id) As cnt FROM artifacts WHERE player_id = ' + rows[i].id);
+						if (art[0].cnt < 5)
+							flari_active = 0;
+					}
 				}
 
 				connection.query('UPDATE map_lobby_list SET flari_active = ' + flari_active + ' WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
