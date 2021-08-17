@@ -17612,7 +17612,8 @@ bot.onText(/^estendi (.+)/i, function (message, match) {
 bot.onText(/^annulla (.+)/i, function (message, match) {
 	if (match[1] == undefined)
 		return;
-	if (match[1] == "protezione")
+	match[1] = match[1].toLowerCase();
+	if ((match[1] != "arma") && (match[1] != "armatura") && (match[1] != "scudo"))
 		return;
 	connection.query('SELECT account_id, holiday, id, gems, weapon_enchant, weapon2_enchant, weapon3_enchant, weapon_enchant_end, weapon2_enchant_end, weapon3_enchant_end, weapon_enchant_bonus, weapon2_enchant_bonus, weapon3_enchant_bonus, power_weapon, power_armor, power_shield FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
 		if (err) throw err;

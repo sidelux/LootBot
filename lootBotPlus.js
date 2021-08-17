@@ -1478,7 +1478,6 @@ bot.onText(/^\/gruppi/, function (message) {
 													'Qualcuno sempre a disposizione: @OracoloLootBot\n' +
 													'Calcolo Loot Combat Rating: @lootcrbot\n' +
 													'Tool per mercato e cronologie: @ToolsForLootBot\n' +
-													'Quotazioni oggetti in tempo reale: @Loot_Quotes_Bot\n' +
 													'Tastiera per inviare facilmente i comandi del plus: @LootPlusKeyboardBot\n' +
 
 													'\n<b>Altro</b>\n' +
@@ -9362,7 +9361,7 @@ bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
 	});
 });
 
-bot.onText(/^\/figurinel (\w+)(\s\d+)?|^\/figurinel/, function (message, match) {
+bot.onText(/^\/figurinel (\w+[àèìòù]?)(\s\d+)?|^\/figurinel/, function (message, match) {
 	let rarityFilter = ''
 	let nameFilter = ''
 	let quantityFilter = ''

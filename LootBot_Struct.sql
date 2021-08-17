@@ -2233,6 +2233,23 @@ CREATE TABLE `mana` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `map_bot`
+--
+
+DROP TABLE IF EXISTS `map_bot`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `map_bot` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nickname` varchar(32) NOT NULL,
+  `exp` int(11) NOT NULL,
+  `map_equip_change_power` tinyint(1) NOT NULL DEFAULT 0,
+  `map_count` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `map_history`
 --
 
@@ -2269,6 +2286,7 @@ DROP TABLE IF EXISTS `map_lobby`;
 CREATE TABLE `map_lobby` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
+  `is_bot` tinyint(1) NOT NULL DEFAULT 0,
   `lobby_id` int(11) DEFAULT NULL,
   `lobby_training` tinyint(1) NOT NULL DEFAULT 0,
   `lobby_enter_time` timestamp NULL DEFAULT NULL,
@@ -2310,8 +2328,6 @@ CREATE TABLE `map_lobby` (
   KEY `map_lobby_weapon2_id` (`weapon2_id`),
   KEY `map_lobby_weapon3_id` (`weapon3_id`),
   KEY `map_lobby_enemy_id` (`enemy_id`),
-  CONSTRAINT `map_lobby_enemy_id` FOREIGN KEY (`enemy_id`) REFERENCES `player` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `map_lobby_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE,
   CONSTRAINT `map_lobby_weapon2_id` FOREIGN KEY (`weapon2_id`) REFERENCES `item` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `map_lobby_weapon3_id` FOREIGN KEY (`weapon3_id`) REFERENCES `item` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `map_lobby_weapon_id` FOREIGN KEY (`weapon_id`) REFERENCES `item` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
