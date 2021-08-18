@@ -48861,6 +48861,10 @@ function activateEvent() {
 				return;
 			}
 			event = event_rotation[0].event_name;
+
+			connection.query('UPDATE config SET next_event_name = "' + event + '"', function (err, rows, fields) {
+				if (err) throw err;
+			});
 		} else
 			event = rows[0].next_event_name;
 
@@ -59584,7 +59588,7 @@ function setFullLobby(element, index, array) {
 		connection.query('INSERT INTO map_lobby_list (lobby_id, lobby_training, map_json, turn_number, next_restrict_time, conditions) VALUES (' + lobby_id + ', ' + lobby_training + ', "' + JSON.stringify(mapMatrix) + '", 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE), ' + map_conditions + ')', function (err, rows, fields) {
 			if (err) throw err;
 
-			connection.query('SELECT P.id, P.chat_id, P.exp, P.is_bot FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, async function (err, rows, fields) {
+			connection.query('SELECT P.id, P.chat_id, P.exp, M.is_bot FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, async function (err, rows, fields) {
 				if (err) throw err;
 
 				var kb = {
