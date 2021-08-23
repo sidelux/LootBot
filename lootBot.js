@@ -38240,7 +38240,7 @@ bot.onText(/ricicla/i, function (message) {
 					return;
 				}
 
-				connection.query('SELECT item.name, inventory.quantity, item.rarity FROM inventory, item WHERE item.id = inventory.item_id AND item.rarity = "' + rarity + '" AND player_id = ' + player_id + ' AND inventory.quantity >= 5', function (err, rows, fields) {
+				connection.query('SELECT item.name, inventory.quantity, item.rarity FROM inventory, item WHERE item.id = inventory.item_id AND item.rarity = "' + rarity + '" AND player_id = ' + player_id + ' AND inventory.quantity >= 5 ORDER BY inventory.quantity DESC', function (err, rows, fields) {
 					if (err) throw err;
 					if (Object.keys(rows).length == 0) {
 						bot.sendMessage(message.chat.id, "Non hai oggetti di rarità " + rarity + " riciclabili.", back);
