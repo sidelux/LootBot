@@ -264,6 +264,7 @@ callNTimes(30000, function () { //Ogni 30 secondi
 	checkAssaultsMob();
 	checkAssaultsLock();
 	checkAssaultsExpire();
+	checkAssaultsExpire2();
 
 	checkFullLobby();
 	checkRestrictMap();
@@ -38001,9 +38002,11 @@ bot.onText(/emporio/i, function (message) {
 							if (blackfriday == 1)
 								iKeys.push(["Compra Gemma (" + formatNumber(parseInt(300000 - Math.round((300000 / 100) * 50))) + " §)"]);
 							else {
+								/*
 								if (global_end == 1)
 									iKeys.push(["Compra Gemma (225.000 §)"]);
 								else
+								*/
 									iKeys.push(["Compra Gemma (300.000 §)"]);
 							}
 
@@ -39125,8 +39128,10 @@ bot.onText(/compra/i, function (message) {
 				}
 
 				var price_gem = 300000;
+				/*
 				if (global_end == 1)
 					price_gem = 225000;
+				*/
 
 				var price_view = price_gem;
 
@@ -53601,7 +53606,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 										}
 									});
 
-									connection.query('UPDATE assault SET completed = completed+1, phase = 0, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1, epic_var = 0, epic_var_record = ' + epic_var_record + ', lock_time_end = NULL, elected_lock_time_end = NULL, weak_unlocked = 0, weak_time_end = NULL, expire_notify = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
+									connection.query('UPDATE assault SET completed = completed+1, phase = 0, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1, epic_var = 0, epic_var_record = ' + epic_var_record + ', lock_time_end = NULL, elected_lock_time_end = NULL, weak_unlocked = 0, weak_time_end = NULL, expire_notify = 0, expire_notify_2 = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
 										if (err) throw err;
 
 										connection.query('SELECT P.id, P.chat_id FROM assault_place_player_id APP, player P WHERE APP.player_id = P.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
@@ -57814,7 +57819,7 @@ function setFinishedAssaults(element, index, array) {
 
 			text += "Il <b>" + boss_num + "° Giorno dell'Assalto</b> ha inizio, entra in combattimento per ottenere la vittoria!\nL'eletto incaricato di guidare la battaglia è <b>" + nickname + "</b> 🗡";
 
-			connection.query('UPDATE assault SET phase = ' + (phase+1) + ', refresh_mob = 1, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), expire_notify = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
+			connection.query('UPDATE assault SET phase = ' + (phase+1) + ', refresh_mob = 1, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), expire_notify = 0, expire_notify_2 = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
 
@@ -58143,6 +58148,34 @@ function setFinishedAssaultsExpire(element, index, array) {
 			bot.sendMessage(rows[i].chat_id, "Il *Giorno dell'Assalto* si concluderà tra meno di 2 ore, forza!", mark);
 
 		connection.query('UPDATE assault SET expire_notify = 1 WHERE team_id = ' + team_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
+	});
+};
+
+function checkAssaultsExpire2() {
+	connection.query('SELECT team_id FROM assault WHERE phase = 2 AND expire_notify_2 = 0 AND DATE_SUB(time_end, INTERVAL 1 HOUR) < NOW() AND time_end IS NOT NULL', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length == 1)
+				console.log(getNow("it") + "\x1b[32m 1 avviso scadenza assalto 2 inviato\x1b[0m");
+			else
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " avvisi scadenza assalto 2 inviati\x1b[0m");
+			rows.forEach(setFinishedAssaultsExpire2);
+		}
+	});
+};
+
+function setFinishedAssaultsExpire2(element, index, array) {
+	var team_id = element.team_id;
+
+	connection.query('SELECT player_id, chat_id FROM team_player, player WHERE team_player.player_id = player.id AND team_id = ' + team_id + ' ORDER BY team_player.id', function (err, rows, fields) {
+		if (err) throw err;
+
+		for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+			bot.sendMessage(rows[i].chat_id, "Il *Giorno dell'Assalto* si concluderà tra meno di 1 ora, ultimo sforzo!", mark);
+
+		connection.query('UPDATE assault SET expire_notify_2 = 1 WHERE team_id = ' + team_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
 	});
@@ -61323,10 +61356,6 @@ function setFinishedMission(element, index, array) {
 
 								getSnowball(chat_id, element.nickname, element.id, 1);
 								setAchievement(element.id, 1, 1);
-								/*
-								if (mission_gem == 0)
-									globalAchievement(element.id, 1);
-								*/
 							});
 						});
 					});
@@ -62376,6 +62405,7 @@ function setExp(player_id, exp) {
 		}
 
 		setAchievement(player_id, 57, exp);
+		globalAchievement(player_id, exp);
 		connection.query('UPDATE player SET exp_week = exp_week+' + exp + ', exp_day = exp_day+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 		});

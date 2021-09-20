@@ -240,6 +240,7 @@ CREATE TABLE `assault` (
   `epic_var` int(11) NOT NULL DEFAULT 0,
   `epic_var_record` int(11) NOT NULL DEFAULT 0,
   `expire_notify` tinyint(4) NOT NULL DEFAULT 0,
+  `expire_notify_2` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `team_id` (`team_id`),
   CONSTRAINT `assault_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
