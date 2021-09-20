@@ -9192,18 +9192,24 @@ bot.onText(/^\/mappatura$|^\/mappaturasym$/i, function (message) {
 											mapped_left = dungeonToSym(rows[rowId].dir_left);
 										else
 											mapped_left = dungeonToDesc(rows[rowId].dir_left);
+										if (rows[rowId].dir_left > 10)
+											mapped_left += rows[rowId].dir_left - 10;
 									}
 									if (rows[rowId].mapped_top == 1) {
 										if (emojiMode == 1)
 											mapped_top = dungeonToSym(rows[rowId].dir_top);
 										else
 											mapped_top = dungeonToDesc(rows[rowId].dir_top);
+										if (rows[rowId].dir_top > 10)
+											mapped_top += rows[rowId].dir_top - 10;
 									}
 									if (rows[rowId].mapped_right == 1) {
 										if (emojiMode == 1)
 											mapped_right = dungeonToSym(rows[rowId].dir_right);
 										else
 											mapped_right = dungeonToDesc(rows[rowId].dir_right);
+										if (rows[rowId].dir_right > 10)
+											mapped_right += rows[rowId].dir_right - 10;
 									}
 									text += "\n" + current_room + posRoom + ": " + mapped_left + posLeft + " | " + mapped_top + posTop + " | " + mapped_right + posRight;
 								} else
@@ -30942,6 +30948,152 @@ bot.onText(/Entra in(?! uno esistente)/i, function (message) {
 	});
 });
 
+bot.onText(/^\/inviacasse (.+),(.+),(\d+)|^\/inviacasse$/i, function (message, match) {
+	var today = new Date();
+	if ((today.getDay() > 2) && (today.getDay() < 6))
+		villa = 0;
+
+	if (villa == 0) {
+		bot.sendMessage(message.chat.id, "L'evento non è disponibile al momento");
+		return;
+	}
+
+	if ((match[1] == undefined) || (match[2] == undefined) || (match[3] == undefined)) {
+		bot.sendMessage(message.chat.id, "La sintassi è '/inviacasse giocatore,messaggio,quantità'");
+		return;
+	}
+
+	var toNick = match[1];
+	var custom_msg = match[2];
+	var quantity = match[3];
+
+	var reg = new RegExp("^[a-zA-Z0-9 \-\;\,\.àùèìéòó_\§\!\\\n?]{1,1000}$");
+	if (!reg.test(custom_msg)) {
+		bot.sendMessage(message.chat.id, "Il testo contiene caratteri non ammessi o supera i 1.000 caratteri, riprova");
+		return;
+	}
+
+	if (isNaN(quantity)) {
+		bot.sendMessage(message.chat.id, "Inserisci una quantità valida");
+		return;
+	}
+
+	if ((quantity < 1) || (quantity > 10)) {
+		bot.sendMessage(message.chat.id, "Inserisci una quantità compresa tra 1 e 10");
+		return;
+	}
+
+	connection.query('SELECT id, account_id, reborn, gender FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
+		if (err) throw err;
+
+		var player_id = rows[0].id;
+		var reborn = rows[0].reborn;
+
+		var banReason = await isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+
+		var gender_text = "a";
+		if (rows[0].gender == "M")
+			gender_text = "o";
+
+		connection.query('SELECT player_id, points FROM event_villa_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Accedi all'eveno prima di utilizzare questo comando");
+				return;
+			}
+
+			var points = rows[0].points;
+			var gift = Math.floor(points / 5);
+
+			if (gift <= 0) {
+				bot.sendMessage(message.chat.id, "Non hai Casse a disposizione! Svolgi attività per ottenere punti!");
+				return;
+			}
+
+			if (quantity*5 > points) {
+				bot.sendMessage(message.chat.id, "Non hai abbastanza punti per inviare così tante casse");
+				return;
+			}
+
+			connection.query('SELECT id, chat_id FROM player WHERE nickname = "' + toNick + '"', function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Il nome utente inserito non esiste!");
+					return;
+				}
+				var player_id2 = rows[0].id;
+				var chat_id = rows[0].chat_id;
+
+				if (player_id != 1) {
+					if (player_id2 == player_id) {
+						bot.sendMessage(message.chat.id, "Quanto è orribile inviare un dono a se stessi?! Daiii!");
+						return;
+					}
+
+					if (player_id2 == 1) {
+						bot.sendMessage(message.chat.id, "Grazie per il pensiero ma il sommo ha già tutto ciò che gli serve ❤️ ");
+						return;
+					}
+				}
+
+				connection.query('SELECT 1 FROM event_villa_gift WHERE from_id = ' + player_id + ' AND to_id = ' + player_id2, function (err, rows, fields) {
+					if (err) throw err;
+
+					if (Object.keys(rows).length >= 10) {
+						bot.sendMessage(message.chat.id, "Non puoi inviare più di 10 regali alla stessa persona!");
+						return;
+					}
+
+					connection.query('UPDATE event_villa_status SET points = points-' + (quantity*5) + ' WHERE player_id = ' + player_id, async function (err, rows, fields) {
+						if (err) throw err;
+						var item_list = "";
+						for (var i = 0; i < quantity; i++) {
+							var rows = await connection.queryAsync('SELECT id, name FROM item WHERE rarity NOT IN ("C","U","UE","A","X","NC","S","D","H","IN") AND craftable = 0 ORDER BY RAND()');
+							if (err) throw err;
+
+							var item_id = rows[0].id;
+							var item_name = rows[0].name;
+
+							var uArray = [200, 201, 532, 598];
+							var nArray = ["Necronucleo", "Respiro di Morte", "Urlo di Morte", "Soffio di Morte"];
+							var rand = Math.random() * 1000;
+							if (rand < 5) {
+								var i = Math.floor(Math.random() * uArray.length);
+								item_id = uArray[i];
+								item_name = nArray[i];
+							}
+							if (rand < 1) {
+								item_id = 777;
+								item_name = "Testa del Dragone";
+							}
+							item_list += item_name + "\n";
+
+							await connection.queryAsync('INSERT INTO event_villa_gift (from_id, to_id, item_id) VALUES (' + player_id + ',' + player_id2 + ',' + item_id + ')');
+							await addItem(player_id2, item_id);
+						}
+
+						var extra = "";
+						if (custom_msg != "") {
+							custom_msg = custom_msg.replaceAll("<>", "");
+							extra = " con un messaggio personalizzato";
+						}
+						bot.sendMessage(message.chat.id, "Hai inviato " + quantity + " Casse Misteriose a <b>" + nick + "</b>" + extra + "!", html);
+						if (custom_msg != "")
+							extra = "\nSopra le casse leggi: <i>" + custom_msg + "</i>";
+						bot.sendMessage(chat_id, "Hai ricevuto " + quantity + " Casse Misteriose contenenti:\n" + item_list + "\nDa <b>" + message.from.username + "</b>!" + extra, html);
+					});
+				});
+			});
+		});
+	});
+});
+
 bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function (message) {
 
 	var today = new Date();
@@ -30999,7 +31151,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [["Invia una Cassa 📦"], ["Cronologia giocatori 📜"], ["Cronologia casse 📦"], ["Torna al menu"]]
+			keyboard: [["Invia una Cassa 📦"], ["Cronologia giocatori 📜"], ["Ricevute 📦", "Inviate 📦"], ["Torna al menu"]]
 		}
 	};
 
@@ -31086,7 +31238,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 				if (gift == 1)
 					plur = "a";
 
-				var text = "Benvenut" + gender_text + " nella *Villa di LastSoldier95* 🏰!\nSvolgi missioni, incarichi, sconfiggi mob e completa partite nelle Mappe da questo momento ed ogni 5 punti otterrai la possibilità di inviare una *Cassa Misteriosa* 📦 ad un altro avventuriero (compresi gli oggetti U)!\n\nHai a disposizione *" + gift + "* Cass" + plur + " da inviare (" + rows[0].points + " punti)\nFin ora sono state inviate *" + formatNumber(count) + "* Casse, tu ne hai inviate *" + mycount + "* e ricevute *" + mycountrec + "*\n\nNota: Se non invierai tutte le casse entro martedì sera, il padrone di casa se le riprenderà scontento del tuo operato" + bonusText;
+				var text = "Benvenut" + gender_text + " nella *Villa di LastSoldier95* 🏰!\nSvolgi missioni, incarichi, sconfiggi mob e completa partite nelle Mappe da questo momento ed ogni 5 punti otterrai la possibilità di inviare una *Cassa Misteriosa* 📦 ad un altro avventuriero (compresi gli oggetti U)!\n\nHai a disposizione *" + gift + "* Cass" + plur + " da inviare (" + rows[0].points + " punti)\nFin ora sono state inviate *" + formatNumber(count) + "* Casse, tu ne hai inviate *" + mycount + "* e ricevute *" + mycountrec + "*\n\nNota: Se non invierai tutte le casse entro martedì sera, il padrone di casa se le riprenderà scontento del tuo operato.\nPuoi anche usare il comando /inviacasse per inviare più casse in un colpo solo." + bonusText;
 				bot.sendMessage(message.chat.id, text, kb).then(function () {
 					answerCallbacks[message.chat.id] = async function (answer) {
 						if (answer.text.indexOf("Cassa") != -1) {
@@ -31209,13 +31361,27 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 									bot.sendMessage(message.chat.id, text, kb2);
 								});
 							});
-						} else if (answer.text.indexOf("casse") != -1) {
+						} else if (answer.text.indexOf("ricevute") != -1) {
 							connection.query('SELECT COUNT(I.id) As cnt, I.name, I.rarity FROM event_villa_gift E, item I WHERE E.item_id = I.id AND to_id = ' + player_id + ' GROUP BY E.item_id ORDER BY E.id DESC LIMIT 50', function (err, rows, fields) {
 								if (err) throw err;
 
 								var text = "Ultimi 50 oggetti trovati:\n";
 								if (Object.keys(rows).length == 0)
 									text = "Nessun oggetto ricevuto\n";
+								else {
+									for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+										text += "> " + rows[i].cnt + "x " + rows[i].name + " (" + rows[i].rarity + ")\n";
+								}
+
+								bot.sendMessage(message.chat.id, text, kb2);
+							});
+						} else if (answer.text.indexOf("inviate") != -1) {
+							connection.query('SELECT COUNT(I.id) As cnt, I.name, I.rarity FROM event_villa_gift E, item I WHERE E.item_id = I.id AND from_id = ' + player_id + ' GROUP BY E.item_id ORDER BY E.id DESC LIMIT 50', function (err, rows, fields) {
+								if (err) throw err;
+
+								var text = "Ultimi 50 oggetti inviati:\n";
+								if (Object.keys(rows).length == 0)
+									text = "Nessun oggetto inviato\n";
 								else {
 									for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 										text += "> " + rows[i].cnt + "x " + rows[i].name + " (" + rows[i].rarity + ")\n";
@@ -48536,7 +48702,7 @@ function mainMenu(message) {
 																		dungeon_energy_text = "∞";
 																		dungeon_energy = 999;
 																	}
-																	var room_txt = " (" + room_num + "/" + room_tot_num + ")";
+																	var room_txt = " (Stanza " + room_num + "/" + room_tot_num + ")";
 																	if (room_num > room_tot_num)
 																		room_txt = " (Boss)";
 																	if (dungeon_energy < 10) {
