@@ -9193,7 +9193,7 @@ bot.onText(/^\/mappatura$|^\/mappaturasym$/i, function (message) {
 										else
 											mapped_left = dungeonToDesc(rows[rowId].dir_left);
 										if (rows[rowId].dir_left > 10)
-											mapped_left += rows[rowId].dir_left - 10;
+											mapped_left += " (" + (rows[rowId].dir_left - 10) + ")";
 									}
 									if (rows[rowId].mapped_top == 1) {
 										if (emojiMode == 1)
@@ -9201,7 +9201,7 @@ bot.onText(/^\/mappatura$|^\/mappaturasym$/i, function (message) {
 										else
 											mapped_top = dungeonToDesc(rows[rowId].dir_top);
 										if (rows[rowId].dir_top > 10)
-											mapped_top += rows[rowId].dir_top - 10;
+											mapped_top += " (" + (rows[rowId].dir_top - 10) + ")";
 									}
 									if (rows[rowId].mapped_right == 1) {
 										if (emojiMode == 1)
@@ -9209,7 +9209,7 @@ bot.onText(/^\/mappatura$|^\/mappaturasym$/i, function (message) {
 										else
 											mapped_right = dungeonToDesc(rows[rowId].dir_right);
 										if (rows[rowId].dir_right > 10)
-											mapped_right += rows[rowId].dir_right - 10;
+											mapped_right += " (" + (rows[rowId].dir_right - 10) + ")";
 									}
 									text += "\n" + current_room + posRoom + ": " + mapped_left + posLeft + " | " + mapped_top + posTop + " | " + mapped_right + posRight;
 								} else
