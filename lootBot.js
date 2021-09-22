@@ -6637,13 +6637,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 												}
 											}
 
-											var max_lobby_count = 3;
-											var d = new Date();
-											if (d.getHours() >= 18)
-												max_lobby_count = 2;
-											if ((d.getDay() == 0) || (d.getDay() == 6))
-												max_lobby_count = 3;
-
+											var max_lobby_count = 2;
 											var query = 'SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg, L2.id FROM map_lobby L LEFT JOIN map_lobby_list L2 ON L.lobby_id = L2.lobby_id, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL AND L2.id IS NULL AND L.lobby_training = 0 GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY RAND()';
 											if (trainingLobby == 1)
 												query = 'SELECT L.lobby_id, COUNT(L.lobby_id) As cnt, AVG(P.exp) As exp_avg, L2.id FROM map_lobby L LEFT JOIN map_lobby_list L2 ON L.lobby_id = L2.lobby_id, player P WHERE L.player_id = P.id AND L.lobby_id IS NOT NULL AND L2.id IS NULL AND L.lobby_training = 1 GROUP BY L.lobby_id HAVING cnt < ' + lobby_total_space + ' ORDER BY cnt DESC';
