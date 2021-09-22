@@ -53,10 +53,10 @@ var battle_season_test = 0;
 var dragon_limit_search = 15;
 var map_condition_max = 12;
 var max_dungeon_energy = 60;
-var map_moves_mode = 0;
+var map_moves_mode = 1;
 var lobby_restric_min = 8;
 if (map_moves_mode == 1)
-	lobby_restric_min = 5;
+	lobby_restric_min = 10;
 var moves_left_default = 10;
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
 var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750, 2500, 3000, 3750, 4250];
@@ -6948,7 +6948,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 																		"\n> Le lobby hanno un tempo massimo di ricerca di 30 minuti, trascorso quel tempo, la ricerca viene automaticamente interrotta.\n" +
 																		"\n> Di notte, la domenica e durante le Vette non è possibile accedere a nuove Lobby." +
 																		"\n> Il personaggio inizierà la partita con un equip base, zero monete e zero rottami." +
-																		"\n> Ogni " + lobby_restric_min + " minuti (" + (lobby_restric_min*2) + " appena avviata la partita) la mappa si restringe bruciando uno strato esterno fino a che rimane solo un quadratino centrale." +
+																		"\n> Ogni tot minuti la mappa si restringe bruciando uno strato esterno fino a che rimane solo un quadratino centrale." +
 																		moves_desc +
 																		"\n> Quando un giocatore incontra un altro giocatore, ha inizio una battaglia dove lo sconfitto uscirà dalla partita." +
 																		"\n> E' possibile utilizzare il pulsante Controlla per azionare l'evento relativo alla posizione in cui ci si trova, utile per esempio nel caso del teletrasporto." + 
@@ -8335,7 +8335,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 									var randomPos = getRandomPos(mapMatrix);
 									posX = randomPos[0];
 									posY = randomPos[1];
-									connection.query('UPDATE map_lobby SET last_obj = NULL, posX = ' + posX + ', posY = ' + posY + ', wait_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+									connection.query('UPDATE map_lobby SET last_obj = NULL, posX = ' + posX + ', posY = ' + posY + ', wait_time = NULL, moves_left = moves_left+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 										bot.sendMessage(message.chat.id, "Hai deciso di teletrasportati in un luogo inesplorato!", kbBack);
 									});
@@ -8348,7 +8348,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										bot.sendMessage(message.chat.id, "Sembra non ci sia nessun nemico disponibile...", kbBack);
 										return;
 									}
-									connection.query('UPDATE map_lobby SET last_obj = NULL, posX = ' + posX + ', posY = ' + posY + ', wait_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+									connection.query('UPDATE map_lobby SET last_obj = NULL, posX = ' + posX + ', posY = ' + posY + ', wait_time = NULL, moves_left = moves_left+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 										bot.sendMessage(message.chat.id, "Hai deciso di teletrasportati direttamente su un nemico!", kbBack);
 									});
@@ -8421,8 +8421,16 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 								min = "meno di 1";
 							wait_text = "\n🕐 " + min + " minut" + plur;
 						}
-					} else
-						moves_text = "\n👣 " + moves_left;
+					} else {
+						if (moves_left == 0)
+							moves_text = "\n👣 Cariche esaurite"
+						else {
+							if (moves_left == 1)
+								moves_text = "\n👣 1 carica";
+							else
+								moves_text = "\n👣 " + moves_left + " cariche";
+						}
+					}
 
 					var restrict_text = "";
 					if (next_restrict_time != null) {
@@ -8468,7 +8476,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 					if (boost_turn > 0)
 						boost_text = "\n" + mapIdToSym(13) + " " + boost_turn;
 
-					bot.sendMessage(message.chat.id, "👥 " + total_players_alive + " su " + lobby_total_space + " sopravvissuti\n❤️ " + formatNumber(life) + wait_text + restrict_text + boost_text + "\n" + map, kbSel).then(function () {
+					bot.sendMessage(message.chat.id, "👥 " + total_players_alive + " su " + lobby_total_space + " sopravvissuti\n❤️ " + formatNumber(life) + wait_text + moves_text + restrict_text + boost_text + "\n" + map, kbSel).then(function () {
 						answerCallbacks[message.chat.id] = async function (answer) {
 							if ((answer.text == "Torna alla mappa") || (answer.text == "Torna al menu") || (answer.text.toLowerCase().indexOf("aggiorna") != -1))
 								return;
@@ -8849,7 +8857,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											wait_time = 4;
 											text += "Cadi in un " + mapIdToSym(12) + " Campo Paralizzante e vieni immobilizzato! Dovrai attendere più tempo per continuare\n";
 										} else {
-											moves_left--;
+											moves_left = moves_left-1;
 											text += "Cadi in un " + mapIdToSym(12) + " Campo Paralizzante e vieni immobilizzato! Perdi una Carica Movimento.\n";
 										}
 										toClear = 1;
@@ -8963,7 +8971,8 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 										var query = 'UPDATE map_lobby SET money = money + ' + money + ', battle_turn_start = NOW(), wait_time = "' + long_date + '", battle_timeout = "' + long_date_turn + '", battle_timeout_limit = "' + long_date_battle + '", posX = ' + posX + ', posY = ' + posY + item_query + last_obj_query + scrap_query + enemy_query + pulse_query + life_query + boost_query + ' WHERE player_id = ' + player_id;
 									} else {
-										moves_left--;
+										moves_left = moves_left-1;
+										// console.log("moves_left " + moves_left + " player " + player_id);
 										if (moves_left < 0)
 											moves_left = 0;
 										var query = 'UPDATE map_lobby SET money = money + ' + money + ', battle_turn_start = NOW(), moves_left = ' + moves_left + ', battle_timeout = "' + long_date_turn + '", battle_timeout_limit = "' + long_date_battle + '", posX = ' + posX + ', posY = ' + posY + item_query + last_obj_query + scrap_query + enemy_query + pulse_query + life_query + boost_query + ' WHERE player_id = ' + player_id;
@@ -54708,7 +54717,7 @@ function mapPlayerKilled(lobby_id, player_id, cause, life, check_next) {
 		if (Object.keys(enemy).length > 0) {
 			// sync perchè sotto viene reinterrogato
 			// Assegno uccisione all'enemy
-			await connection.queryAsync('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_turn_start = NULL, battle_time_elapsed = 0, battle_turn_lost = 0, battle_turn_active = 0, battle_shield = 0, battle_heavy = 0, battle_stunned = 0, moves_left = 0 WHERE player_id = ' + enemy[0].player_id);
+			await connection.queryAsync('UPDATE map_lobby SET enemy_id = NULL, my_turn = 0, battle_timeout = NULL, battle_timeout_limit = NULL, battle_turn_start = NULL, battle_time_elapsed = 0, battle_turn_lost = 0, battle_turn_active = 0, battle_shield = 0, battle_heavy = 0, battle_stunned = 0 WHERE player_id = ' + enemy[0].player_id);
 			enemy_pos_x = enemy[0].posX;
 			enemy_pos_y = enemy[0].posY;
 			enemy_id = enemy[0].player_id;
@@ -55328,6 +55337,12 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 	});
 
 	var time = lobby_restric_min;
+	if (turnNumber == 0)
+		time = lobby_restric_min;
+	else if (turnNumber == 1)
+		time = lobby_restric_min-2;
+	else
+		time = lobby_restric_min-4;
 
 	if (conditions == 1)
 		time = Math.round(time/2);
@@ -55347,9 +55362,9 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 	}
 
 	var moves_left = moves_left_default;
-	if (turnNumber == 1)
+	if (turnNumber == 0)
 		moves_left = moves_left_default/2;
-	else if (turnNumber == 2)
+	else if (turnNumber == 1)
 		moves_left = (moves_left_default/2)-1;
 	else
 		moves_left = (moves_left_default/2)-2;
@@ -55357,6 +55372,14 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 	connection.query('UPDATE map_lobby SET moves_left = ' + moves_left + ' WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 		if (err) throw err;
 	});
+	
+	if (map_moves_mode == 1) {
+		connection.query('SELECT P.id, P.chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND M.killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+			if (err) throw err;
+			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+				bot.sendMessage(rows[i].chat_id, "La mappa si è ristretta e le Cariche Movimento sono state ripristinate!");
+		});
+	}
 }
 
 function mapIdToSym(objId) {
@@ -59844,7 +59867,7 @@ function setFullLobby(element, index, array) {
 		var size = Math.round(players*2-1);	// sempre dispari
 		var mapMatrix = generateMap(lobby_id, size, size, players, map_conditions);
 
-		connection.query('INSERT INTO map_lobby_list (lobby_id, lobby_training, map_json, turn_number, next_restrict_time, conditions) VALUES (' + lobby_id + ', ' + lobby_training + ', "' + JSON.stringify(mapMatrix) + '", 0, DATE_ADD(NOW(), INTERVAL ' + (lobby_restric_min*2) + ' MINUTE), ' + map_conditions + ')', function (err, rows, fields) {
+		connection.query('INSERT INTO map_lobby_list (lobby_id, lobby_training, map_json, turn_number, next_restrict_time, conditions) VALUES (' + lobby_id + ', ' + lobby_training + ', "' + JSON.stringify(mapMatrix) + '", 0, DATE_ADD(NOW(), INTERVAL ' + lobby_restric_min + ' MINUTE), ' + map_conditions + ')', function (err, rows, fields) {
 			if (err) throw err;
 
 			connection.query('SELECT P.id, P.chat_id, P.exp, M.is_bot FROM map_lobby M, player P WHERE M.player_id = P.id AND lobby_id = ' + lobby_id, async function (err, rows, fields) {

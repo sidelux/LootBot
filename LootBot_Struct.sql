@@ -2300,6 +2300,7 @@ CREATE TABLE `map_lobby` (
   `total_life` int(11) DEFAULT NULL,
   `killed` tinyint(1) NOT NULL DEFAULT 0,
   `wait_time` timestamp NULL DEFAULT NULL,
+  `moves_left` int(11) NOT NULL DEFAULT 0,
   `weapon_id` int(11) DEFAULT NULL,
   `weapon2_id` int(11) DEFAULT NULL,
   `weapon3_id` int(11) DEFAULT NULL,
