@@ -8866,7 +8866,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											text += "Trovi e raccogli una " + mapIdToSym(13) + " Bevanda Boost, " + next + " 3 turni il tempo di attesa per i movimenti è ridotto\n";
 										} else {
 											moves_left += 3;
-											text += "Trovi e raccogli una " + mapIdToSym(13) + " Bevanda Boost, " + next + " ottieni 3 Cariche Movimento.\n";
+											text += "Trovi e raccogli una " + mapIdToSym(13) + " Bevanda Boost, ottieni 3 Cariche Movimento.\n";
 										}
 										toClear = 1;
 									}
@@ -48443,7 +48443,7 @@ function mainMenu(message) {
 				}
 			}
 
-			connection.query("SELECT M.lobby_id, M.wait_time, M.enemy_id, M.my_turn, L.next_restrict_time, M.lobby_wait_end, M.killed FROM map_lobby M LEFT JOIN map_lobby_list L ON M.lobby_id = L.lobby_id WHERE M.player_id = " + player_id, async function (err, rows, fields) {
+			connection.query("SELECT M.lobby_id, M.wait_time, M.enemy_id, M.my_turn, L.next_restrict_time, M.lobby_wait_end, M.killed, M.moves_left FROM map_lobby M LEFT JOIN map_lobby_list L ON M.lobby_id = L.lobby_id WHERE M.player_id = " + player_id, async function (err, rows, fields) {
 				if (err) throw err;
 				if ((Object.keys(rows).length > 0) && (menu_min == 0)) {
 					if (rows[0].killed == 1) {
@@ -48493,8 +48493,16 @@ function mainMenu(message) {
 									restrict_min = "meno di 1";
 								restrict_text = " (☠️ " + restrict_min + " minut" + restrict_plur + ")";
 							}
-							if (checkDragonTopOn == 0)
-								msgtext += "\n🗺 Puoi esplorare le Mappe" + restrict_text;
+							if (checkDragonTopOn == 0) {
+								if (map_moves_mode == 0)
+									msgtext += "\n🗺 Puoi esplorare le Mappe" + restrict_text;
+								else {
+									if (rows[0].moves_left > 0)
+										msgtext += "\n🗺 Puoi esplorare le Mappe" + restrict_text;
+									else
+										msgtext += "\n🗺 Cariche Movimento esaurite" + restrict_text;
+								}
+							}
 						}
 					} else if (rows[0].lobby_wait_end != null) {
 						var lobby_wait = new Date(rows[0].lobby_wait_end);
