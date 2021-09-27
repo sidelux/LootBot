@@ -570,8 +570,9 @@ bot.onText(/^\/comandigiocatore/, function (message) {
 		"/abilità - Visualizza informazioni sull'abilità del giocatore\n" +
 		'/posizione - Indica la posizione in classifica globale e se si otterrà il relativo punto partecipazione\n' +
 		'/posizioneteam - Indica la posizione in classifica globale di tutti i membri del team\n' +
+		'/globaleteam - Indica quali persone nel team hanno raggiunto la soglia per la globale\n' +
 		'/figurine - Visualizza un riassunto delle figurine possedute raggruppate per rarità\n' +
-		"/figurinel - Visualizza le figurine possedute (specifica anche la rarità, il nome parziale, 'doppie', rarità o raritàinv)\n" +
+		"/figurinel - Visualizza le figurine possedute (specifica anche la rarità, il nome parziale, 'doppie', rarità o raritàinv e il numero della pagina con p1, ps2, ecc.)\n" +
 		'/figurina - Visualizza i dettagli delle figurine\n' +
 		'/figurinem - Visualizza le figurine mancanti per la rarità indicata', mark)
 })
@@ -2138,7 +2139,7 @@ bot.onText(/^\/comandigruppo/, function (message) {
 		'/groupban on-off - Abilita o disabilita il filtro group ban\n\n' +
 		'*Filtro foto/documenti postati nei gruppi*\n' +
 		'/photodocs on-off - Abilita o disabilita il filtro foto/documenti per livello < 50\n\n' +
-		'*Compattatore messaggi (beta)*\n' +
+		'*Compattatore messaggi*\n' +
 		'/compact on-off - Abilita o disabilita il compattamento automatico dei messaggi\n\n' +
 		'*Attiva i filtri per ogni messaggio*\n' +
 		'/hardmode on-off - Abilita o disabilita il controllo filtri per ogni messaggio\n' +
@@ -8331,9 +8332,9 @@ bot.onText(/^\/posizione$/, function (message, match) {
 				var limit_msg = "";
 				if (global_eventhide == 0) {
 					if (my_pnt >= global_limit_val)
-						limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>verrà considerata</b> nelle tue statistiche! (Beta)";
+						limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>verrà considerata</b> nelle tue statistiche!";
 					else
-						limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>NON verrà</b> considerata nelle tue statistiche. (Beta)";
+						limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>NON verrà</b> considerata nelle tue statistiche.";
 				}
 
 				connection.query('SELECT P.id, nickname, value As cnt FROM achievement_global A, player P WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id GROUP BY player_id ORDER BY SUM(value) DESC', function (err, rows, fields) {
@@ -8397,6 +8398,63 @@ bot.onText(/^\/partecipanti/, function (message, match) {
 			});
 		});
 	}
+});
+
+bot.onText(/^\/globaleteam/, function (message, match) {
+	connection.query('SELECT id, global_event FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err
+
+		if (Object.keys(rows).length == 0) { return }
+
+		const player_id = rows[0].id;
+		const global_event = rows[0].global_event;
+
+		connection.query('SELECT global_eventwait, global_cap, global_eventhide FROM config', function (err, rows, fields) {
+			if (err) throw err
+
+			if (rows[0].global_eventwait == 1) {
+				bot.sendMessage(message.chat.id, "La funzione è disponibile solo quando l'impresa globale è in corso")
+				return
+			}
+
+			const global_cap = rows[0].global_cap;
+			const global_eventhide = rows[0].global_eventhide;
+
+			connection.query('SELECT team_id, player_id FROM team_player WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
+				if (err) throw err
+
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.from.id, 'Non sei in team')
+					return
+				}
+
+				const team_id = rows[0].team_id
+
+				connection.query('SELECT P.id, nickname, value As cnt, reborn FROM achievement_global A, player P, team_player T WHERE account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id AND T.player_id = P.id AND T.team_id = ' + team_id + ' ORDER BY value DESC', function (err, rows, fields) {
+					if (err) throw err;
+
+					var my_pnt;
+					var global_limit_perc;
+					var global_limit_val;
+					var text = "Situazione globale per i membri del team:\n";
+
+					for (let i = 0, len = Object.keys(rows).length; i < len; i++) {
+						my_pnt = rows[0].cnt;
+						global_limit_perc = 0.15 + (reborn * 0.03);
+						global_limit_val = Math.round(global_cap * global_limit_perc / 100);
+
+						text += rows[i].nickname;
+						if (my_pnt >= global_limit_val)
+							text += " ✅";
+						else
+							text += " 🚫";
+					}
+
+					bot.sendMessage(message.chat.id, text, html);
+				});
+			});
+		})
+	})
 });
 
 bot.onText(/^\/posizioneteam/, function (message, match) {
@@ -9361,11 +9419,12 @@ bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
 	});
 });
 
-bot.onText(/^\/figurinel (\w+[àèìòù]?)(\s\d+)?|^\/figurinel/, function (message, match) {
+bot.onText(/^\/figurinel (\w+[àèìòù]?)(\s\d+)?(p\d+)?|^\/figurinel/, function (message, match) {
 	let rarityFilter = ''
 	let nameFilter = ''
 	let quantityFilter = ''
 	let orderFilter = 'ORDER BY name'
+	let pageFilter = '';
 	let filterName = ''
 	if (match[1] != undefined) {
 		if (match[1] == 'doppie') {
@@ -9398,6 +9457,23 @@ bot.onText(/^\/figurinel (\w+[àèìòù]?)(\s\d+)?|^\/figurinel/, function (mes
 			filterName += ' di rarità ' + match[2]
 			rarityFilter += ' AND rarity = ' + match[2]
 		}
+		if ((match[1] != undefined && match[1].startsWith("p")) || 
+		(match[2] != undefined && match[2].startsWith("p")) || 
+		(match[3] != undefined && match[3].startsWith("p"))) {
+			let page = 0;
+			if (match[1] != undefined && match[1].startsWith("p"))
+				page = match[1].replace("p", "");
+			else if (match[2] != undefined && match[2].startsWith("p"))
+				page = match[2].replace("p", "");
+			else if (match[3] != undefined && match[3].startsWith("p"))
+				page = match[3].replace("p", "");
+			page = page-1;
+			if (isNaN(page)) {
+				bot.sendMessage(message.chat.id, 'Il numero pagina deve essere un intero');
+				return;
+			}
+			pageFilter = " LIMIT " + (page*50) + ",50";
+		}
 	}
 
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -9413,7 +9489,7 @@ bot.onText(/^\/figurinel (\w+[àèìòù]?)(\s\d+)?|^\/figurinel/, function (mes
 			if (err) throw err
 			const have = rows[0].cnt
 
-			connection.query('SELECT name, rarity, quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND quantity > 0 AND player_id = ' + player_id + rarityFilter + nameFilter + quantityFilter + ' ' + orderFilter, function (err, rows, fields) {
+			connection.query('SELECT name, rarity, quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND quantity > 0 AND player_id = ' + player_id + rarityFilter + nameFilter + quantityFilter + ' ' + orderFilter + pageFilter, function (err, rows, fields) {
 				if (err) throw err
 
 				if (Object.keys(rows).length == 0) {
@@ -9422,7 +9498,8 @@ bot.onText(/^\/figurinel (\w+[àèìòù]?)(\s\d+)?|^\/figurinel/, function (mes
 				}
 
 				let text = message.from.username + ', possiedi ' + formatNumber(have) + ' figurine' + filterName + ':\n'
-				for (i = 0, len = Object.keys(rows).length; i < len; i++) { text += '> ' + rows[i].name + ' (' + rows[i].rarity + ', ' + rows[i].quantity + ')\n' }
+				for (i = 0, len = Object.keys(rows).length; i < len; i++)
+					text += '> ' + rows[i].name + ' (' + rows[i].rarity + ', ' + rows[i].quantity + ')\n';
 
 				if (text.length >= 3500) {
 					bot.sendMessage(message.chat.id, message.from.username + ', troppi risultati, riprova con un filtro', html)

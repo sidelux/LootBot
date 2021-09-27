@@ -35874,7 +35874,6 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 	}
 	*/
 
-
 	if ((message.text.toLowerCase().indexOf("pacchetto") == "negozio") || 
 		(message.text.toLowerCase() == "figurine collezionate") || 
 		(message.text.toLowerCase().indexOf("pacchetto") != -1) ||
@@ -49009,7 +49008,7 @@ function printStart(message) {
 }
 
 function getDefaultKeyboard() {
-	var topMap = "Mappe di Lootia 🗺 (Beta)";
+	var topMap = "Mappe di Lootia 🗺";
 	if (checkDragonTopOn == 1)
 		topMap = "Vette dei Draghi 🐲";
 
@@ -49028,7 +49027,7 @@ function getDefaultKeyboard() {
 }
 
 function checkKeyboard() {	
-	var topMap = "Mappe di Lootia 🗺 (Beta)";
+	var topMap = "Mappe di Lootia 🗺";
 	if (checkDragonTopOn == 1)
 		topMap = "Vette dei Draghi 🐲";
 
@@ -52403,9 +52402,9 @@ function getRankAch(message, size) {
 				var limit_msg = "";
 				if (global_eventhide == 0) {
 					if (my_pnt >= global_limit_val)
-						limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>verrà considerata</b> nelle tue statistiche! (Beta)";
+						limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>verrà considerata</b> nelle tue statistiche!";
 					else
-						limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>NON verrà</b> considerata nelle tue statistiche. (Beta)";
+						limit_msg = "\nA questo punteggio la partecipazione all'impresa <b>NON verrà</b> considerata nelle tue statistiche.";
 				}
 
 				if (top_min == 1) {
