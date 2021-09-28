@@ -55357,9 +55357,15 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions, reason) {
 			if (err) throw err;
 		});
 	} else {
-		connection.query('UPDATE map_lobby_list SET next_restrict_time = DATE_ADD(next_restrict_time, INTERVAL ' + time + ' MINUTE) WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
-			if (err) throw err;
-		});
+		if (reason == 1) {
+			connection.query('UPDATE map_lobby_list SET next_restrict_time = DATE_ADD(next_restrict_time, INTERVAL ' + time + ' MINUTE) WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+		} else if (reason == 2) {
+			connection.query('UPDATE map_lobby_list SET next_restrict_time = DATE_ADD(NOW(), INTERVAL ' + time + ' MINUTE) WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
 	}
 
 	var moves_left = moves_left_default;
@@ -55382,7 +55388,6 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions, reason) {
 				text = "Tempo scaduto! La mappa si è ristretta e le Cariche Movimento sono state ripristinate!";
 			else if (reason == 2)
 				text = "Tutte le Cariche sono state consumate, la mappa si è ristretta e le Cariche Movimento sono state ripristinate!";
-			console.log("Restrict map by reason " + reason);
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 				bot.sendMessage(rows[i].chat_id, text);
 		});
