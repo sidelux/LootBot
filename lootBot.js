@@ -55277,7 +55277,7 @@ function printMap(mapMatrix, posY, posX, pulsePosY, pulsePosX, killed, checkEnem
 	return text;
 }
 
-function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
+function restrictMap(lobby_id, mapMatrix, turnNumber, conditions, reason) {
 	mapMatrix = JSON.parse(mapMatrix);
 	mapArray = JSON.stringify(mapMatrix);
 
@@ -55377,8 +55377,14 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions) {
 	if (map_moves_mode == 1) {
 		connection.query('SELECT P.id, P.chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND M.killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 			if (err) throw err;
+			var text = "";
+			if (reason == 1)
+				text = "Tempo scaduto! La mappa si è ristretta e le Cariche Movimento sono state ripristinate!";
+			else if (reason == 2)
+				text = "Tutte le Cariche sono state consumate, la mappa si è ristretta e le Cariche Movimento sono state ripristinate!";
+			console.log("Restrict map by reason " + reason);
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-				bot.sendMessage(rows[i].chat_id, "La mappa si è ristretta e le Cariche Movimento sono state ripristinate!");
+				bot.sendMessage(rows[i].chat_id, text);
 		});
 	}
 }
@@ -60221,13 +60227,13 @@ async function setSeasonEnd(element, index, array) {
 }
 
 function checkRestrictMap() {
-	connection.query('SELECT lobby_id, map_json, turn_number, conditions FROM map_lobby_list WHERE next_restrict_time < NOW()', function (err, rows, fields) {
+	connection.query('SELECT M.lobby_id, M.map_json, M.turn_number, M.conditions, SUM(L.moves_left) As total_moves_left, (next_restrict_time < NOW()) As restrict_now FROM map_lobby_list M INNER JOIN map_lobby L ON M.lobby_id = L.lobby_id GROUP BY M.lobby_id', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
-				console.log(getNow("it") + "\x1b[32m 1 restringimento mappa avviata\x1b[0m");
+				console.log(getNow("it") + "\x1b[32m 1 controllo restringimento mappa avviata\x1b[0m");
 			else
-				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " restringimenti mappe avviati\x1b[0m");
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " controlli restringimento mappe avviati\x1b[0m");
 			rows.forEach(setRestrictMap);
 		}
 	});
@@ -60238,8 +60244,22 @@ function setRestrictMap(element, index, array) {
 	var mapMatrix = element.map_json;
 	var turnNumber = element.turn_number;
 	var conditions = element.conditions;
+	var total_moves_left = element.total_moves_left;
+	var restrict_now = element.restrict_now;
 
-	restrictMap(lobby_id, mapMatrix, turnNumber, conditions);
+	var restrict = 0;
+	var reason = 0;
+	if (restrict_now == 1) {
+		restrict = 1;
+		reason = 1;
+	}
+	if (total_moves_left == 0) {
+		restrict = 1;
+		reason = 2;
+	}
+
+	if (restrict == 1)
+		restrictMap(lobby_id, mapMatrix, turnNumber, conditions, reason);
 };
 
 function checkTopSeasonStart() {
