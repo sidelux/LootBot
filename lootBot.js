@@ -1148,7 +1148,7 @@ bot.onText(/^\/incremglobal/, function (message, match) {
 
 bot.onText(/^\/endglobal$/, function (message, match) {
 	if (message.from.id == 20471035) {
-		connection.query('SELECT I.id As id1, I.name As name1, I2.id As id2, I2.name As name2, I3.id As id3, I3.name As name3, global_treshold, global_end_message, global_description FROM config C INNER JOIN item I ON C.global_item1 = I.id INNER JOIN item I2 ON C.global_item2 = I2.id INNER JOIN item I3 ON C.global_item3 = I3.id', function (err, rows, fields) {
+		connection.query('SELECT I.id As id1, I.name As name1, I2.id As id2, I2.name As name2, I3.id As id3, I3.name As name3, global_treshold, global_end_message, global_desc FROM config C INNER JOIN item I ON C.global_item1 = I.id INNER JOIN item I2 ON C.global_item2 = I2.id INNER JOIN item I3 ON C.global_item3 = I3.id', function (err, rows, fields) {
 			if (err) throw err;
 
 			var item_1 = rows[0].name1;
@@ -1157,14 +1157,14 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 			var item_1id = rows[0].id1;
 			var item_2id = rows[0].id2;
 			var item_3id = rows[0].id3;
-			var global_description = rows[0].global_description;
+			var global_desc = rows[0].global_desc;
 
 			var minValue = rows[0].global_treshold;
 			var bonusText = rows[0].global_end_message;
 
 			console.log(item_1, item_2, item_3, item_1id, item_2id, item_3id);
 			console.log("minValue " + minValue);
-			console.log("bonusText " + bonusText);
+			console.log("bonusText " + bonusText.trim());
 
 			connection.query('SELECT global_cap FROM config', function (err, rows, fields) {
 				if (err) throw err;
@@ -1249,7 +1249,7 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 											if (err) throw err;
 										});
 
-										connection.query('INSERT INTO global_history (description, cap, item1, item2, item3, treshold, end_message, close_date, completed) VALUES ("' + global_description + '", ' + global_cap + ', ' + item_1id + ', ' + item_2id + ', ' + item_3id + ', ' + minValue + ', "' + bonusText + '", NOW(), 1)', function (err, rows, fields) {
+										connection.query('INSERT INTO global_history (description, cap, item1, item2, item3, treshold, end_message, close_date, completed) VALUES ("' + global_desc + '", ' + global_cap + ', ' + item_1id + ', ' + item_2id + ', ' + item_3id + ', ' + minValue + ', "' + bonusText + '", NOW(), 1)', function (err, rows, fields) {
 											if (err) throw err;
 										});
 
@@ -53308,7 +53308,7 @@ function assaultIncrement(message, player_id, team_id) {
 					}
 
 					var val = Math.round(rows[0].level*10/rows[0].max_level); // per globale
-
+					globalAchievement(player_id, val);
 				});
 			});
 		});
@@ -56287,7 +56287,6 @@ async function endDungeonRoom(player_id, boost_id, boost_mission) {
 	}
 	await reduceDungeonEnergy(player_id, 10);
 
-	/*
     connection.query('SELECT chat_id, global_end FROM player WHERE id = ' + player_id, function (err, rows, fields) {
         if (err) throw err;
         if (rows[0].global_end == 1) {
@@ -56302,7 +56301,6 @@ async function endDungeonRoom(player_id, boost_id, boost_mission) {
             }
         }
     });
-    */
 }
 
 async function reduceDungeonEnergy(player_id, quantity) {
@@ -59493,7 +59491,7 @@ function setLobbyTime(element, index, array) {
 }
 
 function checkLobbyLeave() {
-	connection.query('SELECT id FROM map_lobby WHERE lobby_wait_end < NOW() AND lobby_wait_end IS NOT NULL', function (err, rows, fields) {
+	connection.query('SELECT M.id, P.chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND M.lobby_wait_end < NOW() AND M.lobby_wait_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
@@ -59507,9 +59505,11 @@ function checkLobbyLeave() {
 
 function setLobbyLeave(element, index, array) {
 	var map_lobby_id = element.id;
+	var chat_id = element.chat_id;
 
 	connection.query('UPDATE map_lobby SET lobby_wait_end = NULL WHERE id = ' + map_lobby_id, function (err, rows, fields) {
 		if (err) throw err;
+		bot.sendMessage(chat_id, "Il tempo dì attesa è terminato, puoi tornare ad esplorare le mappe!");
 	});
 }
 
@@ -62680,7 +62680,6 @@ function setExp(player_id, exp) {
 		}
 
 		setAchievement(player_id, 57, exp);
-		globalAchievement(player_id, exp);
 		connection.query('UPDATE player SET exp_week = exp_week+' + exp + ', exp_day = exp_day+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
