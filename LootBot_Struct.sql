@@ -1820,7 +1820,7 @@ DROP TABLE IF EXISTS `global_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `global_history` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `description` varchar(256) NOT NULL,
   `cap` bigint(32) NOT NULL,
   `item1` int(11) NOT NULL,
@@ -1830,13 +1830,14 @@ CREATE TABLE `global_history` (
   `end_message` varchar(128) NOT NULL,
   `close_date` timestamp NULL DEFAULT NULL,
   `completed` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`),
   KEY `history_item_id_1` (`item1`),
   KEY `history_item_id_2` (`item2`),
   KEY `history_item_id_3` (`item3`),
   CONSTRAINT `history_item_id_1` FOREIGN KEY (`item1`) REFERENCES `item` (`id`),
   CONSTRAINT `history_item_id_2` FOREIGN KEY (`item2`) REFERENCES `item` (`id`),
   CONSTRAINT `history_item_id_3` FOREIGN KEY (`item3`) REFERENCES `item` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

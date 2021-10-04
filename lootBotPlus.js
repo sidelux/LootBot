@@ -9419,7 +9419,7 @@ bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
 	});
 });
 
-bot.onText(/^\/figurinel (\w+[àèìòù]?)(\s\d+)?(p\d+)?|^\/figurinel/, function (message, match) {
+bot.onText(/^\/figurinel (\w+[àèìòù]?)(\s\d+)?(\sp\d+)?|^\/figurinel/, function (message, match) {
 	let rarityFilter = ''
 	let nameFilter = ''
 	let quantityFilter = ''
@@ -9457,6 +9457,12 @@ bot.onText(/^\/figurinel (\w+[àèìòù]?)(\s\d+)?(p\d+)?|^\/figurinel/, functi
 			filterName += ' di rarità ' + match[2]
 			rarityFilter += ' AND rarity = ' + match[2]
 		}
+		if (match[1] != undefined)
+			match[1] = match[1].trim();
+		if (match[2] != undefined)
+			match[2] = match[2].trim();
+		if (match[3] != undefined)
+			match[3] = match[3].trim();
 		if ((match[1] != undefined && match[1].startsWith("p")) || 
 		(match[2] != undefined && match[2].startsWith("p")) || 
 		(match[3] != undefined && match[3].startsWith("p"))) {
