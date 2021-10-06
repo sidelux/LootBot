@@ -21889,7 +21889,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 										status += "Avversario " + dragonSym(enemy_dragon_type) + ": " + formatNumber(enemy_dragon_life) + " 🔺 (" + enemy_altered + ")\n|" + progressBar(enemy_dragon_life, enemy_dragon_total_life) + "|\n\n";
 
 										status += "Scaglie: " + scale + "\n";
-										if ((charm_id != 695) && (charm_id != 602)) {
+										if ((charm_id != 695) && (charm_id != 602) && (charm_id != 0)) {
 											const charm_name = await connection.queryAsync("SELECT name FROM item WHERE id = " + charm_id);
 											status += "📿 " + charm_name[0].name + "\n";
 										}
@@ -44757,7 +44757,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 
 													bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è migliore di quella del guardiano (" + combi + ")!\nIn una stanzetta all'interno del rifugio hai trovato un sacchettino contenente " + moneytxt + expText + extra, kbBack);
 
-													if (toGnome_notification == 0)
+													if (toGnome_notification == 1)
 														bot.sendMessage(toChat, message.from.username + " è riuscito a sconfiggere il guardiano del tuo rifugio, purtroppo avendo lasciato incustodito un sacchettino, hai perso " + moneytxt + extra2, html);
 												});
 
@@ -44818,7 +44818,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 									if (err) throw err;
 									bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è peggiore di quella del guardiano (" + combi + ")! Il portone del rifugio si blocca ed il tuo gnomo è costretto a tornare indietro" + expText, kbBack);
 
-									if (toGnome_notification == 0)
+									if (toGnome_notification == 1)
 										bot.sendMessage(toChat, "Lo gnomo di <b>" + message.from.username + "</b> non è riuscito a sconfiggere il guardiano del tuo portone, così è stato respinto", html);
 								});
 
@@ -61855,9 +61855,10 @@ function setFinishedHeistProgress(element, index, array) {
 						if (id != 0) {
 							text = "Durante il viaggio è stato catturato dai guardiani del rifugio e durante la sua avventurosa fuga è riuscito a sgraffignare 1x <b>" + name + "</b>!";
 							bot.sendMessage(chat_id, "Il tuo gnomo ha cambiato le rune richieste, torna al rifugio!\n" + text, rBack);
-							connection.query('SELECT chat_id FROM player WHERE id = ' + to_id, function (err, rows, fields) {
+							connection.query('SELECT gnome_notification, chat_id FROM player WHERE id = ' + to_id, function (err, rows, fields) {
 								if (err) throw err;
-								bot.sendMessage(rows[0].chat_id, "Lo gnomo <i>" + gnome_name + "</i> di " + nick + " è riuscito a sgraffignarti 1x <b>" + name + "</b>!", html);
+								if (rows[0].gnome_notification == 1)
+									bot.sendMessage(rows[0].chat_id, "Lo gnomo <i>" + gnome_name + "</i> di " + nick + " è riuscito a sgraffignarti 1x <b>" + name + "</b>!", html);
 							});
 						}
 					});
@@ -62036,10 +62037,11 @@ function setFinishedHeist(element, index, array) {
 							return;
 						}
 					}
-					connection.query('SELECT house_id FROM player WHERE id = ' + toId, function (err, rows, fields) {
+					connection.query('SELECT gnome_notification, house_id FROM player WHERE id = ' + toId, function (err, rows, fields) {
 						if (err) throw err;
 
 						var to_house_id = rows[0].house_id;
+						var toGnome_notification = rows[0].gnome_notification;
 
 						rate -= to_house_id * 3;	// max 18
 						rate -= dragon_level / 30;	// max 10
@@ -62126,10 +62128,12 @@ function setFinishedHeist(element, index, array) {
 									if (rows[0].heist_description != null)
 										heist_description = "\nLeggi malinconicamente un cartello affisso su un albero con su scritto: <i>" + rows[0].heist_description + "</i>";
 									bot.sendMessage(fromChat, "Il tuo gnomo <i>" + gnome_name + "</i> non è riuscito a raggiungere il rifugio nemico, dannazione!", kb2);
-									if (isMatch == 1)
-										bot.sendMessage(rows[0].chat_id, "Lo gnomo <i>" + gnome_name + "</i> di <b>" + fromNick + "</b> è stato respinto dal tuo guardiano!", html);
-									else
-										bot.sendMessage(rows[0].chat_id, "Lo gnomo <i>" + gnome_name + "</i> di <b>" + fromNick + "</b> è stato acciuffato dal tuo guardiano!", html);
+									if (toGnome_notification == 1) {
+										if (isMatch == 1)
+											bot.sendMessage(rows[0].chat_id, "Lo gnomo <i>" + gnome_name + "</i> di <b>" + fromNick + "</b> è stato respinto dal tuo guardiano!", html);
+										else
+											bot.sendMessage(rows[0].chat_id, "Lo gnomo <i>" + gnome_name + "</i> di <b>" + fromNick + "</b> è stato acciuffato dal tuo guardiano!", html);
+									}
 								});
 
 								var d = new Date();
@@ -62158,10 +62162,12 @@ function setFinishedHeist(element, index, array) {
 									connection.query('SELECT chat_id FROM player WHERE id = ' + toId, function (err, rows, fields) {
 										if (err) throw err;
 
-										if (isMatch == 1) {
-											bot.sendMessage(rows[0].chat_id, "Lo gnomo <i>" + gnome_name + "</i> di <b>" + fromNick + "</b> è riuscito a trovare il tuo rifugio!", html);
-										} else {
-											bot.sendMessage(rows[0].chat_id, "Lo gnomo <i>" + gnome_name + "</i> di <b>" + fromNick + "</b> è riuscito ad arrivare davanti al tuo rifugio!", html);
+										if (toGnome_notification == 1) {
+											if (isMatch == 1) {
+												bot.sendMessage(rows[0].chat_id, "Lo gnomo <i>" + gnome_name + "</i> di <b>" + fromNick + "</b> è riuscito a trovare il tuo rifugio!", html);
+											} else {
+												bot.sendMessage(rows[0].chat_id, "Lo gnomo <i>" + gnome_name + "</i> di <b>" + fromNick + "</b> è riuscito ad arrivare davanti al tuo rifugio!", html);
+											}
 										}
 									});
 								});
