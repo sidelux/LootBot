@@ -44,7 +44,7 @@ var merchant_limit = 5;
 var max_top_id = 6;
 var rank_cap = 15;
 var lobby_total_space = 5;
-var lobby_daily_limit_default = 5;
+var lobby_daily_limit_default = 8;
 var lobby_daily_limit = lobby_daily_limit_default;
 var battle_timeout_turn = 2;
 var battle_timeout_limit_min = 20;
@@ -6515,7 +6515,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 
 								var lobby_players = rows[0].cnt;
 								if (crazyMode == 1)
-									lobby_daily_limit = 7;
+									lobby_daily_limit = lobby_daily_limit_default+2;
 								else
 									lobby_daily_limit = lobby_daily_limit_default;
 								var map_daily_diff = lobby_daily_limit-map_count;
@@ -30402,6 +30402,49 @@ bot.onText(/^notifiche cariche esplorative/i, function (message) {
 	});
 });
 
+bot.onText(/^notifiche gnomi/i, function (message) {
+	connection.query('SELECT account_id, holiday, id FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
+		if (err) throw err;
+
+		var banReason = await isBanned(rows[0].account_id);
+		if (banReason != null) {
+			var text = "Il tuo account è stato *bannato* per il seguente motivo: _" + banReason + "_";
+			bot.sendMessage(message.chat.id, text, mark);
+			return;
+		}
+		if (rows[0].holiday == 1) {
+			bot.sendMessage(message.chat.id, "Sei in modalità vacanza!\nVisita la sezione Giocatore per disattivarla!", back)
+			return;
+		}
+
+		var player_id = rows[0].id;
+
+		connection.query('SELECT gnome_notification FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+			var notify = rows[0].gnome_notification;
+
+			bot.sendMessage(message.chat.id, "Cambiare l'impostazione notifiche per gli gnomi?", conf).then(function () {
+				answerCallbacks[message.chat.id] = async function (answer) {
+					var action = answer.text;
+					if (action == "Conferma") {
+						if (notify == 1)
+							notify = 0;
+						else
+							notify = 1;
+						connection.query('UPDATE player SET gnome_notification = ' + notify + ' WHERE id = ' + player_id, function (err, rows, fields) {
+							if (err) throw err;
+							if (notify == 0)
+								bot.sendMessage(message.chat.id, "Non riceverai le notifiche per le attività per gli gnomi!", back);
+							else
+								bot.sendMessage(message.chat.id, "Riceverai le notifiche per le attività per gli gnomi!", back);
+						});
+					}
+				};
+			});
+		});
+	});
+});
+
 bot.onText(/^Sciogli/i, function (message) {
 	connection.query('SELECT account_id, id, money FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
 		if (err) throw err;
@@ -37610,7 +37653,7 @@ bot.onText(/^Cambia Top/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [["Torna alle Top"], ["Torna al menu"]]
+			keyboard: [["Torna alle Top"], ["Torna alla globale"], ["Torna al menu"]]
 		}
 	};
 
@@ -44038,11 +44081,12 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 			} else
 				my_comb = String(rows[0].my_combination);
 
-			connection.query("SELECT chat_id, nickname FROM player WHERE id = " + toId, function (err, rows, fields) {
+			connection.query("SELECT chat_id, nickname, gnome_notification FROM player WHERE id = " + toId, function (err, rows, fields) {
 				if (err) throw err;
 
 				var nick = rows[0].nickname;
 				var toChat = rows[0].chat_id;
+				var toGnome_notification = rows[0].gnome_notification;
 				var my_comb_arr = my_comb.split("");
 
 				bot.sendMessage(message.chat.id, "Per entrare nel rifugio di <b>" + nick + "</b> devi possedere delle Rune di un valore più alto rispetto a quelle del guardiano del cancello, come procedi?\n\nLo gnomo torna dal rifugio con 5 Rune, su ogni runa è scritto un numero:\n\n💬 " + my_comb_arr.join(" ") + "\n\nPuoi cambiare le Rune ancora " + (4 - travel) + " volte, lo gnomo si stancherà di aspettare alle " + short_date_end, kb).then(function () {
@@ -44713,7 +44757,8 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 
 													bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è migliore di quella del guardiano (" + combi + ")!\nIn una stanzetta all'interno del rifugio hai trovato un sacchettino contenente " + moneytxt + expText + extra, kbBack);
 
-													bot.sendMessage(toChat, message.from.username + " è riuscito a sconfiggere il guardiano del tuo rifugio, purtroppo avendo lasciato incustodito un sacchettino, hai perso " + moneytxt + extra2, html);
+													if (toGnome_notification == 0)
+														bot.sendMessage(toChat, message.from.username + " è riuscito a sconfiggere il guardiano del tuo rifugio, purtroppo avendo lasciato incustodito un sacchettino, hai perso " + moneytxt + extra2, html);
 												});
 
 												if (travel <= 2)
@@ -44773,7 +44818,8 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 									if (err) throw err;
 									bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è peggiore di quella del guardiano (" + combi + ")! Il portone del rifugio si blocca ed il tuo gnomo è costretto a tornare indietro" + expText, kbBack);
 
-									bot.sendMessage(toChat, "Lo gnomo di <b>" + message.from.username + "</b> non è riuscito a sconfiggere il guardiano del tuo portone, così è stato respinto", html);
+									if (toGnome_notification == 0)
+										bot.sendMessage(toChat, "Lo gnomo di <b>" + message.from.username + "</b> non è riuscito a sconfiggere il guardiano del tuo portone, così è stato respinto", html);
 								});
 
 								var d = new Date();
@@ -44879,6 +44925,7 @@ bot.onText(/^rifugio|Torna al rifugio|^ispezione$/i, function (message) {
 				iKeys.push(["Ispezione 🔦", "Spia Rifugio 👀"]);
 				iKeys.push(["Prelevazione 🌐", "Migliora Rifugio 🏕", "Protezione 💫"]);
 				iKeys.push(["Ispezioni passate 📃"]);
+				iKeys.push(["Notifiche gnomi 💬"]);
 				iKeys.push(["Torna al menu"]);
 
 				var kb = {
@@ -46594,7 +46641,7 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 							parse_mode: "HTML",
 							reply_markup: {
 								resize_keyboard: true,
-								keyboard: [["Informazioni Impresa Globale"], ["Impresa Globale"], ["Torna al menu"]]
+								keyboard: [["Informazioni Impresa Globale"], ["Impresa Globale"], ['Cambia Top'], ["Torna al menu"]]
 							}
 						};
 
@@ -60232,7 +60279,7 @@ async function setSeasonEnd(element, index, array) {
 }
 
 function checkRestrictMap() {
-	connection.query('SELECT M.lobby_id, M.map_json, M.turn_number, M.conditions, SUM(L.moves_left) As total_moves_left, (next_restrict_time < NOW()) As restrict_now FROM map_lobby_list M INNER JOIN map_lobby L ON M.lobby_id = L.lobby_id GROUP BY M.lobby_id', function (err, rows, fields) {
+	connection.query('SELECT M.lobby_id, M.map_json, M.turn_number, M.conditions, (SELECT SUM(L.moves_left) FROM map_lobby ML WHERE M.lobby_id = ML.lobby_id AND ML.killed = 0 LIMIT 1) As total_moves_left, (next_restrict_time < NOW()) As restrict_now FROM map_lobby_list M INNER JOIN map_lobby L ON M.lobby_id = L.lobby_id GROUP BY M.lobby_id', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
