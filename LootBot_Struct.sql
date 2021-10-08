@@ -3135,6 +3135,7 @@ CREATE TABLE `player` (
   `custom_gnome_1` varchar(16) DEFAULT NULL,
   `custom_gnome_2` varchar(16) DEFAULT NULL,
   `custom_gnome_3` varchar(16) DEFAULT NULL,
+  `gnome_notification` tinyint(1) NOT NULL DEFAULT 1,
   `show_time` tinyint(1) NOT NULL DEFAULT 0,
   `menu_min` tinyint(1) NOT NULL DEFAULT 0,
   `birth_date` date DEFAULT NULL,

@@ -37653,7 +37653,7 @@ bot.onText(/^Cambia Top/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [["Torna alle Top"], ["Torna alla globale"], ["Torna al menu"]]
+			keyboard: [["Torna alle Top"], ["Torna alle imprese"], ["Torna al menu"]]
 		}
 	};
 
