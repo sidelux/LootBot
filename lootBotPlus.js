@@ -8438,17 +8438,20 @@ bot.onText(/^\/globaleteam/, function (message, match) {
 					var global_limit_val;
 					var text = "Situazione globale per i membri del team:\n";
 
-					for (let i = 0, len = Object.keys(rows).length; i < len; i++) {
-						my_pnt = rows[0].cnt;
-						global_limit_perc = 0.15 + (reborn * 0.03);
-						global_limit_val = Math.round(global_cap * global_limit_perc / 100);
-
-						text += rows[i].nickname;
-						if (my_pnt >= global_limit_val)
-							text += " ✅";
-						else
-							text += " 🚫";
-					}
+					if (Object.keys(rows).length > 0) {
+						for (let i = 0, len = Object.keys(rows).length; i < len; i++) {
+							my_pnt = rows[i].cnt;
+							global_limit_perc = 0.15 + (rows[i].reborn * 0.03);
+							global_limit_val = Math.round(global_cap * global_limit_perc / 100);
+	
+							text += rows[i].nickname;
+							if (my_pnt >= global_limit_val)
+								text += " ✅\n";
+							else
+								text += " 🚫\n";
+						}
+					} else
+						text += "Nessun compagno ha ancora contribuito alla globale";
 
 					bot.sendMessage(message.chat.id, text, html);
 				});
@@ -10311,6 +10314,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 			const global_win = rows[0].global_win
 			const trophies = rows[0].trophies
 			const total_trophies = rows[0].total_trophies
+			const global_event = rows[0].global_event;
 
 			let top_win_text = ''
 			if (top_win > 0) { top_win_text = 'Vittorie Vette: ' + top_win + ' (' + top_win_best + ' Ð)\n' }
@@ -10321,6 +10325,9 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 
 			let global_win_text = ''
 			if (global_win > 0) { global_win_text = 'Vittorie Globali: ' + global_win + '\n' }
+
+			var global_event_text = "";
+			if (global_event > 0) { global_event_text = "Contributo Globali: " + global_event + "\n" };
 
 			let trophies_text = ''
 			if (total_trophies > 0) { trophies_text = 'Trofei Mappe: ' + trophies + ' / ' + total_trophies + '\n' }
@@ -10738,6 +10745,7 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 																								mission_team_count +
 																								top_win_text +
 																								map_win_text +
+																								global_event_text +
 																								global_win_text +
 																								trophies_text +
 																								(player_description != null ? '\n<i>' + player_description + '</i>' : ''), html)
