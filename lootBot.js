@@ -2712,7 +2712,10 @@ bot.onText(/^\/m (.+)|^\/m$/, function (message, match) {
 								}
 							}
 
-							bot.sendMessage(chat_id2, "<b>Messaggio da </b>@" + message.from.username + extra + ":\n" + msg, html);
+							var intro = "<b>Messaggio da </b>@" + message.from.username + extra;
+							if (player_id == player_id2)
+								intro = "<i>Anteprima messaggio</i>";
+							bot.sendMessage(chat_id2, intro + ":\n" + msg, html);
 							bot.sendMessage(message.chat.id, "Inviato!");
 						});
 					});
@@ -16311,16 +16314,17 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																				connection.query('UPDATE player SET life = life-' + damage + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
 																					if (magic == 1) {
+																						if (player_life <= player_total_life*0.2)
+																							setAchievement(player_id, 20, heal);
 																						connection.query('UPDATE player SET life = life+' + heal + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																							if (err) throw err;
 																							calcLife(message);
 																							//console.log("Ricarica salute dungeon: " + heal);
 																						});
-																						if (magicDouble == 1) {
+																						if (magicDouble == 1)
 																							magic_txt2 += " (+" + formatNumber(heal) + " hp e danni - x2)";
-																						} else {
+																						else
 																							magic_txt2 += " (+" + formatNumber(heal) + " hp e danni)";
-																						}
 																					}
 
 																					if (damage == 0) {
@@ -31059,7 +31063,7 @@ bot.onText(/^\/inviacasse (.+),(.+),(\d+)|^\/inviacasse$/i, function (message, m
 
 	var toNick = match[1];
 	var custom_msg = match[2];
-	var quantity = match[3];
+	var quantity = parseInt(match[3]);
 
 	var reg = new RegExp("^[a-zA-Z0-9 \-\;\,\.àùèìéòó_\§\!\\\n?]{1,1000}$");
 	if (!reg.test(custom_msg)) {
@@ -31098,7 +31102,7 @@ bot.onText(/^\/inviacasse (.+),(.+),(\d+)|^\/inviacasse$/i, function (message, m
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
-				bot.sendMessage(message.chat.id, "Accedi all'eveno prima di utilizzare questo comando");
+				bot.sendMessage(message.chat.id, "Accedi all'evento prima di utilizzare questo comando");
 				return;
 			}
 
@@ -31139,7 +31143,7 @@ bot.onText(/^\/inviacasse (.+),(.+),(\d+)|^\/inviacasse$/i, function (message, m
 				connection.query('SELECT 1 FROM event_villa_gift WHERE from_id = ' + player_id + ' AND to_id = ' + player_id2, function (err, rows, fields) {
 					if (err) throw err;
 
-					if (Object.keys(rows).length >= 10) {
+					if (parseInt(Object.keys(rows).length)+quantity > 10) {
 						bot.sendMessage(message.chat.id, "Non puoi inviare più di 10 regali alla stessa persona!");
 						return;
 					}
@@ -31177,7 +31181,7 @@ bot.onText(/^\/inviacasse (.+),(.+),(\d+)|^\/inviacasse$/i, function (message, m
 							custom_msg = custom_msg.replaceAll("<>", "");
 							extra = " con un messaggio personalizzato";
 						}
-						bot.sendMessage(message.chat.id, "Hai inviato " + quantity + " Casse Misteriose a <b>" + nick + "</b>" + extra + "!", html);
+						bot.sendMessage(message.chat.id, "Hai inviato " + quantity + " Casse Misteriose a <b>" + toNick + "</b>" + extra + "!", html);
 						if (custom_msg != "")
 							extra = "\nSopra le casse leggi: <i>" + custom_msg + "</i>";
 						bot.sendMessage(chat_id, "Hai ricevuto " + quantity + " Casse Misteriose contenenti:\n" + item_list + "\nDa <b>" + message.from.username + "</b>!" + extra, html);
@@ -31455,7 +31459,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 									bot.sendMessage(message.chat.id, text, kb2);
 								});
 							});
-						} else if (answer.text.indexOf("ricevute") != -1) {
+						} else if (answer.text.toLowerCase().indexOf("ricevute") != -1) {
 							connection.query('SELECT COUNT(I.id) As cnt, I.name, I.rarity FROM event_villa_gift E, item I WHERE E.item_id = I.id AND to_id = ' + player_id + ' GROUP BY E.item_id ORDER BY E.id DESC LIMIT 50', function (err, rows, fields) {
 								if (err) throw err;
 
@@ -31469,7 +31473,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 
 								bot.sendMessage(message.chat.id, text, kb2);
 							});
-						} else if (answer.text.indexOf("inviate") != -1) {
+						} else if (answer.text.toLowerCase().indexOf("inviate") != -1) {
 							connection.query('SELECT COUNT(I.id) As cnt, I.name, I.rarity FROM event_villa_gift E, item I WHERE E.item_id = I.id AND from_id = ' + player_id + ' GROUP BY E.item_id ORDER BY E.id DESC LIMIT 50', function (err, rows, fields) {
 								if (err) throw err;
 
@@ -37266,15 +37270,45 @@ bot.onText(/^set$|^set 💣$|torna ai set|^Imposta (.+)/i, function (message) {
 				answerCallbacks[message.chat.id] = async function (answer) {
 					var resp = answer.text.toLowerCase();
 					if (resp == "nuovo set") {
-						bot.sendMessage(message.chat.id, "Aggiungi un nuovo set utilizzando questo formato:\nNOMESET: ARMA,ARMATURA,SCUDO,TALISMANO\n" +
-										"_Esempio:_ Guerriero: Spada Antimateria,Armatura Nova,Scudo Statico,Talismano Guerriero\n" +
-										"Se salti un campo, verrà mantenuto l'oggetto attuale equipaggiato\n" +
-										"_Esempio:_ Contadino: Coltello a Baionetta,Protezione di Stoffa,,Talismano della Forza\n\nAttenzione: Non usare parole chiave come 'viaggio' o 'missione', o non riuscirai più ad impostarlo!", setBack).then(function () {
+						bot.sendMessage(message.chat.id, "Aggiungi un nuovo set utilizzando questo formato:\nNOMESET: ARMA,ARMATURA,SCUDO,TALISMANO\n_Esempio:_ Guerriero: Spada Antimateria,Armatura Nova,Scudo Statico,Talismano Guerriero\nSe salti un campo, verrà mantenuto l'oggetto attuale equipaggiato\n_Esempio:_ Contadino: Coltello a Baionetta,Protezione di Stoffa,,Talismano della Forza\n\nAttenzione: Non usare parole chiave come 'viaggio' o 'missione', o non riuscirai più ad impostarlo!\nPuoi usare anche 'Equipaggiamento' per generarlo velocemente utilizzando l'equipaggiamento attuale, verrà sovrascritto ogni volta.", setBack).then(function () {
 							answerCallbacks[message.chat.id] = async function (answer) {
 								var resp = answer.text;
 
 								if ((resp == "Torna al menu") || (resp == "Torna ai set"))
 									return;
+
+								if (resp.toLowerCase() == "equipaggiamento") {
+									connection.query('SELECT weapon_id, weapon2_id, weapon3_id, charm_id FROM set_list WHERE from_equip = 1 AND player_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+
+										var w1 = rows[0].weapon_id;
+										var w2 = rows[0].weapon2_id;
+										var w3 = rows[0].weapon3_id;
+										var w4 = rows[0].charm_id;
+
+										connection.query('SELECT id FROM set_list WHERE from_equip = 1 AND player_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+		
+											if (Object.keys(rows).length > 0) {
+												var set_id = rows[0].id;
+												connection.query('UPDATE set_list SET item_weapon = ' + w1 + ', item_armor = ' + w2 + ', item_shield = ' + w3 + ', item_charm = ' + w4 + ' WHERE id = ' + set_id, function (err, rows, fields) {
+													if (err) throw err;
+													bot.sendMessage(message.chat.id, "Set *Equipaggiamento (Auto)* aggiornato! (Codice importazione: " + set_id + ")", setBack);
+												});
+											} else {
+												connection.query('INSERT INTO set_list (player_id, quantity, name, item_weapon, item_armor, item_shield, item_charm) VALUES (' + player_id + ',4,"Equipaggiamento (Auto)",' + w1 + ',' + w2 + ',' + w3 + ',' + w4 + ')', function (err, rows, fields) {
+													if (err) throw err;
+													connection.query('SELECT MAX(id) As maxid FROM set_list WHERE player_id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+														bot.sendMessage(message.chat.id, "Set *Equipaggiamento (Auto)* creato! (Codice importazione: " + rows[0].maxid + ")", setBack);
+													});
+												});
+											}
+										});
+									});
+
+									return;
+								}
 
 								var reg = new RegExp("([a-zA-Z0-9 ]+): *([a-zA-Z\- 'àèéìòù]*), *([a-zA-Z\- 'àèéìòù]*), *([a-zA-Z\- 'àèéìòù]*), *([a-zA-Z\- 'àèéìòù]*)");
 								var reg2 = /([a-zA-Z0-9 ]+): *([a-zA-Z\- 'àèéìòù]*), *([a-zA-Z\- 'àèéìòù]*), *([a-zA-Z\- 'àèéìòù]*), *([a-zA-Z\- 'àèéìòù]*)/i;
@@ -37317,7 +37351,7 @@ bot.onText(/^set$|^set 💣$|torna ai set|^Imposta (.+)/i, function (message) {
 									if (err) throw err;
 
 									if (Object.keys(rows).length > 0) {
-										bot.sendMessage(message.chat.id, "Non puoi utilizzare due nomi uguali", setBack);
+										bot.sendMessage(message.chat.id, "Il nome del set è già presente, riprova", setBack);
 										return;
 									}
 
@@ -39502,10 +39536,12 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 		connection.query('SELECT COUNT(id) As cnt FROM artifacts WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
+			/*
 			if (rows[0].cnt == 6) {
 				bot.sendMessage(message.chat.id, "Hai ottenuto tutti gli Artefatti!", back);
 				return;
 			}
+			*/
 
 			bot.sendMessage(message.chat.id, "Gli Artefatti 🔱\nSono strumenti di incredibile *potenza*, premio degli avventurieri piu tenaci.\nPer ambire a questi riconoscimenti sarà necessario dimostrare le proprie *abilità* nel commercio, il proprio coraggio nell'esplorazione delle terre remote, la propria dedizione alle nobili arti del combattimento, della truffa e dell'allevamento di draghi.\n_Pochi sono i guerrieri che possono vantarsi d'una collezione completa, vuoi aspirare ad ottenerne uno?_", artifacts).then(function () {
 				answerCallbacks[message.chat.id] = async function (answer) {
@@ -40530,7 +40566,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 									} else if (ability_id == 7) {
 										text3 += val + sym + " " + forlevel;
 										if (level < 10)
-											gems = 50 * (level+1);
+											gems = 10 * (level+1);
 										text2 += "\n> " + gems + " 💎";
 									} else if (ability_id == 8) {
 										text3 += val + sym + " " + forlevel;
