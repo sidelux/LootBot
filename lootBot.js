@@ -31162,9 +31162,9 @@ bot.onText(/^\/inviacasse (.+),(.+),(\d+)|^\/inviacasse$/i, function (message, m
 							var nArray = ["Necronucleo", "Respiro di Morte", "Urlo di Morte", "Soffio di Morte"];
 							var rand = Math.random() * 1000;
 							if (rand < 5) {
-								var i = Math.floor(Math.random() * uArray.length);
-								item_id = uArray[i];
-								item_name = nArray[i];
+								var x = Math.floor(Math.random() * uArray.length);
+								item_id = uArray[x];
+								item_name = nArray[x];
 							}
 							if (rand < 1) {
 								item_id = 777;
