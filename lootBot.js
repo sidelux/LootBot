@@ -31143,8 +31143,9 @@ bot.onText(/^\/inviacasse (.+),(.+),(\d+)|^\/inviacasse$/i, function (message, m
 				connection.query('SELECT 1 FROM event_villa_gift WHERE from_id = ' + player_id + ' AND to_id = ' + player_id2, function (err, rows, fields) {
 					if (err) throw err;
 
-					if (parseInt(Object.keys(rows).length)+quantity > 10) {
-						bot.sendMessage(message.chat.id, "Non puoi inviare più di 10 regali alla stessa persona!");
+					var sent = parseInt(Object.keys(rows).length);
+					if (sent+quantity > 10) {
+						bot.sendMessage(message.chat.id, "Non puoi inviare più di 10 regali alla stessa persona! Puoi inviarne ancora " + (10-sent));
 						return;
 					}
 
@@ -37270,15 +37271,15 @@ bot.onText(/^set$|^set 💣$|torna ai set|^Imposta (.+)/i, function (message) {
 				answerCallbacks[message.chat.id] = async function (answer) {
 					var resp = answer.text.toLowerCase();
 					if (resp == "nuovo set") {
-						bot.sendMessage(message.chat.id, "Aggiungi un nuovo set utilizzando questo formato:\nNOMESET: ARMA,ARMATURA,SCUDO,TALISMANO\n_Esempio:_ Guerriero: Spada Antimateria,Armatura Nova,Scudo Statico,Talismano Guerriero\nSe salti un campo, verrà mantenuto l'oggetto attuale equipaggiato\n_Esempio:_ Contadino: Coltello a Baionetta,Protezione di Stoffa,,Talismano della Forza\n\nAttenzione: Non usare parole chiave come 'viaggio' o 'missione', o non riuscirai più ad impostarlo!\nPuoi usare anche 'Equipaggiamento' per generarlo velocemente utilizzando l'equipaggiamento attuale, verrà sovrascritto ogni volta.", setBack).then(function () {
+						bot.sendMessage(message.chat.id, "Aggiungi un nuovo set utilizzando questo formato:\nNOMESET: ARMA,ARMATURA,SCUDO,TALISMANO\n_Esempio:_ Guerriero: Spada Antimateria,Armatura Nova,Scudo Statico,Talismano Guerriero\nSe salti un campo, verrà mantenuto l'oggetto attuale equipaggiato\n_Esempio:_ Contadino: Coltello a Baionetta,Protezione di Stoffa,,Talismano della Forza\n\nAttenzione: Non usare parole chiave come 'viaggio' o 'missione', o non riuscirai più ad impostarlo!\nPuoi usare anche 'Attuale' per generarlo velocemente utilizzando l'equipaggiamento attuale, verrà sovrascritto ogni volta.", setBack).then(function () {
 							answerCallbacks[message.chat.id] = async function (answer) {
 								var resp = answer.text;
 
 								if ((resp == "Torna al menu") || (resp == "Torna ai set"))
 									return;
 
-								if (resp.toLowerCase() == "equipaggiamento") {
-									connection.query('SELECT weapon_id, weapon2_id, weapon3_id, charm_id FROM set_list WHERE from_equip = 1 AND player_id = ' + player_id, function (err, rows, fields) {
+								if (resp.toLowerCase() == "attuale") {
+									connection.query('SELECT weapon_id, weapon2_id, weapon3_id, charm_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
 
 										var w1 = rows[0].weapon_id;
@@ -37293,14 +37294,14 @@ bot.onText(/^set$|^set 💣$|torna ai set|^Imposta (.+)/i, function (message) {
 												var set_id = rows[0].id;
 												connection.query('UPDATE set_list SET item_weapon = ' + w1 + ', item_armor = ' + w2 + ', item_shield = ' + w3 + ', item_charm = ' + w4 + ' WHERE id = ' + set_id, function (err, rows, fields) {
 													if (err) throw err;
-													bot.sendMessage(message.chat.id, "Set *Equipaggiamento (Auto)* aggiornato! (Codice importazione: " + set_id + ")", setBack);
+													bot.sendMessage(message.chat.id, "Set *Attuale -Auto-* aggiornato! (Codice importazione: " + set_id + ")", setBack);
 												});
 											} else {
-												connection.query('INSERT INTO set_list (player_id, quantity, name, item_weapon, item_armor, item_shield, item_charm) VALUES (' + player_id + ',4,"Equipaggiamento (Auto)",' + w1 + ',' + w2 + ',' + w3 + ',' + w4 + ')', function (err, rows, fields) {
+												connection.query('INSERT INTO set_list (player_id, quantity, name, item_weapon, item_armor, item_shield, item_charm, from_equip) VALUES (' + player_id + ',4,"Attuale -Auto-",' + w1 + ',' + w2 + ',' + w3 + ',' + w4 + ', 1)', function (err, rows, fields) {
 													if (err) throw err;
 													connection.query('SELECT MAX(id) As maxid FROM set_list WHERE player_id = ' + player_id, function (err, rows, fields) {
 														if (err) throw err;
-														bot.sendMessage(message.chat.id, "Set *Equipaggiamento (Auto)* creato! (Codice importazione: " + rows[0].maxid + ")", setBack);
+														bot.sendMessage(message.chat.id, "Set *Attuale -Auto-* creato! (Codice importazione: " + rows[0].maxid + ")", setBack);
 													});
 												});
 											}
