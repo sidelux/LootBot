@@ -31076,8 +31076,8 @@ bot.onText(/^\/inviacasse (.+),(.+),(\d+)|^\/inviacasse$/i, function (message, m
 		return;
 	}
 
-	if ((quantity < 1) || (quantity > 10)) {
-		bot.sendMessage(message.chat.id, "Inserisci una quantità compresa tra 1 e 10");
+	if ((quantity < 1) || (quantity > 15)) {
+		bot.sendMessage(message.chat.id, "Inserisci una quantità compresa tra 1 e 15");
 		return;
 	}
 
@@ -31144,8 +31144,8 @@ bot.onText(/^\/inviacasse (.+),(.+),(\d+)|^\/inviacasse$/i, function (message, m
 					if (err) throw err;
 
 					var sent = parseInt(Object.keys(rows).length);
-					if (sent+quantity > 10) {
-						bot.sendMessage(message.chat.id, "Non puoi inviare più di 10 regali alla stessa persona! Puoi inviarne ancora " + (10-sent));
+					if (sent+quantity > 15) {
+						bot.sendMessage(message.chat.id, "Non puoi inviare più di 15 regali alla stessa persona! Puoi inviarne ancora " + (15-sent));
 						return;
 					}
 
@@ -31347,7 +31347,7 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 								return;
 							}
 
-							bot.sendMessage(message.chat.id, "A chi vuoi inviare la Cassa? Puoi inviarne solamente 10 per persona! Scrivi il suo nome utente. Se vuoi aggiungere un messaggio personalizzato aggiungi la virgola (esempio: fenix45, Auguri!)", kb4).then(function () {
+							bot.sendMessage(message.chat.id, "A chi vuoi inviare la Cassa? Puoi inviarne solamente 15 per persona! Scrivi il suo nome utente. Se vuoi aggiungere un messaggio personalizzato aggiungi la virgola (esempio: fenix45, Auguri!)", kb4).then(function () {
 								answerCallbacks[message.chat.id] = async function (answer) {
 
 									if (answer.text == "Annulla")
@@ -31384,8 +31384,8 @@ bot.onText(/^Villa|Villa di Last|Torna alla Villa|Entra nella Villa/i, function 
 										connection.query('SELECT 1 FROM event_villa_gift WHERE from_id = ' + player_id + ' AND to_id = ' + player_id2, function (err, rows, fields) {
 											if (err) throw err;
 
-											if (Object.keys(rows).length >= 10) {
-												bot.sendMessage(message.chat.id, "Non puoi inviare più di 10 regali alla stessa persona!", kb2);
+											if (Object.keys(rows).length >= 15) {
+												bot.sendMessage(message.chat.id, "Non puoi inviare più di 15 regali alla stessa persona!", kb2);
 												return;
 											}
 
