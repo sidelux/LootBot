@@ -550,6 +550,27 @@ CREATE TABLE `birth_gift` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `boost_store`
+--
+
+DROP TABLE IF EXISTS `boost_store`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `boost_store` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `player_id` int(11) NOT NULL,
+  `boost_id` tinyint(1) NOT NULL,
+  `boost_mission` int(11) NOT NULL,
+  `time_end` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `boost_store_player_id` (`player_id`),
+  KEY `boost_store_boost_id` (`boost_id`),
+  CONSTRAINT `boost_store_boost_id` FOREIGN KEY (`boost_id`) REFERENCES `item` (`boost_id`) ON DELETE CASCADE,
+  CONSTRAINT `boost_store_player_id` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `boss`
 --
 
@@ -2136,6 +2157,7 @@ CREATE TABLE `item` (
   `dragon_power` int(8) NOT NULL DEFAULT 0,
   `critical` int(8) NOT NULL DEFAULT 0,
   `category` int(11) NOT NULL DEFAULT 0,
+  `boost_id` tinyint(1) DEFAULT NULL,
   `cons` int(11) NOT NULL DEFAULT 0,
   `cons_val` decimal(5,2) NOT NULL DEFAULT 0.00,
   `allow_sell` int(11) NOT NULL DEFAULT 1,
@@ -2143,6 +2165,7 @@ CREATE TABLE `item` (
   UNIQUE KEY `name` (`name`),
   KEY `rarity` (`rarity`),
   KEY `craft` (`craftable`),
+  KEY `boost_id` (`boost_id`),
   CONSTRAINT `ITEM_RARITYSN` FOREIGN KEY (`rarity`) REFERENCES `rarity` (`shortname`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
