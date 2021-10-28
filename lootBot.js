@@ -597,14 +597,14 @@ bot.on('message', async function (message) {
 		var month = now_d.getMonth();
 		var year = now_d.getFullYear();
 
-		if ((day == 31) && (month == 9) && (hour >= 12) && (year == 2020)) {
+		if ((day == 31) && (month == 9) && (hour >= 12) && (year == 2021)) {
 			connection.query('SELECT COUNT(*) As cnt FROM one_time_gift WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (rows[0].cnt == 0) {
 					connection.query('INSERT INTO one_time_gift (player_id) VALUES (' + player_id + ')', async function (err, rows, fields) {
 						if (err) throw err;
-						await addItem(player_id, 801);
-						bot.sendMessage(message.chat.id, "Buon Halloween 🎃!\nPer la tua presenza costante nel gioco, hai ricevuto una nuova IN non commerciabile: una *Zucchetta di Halloween 2020 (IN)*!", mark);
+						await addItem(player_id, 804);
+						bot.sendMessage(message.chat.id, "Buon Halloween 🎃!\nPer la tua presenza costante nel gioco, hai ricevuto una nuova IN non commerciabile: una *Zucchetta di Halloween 2021 (IN)*!", mark);
 						console.log("One time gift a " + message.from.username);
 					});
 				}
@@ -3468,17 +3468,11 @@ bot.onText(/^vetrinetta/i, function (message) {
 				}
 			};
 			
-			bot.sendMessage(message.chat.id, text + "\nQuale bevanda vuoi utilizzare?", kb).then(function () {
+			bot.sendMessage(message.chat.id, text + "\nQuale bevanda vuoi utilizzare? Se ne hai una attiva questa sarà rimpiazzata", kb).then(function () {
 				answerCallbacks[message.chat.id] = async function (answer) {
 					if (answer.text == "Torna al menu")
 						return;
 					if (answer.text.toLowerCase().indexOf("bevanda") != -1) {
-
-						if (active_boost_id != 0) {
-							bot.sendMessage(message.chat.id, "Puoi attivare una bevanda solo se non ne hai una attiva in questo momento", back);
-							return;
-						}
-
 						var boost_selected = answer.text.split(" - ")[0];
 						var boost_mission_selected = answer.text.split(" - ")[1];
 						connection.query('SELECT name, boost_id FROM item WHERE name = "' + boost_selected + '"', function (err, rows, fields) {
@@ -7930,7 +7924,7 @@ bot.onText(/attacca!/i, function (message) {
 										connection.query('UPDATE map_lobby SET ' + query + ', battle_turn_lost = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 										});
-										connection.query('UPDATE map_lobby SET ' + enemy_query + ', battle_turn_lost = 0 WHERE player_id = ' + enemy_id, function (err, rows, fields) {
+										connection.query('UPDATE map_lobby SET ' + enemy_query + ' WHERE player_id = ' + enemy_id, function (err, rows, fields) {
 											if (err) throw err;
 										});
 
@@ -13718,15 +13712,15 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																				if (boost_id == 8)
 																					boost_mission++;
 
-																				await delItem(player_id, item1, 1);
-																				setAchievement(player_id, 78, 1);
-																				setAchievement(player_id, 69, 1);
-
 																				if (active_boost_id == 0) {
 																					connection.query('UPDATE player SET boost_id = ' + boost_id + ', boost_mission = ' + boost_mission + ' WHERE id = ' + player_id, async function (err, rows, fields) {
 																						if (err) throw err;
 
 																						bot.sendMessage(message.chat.id, "Hai bevuto la " + item2_name + " e ti senti un po' meglio, prosegui il dungeon", dNext);
+																						
+																						setAchievement(player_id, 78, 1);
+																						setAchievement(player_id, 69, 1);
+																						await delItem(player_id, item1, 1);
 
 																						await endDungeonRoom(player_id, boost_id, boost_mission);
 																						connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -13746,6 +13740,10 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																						connection.query('INSERT INTO boost_store (player_id, boost_id, boost_mission, time_end) VALUES (' + player_id + ',' + boost_id + ', ' + boost_mission + ', "' + long_date + '")', async function (err, rows, fields) {
 																							if (err) throw err;
 																							bot.sendMessage(message.chat.id, "Avevi già una bevanda attiva, la nuova " + item2_name + " è stata inserita nella vetrinetta!", dNext);
+
+																							setAchievement(player_id, 78, 1);
+																							setAchievement(player_id, 69, 1);
+																							await delItem(player_id, item1, 1);
 
 																							await endDungeonRoom(player_id, boost_id, boost_mission);
 																							connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -28697,7 +28695,7 @@ bot.onText(/^incrementi effettuati/i, function (message) {
 
 		var player_id = rows[0].id;
 
-		connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, async function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length == 0) {
 				bot.sendMessage(message.chat.id, "Entra in un team per utilizzare questa funzione", team);
@@ -28705,28 +28703,26 @@ bot.onText(/^incrementi effettuati/i, function (message) {
 			}
 
 			var team_id = rows[0].team_id;
-			bot.sendMessage(message.chat.id, incremDone(team_id), kbBack);
+
+			connection.query('SELECT nickname, increment_count FROM assault_increment_history A, player P WHERE A.player_id = P.id AND team_id = ' + team_id + ' ORDER BY increment_count DESC', function (err, rows, fields) {
+
+				var text;
+				if (Object.keys(rows).length == 0)
+					text = "Nessun membro del team ha incrementato durante questo combattimento";
+				else {
+					var c = 1;
+					text = "Incrementi effettuati dal team durante l'ultimo combattimento:\n\n";
+					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+						text += c + "° " + rows[i].nickname + " (" + rows[i].increment_count + ")\n";
+						c++;
+					}
+				}
+
+				bot.sendMessage(message.chat.id, text, kbBack);
+			});
 		});
 	});
 });
-
-async function incremDone(team_id) {
-	var rows = await connection.queryAsync('SELECT nickname, increment_count FROM assault_increment_history A, player P WHERE A.player_id = P.id AND team_id = ' + team_id + ' ORDER BY increment_count DESC');
-	
-	if (Object.keys(rows).length == 0) {
-		return "Nessun membro del team ha incrementato durante questo combattimento";
-		return;
-	}
-
-	var c = 1;
-	var text = "Incrementi effettuati dal team durante l'ultimo combattimento:\n\n";
-	for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-		text += c + "° " + rows[i].nickname + " (" + rows[i].increment_count + ")\n";
-		c++;
-	}
-
-	return text;
-}
 
 bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^❤️$|^cc$|^cp$/i, function (message) {
 
@@ -57953,7 +57949,21 @@ function setFinishedAssaults(element, index, array) {
 				if (err) throw err;
 			});
 
-			text += "Il <b>" + (boss_num-1) + "° Giorno dell'Assalto</b> è stato completato con successo!\n\nIl <b>Giorno della Preparazione</b> ha inizio, tutti i compagni sono usciti dall'infermeria, ora organizza le tue strutture per sopravvivere contro un altro boss!\n\n" + incremDone(team_id);
+			connection.query('SELECT nickname, increment_count FROM assault_increment_history A, player P WHERE A.player_id = P.id AND team_id = ' + team_id + ' ORDER BY increment_count DESC', function (err, rows, fields) {
+				var text;
+				if (Object.keys(rows).length == 0)
+					text = "Nessun membro del team ha incrementato durante questo combattimento";
+				else {
+					var c = 1;
+					text = "Incrementi effettuati dal team durante l'ultimo combattimento:\n\n";
+					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+						text += c + "° " + rows[i].nickname + " (" + rows[i].increment_count + ")\n";
+						c++;
+					}
+				}
+
+				text += "Il <b>" + (boss_num-1) + "° Giorno dell'Assalto</b> è stato completato con successo!\n\nIl <b>Giorno della Preparazione</b> ha inizio, tutti i compagni sono usciti dall'infermeria, ora organizza le tue strutture per sopravvivere contro un altro boss!\n\n" + text;
+			});
 		} else {
 			console.log("Errore phase non valida: " + phase);
 			return;

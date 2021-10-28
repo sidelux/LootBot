@@ -5960,7 +5960,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, async function (message, match) {
 
 	if (price != 'tutto') { price = parseInt(price.replace(/\D+/gi, '').trim().replaceAll(/\./, '')) }
 
-	if (price >= 1000000000) {
+	if (price > 1000000000) {
 		bot.sendMessage(message.from.id, 'Puoi inviare al massimo 1.000.000.000 monete!')
 		return
 	}
