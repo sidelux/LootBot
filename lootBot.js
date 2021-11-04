@@ -3455,7 +3455,7 @@ bot.onText(/^vetrinetta/i, function (message) {
 					diff = Math.floor(rows[i].diff / 24) + " giorni";
 				else
 					diff = rows[i].diff + " ore";
-				text += "> " + rows[i].name + " (" + rows[i].boost_mission + " turni, scade tra circa " + diff + ")\n";
+				text += "> " + rows[i].name + " (" + rows[i].boost_mission + " utilizzi, scade tra circa " + diff + ")\n";
 				iKeys.push([rows[i].name + " - " + rows[i].boost_mission]);
 			}
 			iKeys.push(["Torna al menu"]);
@@ -3500,7 +3500,7 @@ bot.onText(/^vetrinetta/i, function (message) {
 									if (err) throw err;
 									connection.query('UPDATE player SET boost_id = ' + boost_id + ', boost_mission = ' + boost_mission + ' WHERE id = ' + player_id, function (err, rows, fields) {
 										if (err) throw err;
-										bot.sendMessage(message.chat.id, "La bevanda " + boost_name + " è stata attivata, durerà " + boost_mission + " turni", back);
+										bot.sendMessage(message.chat.id, "La " + boost_name + " è stata attivata, durerà " + boost_mission + " turni", back);
 									});
 								});
 							});
@@ -8588,11 +8588,16 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 							if ((answer.text == "Torna alla mappa") || (answer.text == "Torna al menu") || (answer.text.toLowerCase().indexOf("aggiorna") != -1))
 								return;
 
-							connection.query('SELECT killed FROM map_lobby WHERE player_id = ' + player_id, async function (err, rows, fields) {
+							connection.query('SELECT killed, enemy_id FROM map_lobby WHERE player_id = ' + player_id, async function (err, rows, fields) {
 								if (err) throw err;
 
 								if (rows[0].killed == 1) {
 									bot.sendMessage(message.chat.id, "Sei stato sconfitto!", kbBack);
+									return;
+								}
+
+								if (rows[0].enemy_id != null) {
+									bot.sendMessage(message.chat.id, "Sei in combattimento!", kbBack);
 									return;
 								}
 
@@ -8872,7 +8877,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 													// se non trova a causa della rarità, riprova senza il filtro
 													item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < -1 ORDER BY RAND()");
 												}
-											} else if (rand == 3) {
+											} else {
 												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < -1 AND rarity = '" + rarity + "' ORDER BY RAND()");
 												if (Object.keys(item).length == 0) {
 													// se non trova a causa della rarità, riprova senza il filtro
@@ -58004,6 +58009,8 @@ function setFinishedAssaults(element, index, array) {
 						text += c + "° " + rows[i].nickname + " (" + rows[i].increment_count + ")\n";
 						c++;
 					}
+					if (text.length > 3500)
+						text = "";
 				}
 
 				text += "Il <b>" + (boss_num-1) + "° Giorno dell'Assalto</b> è stato completato con successo!\n\nIl <b>Giorno della Preparazione</b> ha inizio, tutti i compagni sono usciti dall'infermeria, ora organizza le tue strutture per sopravvivere contro un altro boss!\n\n" + text;
@@ -58437,7 +58444,7 @@ function checkMissions() {
 };
 
 function checkBoostStore() {
-	connection.query('SELECT B.id, P.chat_id FROM boost_store B, player P WHERE B.player_id = P.id AND B.time_end < NOW()', function (err, rows, fields) {
+	connection.query('SELECT B.id, P.chat_id, I.name FROM boost_store B, player P, item I WHERE B.boost_id = I.boost_id AND B.player_id = P.id AND B.time_end < NOW()', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
@@ -58452,10 +58459,11 @@ function checkBoostStore() {
 function setFinishedBoostStore(element, index, array) {
 	var id = element.id;
 	var chat_id = element.chat_id;
+	var boost_name = element.name;
 
 	connection.query('DELETE FROM boost_store WHERE id = ' + id, function (err, rows, fields) {
 		if (err) throw err;
-		bot.sendMessage(chat_id, "Una bevanda nella vetrinetta è scaduta, così l'hai buttata via...");
+		bot.sendMessage(chat_id, "La " + boost_name + " nella vetrinetta è scaduta, così l'hai buttata via...");
 	});
 }
 
@@ -61526,7 +61534,7 @@ function finishedMissionBoost(active_boost_id, player_id, chat_id, boost_id, boo
 		if (active_boost_id == 0) {
 			connection.query('UPDATE player SET boost_id = ' + boost_id + ', boost_mission = ' + boost_mission + ' WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
-				bot.sendMessage(chat_id, "Hai trovato una " + boost_name + " attiva per " + boost_mission + " turni!");
+				bot.sendMessage(chat_id, "Durante la missione hai trovato una " + boost_name + " attiva per " + boost_mission + " turni!");
 				setAchievement(player_id, 69, 1);
 			});
 		} else {
@@ -61540,7 +61548,7 @@ function finishedMissionBoost(active_boost_id, player_id, chat_id, boost_id, boo
 				var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 				connection.query('INSERT INTO boost_store (player_id, boost_id, boost_mission, time_end) VALUES (' + player_id + ',' + boost_id + ', ' + boost_mission + ', "' + long_date + '")', function (err, rows, fields) {
 					if (err) throw err;
-					bot.sendMessage(chat_id, "Avevi già una bevanda attiva, la nuova " + boost_name + " è stata inserita nella vetrinetta!");
+					bot.sendMessage(chat_id, "Durante la missione trovi una bevanda, ma ne avevi già una attiva, la nuova " + boost_name + " è stata inserita nella vetrinetta!");
 					setAchievement(player_id, 69, 1);
 				});
 			});
