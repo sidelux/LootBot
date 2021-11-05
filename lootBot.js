@@ -8930,7 +8930,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 													// se non trova a causa della rarità, riprova senza il filtro
 													item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < -1 ORDER BY RAND()");
 												}
-											} else if (rand == 3) {
+											} else {
 												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < -1 AND rarity = '" + rarity + "' ORDER BY RAND()");
 												if (Object.keys(item).length == 0) {
 													// se non trova a causa della rarità, riprova senza il filtro
@@ -57999,21 +57999,21 @@ function setFinishedAssaults(element, index, array) {
 			});
 
 			connection.query('SELECT nickname, increment_count FROM assault_increment_history A, player P WHERE A.player_id = P.id AND team_id = ' + team_id + ' ORDER BY increment_count DESC', function (err, rows, fields) {
-				var text;
+				var increm_text;
 				if (Object.keys(rows).length == 0)
-					text = "Nessun membro del team ha incrementato durante questo combattimento";
+					increm_text = "Nessun membro del team ha incrementato durante questo combattimento";
 				else {
 					var c = 1;
-					text = "Incrementi effettuati dal team durante l'ultimo combattimento:\n\n";
+					increm_text = "Incrementi effettuati dal team durante l'ultimo combattimento:\n\n";
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-						text += c + "° " + rows[i].nickname + " (" + rows[i].increment_count + ")\n";
+						increm_text += c + "° " + rows[i].nickname + " (" + rows[i].increment_count + ")\n";
 						c++;
 					}
-					if (text.length > 3500)
-						text = "";
+					if (increm_text.length > 3500)
+						increm_text = "";
 				}
 
-				text += "Il <b>" + (boss_num-1) + "° Giorno dell'Assalto</b> è stato completato con successo!\n\nIl <b>Giorno della Preparazione</b> ha inizio, tutti i compagni sono usciti dall'infermeria, ora organizza le tue strutture per sopravvivere contro un altro boss!\n\n" + text;
+				text += "Il <b>" + (boss_num-1) + "° Giorno dell'Assalto</b> è stato completato con successo!\n\nIl <b>Giorno della Preparazione</b> ha inizio, tutti i compagni sono usciti dall'infermeria, ora organizza le tue strutture per sopravvivere contro un altro boss!\n\n" + increm_text;
 			});
 		} else {
 			console.log("Errore phase non valida: " + phase);
