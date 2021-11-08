@@ -12595,6 +12595,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																return;
 															}
 
+															if (dungeon_energy < 10) {
+																bot.sendMessage(message.chat.id, "Non hai abbastanza Cariche Esplorative", back);
+																return;
+															}
+
 															var next_dir = "";
 															if (answer.text.indexOf("1.") != -1) {
 																if (params[3] == 0)
