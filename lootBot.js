@@ -36364,7 +36364,7 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 														name = "1x 🃏 " + new_card[0].name + " (" + new_card[0].rarity + ")";
 													}
 
-													console.log("Figurina bruciata: " + name);
+													console.log("Figurina bruciata per player " + player_id + ": " + name);
 
 													text += "> " + name + "\n";
 												}
@@ -51731,10 +51731,11 @@ function checkCardProgress(player_id, chat_id, rarity) {
 								if (err) throw err;
 							});
 
-							console.log("Ricompensa figurine rarità " + rarity + " consegnata a " + player_id);
+							// console.log("Ricompensa figurine rarità " + rarity + " consegnata a " + player_id);
 						});
-					} else 
-						console.log("Ricompensa figurine rarità " + rarity + " saltata per " + player_id);
+					} else {
+						// console.log("Ricompensa figurine rarità " + rarity + " saltata per " + player_id);
+					}
 				});
 			}
 		});
@@ -58049,15 +58050,15 @@ function setFinishedAssaults(element, index, array) {
 				if (err) throw err;
 			});
 
-			var rows = await connection.queryAsync('SELECT nickname, increment_count FROM assault_increment_history A, player P WHERE A.player_id = P.id AND team_id = ' + team_id + ' ORDER BY increment_count DESC');
+			var increments = await connection.queryAsync('SELECT nickname, increment_count FROM assault_increment_history A, player P WHERE A.player_id = P.id AND team_id = ' + team_id + ' ORDER BY increment_count DESC');
 			var increm_text;
-			if (Object.keys(rows).length == 0)
+			if (Object.keys(increments).length == 0)
 				increm_text = "Nessun membro del team ha incrementato durante questo combattimento";
 			else {
 				var c = 1;
 				increm_text = "Incrementi effettuati dal team durante l'ultimo combattimento:\n\n";
-				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					increm_text += c + "° " + rows[i].nickname + " (" + rows[i].increment_count + ")\n";
+				for (var i = 0, len = Object.keys(increments).length; i < len; i++) {
+					increm_text += c + "° " + increments[i].nickname + " (" + increments[i].increment_count + ")\n";
 					c++;
 				}
 				if (increm_text.length > 3500)
