@@ -7797,7 +7797,7 @@ bot.onText(/attacca!/i, function (message) {
 												enemy_item_query += ", weapon3_id = NULL";
 											}
 
-											query += ", money = money+" + enemy_money + ", scrap = scrap+" + enemy_scrap + item_query;
+											query += ", money = money+" + enemy_money + ", moves_left = moves_left+1, scrap = scrap+" + enemy_scrap + item_query;
 											if (lobby_training == 0)
 												addScrap(player_id, enemy_scrap);
 											enemy_query += ", life = 0, money = money-" + enemy_money + ", scrap = 0" + enemy_item_query;
@@ -7894,7 +7894,7 @@ bot.onText(/attacca!/i, function (message) {
 											enemy_query += ", money = money+" + money + ", scrap = scrap+" + scrap + enemy_item_query;
 											if (lobby_training == 0)
 												addScrap(enemy_id, scrap);
-											query += ", life = 0, money = money-" + money + ", scrap = 0" + item_query;
+											query += ", life = 0, money = money-" + money + ", moves_left = moves_left+1, scrap = 0" + item_query;
 
 											mapPlayerKilled(lobby_id, player_id, 2, null, 1);
 
@@ -8248,6 +8248,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 										// modifica anche sotto
 										var item_query = "";
+										var addScrapCnt = 0;
 										if (item_id != 0) {
 											if (item_type == 1) { 
 												if (weapon_id != null) {
@@ -8258,6 +8259,10 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 													if (check) {
 														text += "\nArma sostituita!";
 														item_query = ", weapon_id = '" + item_id + "'";
+													} else {
+														text += "\nArma convertita in un 🔩 Rottame!";
+														scrap_query = ", scrap = scrap+1";
+														addScrapCnt++;
 													}
 												} else {
 													text += "\nArma equipaggiata!";
@@ -8272,6 +8277,10 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 													if (check) {
 														text += "\nArmatura sostituita!";
 														item_query = ", weapon2_id = '" + item_id + "'";
+													} else {
+														text += "\nArmatura convertita in un 🔩 Rottame!";
+														scrap_query = ", scrap = scrap+1";
+														addScrapCnt++;
 													}
 												} else {
 													text += "\nArmatura equipaggiata!";
@@ -8286,6 +8295,10 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 													if (check) {
 														text += "\nScudo sostituito!";
 														item_query = ", weapon3_id = '" + item_id + "'";
+													} else {
+														text += "\nScudo convertito in un 🔩 Rottame!";
+														scrap_query = ", scrap = scrap+1";
+														addScrapCnt++;
 													}
 												} else {
 													text += "\nScudo equipaggiato!";
@@ -48227,6 +48240,7 @@ function mainMenu(message) {
 		var market_pack = rows[0].market_pack;
 		var heist_protection = rows[0].heist_protection;
 		var heist_count = rows[0].heist_count;
+		var birth_date = rows[0].birth_date;
 
 		var mission_time_end = rows[0].mission_time_end;
 		var mission_special_time_end = rows[0].mission_special_time_end;
@@ -48252,6 +48266,18 @@ function mainMenu(message) {
 			if (rows[0].paralyzed == 1)
 				plur = "o";
 			msgtext += "\n⚡️ Sei paralizzat" + gender_text + " ancora per <b>" + rows[0].paralyzed + " turn" + plur + "</b>";
+		}
+
+		var now_d = new Date();
+		var hour = now_d.getHours();
+		var day = now_d.getDate();
+		var month = now_d.getMonth();
+		var year = now_d.getFullYear();
+
+		if (birth_date != null) {
+			birth_date = new Date(birth_date);
+			if ((birth_date.getDate() == day) && (birth_date.getMonth() == month))
+				msgtext += "\nBuon Compleanno! 🍰";
 		}
 
 		if (menu_min == 0) {
@@ -58023,23 +58049,22 @@ function setFinishedAssaults(element, index, array) {
 				if (err) throw err;
 			});
 
-			connection.query('SELECT nickname, increment_count FROM assault_increment_history A, player P WHERE A.player_id = P.id AND team_id = ' + team_id + ' ORDER BY increment_count DESC', function (err, rows, fields) {
-				var increm_text;
-				if (Object.keys(rows).length == 0)
-					increm_text = "Nessun membro del team ha incrementato durante questo combattimento";
-				else {
-					var c = 1;
-					increm_text = "Incrementi effettuati dal team durante l'ultimo combattimento:\n\n";
-					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-						increm_text += c + "° " + rows[i].nickname + " (" + rows[i].increment_count + ")\n";
-						c++;
-					}
-					if (increm_text.length > 3500)
-						increm_text = "";
+			var rows = await connection.queryAsync('SELECT nickname, increment_count FROM assault_increment_history A, player P WHERE A.player_id = P.id AND team_id = ' + team_id + ' ORDER BY increment_count DESC');
+			var increm_text;
+			if (Object.keys(rows).length == 0)
+				increm_text = "Nessun membro del team ha incrementato durante questo combattimento";
+			else {
+				var c = 1;
+				increm_text = "Incrementi effettuati dal team durante l'ultimo combattimento:\n\n";
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+					increm_text += c + "° " + rows[i].nickname + " (" + rows[i].increment_count + ")\n";
+					c++;
 				}
+				if (increm_text.length > 3500)
+					increm_text = "";
+			}
 
-				text += "Il <b>" + (boss_num-1) + "° Giorno dell'Assalto</b> è stato completato con successo!\n\nIl <b>Giorno della Preparazione</b> ha inizio, tutti i compagni sono usciti dall'infermeria, ora organizza le tue strutture per sopravvivere contro un altro boss!\n\n" + increm_text;
-			});
+			text += "Il <b>" + (boss_num-1) + "° Giorno dell'Assalto</b> è stato completato con successo!\n\nIl <b>Giorno della Preparazione</b> ha inizio, tutti i compagni sono usciti dall'infermeria, ora organizza le tue strutture per sopravvivere contro un altro boss!\n\n" + increm_text;
 		} else {
 			console.log("Errore phase non valida: " + phase);
 			return;
