@@ -15632,7 +15632,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																				return;
 																			}
 
-																			bot.sendMessage(message.chat.id, "Sicuro di voler uscire dal dungeon?", dYesNo).then(function () {
+																			bot.sendMessage(message.chat.id, "Sicuro di voler abbandonare la battaglia e tornare alla stanza precedente?", dYesNo).then(function () {
 																				answerCallbacks[message.chat.id] = async function (answer) {
 																					if (answer.text.toLowerCase() == "si") {
 
