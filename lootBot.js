@@ -10421,7 +10421,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, monster_total_life = 0, last_dir = NULL, last_selected_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
-																bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
+																bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, dBack);
 															}
 														}
 													});
@@ -32692,7 +32692,7 @@ bot.onText(/festival/i, function (message) {
 					return;
 				});
 			} else {
-				connection.query('SELECT E.completed, E.cnt, E.increm, E.start_price, E.incremDelta, E.total_price, E.time, E.wait_time, E.full_price, I.name, I.rarity, E.increm, rarity.id As rarity_id FROM event_crafting_item E, item I, rarity WHERE item.id = E.item_id AND rarity.shortname = I.rarity ORDER BY E.id DESC LIMIT 1', function (err, rows, fields) {
+				connection.query('SELECT E.completed, E.cnt, E.increm, E.start_price, E.incremDelta, E.total_price, E.time, E.wait_time, E.full_price, I.name, I.rarity, E.increm, R.id As rarity_id FROM event_crafting_item E, item I, rarity R WHERE I.id = E.item_id AND R.shortname = I.rarity ORDER BY E.id DESC LIMIT 1', function (err, rows, fields) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length == 0)
@@ -36304,6 +36304,12 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 													if (rows[0].quantity < 1) {
 														text += "Non hai abbastanza copie della figurina" + card + "\n";
 														continue;
+													}
+
+													var check_locked = await connection.queryAsync('SELECT 1 FROM card_rarity_reward WHERE rarity = ' + rarity + ' AND player_id = ' + player_id);
+													if ((rows[0].quantity == 1) && (Object.keys(check_locked).length == 1)) {
+														text += "La figurina " + card + " non può essere bruciata\n";
+														return;
 													}
 
 													var rows = await connection.queryAsync('UPDATE card_inventory SET quantity = quantity-1 WHERE card_id = ' + card_id + ' AND player_id = ' + player_id);
@@ -51351,6 +51357,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 				mat[1] = rows[0].material_2;
 				mat[2] = rows[0].material_3;
 
+				/*
 				var today = new Date();
 				if ((eventFestival == 1) && (quantity > 1)) {
 					if ((today.getDay() == 6) || (today.getDay() == 0)) {
@@ -51361,6 +51368,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 						}
 					}
 				}
+				*/
 
 				oggetto = rows[0].name;
 
