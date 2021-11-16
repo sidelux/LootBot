@@ -14095,8 +14095,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		if (rand < 40) {
 																			text = "Scegli di affrontare l'energia magica, con il tuo scudo riesci a proteggerti ed ad assorbire " + qnt + " Mana " + name + "!\nSuperata la prova prosegui il dungeon sospirando...";
 																		} else {
-																			text = "Scegli di affrontare l'energia magica, il tuo scudo non riesce a proteggerti e vieni investito dall'ondata, ma riesci comunque ad assorbire " + qnt + " Mana " + name + "!\nSuperata la prova prosegui il dungeon sospirando...";
-																			connection.query('UPDATE player SET life = ROUND(life-(life*' + life + ')) WHERE id = ' + player_id, function (err, rows, fields) {
+																			var dmg = Math.round(player_life*life);
+																			text = "Scegli di affrontare l'energia magica, il tuo scudo non riesce a proteggerti e vieni investito dall'ondata subendo " + dmg + " danni, ma riesci comunque ad assorbire " + qnt + " Mana " + name + "!\nSuperata la prova prosegui il dungeon sospirando...";
+																			connection.query('UPDATE player SET life = life-' + dmg + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
 																		}
@@ -14106,9 +14107,10 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		setAchievement(player_id, 29, qnt);
 																		setAchievement(player_id, 81, qnt);
 																	} else {
-																		text = "Scegli di affrontare l'energia magica, il tuo scudo non riesce a proteggerti e vieni investito dall'ondata!\nSuperata la prova prosegui il dungeon sospirando...";
+																		var dmg = Math.round(player_life*0.75);
+																		text = "Scegli di affrontare l'energia magica, il tuo scudo non riesce a proteggerti e vieni investito dall'ondata subendo " + dmg + " danni!\nSuperata la prova prosegui il dungeon sospirando...";
 
-																		connection.query('UPDATE player SET life = ROUND(life-(life*0.75)) WHERE id = ' + player_id, function (err, rows, fields) {
+																		connection.query('UPDATE player SET life = life-' + dmg + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
 																	}
