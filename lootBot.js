@@ -3433,13 +3433,14 @@ bot.onText(/giocatore|giocatrice|^io$|^me$/i, function (message) {
 });
 
 bot.onText(/^vetrinetta/i, function (message) {
-	connection.query('SELECT id, birth_date, boost_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, birth_date, boost_id, boost_mission FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
 		var active_boost_id = rows[0].boost_id;
+		var active_boost_mission = rows[0].boost_mission;
 
-		connection.query('SELECT I.name, B.boost_mission, time_end, TIMESTAMPDIFF(HOUR, NOW(), time_end) As diff FROM boost_store B, item I WHERE B.boost_id = I.boost_id AND B.player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT I.name, B.boost_mission, time_end, TIMESTAMPDIFF(HOUR, NOW(), time_end) As diff FROM boost_store B, item I WHERE B.boost_id = I.boost_id AND B.player_id = ' + player_id, async function (err, rows, fields) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
@@ -3447,7 +3448,7 @@ bot.onText(/^vetrinetta/i, function (message) {
 				return;
 			}
 
-			var text = "Nella vetrinetta sono presenti le seguenti bevande:\n";
+			var text = "Nella vetrinetta sono presenti " + Object.keys(rows).length + " bevande:\n";
 			var iKeys = [];
 			var diff;
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
@@ -3468,8 +3469,14 @@ bot.onText(/^vetrinetta/i, function (message) {
 					keyboard: iKeys
 				}
 			};
+
+			var active_text = "";
+			if (active_boost_id != 0) {
+				var boostQuery = await connection.queryAsync("SELECT name FROM item WHERE boost_id = " + active_boost_id);
+				active_text = "✅ La *" + boostQuery[0].name + "* è attiva (" + active_boost_mission + " utilizzi), se ne bevi un'altra, l'effetto di quest'ultima svanirà.";
+			}
 			
-			bot.sendMessage(message.chat.id, text + "\nQuale bevanda vuoi utilizzare? Se ne hai una attiva questa sarà rimpiazzata", kb).then(function () {
+			bot.sendMessage(message.chat.id, text + "\nQuale vuoi utilizzare?" + active_text, kb).then(function () {
 				answerCallbacks[message.chat.id] = async function (answer) {
 					if (answer.text == "Torna al menu")
 						return;
@@ -7664,6 +7671,11 @@ bot.onText(/attacca!/i, function (message) {
 												return;
 											} else if (restrict_end == 1) {
 												bot.sendMessage(message.chat.id, "Non puoi scappare se rimane solo una casella!", kbBack);
+												return;
+											}
+											var checkPlayers = await connection.queryAsync("SELECT COUNT(H.player_id) As cnt FROM map_lobby_list L, map_history H WHERE L.id = H.map_lobby_id AND L.lobby_id = " + lobby_id);
+											if ((lobby_total_space-checkPlayers[0].cnt) <= 2) {
+												bot.sendMessage(message.chat.id, "Non puoi scappare se rimangono solo due giocatori!", kbBack);
 												return;
 											}
 
@@ -14096,7 +14108,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			text = "Scegli di affrontare l'energia magica, con il tuo scudo riesci a proteggerti ed ad assorbire " + qnt + " Mana " + name + "!\nSuperata la prova prosegui il dungeon sospirando...";
 																		} else {
 																			var dmg = Math.round(player_life*life);
-																			text = "Scegli di affrontare l'energia magica, il tuo scudo non riesce a proteggerti e vieni investito dall'ondata subendo " + dmg + " danni, ma riesci comunque ad assorbire " + qnt + " Mana " + name + "!\nSuperata la prova prosegui il dungeon sospirando...";
+																			text = "Scegli di affrontare l'energia magica, il tuo scudo non riesce a proteggerti e vieni investito dall'ondata subendo " + formatNumber(dmg) + " danni, ma riesci comunque ad assorbire " + qnt + " Mana " + name + "!\nSuperata la prova prosegui il dungeon sospirando...";
 																			connection.query('UPDATE player SET life = life-' + dmg + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
 																			});
@@ -14108,7 +14120,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		setAchievement(player_id, 81, qnt);
 																	} else {
 																		var dmg = Math.round(player_life*0.75);
-																		text = "Scegli di affrontare l'energia magica, il tuo scudo non riesce a proteggerti e vieni investito dall'ondata subendo " + dmg + " danni!\nSuperata la prova prosegui il dungeon sospirando...";
+																		text = "Scegli di affrontare l'energia magica, il tuo scudo non riesce a proteggerti e vieni investito dall'ondata subendo " + formatNumber(dmg) + " danni!\nSuperata la prova prosegui il dungeon sospirando...";
 
 																		connection.query('UPDATE player SET life = life-' + dmg + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
