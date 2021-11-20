@@ -562,6 +562,7 @@ CREATE TABLE `boost_store` (
   `boost_id` tinyint(1) NOT NULL,
   `boost_mission` int(11) NOT NULL,
   `time_end` timestamp NOT NULL DEFAULT current_timestamp(),
+  `notification` tinyint(4) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `boost_store_player_id` (`player_id`),
   KEY `boost_store_boost_id` (`boost_id`),
