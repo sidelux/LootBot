@@ -7962,7 +7962,7 @@ bot.onText(/attacca!/i, function (message) {
 												if (err) throw err;
 
 												if (Object.keys(rows).length > 0) {
-													bot.sendMessage(rows[0].chat_id, "Gli sfidanti presenti nella mappa sono scappati lasciandoti a bocca aciutta...");
+													bot.sendMessage(rows[0].chat_id, "Gli sfidanti presenti nella mappa sono scappati lasciandoti a bocca asciutta...");
 												}
 											});
 										}
@@ -24698,7 +24698,6 @@ bot.onText(/^party$|gestisci party|torna ai party/i, function (message) {
 											if (rows[i].player_id != player_id)
 												iKeys.push(["Spia " + rows[i].nickname]);
 											iKeys.push(["Escludi: " + rows[i].nickname]);
-											iKeys.push(["Sposta: " + rows[i].nickname]);
 										}
 
 										iKeys.push(["Elimina ❌", "Annulla Incarico 🚫"],["Torna ai party"])
@@ -25182,11 +25181,13 @@ bot.onText(/^escludi: (.+)/i, function (message, match) {
 	});
 });
 
-bot.onText(/^sposta: (.+)/i, function (message, match) {
+bot.onText(/^sposta: (.+)|sposta membri/i, function (message, match) {
 
-	if (match[1] == undefined) {
-		bot.sendMessage(message.chat.id, "Inserisci anche il parametro giocatore", back)
-		return;
+	if (message.text.indexOf("membri") == -1) {
+		if (match[1] == undefined) {
+			bot.sendMessage(message.chat.id, "Inserisci anche il parametro giocatore", back)
+			return;
+		}
 	}
 
 	connection.query('SELECT id, account_id, holiday FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -25206,7 +25207,7 @@ bot.onText(/^sposta: (.+)/i, function (message, match) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Si"], ["Torna al gestisci party"]]
+				keyboard: [["Si"], ["Torna al team"]]
 			}
 		};
 
@@ -25214,7 +25215,7 @@ bot.onText(/^sposta: (.+)/i, function (message, match) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Torna al gestisci party"]]
+				keyboard: [["Torna al team"]]
 			}
 		};
 
@@ -25237,6 +25238,32 @@ bot.onText(/^sposta: (.+)/i, function (message, match) {
 					return;
 				}
 
+				if (message.text.indexOf("membri") != -1) {
+					connection.query('SELECT P.nickname FROM assault_place_player_id A, player P WHERE A.player_id = P.id AND team_id = ' + team_id, function (err, rows, fields) {
+						if (err) throw err;
+
+						var iKeys = [];
+						if (Object.keys(rows).length == 0) {
+							bot.sendMessage(message.chat.id, "Nessun giocatore disponibile", kbBack);
+							return;
+						}
+						for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+							iKeys.push(["Sposta: " + rows[i].nickname]);
+
+						var kbPlayers = {
+							parse_mode: "HTML",
+							reply_markup: {
+								resize_keyboard: true,
+								keyboard: iKeys
+							}
+						};
+
+						bot.sendMessage(message.chat.id, "Seleziona il giocatore da spostare", kbPlayers);
+					});
+
+					return;
+				}
+
 				connection.query('SELECT id, nickname, chat_id FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
 					if (err) throw err;
 
@@ -25249,7 +25276,7 @@ bot.onText(/^sposta: (.+)/i, function (message, match) {
 					var nickname_move = rows[0].nickname;
 					var player_move_chat_id = rows[0].chat_id;
 
-					connection.query('SELECT phase FROM assault WHERE team_id = 1', function (err, rows, fields) {
+					connection.query('SELECT phase FROM assault WHERE team_id = ' + team_id, function (err, rows, fields) {
 						if (err) throw err;
 
 						if (Object.keys(rows).length == 0) {
@@ -25624,6 +25651,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 										text += "\nAncora <b>" + (team_players-selected_count) + "</b> membri devono scegliere la propria postazione";
 								}
 
+								iKeys.push(["Sposta membri"]);
 								iKeys.push(["Torna al menu"]);
 
 								if (selected != -1) {
@@ -42947,7 +42975,7 @@ bot.onText(/arena/i, function (message) {
 												bot.sendMessage(message.chat.id, "Hai già puntato su questo scontro!", kbBack);
 												return;
 											}
-											bot.sendMessage(message.chat.id, "Specifica la pietra che vuoi puntare sul drago scrivendo il numero corrispondente e poi la quantità di pietre da puntare (massimo 10) separando i due valori con una virgola, se vinci otterrai x2 pietre del tipo puntato, altrimenti le perderai tutte. A volte puoi vincerne anche x3!\n" +
+											bot.sendMessage(message.chat.id, "Specifica la pietra che vuoi puntare sul drago scrivendo il numero corrispondente e poi la quantità di pietre da puntare (massimo 10) separando i valori con una virgola, se vinci otterrai x2 pietre del tipo puntato, altrimenti le perderai tutte. A volte puoi vincerne anche x3!\n" +
 															"Pietra Anima di Legno -> 1\n" +
 															"Pietra Anima di Ferro -> 2\n" +
 															"Pietra Anima Preziosa -> 3\n" +
