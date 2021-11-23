@@ -7958,7 +7958,7 @@ bot.onText(/attacca!/i, function (message) {
 												if (err) throw err;
 											});
 
-											connection.query('SELECT player_id, chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + player_pos_x + ' AND posY = ' + player_pos_y + ' AND player_id NOT IN (' + player_id + ', ' + enemy_id + ')', function (err, rows, fields) {
+											connection.query('SELECT player_id, chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND posX = ' + player_pos_x + ' AND posY = ' + player_pos_y + ' AND player_id NOT IN (' + player_id + ', ' + enemy_id + ') AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 												if (err) throw err;
 
 												if (Object.keys(rows).length > 0) {
