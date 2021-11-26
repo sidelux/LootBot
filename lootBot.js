@@ -25,7 +25,7 @@ var eventStory = 0;
 var snowHouse = 0;
 var snowHouseWait = 0;
 var snowHouseEnd = 1;
-var blackfriday = 0;
+var blackfriday = 1;
 
 // Variabili globali
 var nightStart = 23;
@@ -6643,7 +6643,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 									conditions_desc = "Gran parte della mappa è disseminata di campi paralizzanti";
 								} else if (map_conditions == 7) {
 									conditions += "🖐 Senza fretta";
-									conditions_desc = "Il tempo di restringimento è raddoppiato";
+									conditions_desc = "Le cariche movimento disponibili sono raddoppiate";
 								} else if (map_conditions == 8) {
 									conditions += "🔋 Veloce come il vento";
 									conditions_desc = "Gran parte della mappa è disseminata di bevande boost";
@@ -8974,6 +8974,12 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												}
 											}
 										}
+										if (item == undefined) {
+											console.log("item non definito, map_equip_change_power: " + map_equip_change_power);
+											console.log(item);
+											bot.sendMessage(message.chat.id, "Errore selezione oggetto, riprova", kbBack);
+											return;
+										}
 										last_obj_query += ", last_obj_val = '" + item[0].id + ":" + price + "'";
 										isBuild = 1;
 										text += "Raggiungi un Emporio, qui puoi acquistare oggetti che ti potranno essere utili.\n";
@@ -9277,7 +9283,7 @@ bot.onText(/sacca$/i, function (message) {
 
 bot.onText(/^\/legenda$/i, function (message) {
 	var legend = "";
-	for (var i = -27; i < 10; i++)
+	for (var i = -28; i < 10; i++)
 		legend += "\n> " + dungeonToDesc(i) + " - " + dungeonToSym(i);
 	bot.sendMessage(message.chat.id, "Legenda simboli dungeon per la Mappatura:" + legend, back);
 });
@@ -9543,7 +9549,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 	if (message.text.length > 25)
 		return;
 
-	var max_rooms_neg = 27;		// Diventa negativo dopo
+	var max_rooms_neg = 28;		// Diventa negativo dopo
 
 	var dBack = {
 		parse_mode: "Markdown",
@@ -10258,6 +10264,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 								//	Vicolo cieco: -25
 								//	Negozio di figurine: -26
 								//	Brucaliffo: -27
+								//  Ninfa: -28
 
 								var arr = [];
 								var p1 = Math.round((rooms * 3) / 100 * 60);
@@ -14839,6 +14846,130 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															});
 														} else if (answer.text == "Ignora") {
 															bot.sendMessage(message.chat.id, "Magicamente si apre un varco nella nube di fumo. Il brucaliffo ti indica con un cenno che quella è l'uscita. Decidi di seguire la sua indicazione e di proseguire il dungeon...", dNext);
+
+															await endDungeonRoom(player_id, boost_id, boost_mission);
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
+															return;
+														}
+													}
+												});
+											} else if (dir == -28) {
+												var dOptions = {
+													parse_mode: "Markdown",
+													reply_markup: {
+														resize_keyboard: true,
+														keyboard: [["Ti avvicini alla ragazza"], ["Ignora"], ["Torna al menu"]]
+													}
+												};
+
+												bot.sendMessage(message.chat.id, "Appena entri nella stanza rimani sorpreso! Erba, piante e fiori crescono rigogliosi in questo luogo.\nUna ragazza seduta su una roccia vicino ad una sorgente d'acqua in lontananza attira la tua attenzione, cosa fai?", dOptions).then(function () {
+													answerCallbacks[message.chat.id] = async function (answer) {
+														if (answer.text == "Ti avvicini alla ragazza") {
+															var rand = Math.random()*100;
+															if (rand > 50) {
+																bot.sendMessage(message.chat.id, "Decidi di avvicinarti e scopri che la ragazza é in realtà una Ninfa, é felice di vederti e ti bacia dolcemente sulla fronte.\nProsegui alla prossima stanza rinvigorito dalla benedizione della Ninfa.", dNext);
+																var life_perc = 50;
+																var player_refill = player_total_life*life_perc/100;
+																if (player_life+player_refill > player_total_life)
+																	player_refill = player_total_life-player_life;
+																connection.query('UPDATE player SET life = life+' + player_refill + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+																});
+															} else {
+																var monsterLev = Math.round(Math.random() * Math.round(room_num / 2) + Math.round(room_num / 2));
+
+																if (monsterLev > max_mob_value-5)
+																	monsterLev = max_mob_value-5;
+
+																connection.query('SELECT id, life, name, level FROM dungeon_monsters WHERE level = ' + monsterLev + ' ORDER BY RAND()', function (err, rows, fields) {
+																	if (err) throw err;
+																	if (Object.keys(rows).length == 0) {
+																		bot.sendMessage(message.chat.id, "Errore selezione mostro: " + monsterLev, back);
+																		return;
+																	}
+																	connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + rows[0].life + ', monster_total_life = ' + rows[0].life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																		if (err) throw err;
+																		if (boost_id == 6)
+																			setBoost(player_id, boost_mission, boost_id);
+																	});
+																	bot.sendMessage(message.chat.id, "Decidi di avvicinarti, scopri che non si tratta di una ragazza, ma sembra essere un *" + rows[0].name + "* di livello *" + rows[0].level + "*, puoi sfidarlo per ottenere il suo bottino e proseguire, oppure scappare.", dBattle).then(function () {
+																		answerCallbacks[message.chat.id] = async function (answer) {
+																			if (answer.text == "Scappa") {
+																				bot.sendMessage(message.chat.id, "Sicuro di voler tentare di tornare alla stanza precedente? Il mostro potrebbe colpirti durante la fuga", dYesNo).then(function () {
+																					answerCallbacks[message.chat.id] = async function (answer) {
+																						if (answer.text.toLowerCase() == "si") {
+
+																							var rand = Math.random() * 100;
+																							if (rand < 50)
+																								var dmg = Math.round(player_total_life * 20 / 100);
+																							else
+																								var dmg = Math.round(player_total_life * 30 / 100);
+
+																							var exText = "";
+
+																							connection.query('UPDATE player SET life = life-' + dmg + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																								if (err) throw err;
+																							});
+
+																							if (player_life - dmg <= 0) {
+																								exText = "ma sei stato ucciso e quindi portato fuori dal dungeon ed il tuo rango viene ridotto.";
+
+																								var d = new Date();
+																								d.setHours(d.getHours() + wait_dungeon_long);
+																								var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+																								connection.query('UPDATE player SET death_count = death_count+1, dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																									if (err) throw err;
+																								});
+																								connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+																									if (err) throw err;
+																								});
+																								connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
+																									if (err) throw err;
+																								});
+																								if (cursed == 1) {
+																									if (player_rank == 1) {
+																										connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																											if (err) throw err;
+																										});
+																									} else if (player_rank > 1) {
+																										connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																											if (err) throw err;
+																										});
+																									}
+																								} else {
+																									if (player_rank > 0) {
+																										connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																											if (err) throw err;
+																										});
+																									}
+																								}
+																							} else {
+																								exText = "e sei sopravvissuto, di conseguenza torni alla stanza precedente, perdi inoltre 10 Cariche Esplorative";
+
+																								await reduceDungeonEnergy(player_id, 10);
+																							}
+																							connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, monster_total_life = 0, last_dir = NULL, last_selected_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																								if (err) throw err;
+																							});
+																							bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
+																						}
+																					}
+																				});
+																			}
+																		};
+																	});
+																});
+																return;
+															}
+
+															await endDungeonRoom(player_id, boost_id, boost_mission);
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
+														} else if (answer.text == "Ignora") {
+															bot.sendMessage(message.chat.id, "Hai ignorato la ragazza...", dNext);
 
 															await endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -52146,9 +52277,18 @@ function setAchievement(player_id, type, increment, itemId = 0) {
 
 										if (Object.keys(rows).length > 0) {
 											if ((rows[0].cnt == 3) && (rows[0].compl == 3)) {
-												connection.query('UPDATE player SET achievement_count_all = achievement_count_all+1 WHERE id = ' + player_id, function (err, rows, fields) {
+												connection.query('SELECT achievement_count_all FROm player WHERE id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
-													bot.sendMessage(chat_id, "Hai completato una tripletta di imprese giornaliere!", mark);
+													var achievement_count_all = rows[0].achievement_count_all;
+													connection.query('UPDATE player SET achievement_count_all = achievement_count_all+1 WHERE id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+														if (achievement_count_all+1 % 3 == 0) {
+															var money = ((achievement_count_all+1)/10)*1000;
+															bot.sendMessage(chat_id, "Hai completato una tripletta di imprese giornaliere ed ottenuto " + formatNumber(money) + "!", mark);
+															addMoney(player_id, money);
+														} else
+															bot.sendMessage(chat_id, "Hai completato una tripletta di imprese giornaliere!", mark);
+													});
 												});
 											}
 										}
@@ -52212,9 +52352,18 @@ function setAchievement(player_id, type, increment, itemId = 0) {
 
 									if (Object.keys(rows).length > 0) {
 										if ((rows[0].cnt == 3) && (rows[0].compl == 3)) {
-											connection.query('UPDATE player SET achievement_count_all = achievement_count_all+1 WHERE id = ' + player_id, function (err, rows, fields) {
+											connection.query('SELECT achievement_count_all FROm player WHERE id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
-												bot.sendMessage(chat_id, "Hai completato una tripletta di imprese giornaliere!", mark);
+												var achievement_count_all = rows[0].achievement_count_all;
+												connection.query('UPDATE player SET achievement_count_all = achievement_count_all+1 WHERE id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+													if (achievement_count_all+1 % 3 == 0) {
+														var money = ((achievement_count_all+1)/10)*1000;
+														bot.sendMessage(chat_id, "Hai completato una tripletta di imprese giornaliere ed ottenuto " + formatNumber(money) + "!", mark);
+														addMoney(player_id, money);
+													} else
+														bot.sendMessage(chat_id, "Hai completato una tripletta di imprese giornaliere!", mark);
+												});
 											});
 										}
 									}
@@ -54801,6 +54950,8 @@ function dungeonToDesc(d) {
 		return "Negozio di figurine";
 	else if (d == -27)
 		return "Brucaliffo";
+	else if (d == -28)
+		return "Ninfa";
 }
 
 function dungeonToSym(d) {
@@ -54882,6 +55033,8 @@ function dungeonToSym(d) {
 		return "🃏";
 	else if (d == -27)
 		return "🐛";
+	else if (d == -28)
+		return "🧚‍♀️";
 }
 
 function manaToSym(mana) {
@@ -55565,9 +55718,6 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions, reason) {
 	if (conditions == 1)
 		time = Math.round(time/2);
 
-	if (conditions == 7)
-		time = time*2;
-
 	if (turnNumber+1 == middleX) {
 		// se raggiunge l'1x1, non restringe più
 		connection.query('UPDATE map_lobby_list SET next_restrict_time = NULL, restrict_end = 1 WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
@@ -55592,6 +55742,9 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions, reason) {
 		moves_left = (moves_left_default/2)-1;
 	else
 		moves_left = (moves_left_default/2)-2;
+
+	if (conditions == 7)
+		moves_left = moves_left*2;
 
 	connection.query('UPDATE map_lobby SET moves_left = ' + moves_left + ' WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 		if (err) throw err;
@@ -60124,7 +60277,7 @@ async function setFullLobby(element, index, array) {
 };
 
 function checkFullLobby() {
-	connection.query('SELECT M.lobby_id, M.lobby_training, COUNT(M.lobby_id) As cnt FROM map_lobby M LEFT JOIN map_lobby_list L ON M.lobby_id = L.lobby_id WHERE M.lobby_id IS NOT NULL AND L.id IS NULL GROUP BY M.lobby_id HAVING cnt = ' + lobby_total_space + ' ORDER BY M.id', function (err, rows, fields) {
+	connection.query('SELECT M.lobby_id, M.lobby_training, COUNT(M.lobby_id) As cnt, L.conditions FROM map_lobby M LEFT JOIN map_lobby_list L ON M.lobby_id = L.lobby_id WHERE M.lobby_id IS NOT NULL AND L.id IS NULL GROUP BY M.lobby_id HAVING cnt = ' + lobby_total_space + ' ORDER BY M.id', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
@@ -60140,6 +60293,7 @@ function setFullLobby(element, index, array) {
 	var lobby_id = element.lobby_id;
 	var players = element.cnt;
 	var lobby_training = element.lobby_training;
+	var conditions = element.conditions;
 
 	connection.query('SELECT map_conditions FROM config', function (err, rows, fields) {
 		if (err) throw err;
@@ -60176,9 +60330,12 @@ function setFullLobby(element, index, array) {
 
 				var life = 5000;
 				var flari_active = 1;
+				var moves = moves_left_default;
+				if (conditions == 7)
+					moves = moves*2;
 
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					connection.query('UPDATE map_lobby SET lobby_enter_time = NULL, killed = 0, weapon_id = 13, weapon2_id = 56, weapon3_id = 26, posX = ' + posArr[i][0] + ', posY = ' + posArr[i][1] + ', life = ' + life + ', total_life = ' + life + ', money = 0, scrap = 0, battle_time_elapsed = 0, battle_turn_start = NULL, moves_left = ' + moves_left_default + ' WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
+					connection.query('UPDATE map_lobby SET lobby_enter_time = NULL, killed = 0, weapon_id = 13, weapon2_id = 56, weapon3_id = 26, posX = ' + posArr[i][0] + ', posY = ' + posArr[i][1] + ', life = ' + life + ', total_life = ' + life + ', money = 0, scrap = 0, battle_time_elapsed = 0, battle_turn_start = NULL, moves_left = ' + moves + ' WHERE player_id = ' + rows[i].id, function (err, rows, fields) {
 						if (err) throw err;
 					});
 

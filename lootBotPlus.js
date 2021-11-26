@@ -436,7 +436,7 @@ bot.on('inline_query', async function (query) {
 		last = 1
 	}
 
-	connection.query('SELECT public_shop.id, quantity, item.name, price, player_id, massive, time_end, item_id, public_shop.description FROM public_shop, item WHERE item.id = item_id AND code = ' + code + ' ORDER BY item.name', async function (err, rows, fields) {
+	connection.query('SELECT public_shop.id, quantity, original_quantity, item.name, price, player_id, massive, time_end, item_id, public_shop.description FROM public_shop, item WHERE item.id = item_id AND code = ' + code + ' ORDER BY item.name', async function (err, rows, fields) {
 		if (err) throw err
 
 		if (Object.keys(rows).length == 0) { return }
@@ -448,6 +448,7 @@ bot.on('inline_query', async function (query) {
 		let total_price = 0
 		let pQnt = 0
 		let qntTot = 0
+		let qntTotOrig = 0;
 		for (let i = 0, len = Object.keys(rows).length; i < len; i++) {
 			name = cutTextW(rows[i].name)
 			iKeys.push([{
@@ -459,6 +460,7 @@ bot.on('inline_query', async function (query) {
 			if (pQnt > rows[i].quantity) { pQnt = rows[i].quantity }
 			total_price += parseInt(rows[i].price * pQnt)
 			qntTot += pQnt
+			qntTotOrig += rows[i].original_quantity;
 			item_list += name + ', '
 		}
 
@@ -498,7 +500,7 @@ bot.on('inline_query', async function (query) {
 			let plur = 'i'
 			if (qntTot == 1) { plur = 'o' }
 
-			const text = '<b>Negozio di ' + rows[0].nickname + '</b>\nAggiornato alle ' + short_date + '\nScadrà alle ' + long_date + '\nContiene ' + formatNumber(qntTot) + ' oggett' + plur + isProtected + description
+			const text = '<b>Negozio di ' + rows[0].nickname + '</b>\nAggiornato alle ' + short_date + '\nScadrà alle ' + long_date + '\nContiene ' + formatNumber(qntTot) + ' oggett' + plur + " (" + formatNumber(qntTotOrig) + " alla creazione)" + isProtected + description
 			let desc
 			if (last == 0) { desc = total_qnt + ' oggetti in vendita\n' + item_list } else { desc = 'Negozio più recente\n' + item_list }
 
@@ -4438,7 +4440,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 								quantity = 1
 							}
 
-							connection.query('UPDATE public_shop SET price = ' + price + ', quantity = ' + quantity + ', time_creation = NOW() WHERE id = ' + shopQuery[0].id, function (err, rows, fields) {
+							connection.query('UPDATE public_shop SET price = ' + price + ', quantity = ' + quantity + ', original_quantity = ' + quantity + ', time_creation = NOW() WHERE id = ' + shopQuery[0].id, function (err, rows, fields) {
 								if (err) throw err
 							})
 							text += 'Oggetto aggiornato: ' + quantity + 'x ' + item_name + ' a ' + formatNumber(price) + '§\n'
@@ -4526,7 +4528,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 								}
 
 								// serve sincrono altrimenti non riesce a controllare l'esistenza dell'oggetto
-								await connection.queryAsync('INSERT INTO public_shop (player_id, code, item_id, price, quantity, time_end, public, massive, protected, autodel) VALUES (' + player_id + ',' + code + ',' + item_id + ',' + price + ',' + quantity + ',"' + long_date + '",' + privacy + ',' + massive + ', ' + isProtected + ', ' + autodel + ')')
+								await connection.queryAsync('INSERT INTO public_shop (player_id, code, item_id, price, quantity, original_quantity, time_end, public, massive, protected, autodel) VALUES (' + player_id + ',' + code + ',' + item_id + ',' + price + ',' + quantity + ',' + quantity + ',"' + long_date + '",' + privacy + ',' + massive + ', ' + isProtected + ', ' + autodel + ')')
 
 								text += 'Oggetto aggiunto: ' + quantity + 'x ' + item_name + ' a ' + formatNumber(price) + ' §\n'
 								cnt++
@@ -10793,7 +10795,7 @@ async function updateShop(message, code, isId, customQueryMessage) {
 		}
 		code = shopCode[0].code
 	}
-	connection.query('SELECT public_shop.id, player.id As player_id, player.nickname, quantity, item.name, price, massive, protected, public_shop.description, item_id, time_end FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code + ' ORDER BY item.name', async function (err, rows, fields) {
+	connection.query('SELECT public_shop.id, player.id As player_id, player.nickname, quantity, original_quantity, item.name, price, massive, protected, public_shop.description, item_id, time_end FROM public_shop, item, player WHERE player.id = public_shop.player_id AND item.id = item_id AND code = ' + code + ' ORDER BY item.name', async function (err, rows, fields) {
 		if (err) throw err
 
 		if (Object.keys(rows).length == 0) {
@@ -10808,6 +10810,7 @@ async function updateShop(message, code, isId, customQueryMessage) {
 		let total_price = 0
 		let pQnt = 0
 		let qntTot = 0
+		let qntTotOrig = 0;
 		for (let i = 0, len = Object.keys(rows).length; i < len; i++) {
 			name = cutTextW(rows[i].name)
 			iKeys.push([{
@@ -10818,6 +10821,7 @@ async function updateShop(message, code, isId, customQueryMessage) {
 			if (pQnt > rows[i].quantity) { pQnt = rows[i].quantity }
 			total_price += parseInt(rows[i].price * pQnt)
 			qntTot += pQnt
+			qntTotOrig += rows[i].original_quantity;
 		}
 
 		if (rows[0].massive != 0) {
@@ -10849,7 +10853,7 @@ async function updateShop(message, code, isId, customQueryMessage) {
 		let plur = 'i'
 		if (qntTot == 1) { plur = 'o' }
 
-		const text = '<b>Negozio di ' + rows[0].nickname + '</b>\nAggiornato alle ' + short_date + '\nScadrà alle ' + long_date + '\nContiene ' + formatNumber(qntTot) + ' oggett' + plur + isProtected + description
+		const text = '<b>Negozio di ' + rows[0].nickname + '</b>\nAggiornato alle ' + short_date + '\nScadrà alle ' + long_date + '\nContiene ' + formatNumber(qntTot) + ' oggett' + plur + " (" + formatNumber(qntTotOrig) + " alla creazione)" + isProtected + description
 
 		bot.editMessageText(text, {
 			inline_message_id: message.inline_message_id,
