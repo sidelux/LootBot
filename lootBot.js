@@ -3452,12 +3452,16 @@ bot.onText(/^vetrinetta/i, function (message) {
 			var text = "Nella vetrinetta sono presenti " + Object.keys(rows).length + " bevande:\n";
 			var iKeys = [];
 			var diff;
+			var sym = "";
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 				if (rows[i].diff >= 24)
 					diff = Math.floor(rows[i].diff / 24) + " giorni";
 				else
 					diff = rows[i].diff + " ore";
-				text += "> " + rows[i].name + " (" + rows[i].boost_mission + " utilizzi, scade tra circa " + diff + ")\n";
+				sym = "";
+				if (rows[i].diff < 48)
+					sym = " 🤢";
+				text += "> " + rows[i].name + " (" + rows[i].boost_mission + " utilizzi, scade tra circa " + diff + sym + ")\n";
 				iKeys.push([rows[i].name + " - " + rows[i].boost_mission]);
 			}
 			iKeys.push(["Torna al menu"]);
@@ -3477,7 +3481,7 @@ bot.onText(/^vetrinetta/i, function (message) {
 				active_text = "✅ La *" + boostQuery[0].name + "* è attiva (" + active_boost_mission + " utilizzi), se ne bevi un'altra, l'effetto di quest'ultima svanirà.";
 			}
 			
-			bot.sendMessage(message.chat.id, text + "\nQuale vuoi utilizzare?" + active_text, kb).then(function () {
+			bot.sendMessage(message.chat.id, text + "\nSeleziona la bevanda per utilizzarla o scartarla." + active_text, kb).then(function () {
 				answerCallbacks[message.chat.id] = async function (answer) {
 					if (answer.text == "Torna al menu")
 						return;
@@ -3494,7 +3498,7 @@ bot.onText(/^vetrinetta/i, function (message) {
 
 							var boost_id = rows[0].boost_id;
 							var boost_name = rows[0].name;
-							connection.query('SELECT id, boost_mission FROM boost_store WHERE boost_id = ' + boost_id + ' AND boost_mission = ' + boost_mission_selected + ' AND player_id = ' + player_id, function (err, rows, fields) {
+							connection.query('SELECT id, boost_mission, TIMESTAMPDIFF(HOUR, NOW(), time_end) As diff FROM boost_store WHERE boost_id = ' + boost_id + ' AND boost_mission = ' + boost_mission_selected + ' AND player_id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
 
 								if (Object.keys(rows).length == 0) {
@@ -3504,12 +3508,51 @@ bot.onText(/^vetrinetta/i, function (message) {
 
 								var boost_row_id = rows[0].id;
 								var boost_mission = rows[0].boost_mission;
-								connection.query('DELETE FROM boost_store WHERE id = ' + boost_row_id, function (err, rows, fields) {
-									if (err) throw err;
-									connection.query('UPDATE player SET boost_id = ' + boost_id + ', boost_mission = ' + boost_mission + ' WHERE id = ' + player_id, function (err, rows, fields) {
-										if (err) throw err;
-										bot.sendMessage(message.chat.id, "La " + boost_name + " è stata attivata, durerà " + boost_mission + " turni", back);
-									});
+								var boost_end = rows[0].diff;
+								var extra = "";
+								var boost_expired = 0;
+								if (boost_end < 48) {
+									extra = " Attenzione, la bevanda ha uno strano aspetto, pensaci bene prima di berla...";
+									boost_expired = 1;
+								}
+
+								var kb2 = {
+									parse_mode: "Markdown",
+									disable_web_page_preview: true,
+									reply_markup: {
+										resize_keyboard: true,
+										keyboard: [["Attiva"], ["Butta"], ["Torna al menu"]]
+									}
+								};
+
+								bot.sendMessage(message.chat.id, "Cosa vuoi fare con la bevanda selezionata?" + extra, kb2).then(function () {
+									answerCallbacks[message.chat.id] = async function (answer) {
+										if (answer.text == "Torna al menu")
+											return;
+
+										if (answer.text == "Attiva") {
+											connection.query('DELETE FROM boost_store WHERE id = ' + boost_row_id, function (err, rows, fields) {
+												if (err) throw err;
+												var extra = "";
+												if (boost_expired == 1) {
+													extra = "\nLa bevanda non aveva un bell'aspetto, purtroppo ti provoca una nausea fastidiosa, bevendola ottieni la metà degli utilizzi previsti.";
+													boost_mission = Math.floor(boost_mission/2);
+												} else {
+													extra = "\nLa bevanda non aveva un bell'aspetto, ma per fortuna ha ottenuto un effetto ancora migliore, bevendola ottieni il 50% in più degli utilizzi previsti.";
+													boost_mission = boost_mission*1.5;
+												}
+												connection.query('UPDATE player SET boost_id = ' + boost_id + ', boost_mission = ' + boost_mission + ' WHERE id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+													bot.sendMessage(message.chat.id, "La " + boost_name + " è stata attivata, durerà " + boost_mission + " turni" + extra, back);
+												});
+											});
+										} else if (answer.text == "Butta") {
+											connection.query('DELETE FROM boost_store WHERE id = ' + boost_row_id, function (err, rows, fields) {
+												if (err) throw err;
+												bot.sendMessage(message.chat.id, "Hai buttato la " + boost_name, back);
+											});
+										}
+									}
 								});
 							});
 						});
@@ -25372,7 +25415,7 @@ bot.onText(/^sposta: (.+)|sposta membri/i, function (message, match) {
 				}
 
 				if (message.text.indexOf("membri") != -1) {
-					connection.query('SELECT P.nickname FROM assault_place_player_id A, player P WHERE A.player_id = P.id AND team_id = ' + team_id, function (err, rows, fields) {
+					connection.query('SELECT P.nickname FROM team_player T, player P WHERE T.player_id = P.id AND T.team_id = ' + team_id, function (err, rows, fields) {
 						if (err) throw err;
 
 						var iKeys = [];
