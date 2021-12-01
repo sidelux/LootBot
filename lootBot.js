@@ -7978,8 +7978,10 @@ bot.onText(/attacca!/i, function (message) {
 });
 
 function addScrap(player_id, scrap) {
+	/*
 	if (scrap > 0)
 		globalAchievement(player_id, scrap);
+	*/
 }
 
 bot.onText(/printMap (.+)/i, async function (message, match) {
@@ -25338,7 +25340,7 @@ bot.onText(/^sposta: (.+)|sposta membri/i, function (message, match) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Si"], ["Torna al team"]]
+				keyboard: [["Si"], ["Torna all'assalto"]]
 			}
 		};
 
@@ -25346,7 +25348,7 @@ bot.onText(/^sposta: (.+)|sposta membri/i, function (message, match) {
 			parse_mode: "HTML",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Torna al team"]]
+				keyboard: [["Torna all'assalto"]]
 			}
 		};
 
@@ -25380,6 +25382,8 @@ bot.onText(/^sposta: (.+)|sposta membri/i, function (message, match) {
 						}
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 							iKeys.push(["Sposta: " + rows[i].nickname]);
+						iKeys.push(["Torna all'assalto"]);
+						iKeys.push(["Torna al menu"]);
 
 						var kbPlayers = {
 							parse_mode: "HTML",
@@ -25420,15 +25424,14 @@ bot.onText(/^sposta: (.+)|sposta membri/i, function (message, match) {
 							return;
 						}
 
-						connection.query('SELECT place_id FROM assault_place_player_id WHERE player_id = ' + player_id, function (err, rows, fields) {
+						connection.query('SELECT place_id FROM assault_place_player_id WHERE player_id = ' + player_move_id, function (err, rows, fields) {
 							if (err) throw err;
 
-							if (Object.keys(rows).length == 0) {
-								bot.sendMessage(message.chat.id, "Il giocatore deve essere già in una postazione per poterlo spostare", team);
-								return;
-							}
+							var in_place = 0;
+							if (Object.keys(rows).length > 0)
+								in_place = 1;
 
-							connection.query('SELECT 1 FROM assault_place_magic WHERE player_id = ' + player_id, function (err, rows, fields) {
+							connection.query('SELECT 1 FROM assault_place_magic WHERE player_id = ' + player_move_id, function (err, rows, fields) {
 								if (err) throw err;
 	
 								if (Object.keys(rows).length > 0) {
@@ -25436,10 +25439,10 @@ bot.onText(/^sposta: (.+)|sposta membri/i, function (message, match) {
 									return;
 								}
 
-								connection.query('SELECT 1 FROM assault_place_cons WHERE player_id = ' + player_id, function (err, rows, fields) {
+								connection.query('SELECT 1 FROM assault_place_cons WHERE player_id = ' + player_move_id, function (err, rows, fields) {
 									if (err) throw err;
 		
-									if (Object.keys(rows).length == 0) {
+									if (Object.keys(rows).length > 0) {
 										bot.sendMessage(message.chat.id, "Non è possibile spostare il giocatore se ha già caricato dei consumabili nella sua postazione", team);
 										return;
 									}
@@ -25464,16 +25467,16 @@ bot.onText(/^sposta: (.+)|sposta membri/i, function (message, match) {
 												keyboard: iKeys
 											}
 										};
-										iKeys.push(["Torna al gestisci party"]);
+										iKeys.push(["Torna all'assalto"]);
 
 										bot.sendMessage(message.chat.id, "In quale postazione vuoi spostare il giocatore?", kbPlace).then(function () {
 											answerCallbacks[message.chat.id] = async function (answer) {
-												if (answer.text.toLowerCase() == "torna al gestisci party")
+												if (answer.text.toLowerCase() == "torna all'assalto")
 													return;
 
 												var place = answer.text;
 
-												connection.query('SELECT P.name, P.max_players, P.id FROM assault_place_team A, assault_place P WHERE A.place_id = P.id AND team_id = ' + team_id + ' AND P.name = "' + place + "'", function (err, rows, fields) {
+												connection.query('SELECT P.name, P.max_players, P.id FROM assault_place_team A, assault_place P WHERE A.place_id = P.id AND team_id = ' + team_id + ' AND P.name = "' + place + '"', function (err, rows, fields) {
 													if (err) throw err;
 
 													if (Object.keys(rows).length == 0) {
@@ -25493,11 +25496,19 @@ bot.onText(/^sposta: (.+)|sposta membri/i, function (message, match) {
 															return;
 														}
 
-														connection.query('UPDATE assault_place_player_id SET place_id = ' + place_id + ' WHERE player_id = ' + player_move_id, function (err, rows, fields) {
-															if (err) throw err;
-															bot.sendMessage(message.chat.id, "Il giocatore <b>" + nickname_move + "</b> è stato spostato nella postazione <b>" + place_name + "</b>!", kbBack);
-															bot.sendMessage(player_move_chat_id, "Sei stato spostato di Postazione dell'amministratore del Team, ora ti trovi nella Postazione <b>" + place_name + "</b>", html);
-														});
+														if (in_place == 1) {
+															connection.query('UPDATE assault_place_player_id SET place_id = ' + place_id + ' WHERE player_id = ' + player_move_id, function (err, rows, fields) {
+																if (err) throw err;
+																bot.sendMessage(message.chat.id, "Il giocatore <b>" + nickname_move + "</b> è stato spostato nella postazione <b>" + place_name + "</b>!", kbBack);
+																bot.sendMessage(player_move_chat_id, "Sei stato spostato di postazione dell'amministratore del Team, ora ti trovi nella Postazione <b>" + place_name + "</b>", html);
+															});
+														} else {
+															connection.query('INSERT INTO assault_place_player_id (place_id, team_id, player_id) VALUES (' + place_id + ', ' + team_id + ', ' + player_move_id + ')', function (err, rows, fields) {
+																if (err) throw err;
+																bot.sendMessage(message.chat.id, "Il giocatore <b>" + nickname_move + "</b> è stato inserito nella postazione <b>" + place_name + "</b>!", kbBack);
+																bot.sendMessage(player_move_chat_id, "Sei stato inserito nella postazione <b>" + place_name + "</b> dall'amministratore del Team", html);
+															});
+														}
 													});
 												});
 											};
@@ -25808,6 +25819,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 												index++;
 											}
 										}
+										full_kb.splice(index, 0, ["Sposta membri"]);
 										full_kb.splice(index, 0, ["Esci ↩️", "Torna al menu"]);
 										kb = {
 											parse_mode: "HTML",
@@ -25830,7 +25842,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 
 								bot.sendMessage(message.chat.id, main_text + text, kb).then(function () {
 									answerCallbacks[message.chat.id] = async function (answer) {
-										if ((answer.text == "Torna all'assalto") || (answer.text == "Torna al menu"))
+										if ((answer.text == "Torna all'assalto") || (answer.text == "Torna al menu") || (answer.text == "Sposta membri"))
 											return;
 										else if (answer.text.toLowerCase().indexOf("panoramica") != -1)
 											return;
@@ -26740,6 +26752,9 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 												}
 
 												var place_name = answer.text;
+
+												if (place_name == "Sposta membri")
+													return;
 
 												connection.query('SELECT AP.name, AP.description, AP.class_bonus, AP.max_players, COUNT(APP.id) As cnt FROM assault_place AP LEFT JOIN assault_place_player_id APP ON AP.id = APP.place_id AND APP.team_id = ' + team_id + ' WHERE name = "' + place_name + '"', function (err, rows, fields) {
 													if (err) throw err;
@@ -50800,11 +50815,8 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 													if (crazyMode == 1)
 														totTime = Math.round(totTime / 2);
 
-													/*
-													if (global_end == 1) {
+													if (global_end == 1)
 														totTime = Math.round(totTime / 2);
-													}
-													*/
 
 													if (boost_id == 9) {
 														setBoost(from_id, boost_mission, boost_id);
@@ -54001,10 +54013,12 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 										chest5 = Math.round(chest5);
 										chest6 = Math.round(chest6);
 
+										/*
 										if (rows[i].global_end == 1) {
 											paUpd += 7;
 											paView += 7;
 										}
+										*/
 
 										if (is_boss == 1) {
 											randProb = Math.random()*100;
@@ -59162,6 +59176,8 @@ function setFinishedTeamMission(element, index, array) {
 									for (i = 0; i < Object.keys(rows).length; i++) {
 										if (rows[i].suspended == 0) {
 
+											globalAchievement(rows[i].id, mission_time_count_min);
+
 											qnt = savedQnt;
 
 											var extra = "";
@@ -59929,7 +59945,7 @@ function setLobbyLeave(element, index, array) {
 
 	connection.query('UPDATE map_lobby SET lobby_wait_end = NULL WHERE id = ' + map_lobby_id, function (err, rows, fields) {
 		if (err) throw err;
-		bot.sendMessage(chat_id, "Il tempo dì attesa è terminato, puoi tornare ad esplorare le mappe!");
+		bot.sendMessage(chat_id, "Il tempo di attesa è terminato, puoi tornare ad esplorare le mappe!");
 	});
 }
 

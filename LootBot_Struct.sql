@@ -3396,6 +3396,7 @@ CREATE TABLE `public_shop` (
   `item_id` int(11) NOT NULL,
   `price` int(11) NOT NULL,
   `quantity` int(11) NOT NULL,
+  `original_quantity` int(11) NOT NULL,
   `time_creation` timestamp NOT NULL DEFAULT current_timestamp(),
   `time_end` timestamp NULL DEFAULT NULL,
   `notified` tinyint(1) NOT NULL DEFAULT 0,
