@@ -3459,7 +3459,7 @@ bot.onText(/^vetrinetta/i, function (message) {
 				else
 					diff = rows[i].diff + " ore";
 				sym = "";
-				if (rows[i].diff < 48)
+				if (rows[i].diff < 24)
 					sym = " 🤢";
 				text += "> " + rows[i].name + " (" + rows[i].boost_mission + " utilizzi, scade tra circa " + diff + sym + ")\n";
 				iKeys.push([rows[i].name + " - " + rows[i].boost_mission]);
@@ -3478,7 +3478,7 @@ bot.onText(/^vetrinetta/i, function (message) {
 			var active_text = "";
 			if (active_boost_id != 0) {
 				var boostQuery = await connection.queryAsync("SELECT name FROM item WHERE boost_id = " + active_boost_id);
-				active_text = "✅ La *" + boostQuery[0].name + "* è attiva (" + active_boost_mission + " utilizzi), se ne bevi un'altra, l'effetto di quest'ultima svanirà.";
+				active_text = "\n✅ La *" + boostQuery[0].name + "* è attiva (" + active_boost_mission + " utilizzi), se ne bevi un'altra, l'effetto di quest'ultima svanirà.";
 			}
 			
 			bot.sendMessage(message.chat.id, text + "\nSeleziona la bevanda per utilizzarla o scartarla." + active_text, kb).then(function () {
@@ -3511,7 +3511,7 @@ bot.onText(/^vetrinetta/i, function (message) {
 								var boost_end = rows[0].diff;
 								var extra = "";
 								var boost_expired = 0;
-								if (boost_end < 48) {
+								if (boost_end < 24) {
 									extra = " Attenzione, la bevanda ha uno strano aspetto, pensaci bene prima di berla...";
 									boost_expired = 1;
 								}
@@ -3535,11 +3535,14 @@ bot.onText(/^vetrinetta/i, function (message) {
 												if (err) throw err;
 												var extra = "";
 												if (boost_expired == 1) {
-													extra = "\nLa bevanda non aveva un bell'aspetto, purtroppo ti provoca una nausea fastidiosa, bevendola ottieni la metà degli utilizzi previsti.";
-													boost_mission = Math.floor(boost_mission/2);
-												} else {
-													extra = "\nLa bevanda non aveva un bell'aspetto, ma per fortuna ha ottenuto un effetto ancora migliore, bevendola ottieni il 50% in più degli utilizzi previsti.";
-													boost_mission = boost_mission*1.5;
+													var rand = Math.random()*100;
+													if (rand <= 50) {
+														extra = "\nLa bevanda non aveva un bell'aspetto, purtroppo ti provoca una nausea fastidiosa, bevendola ottieni la *metà* degli utilizzi previsti.";
+														boost_mission = Math.floor(boost_mission/2);
+													} else {
+														extra = "\nLa bevanda non aveva un bell'aspetto, ma per fortuna ha ottenuto un effetto ancora migliore, bevendola ottieni il *50% in più* degli utilizzi previsti.";
+														boost_mission = Math.floor(boost_mission*1.5);
+													}
 												}
 												connection.query('UPDATE player SET boost_id = ' + boost_id + ', boost_mission = ' + boost_mission + ' WHERE id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
