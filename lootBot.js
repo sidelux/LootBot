@@ -31044,7 +31044,13 @@ bot.onText(/^notifiche cariche esplorative/i, function (message) {
 			if (err) throw err;
 			var notify = rows[0].dungeon_energy_notification;
 
-			bot.sendMessage(message.chat.id, "Cambiare l'impostazione notifiche per le cariche?", conf).then(function () {
+			var extra = "";
+			if (notify == 1)
+				extra = "Attualmente sono attive";
+			else
+				extra = "Attualmente non sono attive";
+
+			bot.sendMessage(message.chat.id, "Cambiare l'impostazione notifiche per le cariche?" + extra, conf).then(function () {
 				answerCallbacks[message.chat.id] = async function (answer) {
 					var action = answer.text;
 					if (action == "Torna al Dungeon")
@@ -49184,8 +49190,16 @@ function mainMenu(message) {
 																}
 															}
 
-															if (Object.keys(rows).length > 0) {
+															var boost_store = await connection.queryAsync('SELECT COUNT(*) As cnt FROM boost_store WHERE player_id = ' + player_id);
 
+															var boost_store_text = "";
+															if (boost_store[0].cnt > 0)
+																boost_store_text = boost_store[0].cnt + " bevande nella vetrinetta";
+
+															if (Object.keys(rows).length == 0) {
+																if (boost_store[0].cnt > 0)
+																	msgtext = msgtext + "\n🍶 " + boost_store_text;
+															} else if (Object.keys(rows).length > 0) {
 																var boost_time = rows[0].boost_time;
 																var sleep_time_end = rows[0].sleep_time_end;
 																var dragon_life = rows[0].life;
@@ -49197,6 +49211,11 @@ function mainMenu(message) {
 																		msgtext = msgtext + "\n🍶 Bevanda pronta al ritiro";
 																	else
 																		msgtext = msgtext + "\n🍶 Produzione bevanda alle " + addZero(dragon.getHours()) + ":" + addZero(dragon.getMinutes());
+																	if (boost_store[0].cnt > 0)
+																		msgtext = msgtext + ", " + boost_store_text;
+																} else {
+																	if (boost_store[0].cnt > 0)
+																		msgtext = msgtext + "\n🍶 " + boost_store_text;
 																}
 
 																var dragon = await connection.queryAsync('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id);

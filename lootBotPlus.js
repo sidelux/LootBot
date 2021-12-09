@@ -8533,11 +8533,10 @@ bot.onText(/^\/posizioneteam/, function (message, match) {
 
 						var text = "Posizione in globale dei membri del team:\n";
 						for (let i = 0, len = arrayPlayers.length; i < len; i++) {
-							if (arrayPlayers[i].pos == 0) {
+							if (arrayPlayers[i].pos == 0)
 								text += "> <b>" + arrayPlayers[i].nickname + "</b> non presente in classifica\n"
-							} else {
-								text += "> <b>" + arrayPlayers[i].nickname + "</b> alla posizione <i>" + arrayPlayers[i].pos + "</i> con " + formatNumber(arrayPlayers[i].pnt) + " punti\n"
-							}
+							else
+								text += "> <b>" + arrayPlayers[i].nickname + "</b> alla posizione <i>" + (Math.round(arrayPlayers[i].pos/60)) + "</i> con " + formatNumber(arrayPlayers[i].pnt) + " punti\n"
 						}
 
 						bot.sendMessage(message.chat.id, text, html)
