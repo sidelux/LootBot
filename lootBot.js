@@ -25,7 +25,7 @@ var eventStory = 0;
 var snowHouse = 0;
 var snowHouseWait = 0;
 var snowHouseEnd = 1;
-var blackfriday = 1;
+var blackfriday = 0;
 
 // Variabili globali
 var nightStart = 23;
@@ -20642,12 +20642,11 @@ bot.onText(/^\/pagateam (.+)|^\/pagateam/i, function (message, match) {
 
 				var total_price_reduce = 0;
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					if (rows[0].money+price > 1000000000) {
-						bot.sendMessage(rows[i].chat_id, message.from.username + " del tuo team voleva inviarti <b>" + price + " §</b>, ma raggiungendo il cap non hai ricevuto la somma prevista.", html);
+					if (rows[i].money+price > 1000000000) {
+						bot.sendMessage(rows[i].chat_id, message.from.username + " del tuo team voleva inviarti <b>" + formatNumber(price) + " §</b>, ma raggiungendo il cap non hai ricevuto la somma prevista.", html);
 						continue;
-					} else {
+					} else
 						await addMoney(rows[i].player_id, price);
-					}
 
 					total_price_reduce += price;
 
@@ -20655,7 +20654,7 @@ bot.onText(/^\/pagateam (.+)|^\/pagateam/i, function (message, match) {
 					if (msg != "")
 						extra = "\nCon scritto: <i>" + msg + "</i>";
 
-					bot.sendMessage(rows[i].chat_id, "Hai ricevuto <b>" + price + " §</b> da " + message.from.username + " del tuo team!" + extra, html);
+					bot.sendMessage(rows[i].chat_id, "Hai ricevuto <b>" + formatNumber(price) + " §</b> da " + message.from.username + " del tuo team!" + extra, html);
 
 					connection.query('INSERT INTO pay_history (from_id, to_id, price, hist_time) VALUES (' + player_id + ',' + rows[i].player_id + ',' + price + ',"' + long_date + '")', function (err, rows, fields) {
 						if (err) throw err;
@@ -25772,8 +25771,8 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 							var diff = Math.round((now - d) / 1000); //in secondi
 							diff = Math.abs(diff);
 
-							var text = "Il <b> " + boss_num + "° Giorno della Preparazione</b> terminerà tra " + toTime(diff) + "!\n\nOrganizzazione attuale intorno alla magione del team:\n";
-							connection.query('SELECT AP.name, AP.id As place_id, P.id, P.nickname, P.exp, P.reborn, P.class, APT.level, APT.time_end, AP.class_bonus, C.name As class_bonus_name, (SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE place_id = AP.id AND team_id = ' + team_id + ') As players, AP.max_players, AP.max_level FROM assault_place AP LEFT JOIN (SELECT * FROM assault_place_team WHERE team_id = ' + team_id + ') APT ON (APT.place_id = AP.id AND APT.team_id = ' + team_id + ') LEFT JOIN assault_place_player_id APP ON (AP.id = APP.place_id AND APP.team_id = ' + team_id + ') LEFT JOIN player P ON P.id = APP.player_id LEFT JOIN class C ON AP.class_bonus = C.id WHERE P.holiday = 0 OR P.holiday IS NULL ORDER BY AP.id', async function (err, rows, fields) {
+							var text = "Il <b>" + boss_num + "° Giorno della Preparazione</b> terminerà tra " + toTime(diff) + "!\n\nOrganizzazione attuale intorno alla magione del team:\n";
+							connection.query('SELECT AP.name, AP.id As place_id, P.id, P.nickname, P.exp, P.reborn, P.class, APT.level, APT.time_end, AP.class_bonus, C.name As class_bonus_name, P.holiday, (SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE place_id = AP.id AND team_id = ' + team_id + ') As players, AP.max_players, AP.max_level FROM assault_place AP LEFT JOIN (SELECT * FROM assault_place_team WHERE team_id = ' + team_id + ') APT ON (APT.place_id = AP.id AND APT.team_id = ' + team_id + ') LEFT JOIN assault_place_player_id APP ON (AP.id = APP.place_id AND APP.team_id = ' + team_id + ') LEFT JOIN player P ON P.id = APP.player_id LEFT JOIN class C ON AP.class_bonus = C.id ORDER BY AP.id', async function (err, rows, fields) {
 								if (err) throw err;
 
 								var place_id_break = 0;
@@ -25782,6 +25781,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 								var selected_name = "";
 								var selected_level = 0;
 								var selected_count = 0;
+								var holiday = "";
 
 								iKeys.push(["Panoramica 🔄", "Rapporto 🔎"]);
 
@@ -25807,13 +25807,16 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 									}
 
 									if (rows[i].id != null) {
+										holiday = "";
+										if (rows[i].holiday == 1)
+											holiday = " 🏖";
 										if (rows[i].id == player_id) {
-											text += "> <i>" + rows[i].nickname + "</i> - " + classSym(rows[i].class) + " " + Math.floor(rows[i].exp/10) + " " + rebSym(rows[i].reborn) + "\n";
+											text += "> <i>" + rows[i].nickname + "</i> - " + classSym(rows[i].class) + " " + Math.floor(rows[i].exp/10) + " " + rebSym(rows[i].reborn) + holiday + "\n";
 											selected = rows[i].place_id;
 											selected_name = rows[i].name;
 											selected_level = rows[i].level;
 										} else
-											text += "> " + rows[i].nickname + " - " + classSym(rows[i].class) + " " + Math.floor(rows[i].exp/10) + " " + rebSym(rows[i].reborn) + "\n";
+											text += "> " + rows[i].nickname + " - " + classSym(rows[i].class) + " " + Math.floor(rows[i].exp/10) + " " + rebSym(rows[i].reborn) + holiday + "\n";
 									} else
 										text += "<i>Nessun membro in questa postazione</i>\n";
 								}
@@ -38532,8 +38535,12 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 												if (err) throw err;
 
 												if (rows[0].global_eventwait == 0) {
-													if (mypos > 0)
+													if (mypos > 0) {
+														// globale ore in incarico
+														mypnt = Math.round(mypnt/60);
+														// fine
 														text = text + "\n*Impresa Globale*: " + mypos + "° con " + formatNumber(mypnt);
+													}
 												}
 
 												c = 1;
@@ -46951,6 +46958,12 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 										global_desc = "monete lunari ottenute tramite donazioni";
 									}
 
+									// globale ore in incarico
+									globalVal = Math.round(globalVal/60);
+									if (global_hide == 0)
+										cap = Math.round(cap/60);
+									// fine
+
 									text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> " + global_desc + "\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
 								}
 							}
@@ -52826,6 +52839,9 @@ function getRankAch(message, size) {
 						}
 
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+							// globale ore in incarico
+							rows[i].cnt = Math.round(rows[i].cnt/60);
+							// fine
 							if (c < size + 1)
 								text += c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].cnt) + ")\n";
 							if (rows[i].id == player_id) {
@@ -52834,6 +52850,7 @@ function getRankAch(message, size) {
 							}
 							c++;
 						}
+
 						text += "\nTu:\n" + mypos + "° " + message.from.username + " (" + formatNumber(mypnt) + ")";
 
 						bot.sendMessage(message.chat.id, text + limit_msg, kb);
@@ -52855,6 +52872,9 @@ function getRankAch(message, size) {
 
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 							nickname.push(rows[i].nickname);
+							// globale ore in incarico
+							rows[i].cnt = Math.round(rows[i].cnt/60);
+							// fine
 							point.push(rows[i].cnt);
 							if (player_id == rows[i].id)
 								mypos = i;
@@ -62979,7 +62999,7 @@ function resetSpecialItem() {
 }
 
 function saveHourGlobal() {
-	connection.query('INSERT INTO global_hourly (value, players) SELECT SUM(value) As tot, COUNT(id) As num FROM achievement_global', function (err, rows, fields) {
+	connection.query('INSERT INTO global_hourly (value, players) SELECT IFNULL(SUM(value), 0) As tot, COUNT(id) As num FROM achievement_global', function (err, rows, fields) {
 		if (err) throw err;
 	});
 }
