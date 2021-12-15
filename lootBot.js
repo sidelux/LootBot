@@ -27723,6 +27723,13 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				weak = " 🔺";
 																			}
 
+																			var rand = Math.random()*100;
+																			var magic_mega = "";
+																			if (rand < place1_level*2) {
+																				magic_power += magic_power*0.5;
+																				magic_mega = "mega ";
+																			}
+
 																			magic_power = Math.round(magic_power);
 																			var range = Math.round(getRandomArbitrary(0, 8));
 																			var damage_red = place1_level*magic_power*(5+(avg_dmg/100)+range);
@@ -27754,7 +27761,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																					mob_killed = 1;
 																			}
 
-																			final_report += assaultEmojiList[0] + " La Torre dello Stregone ha lanciato <b>" + magic_name + " " + magic_power + "</b>" + magic_effect + magic_double + weak + "\n\n";
+																			final_report += assaultEmojiList[0] + " La Torre dello Stregone ha lanciato " + magic_mega + "<b>" + magic_name + " " + magic_power + "</b>" + magic_effect + magic_double + weak + "\n\n";
 																			epic_var++;
 																		} else
 																			final_report += assaultEmojiList[0] + " La Torre dello Stregone non contiene alcun incantesimo, nessun danno al nemico!\n\n";
@@ -36839,7 +36846,7 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 											}
 										});
 									} else if (answer.text.toLowerCase().indexOf("scambia") != -1) {
-										if (reborn <= 2) {
+										if (reborn < 2) {
 											bot.sendMessage(message.chat.id, "Puoi scambiare le figurine solamente da R1!", kbBack);
 											return;
 										}

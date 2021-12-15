@@ -8356,7 +8356,7 @@ bot.onText(/^\/posizione$/, function (message, match) {
 						return
 					}
 
-					bot.sendMessage(message.chat.id, message.from.username + ', hai raggiunto la posizione <b>' + formatNumber(pos) + '</b> con <b>' + formatNumber(pnt) + "</b> punti nell'Impresa Globale in corso!" + limit_msg, html)
+					bot.sendMessage(message.chat.id, message.from.username + ', hai raggiunto la posizione <b>' + formatNumber(pos) + '</b> con <b>' + formatNumber(Math.round(pnt/60)) + "</b> punti nell'Impresa Globale in corso!" + limit_msg, html)
 				})
 			})
 		})
@@ -8536,7 +8536,7 @@ bot.onText(/^\/posizioneteam/, function (message, match) {
 							if (arrayPlayers[i].pos == 0)
 								text += "> <b>" + arrayPlayers[i].nickname + "</b> non presente in classifica\n"
 							else
-								text += "> <b>" + arrayPlayers[i].nickname + "</b> alla posizione <i>" + (Math.round(arrayPlayers[i].pos/60)) + "</i> con " + formatNumber(arrayPlayers[i].pnt) + " punti\n"
+								text += "> <b>" + arrayPlayers[i].nickname + "</b> alla posizione <i>" + arrayPlayers[i].pos + "</i> con " + formatNumber((Math.round(arrayPlayers[i].pnt/60))) + " punti\n"
 						}
 
 						bot.sendMessage(message.chat.id, text, html)
