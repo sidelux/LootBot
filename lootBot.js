@@ -33253,55 +33253,92 @@ bot.onText(/^scava$/i, function (message) {
 
 		var player_id = rows[0].id;
 
-		connection.query('SELECT zone_id, boost_time FROM event_mana_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT name, type FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
-			if (Object.keys(rows).length == 0) {
-				bot.sendMessage(message.chat.id, "Accedi all'evento per utilizzare questa funzione!", back);
-				return;
+			var dragon_name = null;
+			var dragon_type = null;
+			if (Object.keys(rows).length > 0) {
+				dragon_name = rows[0].name;
+				dragon_type = rows[0].type;
 			}
 
-			if (rows[0].zone_id == 0) {
-				bot.sendMessage(message.chat.id, "Non stai estraendo mana!", back);
-				return;
-			}
+			connection.query('SELECT zone_id, boost_time, boost_start FROM event_mana_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
 
-			if (rows[0].boost_time == null) {
-				bot.sendMessage(message.chat.id, "Non è disponibile nessun bonus di estrazione!", back);
-				return;
-			}
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, "Accedi all'evento per utilizzare questa funzione!", back);
+					return;
+				}
 
-			var now = new Date();
-			var end = new Date(rows[0].boost_time);
+				if (rows[0].zone_id == 0) {
+					bot.sendMessage(message.chat.id, "Non stai estraendo mana!", back);
+					return;
+				}
 
-			if (now.getTime() > end.getTime()) {
-				connection.query('UPDATE event_mana_status SET boost_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-					bot.sendMessage(message.chat.id, "Il bonus non è più disponibile, sei arrivato tardi!", back);
-				});
-				return;
-			}
+				if (rows[0].boost_time == null) {
+					bot.sendMessage(message.chat.id, "Non è disponibile nessun bonus di estrazione!", back);
+					return;
+				}
 
-			var zone_id = rows[0].zone_id;
-			var qnt = Math.round(getRandomArbitrary(20, 50));
+				var now = new Date();
+				var start = new Date(rows[0].boost_start);
+				var end = new Date(rows[0].boost_time);
 
-			bot.sendMessage(message.chat.id, "Raccogliere il bonus delle Miniere di Mana?", yesno).then(function () {
-				answerCallbacks[message.chat.id] = async function (answer) {
-					if (answer.text.toLowerCase() == "si") {
-						connection.query('UPDATE event_mana_status SET boost_time = NULL, mana_' + zone_id + ' = mana_' + zone_id + '+' + qnt + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
-							if (err) throw err;
+				if (now.getTime() > end.getTime()) {
+					connection.query('UPDATE event_mana_status SET boost_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+						bot.sendMessage(message.chat.id, "Il bonus non è più disponibile, sei arrivato tardi!", back);
+					});
+					return;
+				}
 
-							var color = "";
-							if (zone_id == 1)
-								color = "Blu";
-							else if (zone_id == 2)
-								color = "Giallo";
-							else if (zone_id == 3)
-								color = "Rosso";
+				var zone_id = rows[0].zone_id;
+				var qnt = Math.round(getRandomArbitrary(20, 50));
 
-							bot.sendMessage(message.chat.id, "Hai sfruttato il bonus della vena ricca ed ottenuto *" + qnt + "* Mana " + color + "!", back);
-						});
+				var text = "";
+				if (dragon_name != null) {
+					var fullname = dragon_name + " " + dragon_type;
+					var rand = Math.rand()*100;
+					var diff_sec = Math.round(now-start)/1000;
+					if (diff_sec <= 120) {
+						if (rand < 80) {
+							bonus += 10;
+							text = fullname + " esala una potente fiammata che scioglie la roccia. In una conca vedi pian piano raccogliersi una discreta quantità di mana.";
+						} else {
+							bonus += 15;
+							text = fullname + " esala una potente fiammata che scioglie la roccia. In una conca vedi pian piano raccogliersi una buona quantità di mana.";
+						}
+					} else if (diff_sec <= 300) {
+						if (rand < 80) {
+							bonus = 0;
+							text = fullname + " esala una potente fiammata che scioglie la roccia. Lo stretto corridoio frana e riesci a salvarti per un soffio.";
+						} else {
+							bonus = 20;
+							text = fullname + " esala una potente fiammata che scioglie la roccia. Lo stretto corridoio frana e scansandoti di lato precipiti lungo un buio cunicolo... Sei ora in un maestoso cenote dove non acqua dolce, ma splendente mana liquido riflette i raggi solari.";
+						}
 					}
 				}
+
+				bot.sendMessage(message.chat.id, text + "Raccogliere il bonus delle Miniere di Mana?", yesno).then(function () {
+					answerCallbacks[message.chat.id] = async function (answer) {
+						if (answer.text.toLowerCase() == "si") {
+							qnt += bonus;
+							connection.query('UPDATE event_mana_status SET boost_time = NULL, mana_' + zone_id + ' = mana_' + zone_id + '+' + qnt + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+
+								var color = "";
+								if (zone_id == 1)
+									color = "Blu";
+								else if (zone_id == 2)
+									color = "Giallo";
+								else if (zone_id == 3)
+									color = "Rosso";
+
+								bot.sendMessage(message.chat.id, "Hai sfruttato il bonus della vena ricca ed ottenuto *" + qnt + "* Mana " + color + "!", back);
+							});
+						}
+					}
+				});
 			});
 		});
 	});
@@ -33713,7 +33750,7 @@ bot.onText(/Miniere di Mana|Raccolta|^miniera$|^miniere$/i, function (message) {
 
 											var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 
-											connection.query('UPDATE event_mana_status SET time_start = "' + long_date + '", zone_id = ' + zone_id + ', boost_cnt = 0, boost_time = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+											connection.query('UPDATE event_mana_status SET time_start = "' + long_date + '", zone_id = ' + zone_id + ', boost_cnt = 0, boost_time = NULL, boost_start = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
 												bot.sendMessage(message.chat.id, "Estrazione iniziata, torna qui tra qualche ora per concluderla ed ottenere ciò che hai estratto!", mBack);
 											});
@@ -38942,7 +38979,7 @@ bot.onText(/emporio/i, function (message) {
 			parse_mode: "Markdown",
 			reply_markup: {
 				resize_keyboard: true,
-				keyboard: [["Compra", "Vendi", "Ricicla"], ["Torna alla piazza"], ["Torna al menu"]]
+				keyboard: [["Compra", "Vendi", "Ricicla"], ["Compra scrigni settimanali"], ["Torna alla piazza"], ["Torna al menu"]]
 			}
 		};
 
@@ -40189,6 +40226,91 @@ bot.onText(/compra/i, function (message) {
 							}
 						});
 					};
+				});
+			} else if (oggetto.indexOf("settimanali") != -1) {
+				/*
+				if (player_id != 1) {
+					bot.sendMessage(message.chat.id, "Disponibile a breve", chest);
+					return;
+				}
+				*/
+				connection.query('SELECT C.name, C.id, C.value, IFNULL((SELECT quantity FROM shop_limit WHERE player_id = ' + player_id + ' AND chest_id = C.id), 0) As quantity FROM chest C WHERE C.id IN (1, 2, 3, 4, 5, 6) ORDER BY id', async function (err, rows, fields) {
+					if (err) throw err;
+
+					if (Object.keys(rows).length == 0) {
+						bot.sendMessage(message.chat.id, "Hai già acquistato tutti gli scrigni per questa settimana", store);
+						return;
+					}
+		
+					var chest_list = "Acquisterai:\n";
+					var max_quantity;
+					var quantity_left;
+					var total_price = 0;
+					for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+						max_quantity = ((7-rows[i].id)*100)*7;
+						quantity_left = max_quantity;
+						if (rows[i].quantity > 0)
+							quantity_left = max_quantity-rows[i].quantity;
+		
+						chest_list += "> " + formatNumber(quantity_left) + "x " + rows[i].name + "\n";
+						total_price += quantity_left*rows[i].value;
+					}
+
+					if (price_drop == 1)
+						total_price -= Math.round((total_price / 100) * sconto);
+
+					chest_list += "\nPer un totale di " + formatNumber(total_price) + " §, confermi?";
+
+					bot.sendMessage(message.chat.id, chest_list, storeYesNo).then(function () {
+						answerCallbacks[message.chat.id] = async function (answer) {
+							if (answer.text.toLowerCase() == "si") {
+								connection.query('SELECT money FROM player WHERE id = ' + player_id, async function (err, player, fields) {
+									if (err) throw err;
+
+									if (player[0].money - total_price < 0) {
+										bot.sendMessage(message.chat.id, "Non hai abbastanza credito a disposizione (" + formatNumber(player[0].money) + "/" + formatNumber(total_price) + ")", store);
+										return;
+									}
+
+									var bonus_text = "";
+									if (abBonus == 1) {
+										total_price = Math.round(total_price / 2);
+										bonus_text = " dimezzati grazie al tuo talento!";
+									}
+
+									var chest_id = 0;
+									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+										chest_id = rows[i].id;
+										max_quantity = ((7-rows[i].id)*100)*7;
+										quantity = max_quantity;
+										if (rows[i].quantity > 0)
+											quantity = max_quantity-rows[i].quantity;
+
+										var shop_limit = connection.queryAsync('SELECT 1 FROM shop_limit WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
+
+										if (Object.keys(shop_limit).length == 0) {
+											connection.query('INSERT INTO shop_limit (player_id, chest_id, quantity) VALUES (' + player_id + ', ' + chest_id + ', ' + quantity + ')', function (err, rows, fields) {
+												if (err) throw err;
+											});
+										} else {
+											connection.query('UPDATE shop_limit SET quantity = quantity + ' + quantity + ' WHERE chest_id = ' + chest_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+											});
+										}
+
+										connection.query('INSERT INTO shop_history (player_id, chest_id, quantity) VALUES (' + player_id + ', ' + chest_id + ', ' + quantity + ')', function (err, rows, fields) {
+											if (err) throw err;
+										});
+
+										await addChest(player_id, chest_id, quantity, 1);
+										setAchievement(player_id, 14, quantity, chest_id);
+									}
+									await reduceMoney(player_id, total_price);
+									bot.sendMessage(message.chat.id, "Acquisto completato con successo! Hai speso " + formatNumber(total_price) + " §" + bonus_text, chest);
+								});
+							}
+						}
+					});
 				});
 			}
 		});
@@ -56796,7 +56918,7 @@ async function addDungeonEnergy(player_id, quantity) {
 }
 
 function refreshManaBoost() {
-	connection.query('UPDATE event_mana_status SET boost_cnt = 0, boost_time = NULL', function (err, rows, fields) {
+	connection.query('UPDATE event_mana_status SET boost_cnt = 0, boost_time = NULL, boost_start = NULL', function (err, rows, fields) {
 		if (err) throw err;
 	});
 }
@@ -58315,7 +58437,7 @@ function setMana(element, index, array) {
 	var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
 	var short_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes());
 
-	connection.query('UPDATE event_mana_status SET boost_cnt = boost_cnt+1, boost_time = "' + long_date + '" WHERE player_id = ' + player_id, function (err, rows, fields) {
+	connection.query('UPDATE event_mana_status SET boost_cnt = boost_cnt+1, boost_time = "' + long_date + '", boost_start = NOW() WHERE player_id = ' + player_id, function (err, rows, fields) {
 		if (err) throw err;
 
 		var kb = {
