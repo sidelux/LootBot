@@ -1660,6 +1660,7 @@ CREATE TABLE `event_mana_status` (
   `mana_3` int(11) NOT NULL DEFAULT 0 COMMENT 'Rosso',
   `boost_cnt` tinyint(4) NOT NULL DEFAULT 0,
   `boost_time` timestamp NULL DEFAULT NULL,
+  `boost_start` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `player_id` (`player_id`),
   CONSTRAINT `PLAYERID_MANAS` FOREIGN KEY (`player_id`) REFERENCES `player` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -3285,7 +3286,7 @@ DROP TABLE IF EXISTS `plus_players`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `plus_players` (
-  `account_id` int(16) NOT NULL,
+  `account_id` bigint(16) NOT NULL,
   `nickname` text NOT NULL,
   `real_name` varchar(64) DEFAULT NULL,
   `gender` varchar(1) DEFAULT NULL,

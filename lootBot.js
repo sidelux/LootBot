@@ -24,7 +24,7 @@ var eventDust = 0;
 var eventStory = 0;
 var snowHouse = 0;
 var snowHouseWait = 0;
-var snowHouseEnd = 1;
+var snowHouseEnd = 0;
 var blackfriday = 0;
 
 // Variabili globali
@@ -9022,7 +9022,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												}
 											}
 										}
-										if (item == undefined) {
+										if ((item == undefined) || (item[0] == undefined)) {
 											console.log("item non definito, map_equip_change_power: " + map_equip_change_power);
 											console.log(item);
 											bot.sendMessage(message.chat.id, "Errore selezione oggetto, riprova", kbBack);
@@ -32827,7 +32827,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 
 						var snowman_cnt = parseInt(rows[0].cnt);
 
-						bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella tua <b>Casa nella Neve</b> 🌨!\nDurante questa settimana si svolge una gara che premierà chi riuscirà a costruire più Pupazzi di Neve degli altri partecipanti!\nPer costruirne un altro ti servono <b>" + (10+(snowman_cnt*10)) + " Palle di Neve</b>, puoi lanciarne una per danneggiare gli avversari oppure i loro pupazzi.\n\nPossiedi <b>" + snowball + "</b> Palle di Neve ❄️ e <b>" + formatNumber(snowman_cnt) + "</b> Pupazzi di Neve ⛄️!\nIn totale sono stati creati <b>" + formatNumber(snowman_cnt_tot) + "</b> Pupazzi e ci sono <b>" + formatNumber(snowball_tot) + "</b> Palle di Neve!\n\nC'è una probabilità di ottenerne altre tramite Missioni, Ispezioni, Dungeon, Mappe, Cave ed Incarichi. Ogni Pupazzo ti fornirà 1 Palla di Neve per ogni azione.\n\nL'evento termina il 30 alle 12:00!", kb).then(function () {
+						bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella tua <b>Casa nella Neve</b> 🌨!\nDurante questa settimana si svolge una gara che premierà chi riuscirà a costruire più Pupazzi di Neve degli altri partecipanti!\nPer costruirne un altro ti servono <b>" + (10+(snowman_cnt*10)) + " Palle di Neve</b>, puoi lanciarne una per danneggiare gli avversari oppure i loro pupazzi.\n\nPossiedi <b>" + snowball + "</b> Palle di Neve ❄️ e <b>" + formatNumber(snowman_cnt) + "</b> Pupazzi di Neve ⛄️!\nIn totale sono stati creati <b>" + formatNumber(snowman_cnt_tot) + "</b> Pupazzi e ci sono <b>" + formatNumber(snowball_tot) + "</b> Palle di Neve!\n\nC'è una probabilità di ottenerne altre tramite Missioni, Ispezioni, Dungeon, Mappe, Cave ed Incarichi. Ogni Pupazzo ti fornirà 1 Palla di Neve per ogni azione.\n\nL'evento termina il 31 alle 12:00!", kb).then(function () {
 							answerCallbacks[message.chat.id] = async function (answer) {
 								if (answer.text == "Lancia Palla di Neve ❄️") {
 									bot.sendMessage(message.chat.id, "Puoi lanciare una Palla di Neve ad un giocatore in particolare (scrivendo il nickname) oppure ad uno casuale, nel primo caso consumerai 2 Palle di Neve.\nNel caso in cui il bersaglio avesse un Pupazzo di Neve, quest'ultimo verrà colpito al posto del giocatore e danneggiato o distrutto. Può capitare inoltre che il giocatore avversario recuperi la tua Palla di Neve!", kb2).then(function () {
@@ -33296,9 +33296,10 @@ bot.onText(/^scava$/i, function (message) {
 				var qnt = Math.round(getRandomArbitrary(20, 50));
 
 				var text = "";
+				var bonus = 0;
 				if (dragon_name != null) {
 					var fullname = dragon_name + " " + dragon_type;
-					var rand = Math.rand()*100;
+					var rand = Math.random()*100;
 					var diff_sec = Math.round(now-start)/1000;
 					if (diff_sec <= 120) {
 						if (rand < 80) {
