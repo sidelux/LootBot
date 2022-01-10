@@ -24,7 +24,7 @@ var eventDust = 0;
 var eventStory = 0;
 var snowHouse = 0;
 var snowHouseWait = 0;
-var snowHouseEnd = 0;
+var snowHouseEnd = 1;
 var blackfriday = 0;
 
 // Variabili globali
@@ -14661,7 +14661,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															if (room_id > 1) {
 																bot.sendMessage(message.chat.id, "Torni alla stanza precedente con rassegnazione...", dNext);
 
-																await endDungeonRoom(player_id, boost_id, boost_mission);
+																await endDungeonRoom(player_id, boost_id, boost_mission, 0);
 
 																connection.query('UPDATE dungeon_status SET room_id = room_id, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
@@ -31736,9 +31736,9 @@ bot.onText(/^\/inviacasse (.+),(.+),(\d+)|^\/inviacasse$/i, function (message, m
 		return;
 	}
 
-	var toNick = match[1];
-	var custom_msg = match[2];
-	var quantity = parseInt(match[3]);
+	var toNick = match[1].trim();
+	var custom_msg = match[2].trim();
+	var quantity = parseInt(match[3].trim());
 
 	var reg = new RegExp("^[a-zA-Z0-9 \-\;\,\.àùèìéòó_\§\!\\\n?]{1,1000}$");
 	if (!reg.test(custom_msg)) {
@@ -31858,7 +31858,7 @@ bot.onText(/^\/inviacasse (.+),(.+),(\d+)|^\/inviacasse$/i, function (message, m
 							extra = " con un messaggio personalizzato";
 						}
 						bot.sendMessage(message.chat.id, "Hai inviato " + quantity + " Casse Misteriose a <b>" + toNick + "</b>" + extra + "!", html);
-						if (custom_msg != "")
+						if (custom_msg.trim() != "")
 							extra = "\nSopra le casse leggi: <i>" + custom_msg + "</i>";
 						bot.sendMessage(chat_id, "Hai ricevuto " + quantity + " Casse Misteriose contenenti:\n" + item_list + "\nDa <b>" + message.from.username + "</b>!" + extra, html);
 					});
@@ -32709,8 +32709,8 @@ bot.onText(/^\/endVillaggio/i, function (message) {
 				});
 				await addChest(rows[i].id, 8, qnt);
 				if (rows[i].cnt >= 2) {
-					await addItem(rows[i].id, 802);
-					text += " ed un *Alberello di Natale 2020* (IN)";
+					await addItem(rows[i].id, 805);
+					text += " ed un *Alberello di Natale 2021* (IN)";
 				}
 				console.log(rows[i].nickname, text);
 				bot.sendMessage(rows[i].chat_id, text + "!", mark);
@@ -38588,7 +38588,7 @@ bot.onText(/^Le Mie Classifiche/i, function (message) {
 												if (rows[0].global_eventwait == 0) {
 													if (mypos > 0) {
 														// globale ore in incarico
-														mypnt = Math.round(mypnt/60);
+														// mypnt = Math.round(mypnt/60);
 														// fine
 														text = text + "\n*Impresa Globale*: " + mypos + "° con " + formatNumber(mypnt);
 													}
@@ -40287,7 +40287,7 @@ bot.onText(/compra/i, function (message) {
 										if (rows[i].quantity > 0)
 											quantity = max_quantity-rows[i].quantity;
 
-										var shop_limit = connection.queryAsync('SELECT 1 FROM shop_limit WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
+										var shop_limit = await connection.queryAsync('SELECT 1 FROM shop_limit WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
 
 										if (Object.keys(shop_limit).length == 0) {
 											connection.query('INSERT INTO shop_limit (player_id, chest_id, quantity) VALUES (' + player_id + ', ' + chest_id + ', ' + quantity + ')', function (err, rows, fields) {
@@ -46771,11 +46771,12 @@ bot.onText(/missione|^msn$/i, function (message) {
 							name += " (Estesa per malus globale)";
 							duration_extend += 25;
 						}
+						*/
+
 						if (global_end == 1) {
 							name += " (Ridotta per bonus globale)";
 							duration_reduce += 25;
 						}
-						*/
 
 						if (duration_reduce > 0)
 							duration -= (duration / 100 * duration_reduce);
@@ -47095,9 +47096,11 @@ bot.onText(/^imprese|Torna alle imprese/i, function (message) {
 									}
 
 									// globale ore in incarico
+									/*
 									globalVal = Math.round(globalVal/60);
 									if (global_hide == 0)
 										cap = Math.round(cap/60);
+									*/
 									// fine
 
 									text += "Progresso: <b>" + formatNumber(globalVal) + "</b> / <b>" + formatNumber(cap) + "</b> " + global_desc + "\nTempo rimanente: <b>" + diff + "</b>\nAl completamento si otterrà un bonus, al fallimento un malus, forza!\n";
@@ -47998,7 +48001,7 @@ function setMapCondition() {
 }
 
 function getSnowball(chat_id, nickname, player_id, quantity) {
-	if ((snowHouse == 1) && (snowHouseEnd == 0)) {
+	if ((snowHouse == 1) && (snowHouseWait == 0) && (snowHouseEnd == 0)) {
 		var rand = Math.random()*100;
 		if (rand < 50) {
 			connection.query('SELECT COUNT(id) As cnt FROM event_snowball_status WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -51023,8 +51026,10 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 													if (crazyMode == 1)
 														totTime = Math.round(totTime / 2);
 
+													/*
 													if (global_end == 1)
 														totTime = Math.round(totTime / 2);
+													*/
 
 													if (boost_id == 9) {
 														setBoost(from_id, boost_mission, boost_id);
@@ -52989,7 +52994,7 @@ function getRankAch(message, size) {
 
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 							// globale ore in incarico
-							rows[i].cnt = Math.round(rows[i].cnt/60);
+							// rows[i].cnt = Math.round(rows[i].cnt/60);
 							// fine
 							if (c < size + 1)
 								text += c + "° " + rows[i].nickname + " (" + formatNumber(rows[i].cnt) + ")\n";
@@ -53022,7 +53027,7 @@ function getRankAch(message, size) {
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 							nickname.push(rows[i].nickname);
 							// globale ore in incarico
-							rows[i].cnt = Math.round(rows[i].cnt/60);
+							// rows[i].cnt = Math.round(rows[i].cnt/60);
 							// fine
 							point.push(rows[i].cnt);
 							if (player_id == rows[i].id)
@@ -56878,8 +56883,10 @@ function setDungeonEnergy(element, index, array) {
 	});
 }
 
-async function endDungeonRoom(player_id, boost_id, boost_mission) {
+async function endDungeonRoom(player_id, boost_id, boost_mission, global_cnt = 1) {
 	setAchievement(player_id, 63, 1);
+	if (global_cnt == 1)
+		globalAchievement(player_id, 1);
 	if (boost_id == 8) {
 		setBoost(player_id, boost_mission, boost_id);
 		return;
@@ -59390,9 +59397,6 @@ function setFinishedTeamMission(element, index, array) {
 
 									for (i = 0; i < Object.keys(rows).length; i++) {
 										if (rows[i].suspended == 0) {
-
-											globalAchievement(rows[i].id, mission_time_count_min);
-
 											qnt = savedQnt;
 
 											var extra = "";

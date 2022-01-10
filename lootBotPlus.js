@@ -15,12 +15,13 @@ const tipsController = require('./suggestions/tips_message_controller.js')
 
 process.on('uncaughtException', function (error) {
 	console.log('\x1b[31mException: ', error, '\x1b[0m')
+	console.log(error);
 })
 
 process.on('unhandledRejection', function (error, p) {
-	if ((error.message.indexOf('Too Many Requests') === -1) && (error.message.indexOf('message is not modified') === -1)) {
+	if ((error.message.indexOf('Too Many Requests') === -1) && (error.message.indexOf('message is not modified') === -1))
 		console.log('\x1b[31mError: ', error.message, '\x1b[0m')
-	}
+	console.log(error);
 })
 
 tipsController.initialize()
@@ -5195,7 +5196,7 @@ bot.on('callback_query', async function (message) {
 						})
 					} else {
 						bot.editMessageText(text, {
-							chat_id: message.chat.id,
+							chat_id: message.message.chat.id,
 							message_id: message.message.message_id,
 							parse_mode: 'HTML',
 							reply_markup: {
@@ -8356,7 +8357,7 @@ bot.onText(/^\/posizione$/, function (message, match) {
 						return
 					}
 
-					bot.sendMessage(message.chat.id, message.from.username + ', hai raggiunto la posizione <b>' + formatNumber(pos) + '</b> con <b>' + formatNumber(Math.round(pnt/60)) + "</b> punti nell'Impresa Globale in corso!" + limit_msg, html)
+					bot.sendMessage(message.chat.id, message.from.username + ', hai raggiunto la posizione <b>' + formatNumber(pos) + '</b> con <b>' + formatNumber(pnt) + "</b> punti nell'Impresa Globale in corso!" + limit_msg, html)
 				})
 			})
 		})
@@ -8536,7 +8537,7 @@ bot.onText(/^\/posizioneteam/, function (message, match) {
 							if (arrayPlayers[i].pos == 0)
 								text += "> <b>" + arrayPlayers[i].nickname + "</b> non presente in classifica\n"
 							else
-								text += "> <b>" + arrayPlayers[i].nickname + "</b> alla posizione <i>" + arrayPlayers[i].pos + "</i> con " + formatNumber((Math.round(arrayPlayers[i].pnt/60))) + " punti\n"
+								text += "> <b>" + arrayPlayers[i].nickname + "</b> alla posizione <i>" + arrayPlayers[i].pos + "</i> con " + formatNumber(arrayPlayers[i].pnt) + " punti\n"
 						}
 
 						bot.sendMessage(message.chat.id, text, html)
