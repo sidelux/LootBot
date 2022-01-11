@@ -36757,7 +36757,7 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 								parse_mode: "Markdown",
 								reply_markup: {
 									resize_keyboard: true,
-									keyboard: [["Sì"], ["Torna alle figurine"]]
+									keyboard: [["Si"], ["Torna alle figurine"]]
 								}
 							};
 
@@ -36800,109 +36800,108 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 													return;
 												}
 
-												bot.sendMessage(message.chat.id, "Sei sicuro di voler bruciare le seguenti figurine: " + cards.join(" ,") + "?", kbYesNo).then(function () {
+												bot.sendMessage(message.chat.id, "Sei sicuro di voler bruciare le seguenti figurine: " + cards.join(", ") + "?", kbYesNo).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
-														if (answer.text.toLowerCase() != "si")
-															return;
+														if (answer.text.toLowerCase() == "si") {
+															var text = "Butti le figurine nel fuoco verdognolo... Dopo poco tempo ricevi:\n";
 
-														var text = "Butti le figurine nel fuoco verdognolo... Dopo poco tempo ricevi:\n";
+															for (var i = 0; i < cards.length; i++) {
+																var card = cards[i];
 
-														for (var i = 0; i < cards.length; i++) {
-															var card = cards[i];
+																var rows = await connection.queryAsync('SELECT id, rarity, name FROM card_list WHERE name = "' + card + '"');
 
-															var rows = await connection.queryAsync('SELECT id, rarity, name FROM card_list WHERE name = "' + card + '"');
+																if (Object.keys(rows).length == 0) {
+																	text += "La figurina " + card + " inserita non esiste\n";
+																	continue;
+																}
 
-															if (Object.keys(rows).length == 0) {
-																text += "La figurina " + card + " inserita non esiste\n";
-																continue;
-															}
+																var card_id = rows[0].id;
+																var card_name = rows[0].name;
+																var rarity = rows[0].rarity;
 
-															var card_id = rows[0].id;
-															var card_name = rows[0].name;
-															var rarity = rows[0].rarity;
+																var rows = await connection.queryAsync('SELECT quantity FROM card_inventory WHERE card_id = ' + card_id + ' AND player_id = ' + player_id);
 
-															var rows = await connection.queryAsync('SELECT quantity FROM card_inventory WHERE card_id = ' + card_id + ' AND player_id = ' + player_id);
+																if (Object.keys(rows).length == 0) {
+																	text += "Non possiedi la figurina " + card + "\n";
+																	continue;
+																}
 
-															if (Object.keys(rows).length == 0) {
-																text += "Non possiedi la figurina " + card + "\n";
-																continue;
-															}
+																if (rows[0].quantity < 1) {
+																	text += "Non hai abbastanza copie della figurina" + card + "\n";
+																	continue;
+																}
 
-															if (rows[0].quantity < 1) {
-																text += "Non hai abbastanza copie della figurina" + card + "\n";
-																continue;
-															}
+																var check_locked = await connection.queryAsync('SELECT 1 FROM card_rarity_reward WHERE rarity = ' + rarity + ' AND player_id = ' + player_id);
+																if ((rows[0].quantity == 1) && (Object.keys(check_locked).length == 1)) {
+																	text += "La figurina " + card + " non può essere bruciata\n";
+																	return;
+																}
 
-															var check_locked = await connection.queryAsync('SELECT 1 FROM card_rarity_reward WHERE rarity = ' + rarity + ' AND player_id = ' + player_id);
-															if ((rows[0].quantity == 1) && (Object.keys(check_locked).length == 1)) {
-																text += "La figurina " + card + " non può essere bruciata\n";
-																return;
-															}
+																var rows = await connection.queryAsync('UPDATE card_inventory SET quantity = quantity-1 WHERE card_id = ' + card_id + ' AND player_id = ' + player_id);
 
-															var rows = await connection.queryAsync('UPDATE card_inventory SET quantity = quantity-1 WHERE card_id = ' + card_id + ' AND player_id = ' + player_id);
+																var rand = Math.random()*100;
+																var name = "";
 
-															var rand = Math.random()*100;
-															var name = "";
+																if (player_id == 1)
+																	rand = 60;
 
-															if (player_id == 1)
-																rand = 60;
-
-															if (rand < 50) {
-																if (rarity < 5) {
-																	var money = 50000*rarity;
-																	await addMoney(player_id, money);
-																	name = formatNumber(money) + "x Monete";
-																} else if (rarity < 9) {
-																	rand = Math.random()*100;
-																	if (rand < 80) {
-																		await addChest(player_id, 5, 10);
-																		name = "10x Scrigni Leggendari";
+																if (rand < 50) {
+																	if (rarity < 5) {
+																		var money = 50000*rarity;
+																		await addMoney(player_id, money);
+																		name = formatNumber(money) + "x Monete";
+																	} else if (rarity < 9) {
+																		rand = Math.random()*100;
+																		if (rand < 80) {
+																			await addChest(player_id, 5, 10);
+																			name = "10x Scrigni Leggendari";
+																		} else {
+																			await addChest(player_id, 6, 5);
+																			name = "5x Scrigni Epici";
+																		}
 																	} else {
-																		await addChest(player_id, 6, 5);
-																		name = "5x Scrigni Epici";
+																		rand = Math.random()*100;
+																		if (rand < 60) {
+																			connection.query('UPDATE player SET moon_coin = moon_coin+1 WHERE id = ' + player_id, function (err, rows, fields) {
+																				if (err) throw err;
+																			});
+																			name = "1x Moneta Lunare 🌕";
+																		} else if (rand < 80) {
+																			await addChest(player_id, 9, 1);
+																			name = "1x Scrigno Scaglia";
+																		} else {
+																			await addChest(player_id, 7, 1);
+																			name = "1x Scrigno Capsula";
+																		}
 																	}
 																} else {
-																	rand = Math.random()*100;
-																	if (rand < 60) {
-																		connection.query('UPDATE player SET moon_coin = moon_coin+1 WHERE id = ' + player_id, function (err, rows, fields) {
-																			if (err) throw err;
-																		});
-																		name = "1x Moneta Lunare 🌕";
-																	} else if (rand < 80) {
-																		await addChest(player_id, 9, 1);
-																		name = "1x Scrigno Scaglia";
-																	} else {
-																		await addChest(player_id, 7, 1);
-																		name = "1x Scrigno Capsula";
-																	}
+																	var new_card = await connection.queryAsync('SELECT id, name, rarity FROM card_list WHERE rarity BETWEEN ' + (rarity-1) + ' AND ' + (rarity+1) + ' ORDER BY RAND()');
+
+																	connection.query('SELECT 1 FROM card_inventory WHERE card_id = ' + new_card[0].id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+																		if (err) throw err;
+																		if (Object.keys(rows).length == 0) {
+																			connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + new_card[0].id + ')', function (err, rows, fields) {
+																				if (err) throw err;
+																				checkAllCardsProgress(player_id);
+																			});
+																		} else {
+																			connection.query('UPDATE card_inventory SET quantity = quantity + 1 WHERE player_id = ' + player_id + ' AND card_id = ' + new_card[0].id, function (err, rows, fields) {
+																				if (err) throw err;
+																				checkAllCardsProgress(player_id);
+																			});
+																		}
+																	});
+
+																	name = "1x 🃏 " + new_card[0].name + " (" + new_card[0].rarity + ")";
 																}
-															} else {
-																var new_card = await connection.queryAsync('SELECT id, name, rarity FROM card_list WHERE rarity BETWEEN ' + (rarity-1) + ' AND ' + (rarity+1) + ' ORDER BY RAND()');
 
-																connection.query('SELECT 1 FROM card_inventory WHERE card_id = ' + new_card[0].id + ' AND player_id = ' + player_id, function (err, rows, fields) {
-																	if (err) throw err;
-																	if (Object.keys(rows).length == 0) {
-																		connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + new_card[0].id + ')', function (err, rows, fields) {
-																			if (err) throw err;
-																			checkAllCardsProgress(player_id);
-																		});
-																	} else {
-																		connection.query('UPDATE card_inventory SET quantity = quantity + 1 WHERE player_id = ' + player_id + ' AND card_id = ' + new_card[0].id, function (err, rows, fields) {
-																			if (err) throw err;
-																			checkAllCardsProgress(player_id);
-																		});
-																	}
-																});
+																console.log("Figurina bruciata per player " + player_id + ": " + name);
 
-																name = "1x 🃏 " + new_card[0].name + " (" + new_card[0].rarity + ")";
+																text += "> " + name + "\n";
 															}
 
-															console.log("Figurina bruciata per player " + player_id + ": " + name);
-
-															text += "> " + name + "\n";
+															bot.sendMessage(message.chat.id, text, kbBack);
 														}
-
-														bot.sendMessage(message.chat.id, text, kbBack);
 													}
 												});
 											}
