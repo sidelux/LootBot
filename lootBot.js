@@ -3475,6 +3475,15 @@ bot.onText(/^vetrinetta/i, function (message) {
 				}
 			};
 
+			var kbBack = {
+				parse_mode: "Markdown",
+				disable_web_page_preview: true,
+				reply_markup: {
+					resize_keyboard: true,
+					keyboard: [["Torna alla vetrinetta"], ["Torna al menu"]]
+				}
+			};
+
 			var active_text = "";
 			if (active_boost_id != 0) {
 				var boostQuery = await connection.queryAsync("SELECT name FROM item WHERE boost_id = " + active_boost_id);
@@ -3492,7 +3501,7 @@ bot.onText(/^vetrinetta/i, function (message) {
 							if (err) throw err;
 
 							if (Object.keys(rows).length == 0) {
-								bot.sendMessage(message.chat.id, "La bevanda che hai inserito non esiste, riprova.", back);
+								bot.sendMessage(message.chat.id, "La bevanda che hai inserito non esiste, riprova.", kbBack);
 								return;
 							}
 
@@ -3502,7 +3511,7 @@ bot.onText(/^vetrinetta/i, function (message) {
 								if (err) throw err;
 
 								if (Object.keys(rows).length == 0) {
-									bot.sendMessage(message.chat.id, "La bevanda che hai inserito non è presente nella vetrinetta, riprova.", back);
+									bot.sendMessage(message.chat.id, "La bevanda che hai inserito non è presente nella vetrinetta, riprova.", kbBack);
 									return;
 								}
 
@@ -3546,13 +3555,13 @@ bot.onText(/^vetrinetta/i, function (message) {
 												}
 												connection.query('UPDATE player SET boost_id = ' + boost_id + ', boost_mission = ' + boost_mission + ' WHERE id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
-													bot.sendMessage(message.chat.id, "La " + boost_name + " è stata attivata, durerà " + boost_mission + " turni" + extra, back);
+													bot.sendMessage(message.chat.id, "La " + boost_name + " è stata attivata, durerà " + boost_mission + " turni" + extra, kbBack);
 												});
 											});
 										} else if (answer.text == "Butta") {
 											connection.query('DELETE FROM boost_store WHERE id = ' + boost_row_id, function (err, rows, fields) {
 												if (err) throw err;
-												bot.sendMessage(message.chat.id, "Hai buttato la " + boost_name, back);
+												bot.sendMessage(message.chat.id, "Hai buttato la " + boost_name, kbBack);
 											});
 										}
 									}
@@ -3560,7 +3569,7 @@ bot.onText(/^vetrinetta/i, function (message) {
 							});
 						});
 					} else {
-						bot.sendMessage(message.chat.id, "Bevanda non valida, riprova.", back);
+						bot.sendMessage(message.chat.id, "Bevanda non valida, riprova.", kbBack);
 						return;
 					}
 				}
@@ -14922,7 +14931,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																var player_refill = player_total_life*life_perc/100;
 																if (player_life+player_refill > player_total_life)
 																	player_refill = player_total_life-player_life;
-																connection.query('UPDATE player SET life = life+' + player_refill + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																connection.query('UPDATE player SET life = life+' + player_refill + ', paralyzed = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 															} else {
@@ -22329,11 +22338,11 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 											for (var i = 0; i < dragon_scale; i++)
 												scale += "⚜️ ";
 										} else
-											scale = "-"
+											scale = "-";
 
-										var status = "Tuo drago " + dragonSym(dragon_type) + ": " + formatNumber(dragon_life) + " 🔺 (" + altered + ")\n|" + progressBar(dragon_life, dragon_total_life) + "|\n\n";
+										var status = "Avversario " + dragonSym(enemy_dragon_type) + ": " + formatNumber(enemy_dragon_life) + " 🔺 (" + enemy_altered + ")\n|" + progressBar(enemy_dragon_life, enemy_dragon_total_life) + "|\n\n";
 
-										status += "Avversario " + dragonSym(enemy_dragon_type) + ": " + formatNumber(enemy_dragon_life) + " 🔺 (" + enemy_altered + ")\n|" + progressBar(enemy_dragon_life, enemy_dragon_total_life) + "|\n\n";
+										status += "Tuo drago " + dragonSym(dragon_type) + ": " + formatNumber(dragon_life) + " 🔺 (" + altered + ")\n|" + progressBar(dragon_life, dragon_total_life) + "|\n\n";
 
 										status += "Scaglie: " + scale + "\n";
 										if ((charm_id != 695) && (charm_id != 602) && (charm_id != 0)) {
@@ -23355,7 +23364,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																							setAchievement(player_id, 88, 1);
 																							setAchievement(player_id, 90, 1);
 
-																							bot.sendMessage(message.chat.id, "Hai sconfitto <b>" + enemy_dragon_name + "</b>, hai ottenuto " + rank + " Ð" + extra + bonus_money, kbBack);
+																							bot.sendMessage(message.chat.id, "Hai sconfitto <b>" + enemy_dragon_name + "</b> infliggendo " + formatNumber(damage) + " danni, hai ottenuto " + rank + " Ð" + extra + bonus_money, kbBack);
 
 																							if (is_dummy == 0) {
 																								bot.sendMessage(chat_id2, "Il tuo drago è stato sconfitto nella vetta da " + dragon_name + " ed hai perso " + rank_lost + " Ð! Fallo riposare per tornare a combattere!");
@@ -32799,7 +32808,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 				connection.query('INSERT INTO event_snowball_status (player_id, snowball) VALUES (' + player_id + ', 5)', function (err, rows, fields) {
 					if (err) throw err;
 					
-					bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella <b>Casa nella Neve</b> 🌨, l'evento Natalizio! 🎄\nSi tratta in tutto per tutto di una competizione per chi riuscirà a costruire più <b>Pupazzi di Neve</b> in tutto il regno di Lootia. Con le <b>Palle di Neve</b> puoi costruirne sempre di più, oppure danneggiare quelli avversari per far perdere loro punti. Puoi accumulare la Neve attraverso Missioni, Ispezioni, Dungeon, Mappe, Cave ed Incarichi.\nBuona fortuna!\nHai ricevuto <b>5 Palle di Neve</b> per l'iscrizione.", kb3);
+					bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella <b>Casa nella Neve</b> 🌨, l'evento Natalizio! 🎄\nSi tratta in tutto per tutto di una competizione per chi riuscirà a costruire più <b>Pupazzi di Neve</b> in tutto il regno di Lootia. Con le <b>Palle di Neve</b> puoi costruirne sempre di più, oppure danneggiare quelli avversari per far perdere loro punti. Puoi accumulare la Neve attraverso Missioni (non gemmate), Ispezioni, Dungeon, Mappe, Cave ed Incarichi.\nBuona fortuna!\nHai ricevuto <b>5 Palle di Neve</b> per l'iscrizione.", kb3);
 				});
 				console.log(message.from.username + " iscritto all'evento di natale");
 				return;
@@ -32827,7 +32836,7 @@ bot.onText(/Casa nella Neve|Torna alla Casa$|Entra nella Casa$|villaggio innevat
 
 						var snowman_cnt = parseInt(rows[0].cnt);
 
-						bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella tua <b>Casa nella Neve</b> 🌨!\nDurante questa settimana si svolge una gara che premierà chi riuscirà a costruire più Pupazzi di Neve degli altri partecipanti!\nPer costruirne un altro ti servono <b>" + (10+(snowman_cnt*10)) + " Palle di Neve</b>, puoi lanciarne una per danneggiare gli avversari oppure i loro pupazzi.\n\nPossiedi <b>" + snowball + "</b> Palle di Neve ❄️ e <b>" + formatNumber(snowman_cnt) + "</b> Pupazzi di Neve ⛄️!\nIn totale sono stati creati <b>" + formatNumber(snowman_cnt_tot) + "</b> Pupazzi e ci sono <b>" + formatNumber(snowball_tot) + "</b> Palle di Neve!\n\nC'è una probabilità di ottenerne altre tramite Missioni, Ispezioni, Dungeon, Mappe, Cave ed Incarichi. Ogni Pupazzo ti fornirà 1 Palla di Neve per ogni azione.\n\nL'evento termina il 31 alle 12:00!", kb).then(function () {
+						bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " nella tua <b>Casa nella Neve</b> 🌨!\nDurante questa settimana si svolge una gara che premierà chi riuscirà a costruire più Pupazzi di Neve degli altri partecipanti!\nPer costruirne un altro ti servono <b>" + (10+(snowman_cnt*10)) + " Palle di Neve</b>, puoi lanciarne una per danneggiare gli avversari oppure i loro pupazzi.\n\nPossiedi <b>" + snowball + "</b> Palle di Neve ❄️ e <b>" + formatNumber(snowman_cnt) + "</b> Pupazzi di Neve ⛄️!\nIn totale sono stati creati <b>" + formatNumber(snowman_cnt_tot) + "</b> Pupazzi e ci sono <b>" + formatNumber(snowball_tot) + "</b> Palle di Neve!\n\nC'è una probabilità di ottenerne altre tramite Missioni (non gemmate), Ispezioni, Dungeon, Mappe, Cave ed Incarichi. Ogni Pupazzo ti fornirà 1 Palla di Neve per ogni azione.\n\nL'evento termina il 31 alle 12:00!", kb).then(function () {
 							answerCallbacks[message.chat.id] = async function (answer) {
 								if (answer.text == "Lancia Palla di Neve ❄️") {
 									bot.sendMessage(message.chat.id, "Puoi lanciare una Palla di Neve ad un giocatore in particolare (scrivendo il nickname) oppure ad uno casuale, nel primo caso consumerai 2 Palle di Neve.\nNel caso in cui il bersaglio avesse un Pupazzo di Neve, quest'ultimo verrà colpito al posto del giocatore e danneggiato o distrutto. Può capitare inoltre che il giocatore avversario recuperi la tua Palla di Neve!", kb2).then(function () {
@@ -36744,6 +36753,14 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 								}
 							};
 
+							var kbYesNo = {
+								parse_mode: "Markdown",
+								reply_markup: {
+									resize_keyboard: true,
+									keyboard: [["Sì"], ["Torna alle figurine"]]
+								}
+							};
+
 							bot.sendMessage(message.chat.id, text + "\nPuoi ampliare la tua collezione scambiandole con gli altri giocatori ed ottenerle nell'_Emporio_!\nSe hai già richiesto la ricompensa per una rarità completata, potrai scambiarne solo le doppie", kb).then(function () {
 								answerCallbacks[message.chat.id] = async function (answer) {
 									if (answer.text == "Torna al menu")
@@ -36783,104 +36800,111 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 													return;
 												}
 
-												var text = "Butti le figurine nel fuoco verdognolo... Dopo poco tempo ricevi:\n";
+												bot.sendMessage(message.chat.id, "Sei sicuro di voler bruciare le seguenti figurine: " + cards.join(" ,") + "?", kbYesNo).then(function () {
+													answerCallbacks[message.chat.id] = async function (answer) {
+														if (answer.text.toLowerCase() != "si")
+															return;
 
-												for (var i = 0; i < cards.length; i++) {
-													var card = cards[i];
+														var text = "Butti le figurine nel fuoco verdognolo... Dopo poco tempo ricevi:\n";
 
-													var rows = await connection.queryAsync('SELECT id, rarity, name FROM card_list WHERE name = "' + card + '"');
+														for (var i = 0; i < cards.length; i++) {
+															var card = cards[i];
 
-													if (Object.keys(rows).length == 0) {
-														text += "La figurina " + card + " inserita non esiste\n";
-														continue;
-													}
+															var rows = await connection.queryAsync('SELECT id, rarity, name FROM card_list WHERE name = "' + card + '"');
 
-													var card_id = rows[0].id;
-													var card_name = rows[0].name;
-													var rarity = rows[0].rarity;
-
-													var rows = await connection.queryAsync('SELECT quantity FROM card_inventory WHERE card_id = ' + card_id + ' AND player_id = ' + player_id);
-
-													if (Object.keys(rows).length == 0) {
-														text += "Non possiedi la figurina " + card + "\n";
-														continue;
-													}
-
-													if (rows[0].quantity < 1) {
-														text += "Non hai abbastanza copie della figurina" + card + "\n";
-														continue;
-													}
-
-													var check_locked = await connection.queryAsync('SELECT 1 FROM card_rarity_reward WHERE rarity = ' + rarity + ' AND player_id = ' + player_id);
-													if ((rows[0].quantity == 1) && (Object.keys(check_locked).length == 1)) {
-														text += "La figurina " + card + " non può essere bruciata\n";
-														return;
-													}
-
-													var rows = await connection.queryAsync('UPDATE card_inventory SET quantity = quantity-1 WHERE card_id = ' + card_id + ' AND player_id = ' + player_id);
-
-													var rand = Math.random()*100;
-													var name = "";
-
-													if (player_id == 1)
-														rand = 60;
-
-													if (rand < 50) {
-														if (rarity < 5) {
-															var money = 50000*rarity;
-															await addMoney(player_id, money);
-															name = formatNumber(money) + "x Monete";
-														} else if (rarity < 9) {
-															rand = Math.random()*100;
-															if (rand < 80) {
-																await addChest(player_id, 5, 10);
-																name = "10x Scrigni Leggendari";
-															} else {
-																await addChest(player_id, 6, 5);
-																name = "5x Scrigni Epici";
-															}
-														} else {
-															rand = Math.random()*100;
-															if (rand < 60) {
-																connection.query('UPDATE player SET moon_coin = moon_coin+1 WHERE id = ' + player_id, function (err, rows, fields) {
-																	if (err) throw err;
-																});
-																name = "1x Moneta Lunare 🌕";
-															} else if (rand < 80) {
-																await addChest(player_id, 9, 1);
-																name = "1x Scrigno Scaglia";
-															} else {
-																await addChest(player_id, 7, 1);
-																name = "1x Scrigno Capsula";
-															}
-														}
-													} else {
-														var new_card = await connection.queryAsync('SELECT id, name, rarity FROM card_list WHERE rarity BETWEEN ' + (rarity-1) + ' AND ' + (rarity+1) + ' ORDER BY RAND()');
-
-														connection.query('SELECT 1 FROM card_inventory WHERE card_id = ' + new_card[0].id + ' AND player_id = ' + player_id, function (err, rows, fields) {
-															if (err) throw err;
 															if (Object.keys(rows).length == 0) {
-																connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + new_card[0].id + ')', function (err, rows, fields) {
-																	if (err) throw err;
-																	checkAllCardsProgress(player_id);
-																});
-															} else {
-																connection.query('UPDATE card_inventory SET quantity = quantity + 1 WHERE player_id = ' + player_id + ' AND card_id = ' + new_card[0].id, function (err, rows, fields) {
-																	if (err) throw err;
-																	checkAllCardsProgress(player_id);
-																});
+																text += "La figurina " + card + " inserita non esiste\n";
+																continue;
 															}
-														});
 
-														name = "1x 🃏 " + new_card[0].name + " (" + new_card[0].rarity + ")";
+															var card_id = rows[0].id;
+															var card_name = rows[0].name;
+															var rarity = rows[0].rarity;
+
+															var rows = await connection.queryAsync('SELECT quantity FROM card_inventory WHERE card_id = ' + card_id + ' AND player_id = ' + player_id);
+
+															if (Object.keys(rows).length == 0) {
+																text += "Non possiedi la figurina " + card + "\n";
+																continue;
+															}
+
+															if (rows[0].quantity < 1) {
+																text += "Non hai abbastanza copie della figurina" + card + "\n";
+																continue;
+															}
+
+															var check_locked = await connection.queryAsync('SELECT 1 FROM card_rarity_reward WHERE rarity = ' + rarity + ' AND player_id = ' + player_id);
+															if ((rows[0].quantity == 1) && (Object.keys(check_locked).length == 1)) {
+																text += "La figurina " + card + " non può essere bruciata\n";
+																return;
+															}
+
+															var rows = await connection.queryAsync('UPDATE card_inventory SET quantity = quantity-1 WHERE card_id = ' + card_id + ' AND player_id = ' + player_id);
+
+															var rand = Math.random()*100;
+															var name = "";
+
+															if (player_id == 1)
+																rand = 60;
+
+															if (rand < 50) {
+																if (rarity < 5) {
+																	var money = 50000*rarity;
+																	await addMoney(player_id, money);
+																	name = formatNumber(money) + "x Monete";
+																} else if (rarity < 9) {
+																	rand = Math.random()*100;
+																	if (rand < 80) {
+																		await addChest(player_id, 5, 10);
+																		name = "10x Scrigni Leggendari";
+																	} else {
+																		await addChest(player_id, 6, 5);
+																		name = "5x Scrigni Epici";
+																	}
+																} else {
+																	rand = Math.random()*100;
+																	if (rand < 60) {
+																		connection.query('UPDATE player SET moon_coin = moon_coin+1 WHERE id = ' + player_id, function (err, rows, fields) {
+																			if (err) throw err;
+																		});
+																		name = "1x Moneta Lunare 🌕";
+																	} else if (rand < 80) {
+																		await addChest(player_id, 9, 1);
+																		name = "1x Scrigno Scaglia";
+																	} else {
+																		await addChest(player_id, 7, 1);
+																		name = "1x Scrigno Capsula";
+																	}
+																}
+															} else {
+																var new_card = await connection.queryAsync('SELECT id, name, rarity FROM card_list WHERE rarity BETWEEN ' + (rarity-1) + ' AND ' + (rarity+1) + ' ORDER BY RAND()');
+
+																connection.query('SELECT 1 FROM card_inventory WHERE card_id = ' + new_card[0].id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+																	if (Object.keys(rows).length == 0) {
+																		connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + new_card[0].id + ')', function (err, rows, fields) {
+																			if (err) throw err;
+																			checkAllCardsProgress(player_id);
+																		});
+																	} else {
+																		connection.query('UPDATE card_inventory SET quantity = quantity + 1 WHERE player_id = ' + player_id + ' AND card_id = ' + new_card[0].id, function (err, rows, fields) {
+																			if (err) throw err;
+																			checkAllCardsProgress(player_id);
+																		});
+																	}
+																});
+
+																name = "1x 🃏 " + new_card[0].name + " (" + new_card[0].rarity + ")";
+															}
+
+															console.log("Figurina bruciata per player " + player_id + ": " + name);
+
+															text += "> " + name + "\n";
+														}
+
+														bot.sendMessage(message.chat.id, text, kbBack);
 													}
-
-													console.log("Figurina bruciata per player " + player_id + ": " + name);
-
-													text += "> " + name + "\n";
-												}
-
-												bot.sendMessage(message.chat.id, text, kbBack);
+												});
 											}
 										});
 									} else if (answer.text.toLowerCase().indexOf("scambia") != -1) {
@@ -62252,7 +62276,8 @@ function setFinishedMission(element, index, array) {
 								else if ((boost_id == 4) || (boost_id == 5) || (boost_id == 7))
 									setBoost(element.id, boost_mission, boost_id);
 
-								getSnowball(chat_id, element.nickname, element.id, 1);
+								if (mission_gem == 0)
+									getSnowball(chat_id, element.nickname, element.id, chest_id);
 								setAchievement(element.id, 1, 1);
 							});
 						});
