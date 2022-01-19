@@ -3433,7 +3433,7 @@ bot.onText(/giocatore|giocatrice|^io$|^me$/i, function (message) {
 	getInfo(message, message.from.username, 6);
 });
 
-bot.onText(/^vetrinetta/i, function (message) {
+bot.onText(/^vetrinetta|torna alla vetrinetta/i, function (message) {
 	connection.query('SELECT id, birth_date, boost_id, boost_mission FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -16111,6 +16111,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																			var damage = 100 + (Math.pow(monster_level, 2) * (1 + 1.5 * Math.random())) / 3.3 + Math.pow(weapon_dmg, 2) / 10.5 - bonus;
 
 																			var heal = Math.round(((magicPow/350)*Math.abs(damage))*10);
+																			if (heal < 0)
+																				heal = 0;
 																			if (magic == 1)
 																				danno += heal;
 																			if (heal+player_life > player_total_life)
@@ -37410,7 +37412,10 @@ bot.onText(/Bacheca IN/i, function (message) {
 							if ((rows[i].quantity == 0) && (rows[i].name.indexOf(year) != -1)) {
 								ids.push(rows[i].id);
 								items.push(rows[i].name);
-								prices.push((lastYear-year)*50);
+								var price = (lastYear-year)*50;
+								if (price > 200)
+									price = 200;
+								prices.push(price);
 							}
 						}
 					}

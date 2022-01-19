@@ -1503,6 +1503,7 @@ bot.onText(/^\/gruppi/, function (message) {
 													'\n<b>Canali</b>\n' +
 													'@Suggerimenti_per_LootBot - Gruppo dove i suggerimenti vengono postati e votati dagli utenti\n' +
 													'@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n' +
+													'@LootDogana - Ogni transazione di loot passa di qui, nel bene e nel male!\n' +
 
 													"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html)
 											})
