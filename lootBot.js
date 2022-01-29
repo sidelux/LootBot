@@ -5453,6 +5453,7 @@ bot.onText(/lancia il dado/i, function (message) {
 									if (my_diff < enemy_diff) {
 										win_text = "hai vinto ed ottenuto *" + qnt + "* Mana " + capitalizeFirstLetter(color) + "!";
 										setAchievement(player_id, 81, qnt);
+										setAchievement(player_id, 29, qnt);
 										connection.query('UPDATE event_mana_status SET mana_' + mana_num + ' = mana_' + mana_num + '+' + (qnt*2) + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 											if (err) throw err;
 										});
@@ -10848,9 +10849,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																				return;
 																			}
 
+																			addDungeonEnergy(player_id, 10);
+
 																			connection.query('UPDATE dungeon_status SET room_id = room_id-1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																				if (err) throw err;
-																				bot.sendMessage(message.chat.id, "Sei tornato alla stanza precedente!", dBack);
+																				bot.sendMessage(message.chat.id, "Sei tornato alla stanza precedente e hai recuperato 10 Cariche Esplorative!", dBack);
 																			});
 																		}
 																	}
@@ -52271,7 +52274,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 															setAchievement(player_id, 68, quantity, result_rarity_id);	// rarità
 														var today = new Date();
 														if (((today.getDay() == 6) || (today.getDay() == 0)) && (eventFestival == 1))
-															checkFestival(message.chat.id, player_id, matR);
+															checkFestival(message.chat.id, player_id, matR, quantity);
 													});
 												});
 											});
@@ -52287,7 +52290,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 	});
 }
 
-function checkFestival(chat_id, player_id, item_id) {
+function checkFestival(chat_id, player_id, item_id, quantity) {
 	connection.query('SELECT event_crafting_item.completed, event_crafting_item.cnt, event_crafting_item.total_price, event_crafting_item.full_price, event_crafting_item.wait_time, event_crafting_item.start_price, event_crafting_item.increm, event_crafting_item.id As eventId, event_crafting_item.cnt, item.id, rarity.id As rarity_id, event_crafting_item.incremDelta FROM event_crafting_item, item, rarity WHERE item.rarity = rarity.shortname AND item.id = event_crafting_item.item_id ORDER BY event_crafting_item.id DESC LIMIT 1', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -52304,14 +52307,14 @@ function checkFestival(chat_id, player_id, item_id) {
 			var rarityId = rows[0].rarity_id;
 			var incremPrice = rows[0].increm;
 
-			connection.query('UPDATE event_crafting_item SET total_price = total_price+' + ricompensa + ', cnt = cnt+1, incremDelta = ' + ricompensa + ' WHERE id = ' + eventId, function (err, rows, fields) {
+			connection.query('UPDATE event_crafting_item SET total_price = total_price+' + ricompensa + ', cnt = cnt+' + quantity + ', incremDelta = ' + ricompensa + ' WHERE id = ' + eventId, function (err, rows, fields) {
 				if (err) throw err;
-				connection.query('UPDATE event_crafting_status SET cnt = cnt+1, total_cnt = total_cnt+1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+				connection.query('UPDATE event_crafting_status SET cnt = cnt+' + quantity + ', total_cnt = total_cnt+' + quantity + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
 					var plur = "e";
 					if ((parseInt(cnt) + 1) == 1)
 						plur = "a";
-					bot.sendMessage(chat_id, "Hai creato l'oggetto per il festival! Il gruzzolone ha raggiunto un totale di *" + formatNumber(total_price) + " §*, è stato creato " + formatNumber(parseInt(cnt) + 1) + " volt" + plur + "!", mark);
+					bot.sendMessage(chat_id, "Hai creato l'oggetto per il festival! Il gruzzolone ha raggiunto un totale di *" + formatNumber(total_price) + " §*, è stato creato " + formatNumber(parseInt(cnt) + quantity) + " volt" + plur + "!", mark);
 
 					var cap = start_price * 5 * (7 - rarityId);
 					cap += cap * (incremPrice / 100);
