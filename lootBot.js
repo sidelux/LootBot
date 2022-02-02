@@ -45239,6 +45239,9 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 
 													bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è migliore di quella del guardiano (" + combi + ")!\nIn una stanzetta all'interno del rifugio hai trovato un sacchettino contenente " + moneytxt + expText + extra, kbBack);
 
+													if (isMatch == 1)
+														globalAchievement(player_id, 1);
+
 													if (toGnome_notification == 1)
 														bot.sendMessage(toChat, message.from.username + " è riuscito a sconfiggere il guardiano del tuo rifugio, purtroppo avendo lasciato incustodito un sacchettino, hai perso " + moneytxt + extra2, html);
 												});
@@ -46803,11 +46806,12 @@ bot.onText(/missione|^msn$/i, function (message) {
 							duration_extend += 25;
 						}
 						*/
-
+						/*
 						if (global_end == 1) {
 							name += " (Ridotta per bonus globale)";
 							duration_reduce += 25;
 						}
+						*/
 
 						if (duration_reduce > 0)
 							duration -= (duration / 100 * duration_reduce);
@@ -56916,8 +56920,10 @@ function setDungeonEnergy(element, index, array) {
 
 async function endDungeonRoom(player_id, boost_id, boost_mission, global_cnt = 1) {
 	setAchievement(player_id, 63, 1);
+	/*
 	if (global_cnt == 1)
 		globalAchievement(player_id, 1);
+	*/
 	if (boost_id == 8) {
 		setBoost(player_id, boost_mission, boost_id);
 		return;
@@ -59431,7 +59437,6 @@ function setFinishedTeamMission(element, index, array) {
 											qnt = savedQnt;
 
 											var extra = "";
-											/*
                                             if (rows[i].global_end == 1) {
                                                 if ((qnt >= 100) || (rewardStr[1] == "money"))
                                                     qnt += qnt*0.2;
@@ -59446,7 +59451,6 @@ function setFinishedTeamMission(element, index, array) {
                                                 console.log("Incarico: " + rewardStr[1] + " " + extra_val);
                                                 extra = "\n\nQuantità incrementata di +" + extra_val + " per il bonus globale";
                                             }
-                                            */
 
 											if (endText.length > 3500)
 												endText = endText.substr(0, 35000) + "...";
