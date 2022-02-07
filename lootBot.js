@@ -59438,7 +59438,12 @@ function setFinishedTeamMission(element, index, array) {
 
 											var extra = "";
                                             if (rows[i].global_end == 1) {
-                                                if ((qnt >= 100) || (rewardStr[1] == "money"))
+                                                if ((rewardStr[1] == "mana") || 
+												(rewardStr[1] == "mana1") || 
+												(rewardStr[1] == "mana2") || 
+												(rewardStr[1] == "mana3") || 
+												(rewardStr[1] == "exp") || 
+												(rewardStr[1] == "money"))
                                                     qnt += qnt*0.2;
                                                 else
                                                     qnt++;
