@@ -3433,7 +3433,7 @@ bot.onText(/giocatore|giocatrice|^io$|^me$/i, function (message) {
 	getInfo(message, message.from.username, 6);
 });
 
-bot.onText(/^vetrinetta|torna alla vetrinetta/i, function (message) {
+bot.onText(/^vetrinetta|torna alla vetrinetta|^vtr$/i, function (message) {
 	connection.query('SELECT id, birth_date, boost_id, boost_mission FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
@@ -3553,15 +3553,23 @@ bot.onText(/^vetrinetta|torna alla vetrinetta/i, function (message) {
 														boost_mission = Math.floor(boost_mission*1.5);
 													}
 												}
-												connection.query('UPDATE player SET boost_id = ' + boost_id + ', boost_mission = ' + boost_mission + ' WHERE id = ' + player_id, function (err, rows, fields) {
-													if (err) throw err;
-													bot.sendMessage(message.chat.id, "La " + boost_name + " è stata attivata, durerà " + boost_mission + " turni" + extra, kbBack);
-												});
+												if (active_boost_id == boost_id) {
+													connection.query('UPDATE player SET boost_mission = boost_mission+' + boost_mission + ' WHERE id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+														bot.sendMessage(message.chat.id, "La " + boost_name + " è stata prolungata, durerà " + boost_mission + " turni in più" + extra, kbBack);
+													});
+												} else {
+													connection.query('UPDATE player SET boost_id = ' + boost_id + ', boost_mission = ' + boost_mission + ' WHERE id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+														bot.sendMessage(message.chat.id, "La " + boost_name + " è stata attivata, durerà " + boost_mission + " turni" + extra, kbBack);
+													});
+												}
 											});
 										} else if (answer.text == "Butta") {
 											connection.query('DELETE FROM boost_store WHERE id = ' + boost_row_id, function (err, rows, fields) {
 												if (err) throw err;
 												bot.sendMessage(message.chat.id, "Hai buttato la " + boost_name, kbBack);
+												setAchievement(player_id, 75, 1);
 											});
 										}
 									}
@@ -23368,6 +23376,8 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 
 																							setAchievement(player_id, 88, 1);
 																							setAchievement(player_id, 90, 1);
+																							if (chest >= 1)
+																								setAchievement(player_id, 89, 1);
 
 																							bot.sendMessage(message.chat.id, "Hai sconfitto <b>" + enemy_dragon_name + "</b> infliggendo " + formatNumber(damage) + " danni, hai ottenuto " + rank + " Ð" + extra + bonus_money, kbBack);
 
@@ -55987,6 +55997,8 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions, reason) {
 	if (conditions == 1)
 		time = Math.round(time/2);
 
+	
+
 	if (turnNumber+1 == middleX) {
 		// se raggiunge l'1x1, non restringe più
 		connection.query('UPDATE map_lobby_list SET next_restrict_time = NULL, restrict_end = 1 WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
@@ -56004,33 +56016,42 @@ function restrictMap(lobby_id, mapMatrix, turnNumber, conditions, reason) {
 		}
 	}
 
-	var moves_left = moves_left_default;
-	if (turnNumber == 0)
-		moves_left = moves_left_default/2;
-	else if (turnNumber == 1)
-		moves_left = (moves_left_default/2)-1;
-	else
-		moves_left = (moves_left_default/2)-2;
-
-	if (conditions == 7)
-		moves_left = moves_left*2;
-
-	connection.query('UPDATE map_lobby SET moves_left = ' + moves_left + ' WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
+	connection.query('SELECT COUNT(M.id) As alive FROM map_lobby WHERE M.killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
 		if (err) throw err;
-	});
-	
-	if (map_moves_mode == 1) {
-		connection.query('SELECT P.id, P.chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND M.killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+
+		var moves_left = moves_left_default;
+		if (turnNumber == 0)
+			moves_left = moves_left_default/2;
+		else if (turnNumber == 1)
+			moves_left = (moves_left_default/2)-1;
+		else
+			moves_left = (moves_left_default/2)-2;
+
+		if (conditions == 7)
+			moves_left = moves_left*2;
+
+		if (rows[0].alive <= 2)
+			moves_left = moves_left/2;
+
+		moves_left = Math.floor(moves_left);
+
+		connection.query('UPDATE map_lobby SET moves_left = ' + moves_left + ' WHERE lobby_id = ' + lobby_id, function (err, rows, fields) {
 			if (err) throw err;
-			var text = "";
-			if (reason == 1)
-				text = "Tempo scaduto! La mappa si è ristretta e le Cariche Movimento sono state ripristinate!";
-			else if (reason == 2)
-				text = "Tutte le Cariche sono state consumate, la mappa si è ristretta e le Cariche Movimento sono state ripristinate!";
-			for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-				bot.sendMessage(rows[i].chat_id, text);
 		});
-	}
+		
+		if (map_moves_mode == 1) {
+			connection.query('SELECT P.id, P.chat_id FROM map_lobby M, player P WHERE M.player_id = P.id AND M.killed = 0 AND lobby_id = ' + lobby_id, function (err, rows, fields) {
+				if (err) throw err;
+				var text = "";
+				if (reason == 1)
+					text = "Tempo scaduto! La mappa si è ristretta e le Cariche Movimento sono state ripristinate!";
+				else if (reason == 2)
+					text = "Tutte le Cariche sono state consumate, la mappa si è ristretta e le Cariche Movimento sono state ripristinate!";
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++)
+					bot.sendMessage(rows[i].chat_id, text);
+			});
+		}
+	});
 }
 
 function mapIdToSym(objId) {

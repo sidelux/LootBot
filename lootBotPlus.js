@@ -7866,7 +7866,7 @@ bot.onText(/^\/scuola/, function (message) {
 })
 
 bot.onText(/^\/statistiche|^\/stats$/, function (message) {
-	connection.query('SELECT MAX(id) As tot, SUM(achievement_count) As achievement, SUM(dungeon_count) As dungeon_tot, SUM(money) As money, SUM(craft_count) As craft, SUM(mission_count) As miss2 FROM player', function (err, rows, fields) {
+	connection.query('SELECT MAX(id) As tot, SUM(achievement_count) As achievement, SUM(dungeon_count) As dungeon_tot, SUM(money) As money, SUM(craft_count) As craft, SUM(mission_count) As miss2, SUM(top_win) As top, MAX(top_win_best) As topbest, SUM(trophies) As trophies_cnt FROM player', async function (err, rows, fields) {
 		if (err) throw err
 		const tot = rows[0].tot
 		const achievement = rows[0].achievement
@@ -7874,6 +7874,13 @@ bot.onText(/^\/statistiche|^\/stats$/, function (message) {
 		const craft = rows[0].craft
 		const miss2 = rows[0].miss2
 		const dungeon_tot = rows[0].dungeon_tot
+		const top_win = rows[0].top;
+		const top_win_best = rows[0].topbest;
+		const trophies = rows[0].trophies_cnt;
+
+		var map_win = await connection.queryAsync("SELECT COUNT(id) As cnt FROM map_history WHERE position = 1");
+		const map_win_cnt = map_win[0].cnt;
+
 		connection.query('SELECT COUNT(*) As miss FROM player WHERE mission_id != 0', function (err, rows, fields) {
 			if (err) throw err
 			const miss = rows[0].miss
@@ -8058,6 +8065,7 @@ bot.onText(/^\/statistiche|^\/stats$/, function (message) {
 																																									'*Imprese completate:* ' + formatNumber(achievement) + '\n' +
 																																									'*Spese Casa dei Giochi:* ' + formatNumber(house_tot) + ' §\n' +
 																																									'*Battaglie nella Vetta:* ' + formatNumber(top_log) + '\n' +
+																																									'*Vittorie nella Vetta:* ' + formatNumber(top_win) + ' (max ' + top_win_best + ' Ð)\n' +
 																																									'*Incarichi in corso/completati:* ' + formatNumber(mission_team_current) + '/' + formatNumber(mission_team) + '\n' +
 																																									'*Artefatti ottenuti:* ' + formatNumber(artifacts) + '\n' +
 																																									'*Assalti in corso/completati/falliti:* ' + formatNumber(assaults) + '/' + formatNumber(assaults_win) + '/' + formatNumber(assaults_lost) + '\n' +
@@ -8065,6 +8073,8 @@ bot.onText(/^\/statistiche|^\/stats$/, function (message) {
 																																									'*Partite giocate nelle Mappe:* ' + formatNumber(map_plays) + '\n' +
 																																									'*Uccisioni nelle Mappe:* ' + formatNumber(map_kills) + '\n' +
 																																									'*Uccisioni giocatori:* ' + formatNumber(death_count) + '\n' +
+																																									'*Vittorie mappe:* ' + formatNumber(map_win_cnt) + '\n' +
+																																									'*Trofei ottenuti:* ' + formatNumber(trophies) + '\n' +
 																																									'\n*Gruppi attivi (4):* ' + formatNumber(groups) + '\n' +
 																																									'*Membri nei gruppi attivi (4):* ' + formatNumber(members) + '\n' +
 
