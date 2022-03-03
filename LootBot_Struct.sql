@@ -2068,6 +2068,26 @@ CREATE TABLE `house_game_3` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `house_game_4`
+--
+
+DROP TABLE IF EXISTS `house_game_4`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `house_game_4` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `player_id` int(11) NOT NULL,
+  `rarity` varchar(2) NOT NULL,
+  `thevalue` int(11) NOT NULL,
+  `themaxvalue` int(11) NOT NULL,
+  `exit_button` tinyint(1) NOT NULL DEFAULT 0,
+  `end` tinyint(1) NOT NULL DEFAULT 0,
+  `end_phase` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `house_room`
 --
 

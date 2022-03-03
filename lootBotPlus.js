@@ -1498,7 +1498,7 @@ bot.onText(/^\/gruppi/, function (message) {
 													"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ') - Chiedi aiuto per le richieste del contrabbandiere!\n' +
 													"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ') - Gruppo OT con tanto di gelato (Livello minimo: 10)\n' +
 													"<a href='https://t.me/joinchat/I-b0dhM-eO3tmxrz9rtMrg'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
-													"<a href='https://t.me/joinchat/EDP-JUWZbC6SZ-f0ieaoLg'>Loot Music</a> (" + c17 + ') - La musica ed il diverimento di Lootia!\n' +
+													"<a href='https://t.me/+bSX_qvSyzIxhZDdk'>Loot Music</a> (" + c17 + ') - La musica ed il diverimento di Lootia!\n' +
 
 													'\n<b>Canali</b>\n' +
 													'@Suggerimenti_per_LootBot - Gruppo dove i suggerimenti vengono postati e votati dagli utenti\n' +
