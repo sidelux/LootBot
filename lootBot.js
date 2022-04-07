@@ -9,7 +9,6 @@ process.on('uncaughtException', function (error) {
 process.on('unhandledRejection', function (error, p) {
 	if ((error.message.indexOf("Too Many Requests") == -1) && (error.message.indexOf("message is not modified") == -1))
 		console.log("\x1b[31munhandledRejection: " + error.message + "\x1b[0m");
-	console.log(error);
 });
 
 var max_mission_id = 290;
@@ -20642,7 +20641,7 @@ bot.onText(/magazzino/i, function (message, match) {
 				}
 			};
 
-			connection.query('SELECT P.nickname, I.name, T.quantity FROM team_store T, player P, item I WHERE T.player_id = P.id AND T.item_id = I.id AND team_id = ' + team_id + ' ORDER BY I.name', function (err, rows, fields) {
+			connection.query('SELECT P.nickname, I.name, T.quantity FROM team_store T, player P, item I WHERE T.player_id = P.id AND T.item_id = I.id AND team_id = ' + team_id + ' ORDER BY I.name LIMIT 100', function (err, rows, fields) {
 				if (err) throw err;
 
 				var text = "";
@@ -33913,12 +33912,10 @@ bot.onText(/Miniere di Mana|Raccolta|^miniera$|^miniere$/i, function (message) {
 
 						var extra_mana = "";
 						// modifica anche il ritiro automatico
-						/*
 						if (global_end == 1) {
 							quantity = quantity*2;
 							extra_mana = " (aumentata grazie al bonus globale)";
 						}
-						*/
 
 						quantity = Math.floor(quantity);
 
@@ -35733,10 +35730,12 @@ bot.onText(/contrabbandiere|vedi offerte|ctb/i, function (message) {
 						activeCoupon = "\n<b>Il coupon è attivo!</b>";
 
 					var extra = "";
+					/*
 					if (global_end == 1) {
 						extra = " (dimezzato per malus globale)";
 						price = Math.round(price/2);
 					}
+					*/
 
 					bot.sendMessage(message.chat.id, "Benvenut" + gender_text + " <b>" + message.from.username + "</b>!\nPuoi creare oggetti per il <b>Contrabbandiere</b> ed egli provvederà a valutarli e ricompensarti adeguatamente, purtroppo però è disponibile solamente di giorno. Quando lascia la piazza, aggiorna la sua fornitura e quando torna ti propone affari diversi.\n\n<b>" + name + " (" + rarity + ")</b> al prezzo di <i>" + formatNumber(price) + "</i> §" + extra + poss + "\n\nAccetti l'incarico di questo oggetto? Se l'offerta che ti propone non ti sembra valida, puoi cambiarla.\nHai ancora a disposizione <b>" + offers + " offerte</b> per oggi." + activeCoupon, kb).then(function () {
 						answerCallbacks[message.chat.id] = async function (answer) {
@@ -44779,6 +44778,14 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 				}
 			};
 
+			var kbNoChange = {
+				parse_mode: "HTML",
+				reply_markup: {
+					resize_keyboard: true,
+					keyboard: [["Tieni Combinazione"], ["Rinuncia", "Regole"], ["Torna al Rifugio"]]
+				}
+			};
+
 			var rBack = {
 				parse_mode: "HTML",
 				reply_markup: {
@@ -44848,13 +44855,20 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 				var toChat = rows[0].chat_id;
 				var toGnome_notification = rows[0].gnome_notification;
 				var my_comb_arr = my_comb.split("");
+				var left = (4 - travel);
+				var change_left = "Puoi cambiare le Rune ancora " + left + " volte";
+				var active_kb = kb;
+				if (left == 0) {
+					change_left = "Non puoi più cambiare alcuna runa";
+					active_kb = kbNoChange;
+				}
 
-				bot.sendMessage(message.chat.id, "Per entrare nel rifugio di <b>" + nick + "</b> devi possedere delle Rune di un valore più alto rispetto a quelle del guardiano del cancello, come procedi?\n\nLo gnomo torna dal rifugio con 5 Rune, su ogni runa è scritto un numero:\n\n💬 " + my_comb_arr.join(" ") + "\n\nPuoi cambiare le Rune ancora " + (4 - travel) + " volte, lo gnomo si stancherà di aspettare alle " + short_date_end, kb).then(function () {
+				bot.sendMessage(message.chat.id, "Per entrare nel rifugio di <b>" + nick + "</b> devi possedere delle Rune di un valore più alto rispetto a quelle del guardiano del cancello, come procedi?\n\nLo gnomo torna dal rifugio con 5 Rune, su ogni runa è scritto un numero:\n\n💬 " + my_comb_arr.join(" ") + "\n\n" + change_left + ", lo gnomo si stancherà di aspettare alle " + short_date_end, active_kb).then(function () {
 					answerCallbacks[message.chat.id] = async function (answer) {
 						if (answer.text.toLowerCase() == "cambia rune") {
 
-							if (travel >= 4) {
-								bot.sendMessage(message.chat.id, "Non puoi cambiare Rune più di 2 volte per ispezione!", rBack);
+							if (left <= 0) {
+								bot.sendMessage(message.chat.id, "Non puoi più cambiare le rune!", rBack);
 								return;
 							}
 
@@ -49070,6 +49084,8 @@ function mainMenu(message) {
 	if ((n == 0) && (crazyMode == 0)) {
 		if (n2 <= 7)
 			sconto = 20;
+		else
+			sconto = 10;
 		price_drop = 1;
 		price_drop_msg = "\n💸 Oggi sconti del <b>" + sconto + "%</b> all'emporio ed al mercato!";
 	} else if (n == 2)
@@ -56540,12 +56556,10 @@ function autoMana() {
 
 				var extra_mana = "";
 				// modifiche anche il ritiro manuale
-				/*
 				if (rows[i].global_end == 1) {
 					rows[i].quantity = rows[i].quantity*2;
 					extra_mana = " (aumentato grazie al bonus globale)";
 				}
-				*/
 
 				rows[i].quantity = Math.floor(rows[i].quantity);
 
@@ -61029,6 +61043,7 @@ function setFinishedLobbyEnd(element, index, array) {
 
 						if (trophies_count >= 0) {
 							trophies_query = "+" + trophies_count;
+							globalAchievement(rows[i].id, trophies_count);
 						} else {
 							trophies_actual = rows[i].trophies;
 							trophies_count = Math.abs(trophies_count);
@@ -63357,9 +63372,6 @@ async function setFinishedCave(element, index, array) {
 				msg += " (di cui " + stone6e + " evolute)";
 		}
 		msg += "\n\n" + caveid + " pietre per un totale di " + totPnt + " punti" + extra;
-
-		if (cave_gem == 0)
-			globalAchievement(element.id, caveid);
 
 		bot.sendMessage(chat_id, "Hai completato l'esplorazione della cava e hai ottenuto:" + msg + boost_text);
 		setAchievement(element.id, 54, (stone1e+stone2e+stone3e+stone4e+stone5e+stone6e));
