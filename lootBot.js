@@ -1430,6 +1430,15 @@ bot.onText(/\/captcha/i, function (message, match) {
 	}
 });
 
+bot.onText(/testspam (.+)/i, function (message, match) {
+	var n = match[1];
+	if (n > 10)
+		return;
+	for (var i = 0; i < n; i++) {
+		bot.sendMessage(message.chat.id, i);
+	}
+});
+
 bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
 	/*
 	if (message.from.id != 20471035) {
@@ -9311,10 +9320,16 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											}
 										}
 										if ((item == undefined) || (item[0] == undefined)) {
-											console.log("item non definito, map_equip_change_power: " + map_equip_change_power);
-											console.log(item);
-											bot.sendMessage(message.chat.id, "Errore selezione oggetto, riprova", kbBack);
-											return;
+											console.log("item non definito, map_equip_change_power: " + map_equip_change_power + ", crit1: " + weapon_critical1 + ", crit2: " + weapon_critical2 + ", crit3: " + weapon_critical3);
+											
+											// oggetto casuale
+											var rand = Math.round(getRandomArbitrary(1, 3));
+											if (rand == 1)
+												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > 0 AND power != 0 AND rarity = '" + rarity + "' ORDER BY RAND()");
+											else if (rand == 2)
+												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > 0 AND power_armor != 0 AND rarity = '" + rarity + "' ORDER BY RAND()");
+											else
+												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > 0 AND power_shield != 0 AND rarity = '" + rarity + "' ORDER BY RAND()");
 										}
 										last_obj_query += ", last_obj_val = '" + item[0].id + ":" + price + "'";
 										isBuild = 1;
@@ -51271,13 +51286,13 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 
 								var type = "";
 								var method;
-								if (answer.text.indexOf("Piedelesto") != -1) {
+								if (answer.text.toLowerCase().indexOf("piedelesto") != -1) {
 									method = 1;
 									type = custom_gnome_1 + "Piedelesto";
-								} else if (answer.text.indexOf("Occhiofurbo") != -1) {
+								} else if (answer.text.toLowerCase().indexOf("occhiofurbo") != -1) {
 									method = 3;
 									type = custom_gnome_3 + "Occhiofurbo";
-								} else if (answer.text.indexOf("Testacalda") != -1) {
+								} else if (answer.text.toLowerCase().indexOf("testacalda") != -1) {
 									method = 2;
 									type = custom_gnome_2 + "Testacalda";
 								} else
@@ -58699,6 +58714,25 @@ function setFinishedTeamAct(element, index, array) {
 				}
 			});
 		}
+
+		connection.query('SELECT party_id FROM mission_team_party_player WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+			if (Object.keys(rows).length > 0) {
+				var party_id = rows[0].party_id;
+				connection.query('DELETE FROM mission_team_party_player WHERE player_id = ' + player_id, function (err, rows, fields) {
+					if (err) throw err;
+					connection.query('SELECT COUNT(id) As cnt FROM mission_team_party_player WHERE party_id = ' + party_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
+						if (err) throw err;
+						if (rows[0].cnt == 0) {
+							connection.query('DELETE FROM mission_team_party WHERE party_id = ' + party_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
+								if (err) throw err;
+								console.log("Party " + party_id + " del team " + team_id + " elminato perchè vuoto");
+							});
+						}
+					});
+				});
+			}
+		});
 
 		connection.query('SELECT player_id FROM team_player WHERE team_id = ' + team_id + ' AND role = 0 ORDER BY RAND()', function (err, rows, fields) {
 			if (err) throw err;
