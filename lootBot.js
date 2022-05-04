@@ -612,14 +612,14 @@ bot.on('message', async function (message) {
 			});
 		}
 
-		if ((day == 4) && (month == 3) && (hour >= 9) && (year == 2021)) {
+		if ((day == 17) && (month == 3) && (hour >= 9) && (year == 2022)) {
 			connection.query('SELECT COUNT(*) As cnt FROM one_time_gift WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (rows[0].cnt == 0) {
 					connection.query('INSERT INTO one_time_gift (player_id) VALUES (' + player_id + ')', async function (err, rows, fields) {
 						if (err) throw err;
-						await addItem(player_id, 803);
-						bot.sendMessage(message.chat.id, "Buona Pasqua 🐣!\nPer la tua presenza costante nel gioco, hai ricevuto una nuova IN non commerciabile: un *Ovetto di Pasqua 2021 (IN)*!", mark);
+						await addItem(player_id, 806);
+						bot.sendMessage(message.chat.id, "Buona Pasqua 🐣!\nPer la tua presenza costante nel gioco, hai ricevuto una nuova IN non commerciabile: un *Ovetto di Pasqua 2022 (IN)*!", mark);
 						console.log("One time gift a " + message.from.username);
 					});
 				}
@@ -16770,6 +16770,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																						}
 
 																						setAchievement(player_id, 3, 1);
+																						globalAchievement(player_id, 1);
 
 																						connection.query('UPDATE player SET mob_count = mob_count+1 WHERE id = ' + player_id, function (err, rows, fields) {
 																							if (err) throw err;
@@ -31800,11 +31801,11 @@ bot.onText(/cambia admin/i, function (message) {
 																	if (vice_num >= max_vice) {
 																		connection.query('UPDATE team_player SET role = 0 WHERE role = 2 AND team_id = ' + team_id, function (err, rows, fields) {
 																			if (err) throw err;
+																			connection.query('UPDATE team_player SET role = 2 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
+																				if (err) throw err;
+																			});
 																		});
-																		connection.query('UPDATE team_player SET role = 2 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
-																			if (err) throw err;
-																		});
-																		bot.sendMessage(message.chat.id, "Cambio Vice-Amministratore completato!", kbBack);
+																		bot.sendMessage(message.chat.id, "Hai raggiunto il limite dei Vice, sono stati rimossi tutti dalla carica e nominato il nuovo Vice selezionato!", kbBack);
 																		bot.sendMessage(newChatId, "Sei stato nominato Vice-Amministratore del Team!", back);
 																	} else {
 																		connection.query('UPDATE team_player SET role = 2 WHERE player_id = ' + newAdmin, function (err, rows, fields) {
@@ -33927,10 +33928,12 @@ bot.onText(/Miniere di Mana|Raccolta|^miniera$|^miniere$/i, function (message) {
 
 						var extra_mana = "";
 						// modifica anche il ritiro automatico
+						/*
 						if (global_end == 1) {
 							quantity = quantity*2;
 							extra_mana = " (aumentata grazie al bonus globale)";
 						}
+						*/
 
 						quantity = Math.floor(quantity);
 
@@ -36797,10 +36800,8 @@ bot.onText(/utilizza polvere/i, function (message) {
 					var rar4 = 100;
 
 					var extra = "";
-					/*
 					if (global_end == 1)
-						extra = "\n*Il prezzo totale è dimezzato grazie al bonus globale!*";
-					*/
+						extra = "\n*Il prezzo totale è dimezzato grazie al bonus globale!*";	// modifica sotto
 
 					bot.sendMessage(message.chat.id, "Puoi creare un oggetto utilizzando la Polvere (ad esclusione degli equipaggiamenti):\nRaro -> " + rar1 + "\nUltra Raro -> " + rar2 + "\nLeggendario -> " + rar3 + "\nEpico -> " + rar4 + "\nSe l'oggetto è craftato, richiederà il *doppio* della polvere + una quantità dipendente dal valore\n\nInserisci il nome dell'oggetto, al momento c'è una piccolissima probabilità di fallimento nella creazione.", alchemy).then(function () {
 						answerCallbacks[message.chat.id] = async function (answer) {
@@ -36837,10 +36838,8 @@ bot.onText(/utilizza polvere/i, function (message) {
 									nec += Math.round(estimate / 10000);
 								}
 
-								/*
 								if (global_end == 1)
 									nec = Math.round(nec/2);
-								*/
 
 								bot.sendMessage(message.chat.id, "Quante copie dell'oggetto vuoi creare? Una copia di questo oggetto ti costerà " + nec + " unità di Polvere", kbNum).then(function () {
 									answerCallbacks[message.chat.id] = async function (answer) {
@@ -40176,12 +40175,12 @@ bot.onText(/compra/i, function (message) {
 											for (i = 0; i < card_quantity; i++) {
 												var inv = await connection.queryAsync('SELECT 1 FROM card_inventory WHERE card_id = ' + rows[i].id + ' AND player_id = ' + player_id);
 												if (Object.keys(inv).length == 0) {
-													connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + rows[i].id + ')', function (err, rows, fields) {
+													connection.query('INSERT INTO card_inventory (player_id, card_id) VALUES (' + player_id + ', ' + rows[i].id + ')', function (err, rows2, fields) {
 														if (err) throw err;
 														checkAllCardsProgress(player_id);
 													});
 												} else {
-													connection.query('UPDATE card_inventory SET quantity = quantity + 1 WHERE player_id = ' + player_id + ' AND card_id = ' + rows[i].id, function (err, rows, fields) {
+													connection.query('UPDATE card_inventory SET quantity = quantity + 1 WHERE player_id = ' + player_id + ' AND card_id = ' + rows[i].id, function (err, rows2, fields) {
 														if (err) throw err;
 														checkAllCardsProgress(player_id);
 													});
@@ -56571,10 +56570,12 @@ function autoMana() {
 
 				var extra_mana = "";
 				// modifiche anche il ritiro manuale
+				/*
 				if (rows[i].global_end == 1) {
 					rows[i].quantity = rows[i].quantity*2;
 					extra_mana = " (aumentato grazie al bonus globale)";
 				}
+				*/
 
 				rows[i].quantity = Math.floor(rows[i].quantity);
 
@@ -61077,7 +61078,6 @@ function setFinishedLobbyEnd(element, index, array) {
 
 						if (trophies_count >= 0) {
 							trophies_query = "+" + trophies_count;
-							globalAchievement(rows[i].id, trophies_count);
 						} else {
 							trophies_actual = rows[i].trophies;
 							trophies_count = Math.abs(trophies_count);
