@@ -60769,13 +60769,12 @@ async function setBattleTimeElapsed(element, index, array) {
 					}
 
 					bot.sendMessage(chat_id, "Troppi turni sono scaduti!\nDal nulla arriva una freccia a gran velocità e decreta il tuo avversario come vincitore dello scontro!");
-					await addDungeonEnergy(enemy_id, 1);
-					bot.sendMessage(enemy_chat_id, "L'avversario ha perso troppi turni!\nHai vinto lo scontro e ricevuto 1 Carica Esplorativa aggiuntiva!" + enemy_text, html);
+					bot.sendMessage(enemy_chat_id, "L'avversario ha perso troppi turni!\nHai vinto lo scontro e ricevuto 1 Carica Movimento aggiuntiva!" + enemy_text, html);
 
 					connection.query('UPDATE map_lobby SET my_turn = 0, battle_timeout = NULL, battle_time_elapsed = battle_time_elapsed + ' + diff + query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 					});
-					connection.query('UPDATE map_lobby SET my_turn = 1, battle_timeout = NULL, battle_turn_start = NOW()' + enemy_query + ' WHERE player_id = ' + enemy_id, function (err, rows, fields) {
+					connection.query('UPDATE map_lobby SET my_turn = 1, moves_left = moves_left+1, battle_timeout = NULL, battle_turn_start = NOW()' + enemy_query + ' WHERE player_id = ' + enemy_id, function (err, rows, fields) {
 						if (err) throw err;
 					});
 				} else {
