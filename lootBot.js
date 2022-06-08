@@ -15719,6 +15719,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 		var crit_bool = 0;
 		var crit_txt = "";
 
+		danno = danno * 2; // per tappare mole di messaggi
+
 		if (crazyMode == 1)
 			danno = danno * 2;
 
@@ -16770,7 +16772,6 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																						}
 
 																						setAchievement(player_id, 3, 1);
-																						globalAchievement(player_id, 1);
 
 																						connection.query('UPDATE player SET mob_count = mob_count+1 WHERE id = ' + player_id, function (err, rows, fields) {
 																							if (err) throw err;
@@ -16980,7 +16981,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							var att = Math.ceil(rows[0].ability_level / 2);
 																							if ((class_id == 5) && (reborn == 5))
 																								att += 5;
-																							else if ((class_id == 5) && (reborn == 5))
+																							else if ((class_id == 5) && (reborn == 6))
 																								att += 7;
 																							if (refilled < att) {
 																								var refill = Math.floor(player_total_life * (rows[0].ability_level / 10)); // Cura = livello*10%
@@ -36800,8 +36801,10 @@ bot.onText(/utilizza polvere/i, function (message) {
 					var rar4 = 100;
 
 					var extra = "";
+					/*
 					if (global_end == 1)
 						extra = "\n*Il prezzo totale è dimezzato grazie al bonus globale!*";	// modifica sotto
+					*/
 
 					bot.sendMessage(message.chat.id, "Puoi creare un oggetto utilizzando la Polvere (ad esclusione degli equipaggiamenti):\nRaro -> " + rar1 + "\nUltra Raro -> " + rar2 + "\nLeggendario -> " + rar3 + "\nEpico -> " + rar4 + "\nSe l'oggetto è craftato, richiederà il *doppio* della polvere + una quantità dipendente dal valore\n\nInserisci il nome dell'oggetto, al momento c'è una piccolissima probabilità di fallimento nella creazione.", alchemy).then(function () {
 						answerCallbacks[message.chat.id] = async function (answer) {
@@ -36838,8 +36841,10 @@ bot.onText(/utilizza polvere/i, function (message) {
 									nec += Math.round(estimate / 10000);
 								}
 
+								/*
 								if (global_end == 1)
 									nec = Math.round(nec/2);
+								*/
 
 								bot.sendMessage(message.chat.id, "Quante copie dell'oggetto vuoi creare? Una copia di questo oggetto ti costerà " + nec + " unità di Polvere", kbNum).then(function () {
 									answerCallbacks[message.chat.id] = async function (answer) {
@@ -54595,7 +54600,6 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 												chest7 += 3;
 										}
 
-										/*
 										if (rows[i].global_end == 1) {
 											chest1 = chest1*2;
 											chest2 = chest2*2;
@@ -54607,7 +54611,6 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											chest8 = chest8*2;
 											chest9 = chest9*2;
 										}
-										*/
 
 										/*
 										if (rows[i].global_end == 1)
@@ -62629,8 +62632,10 @@ function setFinishedMission(element, index, array) {
 								else if ((boost_id == 4) || (boost_id == 5) || (boost_id == 7))
 									setBoost(element.id, boost_mission, boost_id);
 
-								if (mission_gem == 0)
+								if (mission_gem == 0) {
 									getSnowball(chat_id, element.nickname, element.id, chest_id);
+									globalAchievement(element.id, 1);
+								}
 								setAchievement(element.id, 1, 1);
 							});
 						});
