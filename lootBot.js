@@ -13304,9 +13304,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														var rand = Math.random() * 100;
 														if (answer.text == "Tornare in piena salute") {
 															if (rand < 40) {
-																connection.query('UPDATE player SET life = total_life WHERE id = ' + player_id, function (err, rows, fields) {
+																connection.query('UPDATE player SET life = total_life, paralyzed = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 																	if (err) throw err;
-																	bot.sendMessage(message.chat.id, "Hai espresso il tuo desiderio... Ed è stato ascoltato! Hai recuperato tutti gli hp!", dNext);
+																	bot.sendMessage(message.chat.id, "Hai espresso il tuo desiderio... Ed è stato ascoltato! Hai recuperato tutti gli hp e le alterazioni di stato sono state rimosse!", dNext);
 																});
 															} else {
 																connection.query('UPDATE player SET life = 1 WHERE id = ' + player_id, function (err, rows, fields) {
@@ -15164,10 +15164,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																					var rand = Math.random()*100;
 																					var prob = rarity*10;
+																					var satisfied = 0;
 																					if (rand <= prob) {
 																						if (dungeonRush == 0) {
 																							var charges = rarity*10;
-																							await addDungeonEnergy(player_id, charges);
+																							satisfied = 1;
 																							bot.sendMessage(message.chat.id, "Il brucaliffo si ritiene soddisfatto del tuo dono e ti regala " + charges + " Cariche Esplorative!", dNext);
 																						} else {
 																							connection.query("UPDATE player SET life = total_life WHERE id = " + player_id, function(err, rows, fields) {
@@ -15187,6 +15188,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																					setAchievement(player_id, 96, 1);
 																					await endDungeonRoom(player_id, boost_id, boost_mission);
+																					if (satisfied == 1)
+																						await addDungeonEnergy(player_id, charges);
 																					connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 																					});
@@ -29877,7 +29880,7 @@ bot.onText(/potenziamenti anima/i, function (message) {
 										boost_list += "> Scrigni Redditizi";
 									boost_tmp = "";
 									if (boost_id == 4)
-										boost_tmp = " +10% ⏳";
+										boost_tmp = " +100% ⏳";
 									boost_list += " (Livello " + rows[i].level + ", +" + (3 * rows[i].level) + "%" + boost_tmp + ")\n";
 								}
 							}
@@ -29967,7 +29970,7 @@ bot.onText(/potenziamenti anima/i, function (message) {
 									p2 = 2500;
 									id = 4;
 									name = "Scrigni Redditizi";
-									desc = "Questa opzione permette di scegliere tra un potenziamento temporaneo per il team, che darà la possibilità di ottenere +10% scrigni dalla sconfitta del boss e costerà " + p + " 🦋 oppure un potenziamento permanente di +3% per livello degli scrigni guadagnati, che costerà " + p2 + " 🦋, continuare?";
+									desc = "Questa opzione permette di scegliere tra un potenziamento temporaneo per il team, che darà la possibilità di ottenere +100% scrigni dalla sconfitta del boss e costerà " + p + " 🦋 oppure un potenziamento permanente di +3% per livello degli scrigni guadagnati, che costerà " + p2 + " 🦋, continuare?";
 								}
 								if (id == 0) {
 									bot.sendMessage(message.chat.id, "Potenziamento non valido", team);
@@ -39365,11 +39368,9 @@ bot.onText(/emporio/i, function (message) {
 							if (blackfriday == 1)
 								iKeys.push(["Compra Gemma (" + formatNumber(parseInt(300000 - Math.round((300000 / 100) * 50))) + " §)"]);
 							else {
-								/*
 								if (global_end == 1)
 									iKeys.push(["Compra Gemma (225.000 §)"]);
 								else
-								*/
 									iKeys.push(["Compra Gemma (300.000 §)"]);
 							}
 
@@ -40491,10 +40492,8 @@ bot.onText(/compra/i, function (message) {
 				}
 
 				var price_gem = 300000;
-				/*
 				if (global_end == 1)
 					price_gem = 225000;
-				*/
 
 				var price_view = price_gem;
 
@@ -52582,6 +52581,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 															}
 														});
 
+														globalAchievement(player_id, craftexp);
 														setAchievement(player_id, 10, craftexp);
 														setAchievement(player_id, 12, quantity, matR);	// id oggetto
 														if (result_cons == 1)
@@ -54563,12 +54563,12 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 										chest6 += chest6*team_boost_chest;
 
 										if (team_boost_chest_tmp == 1) {
-											chest1 += chest1*0.1;
-											chest2 += chest2*0.1;
-											chest3 += chest3*0.1;
-											chest4 += chest4*0.1;
-											chest5 += chest5*0.1;
-											chest6 += chest6*0.1;
+											chest1 += chest1*1;
+											chest2 += chest2*1;
+											chest3 += chest3*1;
+											chest4 += chest4*1;
+											chest5 += chest5*1;
+											chest6 += chest6*1;
 										}
 
 										chest1 = Math.round(chest1);
@@ -54600,6 +54600,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 												chest7 += 3;
 										}
 
+										/*
 										if (rows[i].global_end == 1) {
 											chest1 = chest1*2;
 											chest2 = chest2*2;
@@ -54611,6 +54612,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											chest8 = chest8*2;
 											chest9 = chest9*2;
 										}
+										*/
 
 										/*
 										if (rows[i].global_end == 1)
@@ -62634,7 +62636,7 @@ function setFinishedMission(element, index, array) {
 
 								if (mission_gem == 0) {
 									getSnowball(chat_id, element.nickname, element.id, chest_id);
-									globalAchievement(element.id, 1);
+									// globalAchievement(element.id, 1);
 								}
 								setAchievement(element.id, 1, 1);
 							});
