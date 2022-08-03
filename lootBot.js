@@ -7932,6 +7932,7 @@ bot.onText(/attacca!/i, function (message) {
 												return;
 											}
 											var heavyText = "";
+											var isScrap = 0;
 											if (answer.text.toLowerCase().indexOf("rottame") != -1) {
 												if (battle_heavy == 1) {
 													bot.sendMessage(message.chat.id, "Devi sferrare prima l'attacco caricato!", kbBack);
@@ -7944,6 +7945,7 @@ bot.onText(/attacca!/i, function (message) {
 												full_damage = Math.round(full_damage*1.25);
 												heavyText = " con un rottame";
 												query += ", scrap = scrap-1";
+												isScrap = 1;
 											}
 											if (battle_heavy == 1) {
 												full_damage = full_damage*2;
@@ -7953,7 +7955,7 @@ bot.onText(/attacca!/i, function (message) {
 											var fullProtected = 0;
 											var partialProtected = 0;
 											var shieldText = "";
-											if (enemy_battle_shield == 1) {
+											if ((enemy_battle_shield == 1) && (isScrap == 0)) {
 												var defenceRand = Math.random()*100;
 												if (enemy_full_armor >= defenceRand) {
 													text += "L'avversario si protegge con l'armatura e per il contraccolpo vieni stordito!";
@@ -25730,7 +25732,7 @@ bot.onText(/^sposta: (.+)|sposta membri/i, function (message, match) {
 				}
 
 				if (message.text.indexOf("membri") != -1) {
-					connection.query('SELECT P.nickname FROM team_player T, player P WHERE T.player_id = P.id AND T.team_id = ' + team_id, function (err, rows, fields) {
+					connection.query('SELECT P.nickname, P.id FROM team_player T, player P WHERE T.player_id = P.id AND T.team_id = ' + team_id, async function (err, rows, fields) {
 						if (err) throw err;
 
 						var iKeys = [];
@@ -25738,8 +25740,13 @@ bot.onText(/^sposta: (.+)|sposta membri/i, function (message, match) {
 							bot.sendMessage(message.chat.id, "Nessun giocatore disponibile", kbBack);
 							return;
 						}
-						for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-							iKeys.push(["Sposta: " + rows[i].nickname]);
+						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+							var assigned = await connection.queryAsync('SELECT 1 FROM assault_place_player_id WHERE player_id = ' + rows[i].id);
+							if (Object.keys(assigned).length > 0)
+								iKeys.push(["Sposta: " + rows[i].nickname + " ✅"]);
+							else
+								iKeys.push(["Sposta: " + rows[i].nickname + " ❌"]);
+						}
 						iKeys.push(["Torna all'assalto"]);
 						iKeys.push(["Torna al menu"]);
 
@@ -29620,12 +29627,10 @@ bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^❤️$|^cc$|^cp$/i, fu
 			return;
 		}
 
-		/*
 		if (paralyzed > 0) {
 			bot.sendMessage(message.chat.id, "Non è possibile utilizzare le Pozioni se sei paralizzato", kbBack);
 			return;
 		}
-		*/
 
 		connection.query('SELECT cons_val FROM item WHERE id IN (92,93,94) ORDER BY id', async function (err, rows, fields) {
 			if (err) throw err;
@@ -39368,9 +39373,11 @@ bot.onText(/emporio/i, function (message) {
 							if (blackfriday == 1)
 								iKeys.push(["Compra Gemma (" + formatNumber(parseInt(300000 - Math.round((300000 / 100) * 50))) + " §)"]);
 							else {
+								/*
 								if (global_end == 1)
 									iKeys.push(["Compra Gemma (225.000 §)"]);
 								else
+								*/
 									iKeys.push(["Compra Gemma (300.000 §)"]);
 							}
 
@@ -40472,7 +40479,7 @@ bot.onText(/compra/i, function (message) {
 						};
 					});
 				});
-			} else if (oggetto.indexOf("Gemma") != -1) {
+			} else if (oggetto.toLowerCase().indexOf("gemma") != -1) {
 				var kb = {
 					parse_mode: "Markdown",
 					reply_markup: {
@@ -40492,8 +40499,10 @@ bot.onText(/compra/i, function (message) {
 				}
 
 				var price_gem = 300000;
+				/*
 				if (global_end == 1)
 					price_gem = 225000;
+				*/
 
 				var price_view = price_gem;
 
@@ -52581,7 +52590,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 															}
 														});
 
-														globalAchievement(player_id, craftexp);
+														// globalAchievement(player_id, craftexp);
 														setAchievement(player_id, 10, craftexp);
 														setAchievement(player_id, 12, quantity, matR);	// id oggetto
 														if (result_cons == 1)
@@ -54600,7 +54609,6 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 												chest7 += 3;
 										}
 
-										/*
 										if (rows[i].global_end == 1) {
 											chest1 = chest1*2;
 											chest2 = chest2*2;
@@ -54612,7 +54620,6 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											chest8 = chest8*2;
 											chest9 = chest9*2;
 										}
-										*/
 
 										/*
 										if (rows[i].global_end == 1)
@@ -62398,6 +62405,14 @@ function setFinishedMission(element, index, array) {
 						achPnt++;
 					}
 
+					var rand = Math.random() * 100;
+					if (rand <= 5) {
+						connection.query('UPDATE player SET mkeys = mkeys+1 WHERE id = ' + element.id, function (err, rows, fields) {
+							if (err) throw err;
+							bot.sendMessage(chat_id, "Hai trovato una Chiave Mistica 🗝!");
+						});
+					}
+
 					setAchievement(element.id, 37, achPnt);
 
 					if (auto_id == (max_mission_id + 1))
@@ -63207,7 +63222,16 @@ function setFinishedTravel(element, index, array) {
 						double_text = ", raddoppiati grazie al talento";
 					}
 
-					bot.sendMessage(chat_id, "Viaggio completato, hai ottenuto " + qnt + "x *" + rows[0].name + "* (" + rows[0].rarity_shortname + double_text + "), *" + formatNumber(money) + "* § e *" + exp + "* exp!", mark);
+					var rand = Math.random() * 100;
+					var key_bonus = "";
+					if (rand <= 10) {
+						connection.query('UPDATE player SET mkeys = mkeys+' + element.travel_id + ' WHERE id = ' + element.id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+						key_bonus = " (Bonus: +" + element.travel_id + " 🗝)";
+					}
+
+					bot.sendMessage(chat_id, "Viaggio completato, hai ottenuto " + qnt + "x *" + rows[0].name + "* (" + rows[0].rarity_shortname + double_text + "), *" + formatNumber(money) + "* § e *" + exp + "* exp!" + key_bonus, mark);
 
 					await addChest(element.id, chest_id, qnt);
 					setExp(element.id, exp);
