@@ -62405,8 +62405,8 @@ function setFinishedMission(element, index, array) {
 						achPnt++;
 					}
 
-					var rand = Math.random() * 100;
-					if (rand <= 5) {
+					var randKey = Math.random() * 100;
+					if (randKey <= 5) {
 						connection.query('UPDATE player SET mkeys = mkeys+1 WHERE id = ' + element.id, function (err, rows, fields) {
 							if (err) throw err;
 							bot.sendMessage(chat_id, "Hai trovato una Chiave Mistica 🗝!");
