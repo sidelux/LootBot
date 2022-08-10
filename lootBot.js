@@ -25764,6 +25764,9 @@ bot.onText(/^sposta: (.+)|sposta membri/i, function (message, match) {
 					return;
 				}
 
+				match[1] = match[1].replace(" ✅", "");
+				match[1] = match[1].replace(" ❌", "");
+
 				connection.query('SELECT id, nickname, chat_id FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
 					if (err) throw err;
 
