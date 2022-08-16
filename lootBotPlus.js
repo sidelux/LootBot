@@ -4335,10 +4335,6 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				return
 			}
 
-			const items = []
-			const prices = []
-			const quantities = []
-
 			if (len == 0) {
 				bot.sendMessage(message.chat.id, 'Errore, controlla la sintassi')
 				return
@@ -4397,6 +4393,8 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 					item = splitted[0].trim()
 					if (splitted[1] == undefined) { price = 0 } else { price = parseInt(splitted[1].replace(/[^\w\s]/gi, '').trim().replaceAll(/\./, '')) }
 					if (splitted[2] == undefined) { quantity = 1 } else { quantity = parseInt(splitted[2].replace(/[^\w\s]/gi, '').trim()) }
+
+					price = price.replaceAll('k', '000');
 
 					if (isNaN(price)) { price = 0 }
 
@@ -4480,6 +4478,8 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 					item = splitted[0].trim()
 					if (splitted[1] == undefined) { price = 0 } else { price = parseInt(splitted[1].replace(/[^\w\s]/gi, '').trim().replaceAll(/\./, '')) }
 					if (splitted[2] == undefined) { quantity = 1 } else { quantity = parseInt(splitted[2].replace(/[^\w\s]/gi, '').trim()) }
+
+					price = price.replaceAll('k', '000');
 
 					if (isNaN(price)) { price = 0 }
 

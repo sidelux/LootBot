@@ -25732,7 +25732,7 @@ bot.onText(/^sposta: (.+)|sposta membri/i, function (message, match) {
 				}
 
 				if (message.text.indexOf("membri") != -1) {
-					connection.query('SELECT P.nickname, P.id FROM team_player T, player P WHERE T.player_id = P.id AND T.team_id = ' + team_id, async function (err, rows, fields) {
+					connection.query('SELECT P.nickname, P.id, (SELECT place_id FROM assault_place_player_id A WHERE A.player_id = T.player_id) As place_id FROM team_player T, player P WHERE T.player_id = P.id AND T.team_id = ' + team_id + ' ORDER BY place_id', async function (err, rows, fields) {
 						if (err) throw err;
 
 						var iKeys = [];
@@ -25741,9 +25741,8 @@ bot.onText(/^sposta: (.+)|sposta membri/i, function (message, match) {
 							return;
 						}
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-							var assigned = await connection.queryAsync('SELECT 1 FROM assault_place_player_id WHERE player_id = ' + rows[i].id);
-							if (Object.keys(assigned).length > 0)
-								iKeys.push(["Sposta: " + rows[i].nickname + " ✅"]);
+							if (rows[i].place_id != null)
+								iKeys.push(["Sposta: " + rows[i].nickname + " " + assaultEmojiList[assigned[0].place_id-1]]);
 							else
 								iKeys.push(["Sposta: " + rows[i].nickname + " ❌"]);
 						}
@@ -47764,7 +47763,7 @@ bot.onText(/^semplificato/i, function (message) {
 bot.onText(/esplorazioni|viaggi/i, function (message) {
 	var iKeys = [];
 
-	connection.query('SELECT mission_special_id, mission_special_time_end, mission_id, id, reborn, exp, life, account_id, global_end, mission_party, holiday, class, travel_limit, cave_limit FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
+	connection.query('SELECT mission_special_id, mission_special_time_end, mission_id, id, reborn, exp, life, account_id, global_end, mission_party, holiday, class, travel_limit, cave_limit, mission_count, dungeon_count FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0)
@@ -47790,6 +47789,8 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 		var class_id = rows[0].class;
 		var travel_limit = rows[0].travel_limit;
 		var cave_limit = rows[0].cave_limit;
+		var mission_count = rows[0].mission_count;
+		var dungeon_count = rows[0].dungeon_count;
 
 		helpMsg(message.chat.id, player_id, 11);
 
@@ -47871,6 +47872,7 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 
 								connection.query(extra + 'SELECT name, duration FROM travel', function (err, rows, fields) {
 									if (err) throw err;
+									var travel_time = "";
 									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 
 										if (rows[i].name.indexOf("Cava") != -1) {
@@ -47884,7 +47886,11 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 										}
 
 										rows[i].duration -= rows[i].duration*(dragon_level/300);
-										iKeys.push(["Viaggia a " + rows[i].name + " (" + toTime(rows[i].duration*60, 0) + ")"]);
+										if (rows[i].duration > 0)
+											travel_time = toTime(rows[i].duration*60, 0);
+										else
+											travel_time = "???";
+										iKeys.push(["Viaggia a " + rows[i].name + " (" + travel_time + ")"]);
 									}
 
 									if (Object.keys(iKeys).length > 0) {
@@ -48008,6 +48014,15 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 																	return;
 																} else {
 																	var split = "";
+																	var custom_duration = 0;
+																	if (rows[0].duration == 0) {
+																		if ((mission_count < 5000) || (dungeon_count < 200)) {
+																			bot.sendMessage(message.chat.id, "Hai completato " + formatNumber(mission_count) + "/5.000 missioni e " + formatNumber(dungeon_count) + "/200 dungeon, raggiungi i requisiti per accedere a questo viaggio", back);
+																			return;
+																		}
+																		rows[0].duration = getRandomArbitrary(4320, 14400);
+																		custom_duration = 1;
+																	}
 																	if (double == 1) {
 																		rows[0].duration = rows[0].duration/2;
 																		split = " dimezzato!";
@@ -48024,11 +48039,14 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 
 																	var exp = 1;
 
-																	bot.sendMessage(message.chat.id, "<b>" + rows[0].name + "</b>\n" + message.from.username + ", ti aspetta un incredibile viaggio, " + rows[0].description + " " + short_date + time + " (+" + exp + " exp)", abort_travel);
+																	if (custom_duration == 0)
+																		bot.sendMessage(message.chat.id, "<b>" + rows[0].name + "</b>\n" + message.from.username + ", ti aspetta un incredibile viaggio, " + rows[0].description + " " + short_date + time + " (+" + exp + " exp)", abort_travel);
+																	else
+																		bot.sendMessage(message.chat.id, "<b>" + rows[0].name + "</b>\n" + message.from.username + ", " + rows[0].description + " " + short_date + time + " (+" + exp + " exp)", abort_travel);
 
 																	setExp(player_id, exp);
 
-																	connection.query('UPDATE player SET travel_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', travel_time_end = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE player SET travel_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', travel_time_end = "' + long_date + '", travel_custom_time = ' + rows[0].duration + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 																}
@@ -61901,7 +61919,7 @@ function checkEventMissions() {
 };
 
 function checkTravels() {
-	connection.query('SELECT nickname, id, travel_id, chat_id FROM player WHERE travel_time_end < NOW() AND travel_time_end IS NOT NULL', function (err, rows, fields) {
+	connection.query('SELECT nickname, id, travel_id, chat_id, travel_custom_time FROM player WHERE travel_time_end < NOW() AND travel_time_end IS NOT NULL', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length > 0) {
@@ -63193,6 +63211,7 @@ function setFinishedHeist(element, index, array) {
 
 function setFinishedTravel(element, index, array) {
 	var chat_id = element.chat_id;
+	var travel_custom_time = element.travel_custom_time;
 
 	connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + element.id + ' AND ability_id = 9', function (err, rows, fields) {
 		if (err) throw err;
@@ -63208,42 +63227,52 @@ function setFinishedTravel(element, index, array) {
 
 		connection.query('UPDATE player SET travel_id = 0, travel_time_end = NULL WHERE id = ' + element.id, function (err, rows, fields) {
 			if (err) throw err;
-			connection.query('SELECT chest_id, money FROM travel WHERE id = "' + element.travel_id + '"', function (err, rows, fields) {
+			connection.query('SELECT chest_id, money, duration FROM travel WHERE id = "' + element.travel_id + '"', function (err, rows, fields) {
 				if (err) throw err;
 				var mission_chest = rows[0].chest_id;
 				var money = rows[0].money;
-				connection.query('SELECT name, rarity_shortname FROM chest WHERE id = "' + mission_chest + '"', async function (err, rows, fields) {
-					if (err) throw err;
-					var chest_id = mission_chest;
-
-					var qnt = ((element.travel_id-1)*50)+100;
-					var exp = element.travel_id*10;
-
-					var double_text = "";
-					if (double == 1) {
-						qnt = qnt*2;
-						double_text = ", raddoppiati grazie al talento";
-					}
-
-					var rand = Math.random() * 100;
-					var key_bonus = "";
-					if (rand <= 10) {
-						connection.query('UPDATE player SET mkeys = mkeys+' + element.travel_id + ' WHERE id = ' + element.id, function (err, rows, fields) {
-							if (err) throw err;
-						});
-						key_bonus = " (Bonus: +" + element.travel_id + " 🗝)";
-					}
-
-					bot.sendMessage(chat_id, "Viaggio completato, hai ottenuto " + qnt + "x *" + rows[0].name + "* (" + rows[0].rarity_shortname + double_text + "), *" + formatNumber(money) + "* § e *" + exp + "* exp!" + key_bonus, mark);
-
-					await addChest(element.id, chest_id, qnt);
+				var duration = rows[0].duration;
+				if (duration == 0) {
+					var exp = duration/100;
+					bot.sendMessage(chat_id, "Ferie completate, hai ottenuto *" + exp + "* exp!" + key_bonus, mark);
 					setExp(element.id, exp);
-
-					await addMoney(element.id, money);
 					connection.query('UPDATE player SET travel_limit = 0, travel_count = travel_count+1 WHERE id = ' + element.id, function (err, rows, fields) {
 						if (err) throw err;
 					});
-				});
+				} else {
+					connection.query('SELECT name, rarity_shortname FROM chest WHERE id = "' + mission_chest + '"', async function (err, rows, fields) {
+						if (err) throw err;
+						var chest_id = mission_chest;
+	
+						var qnt = ((element.travel_id-1)*50)+100;
+						var exp = element.travel_id*10;
+	
+						var double_text = "";
+						if (double == 1) {
+							qnt = qnt*2;
+							double_text = ", raddoppiati grazie al talento";
+						}
+	
+						var rand = Math.random() * 100;
+						var key_bonus = "";
+						if (rand <= 10) {
+							connection.query('UPDATE player SET mkeys = mkeys+' + element.travel_id + ' WHERE id = ' + element.id, function (err, rows, fields) {
+								if (err) throw err;
+							});
+							key_bonus = " (Bonus: +" + element.travel_id + " 🗝)";
+						}
+	
+						bot.sendMessage(chat_id, "Viaggio completato, hai ottenuto " + qnt + "x *" + rows[0].name + "* (" + rows[0].rarity_shortname + double_text + "), *" + formatNumber(money) + "* § e *" + exp + "* exp!" + key_bonus, mark);
+	
+						await addChest(element.id, chest_id, qnt);
+						setExp(element.id, exp);
+	
+						await addMoney(element.id, money);
+						connection.query('UPDATE player SET travel_limit = 0, travel_count = travel_count+1 WHERE id = ' + element.id, function (err, rows, fields) {
+							if (err) throw err;
+						});
+					});
+				}
 			});
 		});
 	});
