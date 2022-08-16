@@ -25742,7 +25742,7 @@ bot.onText(/^sposta: (.+)|sposta membri/i, function (message, match) {
 						}
 						for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 							if (rows[i].place_id != null)
-								iKeys.push(["Sposta: " + rows[i].nickname + " " + assaultEmojiList[assigned[0].place_id-1]]);
+								iKeys.push(["Sposta: " + rows[i].nickname + " " + assaultEmojiList[rows[i].place_id-1]]);
 							else
 								iKeys.push(["Sposta: " + rows[i].nickname + " ❌"]);
 						}
