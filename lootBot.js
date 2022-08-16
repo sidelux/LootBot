@@ -48020,7 +48020,7 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 																			bot.sendMessage(message.chat.id, "Hai completato " + formatNumber(mission_count) + "/5.000 missioni e " + formatNumber(dungeon_count) + "/200 dungeon, raggiungi i requisiti per accedere a questo viaggio", back);
 																			return;
 																		}
-																		rows[0].duration = getRandomArbitrary(4320, 14400);
+																		rows[0].duration = getRandomArbitrary(7200, 14400);
 																		custom_duration = 1;
 																	}
 																	if (double == 1) {
@@ -63233,8 +63233,8 @@ function setFinishedTravel(element, index, array) {
 				var money = rows[0].money;
 				var duration = rows[0].duration;
 				if (duration == 0) {
-					var exp = duration/100;
-					bot.sendMessage(chat_id, "Ferie completate, hai ottenuto *" + exp + "* exp!" + key_bonus, mark);
+					var exp = Math.round(travel_custom_time/100);
+					bot.sendMessage(chat_id, "Ferie completate, hai ottenuto *" + exp + "* exp!", mark);
 					setExp(element.id, exp);
 					connection.query('UPDATE player SET travel_limit = 0, travel_count = travel_count+1 WHERE id = ' + element.id, function (err, rows, fields) {
 						if (err) throw err;
