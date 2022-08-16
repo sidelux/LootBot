@@ -4391,10 +4391,8 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 					splitted = elements[i].split(':')
 
 					item = splitted[0].trim()
-					if (splitted[1] == undefined) { price = 0 } else { price = parseInt(splitted[1].replace(/[^\w\s]/gi, '').trim().replaceAll(/\./, '')) }
+					if (splitted[1] == undefined) { price = 0 } else { price = parseInt(splitted[1].replaceAll('k', '000').replace(/[^\w\s]/gi, '').trim().replaceAll(/\./, '')) }
 					if (splitted[2] == undefined) { quantity = 1 } else { quantity = parseInt(splitted[2].replace(/[^\w\s]/gi, '').trim()) }
-
-					price = price.replaceAll('k', '000');
 
 					if (isNaN(price)) { price = 0 }
 
@@ -4476,10 +4474,8 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 					splitted = elements[i].split(':')
 
 					item = splitted[0].trim()
-					if (splitted[1] == undefined) { price = 0 } else { price = parseInt(splitted[1].replace(/[^\w\s]/gi, '').trim().replaceAll(/\./, '')) }
+					if (splitted[1] == undefined) { price = 0 } else { price = parseInt(splitted[1].replaceAll('k', '000').replace(/[^\w\s]/gi, '').trim().replaceAll(/\./, '')) }
 					if (splitted[2] == undefined) { quantity = 1 } else { quantity = parseInt(splitted[2].replace(/[^\w\s]/gi, '').trim()) }
-
-					price = price.replaceAll('k', '000');
 
 					if (isNaN(price)) { price = 0 }
 
