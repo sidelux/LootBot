@@ -3072,6 +3072,7 @@ CREATE TABLE `player` (
   `cave_count` int(11) NOT NULL DEFAULT 0,
   `mob_count` int(11) NOT NULL DEFAULT 0,
   `travel_count` int(11) NOT NULL DEFAULT 0,
+  `travel_custom_time` int(11) DEFAULT NULL,
   `gems` int(3) NOT NULL DEFAULT 0,
   `necro_pnt` int(11) NOT NULL DEFAULT 0,
   `mkeys` int(11) NOT NULL DEFAULT 0,

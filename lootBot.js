@@ -14459,7 +14459,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														keyboard: [["Passi attraverso"], ["Passi di fianco"], ["Torna al menu"]]
+														keyboard: [["Passi attraverso"], ["Passi di fianco"], ["❣️", "❤️"], ["Torna al menu"]]
 													}
 												};
 
@@ -47890,7 +47890,7 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 											travel_time = toTime(rows[i].duration*60, 0);
 										else
 											travel_time = "???";
-										iKeys.push(["Viaggia a " + rows[i].name + " (" + travel_time + ")"]);
+										iKeys.push(["Viaggia per " + rows[i].name + " (" + travel_time + ")"]);
 									}
 
 									if (Object.keys(iKeys).length > 0) {
@@ -47913,7 +47913,7 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 											}
 										};
 
-										if (message.text.indexOf("Viaggia a") != -1) {
+										if (message.text.indexOf("Viaggia per") != -1) {
 											viaggio = message.text.substring(getPosition(message.text, " ", 2) + 1);
 
 											var pos = viaggio.indexOf("(");
