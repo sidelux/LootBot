@@ -63233,7 +63233,7 @@ function setFinishedTravel(element, index, array) {
 				var money = rows[0].money;
 				var duration = rows[0].duration;
 				if (duration == 0) {
-					var exp = Math.round(travel_custom_time/100);
+					var exp = Math.round(travel_custom_time/10);
 					bot.sendMessage(chat_id, "Ferie completate, hai ottenuto *" + exp + "* exp!", mark);
 					setExp(element.id, exp);
 					connection.query('UPDATE player SET travel_limit = 0, travel_count = travel_count+1 WHERE id = ' + element.id, function (err, rows, fields) {
