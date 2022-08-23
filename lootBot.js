@@ -7948,7 +7948,7 @@ bot.onText(/attacca!/i, function (message) {
 												isScrap = 1;
 											}
 											if (battle_heavy == 1) {
-												full_damage = full_damage*2;
+												full_damage = full_damage*3;
 												heavyText = " con attacco caricato";
 												query += ", battle_heavy = 0";
 											}
@@ -12704,7 +12704,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														keyboard: [["Inserisci Monete"], ["Sfonda il Muro"], ["Torna al menu"]]
+														keyboard: [["Inserisci Monete"], ["Sfonda il Muro"], ["❣️", "❤️"], ["Torna al menu"]]
 													}
 												};
 
