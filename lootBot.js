@@ -1512,7 +1512,7 @@ bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
 							url: rewardUrl
 						}]);
 
-						bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente, sei al giorno " + (token_streak+1) + ".\n\nLink ricompensa: <code>" + rewardUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>\n\nLista ricompense:\n> Più <b>Scrigni Cangianti</b> ogni giorno fino al 10°\n> <b>💎</b> ogni giorno fino al 20°\n> <b>🌕 o più 💎</b> ogni giorno fino al 30°\n> <b>Oggetto U assicurato</b> il 31° giorno\n\nSe doni almeno 10€ nel mese corrente, puoi ottenere tutte le ricompense del mese senza guardare la pubblicità.\nVuoi una mano a convertire il link? Prova su @LootLinkExpanderBot!", {
+						bot.sendMessage(message.chat.id, "Per riscattare la tua ricompensa clicca sul pulsante o sul link sottostante e segui le istruzioni, se non riesci a completare i vari step, segui <a href='https://telegra.ph/Mini-Guida-alla-Ricompensa-Giornaliera-01-27'>questa</a> guida.\nLe ricompense aumentano fino a 31 giorni, poi si azzerano nuovamente, sei al giorno " + (token_streak+1) + ".\n\nLink ricompensa: <code>" + rewardUrl + "</code>\n\n<i>Questa funzione è in test, potrebbe essere rimossa o subire modifiche</i>\n\nLista ricompense:\n> Più <b>Scrigni Cangianti</b> ogni giorno fino al 10°\n> <b>💎</b> ogni giorno fino al 20°\n> <b>🌕 o più 💎</b> ogni giorno fino al 30°\n> <b>Oggetto U assicurato</b> il 31° giorno\n\nSe doni almeno 10€ nel mese corrente, puoi ottenere tutte le ricompense del mese senza guardare la pubblicità.\nVuoi una mano a convertire il link? Prova su @lootlinkexpanders!", {
 							parse_mode: 'HTML',
 							disable_web_page_preview: true,
 							reply_markup: {
@@ -4079,7 +4079,7 @@ bot.onText(/descrizione rifugio/i, function (message) {
 		if (rows[0].heist_description != null)
 			text = "\nLa descrizione rifugio attuale impostata è: " + rows[0].heist_description;
 
-		bot.sendMessage(message.chat.id, "Inserisci la descrizione che comparirà quando altri giocatori ti ispezionano e falliscono.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti (solo a-zA-Z0-9àèìòùé.,?!'@ e spazi). Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
+		bot.sendMessage(message.chat.id, "Inserisci la descrizione che comparirà quando altri giocatori ti ispezionano e falliscono.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti (solo a-zA-Z0-9àèìòùéÀÉÌÒÙ.,?!'@ e spazi). Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
 			answerCallbacks[message.chat.id] = async function (answer) {
 				if (answer.text != "Torna al menu") {
 					var resp = answer.text;
@@ -4092,7 +4092,7 @@ bot.onText(/descrizione rifugio/i, function (message) {
 						return;
 					}
 
-					var reg = new RegExp("^[a-zA-Z0-9àèìòùé.,\\\?\!\'\@\(\) ]{1,500}$");
+					var reg = new RegExp("^[a-zA-Z0-9àèìòùéÀÉÌÒÙ.,\\\?\!\'\@\(\) ]{1,500}$");
 					if (reg.test(resp) == false) {
 						bot.sendMessage(message.chat.id, "Descrizione non valida, riprova", back);
 						return;
@@ -4122,7 +4122,7 @@ bot.onText(/descrizione spia/i, function (message) {
 		if (rows[0].spy_description != null)
 			text = "\nLa descrizione spia attuale impostata è: " + rows[0].spy_description;
 
-		bot.sendMessage(message.chat.id, "Inserisci la descrizione che comparirà quando spii altri giocatori.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti (solo a-zA-Z0-9àèìòùé.,?!'@ e spazi). Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
+		bot.sendMessage(message.chat.id, "Inserisci la descrizione che comparirà quando spii altri giocatori.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti (solo a-zA-Z0-9àèìòùéÀÉÌÒÙ.,?!'@ e spazi). Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
 			answerCallbacks[message.chat.id] = async function (answer) {
 				if (answer.text != "Torna al menu") {
 					var resp = answer.text;
@@ -4135,7 +4135,7 @@ bot.onText(/descrizione spia/i, function (message) {
 						return;
 					}
 
-					var reg = new RegExp("^[a-zA-Z0-9àèìòùé.,\\\?\!\'\@\(\) ]{1,500}$");
+					var reg = new RegExp("^[a-zA-Z0-9àèìòùéÀÉÌÒÙ.,\\\?\!\'\@\(\) ]{1,500}$");
 					if (reg.test(resp) == false) {
 						bot.sendMessage(message.chat.id, "Descrizione non valida, riprova", back);
 						return;
@@ -4160,7 +4160,7 @@ bot.onText(/descrizione personale/i, function (message) {
 		if (rows[0].player_description != null)
 			text = "\nLa descrizione personale attuale impostata è: " + rows[0].player_description;
 
-		bot.sendMessage(message.chat.id, "Inserisci la descrizione del tuo personaggio, comparirà quando altri giocatori ti spiano.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti (solo a-zA-Z0-9àèìòùé.,?!'@ e spazi). Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
+		bot.sendMessage(message.chat.id, "Inserisci la descrizione del tuo personaggio, comparirà quando altri giocatori ti spiano.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti (solo a-zA-Z0-9àèìòùéÀÉÌÒÙ.,?!'@ e spazi). Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
 			answerCallbacks[message.chat.id] = async function (answer) {
 				if (answer.text != "Torna al menu") {
 					var resp = answer.text;
@@ -4173,7 +4173,7 @@ bot.onText(/descrizione personale/i, function (message) {
 						return;
 					}
 
-					var reg = new RegExp("^[a-zA-Z0-9àèìòùé.,\\\?\!\'\@\(\) ]{1,500}$");
+					var reg = new RegExp("^[a-zA-Z0-9àèìòùéÀÉÌÒÙ.,\\\?\!\'\@\(\) ]{1,500}$");
 					if (reg.test(resp) == false) {
 						bot.sendMessage(message.chat.id, "Descrizione non valida, riprova", back);
 						return;
@@ -4206,7 +4206,7 @@ bot.onText(/descrizione drago/i, function (message) {
 				return;
 			}
 
-			bot.sendMessage(message.chat.id, "Inserisci la descrizione del tuo drago, comparirà quando altri giocatori ti spiano.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti (solo a-zA-Z0-9àèìòùé.,?!'@ e spazi). Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
+			bot.sendMessage(message.chat.id, "Inserisci la descrizione del tuo drago, comparirà quando altri giocatori ti spiano.\nNon utilizzare insulti, bestemmie, offese verso gli altri player, ecc., massimo 500 caratteri, non andare a capo e non tutti i simboli sono consentiti (solo a-zA-Z0-9àèìòùéÀÉÌÒÙ.,?!'@ e spazi). Scrivi _cancella_ per rimuovere la descrizione." + text, back).then(function () {
 				answerCallbacks[message.chat.id] = async function (answer) {
 					if (answer.text != "Torna al menu") {
 						var resp = answer.text;
@@ -4219,7 +4219,7 @@ bot.onText(/descrizione drago/i, function (message) {
 							return;
 						}
 
-						var reg = new RegExp("^[a-zA-Z0-9àèìòùé.,\\\?\!\'\@\(\) ]{1,500}$");
+						var reg = new RegExp("^[a-zA-Z0-9àèìòùéÀÉÌÒÙ.,\\\?\!\'\@\(\) ]{1,500}$");
 						if (reg.test(resp) == false) {
 							bot.sendMessage(message.chat.id, "Descrizione non valida, riprova", back);
 							return;
@@ -4262,7 +4262,7 @@ bot.onText(/soprannome/i, function (message) {
 						return;
 					}
 
-					var reg = new RegExp("^[a-zA-Zàèìòùé.,\\\?\!\'\@\(\) ]{1,20}$");
+					var reg = new RegExp("^[a-zA-ZàèìòùéÀÉÌÒÙ.,\\\?\!\'\@\(\) ]{1,20}$");
 					if (reg.test(resp) == false) {
 						bot.sendMessage(message.chat.id, "Soprannome non valido, riprova", back);
 						return;
@@ -4329,7 +4329,7 @@ bot.onText(/^nomi gnomi/i, function (message) {
 								return;
 							}
 
-							var reg = new RegExp("^[a-zA-Zàèìòùé.,\\\?\!\'\@\(\) ]{1,16}$");
+							var reg = new RegExp("^[a-zA-ZàèìòùéÀÉÌÒÙ.,\\\?\!\'\@\(\) ]{1,16}$");
 							if (reg.test(resp) == false) {
 								bot.sendMessage(message.chat.id, "Nome non valido, riprova", back);
 								return;
@@ -4873,7 +4873,7 @@ bot.onText(/nomina necrolama/i, function (message) {
 			answerCallbacks[message.chat.id] = async function (answer) {
 				if (answer.text != "Torna al menu") {
 					var resp = answer.text;
-					var reg = new RegExp("^[a-zA-Zàèìòùé.,\\\?\!\'\@\(\)]{1,20}$");
+					var reg = new RegExp("^[a-zA-ZàèìòùéÀÉÌÒÙ.,\\\?\!\'\@\(\)]{1,20}$");
 					if (reg.test(resp) == false) {
 						bot.sendMessage(message.chat.id, "Nome non valido, riprova", kbBack);
 						return;
@@ -4929,7 +4929,7 @@ bot.onText(/nomina corazza necro/i, function (message) {
 			answerCallbacks[message.chat.id] = async function (answer) {
 				if (answer.text != "Torna al menu") {
 					var resp = answer.text;
-					var reg = new RegExp("^[a-zA-Zàèìòùé.,\\\?\!\'\@\(\)]{1,20}$");
+					var reg = new RegExp("^[a-zA-ZàèìòùéÀÉÌÒÙ.,\\\?\!\'\@\(\)]{1,20}$");
 					if (reg.test(resp) == false) {
 						bot.sendMessage(message.chat.id, "Nome non valido, riprova", kbBack);
 						return;
@@ -4985,7 +4985,7 @@ bot.onText(/nomina scudo necro/i, function (message) {
 			answerCallbacks[message.chat.id] = async function (answer) {
 				if (answer.text != "Torna al menu") {
 					var resp = answer.text;
-					var reg = new RegExp("^[a-zA-Zàèìòùé.,\\\?\!\'\@\(\)]{1,20}$");
+					var reg = new RegExp("^[a-zA-ZàèìòùéÀÉÌÒÙ.,\\\?\!\'\@\(\)]{1,20}$");
 					if (reg.test(resp) == false) {
 						bot.sendMessage(message.chat.id, "Nome non valido, riprova", kbBack);
 						return;
@@ -9834,7 +9834,7 @@ bot.onText(/^\/mappaturamsg (.+)|^\/mappaturamsg$/i, function (message, match) {
 			}
 
 			var text = match[1];
-			var reg = new RegExp("^[a-zA-Z0-9àèìòùé.,\\\?\!\'\@\(\) ]{1,500}$");
+			var reg = new RegExp("^[a-zA-Z0-9àèìòùéÀÉÌÒÙ.,\\\?\!\'\@\(\) ]{1,500}$");
 			if (reg.test(text) == false) {
 				bot.sendMessage(message.chat.id, "Messaggio non valido, riprova", back);
 				return;
@@ -10949,7 +10949,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, monster_total_life = 0, last_dir = NULL, last_selected_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
 																		});
-																		bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
+																		bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, dBack);
 																	}
 																}
 															});
@@ -11059,7 +11059,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	bot.sendMessage(message.chat.id, "Commento rimosso!", dBack);
 																});
 															} else {
-																var reg = new RegExp("^[a-zA-Z0-9àèìòùé.,\\\?\!\'\@\(\) ]{1,1000}$");
+																var reg = new RegExp("^[a-zA-Z0-9àèìòùéÀÉÌÒÙ.,\\\?\!\'\@\(\) ]{1,1000}$");
 																if (reg.test(answer.text) == false) {
 																	bot.sendMessage(message.chat.id, "Commento non valido, riprova", dBack);
 																	return;
@@ -11539,7 +11539,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																					connection.query('UPDATE dungeon_status SET monster_id = 0, monster_total_life = 0, last_dir = NULL, last_selected_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																						if (err) throw err;
 																					});
-																					bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
+																					bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, dBack);
 																				}
 																			}
 																		});
@@ -45726,7 +45726,10 @@ bot.onText(/^rifugio|Torna al rifugio|^ispezione$/i, function (message) {
 				if (Object.keys(rows).length > 0)
 					iKeys.push(["Contatta lo Gnomo 💭"]);
 				iKeys.push(["Ispezione 🔦", "Spia Rifugio 👀"]);
-				iKeys.push(["Prelevazione 🌐", "Migliora Rifugio 🏕", "Protezione 💫"]);
+				if ((house_id + 1) > 6)
+					iKeys.push(["Prelevazione 🌐", "Protezione 💫"]);
+				else
+					iKeys.push(["Prelevazione 🌐", "Migliora Rifugio 🏕", "Protezione 💫"]);
 				iKeys.push(["Ispezioni passate 📃"]);
 				iKeys.push(["Notifiche gnomi 💬"]);
 				iKeys.push(["Torna al menu"]);
@@ -48015,12 +48018,14 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 																} else {
 																	var split = "";
 																	var custom_duration = 0;
+																	var original_duration = 0;
 																	if (rows[0].duration == 0) {
 																		if ((mission_count < 5000) || (dungeon_count < 200)) {
 																			bot.sendMessage(message.chat.id, "Hai completato " + formatNumber(mission_count) + "/5.000 missioni e " + formatNumber(dungeon_count) + "/200 dungeon, raggiungi i requisiti per accedere a questo viaggio", back);
 																			return;
 																		}
 																		rows[0].duration = getRandomArbitrary(7200, 14400);
+																		original_duration = rows[0].duration;
 																		custom_duration = 1;
 																	}
 																	if (double == 1) {
@@ -48046,7 +48051,7 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 
 																	setExp(player_id, exp);
 
-																	connection.query('UPDATE player SET travel_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', travel_time_end = "' + long_date + '", travel_custom_time = ' + rows[0].duration + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																	connection.query('UPDATE player SET travel_id = ' + rows[0].id + ', chat_id = ' + message.chat.id + ', travel_time_end = "' + long_date + '", travel_custom_time = ' + original_duration + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
 																	});
 																}
