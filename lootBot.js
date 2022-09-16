@@ -11420,7 +11420,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												if (err) throw err;
 											});
 
-											if (selected_dir != null)
+											if ((selected_dir != null) && (last_dir == null))
 												addToMapping(selected_dir, dungeon_id, player_id, room_id);
 
 											if (dir > 10) {
@@ -26856,7 +26856,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																					answerCallbacks[message.chat.id] = async function (answer) {
 
 																						var qnt = parseInt(answer.text);
-																						if ((qnt < 1) || (qnt > 50)) {
+																						if ((qnt < 1) || (qnt > 50) || (isNaN(qnt))) {
 																							bot.sendMessage(message.chat.id, "Inserisci una quantità compresa tra 1 e 50!", kbBack);
 																							return;
 																						}
@@ -54635,6 +54635,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 												chest7 += 3;
 										}
 
+										/*
 										if (rows[i].global_end == 1) {
 											chest1 = chest1*2;
 											chest2 = chest2*2;
@@ -54646,6 +54647,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											chest8 = chest8*2;
 											chest9 = chest9*2;
 										}
+										*/
 
 										/*
 										if (rows[i].global_end == 1)
@@ -61597,7 +61599,7 @@ function checkTopSeasonEnd() {
 									if (test == 0) {
 										await connection.queryAsync('UPDATE event_mana_status SET mana_1 = mana_1+' + mana + ', mana_2 = mana_2+' + mana + ', mana_3 = mana_3+' + mana + ' WHERE player_id = ' + dragon_top_rank[j].player_id)
 										await addItem(dragon_top_rank[j].player_id, 646, dust);
-										await addChest(dragon_top_rank[j].player_id, 9, chest);
+										await addChest(dragon_top_rank[j].player_id, 9, chest, 1);
 										setAchievement(dragon_top_rank[j].player_id, 81, (mana*3));
 									}
 
@@ -63239,7 +63241,7 @@ function setFinishedTravel(element, index, array) {
 				var duration = rows[0].duration;
 				if (duration == 0) {
 					var exp = Math.round(travel_custom_time/10);
-					bot.sendMessage(chat_id, "Ferie completate, hai ottenuto *" + exp + "* exp!", mark);
+					bot.sendMessage(chat_id, "Ferie completate, hai ottenuto *" + formatNumber(exp) + "* exp!", mark);
 					setExp(element.id, exp);
 					connection.query('UPDATE player SET travel_limit = 0, travel_count = travel_count+1 WHERE id = ' + element.id, function (err, rows, fields) {
 						if (err) throw err;
@@ -63855,6 +63857,9 @@ async function addChest(player_id, chest_id, qnt = 1, shop = 0) {
 	if (rows.affectedRows == 0) {
 		await connection.queryAsync('INSERT INTO inventory_chest (player_id, chest_id, quantity) VALUES (' + player_id + ',' + chest_id + ', ' + qnt + ')');
 	}
+
+	if (shop == 0)
+		globalAchievement(player_id, qnt);
 }
 
 function delChest(player_id, chest_id, qnt = 1) {
