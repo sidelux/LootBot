@@ -9,6 +9,7 @@ const mysql = require('mysql')
 const stringSimilarity = require('string-similarity')
 const { create, all } = require('mathjs')
 const express = require('express')
+const fetch = require('isomorphic-fetch')
 
 const config = require('./config.js')
 const tipsController = require('./suggestions/tips_message_controller.js')
@@ -36,6 +37,18 @@ math.import({
 }, { override: true })
 
 const token = config.plustoken
+
+const getChatMemberCount = async chat_id => {
+	try {
+		const r = await fetch(`https://api.telegram.org/bot${token}/getChatMemberCount?${new URLSearchParams({ chat_id })}`)
+		 const j = await r.json()
+		 if (j.ok) return j.result
+		 return 0
+	} catch (e) {
+		 console.error(e)
+		 return 0
+	}
+}
 
 const bot = new TelegramBot(token)
 const app = express()
@@ -241,25 +254,22 @@ bot.on('message', function (message, match) {
 	}
 
 	if (message.chat.id < 0) {
-		connection.query('SELECT chat_id FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+		connection.query('SELECT chat_id FROM plus_groups WHERE chat_id = ' + message.chat.id, async function (err, rows, fields) {
 			if (err) throw err
+			const cnt = await getChatMemberCount(message.chat.id)
 			if (Object.keys(rows).length == 0) {
-				bot.getChatMembersCount(message.chat.id).then(function (cnt) {
-					connection.query('INSERT INTO plus_groups (name, chat_id, members) VALUES ("' + (message.chat.title).replace(/[^\p{L}\p{N}\p{P}\p{Z}]/gu, '').replaceAll("'", "").replaceAll('"', '') + '","' + message.chat.id + '",' + cnt + ')', function (err, rows, fields) {
-						if (err) throw err
-						console.log('Gruppo aggiunto: ' + message.chat.title)
-					})
+				connection.query('INSERT INTO plus_groups (name, chat_id, members) VALUES ("' + (message.chat.title).replace(/[^\p{L}\p{N}\p{P}\p{Z}]/gu, '').replaceAll("'", "").replaceAll('"', '') + '","' + message.chat.id + '",' + cnt + ')', function (err, rows, fields) {
+					if (err) throw err
+					console.log('Gruppo aggiunto: ' + message.chat.title)
 				})
 			} else {
-				bot.getChatMembersCount(message.chat.id).then(function (cnt) {
-					const d = new Date()
-					const long_date = d.getFullYear() + '-' + addZero(d.getMonth() + 1) + '-' + addZero(d.getDate()) + ' ' + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds())
+				const d = new Date()
+				const long_date = d.getFullYear() + '-' + addZero(d.getMonth() + 1) + '-' + addZero(d.getDate()) + ' ' + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds())
 
-					message.chat.title = message.chat.title.replace(/[^\w\s]/gi, '')
+				message.chat.title = message.chat.title.replace(/[^\w\s]/gi, '')
 
-					connection.query('UPDATE plus_groups SET name = "' + message.chat.title + '", members = ' + cnt + ', last_update = "' + long_date + '" WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
-						if (err) throw err
-					})
+				connection.query('UPDATE plus_groups SET name = "' + message.chat.title + '", members = ' + cnt + ', last_update = "' + long_date + '" WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+					if (err) throw err
 				})
 			}
 		})
@@ -1427,96 +1437,53 @@ bot.onText(/\/printsticker/, function (message) {
 	})
 })
 
-bot.onText(/^\/gruppi/, function (message) {
-	bot.getChatMembersCount(-1001069842056).then(function (data) {
-		const c1 = data // taverna
-		console.log('Next Mercato')
+bot.onText(/^\/gruppi/, async function (message) {
+	const c1 = await getChatMemberCount(-1001069842056)
+	const c2 = await getChatMemberCount(-1001064571576)
+	const c3 = await getChatMemberCount(-1001087936894)
+	const c4 = await getChatMemberCount(-1001078754923)
+	const c6 = await getChatMemberCount(-1001086845014)
+	const c10 = await getChatMemberCount(-1001123874487)
+	const c11 = await getChatMemberCount(-1001131584245)
+	const c12 = await getChatMemberCount(-1001097316494)
+	const c13 = await getChatMemberCount(-1001050459665)
+	const c14 = await getChatMemberCount(-1001127554674)
+	const c17 = await getChatMemberCount(-1001167682606)
 
-		bot.getChatMembersCount(-1001064571576).then(function (data) {
-			const c2 = data // mercato
-			console.log('Next Lotteria')
+	if (message.chat.id < 0) { bot.sendMessage(message.chat.id, '_Messaggio inviato in privato_', mark) }
 
-			bot.getChatMembersCount(-1001087936894).then(function (data) {
-				const c3 = data // lootteria
-				console.log('Next Flame')
+	bot.sendMessage(message.from.id, '<b>Ufficiali</b>\n' +
+		'Canale principale per aggiornamenti: @LootBotAvvisi\n' +
 
-				bot.getChatMembersCount(-1001078754923).then(function (data) {
-					const c4 = data // flame
-					console.log('Next Scuola')
+		'\n<b>Bot</b>\n' +
+		'Liste oggetti e alberi automatici: @craftlootbot\n' +
+		'Qualcuno sempre a disposizione: @OracoloLootBot\n' +
+		'Calcolo Loot Combat Rating: @lootcrbot\n' +
+		'Tool per mercato e cronologie: @ToolsForLootBot\n' +
+		'Tastiera per inviare facilmente i comandi del plus: @LootPlusKeyboardBot\n' +
 
-					bot.getChatMembersCount(-1001086845014).then(function (data) {
-						const c6 = data // scuola
-						console.log('Next Scommesse')
+		'\n<b>Altro</b>\n' +
+		"<a href='https://telegra.ph/Guida-alle-LootBot-API-04-06'>LootBot Api v2</a>\n" +
 
-						bot.getChatMembersCount(-1001123874487).then(function (data) {
-							const c10 = data // contrabbando
-							console.log('Next Raffles')
+		'\n<b>Gruppi</b>\n' +
+		"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
+		"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ') - Solo scambi!\n' +
+		"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ') - Proponi testi!\n' +
+		"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ') - Solo i vostri negozi!\n' +
+		"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ') - Riservato alle Lotterie\n' +
+		"<a href='https://t.me/joinchat/AVqFykBMfmvrULAUQv-MmQ'>Loot Flame</a> (" + c4 + ') - Nessun filtro, solo flame\n' +
+		"<a href='https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg'>LootBot School</a> (" + c6 + ') - Impara le basi del gioco per iniziare con una marcia in più!\n' +
+		"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ') - Chiedi aiuto per le richieste del contrabbandiere!\n' +
+		"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ') - Gruppo OT con tanto di gelato (Livello minimo: 10)\n' +
+		"<a href='https://t.me/joinchat/I-b0dhM-eO3tmxrz9rtMrg'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
+		"<a href='https://t.me/+bSX_qvSyzIxhZDdk'>Loot Music</a> (" + c17 + ') - La musica ed il diverimento di Lootia!\n' +
 
-							bot.getChatMembersCount(-1001131584245).then(function (data) {
-								const c11 = data // raffles
-								console.log('Next Negozi')
+		'\n<b>Canali</b>\n' +
+		'@Suggerimenti_per_LootBot - Gruppo dove i suggerimenti vengono postati e votati dagli utenti\n' +
+		'@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n' +
+		'@LootDogana - Ogni transazione di loot passa di qui, nel bene e nel male!\n' +
 
-								bot.getChatMembersCount(-1001097316494).then(function (data) {
-									const c12 = data // negozi
-									console.log('Next Test')
-
-									bot.getChatMembersCount(-1001050459665).then(function (data) {
-										const c13 = data // testi
-										console.log('Next Gelateria')
-
-										bot.getChatMembersCount(-1001127554674).then(function (data) {
-											const c14 = data // gelateria
-											console.log('Next Ade')
-
-											bot.getChatMembersCount(-1001167682606).then(function (data) {
-												const c17 = data // music
-												console.log('Next Nabbi')
-
-												if (message.chat.id < 0) { bot.sendMessage(message.chat.id, '_Messaggio inviato in privato_', mark) }
-
-												bot.sendMessage(message.from.id, '<b>Ufficiali</b>\n' +
-													'Canale principale per aggiornamenti: @LootBotAvvisi\n' +
-
-													'\n<b>Bot</b>\n' +
-													'Liste oggetti e alberi automatici: @craftlootbot\n' +
-													'Qualcuno sempre a disposizione: @OracoloLootBot\n' +
-													'Calcolo Loot Combat Rating: @lootcrbot\n' +
-													'Tool per mercato e cronologie: @ToolsForLootBot\n' +
-													'Tastiera per inviare facilmente i comandi del plus: @LootPlusKeyboardBot\n' +
-
-													'\n<b>Altro</b>\n' +
-													"<a href='https://telegra.ph/Guida-alle-LootBot-API-04-06'>LootBot Api v2</a>\n" +
-
-													'\n<b>Gruppi</b>\n' +
-													"<a href='https://telegram.me/joinchat/AThc-z_EfojvcE8mbGw1Cw'>Taverna</a> (" + c1 + ") - Di tutto un po'\n" +
-													"<a href='https://telegram.me/joinchat/AThc-z90Erh4M2O8Mk5QLw'>Mercato</a> (" + c2 + ') - Solo scambi!\n' +
-													"<a href='https://telegram.me/joinchat/AThc-z6cvhH-w2JWq9Ioew'>Testi Missioni</a> (" + c13 + ') - Proponi testi!\n' +
-													"<a href='https://telegram.me/joinchat/AThc-0FnuI5vlb4Hm53W_w'>Negozi</a> (" + c12 + ') - Solo i vostri negozi!\n' +
-													"<a href='https://t.me/joinchat/Dl2UwEDYmX6z5jf7vHhG9Q'>Lootteria</a> (" + c3 + ') - Riservato alle Lotterie\n' +
-													"<a href='https://t.me/joinchat/AVqFykBMfmvrULAUQv-MmQ'>Loot Flame</a> (" + c4 + ') - Nessun filtro, solo flame\n' +
-													"<a href='https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg'>LootBot School</a> (" + c6 + ') - Impara le basi del gioco per iniziare con una marcia in più!\n' +
-													"<a href='https://t.me/joinchat/DOs98UL89rdYL_PFGukbJw'>Vicolo del Contrabbando</a> (" + c10 + ') - Chiedi aiuto per le richieste del contrabbandiere!\n' +
-													"<a href='https://t.me/joinchat/AAAAAEM1HnIQeWI32RwzXw'>Gelateria</a> (" + c14 + ') - Gruppo OT con tanto di gelato (Livello minimo: 10)\n' +
-													"<a href='https://t.me/joinchat/I-b0dhM-eO3tmxrz9rtMrg'>Gruppo Scommesse 2</a> Gruppo ignorante dove arriverai a giocarti la casa a dadi e il cagnolino a testa o croce\n" +
-													"<a href='https://t.me/+bSX_qvSyzIxhZDdk'>Loot Music</a> (" + c17 + ') - La musica ed il diverimento di Lootia!\n' +
-
-													'\n<b>Canali</b>\n' +
-													'@Suggerimenti_per_LootBot - Gruppo dove i suggerimenti vengono postati e votati dagli utenti\n' +
-													'@LaBachecaDiLootia - Bacheca degli annunci per gli avventurieri di Lootia\n' +
-													'@LootDogana - Ogni transazione di loot passa di qui, nel bene e nel male!\n' +
-
-													"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html)
-											})
-										})
-									})
-								})
-							})
-						})
-					})
-				})
-			})
-		})
-	})
+		"\nVisita anche /mercatini. Per comparire qua chiedi all'amministratore.", html)
 })
 
 bot.onText(/^\/mercatini/, function (message) {
