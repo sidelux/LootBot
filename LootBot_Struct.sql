@@ -1,8 +1,8 @@
--- MySQL dump 10.19  Distrib 10.3.34-MariaDB, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.19  Distrib 10.3.36-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: LootBot
 -- ------------------------------------------------------
--- Server version	10.3.34-MariaDB-0+deb10u1
+-- Server version	10.3.36-MariaDB-0+deb10u2
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -505,14 +505,13 @@ DROP TABLE IF EXISTS `auction_public`;
 /*!50001 DROP VIEW IF EXISTS `auction_public`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `auction_public` (
-  `id` tinyint NOT NULL,
-  `creator` tinyint NOT NULL,
-  `player` tinyint NOT NULL,
-  `item` tinyint NOT NULL,
-  `price` tinyint NOT NULL,
-  `time` tinyint NOT NULL
-) ENGINE=MyISAM */;
+/*!50001 CREATE VIEW `auction_public` AS SELECT
+ 1 AS `id`,
+  1 AS `creator`,
+  1 AS `player`,
+  1 AS `item`,
+  1 AS `price`,
+  1 AS `time` */;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -865,13 +864,12 @@ DROP TABLE IF EXISTS `craft_public`;
 /*!50001 DROP VIEW IF EXISTS `craft_public`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `craft_public` (
-  `id` tinyint NOT NULL,
-  `material_1` tinyint NOT NULL,
-  `material_2` tinyint NOT NULL,
-  `material_3` tinyint NOT NULL,
-  `material_result` tinyint NOT NULL
-) ENGINE=MyISAM */;
+/*!50001 CREATE VIEW `craft_public` AS SELECT
+ 1 AS `id`,
+  1 AS `material_1`,
+  1 AS `material_2`,
+  1 AS `material_3`,
+  1 AS `material_result` */;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -882,13 +880,12 @@ DROP TABLE IF EXISTS `craft_public_id`;
 /*!50001 DROP VIEW IF EXISTS `craft_public_id`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `craft_public_id` (
-  `id` tinyint NOT NULL,
-  `material_1` tinyint NOT NULL,
-  `material_2` tinyint NOT NULL,
-  `material_3` tinyint NOT NULL,
-  `material_result` tinyint NOT NULL
-) ENGINE=MyISAM */;
+/*!50001 CREATE VIEW `craft_public_id` AS SELECT
+ 1 AS `id`,
+  1 AS `material_1`,
+  1 AS `material_2`,
+  1 AS `material_3`,
+  1 AS `material_result` */;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -1192,10 +1189,9 @@ DROP TABLE IF EXISTS `dragon_top_unlinked`;
 /*!50001 DROP VIEW IF EXISTS `dragon_top_unlinked`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `dragon_top_unlinked` (
-  `dragon_id` tinyint NOT NULL,
-  `combat_id` tinyint NOT NULL
-) ENGINE=MyISAM */;
+/*!50001 CREATE VIEW `dragon_top_unlinked` AS SELECT
+ 1 AS `dragon_id`,
+  1 AS `combat_id` */;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -1977,15 +1973,14 @@ DROP TABLE IF EXISTS `heist_public`;
 /*!50001 DROP VIEW IF EXISTS `heist_public`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `heist_public` (
-  `id` tinyint NOT NULL,
-  `from_nick` tinyint NOT NULL,
-  `to_nick` tinyint NOT NULL,
-  `fail` tinyint NOT NULL,
-  `time` tinyint NOT NULL,
-  `matchmaking` tinyint NOT NULL,
-  `after_rune` tinyint NOT NULL
-) ENGINE=MyISAM */;
+/*!50001 CREATE VIEW `heist_public` AS SELECT
+ 1 AS `id`,
+  1 AS `from_nick`,
+  1 AS `to_nick`,
+  1 AS `fail`,
+  1 AS `time`,
+  1 AS `matchmaking`,
+  1 AS `after_rune` */;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -2235,14 +2230,13 @@ DROP TABLE IF EXISTS `lottery_public`;
 /*!50001 DROP VIEW IF EXISTS `lottery_public`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `lottery_public` (
-  `id` tinyint NOT NULL,
-  `creator` tinyint NOT NULL,
-  `player` tinyint NOT NULL,
-  `item` tinyint NOT NULL,
-  `money` tinyint NOT NULL,
-  `time` tinyint NOT NULL
-) ENGINE=MyISAM */;
+/*!50001 CREATE VIEW `lottery_public` AS SELECT
+ 1 AS `id`,
+  1 AS `creator`,
+  1 AS `player`,
+  1 AS `item`,
+  1 AS `money`,
+  1 AS `time` */;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -2487,18 +2481,17 @@ DROP TABLE IF EXISTS `market_direct_public`;
 /*!50001 DROP VIEW IF EXISTS `market_direct_public`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `market_direct_public` (
-  `id` tinyint NOT NULL,
-  `item_id` tinyint NOT NULL,
-  `name` tinyint NOT NULL,
-  `price` tinyint NOT NULL,
-  `quantity` tinyint NOT NULL,
-  `time` tinyint NOT NULL,
-  `from_nick` tinyint NOT NULL,
-  `to_nick` tinyint NOT NULL,
-  `buyer` tinyint NOT NULL,
-  `type` tinyint NOT NULL
-) ENGINE=MyISAM */;
+/*!50001 CREATE VIEW `market_direct_public` AS SELECT
+ 1 AS `id`,
+  1 AS `item_id`,
+  1 AS `name`,
+  1 AS `price`,
+  1 AS `quantity`,
+  1 AS `time`,
+  1 AS `from_nick`,
+  1 AS `to_nick`,
+  1 AS `buyer`,
+  1 AS `type` */;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -2580,17 +2573,16 @@ DROP TABLE IF EXISTS `market_public`;
 /*!50001 DROP VIEW IF EXISTS `market_public`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `market_public` (
-  `id` tinyint NOT NULL,
-  `item_1` tinyint NOT NULL,
-  `name_1` tinyint NOT NULL,
-  `item_2` tinyint NOT NULL,
-  `name_2` tinyint NOT NULL,
-  `time` tinyint NOT NULL,
-  `from_nick` tinyint NOT NULL,
-  `to_nick` tinyint NOT NULL,
-  `buyer` tinyint NOT NULL
-) ENGINE=MyISAM */;
+/*!50001 CREATE VIEW `market_public` AS SELECT
+ 1 AS `id`,
+  1 AS `item_1`,
+  1 AS `name_1`,
+  1 AS `item_2`,
+  1 AS `name_2`,
+  1 AS `time`,
+  1 AS `from_nick`,
+  1 AS `to_nick`,
+  1 AS `buyer` */;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -2995,13 +2987,12 @@ DROP TABLE IF EXISTS `pay_public`;
 /*!50001 DROP VIEW IF EXISTS `pay_public`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `pay_public` (
-  `id` tinyint NOT NULL,
-  `from_nick` tinyint NOT NULL,
-  `to_nick` tinyint NOT NULL,
-  `price` tinyint NOT NULL,
-  `time` tinyint NOT NULL
-) ENGINE=MyISAM */;
+/*!50001 CREATE VIEW `pay_public` AS SELECT
+ 1 AS `id`,
+  1 AS `from_nick`,
+  1 AS `to_nick`,
+  1 AS `price`,
+  1 AS `time` */;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -3229,13 +3220,12 @@ DROP TABLE IF EXISTS `player_public`;
 /*!50001 DROP VIEW IF EXISTS `player_public`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `player_public` (
-  `id` tinyint NOT NULL,
-  `nickname` tinyint NOT NULL,
-  `greater_50` tinyint NOT NULL,
-  `team_id` tinyint NOT NULL,
-  `team` tinyint NOT NULL
-) ENGINE=MyISAM */;
+/*!50001 CREATE VIEW `player_public` AS SELECT
+ 1 AS `id`,
+  1 AS `nickname`,
+  1 AS `greater_50`,
+  1 AS `team_id`,
+  1 AS `team` */;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -3533,11 +3523,10 @@ DROP TABLE IF EXISTS `search_public`;
 /*!50001 DROP VIEW IF EXISTS `search_public`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `search_public` (
-  `id` tinyint NOT NULL,
-  `term` tinyint NOT NULL,
-  `time` tinyint NOT NULL
-) ENGINE=MyISAM */;
+/*!50001 CREATE VIEW `search_public` AS SELECT
+ 1 AS `id`,
+  1 AS `term`,
+  1 AS `time` */;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -3612,14 +3601,13 @@ DROP TABLE IF EXISTS `shop_public`;
 /*!50001 DROP VIEW IF EXISTS `shop_public`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `shop_public` (
-  `nickname` tinyint NOT NULL,
-  `code` tinyint NOT NULL,
-  `item_id` tinyint NOT NULL,
-  `price` tinyint NOT NULL,
-  `quantity` tinyint NOT NULL,
-  `time_end` tinyint NOT NULL
-) ENGINE=MyISAM */;
+/*!50001 CREATE VIEW `shop_public` AS SELECT
+ 1 AS `nickname`,
+  1 AS `code`,
+  1 AS `item_id`,
+  1 AS `price`,
+  1 AS `quantity`,
+  1 AS `time_end` */;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -3713,12 +3701,11 @@ DROP TABLE IF EXISTS `team_player_public`;
 /*!50001 DROP VIEW IF EXISTS `team_player_public`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `team_player_public` (
-  `team_id` tinyint NOT NULL,
-  `player_id` tinyint NOT NULL,
-  `nickname` tinyint NOT NULL,
-  `role` tinyint NOT NULL
-) ENGINE=MyISAM */;
+/*!50001 CREATE VIEW `team_player_public` AS SELECT
+ 1 AS `team_id`,
+  1 AS `player_id`,
+  1 AS `nickname`,
+  1 AS `role` */;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -3729,12 +3716,11 @@ DROP TABLE IF EXISTS `team_public`;
 /*!50001 DROP VIEW IF EXISTS `team_public`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
-/*!50001 CREATE TABLE `team_public` (
-  `team_id` tinyint NOT NULL,
-  `name` tinyint NOT NULL,
-  `child_team` tinyint NOT NULL,
-  `pnt` tinyint NOT NULL
-) ENGINE=MyISAM */;
+/*!50001 CREATE VIEW `team_public` AS SELECT
+ 1 AS `team_id`,
+  1 AS `name`,
+  1 AS `child_team`,
+  1 AS `pnt` */;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -3906,7 +3892,6 @@ CREATE TABLE `travel` (
 -- Final view structure for view `auction_public`
 --
 
-/*!50001 DROP TABLE IF EXISTS `auction_public`*/;
 /*!50001 DROP VIEW IF EXISTS `auction_public`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -3925,7 +3910,6 @@ CREATE TABLE `travel` (
 -- Final view structure for view `craft_public`
 --
 
-/*!50001 DROP TABLE IF EXISTS `craft_public`*/;
 /*!50001 DROP VIEW IF EXISTS `craft_public`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -3944,7 +3928,6 @@ CREATE TABLE `travel` (
 -- Final view structure for view `craft_public_id`
 --
 
-/*!50001 DROP TABLE IF EXISTS `craft_public_id`*/;
 /*!50001 DROP VIEW IF EXISTS `craft_public_id`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -3963,7 +3946,6 @@ CREATE TABLE `travel` (
 -- Final view structure for view `dragon_top_unlinked`
 --
 
-/*!50001 DROP TABLE IF EXISTS `dragon_top_unlinked`*/;
 /*!50001 DROP VIEW IF EXISTS `dragon_top_unlinked`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -3982,7 +3964,6 @@ CREATE TABLE `travel` (
 -- Final view structure for view `heist_public`
 --
 
-/*!50001 DROP TABLE IF EXISTS `heist_public`*/;
 /*!50001 DROP VIEW IF EXISTS `heist_public`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -4001,7 +3982,6 @@ CREATE TABLE `travel` (
 -- Final view structure for view `lottery_public`
 --
 
-/*!50001 DROP TABLE IF EXISTS `lottery_public`*/;
 /*!50001 DROP VIEW IF EXISTS `lottery_public`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -4020,7 +4000,6 @@ CREATE TABLE `travel` (
 -- Final view structure for view `market_direct_public`
 --
 
-/*!50001 DROP TABLE IF EXISTS `market_direct_public`*/;
 /*!50001 DROP VIEW IF EXISTS `market_direct_public`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -4039,7 +4018,6 @@ CREATE TABLE `travel` (
 -- Final view structure for view `market_public`
 --
 
-/*!50001 DROP TABLE IF EXISTS `market_public`*/;
 /*!50001 DROP VIEW IF EXISTS `market_public`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -4058,7 +4036,6 @@ CREATE TABLE `travel` (
 -- Final view structure for view `pay_public`
 --
 
-/*!50001 DROP TABLE IF EXISTS `pay_public`*/;
 /*!50001 DROP VIEW IF EXISTS `pay_public`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -4077,7 +4054,6 @@ CREATE TABLE `travel` (
 -- Final view structure for view `player_public`
 --
 
-/*!50001 DROP TABLE IF EXISTS `player_public`*/;
 /*!50001 DROP VIEW IF EXISTS `player_public`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -4096,7 +4072,6 @@ CREATE TABLE `travel` (
 -- Final view structure for view `search_public`
 --
 
-/*!50001 DROP TABLE IF EXISTS `search_public`*/;
 /*!50001 DROP VIEW IF EXISTS `search_public`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -4115,7 +4090,6 @@ CREATE TABLE `travel` (
 -- Final view structure for view `shop_public`
 --
 
-/*!50001 DROP TABLE IF EXISTS `shop_public`*/;
 /*!50001 DROP VIEW IF EXISTS `shop_public`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -4134,7 +4108,6 @@ CREATE TABLE `travel` (
 -- Final view structure for view `team_player_public`
 --
 
-/*!50001 DROP TABLE IF EXISTS `team_player_public`*/;
 /*!50001 DROP VIEW IF EXISTS `team_player_public`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -4153,7 +4126,6 @@ CREATE TABLE `travel` (
 -- Final view structure for view `team_public`
 --
 
-/*!50001 DROP TABLE IF EXISTS `team_public`*/;
 /*!50001 DROP VIEW IF EXISTS `team_public`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;

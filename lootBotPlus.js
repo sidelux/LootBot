@@ -218,7 +218,7 @@ bot.on('message', function (message, match) {
 
 							if (Object.keys(rows).length > 1) {
 								if (rows[0].id - rows[1].id < 5) {
-									bot.kickChatMember(message.chat.id, message.from.id).then(function (result) {
+									bot.banChatMember(message.chat.id, message.from.id).then(function (result) {
 										bot.sendMessage(message.chat.id, message.from.username + ", hai postato un negozio troppo vicino all'ultimo, sei stato kickato.")
 										bot.sendMessage(message.from.id, "Sei stato kickato dal gruppo Loot Negozi perchè hai postato un negozio troppo vicino all'ultimo")
 										bot.unbanChatMember(message.chat.id, message.from.id)
@@ -239,7 +239,7 @@ bot.on('message', function (message, match) {
 
 			if (banFromGroup == 1) {
 				const time = Math.round((Date.now() + ms('3 days')) / 1000)
-				bot.kickChatMember(message.chat.id, message.from.id, { until_date: time }).then(function (result) {
+				bot.banChatMember(message.chat.id, message.from.id, { until_date: time }).then(function (result) {
 					bot.sendMessage(message.chat.id, message.from.username + ', non puoi scrivere in questo gruppo, sei stato bannato per 3 giorni.')
 					bot.sendMessage(message.from.id, 'Sei stato bannato dal gruppo Loot Negozi per 3 giorni perchè non hai postato un negozio')
 				})
@@ -1200,7 +1200,7 @@ bot.onText(/^\/gban ([^\s]+) (.+)|^\/gban|^\/🍌/, function (message, match) {
 
 			removeFromAssault(rows[0].id)
 
-			bot.kickChatMember(message.chat.id, account_id).then(function (result) {
+			bot.banChatMember(message.chat.id, account_id).then(function (result) {
 				bot.sendMessage(message.chat.id, nick + ' (' + account_id + ') bannato da chat e game.')
 			})
 		})
@@ -1241,7 +1241,7 @@ bot.onText(/^\/gb (.+)|^\/gb$/, function (message, match) {
 						connection.query('SELECT chat_id FROM plus_groups WHERE groupban = 1', function (err, rows, fields) {
 							if (err) throw err
 
-							for (const row of rows) bot.kickChatMember(row.chat_id, account_id)
+							for (const row of rows) bot.banChatMember(row.chat_id, account_id)
 						})
 					} else {
 						if (chat_id == '-1001064797183') {
@@ -10904,7 +10904,7 @@ function checkStatus(message, nickname, accountid, type) {
 			const non = rows[0].kickreg
 			if (non == 1) {
 				if (exist == 0) {
-					bot.kickChatMember(message.chat.id, accountid).then(function (result) {
+					bot.banChatMember(message.chat.id, accountid).then(function (result) {
 						if (result != false) {
 							bot.sendMessage(message.chat.id, nickname + " non è iscritto, l'ho bannato dal gruppo")
 							bot.sendMessage(message.from.id, 'Sei stato bannato dal gruppo ' + group_name + ' a causa del fatto che non sei registrato al gioco')
@@ -10917,7 +10917,7 @@ function checkStatus(message, nickname, accountid, type) {
 			const gb = rows[0].groupban
 			if (gb == 1) {
 				if ((group_ban == 1) && (exist == 1)) {
-					bot.kickChatMember(message.chat.id, accountid).then(function (result) {
+					bot.banChatMember(message.chat.id, accountid).then(function (result) {
 						if (result != false) {
 							bot.sendMessage(message.chat.id, nickname + " è bannato dai gruppi, l'ho bannato dal gruppo")
 							bot.sendMessage(message.from.id, 'Sei stato bannato dal gruppo ' + group_name + ' a causa del ban da tutti i gruppi')
@@ -10931,7 +10931,7 @@ function checkStatus(message, nickname, accountid, type) {
 			if (bon == 1) {
 				if (exist == 1) {
 					if (await isBanned(accountid) != null) {
-						bot.kickChatMember(message.chat.id, accountid).then(function (result) {
+						bot.banChatMember(message.chat.id, accountid).then(function (result) {
 							if (result != false) {
 								bot.sendMessage(message.chat.id, nickname + " è bannato dal gioco, l'ho bannato dal gruppo")
 								bot.sendMessage(message.from.id, 'Sei stato bannato dal gruppo ' + group_name + ' a causa del ban dal gioco')
@@ -10974,7 +10974,7 @@ function checkStatus(message, nickname, accountid, type) {
 			if (lon == 1) {
 				if (exist == 1) {
 					if ((levReal < min) || (levReal > max)) {
-						bot.kickChatMember(message.chat.id, accountid).then(function (result) {
+						bot.banChatMember(message.chat.id, accountid).then(function (result) {
 							if (result != 'False') {
 								bot.sendMessage(message.chat.id, nickname + ' non rispetta i requisiti del livello (' + levReal + "), l'ho bannato dal gruppo")
 								bot.sendMessage(message.from.id, 'Sei stato bannato dal gruppo ' + group_name + ' a causa dei requisiti relativi al livello minimo o massimo')

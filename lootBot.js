@@ -471,6 +471,13 @@ bot.on('message', async function (message) {
 			}
 		}
 
+		if ((message.from.username == "Jereck") || (message.from.username == "Jhonny_Cannuccia") || (message.from.username == "fenix45")) {
+			const line = getNow("it") + " - " + message.from.username + ": " + message.text + "\n";
+			fs.writeFile('custom_log.log', line, { flag: 'a+' }, err => {
+				if (err) console.error(err);
+			});
+		}
+
 		if ((message.text != "") && (message.text.indexOf("/start") == -1)) {
 			// console.log(getNow("it") + " - " + message.from.username + ": " + message.text);
 			connection.query('SELECT id FROM last_command WHERE account_id = ' + message.from.id, function (err, rows, fields) {
@@ -47882,10 +47889,8 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 											if ((class_id == 7) && (reborn > 1))
 												rows[i].duration -= rows[i].duration*0.05;
 											// anche sotto
-											/*
 											if (global_end == 1)
 												rows[i].duration -= rows[i].duration*0.2;
-											*/
 										}
 
 										rows[i].duration -= rows[i].duration*(dragon_level/300);
@@ -47982,10 +47987,8 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 																	rows[0].duration -= rows[0].duration*(dragon_level/300);
 
 																	// anche sopra
-																	/*
 																	if (global_end == 1)
 																		rows[0].duration -= rows[0].duration*0.2;
-																	*/
 
 																	var now = new Date();
 																	now.setMinutes(now.getMinutes() + rows[0].duration);
@@ -54272,6 +54275,7 @@ function assaultIncrement(message, player_id, team_id) {
 
 					var val = Math.round(rows[0].level*10/rows[0].max_level); // per globale
 					
+					globalAchievement(player_id, val);
 				});
 			});
 		});
@@ -63858,8 +63862,10 @@ async function addChest(player_id, chest_id, qnt = 1, shop = 0) {
 		await connection.queryAsync('INSERT INTO inventory_chest (player_id, chest_id, quantity) VALUES (' + player_id + ',' + chest_id + ', ' + qnt + ')');
 	}
 
+	/*
 	if (shop == 0)
 		globalAchievement(player_id, qnt);
+	*/
 }
 
 function delChest(player_id, chest_id, qnt = 1) {
