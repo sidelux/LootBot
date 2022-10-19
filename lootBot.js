@@ -41232,7 +41232,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 										req6 = " (" + rows[0].cnt + "/100)";
 
 									bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
-													"> Aver completato 300 triplette di imprese giornaliere" + req1 + "\n" +
+													"> Aver completato 250 triplette di imprese giornaliere" + req1 + "\n" +
 													"> Aver partecipato attivamente ad almeno 15 imprese globali" + req2 + "\n" +
 													"> Possedere almeno 300 Flaridion (verranno consumati)" + req3 + "\n" +
 													"> Aver raggiunto almeno il rango dungeon 500" + req4 + "\n" +
@@ -41253,8 +41253,8 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 													connection.query('SELECT achievement_count_all, global_event, power_pnt, rank, top_win, top_rank_count FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 														if (err) throw err;
 
-														if (rows[0].achievement_count_all < 300) {
-															bot.sendMessage(message.chat.id, "Non hai raggiunto le triplette necessarie (" + rows[0].achievement_count_all + "/300)", back);
+														if (rows[0].achievement_count_all < 250) {
+															bot.sendMessage(message.chat.id, "Non hai raggiunto le triplette necessarie (" + rows[0].achievement_count_all + "/250)", back);
 															return;
 														}
 
