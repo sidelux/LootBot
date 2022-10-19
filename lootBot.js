@@ -3512,7 +3512,7 @@ bot.onText(/^vetrinetta|torna alla vetrinetta|^vtr$/i, function (message) {
 					if (answer.text.toLowerCase().indexOf("bevanda") != -1) {
 						var boost_selected = answer.text.split(" - ")[0];
 						var boost_mission_selected = answer.text.split(" - ")[1];
-						connection.query('SELECT name, boost_id FROM item WHERE name = "' + boost_selected + '"', function (err, rows, fields) {
+						connection.query('SELECT name, boost_id, description FROM item WHERE boost_name = "' + boost_selected + '"', function (err, rows, fields) {
 							if (err) throw err;
 
 							if (Object.keys(rows).length == 0) {
@@ -3522,6 +3522,7 @@ bot.onText(/^vetrinetta|torna alla vetrinetta|^vtr$/i, function (message) {
 
 							var boost_id = rows[0].boost_id;
 							var boost_name = rows[0].name;
+							var boost_desc = rows[0].description;
 							connection.query('SELECT id, boost_mission, TIMESTAMPDIFF(HOUR, NOW(), time_end) As diff FROM boost_store WHERE boost_id = ' + boost_id + ' AND boost_mission = ' + boost_mission_selected + ' AND player_id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
 
@@ -3536,7 +3537,7 @@ bot.onText(/^vetrinetta|torna alla vetrinetta|^vtr$/i, function (message) {
 								var extra = "";
 								var boost_expired = 0;
 								if (boost_end < 24) {
-									extra = " Attenzione, la bevanda ha uno strano aspetto, pensaci bene prima di berla...";
+									extra = " 🤢";
 									boost_expired = 1;
 								}
 
@@ -3549,7 +3550,7 @@ bot.onText(/^vetrinetta|torna alla vetrinetta|^vtr$/i, function (message) {
 									}
 								};
 
-								bot.sendMessage(message.chat.id, "Cosa vuoi fare con la bevanda selezionata?" + extra, kb2).then(function () {
+								bot.sendMessage(message.chat.id, "*" + boost_name + "* (" + boost_mission + " utilizzi)" + extra + "\n_" + boost_desc + "_\n\nCosa vuoi fare con la bevanda selezionata?", kb2).then(function () {
 									answerCallbacks[message.chat.id] = async function (answer) {
 										if (answer.text == "Torna al menu")
 											return;
@@ -63792,10 +63793,14 @@ function setExp(player_id, exp) {
 		}
 
 		if (((reborn == 5) && (my_exp+exp >= 10000)) || ((reborn == 6) && (my_exp+exp >= 25000))) {
+			if (my_exp+exp >= 10000)
+				gain_exp = Math.abs(10000-(my_exp+exp));
+			else if (my_exp+exp >= 25000)
+				gain_exp = Math.abs(25000-(my_exp+exp));
 			connection.query('SELECT COUNT(id) As cnt FROM artifacts WHERE item_id = 675 AND player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (rows[0].cnt > 0) {
-					connection.query('UPDATE player SET gain_exp = gain_exp+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
+					connection.query('UPDATE player SET gain_exp = gain_exp+' + gain_exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 					});
 				}
