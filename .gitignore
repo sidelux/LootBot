@@ -2,4 +2,4 @@ config.js
 node_modules/
 suggestions/
 node_modules_old/
-custom_log.txt
+custom_log.log

@@ -3512,7 +3512,7 @@ bot.onText(/^vetrinetta|torna alla vetrinetta|^vtr$/i, function (message) {
 					if (answer.text.toLowerCase().indexOf("bevanda") != -1) {
 						var boost_selected = answer.text.split(" - ")[0];
 						var boost_mission_selected = answer.text.split(" - ")[1];
-						connection.query('SELECT name, boost_id, description FROM item WHERE boost_name = "' + boost_selected + '"', function (err, rows, fields) {
+						connection.query('SELECT name, boost_id, description FROM item WHERE name = "' + boost_selected + '"', function (err, rows, fields) {
 							if (err) throw err;
 
 							if (Object.keys(rows).length == 0) {
