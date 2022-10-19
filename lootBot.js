@@ -51,7 +51,7 @@ var battle_timeout_limit_min = 20;
 var battle_timeout_elapsed = 600;
 var battle_season_test = 0;
 var dragon_limit_search = 15;
-var map_condition_max = 12;
+var map_condition_max = 13;
 var max_dungeon_energy = 60;
 var map_moves_mode = 1;
 var lobby_restric_min = 8;
@@ -7009,6 +7009,9 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 								} else if (map_conditions == 12) {
 									conditions += "⛑ Duro a morire";
 									conditions_desc = "Le caselle vuote ricaricano il doppio di salute";
+								} else if (map_conditions == 13) {
+									conditions += "💥 Campo minato";
+									conditions_desc = "Gran parte della mappa è disseminata di trappole";
 								}
 
 								var open = "<b>" + map_daily_diff + "</b> 💥 partite avviabili oggi";
@@ -55874,6 +55877,16 @@ function generateMap(lobby_id, width, height, players, conditions) {
 	} else if (conditions == 10) {
 		pulseRate = 0;
 		boostRate += 7;
+	} else if (conditions == 13) {
+		build = [];
+		chestRate = 10;
+		chestEpicRate = 10;
+		trapRate = 50;
+		pulseRate = 10;
+		scrapRate = 0;
+		teleportRate = 0;
+		paralyzeRate = 0;
+		boostRate = 0;
 	}
 
 	var totalRate = chestRate+chestEpicRate+trapRate+pulseRate+scrapRate+teleportRate+paralyzeRate+boostRate;
@@ -63778,7 +63791,7 @@ function setExp(player_id, exp) {
 			});
 		}
 
-		if (((reborn == 5) && (my_exp >= 10000)) || ((reborn == 6) && (my_exp >= 25000))) {
+		if (((reborn == 5) && (my_exp+exp >= 10000)) || ((reborn == 6) && (my_exp+exp >= 25000))) {
 			connection.query('SELECT COUNT(id) As cnt FROM artifacts WHERE item_id = 675 AND player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (rows[0].cnt > 0) {
