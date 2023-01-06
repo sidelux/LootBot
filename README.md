@@ -1,6 +1,6 @@
 # Loot Game Bot - Telegram Bot
 
-Il primo gamebot di Telegram creato da Edoardo Cortese con più di 25.000 registrazioni disponibile dal 2016.
+Il primo gamebot di Telegram creato da Edoardo Cortese con più di 33.000 registrazioni disponibile dal 2016.
 
 Il bot utilizza il modulo "node-telegram-bot-api" per interagire con le Api di Telegram, un database MySql per memorizzare i dati e Node Js per essere eseguito.
 

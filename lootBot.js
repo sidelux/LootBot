@@ -605,14 +605,14 @@ bot.on('message', async function (message) {
 		var month = now_d.getMonth();
 		var year = now_d.getFullYear();
 
-		if ((day == 31) && (month == 9) && (hour >= 12) && (year == 2021)) {
+		if ((day == 31) && (month == 9) && (hour >= 12) && (year == 2022)) {
 			connection.query('SELECT COUNT(*) As cnt FROM one_time_gift WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (rows[0].cnt == 0) {
 					connection.query('INSERT INTO one_time_gift (player_id) VALUES (' + player_id + ')', async function (err, rows, fields) {
 						if (err) throw err;
-						await addItem(player_id, 804);
-						bot.sendMessage(message.chat.id, "Buon Halloween 🎃!\nPer la tua presenza costante nel gioco, hai ricevuto una nuova IN non commerciabile: una *Zucchetta di Halloween 2021 (IN)*!", mark);
+						await addItem(player_id, 807);
+						bot.sendMessage(message.chat.id, "Buon Halloween 🎃!\nPer la tua presenza costante nel gioco, hai ricevuto una nuova IN non commerciabile: una *Zucchetta di Halloween 2022 (IN)*!", mark);
 						console.log("One time gift a " + message.from.username);
 					});
 				}
@@ -3536,9 +3536,11 @@ bot.onText(/^vetrinetta|torna alla vetrinetta|^vtr$/i, function (message) {
 								var boost_end = rows[0].diff;
 								var extra = "";
 								var boost_expired = 0;
+								var pre_text = "Cosa vuoi farne?";
 								if (boost_end < 24) {
 									extra = " 🤢";
 									boost_expired = 1;
+									pre_text = "Non ha un bell'aspetto... cosa vuoi farne?";
 								}
 
 								var kb2 = {
@@ -3550,7 +3552,7 @@ bot.onText(/^vetrinetta|torna alla vetrinetta|^vtr$/i, function (message) {
 									}
 								};
 
-								bot.sendMessage(message.chat.id, "*" + boost_name + "* (" + boost_mission + " utilizzi)" + extra + "\n_" + boost_desc + "_\n\nCosa vuoi fare con la bevanda selezionata?", kb2).then(function () {
+								bot.sendMessage(message.chat.id, "*" + boost_name + "* (" + boost_mission + " utilizzi)" + extra + "\n_" + boost_desc + "_\n\n" + pre_text, kb2).then(function () {
 									answerCallbacks[message.chat.id] = async function (answer) {
 										if (answer.text == "Torna al menu")
 											return;
@@ -33040,8 +33042,8 @@ bot.onText(/^\/endVillaggio/i, function (message) {
 				});
 				await addChest(rows[i].id, 8, qnt);
 				if (rows[i].cnt >= 2) {
-					await addItem(rows[i].id, 805);
-					text += " ed un *Alberello di Natale 2021* (IN)";
+					await addItem(rows[i].id, 808);
+					text += " ed un *Alberello di Natale 2022* (IN)";
 				}
 				console.log(rows[i].nickname, text);
 				bot.sendMessage(rows[i].chat_id, text + "!", mark);
@@ -33651,7 +33653,7 @@ bot.onText(/^scava$/i, function (message) {
 					}
 				}
 
-				bot.sendMessage(message.chat.id, text + "Raccogliere il bonus delle Miniere di Mana?", yesno).then(function () {
+				bot.sendMessage(message.chat.id, text + " Raccogliere il bonus delle Miniere di Mana?", yesno).then(function () {
 					answerCallbacks[message.chat.id] = async function (answer) {
 						if (answer.text.toLowerCase() == "si") {
 							qnt += bonus;
@@ -41198,10 +41200,10 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 							connection.query('SELECT achievement_count_all, global_event, power_pnt, rank, top_win, top_rank_count FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
 
-								if (rows[0].achievement_count_all >= 300)
+								if (rows[0].achievement_count_all >= 250)
 									req1 = " ✅";
 								else
-									req1 = " (" + rows[0].achievement_count_all + "/300)";
+									req1 = " (" + rows[0].achievement_count_all + "/250)";
 
 								if (rows[0].global_event >= 15)
 									req2 = " ✅";
@@ -47893,8 +47895,10 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 											if ((class_id == 7) && (reborn > 1))
 												rows[i].duration -= rows[i].duration*0.05;
 											// anche sotto
+											/*
 											if (global_end == 1)
 												rows[i].duration -= rows[i].duration*0.2;
+											*/
 										}
 
 										rows[i].duration -= rows[i].duration*(dragon_level/300);
@@ -47991,8 +47995,10 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 																	rows[0].duration -= rows[0].duration*(dragon_level/300);
 
 																	// anche sopra
+																	/*
 																	if (global_end == 1)
 																		rows[0].duration -= rows[0].duration*0.2;
+																	*/
 
 																	var now = new Date();
 																	now.setMinutes(now.getMinutes() + rows[0].duration);
@@ -51412,10 +51418,8 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 													if (crazyMode == 1)
 														totTime = Math.round(totTime / 2);
 
-													/*
 													if (global_end == 1)
 														totTime = Math.round(totTime / 2);
-													*/
 
 													if (boost_id == 9) {
 														setBoost(from_id, boost_mission, boost_id);
@@ -54279,7 +54283,7 @@ function assaultIncrement(message, player_id, team_id) {
 
 					var val = Math.round(rows[0].level*10/rows[0].max_level); // per globale
 					
-					globalAchievement(player_id, val);
+					// globalAchievement(player_id, val);
 				});
 			});
 		});
@@ -54656,6 +54660,29 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											chest9 = chest9*2;
 										}
 										*/
+
+										// Malus
+										if (rows[i].global_end == 1) {
+											chest1 = chest1/2;
+											chest2 = chest2/2;
+											chest3 = chest3/2;
+											chest4 = chest4/2;
+											chest5 = chest5/2;
+											chest6 = chest6/2;
+											chest7 = chest7/2;
+											chest8 = chest8/2;
+											chest9 = chest9/2;
+
+											chest1 = Math.floor(chest1);
+											chest2 = Math.floor(chest2);
+											chest3 = Math.floor(chest3);
+											chest4 = Math.floor(chest4);
+											chest5 = Math.floor(chest5);
+											chest6 = Math.floor(chest6);
+											chest7 = Math.floor(chest7);
+											chest8 = Math.floor(chest8);
+											chest9 = Math.floor(chest9);
+										}
 
 										/*
 										if (rows[i].global_end == 1)
@@ -59830,7 +59857,6 @@ function setFinishedTeamMission(element, index, array) {
 											qnt = savedQnt;
 
 											var extra = "";
-											/*
                                             if (rows[i].global_end == 1) {
                                                 if ((rewardStr[1] == "mana") || 
 												(rewardStr[1] == "mana1") || 
@@ -59850,7 +59876,6 @@ function setFinishedTeamMission(element, index, array) {
                                                 console.log("Incarico: " + rewardStr[1] + " " + extra_val);
                                                 extra = "\n\nQuantità incrementata di +" + extra_val + " per il bonus globale";
                                             }
-											*/
 
 											if (endText.length > 3500)
 												endText = endText.substr(0, 35000) + "...";
@@ -63793,10 +63818,13 @@ function setExp(player_id, exp) {
 		}
 
 		if (((reborn == 5) && (my_exp+exp >= 10000)) || ((reborn == 6) && (my_exp+exp >= 25000))) {
-			if (my_exp+exp >= 10000)
-				gain_exp = Math.abs(10000-(my_exp+exp));
-			else if (my_exp+exp >= 25000)
-				gain_exp = Math.abs(25000-(my_exp+exp));
+			var gain_exp = 0;
+			if (my_exp+exp >= 25000)
+				gain_exp = 25000-(my_exp+exp);
+			else if (my_exp+exp >= 10000)
+				gain_exp = 10000-(my_exp+exp);
+			gain_exp = Math.abs(gain_exp);
+
 			connection.query('SELECT COUNT(id) As cnt FROM artifacts WHERE item_id = 675 AND player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (rows[0].cnt > 0) {
@@ -63808,6 +63836,7 @@ function setExp(player_id, exp) {
 		}
 
 		setAchievement(player_id, 57, exp);
+		globalAchievement(player_id, exp);
 		connection.query('UPDATE player SET exp_week = exp_week+' + exp + ', exp_day = exp_day+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
