@@ -15103,6 +15103,10 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																						cursed_text += " e la figurina 🃏 *" + rows[1].name + "* (" + rows[1].rarity + ")";
 																					}
 
+																					connection.query('UPDATE player SET last_card_date = NOW() WHERE id = ' + player_id, function (err, rows, fields) {
+																						if (err) throw err;
+																					});
+
 																					bot.sendMessage(message.chat.id, "Hai acquistato ed ottenuto " + cursed_text + "\n\nEsci dal negozio sfoggiando il tuo bottino...", dNext);
 
 																					await endDungeonRoom(player_id, boost_id, boost_mission);
@@ -37214,6 +37218,10 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 																				checkAllCardsProgress(player_id);
 																			});
 																		}
+
+																		connection.query('UPDATE player SET last_card_date = NOW() WHERE id = ' + player_id, function (err, rows, fields) {
+																			if (err) throw err;
+																		});
 																	});
 
 																	name = "1x 🃏 " + new_card[0].name + " (" + new_card[0].rarity + ")";
@@ -39232,7 +39240,7 @@ bot.onText(/Figurine Collezionate/i, function (message) {
 	var myinfo = 0;
 	var size = 20;
 
-	var query = 'SELECT P.id, nickname, COUNT(C.id) As total_cnt FROM card_inventory C, player P WHERE C.player_id = P.id AND account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND C.quantity > 0 GROUP BY player_id ORDER BY total_cnt DESC, nickname';
+	var query = 'SELECT P.id, nickname, COUNT(C.id) As total_cnt FROM card_inventory C, player P WHERE C.player_id = P.id AND account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND C.quantity > 0 GROUP BY player_id ORDER BY total_cnt DESC, last_card_date ASC';
 
 	connection.query('SELECT id, top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -40213,6 +40221,10 @@ bot.onText(/compra/i, function (message) {
 														checkAllCardsProgress(player_id);
 													});
 												}
+
+												connection.query('UPDATE player SET last_card_date = NOW() WHERE id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+												});
 
 												card_text += "> " + rows[i].name + " (" + rows[i].rarity + ")\n";
 											}
@@ -43795,12 +43807,13 @@ bot.onText(/^Incantesimi/i, function (message) {
 });
 
 bot.onText(/^pozioni|^🍵$/i, function (message) {
-	connection.query('SELECT id, life, total_life FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, life, total_life, paralyzed FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
 
 		var player_id = rows[0].id;
 		var life = rows[0].life;
 		var total_life = rows[0].total_life;
+		var paralyzed = rows[0].paralyzed;
 
 		if (life <= 0) {
 			bot.sendMessage(message.chat.id, "Sei esausto, torna in vita per poter proseguire le tue avventure!", revive);
@@ -43808,9 +43821,9 @@ bot.onText(/^pozioni|^🍵$/i, function (message) {
 		}
 
 		if (message.text.toLowerCase().indexOf("pozioni") != -1)
-			Consumabili(message, player_id, 2, total_life, life, 0);
+			Consumabili(message, player_id, 2, total_life, life, 0, paralyzed);
 		else if (message.text.indexOf("🍵") != -1)
-			Consumabili(message, player_id, 4, total_life, life, 0);
+			Consumabili(message, player_id, 4, total_life, life, 0, paralyzed);
 	});
 });
 
@@ -46256,7 +46269,7 @@ bot.onText(/inserisci il nickname|ispeziona (.+)/i, function (message, match) {
 
 bot.onText(/^protezione/i, function (message) {
 
-	if (message.text.toLowerCase().indexOf("protezione di") != -1)
+	if ((message.text.toLowerCase().indexOf("protezione di") != -1) || (message.text == "Protezione indistruttibile"))
 		return;
 
 	connection.query('SELECT id, heist_protection, heist_protection_count FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
@@ -51468,7 +51481,7 @@ function calcConsumabili(boss_total_life, damage) {
 	return Math.round((boss_total_life/100 + 1000)*damage*(0.8+Math.random()*0.4));
 }
 
-function Consumabili(message, player_id, from, player_total_life, player_life) {
+function Consumabili(message, player_id, from, player_total_life, player_life, paralyzed) {
 	connection.query('SELECT item.name, item.id, inventory.quantity As num, item.category, item.cons_val FROM inventory, item WHERE inventory.item_id = item.id AND category = 1 AND player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
 		if (err) throw err;
 		var itemKeys = [];
@@ -51586,6 +51599,11 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 								return;
 							}
 
+							if (paralyzed > 0) {
+								bot.sendMessage(message.chat.id, "Non è possibile utilizzare le Pozioni se sei paralizzato", kbBack);
+								return;
+							}
+
 							bot.sendMessage(message.chat.id, "Quante pozioni vuoi usare?", kbNum).then(function () {
 								answerCallbacks[message.chat.id] = async function (answer) {
 
@@ -51632,7 +51650,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 														answerCallbacks[message.chat.id] = async function (answer) {
 															if ((answer.text != "Torna al menu") && (answer.text != "Torna al dungeon")) {
 																player_life = player_total_life;
-																Consumabili(message, player_id, from, player_total_life, player_life);
+																Consumabili(message, player_id, from, player_total_life, player_life, paralyzed);
 																return;
 															}
 														};
@@ -51642,7 +51660,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 														answerCallbacks[message.chat.id] = async function (answer) {
 															if ((answer.text != "Torna al menu") && (answer.text != "Torna al dungeon")) {
 																player_life = player_total_life;
-																Consumabili(message, player_id, from, player_total_life, player_life);
+																Consumabili(message, player_id, from, player_total_life, player_life, paralyzed);
 																return;
 															}
 														};
@@ -51654,7 +51672,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 														answerCallbacks[message.chat.id] = async function (answer) {
 															if ((answer.text != "Torna al menu") && (answer.text != "Torna al dungeon")) {
 																player_life = player_life + perc;
-																Consumabili(message, player_id, from, player_total_life, player_life);
+																Consumabili(message, player_id, from, player_total_life, player_life, paralyzed);
 																return;
 															}
 														};
@@ -51664,7 +51682,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life) {
 														answerCallbacks[message.chat.id] = async function (answer) {
 															if ((answer.text != "Torna al menu") && (answer.text != "Torna al dungeon")) {
 																player_life = player_life + perc;
-																Consumabili(message, player_id, from, player_total_life, player_life);
+																Consumabili(message, player_id, from, player_total_life, player_life, paralyzed);
 																return;
 															}
 														};
@@ -54778,6 +54796,10 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 
 														await connection.queryAsync('INSERT INTO card_inventory (player_id, card_id) VALUES (' + rows[i].id + ', ' + new_id + ')');
 
+														connection.query('UPDATE player SET last_card_date = NOW() WHERE id = ' + rows[i].id, function (err, rows, fields) {
+															if (err) throw err;
+														});
+
 														checkAllCardsProgress(rows[i].id);
 
 														bot.sendMessage(rows[i].chat_id, "Hai creato ed ottenuto la figurina 🃏 *" + mob_name + " (" + card_rarity + ")*! Creane altre per ampliare la collezione!", mark);
@@ -54799,6 +54821,9 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 														await connection.queryAsync('UPDATE card_inventory SET quantity = quantity+1 WHERE player_id = ' + rows[i].id + ' AND card_id = ' + card[0].id);
 													// console.log("Figurina ottenuta: " + mob_name);
 													checkAllCardsProgress(rows[i].id);
+													connection.query('UPDATE player SET last_card_date = NOW() WHERE id = ' + rows[i].id, function (err, rows, fields) {
+														if (err) throw err;
+													});
 
 													bot.sendMessage(rows[i].chat_id, "Hai trovato la figurina 🃏 *" + mob_name + " (" + card[0].rarity + ")*! Ne possiedi " + (have_tot[0].cnt+1) + "/" + tot[0].cnt, mark);
 												}
