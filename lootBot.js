@@ -51431,8 +51431,10 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 													if (crazyMode == 1)
 														totTime = Math.round(totTime / 2);
 
+													/*
 													if (global_end == 1)
 														totTime = Math.round(totTime / 2);
+													*/
 
 													if (boost_id == 9) {
 														setBoost(from_id, boost_mission, boost_id);
@@ -54680,6 +54682,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 										*/
 
 										// Malus
+										/*
 										if (rows[i].global_end == 1) {
 											chest1 = chest1/2;
 											chest2 = chest2/2;
@@ -54701,6 +54704,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											chest8 = Math.floor(chest8);
 											chest9 = Math.floor(chest9);
 										}
+										*/
 
 										/*
 										if (rows[i].global_end == 1)
@@ -59882,6 +59886,7 @@ function setFinishedTeamMission(element, index, array) {
 											qnt = savedQnt;
 
 											var extra = "";
+											/*
                                             if (rows[i].global_end == 1) {
                                                 if ((rewardStr[1] == "mana") || 
 												(rewardStr[1] == "mana1") || 
@@ -59901,6 +59906,7 @@ function setFinishedTeamMission(element, index, array) {
                                                 console.log("Incarico: " + rewardStr[1] + " " + extra_val);
                                                 extra = "\n\nQuantità incrementata di +" + extra_val + " per il bonus globale";
                                             }
+											*/
 
 											if (endText.length > 3500)
 												endText = endText.substr(0, 35000) + "...";
@@ -59924,6 +59930,7 @@ function setFinishedTeamMission(element, index, array) {
 											}
 
 											setAchievement(rows[i].id, 22, 1);
+											globalAchievement(rows[i].id, mission_time_count_min);
 
 											if (rows[i].boost_id == 5) {
 												var rand = Math.random()*100;
@@ -61148,7 +61155,6 @@ function setFinishedLobbyEnd(element, index, array) {
 						trophies_count = ((lobby_total_space-pos+1)+parseInt(rows[i].kills))*multiplier;
 
 						var bonus = "";
-						/*
 						if (rows[i].global_end == 1) {
 							var randGlobal = Math.random()*100;
 							if (randGlobal < 33) {
@@ -61156,7 +61162,6 @@ function setFinishedLobbyEnd(element, index, array) {
 								bonus = " 🌍";
 							}
 						}
-						*/
 
 						var icons = " ";
 						if (rows[i].penality_escape == 1) {
@@ -63861,7 +63866,7 @@ function setExp(player_id, exp) {
 		}
 
 		setAchievement(player_id, 57, exp);
-		globalAchievement(player_id, exp);
+		// globalAchievement(player_id, exp);
 		connection.query('UPDATE player SET exp_week = exp_week+' + exp + ', exp_day = exp_day+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
