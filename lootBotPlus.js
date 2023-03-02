@@ -954,7 +954,7 @@ bot.onText(/^\/popcorn/, function (message) {
 })
 
 bot.onText(/\/checkMember (.+) (.+)/i, function (message, match) {
-	connection.query('SELECT id FROM player WHERE nickname = "' + escape(match[1]) + '"', function (err, rows, fields) {
+	connection.query('SELECT id FROM player WHERE nickname = "' + mysql_real_escape_string(match[1]) + '"', function (err, rows, fields) {
 		if (err) throw err
 		const player_id = rows[0].id
 		connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, async function (err, rows, fields) {
@@ -2443,7 +2443,7 @@ bot.onText(/^\/setwelcome (.+)/, function (message, match) {
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, 'Errore impostazione benvenuto')
 				} else {
-					connection.query('UPDATE plus_groups SET welcome_text = "' + escape(text) + '" WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
+					connection.query('UPDATE plus_groups SET welcome_text = "' + mysql_real_escape_string(text) + '" WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 						if (err) throw err
 						bot.sendMessage(message.chat.id, 'Messaggio di benvenuto impostato correttamente, ricordati di abilitarlo con /welcome on')
 					})
@@ -3041,7 +3041,7 @@ bot.onText(/^\/iscritto ([\w,\-\s]+)|^\/iscritto/i, async function (message, mat
 	for (let i = 0, len = nicknames.length; i < len; i++) {
 		nicknames[i] = nicknames[i].trim()
 		if (nicknames[i] == '') { continue }
-		const rows = await connection.queryAsync('SELECT market_ban, account_id FROM player WHERE nickname = "' + escape(nicknames[i]) + '"')
+		const rows = await connection.queryAsync('SELECT market_ban, account_id FROM player WHERE nickname = "' + mysql_real_escape_string(nicknames[i]) + '"')
 		if (Object.keys(rows).length == 0) { text += nicknames[i] + ': 👎\n' } else {
 			const banReason = await isBanned(rows[0].account_id)
 			if (banReason != null) { text += nicknames[i] + ': 🚫\n' } else {
@@ -3126,7 +3126,7 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+),(.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p
 		}
 		prezzo = prezzo.toString().replaceAll(/\./, '')
 	} else {
-		const item = await connection.queryAsync("SELECT value FROM item WHERE name = '" + escape(match[3]) + "'")
+		const item = await connection.queryAsync("SELECT value FROM item WHERE name = '" + mysql_real_escape_string(match[3]) + "'")
 		if (Object.keys(item).length == 0) {
 			console.log('Non trovato: ' + match[3])
 			bot.sendMessage(message.chat.id, "L'oggetto specificato non esiste")
@@ -7063,7 +7063,7 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 bot.onText(/^\/dlotteria(?!p) (.+)|^\/dlotteria(?!p)/, function (message, match) {
 	if (!checkSpam(message)) { return }
 
-	let nickname = escape(match[1]);
+	let nickname = mysql_real_escape_string(match[1]);
 	if ((nickname == undefined) || (nickname == '')) {
 		bot.sendMessage(message.chat.id, 'Per eliminare la partecipazione ad una lotteria utilizza la seguente sintassi: /dlotteria @nickname')
 		return
@@ -7244,7 +7244,7 @@ bot.onText(/^\/statoincarichi/, function (message, match) {
 })
 
 bot.onText(/^\/statolotteria (.+)|^\/statolotteria/, function (message, match) {
-	let nickname = escape(match[1]);
+	let nickname = mysql_real_escape_string(match[1]);
 	if ((nickname == undefined) || (nickname == '')) { nickname = message.from.username }
 
 	nickname = nickname.replace('@', '')
@@ -7306,7 +7306,7 @@ bot.onText(/^\/statolotteria (.+)|^\/statolotteria/, function (message, match) {
 })
 
 bot.onText(/^\/statoasta (.+)|^\/statoasta/, function (message, match) {
-	let nickname = escape(match[1]);
+	let nickname = mysql_real_escape_string(match[1]);
 	if ((nickname == undefined) || (nickname == '')) {
 		bot.sendMessage(message.chat.id, 'Per ricevere informazioni su un asta utilizza la seguente sintassi: /statoasta @nickname')
 		return
@@ -7373,7 +7373,7 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 
 	if (!checkSpam(message)) { return }
 
-	let nickname = escape(match[1]);
+	let nickname = mysql_real_escape_string(match[1]);
 	if ((nickname == undefined) || (nickname == '')) {
 		bot.sendMessage(message.chat.id, 'Per partecipare ad una lotteria utilizza la seguente sintassi: /lotteriap @nickname, mentre /crealotteriap per iniziarne una nuova. Puoi anche usare /lotteriap tutte')
 		return
@@ -7696,7 +7696,7 @@ bot.onText(/^\/dlotteriap (.+)|^\/dlotteriap/, async function (message, match) {
 
 	if (!checkSpam(message)) { return }
 
-	let nickname = escape(match[1]);
+	let nickname = mysql_real_escape_string(match[1]);
 	if ((nickname == undefined) || (nickname == '')) {
 		bot.sendMessage(message.chat.id, 'Per rimuovere la partecipazione ad una lotteria a pagamento utilizza la seguente sintassi: /dlotteriap @nickname')
 		return
@@ -8110,7 +8110,7 @@ bot.onText(/^\/valorezaino (.+)|^\/valorezaino$/, function (message, match) {
 				bot.sendMessage(message.chat.id, message.from.username + ', il tuo zaino vale <b>' + formatNumber(rows[0].val) + '</b> §' + sym, html)
 			})
 		} else {
-			connection.query('SELECT SUM(I.value*IV.quantity) As val FROM item I, inventory IV WHERE I.id = IV.item_id AND rarity = "' + escape(match[1]) + '" AND IV.player_id = ' + player_id, function (err, rows, fields) {
+			connection.query('SELECT SUM(I.value*IV.quantity) As val FROM item I, inventory IV WHERE I.id = IV.item_id AND rarity = "' + mysql_real_escape_string(match[1]) + '" AND IV.player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err
 				if (rows[0].val == null) {
 					bot.sendMessage(message.chat.id, 'Rarità non valida o non possiedi oggetti')
@@ -8138,7 +8138,7 @@ bot.onText(/^\/valorezainob (.+)|^\/valorezainob$/, function (message, match) {
 		let rarity = ''
 		let raritytxt = ''
 		if (match[1] != undefined) {
-			rarity = " AND rarity = '" + escape(match[1]) + "'"
+			rarity = " AND rarity = '" + mysql_real_escape_string(match[1]) + "'"
 			raritytxt = ' ' + match[1].toUpperCase()
 		}
 
@@ -8162,7 +8162,7 @@ bot.onText(/^\/valorezainoc (.+)|^\/valorezainoc$/, function (message, match) {
 		let rarity = ''
 		let raritytxt = ''
 		if (match[1] != undefined) {
-			rarity = " AND rarity = '" + escape(match[1]) + "'"
+			rarity = " AND rarity = '" + mysql_real_escape_string(match[1]) + "'"
 			raritytxt = ' ' + match[1].toUpperCase()
 		}
 
@@ -8734,7 +8734,7 @@ bot.onText(/^\/imprese/, function (message) {
 })
 
 bot.onText(/^\/oggetto (.+)|^\/oggetto/, function (message, match) {
-	const oggetto = escape(match[1]);
+	const oggetto = mysql_real_escape_string(match[1]);
 	if (oggetto == undefined) {
 		bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto (es. /oggetto Spada Antimateria) per visualizzare quanti ne possiedi")
 		return
@@ -8786,7 +8786,7 @@ bot.onText(/^\/oggetto (.+)|^\/oggetto/, function (message, match) {
 })
 
 bot.onText(/^\/oggetti (.+)|^\/oggetti/, async function (message, match) {
-	const inputMatch = escape(match[1]);
+	const inputMatch = mysql_real_escape_string(match[1]);
 	if (inputMatch == undefined) {
 		bot.sendMessage(message.chat.id, "Inserisci il nome parziale dell'oggetto (es. /oggetti Spada Anti) per visualizzare la lista e la quantità, per una ricerca precisa usa l'asterisco")
 		return
@@ -8841,7 +8841,7 @@ bot.onText(/^\/oggetti (.+)|^\/oggetti/, async function (message, match) {
 bot.onText(/^\/ricerca (.+)|^\/ricerca/, async function (message, match) {
 	if (!checkSpam(message)) { return }
 
-	const oggetto = escape(match[1]);
+	const oggetto = mysql_real_escape_string(match[1]);
 	if (oggetto == undefined) {
 		bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto (es. /ricerca Spada Antimateria) per cercare in tutte le vendite e scambi, puoi specificarne fino a 3 separati da virgola, anche parziali")
 		return
@@ -8911,7 +8911,7 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, async function (message, match) {
 })
 
 bot.onText(/^\/necessari (.+)|^\/necessari/, function (message, match) {
-	const oggetto = escape(match[1]);
+	const oggetto = mysql_real_escape_string(match[1]);
 	if (oggetto == undefined) {
 		bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto (es. /necessari Spada Antimateria) per visualizzare tutti i materiali necessari")
 		return
@@ -9014,7 +9014,7 @@ bot.onText(/^\/notifiche (.+)|^\/notifiche/, function (message, match) {
 })
 
 bot.onText(/^\/prezzo (.+)|^\/prezzo/, function (message, match) {
-	const oggetto = escape(match[1]);
+	const oggetto = mysql_real_escape_string(match[1]);
 	if (oggetto == undefined) {
 		bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto (es. /prezzo Spada Antimateria) per conoscerne gli ultimi prezzi")
 		return
@@ -9068,7 +9068,7 @@ bot.onText(/^\/prezzo (.+)|^\/prezzo/, function (message, match) {
 })
 
 bot.onText(/^\/totale (.+)|^\/totale/, function (message, match) {
-	const oggetto = escape(match[1]);
+	const oggetto = mysql_real_escape_string(match[1]);
 	if (oggetto == undefined) {
 		bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto (es. /totale Spada Antimateria) per calcolarne gli ultimi prezzi sommando i materiali necessari")
 		return
@@ -9148,7 +9148,7 @@ bot.onText(/^\/drago (.+),(.+)|^\/drago/, function (message, match) {
 
 		const isSpy = 0
 		if ((match[1] != undefined) && (match[2] != undefined)) {
-			const name = escape(match[1]).toLowerCase()
+			const name = mysql_real_escape_string(match[1]).toLowerCase()
 			const typeArray = ['delle montagne', 'dei cieli', 'infernale', "dell'oscurità", 'dei mari', 'dei ghiacci']
 			let type
 			const sim = stringSimilarity.findBestMatch(match[2], typeArray)
@@ -9335,7 +9335,7 @@ bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
 			bot.sendMessage(message.chat.id, 'La rarità deve essere compresa tra 1 e 10!')
 			return
 		} else
-			rarity = escape(match[1]);
+			rarity = mysql_real_escape_string(match[1]);
 	}
 
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -9425,7 +9425,7 @@ bot.onText(/^\/figurinel (\w+[àèìòù]?)(\s\d+)?(\sp\d+)?|^\/figurinel/, func
 			}
 
 			filterName = ' di rarità ' + match[1];
-			rarityFilter = ' AND rarity = ' + escape(match[1]);
+			rarityFilter = ' AND rarity = ' + mysql_real_escape_string(match[1]);
 		}
 		if (match[2] != undefined) {
 			if ((match[2] < 1) || (match[2] > 10)) {
@@ -9434,7 +9434,7 @@ bot.onText(/^\/figurinel (\w+[àèìòù]?)(\s\d+)?(\sp\d+)?|^\/figurinel/, func
 			}
 
 			filterName += ' di rarità ' + match[2]
-			rarityFilter += ' AND rarity = ' + escape(match[2]);
+			rarityFilter += ' AND rarity = ' + mysql_real_escape_string(match[2]);
 		}
 		if (match[1] != undefined)
 			match[1] = match[1].trim();
@@ -9512,7 +9512,7 @@ bot.onText(/^\/figurina (.+)|^\/figurina/, function (message, match) {
 
 		const player_id = rows[0].id
 
-		connection.query('SELECT id, name, rarity, creation_date FROM card_list WHERE name LIKE "%' + escape(match[1]) + '%" ORDER BY name', async function (err, rows, fields) {
+		connection.query('SELECT id, name, rarity, creation_date FROM card_list WHERE name LIKE "%' + mysql_real_escape_string(match[1]) + '%" ORDER BY name', async function (err, rows, fields) {
 			if (err) throw err
 
 			if (Object.keys(rows).length == 0) {
@@ -9904,7 +9904,7 @@ bot.onText(/^\/zaino (.+)|^\/zaino$/, function (message, match) {
 				})
 			})
 		} else {
-			let query = "= '" + escape(match[1]) + "'"
+			let query = "= '" + mysql_real_escape_string(match[1]) + "'"
 			let rarity_text = match[1].toUpperCase()
 			if (match[1].indexOf(',') != -1) {
 				rarity_text = match[1].split(',').join(', ')
@@ -9974,7 +9974,7 @@ bot.onText(/^\/zainob (.+)|^\/zainoc (.+)|^\/zainob|^\/zainoc/, function (messag
 		let rarity = ''
 		let desc = ''
 		if (match[1] != undefined) {
-			rarity = " AND rarity.shortname IN ('" + escape(match[1]).split(',').map(Function.prototype.call, String.prototype.trim).join("','") + "')"
+			rarity = " AND rarity.shortname IN ('" + mysql_real_escape_string(match[1]).split(',').map(Function.prototype.call, String.prototype.trim).join("','") + "')"
 			desc = ' - ' + match[1].toUpperCase()
 		} else if (match[2] != undefined) {
 			rarity = " AND rarity.shortname IN ('" + match[2].split(',').map(Function.prototype.call, String.prototype.trim).join("','") + "')"
@@ -10047,6 +10047,30 @@ bot.onText(/^\/zainor/, function (message, match) {
 })
 
 // Funzioni
+
+function mysql_real_escape_string(str) {
+    return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
+        switch (char) {
+            case "\0":
+                return "\\0";
+            case "\x08":
+                return "\\b";
+            case "\x09":
+                return "\\t";
+            case "\x1a":
+                return "\\z";
+            case "\n":
+                return "\\n";
+            case "\r":
+                return "\\r";
+            case "\"":
+            case "'":
+            case "\\":
+            case "%":
+                return "\\" + char;
+        }
+    });
+}
 
 function cleanForMerge(text) {
 	return text.replaceAll(/<[^>]*>/, '')
