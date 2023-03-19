@@ -57336,15 +57336,14 @@ function setDungeonEnergy(element, index, array) {
 		if (crazyMode == 1)
 			refill += 6;
 
-		if ((reborn > 1) || ((reborn == 1) (level >= 50))) {
-			if (refill+dungeon_energy >= max_dungeon_energy) {
-				refill = max_dungeon_energy-dungeon_energy;
-				if (dungeonRush == 0)
-					bot.sendMessage(chat_id, "L'Energia Esplorativa è carica al massimo!");
-			} else {
-				if ((dungeonRush == 0) && (dungeon_energy_notification == 1))
-					bot.sendMessage(chat_id, "Hai ottenuto " + refill + " Cariche Esplorative per il dungeon!");
-			}
+		
+		if (refill+dungeon_energy >= max_dungeon_energy) {
+			refill = max_dungeon_energy-dungeon_energy;
+			if ((dungeonRush == 0) && ((reborn > 1) || ((reborn == 1) (level >= 50))))
+				bot.sendMessage(chat_id, "L'Energia Esplorativa è carica al massimo!");
+		} else {
+			if (((dungeonRush == 0) && (dungeon_energy_notification == 1)) && ((reborn > 1) || ((reborn == 1) (level >= 50))))
+				bot.sendMessage(chat_id, "Hai ottenuto " + refill + " Cariche Esplorative per il dungeon!");
 		}
 
 		connection.query('UPDATE player SET dungeon_energy = dungeon_energy+' + refill + ' WHERE id = ' + player_id, function (err, rows, fields) {
