@@ -25,6 +25,8 @@ Prima di creare una richiesta è bene verificare che il codice sia funzionante e
 
 * **Edoardo Cortese** - *Programmazione* - [fenix45](http://telegram.me/fenix45)
 * **Emanuele Finiguerra** - *Analisi e bilanciamenti* - [LastSoldier95](http://telegram.me/LastSoldier95)
+* **Dario Emerson** - Fix e migliorie
+* **@Delooo** - Mob generator
 
 ## Licenza
 
