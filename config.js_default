@@ -1,0 +1,31 @@
+var config = {};
+
+config.dbhost = "";
+
+config.dbuser = "";
+config.dbpassword = "";
+config.dbdatabase = "";
+
+config.maintoken = "";
+config.plustoken = "";
+config.cltoken = "";
+config.shorttoken = "";
+config.shortpetoken = "";
+config.gendertoken = "";
+
+config.creatore_id = 0;
+config.phenix_id = 0;
+
+config.sugg_antifloodTime = 1,
+config.LootSuggChannel = "",
+config.LootAvvisiChannel = "",
+
+config.databaseLootUser = "",
+config.databaseHost = "",
+config.databasePsw = "",
+config.databaseSuggName = "",
+
+config.manual_log = false,
+config.simple_log = false,
+
+module.exports = config;
