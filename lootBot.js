@@ -57291,7 +57291,7 @@ function setLifeRush(element, index, array) {
 }
 
 function checkDungeonEnergy() {
-	connection.query('SELECT id, dungeon_energy, dungeon_energy_notification, chat_id, class, reborn FROM player WHERE dungeon_energy < ' + max_dungeon_energy, function (err, rows, fields) {
+	connection.query('SELECT id, dungeon_energy, dungeon_energy_notification, chat_id, class, reborn, exp FROM player WHERE dungeon_energy < ' + max_dungeon_energy, function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length > 0) {
 			if (Object.keys(rows).length == 1)
@@ -57309,6 +57309,7 @@ function setDungeonEnergy(element, index, array) {
 	var dungeon_energy_notification = element.dungeon_energy_notification;
 	var chat_id = element.chat_id;
 	var reborn = element.reborn;
+	var level = Math.floor(element.exp/10);
 	var class_id = element.class;
 
 	connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 3', function (err, rows, fields) {
@@ -57335,13 +57336,15 @@ function setDungeonEnergy(element, index, array) {
 		if (crazyMode == 1)
 			refill += 6;
 
-		if (refill+dungeon_energy >= max_dungeon_energy) {
-			refill = max_dungeon_energy-dungeon_energy;
-			if (dungeonRush == 0)
-				bot.sendMessage(chat_id, "L'Energia Esplorativa è carica al massimo!");
-		} else {
-			if ((dungeonRush == 0) && (dungeon_energy_notification == 1))
-				bot.sendMessage(chat_id, "Hai ottenuto " + refill + " Cariche Esplorative per il dungeon!");
+		if ((reborn > 1) || ((reborn == 1) (level >= 50))) {
+			if (refill+dungeon_energy >= max_dungeon_energy) {
+				refill = max_dungeon_energy-dungeon_energy;
+				if (dungeonRush == 0)
+					bot.sendMessage(chat_id, "L'Energia Esplorativa è carica al massimo!");
+			} else {
+				if ((dungeonRush == 0) && (dungeon_energy_notification == 1))
+					bot.sendMessage(chat_id, "Hai ottenuto " + refill + " Cariche Esplorative per il dungeon!");
+			}
 		}
 
 		connection.query('UPDATE player SET dungeon_energy = dungeon_energy+' + refill + ' WHERE id = ' + player_id, function (err, rows, fields) {
