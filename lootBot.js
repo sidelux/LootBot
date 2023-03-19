@@ -23687,6 +23687,9 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																							if (chest >= 1)
 																								setAchievement(player_id, 89, 1);
 
+																							if (rank >= 0)
+																								setAchievement(player_id, 91, 1);
+
 																							bot.sendMessage(message.chat.id, "Hai sconfitto <b>" + enemy_dragon_name + "</b> infliggendo " + formatNumber(damage) + " danni, hai ottenuto " + rank + " Ð" + extra + bonus_money, kbBack);
 
 																							if (is_dummy == 0) {
@@ -45585,6 +45588,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 													}
 
 													bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è migliore di quella del guardiano (" + combi + ")!\nIn una stanzetta all'interno del rifugio hai trovato un sacchettino contenente " + moneytxt + expText + extra, kbBack);
+													globalAchievement(player_id, 1);
 
 													if (toGnome_notification == 1)
 														bot.sendMessage(toChat, message.from.username + " è riuscito a sconfiggere il guardiano del tuo rifugio, purtroppo avendo lasciato incustodito un sacchettino, hai perso " + moneytxt + extra2, html);
@@ -47153,12 +47157,10 @@ bot.onText(/missione|^msn$/i, function (message) {
 							duration_extend += 25;
 						}
 						*/
-						/*
 						if (global_end == 1) {
 							name += " (Ridotta per bonus globale)";
 							duration_reduce += 25;
 						}
-						*/
 
 						if (duration_reduce > 0)
 							duration -= (duration / 100 * duration_reduce);
@@ -59930,7 +59932,7 @@ function setFinishedTeamMission(element, index, array) {
 											}
 
 											setAchievement(rows[i].id, 22, 1);
-											globalAchievement(rows[i].id, mission_time_count_min);
+											// globalAchievement(rows[i].id, mission_time_count_min);
 
 											if (rows[i].boost_id == 5) {
 												var rand = Math.random()*100;
@@ -61155,6 +61157,7 @@ function setFinishedLobbyEnd(element, index, array) {
 						trophies_count = ((lobby_total_space-pos+1)+parseInt(rows[i].kills))*multiplier;
 
 						var bonus = "";
+						/*
 						if (rows[i].global_end == 1) {
 							var randGlobal = Math.random()*100;
 							if (randGlobal < 33) {
@@ -61162,6 +61165,7 @@ function setFinishedLobbyEnd(element, index, array) {
 								bonus = " 🌍";
 							}
 						}
+						*/
 
 						var icons = " ";
 						if (rows[i].penality_escape == 1) {
