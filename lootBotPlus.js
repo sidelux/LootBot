@@ -203,7 +203,7 @@ bot.on('message', function (message, match) {
 			if (message.text.indexOf('@') === -1) { console.log(getNow('it') + ' - ' + message.from.username + ': ' + message.text) } else if (message.text.toLowerCase().indexOf('@lootplusbot') !== -1) { console.log(getNow('it') + ' -- ' + message.from.username + ': ' + message.text) }
 		}
 
-		if (message.from.id != 20471035 && message.chat.id === -1001097316494) {
+		if (message.from.id != config.phenix_id && message.chat.id === -1001097316494) {
 			let banFromGroup = 0
 			if (message.text != undefined) {
 				if (!message.text.startsWith('Negozio di')) { banFromGroup = 1 } else if (message.text.startsWith('@lootplusbot')) {
@@ -792,7 +792,7 @@ bot.onText(/^\/facepalm/, function (message) {
 
 bot.onText(/^\/marketban (.+)/, function (message, match) {
 	match[1] = match[1].replace('@', '')
-	if (message.from.id == 20471035) {
+	if (message.from.id == config.phenix_id) {
 		connection.query('SELECT id, market_ban, nickname, id, account_id FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
 			if (err) throw err
 
@@ -822,7 +822,7 @@ bot.onText(/^\/([0-9]{1,3})birre$/, function (message, match) {
 	match[1] = parseInt(match[1])
 	if (match[1] < 1) { match[1] = 1 }
 
-	if (message.from.id != 20471035) {
+	if (message.from.id != config.phenix_id) {
 		if (match[1] > 10) {
 			bot.sendMessage(message.chat.id, 'nope.')
 			return
@@ -858,6 +858,12 @@ bot.onText(/^\/([0-9]{1,3})birre$/, function (message, match) {
 		if (rows[0].holiday == 1) {
 			bot.sendMessage(message.chat.id, '...')
 			return
+		}
+
+		var reg = new RegExp("^[0-9]{1,100}$");
+		if (reg.test(match[1]) == false) {
+			bot.sendMessage(message.chat.id, "Quantità non valida, riprova");
+			return;
 		}
 
 		if (money < (100 * match[1])) {
@@ -954,14 +960,16 @@ bot.onText(/^\/popcorn/, function (message) {
 })
 
 bot.onText(/\/checkMember (.+) (.+)/i, function (message, match) {
-	connection.query('SELECT id FROM player WHERE nickname = "' + mysql_real_escape_string(match[1]) + '"', function (err, rows, fields) {
-		if (err) throw err
-		const player_id = rows[0].id
-		connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, async function (err, rows, fields) {
+	if (message.from.id == config.phenix_id) {
+		connection.query('SELECT id FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
 			if (err) throw err
-			await validTeamMember(message, rows[0].team_id, player_id, match[2])
+			const player_id = rows[0].id
+			connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, async function (err, rows, fields) {
+				if (err) throw err
+				await validTeamMember(message, rows[0].team_id, player_id, match[2])
+			})
 		})
-	})
+	}
 })
 
 async function validTeamMember(message, team_id, player_id, soglia) {
@@ -1155,7 +1163,7 @@ bot.onText(/^\/cibi/, function (message) {
 })
 
 bot.onText(/^\/gban ([^\s]+) (.+)|^\/gban|^\/🍌/, function (message, match) {
-	if (message.from.id == 20471035) {
+	if (message.from.id == config.phenix_id) {
 		if (match[1] == undefined) {
 			if (message.reply_to_message != undefined) { match[1] = message.reply_to_message.from.username } else {
 				bot.sendMessage(message.chat.id, 'Sintassi: /gban nickname motivo (ban dal gioco, anche in risposta)')
@@ -1163,9 +1171,8 @@ bot.onText(/^\/gban ([^\s]+) (.+)|^\/gban|^\/🍌/, function (message, match) {
 			}
 		}
 
-		if (match[2] == undefined) {
+		if (match[2] == undefined)
 			match[2] == '...'
-		}
 
 		connection.query('SELECT nickname, id, account_id FROM player WHERE nickname = "' + match[1].replace('@', '') + '"', function (err, rows, fields) {
 			if (err) throw err
@@ -1264,9 +1271,8 @@ bot.onText(/^\/gb (.+)|^\/gb$/, function (message, match) {
 })
 
 bot.onText(/^\/det (.+)/, function (message, match) {
-	const nick = match[1]
-
-	if (message.from.id == 20471035) {
+	if (message.from.id == config.phenix_id) {
+		const nick = match[1]
 		connection.query('SELECT * FROM player WHERE nickname = "' + nick + '"', function (err, rows, fields) {
 			if (err) throw err
 			if (Object.keys(rows).length > 0) { bot.sendMessage(message.chat.id, JSON.stringify(rows, null, 4)) } else { bot.sendMessage(message.chat.id, 'Boh!') }
@@ -1279,9 +1285,8 @@ bot.onText(/^\/chatid/, function (message, match) {
 })
 
 bot.onText(/^\/last (.+)/, function (message, match) {
-	const nick = match[1]
-
-	if (message.from.id == 20471035) {
+	if (message.from.id == config.phenix_id) {
+		const nick = match[1]
 		connection.query('SELECT time FROM last_command, player WHERE last_command.account_id = player.account_id AND player.nickname = "' + nick + '"', function (err, rows, fields) {
 			if (err) throw err
 			if (Object.keys(rows).length > 0) {
@@ -1298,7 +1303,7 @@ bot.onText(/^\/ping/, function (message, match) {
 })
 
 bot.onText(/^\/pinfo (.+)/, function (message, match) {
-	if (message.from.id != 20471035) { return }
+	if (message.from.id != config.phenix_id) { return }
 	connection.query('SELECT * FROM plus_players WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
 		if (err) throw err
 		let real_name = '?'
@@ -2161,14 +2166,13 @@ bot.onText(/^\/riassunto/, function (message, match) {
 bot.onText(/^\/setmin (.+)/, function (message, match) {
 	if (message.chat.id > 0) { return }
 
-	if (isNaN(parseInt(match[1]))) {
-		bot.sendMessage(message.chat.id, 'Valore non valido')
-		return
-	}
-
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == 'creator') || (data.status == 'administrator')) {
 			const text = parseInt(match[1])
+			if (isNaN(text)) {
+				bot.sendMessage(message.chat.id, 'Valore non valido')
+				return
+			}
 			connection.query('SELECT 1 FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 				if (err) throw err
 				if (Object.keys(rows).length == 0) {
@@ -2187,14 +2191,13 @@ bot.onText(/^\/setmin (.+)/, function (message, match) {
 bot.onText(/^\/setmax (.+)/, function (message, match) {
 	if (message.chat.id > 0) { return }
 
-	if (isNaN(parseInt(match[1]))) {
-		bot.sendMessage(message.chat.id, 'Valore non valido')
-		return
-	}
-
 	bot.getChatMember(message.chat.id, message.from.id).then(function (data) {
 		if ((data.status == 'creator') || (data.status == 'administrator')) {
 			const text = parseInt(match[1])
+			if (isNaN(text)) {
+				bot.sendMessage(message.chat.id, 'Valore non valido')
+				return
+			}
 			connection.query('SELECT 1 FROM plus_groups WHERE chat_id = ' + message.chat.id, function (err, rows, fields) {
 				if (err) throw err
 				if (Object.keys(rows).length == 0) {
@@ -2484,7 +2487,7 @@ bot.onText(/^\/welcome (.+)/, function (message, match) {
 })
 
 bot.onText(/^\/calcteamall/i, function (message, match) {
-	if (message.from.id != 20471035) { return }
+	if (message.from.id != config.phenix_id) { return }
 	connection.query('SELECT id FROM team WHERE players > 1', function (err, rows, fields) {
 		if (err) throw err
 		for (let j = 0, len = Object.keys(rows).length; j < len; j++) {
@@ -2525,7 +2528,7 @@ bot.onText(/^\/calcteamall/i, function (message, match) {
 })
 
 bot.onText(/^\/calcteam (.+)/i, function (message, match) {
-	if (message.from.id != 20471035) { return }
+	if (message.from.id != config.phenix_id) { return }
 	connection.query('SELECT team.name, player.reborn, player.nickname, FLOOR(player.exp/10) As level FROM team, team_player, player WHERE team.id = team_player.team_id AND team_player.player_id = player.id AND team.name = "' + match[1] + '" ORDER BY player.reborn, player.exp DESC', function (err, rows, fields) {
 		if (err) throw err
 		let mediaTeam = 0
@@ -2565,7 +2568,7 @@ bot.onText(/^\/calcteam (.+)/i, function (message, match) {
 })
 
 bot.onText(/^\/contrabb (.+)/i, function (message, match) {
-	if (message.from.id != 20471035) { return }
+	if (message.from.id != config.phenix_id) { return }
 	connection.query('SELECT id, base_sum, price_sum, name, value FROM item WHERE name = "' + match[1] + '"', function (err, rows, fields) {
 		if (err) throw err
 		const val = parseInt(rows[0].base_sum)
@@ -2603,7 +2606,7 @@ bot.onText(/^\/rimod ([^\s]+) ([^\s]+) ([^\s]+)/i, function (message, match) {
 })
 
 bot.onText(/^\/dai (.+)/i, function (message, match) {
-	if ((message.from.id == 20471035) || (message.from.id == 114304603)) {
+	if ((message.from.id == config.phenix_id) || (message.from.id == 114304603)) {
 		const split = match[1].split(',')
 		let options = { parse_mode: 'Markdown' }
 		if (message.reply_to_message != undefined) { options = { parse_mode: 'Markdown', reply_to_message_id: message.reply_to_message.message_id } }
@@ -2613,7 +2616,7 @@ bot.onText(/^\/dai (.+)/i, function (message, match) {
 })
 
 bot.onText(/^\/reset/i, function (message, match) {
-	if ((message.from.id == 20471035) || (message.from.id == 114304603)) {
+	if ((message.from.id == config.phenix_id) || (message.from.id == 114304603)) {
 		if (message.reply_to_message != undefined) {
 			bot.sendMessage(message.chat.id, '*' + message.reply_to_message.from.username + '*, il tuo account è stato completamente *resettato*, riavvia il bot per creare un nuovo account!', { parse_mode: 'Markdown', reply_to_message_id: message.reply_to_message.message_id })
 		}
@@ -2621,7 +2624,7 @@ bot.onText(/^\/reset/i, function (message, match) {
 })
 
 bot.onText(/^\/msg (.+)/i, function (message, match) {
-	if ((message.from.id == 20471035) || (message.from.id == 114304603)) {
+	if ((message.from.id == config.phenix_id) || (message.from.id == 114304603)) {
 		let options = { parse_mode: 'Markdown' }
 		if (message.reply_to_message != undefined) { options = { parse_mode: 'Markdown', reply_to_message_id: message.reply_to_message.message_id } }
 
@@ -3138,6 +3141,12 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+),(.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p
 
 	oggetto = oggetto.trim()
 
+	var reg = new RegExp("^[a-zA-Z ]{1,100}$");
+	if (reg.test(oggetto) == false) {
+		bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
+		return;
+	}
+
 	connection.query('SELECT id, account_id, market_ban, holiday FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
 		if (err) throw err
 
@@ -3268,6 +3277,12 @@ bot.onText(/^\/pubblicaasta (.+)|^\/pubblicaasta/, function (message, match) {
 		if (rows[0].holiday == 1) {
 			bot.sendMessage(message.chat.id, '...')
 			return
+		}
+
+		var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
+		if (reg.test(nick) == false) {
+			bot.sendMessage(message.chat.id, "Giocatore non valido, riprova");
+			return;
 		}
 
 		let query = 'SELECT auction_list.id, last_price, holiday, creator_id, last_player, item_id, time_end, nickname, market_ban FROM auction_list, player WHERE player.id = auction_list.creator_id AND auction_list.creator_id = (SELECT id FROM player WHERE nickname = "' + nick + '")'
@@ -3413,6 +3428,12 @@ bot.onText(/^\/asta(?!p) ([^\s]+) (.+)|^\/asta(?!p)/, async function (message, m
 		return
 	}
 
+	var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
+	if (reg.test(nickname) == false) {
+		bot.sendMessage(message.chat.id, "Giocatore non valido, riprova");
+		return;
+	}
+
 	connection.query('SELECT id, money, account_id, market_ban FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
 		if (err) throw err
 
@@ -3548,7 +3569,7 @@ bot.onText(/^\/negozi$/, function (message, match) {
 					text += '> ' + rows[i].quantity + 'x ' + rows[i].name + ' (' + formatNumber(rows[i].price) + ' §)\n'
 				}
 
-				if ((Object.keys(text).length > 4000) || (message.from.id == 20471035)) {
+				if ((Object.keys(text).length > 4000) || (message.from.id == config.phenix_id)) {
 					text = ''
 					d = new Date(rows[0].time_end)
 
@@ -3816,6 +3837,12 @@ bot.onText(/^\/protetto (.+)|^\/protetto/, function (message, match) {
 			return
 		}
 
+		var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
+		if (reg.test(code) == false) {
+			bot.sendMessage(message.chat.id, "Giocatore non valido, riprova");
+			return;
+		}
+
 		connection.query('SELECT player_id, protected FROM public_shop WHERE code = ' + code, function (err, rows, fields) {
 			if (err) throw err
 
@@ -3976,6 +4003,12 @@ bot.onText(/^\/negoziodesc (.+),(.+)|^\/negoziodesc/, function (message, match) 
 		}
 
 		text = capitalizeFirstLetter(text.trim())
+
+		reg = new RegExp("^[a-zA-Z0-9]{1,100}$");
+		if (reg.test(code) == false) {
+			bot.sendMessage(message.chat.id, "Codice non valido, riprova");
+			return;
+		}
 
 		if (code == 'tutti') {
 			connection.query('SELECT code FROM public_shop WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -4204,6 +4237,12 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			for (let i = 0; i < arrLen; i++) {
 				code = elements[i]
 
+				var reg = new RegExp("^[0-9]{1,100}$");
+				if (reg.test(code) == false) {
+					bot.sendMessage(message.chat.id, "Codice non valido, riprova");
+					return;
+				}
+
 				var shopQuery = await connection.queryAsync('SELECT 1 FROM public_shop WHERE code = ' + code + ' AND player_id = ' + player_id)
 				if (Object.keys(shopQuery).length > 0) {
 					connection.query('UPDATE public_shop SET time_end = "' + long_date + '", notified = 0, time_creation = NOW() WHERE code = ' + code, function (err, rows, fields) {
@@ -4215,9 +4254,20 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 			return
 		}
 
+		var reg = new RegExp("^[a-zA-Z0-9]{1,100}$");
+		if (reg.test(code) == false) {
+			bot.sendMessage(message.chat.id, "Codice non valido, riprova");
+			return;
+		}
+
 		if (func == 'refill') {
 			let query = text
 			let qnt = text
+			var reg = new RegExp("^[0-9]{1,100}$");
+			if (reg.test(qnt) == false) {
+				bot.sendMessage(message.chat.id, "Quantità non valida, riprova");
+				return;
+			}
 			let sym = ''
 			if (text.indexOf('+') != -1) {
 				qnt = text.replace('+', '')
@@ -4321,6 +4371,13 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 
 				for (var i = 0; i < len; i++) {
 					elements[i] = elements[i].trim()
+
+					var reg = new RegExp("^[a-zA-Z ]{1,100}$");
+					if (reg.test(elements[i]) == false) {
+						bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
+						return;
+					}
+
 					var itemQuery = await connection.queryAsync('SELECT id, name FROM item WHERE name = "' + elements[i] + '"')
 					if (Object.keys(itemQuery).length == 0) { text += 'Oggetto non trovato: ' + elements[i] + '\n' } else {
 						item_id = itemQuery[0].id
@@ -4358,6 +4415,11 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 					splitted = elements[i].split(':')
 
 					item = splitted[0].trim()
+					var reg = new RegExp("^[a-zA-Z ]{1,100}$");
+					if (reg.test(item) == false) {
+						bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
+						return;
+					}
 					if (splitted[1] == undefined) { price = 0 } else { price = parseInt(splitted[1].replaceAll('k', '000').replace(/[^\w\s]/gi, '').trim().replaceAll(/\./, '')) }
 					if (splitted[2] == undefined) { quantity = 1 } else { quantity = parseInt(splitted[2].replace(/[^\w\s]/gi, '').trim()) }
 
@@ -4441,6 +4503,11 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 					splitted = elements[i].split(':')
 
 					item = splitted[0].trim()
+					var reg = new RegExp("^[a-zA-Z ]{1,100}$");
+					if (reg.test(item) == false) {
+						bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
+						return;
+					}
 					if (splitted[1] == undefined) { price = 0 } else { price = parseInt(splitted[1].replaceAll('k', '000').replace(/[^\w\s]/gi, '').trim().replaceAll(/\./, '')) }
 					if (splitted[2] == undefined) { quantity = 1 } else { quantity = parseInt(splitted[2].replace(/[^\w\s]/gi, '').trim()) }
 
@@ -4626,6 +4693,11 @@ bot.onText(/^\/cancellanegozio (.+)|^\/cancellanegozio$/, function (message, mat
 			const codes = code.split(',')
 			let msg = ''
 			for (let i = 0; i < codes.length; i++) {
+				var reg = new RegExp("^[0-9]{1,100}$");
+				if (reg.test(codes[i]) == false) {
+					bot.sendMessage(message.chat.id, "Codice non valido, riprova");
+					return;
+				}
 				var rows = await connection.queryAsync('SELECT player_id FROM public_shop WHERE code = ' + codes[i])
 				if (Object.keys(rows).length == 0) {
 					msg += codes[i] + ': non trovato\n'
@@ -5210,6 +5282,12 @@ bot.on('callback_query', async function (message) {
 			var split = shop_id.split(':')
 			const code = split[1]
 
+			var reg = new RegExp("^[0-9]{1,100}$");
+			if (reg.test(code) == false) {
+				bot.sendMessage(message.chat.id, "Codice non valido, riprova");
+				return;
+			}
+
 			if (split[0] == 'update') {
 				await updateShop(message, code, undefined, '')
 				check.splice(index, 1)
@@ -5548,6 +5626,11 @@ bot.onText(/^\/crealotteria(?!p) (.+)|^\/crealotteria(?!p)$/, function (message,
 		bot.sendMessage(message.chat.id, "Per inserire una lotteria utilizza la seguente sintassi: '/crealotteria NomeOggetto numeroMassimoPartecipanti', l'oggetto viene rimosso dall'inventario appena creata la lotteria e il numero di partecipanti minimo è 5")
 		return
 	}
+	var reg = new RegExp("^[a-zA-Z0-9 ]{1,100}$");
+	if (reg.test(oggetto) == false) {
+		bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
+		return;
+	}
 
 	let max_players = -1
 	let max_text = ''
@@ -5642,6 +5725,12 @@ bot.onText(/^\/crealotteriap ([^\s]+) (.+)|^\/crealotteriap$/, function (message
 		return
 	}
 
+	var reg = new RegExp("^[a-zA-Z0-9 ]{1,100}$");
+	if (reg.test(oggetto) == false) {
+		bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
+		return;
+	}
+
 	let max_players = -1
 	let max_text = ''
 	var match = oggetto.match(/\d+/g)
@@ -5732,7 +5821,7 @@ bot.onText(/^\/crealotteriap ([^\s]+) (.+)|^\/crealotteriap$/, function (message
 
 bot.onText(/^\/estrazione/, async function (message) {
 	/*
-	if (message.from.id != 20471035){
+	if (message.from.id != config.phenix_id){
 	  bot.sendMessage(message.chat.id, "L'estrazione manuale è al momento disabilitata", mark)
 	  return;
 	}
@@ -5922,7 +6011,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, async function (message, match) {
 
 	let price = elements[0]
 
-	const reg = /(\d)k/gm
+	var reg = /(\d)k/gm
 	if (reg.test(price)) { price = price.replaceAll(/k/gi, '000') }
 
 	if (price != 'tutto') { price = parseInt(price.replace(/\D+/gi, '').trim().replaceAll(/\./, '')) }
@@ -5947,6 +6036,12 @@ bot.onText(/^\/paga (.+)|^\/paga/i, async function (message, match) {
 	if (buyer == '') {
 		bot.sendMessage(message.from.id, 'Il parametro acquirente è obbligatorio')
 		return
+	}
+
+	reg = new RegExp("^[a-zA-Z_]{1,100}$");
+	if (reg.test(buyer) == false) {
+		bot.sendMessage(message.chat.id, "Acquirente non valido, riprova");
+		return;
 	}
 
 	if (price != 'tutto') {
@@ -6003,7 +6098,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, async function (message, match) {
 				return
 			}
 
-			if (message.from.id != 20471035) {
+			if (message.from.id != config.phenix_id) {
 				if (buyer.toLowerCase() == message.from.username.toLowerCase()) {
 					bot.sendMessage(message.from.id, 'Non puoi inviare monete a te stesso')
 					return
@@ -6113,9 +6208,19 @@ bot.onText(/^\/offri/i, function (message) {
 		bot.sendMessage(message.from.id, 'Il parametro oggetto è obbligatorio')
 		return
 	}
+	var reg = new RegExp("^[a-zA-Z ]{1,100}$");
+	if (reg.test(item) == false) {
+		bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
+		return;
+	}
 	if (buyer == '') {
 		bot.sendMessage(message.from.id, 'Il parametro acquirente è obbligatorio')
 		return
+	}
+	var reg = new RegExp("^[a-zA-Z_]{1,100}$");
+	if (reg.test(buyer) == false) {
+		bot.sendMessage(message.chat.id, "Acquirente non valido, riprova");
+		return;
 	}
 	if (isNaN(price)) { price = 0 } // imposta al minimo dopo
 
@@ -6214,7 +6319,7 @@ bot.onText(/^\/offri/i, function (message) {
 
 							const buyer_id = rows[0].id
 
-							if (message.from.id != 20471035) {
+							if (message.from.id != config.phenix_id) {
 								if (buyer_id == player_id) {
 									bot.sendMessage(message.from.id, 'Non puoi vendere a te stesso')
 									return
@@ -6411,9 +6516,19 @@ bot.onText(/^\/scambia/i, function (message) {
 			bot.sendMessage(message.from.id, 'Il parametro oggetto 1 è obbligatorio')
 			return
 		}
+		var reg = new RegExp("^[a-zA-Z ]{1,100}$");
+		if (reg.test(item1) == false) {
+			bot.sendMessage(message.chat.id, "Oggetto 1 non valido, riprova");
+			return;
+		}
 		if (item2 == '') {
 			bot.sendMessage(message.from.id, 'Il parametro oggetto 2 è obbligatorio')
 			return
+		}
+		var reg = new RegExp("^[a-zA-Z ]{1,100}$");
+		if (reg.test(item2) == false) {
+			bot.sendMessage(message.chat.id, "Oggetto 2 non valido, riprova");
+			return;
 		}
 		if (item1.toLowerCase() == item2.toLowerCase()) {
 			bot.sendMessage(message.from.id, 'Non puoi inserire due oggetti uguali')
@@ -6422,6 +6537,11 @@ bot.onText(/^\/scambia/i, function (message) {
 		if (buyer == '') {
 			bot.sendMessage(message.from.id, 'Il parametro acquirente è obbligatorio')
 			return
+		}
+		var reg = new RegExp("^[a-zA-Z_]{1,100}$");
+		if (reg.test(buyer) == false) {
+			bot.sendMessage(message.chat.id, "Acquirente non valido, riprova");
+			return;
 		}
 		if ((quantity < 1) || (quantity > 100) || (isNaN(quantity))) {
 			bot.sendMessage(message.from.id, 'Quantità non valida, minimo 1 massimo 100')
@@ -6457,7 +6577,7 @@ bot.onText(/^\/scambia/i, function (message) {
 
 					const buyer_id = rows[0].id
 
-					if (message.from.id != 20471035) {
+					if (message.from.id != config.phenix_id) {
 						if (buyer_id == player_id) {
 							bot.sendMessage(message.from.id, 'Non puoi scambiare a te stesso')
 							return
@@ -6915,6 +7035,11 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 
 		if (nickname.indexOf('+') != -1) {
 			const item_name = nickname.replace('+', '')
+			var reg = new RegExp("^[a-zA-Z ]{1,100}$");
+			if (reg.test(item_name) == false) {
+				bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
+				return;
+			}
 			connection.query('SELECT L.creator_id, L.id, L.price, P.chat_id, P.nickname FROM public_lottery L, player P, item I WHERE P.item_id = I.id AND P.id = L.creator_id AND L.price = 0 AND L.creator_id != ' + player_id + ' AND I.name = "' + item_name + '"', function (err, rows, fields) {
 				if (err) throw err
 
@@ -6989,6 +7114,12 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 				}
 			})
 			return
+		}
+
+		var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
+		if (reg.test(nickname) == false) {
+			bot.sendMessage(message.chat.id, "Giocatore non valido, riprova");
+			return;
 		}
 
 		connection.query('SELECT id FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
@@ -7130,6 +7261,12 @@ bot.onText(/^\/dlotteria(?!p) (.+)|^\/dlotteria(?!p)/, function (message, match)
 			return
 		}
 
+		var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
+		if (reg.test(nickname) == false) {
+			bot.sendMessage(message.chat.id, "Giocatore non valido, riprova");
+			return;
+		}
+
 		connection.query('SELECT id FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
 			if (err) throw err
 			if (Object.keys(rows).length == 0) {
@@ -7249,6 +7386,12 @@ bot.onText(/^\/statolotteria (.+)|^\/statolotteria/, function (message, match) {
 
 	nickname = nickname.replace('@', '')
 
+	var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
+	if (reg.test(nickname) == false) {
+		bot.sendMessage(message.chat.id, "Giocatore non valido, riprova");
+		return;
+	}
+
 	connection.query('SELECT id, nickname FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
 		if (err) throw err
 
@@ -7313,6 +7456,12 @@ bot.onText(/^\/statoasta (.+)|^\/statoasta/, function (message, match) {
 	}
 
 	nickname = nickname.replace('@', '')
+
+	var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
+	if (reg.test(nickname) == false) {
+		bot.sendMessage(message.chat.id, "Giocatore non valido, riprova");
+		return;
+	}
 
 	connection.query('SELECT id, nickname FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
 		if (err) throw err
@@ -7509,6 +7658,11 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 
 		if (nickname.indexOf('+') != -1) {
 			const item_name = nickname.replace('+', '')
+			var reg = new RegExp("^[a-zA-Z ]{1,100}$");
+			if (reg.test(item_name) == false) {
+				bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
+				return;
+			}
 			connection.query('SELECT L.creator_id, player.chat_id, L.id, L.price, (SELECT COUNT(id) FROM public_lottery_players P WHERE P.lottery_id = L.id AND P.player_id = ' + player_id + ') As sub, L.max_players FROM public_lottery L, player, item I WHERE L.item_id = I.id AND player.id = L.creator_id AND L.price > 0 AND L.creator_id != ' + player_id + ' AND I.name = "' + item_name + '" HAVING sub = 0', function (err, rows, fields) {
 				if (err) throw err
 
@@ -7607,6 +7761,12 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 				}
 			})
 			return
+		}
+
+		var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
+		if (reg.test(nickname) == false) {
+			bot.sendMessage(message.chat.id, "Giocatore non valido, riprova");
+			return;
 		}
 
 		connection.query('SELECT id FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
@@ -7765,6 +7925,12 @@ bot.onText(/^\/dlotteriap (.+)|^\/dlotteriap/, async function (message, match) {
 				bot.sendMessage(message.chat.id, 'Hai rimosso la registrazione a tutte le lotterie a pagamento ed hai recuperato ' + formatNumber(price) + ' §!')
 			})
 			return
+		}
+
+		var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
+		if (reg.test(nickname) == false) {
+			bot.sendMessage(message.chat.id, "Giocatore non valido, riprova");
+			return;
 		}
 
 		connection.query('SELECT id FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
@@ -8524,7 +8690,7 @@ bot.onText(/^\/posizioneteam/, function (message, match) {
 
 bot.onText(/^\/checkmarket (.+)/, function (message, match) {
 	if (message.chat.id != -1001064797183) {
-		if (message.from.id != 20471035) { return }
+		if (message.from.id != config.phenix_id) { return }
 	}
 
 	connection.query('SELECT id, nickname FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
@@ -8552,7 +8718,7 @@ bot.onText(/^\/checkmarket (.+)/, function (message, match) {
 
 bot.onText(/^\/checkmarketAll (.+)|^\/checkmarketAll/, function (message, match) {
 	if (message.chat.id != -1001064797183) {
-		if (message.from.id != 20471035) { return }
+		if (message.from.id != config.phenix_id) { return }
 	}
 
 	if (match[1] == undefined) { match[1] = 90 }
@@ -8813,6 +8979,11 @@ bot.onText(/^\/oggetti (.+)|^\/oggetti/, async function (message, match) {
 	const results = await Promise.all(oggetti
 		.map(oggetto => {
 			oggetto = oggetto.trim()
+			var reg = new RegExp("^[a-zA-Z\* ]{1,100}$");
+			if (reg.test(oggetto) == false) {
+				bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
+				return;
+			}
 			let part = 'like "%' + oggetto + '%"'
 			if (oggetto.indexOf('*') != -1) {
 				oggetto = oggetto.replace('*', '')
@@ -8873,6 +9044,11 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, async function (message, match) {
 
 	for (let m = 0; m < Object.keys(oggetti).length; m++) {
 		ogg = oggetti[m].trim()
+		var reg = new RegExp("^[a-zA-Z ]{1,100}$");
+		if (reg.test(ogg) == false) {
+			bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
+			return;
+		}
 		const items = await connection.queryAsync('SELECT id, name FROM item WHERE name LIKE "%' + ogg + '%"')
 
 		for (let i = 0; i < Object.keys(items).length; i++) {
@@ -8911,11 +9087,12 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, async function (message, match) {
 })
 
 bot.onText(/^\/necessari (.+)|^\/necessari/, function (message, match) {
-	const oggetto = mysql_real_escape_string(match[1]);
+	var oggetto = match[1];
 	if (oggetto == undefined) {
 		bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto (es. /necessari Spada Antimateria) per visualizzare tutti i materiali necessari")
 		return
 	}
+	oggetto = mysql_real_escape_string(oggetto);
 
 	connection.query('SELECT id, name, searchable FROM item WHERE name = "' + oggetto + '"', function (err, rows, fields) {
 		if (err) throw err
@@ -9014,11 +9191,13 @@ bot.onText(/^\/notifiche (.+)|^\/notifiche/, function (message, match) {
 })
 
 bot.onText(/^\/prezzo (.+)|^\/prezzo/, function (message, match) {
-	const oggetto = mysql_real_escape_string(match[1]);
+	var oggetto = match[1];
 	if (oggetto == undefined) {
 		bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto (es. /prezzo Spada Antimateria) per conoscerne gli ultimi prezzi")
 		return
 	}
+
+	oggetto = mysql_real_escape_string(oggetto);
 
 	if (message.chat.id < 0) { bot.sendMessage(message.chat.id, '_Messaggio inviato in privato_', mark) }
 
@@ -9068,11 +9247,13 @@ bot.onText(/^\/prezzo (.+)|^\/prezzo/, function (message, match) {
 })
 
 bot.onText(/^\/totale (.+)|^\/totale/, function (message, match) {
-	const oggetto = mysql_real_escape_string(match[1]);
+	var oggetto = match[1];
 	if (oggetto == undefined) {
 		bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto (es. /totale Spada Antimateria) per calcolarne gli ultimi prezzi sommando i materiali necessari")
 		return
 	}
+
+	oggetto = mysql_real_escape_string(oggetto);
 
 	if (message.chat.id < 0) { bot.sendMessage(message.chat.id, '_Messaggio inviato in privato_', mark) }
 
@@ -9767,7 +9948,7 @@ bot.onText(/^\/spia$/, function (message) {
 					if (err) throw err
 				})
 
-				if (message.from.id != 20471035) {
+				if (message.from.id != config.phenix_id) {
 					if (house_id == 1) {
 						bot.sendMessage(chat_id, 'Le pattuglie intorno al villaggio ci hanno avvisato che qualcuno ha spiato il tuo rifugio!' + spy_description, html)
 					} else if (house_id == 2) {
@@ -9905,7 +10086,7 @@ bot.onText(/^\/zaino (.+)|^\/zaino$/, function (message, match) {
 			})
 		} else {
 			let query = "= '" + mysql_real_escape_string(match[1]) + "'"
-			let rarity_text = match[1].toUpperCase()
+			let rarity_text = mysql_real_escape_string(match[1]).toUpperCase()
 			if (match[1].indexOf(',') != -1) {
 				rarity_text = match[1].split(',').join(', ')
 				const rarities = match[1].split(',').join("','")
@@ -10077,6 +10258,11 @@ function cleanForMerge(text) {
 }
 
 function attack(nickname, message, from_id, weapon_bonus, cost, source, account_id, global_end, boost_id, boost_mission, method) {
+	var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
+	if (reg.test(nickname) == false) {
+		bot.sendMessage(message.chat.id, "Giocatore non valido, riprova");
+		return;
+	}
 	connection.query('SELECT exp, ability, chat_id, heist_count, heist_limit, heist_protection, house_id, custom_name_h, id, money FROM player WHERE nickname = "' + nickname + '"', async function (err, rows, fields) {
 		if (err) throw err
 		const chat_id_nickname = rows[0].chat_id
@@ -10241,6 +10427,12 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 		if (Object.keys(rows).length == 0) { return }
 
 		const my_player_id = rows[0].id
+
+		var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
+		if (reg.test(player) == false) {
+			bot.sendMessage(message.chat.id, "Giocatore non valido, riprova");
+			return;
+		}
 
 		connection.query('SELECT * FROM player WHERE nickname = "' + player + '"', async function (err, rows, fields) {
 			if (err) throw err
@@ -10785,6 +10977,11 @@ function cleanArray(actual) {
 
 async function updateShop(message, code, isId, customQueryMessage) {
 	const query = ''
+	var reg = new RegExp("^[0-9]{1,100}$");
+	if (reg.test(code) == false) {
+		bot.sendMessage(message.chat.id, "Codice non valido, riprova");
+		return;
+	}
 	if (isId == 1) {
 		const shopCode = await connection.queryAsync('SELECT code FROM public_shop WHERE id = ' + code)
 		if (shopCode[0] == undefined) {
@@ -10884,6 +11081,12 @@ function funz(x) {
 function checkStatus(message, nickname, accountid, type) {
 	if (message.from.id == 777000) // Telegram
 	{ return }
+
+	var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
+	if (reg.test(nickname) == false) {
+		bot.sendMessage(message.chat.id, "Giocatore non valido, riprova");
+		return;
+	}
 
 	connection.query('SELECT id, exp, reborn, nickname, market_ban, group_ban, player_custom_nickname FROM player WHERE nickname = "' + nickname + '"', function (err, rows, fields) {
 		if (err) throw err
