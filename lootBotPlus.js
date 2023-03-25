@@ -9012,12 +9012,14 @@ bot.onText(/^\/oggetti (.+)|^\/oggetti/, async function (message, match) {
 bot.onText(/^\/ricerca (.+)|^\/ricerca/, async function (message, match) {
 	if (!checkSpam(message)) { return }
 
-	const oggetto = mysql_real_escape_string(match[1]);
+	var oggetto = match[1];
 	if (oggetto == undefined) {
 		bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto (es. /ricerca Spada Antimateria) per cercare in tutte le vendite e scambi, puoi specificarne fino a 3 separati da virgola, anche parziali")
 		return
 	}
+	oggetto = mysql_real_escape_string(oggetto);
 
+	var reg = new RegExp("^[a-zA-Z\', ]{1,100}$");
 	if (reg.test(oggetto) == false) {
 		bot.sendMessage(message.chat.id, 'Oggetto non valido, riprova')
 		return
