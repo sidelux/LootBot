@@ -32,9 +32,22 @@ Per contribuire è possibile creare PR direttamente tramite Github oppure contat
 
 Prima di creare una richiesta è bene verificare che il codice sia funzionante e valido e si riesca a innestare bene nel bilanciamento del gioco.
 
+## TODO
+
+Ci sono vari interventi che ho pensato di apportare ma per mancanza di tempo o risorse non sono mai riuscito a portare ad avviare:
+- [x] Predisposizione per l'open source
+- [ ] Divisione del codice in moduli/file
+- [ ] Aggiunta periodica delle nuove funzionalità sulla base dei suggerimenti della community
+- [ ] Bilanciamento generale che nel tempo ha portato ad inflazione e rottura di molte meccaniche del gioco
+- [ ] Aggiunta del supporto al multi lingua (principalmente l'inglese)
+- [ ] Automazione completa della gestione degli eventi (manca solo l'automazione delle imprese globali)
+
+I contributi a questi interventi avranno maggior priorità rispetto alle altre modifiche.
+
 ## Issue
 
 Per segnalare eventuali problemi al codice non è necessario per forza modificare il codice, è anche possibile creare una richiesta Issue rispettando l'apposito template per indicare con più dettagli possibili quali errori si riscontrano.
+Io o qualcun'altro provvederemo a risolvere il problema o commentare con maggiori indicazioni.
 
 ## Autori
 
