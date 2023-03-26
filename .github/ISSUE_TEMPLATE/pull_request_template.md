@@ -1,3 +1,12 @@
+---
+name: Proposta funzionalità o fix
+about: Template per la proposta di funzionalità
+title: ''
+labels: 'feature'
+assignees: ''
+
+---
+
 ## Descrizione
 
 <!-- Una chiara e dettagliata descrizione della funzionalità aggiunta o del problema risolto. -->
