@@ -16,7 +16,7 @@ Per installarlo nel proprio ambiente è necessario procedere secondo i seguenti 
 - Dopo di che bisogna importare la struttura del database in un ambiente MySql.
 - È consigliato utilizzare un gestore di processi come PM2 per far partire i vari bot.
 
-È presente anche la LootBotApi accessibile via web nella [relativa respository](https://github.com/sidelux/LootBotApi).
+È presente anche la LootBotApi accessibile via web nella [relativa repository](https://github.com/sidelux/LootBotApi).
 Per installarla è necessario anche in questo caso rinominare e modificare il file config.js, specificare validi certificati ssl e poi avviarlo come gli altri script.
 
 È bene tenere in conto che il bot non è mai stato testato in questo stato con 0 giocatori registrati, potrebbe avere comportamenti inattesi.
