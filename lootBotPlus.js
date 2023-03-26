@@ -12,7 +12,11 @@ const express = require('express')
 const fetch = require('isomorphic-fetch')
 
 const config = require('./config.js')
-const tipsController = require('./suggestions/tips_message_controller.js')
+var tipsController;
+if (config.tips_enabled == true) {
+	tipsController = require('./suggestions/tips_message_controller.js')
+	tipsController.initialize()
+}
 
 process.on('uncaughtException', function (error) {
 	console.log('\x1b[31mException: ', error, '\x1b[0m')
@@ -24,8 +28,6 @@ process.on('unhandledRejection', function (error, p) {
 		console.log('\x1b[31mError: ', error.message, '\x1b[0m')
 	console.log(error);
 })
-
-tipsController.initialize()
 
 const math = create(all)
 math.import({
@@ -149,7 +151,7 @@ bot.on('message', function (message, match) {
 	if (message.text) {
 		// Suggestions
 
-		if (message.entities) {
+		if ((config.tips_enabled == true) && (message.entities)) {
 			const entities = message.entities
 			let isSuggestion
 			if (typeof entities !== 'undefined' && entities != null && entities.length != null && entities.length > 0) {

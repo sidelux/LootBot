@@ -1,31 +1,32 @@
 var config = {};
 
-config.dbhost = "";
+config.dbhost = "";             // host database
 
-config.dbuser = "";
-config.dbpassword = "";
-config.dbdatabase = "";
+config.dbuser = "";             // utente database
+config.dbpassword = "";         // password database
+config.dbdatabase = "";         // nome database
 
-config.maintoken = "";
-config.plustoken = "";
-config.cltoken = "";
-config.shorttoken = "";
-config.shortpetoken = "";
-config.gendertoken = "";
+config.maintoken = "";          // token loot
+config.plustoken = "";          // token plus
+config.cltoken = "";            // token craftlootbot (non utilizzato)
+config.shorttoken = "";         // token shorte.st (https://shorte.st/)
+config.shortpetoken = "";       // token short.pe (https://short.pe/)
+config.gendertoken = "";        // token gender api (https://gender-api.com/en/)
 
-config.creatore_id = 0;
-config.phenix_id = 0;
+config.creatore_id = 0;         // id creatore (non utilizzato o comunque uguale a phoenix id)
+config.phenix_id = 0;           // id amministratore
 
-config.sugg_antifloodTime = 1,
-config.LootSuggChannel = "",
-config.LootAvvisiChannel = "",
+config.sugg_antifloodTime = 1,  // non utilizzato
+config.LootSuggChannel = "",    // non utilizzato
+config.LootAvvisiChannel = "",  // non utilizzato
 
-config.databaseLootUser = "",
-config.databaseHost = "",
-config.databasePsw = "",
-config.databaseSuggName = "",
+config.databaseLootUser = "",   // non utilizzato
+config.databaseHost = "",       // non utilizzato
+config.databasePsw = "",        // non utilizzato
+config.databaseSuggName = "",   // non utilizzato
 
-config.manual_log = false,
-config.simple_log = false,
+config.tips_enabled = true;     // non utilizzato
+config.manual_log = false,      // non utilizzato
+config.simple_log = false,      // non utilizzato
 
 module.exports = config;
