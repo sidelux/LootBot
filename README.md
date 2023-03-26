@@ -34,7 +34,7 @@ Prima di creare una richiesta è bene verificare che il codice sia funzionante e
 
 ## TODO
 
-Ci sono vari interventi che ho pensato di apportare ma per mancanza di tempo o risorse non sono mai riuscito a portare ad avviare:
+Ci sono vari interventi che ho pensato di apportare ma per mancanza di tempo o risorse non sono mai riuscito ad avviare:
 - [x] Predisposizione per l'open source
 - [ ] Divisione del codice in moduli/file
 - [ ] Aggiunta periodica delle nuove funzionalità sulla base dei suggerimenti della community
