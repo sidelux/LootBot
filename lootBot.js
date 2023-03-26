@@ -26527,7 +26527,14 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 											if (selected == -1)
 												bot.sendMessage(message.chat.id, "Non hai ancora selezionato una postazione!", kbBack);
 											else {
-												connection.query('SELECT name, max_level FROM assault_place WHERE id = ' + selected + ' OR name = "' + connection.escape(answer.text) + '"', function (err, rows, fields) {
+												answer.text = answer.text.replace("🏗", "");
+												answer.text = answer.text.replace("🚧", "");
+												var reg = new RegExp("^[a-zA-Z ]{1,100}$");
+												if (reg.test(answer.text) == false) {
+													bot.sendMessage(message.chat.id, "Postazione non valida, riprova", kbBack);
+													return;
+												}
+												connection.query('SELECT name, max_level FROM assault_place WHERE id = ' + selected + ' OR name = "' + answer.text + '"', function (err, rows, fields) {
 													if (err) throw err;
 
 													if (Object.keys(rows).length == 0) {
@@ -26537,12 +26544,6 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 
 													var max_level = rows[0].max_level;
 													var place_name = rows[0].name;
-
-													var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-													if (reg.test(place_name) == false) {
-														bot.sendMessage(message.chat.id, "Postazione non valida, riprova", kbBack);
-														return;
-													}
 
 													connection.query('SELECT COUNT(id) As cnt FROM assault_place_player_id WHERE team_id = ' + team_id + ' AND place_id = ' + selected, function (err, rows, fields) {
 														if (err) throw err;
