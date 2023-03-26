@@ -10,7 +10,7 @@ Passi per riprodurre il problema:
 3. Scrivi '....'
 4. Invia il messaggio
 
-## Comportamento atteso
+## Comportamento previsto
 
 <!-- Una descrizione esaustiva di quello che sarebbe dovuto succedere. -->
 
