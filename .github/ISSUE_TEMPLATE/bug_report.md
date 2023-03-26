@@ -27,9 +27,9 @@ Passi per riprodurre il problema:
 
 <!-- Se possibile, aggiungi screenshot del problema. -->
 
-## Messaggi precedenti
+## Messaggi precedenti di Telegram
 
-<!-- Se possibile, indica alcuni messaggi precedenti al problema così da capirne il contesto ed il tuo nome utente Telegram. -->
+<!-- Se possibile, indica i messaggi nella chat precedenti al problema così da capirne meglio il contesto. Indica anche il tuo username Telegram. -->
 
 ## Indicazioni aggiuntive
 
