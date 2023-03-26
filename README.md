@@ -23,8 +23,18 @@ Per installarla è necessario anche in questo caso rinominare e modificare il fi
 
 ## Contributi
 
-Per contribuire è possibile creare PR direttamente tramite Github oppure contattare direttamente @fenix45 su Telegram.
+Per contribuire è possibile creare PR direttamente tramite Github oppure contattare direttamente @fenix45 su Telegram, seguendo queste indicazioni:
+- Esegui il fork del progetto
+- Crea il tuo branch con un nome parlante
+- Esegui il commit delle modifiche
+- Esegui push
+- Apri una Pull Request dettagliando le modifiche effettuate
+
 Prima di creare una richiesta è bene verificare che il codice sia funzionante e valido e si riesca a innestare bene nel bilanciamento del gioco.
+
+## Issue
+
+Per segnalare eventuali problemi al codice non è necessario per forza modificare il codice, è anche possibile creare una richiesta Issue rispettando l'apposito template per indicare con più dettagli possibili quali errori si riscontrano.
 
 ## Autori
 
