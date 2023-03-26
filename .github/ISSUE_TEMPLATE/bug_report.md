@@ -1,38 +1,36 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: Segnalazione bug
+about: Template per la segnalazione di bug
 title: ''
-labels: ''
+labels: 'bug'
 assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## Descrizione del bug
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+<!-- Una chiara e dettagliata descrizione del problema riscontrato. -->
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+## Come riprodurlo
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+Passi per riprodurre il problema:
+1. Vai a '...'
+2. Clicca su '....'
+3. Scrivi '....'
+4. Invia il messaggio
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+## Comportamento previsto
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+<!-- Una descrizione esaustiva di quello che sarebbe dovuto succedere. -->
 
-**Additional context**
-Add any other context about the problem here.
+## Screenshot
+
+<!-- Se possibile, aggiungi screenshot del problema. -->
+
+## Messaggi precedenti
+
+<!-- Se possibile, indica alcuni messaggi precedenti al problema così da capirne il contesto ed il tuo nome utente Telegram. -->
+
+## Indicazioni aggiuntive
+
+<!-- Se hai già delle idee, scrivile qui. -->
