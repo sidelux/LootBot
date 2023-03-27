@@ -77,6 +77,7 @@ const timevarSpam = []
 const timevarFlood = []
 const rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500]
 const reg = /^[a-zA-Zàèìòùé0-9.*,\\?!'@() ]{1,}$/
+const reItem = new RegExp("^[a-zA-Z0-9\'àèéìòù ]{1,100}$");
 
 console.log('Avvio bot...')
 
@@ -3143,8 +3144,7 @@ bot.onText(/^\/creaasta(?!p) ([^\s]+),(.+)|^\/creaasta(?!p) (.+)|^\/creaasta(?!p
 
 	oggetto = oggetto.trim()
 
-	var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-	if (reg.test(oggetto) == false) {
+	if (reItem.test(oggetto) == false) {
 		bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
 		return;
 	}
@@ -4374,8 +4374,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 				for (var i = 0; i < len; i++) {
 					elements[i] = elements[i].trim()
 
-					var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-					if (reg.test(elements[i]) == false) {
+					if (reItem.test(elements[i]) == false) {
 						bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
 						return;
 					}
@@ -4417,8 +4416,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 					splitted = elements[i].split(':')
 
 					item = splitted[0].trim()
-					var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-					if (reg.test(item) == false) {
+					if (reItem.test(item) == false) {
 						bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
 						return;
 					}
@@ -4505,8 +4503,7 @@ bot.onText(/^\/negozio(?!a|r) (.+)|^\/negozio(?!a|r)$|^\/negozioa$|^\/negozior$|
 					splitted = elements[i].split(':')
 
 					item = splitted[0].trim()
-					var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-					if (reg.test(item) == false) {
+					if (reItem.test(item) == false) {
 						bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
 						return;
 					}
@@ -5628,8 +5625,7 @@ bot.onText(/^\/crealotteria(?!p) (.+)|^\/crealotteria(?!p)$/, function (message,
 		bot.sendMessage(message.chat.id, "Per inserire una lotteria utilizza la seguente sintassi: '/crealotteria NomeOggetto numeroMassimoPartecipanti', l'oggetto viene rimosso dall'inventario appena creata la lotteria e il numero di partecipanti minimo è 5")
 		return
 	}
-	var reg = new RegExp("^[a-zA-Z0-9 ]{1,100}$");
-	if (reg.test(oggetto) == false) {
+	if (reItem.test(oggetto) == false) {
 		bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
 		return;
 	}
@@ -5727,8 +5723,7 @@ bot.onText(/^\/crealotteriap ([^\s]+) (.+)|^\/crealotteriap$/, function (message
 		return
 	}
 
-	var reg = new RegExp("^[a-zA-Z0-9 ]{1,100}$");
-	if (reg.test(oggetto) == false) {
+	if (reItem.test(oggetto) == false) {
 		bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
 		return;
 	}
@@ -6040,7 +6035,7 @@ bot.onText(/^\/paga (.+)|^\/paga/i, async function (message, match) {
 		return
 	}
 
-	reg = new RegExp("^[a-zA-Z_]{1,100}$");
+	reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
 	if (reg.test(buyer) == false) {
 		bot.sendMessage(message.chat.id, "Acquirente non valido, riprova");
 		return;
@@ -6210,8 +6205,7 @@ bot.onText(/^\/offri/i, function (message) {
 		bot.sendMessage(message.from.id, 'Il parametro oggetto è obbligatorio')
 		return
 	}
-	var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-	if (reg.test(item) == false) {
+	if (reItem.test(item) == false) {
 		bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
 		return;
 	}
@@ -7037,8 +7031,7 @@ bot.onText(/^\/lotteria(?!p) (.+)|^\/lotteria(?!p)/, function (message, match) {
 
 		if (nickname.indexOf('+') != -1) {
 			const item_name = nickname.replace('+', '')
-			var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-			if (reg.test(item_name) == false) {
+			if (reItem.test(item_name) == false) {
 				bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
 				return;
 			}
@@ -7660,8 +7653,7 @@ bot.onText(/^\/lotteriap (.+)|^\/lotteriap/, function (message, match) {
 
 		if (nickname.indexOf('+') != -1) {
 			const item_name = nickname.replace('+', '')
-			var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-			if (reg.test(item_name) == false) {
+			if (reItem.test(item_name) == false) {
 				bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
 				return;
 			}
@@ -8981,8 +8973,7 @@ bot.onText(/^\/oggetti (.+)|^\/oggetti/, async function (message, match) {
 	const results = await Promise.all(oggetti
 		.map(oggetto => {
 			oggetto = oggetto.trim()
-			var reg = new RegExp("^[a-zA-Z\* ]{1,100}$");
-			if (reg.test(oggetto) == false) {
+			if (reItem.test(oggetto) == false) {
 				bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
 				return;
 			}
@@ -9021,8 +9012,7 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, async function (message, match) {
 	}
 	oggetto = mysql_real_escape_string(oggetto);
 
-	var reg = new RegExp("^[a-zA-Z\', ]{1,100}$");
-	if (reg.test(oggetto) == false) {
+	if (reItem.test(oggetto) == false) {
 		bot.sendMessage(message.chat.id, 'Oggetto non valido, riprova')
 		return
 	}
@@ -9048,8 +9038,7 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, async function (message, match) {
 
 	for (let m = 0; m < Object.keys(oggetti).length; m++) {
 		ogg = oggetti[m].trim()
-		var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-		if (reg.test(ogg) == false) {
+		if (reItem.test(ogg) == false) {
 			bot.sendMessage(message.chat.id, "Oggetto non valido, riprova");
 			return;
 		}

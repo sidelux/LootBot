@@ -84,6 +84,7 @@ var re4 = new RegExp("^[a-zA-Z0-9àèìòù ]{1,40}$");
 var re5 = new RegExp("^[a-zA-Z0-9!?,.àèéìòù@ ]{1,255}$");
 var re6 = new RegExp("^[a-zA-Z0-9àèéìòù\\'\\-\\* ]{1,255}$");
 var re7 = new RegExp("^[a-zA-Z0-9àèéìòù\\'\?\! ]{1,2048}$");
+var reItem = new RegExp("^[a-zA-Z0-9\'àèéìòù ]{1,100}$");
 
 var config = require('./config.js');
 var mobGenerator = require('./mobGenerator.js');
@@ -13666,8 +13667,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		if (answer.text == "Torna al menu")
 																			return;
 																		else {
-																			var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-																			if (reg.test(answer.text) == false) {
+																			if (reItem.test(answer.text) == false) {
 																				bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", back);
 																				return;
 																			}
@@ -15191,8 +15191,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	if (answer.text == "Torna al menu")
 																		return;
 
-																	var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-																	if (reg.test(answer.text) == false) {
+																	if (reItem.test(answer.text) == false) {
 																		bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", back);
 																		return;
 																	}
@@ -17924,8 +17923,7 @@ bot.onText(/scomponi/i, function (message) {
 				else {
 					var ogg = answer.text.trim();
 
-					var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-					if (reg.test(ogg) == false) {
+					if (reItem.test(ogg) == false) {
 						bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", back);
 						return;
 					}
@@ -20755,8 +20753,7 @@ bot.onText(/magazzino/i, function (message, match) {
 								answerCallbacks[message.chat.id] = async function (answer) {
 									if (answer.text == "Torna al magazzino")
 										return;
-									var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-									if (reg.test(answer.text) == false) {
+									if (reItem.test(answer.text) == false) {
 										bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", back);
 										return;
 									}
@@ -22216,8 +22213,7 @@ bot.onText(/^Risorse/i, function (message) {
 								if ((answer.text == "Continua a combattere") || (answer.text == "Torna al menu"))
 									return;
 								var item = answer.text.substring(0, answer.text.indexOf("(") - 1);
-								var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-								if (reg.test(item) == false) {
+								if (reItem.test(item) == false) {
 									bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", kbNext);
 									return;
 								}
@@ -27023,8 +27019,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																							var cons = item_name.replace("Carica ", "");
 																							cons = cons.substring(0, cons.indexOf("(")-1);
 
-																							var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-																							if (reg.test(cons) == false) {
+																							if (reItem.test(cons) == false) {
 																								bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", kbBack);
 																								return;
 																							}
@@ -27167,8 +27162,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																		var cons = answer.text.replace("Brucia ", "");
 																		cons = cons.substring(0, cons.indexOf("(")-1);
 
-																		var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-																		if (reg.test(cons) == false) {
+																		if (reItem.test(cons) == false) {
 																			bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", back);
 																			return;
 																		}
@@ -34814,8 +34808,7 @@ bot.onText(/^sintesi|Torna alla Sintesi/i, function (message) {
 												answerCallbacks[message.chat.id] = async function (answer) {
 													if (answer.text == "Torna alla Sintesi")
 														return;
-													var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-													if (reg.test(answer.text) == false) {
+													if (reItem.test(answer.text) == false) {
 														bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", back);
 														return;
 													}
@@ -36600,8 +36593,7 @@ bot.onText(/^Poste/, function (message) {
 								if ((answer.text == "Torna al menu") || (answer.text == "Torna alla piazza"))
 									return;
 								var itemName = answer.text;
-								var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-								if (reg.test(itemName) == false) {
+								if (reItem.test(itemName) == false) {
 									bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", back);
 									return;
 								}
@@ -37068,8 +37060,7 @@ bot.onText(/utilizza polvere/i, function (message) {
 								return;
 
 							var item_sel = answer.text;
-							var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-							if (reg.test(item_sel) == false) {
+							if (reItem.test(item_sel) == false) {
 								bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", alchemy);
 								return;
 							}
@@ -39811,8 +39802,7 @@ bot.onText(/ricicla/i, function (message) {
 
 			var calc_qnt = Math.floor(qnt/5);
 
-			var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-			if (reg.test(oggettoRisultato) == false) {
+			if (reItem.test(oggettoRisultato) == false) {
 				bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", back);
 				return;
 			}
@@ -39834,8 +39824,7 @@ bot.onText(/ricicla/i, function (message) {
 					return;
 				}
 
-				var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-				if (reg.test(oggetto) == false) {
+				if (reItem.test(oggetto) == false) {
 					bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", back);
 					return;
 				}
@@ -39981,8 +39970,7 @@ bot.onText(/ricicla/i, function (message) {
 									if ((answer.text == "Ricicla Ancora") || (answer.text == "Torna al menu"))
 										return;
 
-									var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-									if (reg.test(answer.text) == false) {
+									if (reItem.test(answer.text) == false) {
 										bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", back);
 										return;
 									}
@@ -40671,8 +40659,7 @@ bot.onText(/compra/i, function (message) {
 					bot.sendMessage(message.chat.id, "Non puoi acquistare pozioni durante il weekend folle", store);
 					return;
 				}
-				var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-				if (reg.test(oggetto) == false) {
+				if (reItem.test(oggetto) == false) {
 					bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", back);
 					return;
 				}
@@ -40756,8 +40743,7 @@ bot.onText(/compra/i, function (message) {
 					bot.sendMessage(message.chat.id, "Non puoi acquistare piume o ceneri durante il weekend folle", store);
 					return;
 				}
-				var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-				if (reg.test(oggetto) == false) {
+				if (reItem.test(oggetto) == false) {
 					bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", back);
 					return;
 				}
@@ -42562,8 +42548,7 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 		var filter = "";
 		var filterTxt = "";
 		if (((oggetto.length == 1) || (oggetto.length == 2)) && (oggetto != "🗡")) {
-			var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-			if (reg.test(oggetto) == false) {
+			if (reItem.test(oggetto) == false) {
 				bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", back);
 				return;
 			}
@@ -42997,8 +42982,7 @@ bot.onText(/^apri/i, function (message) {
 			return;
 
 		var all = "";
-		var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-		if (reg.test(scrigno) == false) {
+		if (reItem.test(scrigno) == false) {
 			bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", chestMore);
 			return;
 		}
@@ -44936,8 +44920,7 @@ bot.onText(/necro del destino/i, function (message) {
 															return;
 														}
 
-														var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-														if (reg.test(itemName) == false) {
+														if (reItem.test(itemName) == false) {
 															bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", kbBack);
 															return;
 														}
@@ -51212,8 +51195,7 @@ function cercaTermine(message, param, player_id) {
 						if (sellable == 0)
 							bottext += "\n_Non vendibile/scambiabile_";
 
-						var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-						if (reg.test(name) == false) {
+						if (reItem.test(name) == false) {
 							bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", back);
 							return;
 						}
@@ -51967,8 +51949,7 @@ function Consumabili(message, player_id, from, player_total_life, player_life, p
 					var pos = oggetto.indexOf(" (");
 					if (pos != -1)
 						oggetto = oggetto.substring(0, pos);
-					var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-					if (reg.test(oggetto) == false) {
+					if (reItem.test(oggetto) == false) {
 						bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", back);
 						return;
 					}
@@ -52807,8 +52788,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 			}
 		};
 
-		var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
-		if (reg.test(oggetto) == false) {
+		if (reItem.test(oggetto) == false) {
 			bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", back);
 			return;
 		}
