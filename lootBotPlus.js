@@ -2148,7 +2148,7 @@ bot.onText(/^\/riassunto/, function (message, match) {
 					const compact = (rows[0].compact) ? '✅' : '❌'
 
 					bot.sendMessage(message.chat.id, '<b>Impostazioni gruppo:</b>\n' +
-						'Messaggio di benvenuto: ' + welcome_text.replace("#n#", "\nn") + '\n' +
+						'Messaggio di benvenuto: ' + welcome_text.replace("#n#", "\n") + '\n' +
 						'Benvenuto: ' + welcome + '\n' +
 						'Filtro livello: ' + level + ' (' + min_lev + '-' + max_lev + ')\n' +
 						'Filtro bannato: ' + kickban + '\n' +
@@ -11206,7 +11206,7 @@ function checkStatus(message, nickname, accountid, type) {
 			}
 
 			if (type == 0) {
-				let welcome = rows[0].welcome_text.replace("#n#", "\\n");
+				let welcome = rows[0].welcome_text.replace("#n#", "\n");
 				const on = rows[0].welcome
 
 				if ((on == 1) && (exist == 1) && (welcome != null)) {
