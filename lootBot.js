@@ -24511,6 +24511,34 @@ bot.onText(/^gazzettino degli incarichi/i, function (message) {
 	});
 });
 
+bot.onText(/^storico degli incarichi/i, function (message) {
+	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+		var player_id = rows[0].id;
+
+		connection.query('SELECT team_id FROM team_player WHERE team_id = (SELECT team_id FROM team_player WHERE player_id = ' + player_id + ') ORDER BY id', function (err, rows, fields) {
+			if (err) throw err;
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, "Entra in un team per utilizzare questa funzione", team);
+				return;
+			}
+			var team_id = rows[0].team_id;
+
+			connection.query('SELECT id, title FROM mission_team_list', function (err, rows, fields) {
+				if (err) throw err;
+
+				var text = "*Incarichi completati*:";
+				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+					var completed = connection_async.query('SELECT COUNT(id) As cnt FROM mission_team_history WHERE mission_team_id = ' + rows[i].id + ' AND team_id = ' + team_id);
+					text += "\n> " + rows[i].title + ": " + completed[0].cnt;
+				}
+
+				bot.sendMessage(message.chat.id, text, back);
+			});
+		});
+	});
+});
+
 bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 	connection.query('SELECT id, holiday, gender, travel_id, cave_id, mission_id, mission_special_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -24604,9 +24632,9 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 							text += "La notte dura dalle " + nightStart + ":00 alle " + nightEnd + ":00";
 
 							if (isAdmin == 1)
-								iKeys.push(["Gestisci Party 👥", "Il mio Party 👥"], ["Gazzettino degli Incarichi 🗞"], ["Torna al team", "Torna al menu"]);
+								iKeys.push(["Gestisci Party 👥", "Il mio Party 👥"], ["Gazzettino degli Incarichi 🗞"], ["Storico degli Incarichi 📜"], ["Torna al team", "Torna al menu"]);
 							else
-								iKeys.push(["Il mio Party 👥"], ["Gazzettino degli Incarichi 🗞"], ["Torna al team", "Torna al menu"]);
+								iKeys.push(["Il mio Party 👥"], ["Gazzettino degli Incarichi 🗞"], ["Storico degli Incarichi 📜"], ["Torna al team", "Torna al menu"]);
 
 							var kb = {
 								parse_mode: "HTML",
@@ -24650,7 +24678,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 
 							bot.sendMessage(message.chat.id, text, kb).then(function () {
 								answerCallbacks[message.chat.id] = async function (answer) {
-									if ((answer.text.toLowerCase().indexOf("il mio party") != -1) || (answer.text.toLowerCase().indexOf("gestisci party") != -1) || (answer.text == "Torna al team") || (answer.text == "Torna al menu") || (answer.text.toLowerCase().indexOf("gazzettino") != -1))
+									if ((answer.text.toLowerCase().indexOf("il mio party") != -1) || (answer.text.toLowerCase().indexOf("gestisci party") != -1) || (answer.text == "Torna al team") || (answer.text == "Torna al menu") || (answer.text.toLowerCase().indexOf("gazzettino") != -1) || (answer.text.toLowerCase().indexOf("storico") != -1))
 										return;
 									else {
 
@@ -60252,9 +60280,10 @@ function setFinishedTeamMission(element, index, array) {
 
 							var player_qnt = rows[0].cnt;
 
-							connection.query('SELECT AVG(complex) As diff, reward_code, duration, parts, progress_num FROM mission_team_list L, mission_team_requirement R WHERE L.requirement_id = R.requirement_id AND L.id = ' + assigned_to, async function (err, rows, fields) {
+							connection.query('SELECT L.id, AVG(complex) As diff, reward_code, duration, parts, progress_num FROM mission_team_list L, mission_team_requirement R WHERE L.requirement_id = R.requirement_id AND L.id = ' + assigned_to, async function (err, rows, fields) {
 								if (err) throw err;
 
+								var mission_team_id = rows[0].id;
 								var complex = rows[0].diff;
 								var duration = rows[0].duration;
 								var parts = rows[0].parts;
@@ -60464,6 +60493,9 @@ function setFinishedTeamMission(element, index, array) {
 										} else {
 											bot.sendMessage(rows[i].chat_id, "Hai completato l'incarico insieme al tuo party come richiesto da " + mandator + "!\nEcco il rapporto dell'incarico:\n<i>" + endText + "</i>\n\nNon ricevi ricompense poichè sei stato sospeso dall'amministratore", html);
 										}
+										connection.query('INSERT INTO team_mission_history (team_id, mision_team_id, completed) VALUES (' + team_id + ', ' + mission_team_id + ', 1)', function (err, rows, fields) {
+											if (err) throw err;
+										});
 										connection.query('UPDATE player SET mission_party = 0, mission_team_count = mission_team_count+1 WHERE id = ' + rows[i].id, function (err, rows, fields) {
 											if (err) throw err;
 										});
