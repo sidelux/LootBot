@@ -16980,7 +16980,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																												var team_id = rows[0].team_id;
 																												connection.query('SELECT rooms FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
 																													if (err) throw err;
-																													connection.query('UPDATE team SET dungeon_count = dungeon_count+1, dungeon_room_count = dungeon_room_count+' + rows[0].rooms + ' WHERE id = ' + team_id, function (err, rows, fields) {
+																													connection.query('UPDATE team SET dungeon_count = dungeon_count+1, dungeon_room_count = dungeon_room_count+' + rows[0].rooms + ', dungeon_room_count_tmp = dungeon_room_count_tmp+' + rows[0].rooms + ' WHERE id = ' + team_id, function (err, rows, fields) {
 																														if (err) throw err;
 																													});
 																												});
@@ -30475,8 +30475,8 @@ bot.onText(/Hall of Fame/i, function (message) {
 
 		connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 			if (err) throw err;
-			var desc = "\n\nIl calcolo tiene conto del tempo trascorso negli Incarichi, dei punti creazione del team, dei dungeon completati in team e degli Assalti completati con successo.";
-			var query = "SELECT name As name, ((500*mission_time_count)+(craft_count)+(3000*boss_count)+(125000*(A.completed+kill_num))+(dungeon_room_count)) As pnt FROM team T LEFT JOIN assault A ON T.id = A.team_id GROUP BY T.id ORDER BY pnt DESC";
+			var desc = "\n\nIl calcolo tiene conto del tempo trascorso negli Incarichi, dei punti creazione del team, dei dungeon completati in team e degli Assalti completati con successo. Si resetta ogni 6 mesi.";
+			var query = "SELECT name As name, ((500*mission_time_count_tmp)+(craft_count_tmp)+(3000*boss_count_tmp)+(125000*(A.completed_tmp+kill_num_tmp))+(dungeon_room_count_tmp)) As pnt FROM team T LEFT JOIN assault A ON T.id = A.team_id GROUP BY T.id ORDER BY pnt DESC";
 			if (rows[0].top_min == 1) {
 				connection.query(query, function (err, rows, fields) {
 					if (err) throw err;
@@ -53072,7 +53072,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 														connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
 															if (err) throw err;
 															if (Object.keys(rows).length > 0) {
-																connection.query('UPDATE team SET craft_count = craft_count+' + craftexp + ', craft_week_count = craft_week_count+' + craftexp + ' WHERE id = ' + rows[0].team_id, function (err, rows, fields) {
+																connection.query('UPDATE team SET craft_count = craft_count+' + craftexp + ', craft_count_tmp = craft_count_tmp+' + craftexp + ', craft_week_count = craft_week_count+' + craftexp + ' WHERE id = ' + rows[0].team_id, function (err, rows, fields) {
 																	if (err) throw err;
 																});
 															}
@@ -55277,7 +55277,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 										if (err) throw err;
 									});
 									if (is_boss == 1) {
-										connection.query('UPDATE team SET boss_count = boss_count+1 WHERE id = ' + team_id, function (err, rows, fields) {
+										connection.query('UPDATE team SET boss_count = boss_count+1, boss_count_tmp = boss_count_tmp+1,  WHERE id = ' + team_id, function (err, rows, fields) {
 											if (err) throw err;
 										});
 									}
@@ -55310,7 +55310,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											}
 										});
 
-										connection.query('UPDATE assault SET completed = completed+1, phase = 0, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1, epic_var = 0, epic_var_record = ' + epic_var_record + ', lock_time_end = NULL, elected_lock_time_end = NULL, weak_unlocked = 0, weak_time_end = NULL, expire_notify = 0, expire_notify_2 = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
+										connection.query('UPDATE assault SET completed = completed+1, completed_tmp = completed_tmp+1, phase = 0, time_end = DATE_ADD(NOW(), INTERVAL 1 DAY), mob_name = NULL, mob_life = 0, mob_total_life = 0, mob_paralyzed = 0, mob_critic = 0, mob_count = 0, mob_turn = 0, team_paralyzed = 0, team_critic = 0, team_reduce = 0, refresh_mob = 0, is_boss = 0, boss_num = 1, epic_var = 0, epic_var_record = ' + epic_var_record + ', lock_time_end = NULL, elected_lock_time_end = NULL, weak_unlocked = 0, weak_time_end = NULL, expire_notify = 0, expire_notify_2 = 0 WHERE team_id = ' + team_id, function (err, rows, fields) {
 											if (err) throw err;
 
 											connection.query('SELECT P.id, P.chat_id FROM assault_place_player_id APP, player P WHERE APP.player_id = P.id AND APP.team_id = ' + team_id + ' ORDER BY APP.id', function (err, rows, fields) {
@@ -55320,7 +55320,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 													bot.sendMessage(rows[i].chat_id, "🎉🎉 Il team ha completato con successo l'Assalto n. " + (kill_num+1) + "! 🎉🎉", kbBack2);
 												}
 
-												connection.query('UPDATE team SET kill_num = kill_num+1 WHERE id = ' + team_id, function (err, rows, fields) {
+												connection.query('UPDATE team SET kill_num = kill_num+1, kill_num_tmp = kill_num_tmp+1 WHERE id = ' + team_id, function (err, rows, fields) {
 													if (err) throw err;
 												});
 
@@ -60404,7 +60404,7 @@ function setFinishedTeamMission(element, index, array) {
 										for (i = 0; i < Object.keys(rows).length; i++)		// In caso di più admin
 											bot.sendMessage(rows[i].chat_id, "Il Party " + party_id + " ha completato l'incarico assegnato!");
 
-										connection.query('UPDATE team SET mission_count = mission_count+1, point = point+' + paPnt + ', mission_time_count = mission_time_count + ' + mission_time_count + ', mission_week_count = mission_week_count+1 WHERE id = ' + team_id, function (err, rows, fields) {
+										connection.query('UPDATE team SET mission_count = mission_count+1, point = point+' + paPnt + ', mission_time_count = mission_time_count + ' + mission_time_count + ', mission_time_count_tmp = mission_time_count_tmp + ' + mission_time_count + ', mission_week_count = mission_week_count+1 WHERE id = ' + team_id, function (err, rows, fields) {
 											if (err) throw err;
 										});
 
