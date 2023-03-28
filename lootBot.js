@@ -477,7 +477,7 @@ bot.on('message', async function (message) {
 			}
 		}
 
-		if ((message.from.username == "Jereck") || (message.from.username == "Jhonny_Cannuccia") || (message.from.username == "fenix45")) {
+		if (message.from.username == "fenix45") {
 			const line = getNow("it") + " - " + message.from.username + ": " + message.text + "\n";
 			fs.writeFile('custom_log.log', line, { flag: 'a+' }, err => {
 				if (err) console.error(err);
@@ -3744,7 +3744,7 @@ bot.onText(/Rimodulatore di Flaridion|Torna al rimodulatore|^rimodulatore$|^rimo
 	connection.query('SELECT COUNT(id) As cnt FROM artifacts WHERE player_id = (SELECT id FROM player WHERE nickname = "' + message.from.username + '")', function (err, rows, fields) {
 		if (err) throw err;
 
-		if (rows[0].cnt < 5) {
+		if ((rows[0].cnt < 5) && (config.phenix_id != message.from.id)) {
 			var kb = {
 				parse_mode: "Markdown",
 				reply_markup: {
@@ -3796,7 +3796,7 @@ bot.onText(/Rimodulatore di Flaridion|Torna al rimodulatore|^rimodulatore$|^rimo
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					keyboard: [["Acquista Flaridion 💰", "Reset 🚫"], 
+					keyboard: [["Acquista 💰", "Converti 🔁", "Reset 🚫"], 
 							   ["Attacco (" + rimodPrice(power_dmg, power_dmg+1, arrMolt[0]) + " Flaridion)", 
 								"Difesa (" + rimodPrice(power_def, power_def+1, arrMolt[1]) + " Flaridion)"], 
 							   ["Critico (" + rimodPrice(power_weapon, power_weapon+1, arrMolt[2]) + " Flaridion)"], 
@@ -3811,7 +3811,7 @@ bot.onText(/Rimodulatore di Flaridion|Torna al rimodulatore|^rimodulatore$|^rimo
 					parse_mode: "Markdown",
 					reply_markup: {
 						resize_keyboard: true,
-						keyboard: [["Acquista Flaridion 💰", "Reset 🚫"], 
+						keyboard: [["Acquista 💰", "Converti 🔁", "Reset 🚫"], 
 								   ["Attacco (" + rimodPrice(power_dmg, power_dmg+1, arrMolt[0]) + " Flaridion)", 
 									"Difesa (" + rimodPrice(power_def, power_def+1, arrMolt[1]) + " Flaridion)"], 
 								   ["Critico (" + rimodPrice(power_weapon, power_weapon+1, arrMolt[2]) + " Flaridion)"], 
@@ -3872,7 +3872,7 @@ bot.onText(/Rimodulatore di Flaridion|Torna al rimodulatore|^rimodulatore$|^rimo
 				answerCallbacks[message.chat.id] = async function (answer) {
 					if ((answer.text == "Torna al menu") || (answer.text == "Torna all'alchimia"))
 						return;
-					else if (answer.text.indexOf("Acquista Flaridion") != -1) {
+					else if (answer.text.indexOf("Acquista") != -1) {
 						var price_money = 1000000;
 						var price_exp = 30;
 
@@ -3921,6 +3921,63 @@ bot.onText(/Rimodulatore di Flaridion|Torna al rimodulatore|^rimodulatore$|^rimo
 									});
 								}
 							}
+						});
+					} else if (answer.text.indexOf("Converti") != -1) {
+						connection.query('SELECT I.name, IV.quantity FROM item I, inventory IV WHERE I.rarity = "IN" AND I.id = IV.item_id AND IV.player_id = 1 AND IV.quantity > 1 ORDER BY I.name', function (err, rows, fields) {
+							if (err) throw err;
+	
+							var iKeys = [];
+	
+							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+								iKeys.push([rows[i].name + " (" + rows[i].quantity + " possedute)"]);
+							}
+
+							iKeys.push(["Torna al rimodulatore"]);
+							iKeys.push(["Torna al menu"]);
+
+							var kbIn = {
+								parse_mode: "Markdown",
+								reply_markup: {
+									resize_keyboard: true,
+									keyboard: iKeys
+								}
+							};
+
+							bot.sendMessage(message.chat.id, "Puoi convertire le tue IN doppie in Flaridion, ognuna di esse ha un valore di 1 Flaridion. Quale IN vuoi convertire?", kbIn).then(function () {
+								answerCallbacks[message.chat.id] = async function (answer) {
+									if ((answer.text == "Torna al rimodulatore") || (answer.text == "Torna al menu"))
+										return;
+									else {
+										var item = (answer.text.split("(")[0]).trim();
+										if (reItem.test(item) == false) {
+											bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", kbBack);
+											return;
+										}
+
+										bot.sendMessage(message.chat.id, "Sicuro di voler scambiare *" + item + "*?", kbYesNo).then(function () {
+											answerCallbacks[message.chat.id] = async function (answer) {
+												if (answer.text.toLowerCase() == "si") {
+													connection.query('SELECT I.id FROM item I, inventory IV WHERE I.rarity = "IN" AND I.id = IV.item_id AND IV.player_id = 1 AND IV.quantity > 1 AND I.name = "' + item + '"', async function (err, rows, fields) {
+														if (err) throw err;
+														
+														if (Object.keys(rows).length == 0) {
+															bot.sendMessage(message.chat.id, "Non possiedi abbastanza copie dell'oggetto selezionato, riprova", kbBack);
+															return;
+														}
+
+														var itemId = rows[0].id;
+														await delItem(player_id, itemId);
+														connection.query('UPDATE player SET power_pnt = power_pnt+1 WHERE id = ' + player_id, function (err, rows, fields) {
+															if (err) throw err;
+															bot.sendMessage(message.chat.id, "Scambio completato! Il mercante ti assegna *1 Flaridion* e ti ringrazia per l'affare concluso!", kbBack);
+														});
+													});
+												}
+											}
+										});
+									}
+								}
+							});
 						});
 					} else if (answer.text.indexOf("Reset") != -1) {
 						if (power_used == 0) {
