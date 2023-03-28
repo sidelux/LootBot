@@ -1,0 +1,26 @@
+server {
+	listen 8443 default_server;
+	listen [::]:8443 default_server;
+
+	ssl on;
+        ssl_certificate /etc/ssl/fenixweb/fenixweb_nginx.crt;
+        ssl_certificate_key /etc/ssl/fenixweb/fenixweb.key;
+
+	root /var/www/html;
+
+	index index.html index.htm index.nginx-debian.html;
+
+	server_name _;
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+
+	location /loot {
+        proxy_pass http://localhost:25001;
+    }
+
+	location /plus {
+        proxy_pass http://localhost:25002;
+    }
+}

@@ -2100,7 +2100,7 @@ bot.onText(/^\/token/, function (message) {
 bot.onText(/^\/comandigruppo/, function (message) {
 	bot.sendMessage(message.chat.id, 'Questi comandi sono utilizzabili solo dagli amministratori, visualizza un riepilogo con /riassunto\n\n' +
 		'*Benvenuto*\n' +
-		'/setwelcome testo - Imposta il testo di benvenuto, usa \\n per andare a capo (massimo 1024 caratteri)\n' +
+		'/setwelcome testo - Imposta il testo di benvenuto, usa #n# per andare a capo (massimo 1024 caratteri)\n' +
 		'/welcome on-off - Abilita o disabilita il messaggio di benvenuto\n' +
 		'\n*Variabili disponibili*:\n' +
 		'#giocatore# - #livello# - #rinascita# - #iscritto# - #drago#\n' +
@@ -2134,9 +2134,8 @@ bot.onText(/^\/riassunto/, function (message, match) {
 				if (err) throw err
 				if (Object.keys(rows).length > 0) {
 					let welcome_text = rows[0].welcome_text
-					if (welcome_text == null) {
+					if (welcome_text == null)
 						welcome_text = 'Non impostato'
-					}
 					const welcome = (rows[0].welcome) ? '✅' : '❌'
 					const level = (rows[0].level) ? '✅' : '❌'
 					const min_lev = rows[0].min_lev
@@ -2149,7 +2148,7 @@ bot.onText(/^\/riassunto/, function (message, match) {
 					const compact = (rows[0].compact) ? '✅' : '❌'
 
 					bot.sendMessage(message.chat.id, '<b>Impostazioni gruppo:</b>\n' +
-						'Messaggio di benvenuto: ' + welcome_text + '\n' +
+						'Messaggio di benvenuto: ' + welcome_text.replace("#n#", "\nn") + '\n' +
 						'Benvenuto: ' + welcome + '\n' +
 						'Filtro livello: ' + level + ' (' + min_lev + '-' + max_lev + ')\n' +
 						'Filtro bannato: ' + kickban + '\n' +
@@ -7376,9 +7375,10 @@ bot.onText(/^\/statoincarichi/, function (message, match) {
 })
 
 bot.onText(/^\/statolotteria (.+)|^\/statolotteria/, function (message, match) {
-	let nickname = mysql_real_escape_string(match[1]);
+	let nickname = match[1];
 	if ((nickname == undefined) || (nickname == '')) { nickname = message.from.username }
 
+	nickname = mysql_real_escape_string(nickname);
 	nickname = nickname.replace('@', '')
 
 	var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
@@ -11206,7 +11206,7 @@ function checkStatus(message, nickname, accountid, type) {
 			}
 
 			if (type == 0) {
-				let welcome = rows[0].welcome_text
+				let welcome = rows[0].welcome_text.replace("#n#", "\\n");
 				const on = rows[0].welcome
 
 				if ((on == 1) && (exist == 1) && (welcome != null)) {

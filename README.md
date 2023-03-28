@@ -10,10 +10,11 @@ Il codice è ora accessibile a tutti, questa decisione è stata presa con lo sco
 
 Il codice è stato scritto ormai nel lontano 2016, quando il creatore era alle prime armi con Node Js, di conseguenza è logico trovare molte righe e metodi di lavoro non appropriati o non aggiornati.
 
-Per installarlo nel proprio ambiente è necessario procedere secondo i seguenti passi:
-- È necessario installare i pacchetti node con il comando npm install.
-- Il file config va rinominato rimuovendo la parte dopo il trattino basso, inserendo tutti i token dei bot necessari per quanto riguarda le funzionalità che si vogliono utilizzare. E' per esempio possibile anche solo utilizzare quelli del bot principale (Loot Game Bot) e quelli del bot di supporto (Loot Plus Bot) ignorando gli altri. Inoltre va inserito il proprio id telegram.
+Per avviarlo nel proprio ambiente è necessario procedere secondo i seguenti passi:
+- Installare i pacchetti node con il comando npm install.
+- Il file config va rinominato rimuovendo la parte dopo il trattino basso, inserendo tutti i token dei bot necessari per quanto riguarda le funzionalità che si vogliono utilizzare. È per esempio possibile anche solo utilizzare quelli del bot principale (Loot Game Bot) e quelli del bot di supporto (Loot Plus Bot) ignorando gli altri. I dettagli sono presenti direttamente nel file, come commenti.
 - Dopo di che bisogna importare la struttura del database in un ambiente MySql.
+- Infine è necessario configurare nginx come proxy utilizzando il file di configurazione fornito, aggiungendo un certificato valido ed una chiave.
 - È consigliato utilizzare un gestore di processi come PM2 per far partire i vari bot.
 
 È presente anche la LootBotApi accessibile via web nella [relativa repository](https://github.com/sidelux/LootBotApi).
