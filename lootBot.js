@@ -239,6 +239,10 @@ var j12 = Schedule.scheduleJob('*/10 * * * *', function () {	// ogni 10 min
 	checkBoostStoreNotification();
 });
 
+var j13 = Schedule.scheduleJob('0 0 1 */6 *', function () {	// ogni 6 mesi
+	resetHallofFame();
+});
+
 callNTimes(20000, function () { //20 secondi
 	if (checkDragonTopOn == 1)
 		checkDragonSearch();
@@ -57197,6 +57201,15 @@ function resetTeamWeekly() {
 
 function resetGnomorra() {
 	connection.query('UPDATE event_gnomorra SET battle_limit = 0, practice_limit = 0', function (err, rows, fields) {
+		if (err) throw err;
+	});
+}
+
+function resetHallofFame() {
+	connection.query('UPDATE team SET mission_time_count_tmp = 0, craft_count_tmp = 0, boss_count_tmp = 0, kill_num_tmp = 0, dungeon_room_count_tmp = 0', function (err, rows, fields) {
+		if (err) throw err;
+	});
+	connection.query('UPDATE assault SET completed_tmp = 0', function (err, rows, fields) {
 		if (err) throw err;
 	});
 }
