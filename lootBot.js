@@ -27407,7 +27407,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [["Riprendi battaglia"],["Torna al menu"]]
+			keyboard: [["Riprendi battaglia"], ["Torna al menu"]]
 		}
 	};
 
@@ -27415,7 +27415,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [["Torna all'assalto"],["Torna al menu"]]
+			keyboard: [["Torna all'assalto"], ["Torna al menu"]]
 		}
 	};
 
@@ -27423,7 +27423,15 @@ bot.onText(/riprendi battaglia/i, function (message) {
 		parse_mode: "HTML",
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [["Incrementi effettuati"],["Torna all'assalto"],["Torna al menu"]]
+			keyboard: [["Incrementi effettuati"], ["Torna all'assalto"], ["Torna al menu"]]
+		}
+	};
+
+	var kbBackIncrem = {
+		parse_mode: "HTML",
+		reply_markup: {
+			resize_keyboard: true,
+			keyboard: [["Riprendi battaglia"], ["Incremento"], ["Torna al menu"]]
 		}
 	};
 
@@ -29633,7 +29641,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																	bot.sendMessage(player[i].chat_id, final_report, html);
 
 																setTimeout(function () {
-																	bot.sendMessage(message.chat.id, "Turno concluso!", kbBack);
+																	bot.sendMessage(message.chat.id, "Turno concluso!", kbBackIncrem);
 																}, 500);
 
 																// Salvo epicità
