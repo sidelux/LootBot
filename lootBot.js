@@ -9405,29 +9405,27 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											var weapon_critical3 = (bag[0].critical3 == null ? "0" : bag[0].critical3);
 											var rand = Math.round(getRandomArbitrary(1, 3));
 											if (rand == 1) {
-												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical1 + " AND power > 0 AND rarity = '" + rarity + "' ORDER BY RAND()");
+												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical1 + " AND power > 1 AND rarity = '" + rarity + "' ORDER BY RAND()");
 												if (Object.keys(item).length == 0) {
-													// se non trova a causa della rarità, riprova senza il filtro
-													item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical1 + " AND power > 0 ORDER BY RAND()");
+													// se non trova a causa della rarità, riprova senza il filtro, esclude oggetti necro
+													item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical1 + " AND power > 1 ORDER BY RAND()");
 												}
 											} else if (rand == 2) {
-												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < 0 AND rarity = '" + rarity + "' ORDER BY RAND()");
+												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < -1 AND rarity = '" + rarity + "' ORDER BY RAND()");
 												if (Object.keys(item).length == 0) {
-													// se non trova a causa della rarità, riprova senza il filtro
-													item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < 0 ORDER BY RAND()");
+													// se non trova a causa della rarità, riprova senza il filtro, esclude oggetti necro
+													item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical2 + " AND power_armor < -1 ORDER BY RAND()");
 												}
 											} else {
-												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < 0 AND rarity = '" + rarity + "' ORDER BY RAND()");
+												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < -1 AND rarity = '" + rarity + "' ORDER BY RAND()");
 												if (Object.keys(item).length == 0) {
-													// se non trova a causa della rarità, riprova senza il filtro
-													item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < 0 ORDER BY RAND()");
+													// se non trova a causa della rarità, riprova senza il filtro, esclude oggetti necro
+													item = await connection.queryAsync("SELECT id FROM item WHERE critical > " + weapon_critical3 + " AND power_shield < -1 ORDER BY RAND()");
 												}
 											}
 										}
-										if ((item == undefined) || (item[0] == undefined)) {
-											console.log("item non definito, map_equip_change_power: " + map_equip_change_power + ", crit1: " + weapon_critical1 + ", crit2: " + weapon_critical2 + ", crit3: " + weapon_critical3);
-											
-											// oggetto casuale
+										if ((item == undefined) || (item[0] == undefined)) {											
+											// oggetto casuale tra tutti
 											var rand = Math.round(getRandomArbitrary(1, 3));
 											if (rand == 1)
 												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > 0 AND power != 0 AND rarity = '" + rarity + "' ORDER BY RAND()");
