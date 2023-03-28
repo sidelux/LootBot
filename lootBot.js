@@ -131,7 +131,7 @@ var port = 25001;
 var options = {
 	"max_connections": 80
 }
-bot.setWebHook('https://fenixweb.net:8443' + path, options);
+bot.setWebHook(config.server + path, options);
 app.listen(port);
 
 app.use(express.json());

@@ -62,7 +62,7 @@ const options = {
 	allowed_updates: ['inline_query', 'chosen_inline_result', 'callback_query'],
 	max_connections: 80
 }
-bot.setWebHook('https://fenixweb.net:8443' + path, options)
+bot.setWebHook(config.server + path, options)
 app.listen(port)
 
 app.use(express.json())

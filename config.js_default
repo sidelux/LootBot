@@ -1,5 +1,6 @@
 var config = {};
 
+config.server = "";             // server web in entrata (es. https://fenixweb.net:8443)
 config.dbhost = "";             // host database
 
 config.dbuser = "";             // utente database
