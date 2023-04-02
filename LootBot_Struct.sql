@@ -223,6 +223,7 @@ CREATE TABLE `assault` (
   `weak_time_end` timestamp NULL DEFAULT NULL,
   `weak_unlocked` int(11) NOT NULL DEFAULT 0,
   `completed` int(11) NOT NULL DEFAULT 0,
+  `completed_tmp` int(11) NOT NULL DEFAULT 0,
   `lost` int(11) NOT NULL DEFAULT 0,
   `mob_name` varchar(64) DEFAULT NULL,
   `mob_life` int(11) NOT NULL DEFAULT 0,
@@ -2724,6 +2725,22 @@ CREATE TABLE `mission_event_text` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `mission_team_history`
+--
+
+DROP TABLE IF EXISTS `mission_team_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `mission_team_history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `team_id` int(11) NOT NULL,
+  `mission_team_id` int(11) NOT NULL,
+  `completed` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `mission_team_list`
 --
 
@@ -3638,6 +3655,11 @@ CREATE TABLE `team` (
   `mission_day_count` int(11) NOT NULL DEFAULT 0,
   `mission_week_count` int(11) NOT NULL DEFAULT 0,
   `mission_time_count` int(11) NOT NULL DEFAULT 0,
+  `mission_time_count_tmp` int(11) NOT NULL DEFAULT 0,
+  `craft_count_tmp` int(11) NOT NULL DEFAULT 0,
+  `boss_count_tmp` int(11) NOT NULL DEFAULT 0,
+  `kill_num_tmp` int(11) NOT NULL DEFAULT 0,
+  `dungeon_room_count_tmp` int(11) NOT NULL DEFAULT 0,
   `boss_respawn` timestamp NULL DEFAULT NULL,
   `closed` int(3) NOT NULL DEFAULT 0,
   `details` int(11) NOT NULL DEFAULT 0,

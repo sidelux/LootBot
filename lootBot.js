@@ -3923,7 +3923,7 @@ bot.onText(/Rimodulatore di Flaridion|Torna al rimodulatore|^rimodulatore$|^rimo
 							}
 						});
 					} else if (answer.text.indexOf("Converti") != -1) {
-						connection.query('SELECT I.name, IV.quantity FROM item I, inventory IV WHERE I.rarity = "IN" AND I.id = IV.item_id AND IV.player_id = 1 AND IV.quantity > 1 ORDER BY I.name', function (err, rows, fields) {
+						connection.query('SELECT I.name, IV.quantity FROM item I, inventory IV WHERE I.rarity = "IN" AND I.id = IV.item_id AND IV.player_id = ' + player_id + ' AND IV.quantity > 1 ORDER BY I.name', function (err, rows, fields) {
 							if (err) throw err;
 	
 							var iKeys = [];
@@ -3957,7 +3957,7 @@ bot.onText(/Rimodulatore di Flaridion|Torna al rimodulatore|^rimodulatore$|^rimo
 										bot.sendMessage(message.chat.id, "Sicuro di voler scambiare *" + item + "*?", kbYesNo).then(function () {
 											answerCallbacks[message.chat.id] = async function (answer) {
 												if (answer.text.toLowerCase() == "si") {
-													connection.query('SELECT I.id FROM item I, inventory IV WHERE I.rarity = "IN" AND I.id = IV.item_id AND IV.player_id = 1 AND IV.quantity > 1 AND I.name = "' + item + '"', async function (err, rows, fields) {
+													connection.query('SELECT I.id FROM item I, inventory IV WHERE I.rarity = "IN" AND I.id = IV.item_id AND IV.player_id = ' + player_id + ' AND IV.quantity > 1 AND I.name = "' + item + '"', async function (err, rows, fields) {
 														if (err) throw err;
 														
 														if (Object.keys(rows).length == 0) {

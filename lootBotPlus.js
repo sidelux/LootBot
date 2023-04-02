@@ -9012,11 +9012,6 @@ bot.onText(/^\/ricerca (.+)|^\/ricerca/, async function (message, match) {
 	}
 	oggetto = mysql_real_escape_string(oggetto);
 
-	if (reItem.test(oggetto) == false) {
-		bot.sendMessage(message.chat.id, 'Oggetto non valido, riprova')
-		return
-	}
-
 	const o = oggetto.trim()
 	let oggetti = []
 	let ogg = ''
