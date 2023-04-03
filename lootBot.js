@@ -24522,12 +24522,12 @@ bot.onText(/^storico degli incarichi/i, function (message) {
 			}
 			var team_id = rows[0].team_id;
 
-			connection.query('SELECT id, title FROM mission_team_list', function (err, rows, fields) {
+			connection.query('SELECT id, title FROM mission_team_list', async function (err, rows, fields) {
 				if (err) throw err;
 
 				var text = "*Incarichi completati*:";
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-					var completed = connection_async.query('SELECT COUNT(id) As cnt FROM mission_team_history WHERE mission_team_id = ' + rows[i].id + ' AND team_id = ' + team_id);
+					var completed = await connection.queryAsync('SELECT COUNT(id) As cnt FROM mission_team_history WHERE mission_team_id = ' + rows[i].id + ' AND team_id = ' + team_id);
 					text += "\n> " + rows[i].title + ": " + completed[0].cnt;
 				}
 

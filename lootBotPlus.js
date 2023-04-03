@@ -6212,7 +6212,7 @@ bot.onText(/^\/offri/i, function (message) {
 		bot.sendMessage(message.from.id, 'Il parametro acquirente è obbligatorio')
 		return
 	}
-	var reg = new RegExp("^[a-zA-Z_]{1,100}$");
+	var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
 	if (reg.test(buyer) == false) {
 		bot.sendMessage(message.chat.id, "Acquirente non valido, riprova");
 		return;
