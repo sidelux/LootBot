@@ -57307,7 +57307,7 @@ function autoMana() {
 						extra_mana = " (aumentato grazie al bonus globale)";
 					} else if (await getPastGlobalStatus() == 2) {
 						rows[i].quantity = Math.round(rows[i].quantity/2);
-						extra_mana = " (ridotto a causa del bonus globale)";
+						extra_mana = " (ridotto a causa del malus globale)";
 					}
 				}
 
