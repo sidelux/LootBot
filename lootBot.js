@@ -3410,13 +3410,13 @@ bot.onText(/^vetrinetta|torna alla vetrinetta|^vtr$/i, function (message) {
 									disable_web_page_preview: true,
 									reply_markup: {
 										resize_keyboard: true,
-										keyboard: [["Attiva"], ["Butta"], ["Torna al menu"]]
+										keyboard: [["Attiva"], ["Butta"], ["Torna alla Vetrinetta"], ["Torna al menu"]]
 									}
 								};
 
 								bot.sendMessage(message.chat.id, "*" + boost_name + "* (" + boost_mission + " utilizzi)" + extra + "\n_" + boost_desc + "_\n\n" + pre_text, kb2).then(function () {
 									answerCallbacks[message.chat.id] = async function (answer) {
-										if (answer.text == "Torna al menu")
+										if ((answer.text == "Torna al menu") || (answer.text == "Torna al Vetrinetta"))
 											return;
 
 										if (answer.text == "Attiva") {
