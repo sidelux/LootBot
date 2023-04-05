@@ -881,6 +881,11 @@ bot.onText(/^\/checkevents/, function(message) {
 		bot.sendMessage(message.chat.id, getEvents());
 });
 
+bot.onText(/^\/checkglobal/, async function(message) {
+	if (message.from.id == config.phenix_id)
+		bot.sendMessage(message.chat.id, await getCurrentGlobal());
+});
+
 bot.onText(/^\/reloadevents/, function(message) {
 	if (message.from.id == config.phenix_id) {
 		reloadEvents();
@@ -8254,8 +8259,8 @@ bot.onText(/attacca!/i, function (message) {
 	});
 });
 
-function addScrap(player_id, scrap) {
-	if (getCurrentGlobal() == 16)
+async function addScrap(player_id, scrap) {
+	if (await getCurrentGlobal() == 16)
 		globalAchievement(player_id, scrap);
 }
 
@@ -8728,10 +8733,10 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											}
 										}
 
-										connection.query('UPDATE map_lobby SET money = money-' + price + ', last_obj = NULL, last_obj_val = NULL' + item_query + scrap_query + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+										connection.query('UPDATE map_lobby SET money = money-' + price + ', last_obj = NULL, last_obj_val = NULL' + item_query + scrap_query + ' WHERE player_id = ' + player_id, async function (err, rows, fields) {
 											if (err) throw err;
 											if (lobby_training == 0)
-												addScrap(player_id, addScrapCnt);
+												await addScrap(player_id, addScrapCnt);
 											bot.sendMessage(message.chat.id, "Hai completato l'acquisto!" + text, kbBack);
 										});
 									} else if (answer.text.toLowerCase().indexOf("no") != -1) {
@@ -9278,7 +9283,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											addScrapCnt = 1;
 										}
 										if (lobby_training == 0)
-											addScrap(player_id, addScrapCnt);
+											await addScrap(player_id, addScrapCnt);
 										text += "Hai trovato uno <b>Strano Congegno</b> con al suo interno un " + mapIdToSym(9) + " <b>Rottame</b>, utile per gli scambi e per i combattimenti!";
 										toClear = 1;
 									} else if (objId == 10) {		// zona bruciata
@@ -9423,7 +9428,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										var query = 'UPDATE map_lobby SET money = money + ' + money + ', battle_turn_start = NOW(), moves_left = ' + moves_left + ', battle_timeout = "' + long_date_turn + '", battle_timeout_limit = "' + long_date_battle + '", posX = ' + posX + ', posY = ' + posY + item_query + last_obj_query + scrap_query + enemy_query + pulse_query + life_query + boost_query + ' WHERE player_id = ' + player_id;
 									}
 									if (lobby_training == 0)
-										addScrap(player_id, addScrapCnt);
+										await addScrap(player_id, addScrapCnt);
 
 									connection.query(query, function (err, rows, fields) {
 										if (err) throw err;
@@ -16672,12 +16677,12 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																						if (boss_battle == 1)
 																							money = money*3;
 
-																						if ((getCurrentGlobal() == 10) && (global_end == 1)) {
-																							if (getPastGlobalStatus() == 1) {
+																						if ((await getCurrentGlobal() == 10) && (global_end == 1)) {
+																							if (await getPastGlobalStatus() == 1) {
 																								money = money*2;
 																								chest++;
 																								await addChest(player_id, chest_id);
-																							} else if (getPastGlobalStatus() == 2) {
+																							} else if (await getPastGlobalStatus() == 2) {
 																								money = Math.round(money/2);
 																							}
 																						}
@@ -16731,7 +16736,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																						}
 
 																						setAchievement(player_id, 3, 1);
-																						if (getCurrentGlobal() == 10)
+																						if (await getCurrentGlobal() == 10)
 																							globalAchievement(player_id, 1);
 
 																						connection.query('UPDATE player SET mob_count = mob_count+1 WHERE id = ' + player_id, function (err, rows, fields) {
@@ -34043,7 +34048,7 @@ bot.onText(/Miniere di Mana|Raccolta|^miniera$|^miniere$/i, function (message) {
 					var diff = Math.round(((now - time_creation) / 1000) / 60);	// minuti
 					diff = Math.abs(diff);
 
-					connection.query('SELECT rate, mana_name, type FROM event_mana_zone WHERE id = ' + rows[0].zone_id, function (err, rows, fields) {
+					connection.query('SELECT rate, mana_name, type FROM event_mana_zone WHERE id = ' + rows[0].zone_id, async function (err, rows, fields) {
 						if (err) throw err;
 
 						var rate = rows[0].rate;
@@ -34071,11 +34076,11 @@ bot.onText(/Miniere di Mana|Raccolta|^miniera$|^miniere$/i, function (message) {
 
 						var extra_mana = "";
 						// modifica anche il ritiro automatico
-						if ((getCurrentGlobal() == 12) && (global_end == 1)) {
-							if (getPastGlobalStatus() == 1) {
+						if ((await getCurrentGlobal() == 12) && (global_end == 1)) {
+							if (await getPastGlobalStatus() == 1) {
 								quantity = quantity*2;
 								extra_mana = " (aumentata grazie al bonus globale)";
-							} else if (getPastGlobalStatus() == 2) {
+							} else if (await getPastGlobalStatus() == 2) {
 								quantity = Math.round(quantity/2);
 								extra_mana = " (ridotta a causa al bonus globale)";
 							}
@@ -36951,10 +36956,10 @@ bot.onText(/utilizza polvere/i, function (message) {
 
 					var extra = "";
 					// modifica sotto
-					if ((getCurrentGlobal() == 9) && (global_end == 1)) {
-						if (getPastGlobalStatus() == 1)
+					if ((await getCurrentGlobal() == 9) && (global_end == 1)) {
+						if (await getPastGlobalStatus() == 1)
 							extra = "\n*Il prezzo totale è dimezzato grazie al bonus globale!*";
-						else if (getPastGlobalStatus() == 2)
+						else if (await getPastGlobalStatus() == 2)
 							extra = "\n*Il prezzo totale è raddoppiato a causa del malus globale!*";
 					}
 
@@ -36969,7 +36974,7 @@ bot.onText(/utilizza polvere/i, function (message) {
 								return;
 							}
 
-							connection.query('SELECT id, estimate, craftable, rarity, name FROM item WHERE rarity IN ("R","UR","L","E") AND power = 0 AND power_shield = 0 AND power_armor = 0 AND dragon_power = 0 AND name = "' + item_sel + '"', function (err, rows, fields) {
+							connection.query('SELECT id, estimate, craftable, rarity, name FROM item WHERE rarity IN ("R","UR","L","E") AND power = 0 AND power_shield = 0 AND power_armor = 0 AND dragon_power = 0 AND name = "' + item_sel + '"', async function (err, rows, fields) {
 								if (err) throw err;
 								if (Object.keys(rows).length == 0) {
 									bot.sendMessage(message.chat.id, "L'oggetto non esiste, la rarità non è consentita o stai cercando di creare un equipaggiamento", alchemy);
@@ -36997,10 +37002,10 @@ bot.onText(/utilizza polvere/i, function (message) {
 									nec += Math.round(estimate / 10000);
 								}
 
-								if ((getCurrentGlobal() == 9) && (global_end == 1)) {
-									if (getPastGlobalStatus() == 1)
+								if ((await getCurrentGlobal() == 9) && (global_end == 1)) {
+									if (await getPastGlobalStatus() == 1)
 										nec = Math.round(nec/2);
-									else if (getPastGlobalStatus() == 2)
+									else if (await getPastGlobalStatus() == 2)
 										nec = nec*2;
 								}
 
@@ -39590,10 +39595,10 @@ bot.onText(/emporio/i, function (message) {
 							if (blackfriday == 1)
 								iKeys.push(["Compra Gemma (" + formatNumber(parseInt(300000 - Math.round((300000 / 100) * 50))) + " §)"]);
 							else {
-								if ((getCurrentGlobal() == 11) && (global_end == 1)) {
-									if (getPastGlobalStatus() == 1)
+								if ((await getCurrentGlobal() == 11) && (global_end == 1)) {
+									if (await getPastGlobalStatus() == 1)
 										iKeys.push(["Compra Gemma (225.000 §)"]);
-									else if (getPastGlobalStatus() == 2)
+									else if (await getPastGlobalStatus() == 2)
 										iKeys.push(["Compra Gemma (375.000 §)"]);
 								} else {
 									iKeys.push(["Compra Gemma (300.000 §)"]);
@@ -40750,10 +40755,10 @@ bot.onText(/compra/i, function (message) {
 				}
 
 				var price_gem = 300000;
-				if ((getCurrentGlobal() == 11) && (global_end == 1)) {
-					if (getPastGlobalStatus() == 1)
+				if ((await getCurrentGlobal() == 11) && (global_end == 1)) {
+					if (await getPastGlobalStatus() == 1)
 						price_gem = 225000;
-					else if (getPastGlobalStatus() == 2)
+					else if (await getPastGlobalStatus() == 2)
 						price_gem = 375000;
 				}
 
@@ -45841,7 +45846,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 													}
 
 													bot.sendMessage(message.chat.id, "La tua combinazione di rune (" + my_comb + ") è migliore di quella del guardiano (" + combi + ")!\nIn una stanzetta all'interno del rifugio hai trovato un sacchettino contenente " + moneytxt + expText + extra, kbBack);
-													if (getCurrentGlobal() == 19)
+													if (await getCurrentGlobal() == 19)
 														globalAchievement(player_id, 1);
 
 													if (toGnome_notification == 1)
@@ -47405,7 +47410,7 @@ bot.onText(/missione|^msn$/i, function (message) {
 
 					var duration = result;	// in secondi
 
-					connection.query('SELECT name, description, id As mission_id FROM mission WHERE chest_id = ' + chest_id + ' ORDER BY RAND()', function (err, rows, fields) {
+					connection.query('SELECT name, description, id As mission_id FROM mission WHERE chest_id = ' + chest_id + ' ORDER BY RAND()', async function (err, rows, fields) {
 						if (err) throw err;
 						var name = rows[0].name;
 						var mission_id = rows[0].mission_id;
@@ -47427,11 +47432,11 @@ bot.onText(/missione|^msn$/i, function (message) {
 						else
 							extra1 = "❌";
 
-						if ((getCurrentGlobal() == 18) && (global_end == 1)) {
-							if (getPastGlobalStatus() == 1) {
+						if ((await getCurrentGlobal() == 18) && (global_end == 1)) {
+							if (await getPastGlobalStatus() == 1) {
 								name += " (Ridotta per bonus globale)";
 								duration_reduce += 25;
-							} else if (getPastGlobalStatus() == 2) {
+							} else if (await getPastGlobalStatus() == 2) {
 								name += " (Aumentata per malus globale)";
 								duration_extend += 25;
 							}
@@ -48176,7 +48181,7 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 										double = 1;
 								}
 
-								connection.query(extra + 'SELECT name, duration FROM travel', function (err, rows, fields) {
+								connection.query(extra + 'SELECT name, duration FROM travel', async function (err, rows, fields) {
 									if (err) throw err;
 									var travel_time = "";
 									for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
@@ -48184,10 +48189,10 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 										if (rows[i].name.indexOf("Cava") != -1) {
 											if ((class_id == 7) && (reborn > 1))
 												rows[i].duration -= rows[i].duration*0.05;
-											if ((getCurrentGlobal() == 13) && (global_end == 1)) {
-												if (getPastGlobalStatus() == 1)
+											if ((await getCurrentGlobal() == 13) && (global_end == 1)) {
+												if (await getPastGlobalStatus() == 1)
 													rows[i].duration -= rows[i].duration*0.2;
-												else if (getPastGlobalStatus() == 2)
+												else if (await getPastGlobalStatus() == 2)
 													rows[i].duration += rows[i].duration*0.2;
 											}
 										}
@@ -48274,7 +48279,7 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 																return;
 															}
 
-															connection.query('SELECT * FROM cave WHERE name = "' + viaggio + '"', function (err, rows, fields) {
+															connection.query('SELECT * FROM cave WHERE name = "' + viaggio + '"', async function (err, rows, fields) {
 																if (err) throw err;
 																if (Object.keys(rows).length == 0) {
 																	bot.sendMessage(message.chat.id, "Cava non valida", back);
@@ -48292,10 +48297,10 @@ bot.onText(/esplorazioni|viaggi/i, function (message) {
 																	rows[0].duration -= rows[0].duration*(dragon_level/300);
 
 																	// anche sopra
-																	if ((getCurrentGlobal() == 13) && (global_end == 1)) {
-																		if (getPastGlobalStatus() == 1)
+																	if ((await getCurrentGlobal() == 13) && (global_end == 1)) {
+																		if (await getPastGlobalStatus() == 1)
 																			rows[0].duration -= rows[0].duration*0.2;
-																		else if (getPastGlobalStatus() == 2)
+																		else if (await getPastGlobalStatus() == 2)
 																			rows[0].duration += rows[0].duration*0.2;
 																	}
 
@@ -52025,7 +52030,7 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 													return;
 												}
 
-												connection.query('SELECT datetime FROM heist WHERE from_id = ' + from_id, function (err, rows, fields) {
+												connection.query('SELECT datetime FROM heist WHERE from_id = ' + from_id, async function (err, rows, fields) {
 													if (err) throw err;
 													if (Object.keys(rows).length > 0) {
 														var date = new Date(rows[0].datetime);
@@ -52068,10 +52073,10 @@ function attack(nickname, message, from_id, weapon_bonus, cost, source, global_e
 													if (crazyMode == 1)
 														totTime = Math.round(totTime / 2);
 
-													if ((getCurrentGlobal() == 16) && (global_end == 1)) {
-														if (getPastGlobalStatus() == 1)
+													if ((await getCurrentGlobal() == 16) && (global_end == 1)) {
+														if (await getPastGlobalStatus() == 1)
 															totTime = Math.round(totTime / 2);
-														else if (getPastGlobalStatus() == 2)
+														else if (await getPastGlobalStatus() == 2)
 															totTime = totTime * 2;
 													}
 
@@ -53283,7 +53288,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 															}
 														});
 
-														if (getCurrentGlobal() == 12)
+														if (await getCurrentGlobal() == 12)
 															globalAchievement(player_id, craftexp);
 														setAchievement(player_id, 10, craftexp);
 														setAchievement(player_id, 12, quantity, matR);	// id oggetto
@@ -54935,7 +54940,7 @@ function assaultIncrement(message, player_id, team_id) {
 					}
 				});
 
-				connection.query('SELECT level, max_level FROM assault_place_team, assault_place WHERE assault_place.id = assault_place_team.place_id AND team_id = ' + team_id + ' AND place_id = ' + my_place_id, function (err, rows, fields) {
+				connection.query('SELECT level, max_level FROM assault_place_team, assault_place WHERE assault_place.id = assault_place_team.place_id AND team_id = ' + team_id + ' AND place_id = ' + my_place_id, async function (err, rows, fields) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length == 0) {
@@ -54946,7 +54951,7 @@ function assaultIncrement(message, player_id, team_id) {
 
 					var val = Math.round(rows[0].level*10/rows[0].max_level); // per globale
 					
-					if (getCurrentGlobal() == 14)
+					if (await getCurrentGlobal() == 14)
 						globalAchievement(player_id, val);
 				});
 			});
@@ -55299,8 +55304,8 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 												chest7 += 3;
 										}
 
-										if ((getCurrentGlobal() == 14) && (global_end == 1)) {
-											if (getPastGlobalStatus() == 1) {
+										if ((await getCurrentGlobal() == 14) && (global_end == 1)) {
+											if (await getPastGlobalStatus() == 1) {
 												chest1 = chest1*2;
 												chest2 = chest2*2;
 												chest3 = chest3*2;
@@ -55310,7 +55315,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 												chest7 = chest7*2;
 												chest8 = chest8*2;
 												chest9 = chest9*2;
-											} else if (getPastGlobalStatus() == 2) {
+											} else if (await getPastGlobalStatus() == 2) {
 												chest1 = Math.round(chest1/2);
 												chest2 = Math.round(chest2/2);
 												chest3 = Math.round(chest3/2);
@@ -55452,7 +55457,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 										if (err) throw err;
 									});
 									if (is_boss == 1) {
-										connection.query('UPDATE team SET boss_count = boss_count+1, boss_count_tmp = boss_count_tmp+1,  WHERE id = ' + team_id, function (err, rows, fields) {
+										connection.query('UPDATE team SET boss_count = boss_count+1, boss_count_tmp = boss_count_tmp+1 WHERE id = ' + team_id, function (err, rows, fields) {
 											if (err) throw err;
 										});
 									}
@@ -57270,7 +57275,7 @@ function rebSym(reborn) {
 }
 
 function autoMana() {
-	connection.query('SELECT mana.name, class, reborn, chat_id, nickname, player_id, rate, type, ROUND(TIMESTAMPDIFF(MINUTE,time_start,NOW())/60*rate,0) As quantity, global_end FROM event_mana_status, event_mana_zone, player, mana WHERE mana.id = event_mana_zone.type AND player.id = player_id AND event_mana_status.time_start IS NOT NULL AND event_mana_status.zone_id = event_mana_zone.id', function (err, rows, fields) {
+	connection.query('SELECT mana.name, class, reborn, chat_id, nickname, player_id, rate, type, ROUND(TIMESTAMPDIFF(MINUTE,time_start,NOW())/60*rate,0) As quantity, global_end FROM event_mana_status, event_mana_zone, player, mana WHERE mana.id = event_mana_zone.type AND player.id = player_id AND event_mana_status.time_start IS NOT NULL AND event_mana_status.zone_id = event_mana_zone.id', async function (err, rows, fields) {
 		if (err) throw err;
 
 		var mana_type = "";
@@ -57296,11 +57301,11 @@ function autoMana() {
 
 				var extra_mana = "";
 				// modifiche anche il ritiro manuale
-				if ((getCurrentGlobal() == 12) && (global_end == 1)) {
-					if (getPastGlobalStatus() == 1) {
+				if ((await getCurrentGlobal() == 12) && (global_end == 1)) {
+					if (await getPastGlobalStatus() == 1) {
 						rows[i].quantity = rows[i].quantity*2;
 						extra_mana = " (aumentato grazie al bonus globale)";
-					} else if (getPastGlobalStatus() == 2) {
+					} else if (await getPastGlobalStatus() == 2) {
 						rows[i].quantity = Math.round(rows[i].quantity/2);
 						extra_mana = " (ridotto a causa del bonus globale)";
 					}
@@ -57975,7 +57980,7 @@ function setDungeonEnergy(element, index, array) {
 
 async function endDungeonRoom(player_id, boost_id, boost_mission, global_cnt = 1) {
 	setAchievement(player_id, 63, 1);
-	if (getCurrentGlobal() == 15)
+	if (await getCurrentGlobal() == 15)
 		globalAchievement(player_id, 1);
 	if (boost_id == 8) {
 		setBoost(player_id, boost_mission, boost_id);
@@ -60493,8 +60498,8 @@ function setFinishedTeamMission(element, index, array) {
 											qnt = savedQnt;
 
 											var extra = "";
-                                            if ((getCurrentGlobal() == 15) && (rows[i].global_end == 1)) {
-												if (getPastGlobalStatus() == 1) {
+                                            if ((await getCurrentGlobal() == 15) && (rows[i].global_end == 1)) {
+												if (await getPastGlobalStatus() == 1) {
 													if ((rewardStr[1] == "mana") || 
 													(rewardStr[1] == "mana1") || 
 													(rewardStr[1] == "mana2") || 
@@ -60512,7 +60517,7 @@ function setFinishedTeamMission(element, index, array) {
 														extra_val = extra_val*1000;
 													console.log("Incarico: " + rewardStr[1] + " " + extra_val);
 													extra = "\n\nQuantità incrementata di +" + extra_val + " per il bonus globale";
-												} else if (getPastGlobalStatus() == 2) {
+												} else if (await getPastGlobalStatus() == 2) {
 													if ((rewardStr[1] == "mana") || 
 													(rewardStr[1] == "mana1") || 
 													(rewardStr[1] == "mana2") || 
@@ -60555,7 +60560,7 @@ function setFinishedTeamMission(element, index, array) {
 											}
 
 											setAchievement(rows[i].id, 22, 1);
-											if (getCurrentGlobal() == 18)
+											if (await getCurrentGlobal() == 18)
 												globalAchievement(rows[i].id, mission_time_count_min);
 
 											if (rows[i].boost_id == 5) {
@@ -60582,7 +60587,7 @@ function setFinishedTeamMission(element, index, array) {
 										} else {
 											bot.sendMessage(rows[i].chat_id, "Hai completato l'incarico insieme al tuo party come richiesto da " + mandator + "!\nEcco il rapporto dell'incarico:\n<i>" + endText + "</i>\n\nNon ricevi ricompense poichè sei stato sospeso dall'amministratore", html);
 										}
-										connection.query('INSERT INTO team_mission_history (team_id, mision_team_id, completed) VALUES (' + team_id + ', ' + mission_team_id + ', 1)', function (err, rows, fields) {
+										connection.query('INSERT INTO mission_team_history (team_id, mision_team_id, completed) VALUES (' + team_id + ', ' + mission_team_id + ', 1)', function (err, rows, fields) {
 											if (err) throw err;
 										});
 										connection.query('UPDATE player SET mission_party = 0, mission_team_count = mission_team_count+1 WHERE id = ' + rows[i].id, function (err, rows, fields) {
@@ -61505,7 +61510,7 @@ async function setBattleTimeElapsed(element, index, array) {
 
 						enemy_query += ", money = money+" + money + ", scrap = scrap+" + scrap + enemy_item_query;
 						if (lobby_training == 0)
-							addScrap(enemy_id, scrap);
+							await addScrap(enemy_id, scrap);
 						query += ", life = 0, money = money-" + money + ", scrap = 0" + item_query;
 					}
 
@@ -61784,14 +61789,14 @@ function setFinishedLobbyEnd(element, index, array) {
 						trophies_count = ((lobby_total_space-pos+1)+parseInt(rows[i].kills))*multiplier;
 
 						var bonus = "";
-						if ((getCurrentGlobal() == 17) && (rows[i].global_end == 1)) {
-							if (getPastGlobalStatus() == 1) {
+						if ((await getCurrentGlobal() == 17) && (rows[i].global_end == 1)) {
+							if (await getPastGlobalStatus() == 1) {
 								var randGlobal = Math.random()*100;
 								if (randGlobal < 33) {
 									trophies_count++;
 									bonus = " 🌍";
 								}
-							} else if (getPastGlobalStatus() == 2) {
+							} else if (await getPastGlobalStatus() == 2) {
 								var randGlobal = Math.random()*100;
 								if (randGlobal < 33) {
 									trophies_count--;
@@ -61828,7 +61833,7 @@ function setFinishedLobbyEnd(element, index, array) {
 
 						if (trophies_count >= 0) {
 							trophies_query = "+" + trophies_count;
-							if (getCurrentGlobal() == 9)
+							if (await getCurrentGlobal() == 9)
 								globalAchievement(rows[i].id, trophies_count);
 						} else {
 							trophies_actual = rows[i].trophies;
@@ -63165,7 +63170,7 @@ function setFinishedMission(element, index, array) {
 						if (Object.keys(rows).length > 0)
 							abBonus = parseInt(rows[0].ability_level) * rows[0].val;
 
-						connection.query('SELECT rarity.shortname As rarity FROM mission_auto, mission, rarity WHERE mission.chest_id = rarity.id AND mission.chest_id = mission_auto.chest_id AND mission_auto.id = ' + auto_id + ' LIMIT 1', function (err, rows, fields) {
+						connection.query('SELECT rarity.shortname As rarity FROM mission_auto, mission, rarity WHERE mission.chest_id = rarity.id AND mission.chest_id = mission_auto.chest_id AND mission_auto.id = ' + auto_id + ' LIMIT 1', async function (err, rows, fields) {
 							if (err) throw err;
 							var rarity_miss = "";
 
@@ -63385,7 +63390,7 @@ function setFinishedMission(element, index, array) {
 
 								if (mission_gem == 0) {
 									getSnowball(chat_id, element.nickname, element.id, chest_id);
-									if (getCurrentGlobal() == 11)
+									if (await getCurrentGlobal() == 11)
 										globalAchievement(element.id, 1);
 								}
 								setAchievement(element.id, 1, 1);
@@ -64012,11 +64017,11 @@ async function setFinishedCave(element, index, array) {
 	let caveid = parseInt(element.cave_id) + 2;
 
 	let extra = "";
-	if ((getCurrentGlobal() == 19) && (global_end == 1)) {
-		if (getPastGlobalStatus() == 1) {
+	if ((await getCurrentGlobal() == 19) && (global_end == 1)) {
+		if (await getPastGlobalStatus() == 1) {
 			caveid += 1;
 			extra = " (aumentate grazie al bonus globale!)";
-		} else if (getPastGlobalStatus() == 2) {
+		} else if (await getPastGlobalStatus() == 2) {
 			caveid -= 1;
 			extra = " (ridotte a causa del malus globale!)";
 		}
@@ -64455,7 +64460,7 @@ function setFinishedGnomorraInvite(element, index, array) {
 };
 
 function setExp(player_id, exp) {
-	connection.query('SELECT chat_id, exp, reborn, global_end FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+	connection.query('SELECT chat_id, exp, reborn, global_end FROM player WHERE id = ' + player_id, async function (err, rows, fields) {
 		if (err) throw err;
 
 		var chat_id = rows[0].chat_id;
@@ -64503,7 +64508,7 @@ function setExp(player_id, exp) {
 		}
 
 		setAchievement(player_id, 57, exp);
-		if (getCurrentGlobal() == 17)
+		if (await getCurrentGlobal() == 17)
 			globalAchievement(player_id, exp);
 		connection.query('UPDATE player SET exp_week = exp_week+' + exp + ', exp_day = exp_day+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
@@ -64578,7 +64583,7 @@ async function addChest(player_id, chest_id, qnt = 1, shop = 0) {
 	}
 
 	if (shop == 0) {
-		if (getCurrentGlobal() == 13)
+		if (await getCurrentGlobal() == 13)
 			globalAchievement(player_id, qnt);
 	}
 }
