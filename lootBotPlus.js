@@ -4005,7 +4005,7 @@ bot.onText(/^\/negoziodesc (.+),(.+)|^\/negoziodesc/, function (message, match) 
 
 		text = capitalizeFirstLetter(text.trim())
 
-		reg = new RegExp("^[a-zA-Z0-9]{1,100}$");
+		reg = new RegExp("^[0-9]{1,100}$");
 		if (reg.test(code) == false) {
 			bot.sendMessage(message.chat.id, "Codice non valido, riprova");
 			return;
@@ -4790,6 +4790,7 @@ bot.on('callback_query', async function (message) {
 			// console.log("> C'è stato un errore di sotto...");
 			// console.log(err);
 		})
+		return;
 	}
 
 	connection.query('SELECT account_id, market_ban, money, id, holiday FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {

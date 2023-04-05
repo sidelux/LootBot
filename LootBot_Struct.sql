@@ -795,6 +795,7 @@ CREATE TABLE `config` (
   `map_conditions` int(11) NOT NULL,
   `top_season_end` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `next_event_name` varchar(32) DEFAULT NULL,
+  `global_id` int(11) NOT NULL,
   `global_eventon` int(11) NOT NULL DEFAULT 0,
   `global_eventwait` int(11) NOT NULL DEFAULT 0 COMMENT 'Raccogliendo dati',
   `global_eventhide` int(11) NOT NULL DEFAULT 0 COMMENT 'Cap non visibile',
@@ -812,7 +813,9 @@ CREATE TABLE `config` (
   `global_msg` text NOT NULL,
   `global_msg_on` int(2) NOT NULL DEFAULT 0,
   `global_limitcnt` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `config_global_id` (`global_id`),
+  CONSTRAINT `config_global_id` FOREIGN KEY (`global_id`) REFERENCES `global_history` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1848,8 +1851,7 @@ CREATE TABLE `global_history` (
   `item3` int(11) NOT NULL,
   `treshold` int(100) NOT NULL,
   `end_message` varchar(128) NOT NULL,
-  `close_date` timestamp NULL DEFAULT NULL,
-  `completed` tinyint(1) NOT NULL,
+  `picked` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `history_item_id_1` (`item1`),
   KEY `history_item_id_2` (`item2`),
