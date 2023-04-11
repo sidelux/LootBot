@@ -60635,7 +60635,7 @@ function setFinishedTeamMission(element, index, array) {
 										} else {
 											bot.sendMessage(rows[i].chat_id, "Hai completato l'incarico insieme al tuo party come richiesto da " + mandator + "!\nEcco il rapporto dell'incarico:\n<i>" + endText + "</i>\n\nNon ricevi ricompense poichè sei stato sospeso dall'amministratore", html);
 										}
-										connection.query('INSERT INTO mission_team_history (team_id, mision_team_id, completed) VALUES (' + team_id + ', ' + mission_team_id + ', 1)', function (err, rows, fields) {
+										connection.query('INSERT INTO mission_team_history (team_id, mission_team_id, completed) VALUES (' + team_id + ', ' + mission_team_id + ', 1)', function (err, rows, fields) {
 											if (err) throw err;
 										});
 										connection.query('UPDATE player SET mission_party = 0, mission_team_count = mission_team_count+1 WHERE id = ' + rows[i].id, function (err, rows, fields) {
