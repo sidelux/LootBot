@@ -807,6 +807,8 @@ CREATE TABLE `config` (
   `global_item3` int(11) NOT NULL COMMENT 'Meno costosa',
   `global_treshold` int(100) NOT NULL,
   `global_end_message` varchar(128) NOT NULL,
+  `global_end_message_fail` varchar(123) NOT NULL,
+  `global_end_status` int(11) NOT NULL,
   `epic_var_record` int(11) NOT NULL DEFAULT 0,
   `epic_var_record_time` timestamp NOT NULL DEFAULT current_timestamp(),
   `food` int(11) NOT NULL DEFAULT 0,
@@ -815,7 +817,13 @@ CREATE TABLE `config` (
   `global_limitcnt` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `config_global_id` (`global_id`),
-  CONSTRAINT `config_global_id` FOREIGN KEY (`global_id`) REFERENCES `global_history` (`id`)
+  KEY `global_item_1` (`global_item1`),
+  KEY `global_item_2` (`global_item2`),
+  KEY `global_item_3` (`global_item3`),
+  CONSTRAINT `config_global_id` FOREIGN KEY (`global_id`) REFERENCES `global_history` (`id`),
+  CONSTRAINT `global_item_1` FOREIGN KEY (`global_item1`) REFERENCES `item` (`id`),
+  CONSTRAINT `global_item_2` FOREIGN KEY (`global_item2`) REFERENCES `item` (`id`),
+  CONSTRAINT `global_item_3` FOREIGN KEY (`global_item3`) REFERENCES `item` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1850,7 +1858,8 @@ CREATE TABLE `global_history` (
   `item2` int(11) NOT NULL,
   `item3` int(11) NOT NULL,
   `treshold` int(100) NOT NULL,
-  `end_message` varchar(128) NOT NULL,
+  `end_message_win` varchar(128) NOT NULL,
+  `end_message_lose` varchar(128) NOT NULL,
   `picked` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `history_item_id_1` (`item1`),

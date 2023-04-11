@@ -626,14 +626,14 @@ bot.on('message', async function (message) {
 			});
 		}
 
-		if ((day == 17) && (month == 3) && (hour >= 9) && (year == 2022)) {
+		if ((day == 9) && (month == 3) && (hour >= 9) && (year == 2023)) {
 			connection.query('SELECT COUNT(*) As cnt FROM one_time_gift WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (rows[0].cnt == 0) {
 					connection.query('INSERT INTO one_time_gift (player_id) VALUES (' + player_id + ')', async function (err, rows, fields) {
 						if (err) throw err;
-						await addItem(player_id, 806);
-						bot.sendMessage(message.chat.id, "Buona Pasqua 🐣!\nPer la tua presenza costante nel gioco, hai ricevuto una nuova IN non commerciabile: un *Ovetto di Pasqua 2022 (IN)*!", mark);
+						await addItem(player_id, 809);
+						bot.sendMessage(message.chat.id, "Buona Pasqua 🐣!\nPer la tua presenza costante nel gioco, hai ricevuto una nuova IN non commerciabile: un *Ovetto di Pasqua 2023 (IN)*!", mark);
 						console.log("One time gift a " + message.from.username);
 					});
 				}
@@ -3414,6 +3414,15 @@ bot.onText(/^vetrinetta|torna alla vetrinetta|^vtr$/i, function (message) {
 									}
 								};
 
+								var kb3 = {
+									parse_mode: "Markdown",
+									disable_web_page_preview: true,
+									reply_markup: {
+										resize_keyboard: true,
+										keyboard: [["Sì"], ["Torna alla Vetrinetta"], ["Torna al menu"]]
+									}
+								};
+
 								bot.sendMessage(message.chat.id, "*" + boost_name + "* (" + boost_mission + " utilizzi)" + extra + "\n_" + boost_desc + "_\n\n" + pre_text, kb2).then(function () {
 									answerCallbacks[message.chat.id] = async function (answer) {
 										if ((answer.text == "Torna al menu") || (answer.text == "Torna al Vetrinetta"))
@@ -3446,10 +3455,25 @@ bot.onText(/^vetrinetta|torna alla vetrinetta|^vtr$/i, function (message) {
 												}
 											});
 										} else if (answer.text == "Butta") {
-											connection.query('DELETE FROM boost_store WHERE id = ' + boost_row_id, function (err, rows, fields) {
-												if (err) throw err;
-												bot.sendMessage(message.chat.id, "Hai buttato la " + boost_name, kbBack);
-												setAchievement(player_id, 75, 1);
+											bot.sendMessage(message.chat.id, "Sei sicuro di voler buttare la bevanda?", kb3).then(function () {
+												answerCallbacks[message.chat.id] = async function (answer) {
+													if (answer.text.toLowerCase() == "si") {
+														connection.query('SELECT 1 FROM boost_store WHERE id = ' + boost_row_id, function (err, rows, fields) {
+															if (err) throw err;
+												
+															if (Object.keys(rows).length == 0) {
+																bot.sendMessage(message.chat.id, "Non possiedi la bevanda selezionata, riprova", kbBack);
+																return;
+															}
+
+															connection.query('DELETE FROM boost_store WHERE id = ' + boost_row_id, function (err, rows, fields) {
+																if (err) throw err;
+																bot.sendMessage(message.chat.id, "Hai buttato la " + boost_name, kbBack);
+																setAchievement(player_id, 75, 1);
+															});
+														});
+													}
+												}
 											});
 										}
 									}
