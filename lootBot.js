@@ -7930,7 +7930,6 @@ bot.onText(/attacca!/i, function (message) {
 													set_battle_stunned = 1;
 												} else {
 													partialProtected = 1;
-													// set_enemy_battle_shield = 2;
 													set_enemy_battle_shield = 0;
 												}
 											}
