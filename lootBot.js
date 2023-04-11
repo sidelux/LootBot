@@ -3424,7 +3424,7 @@ bot.onText(/^vetrinetta|torna alla vetrinetta|^vtr$/i, function (message) {
 									disable_web_page_preview: true,
 									reply_markup: {
 										resize_keyboard: true,
-										keyboard: [["Sì"], ["Torna alla Vetrinetta"], ["Torna al menu"]]
+										keyboard: [["Si"], ["Torna alla Vetrinetta"], ["Torna al menu"]]
 									}
 								};
 
