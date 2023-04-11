@@ -139,19 +139,19 @@ app.post(path, function (req, res) {
 	res.sendStatus(200);
 });
 
-var j = Schedule.scheduleJob('00 3 * * *', function () { //3 notte
+var j = Schedule.scheduleJob('00 3 * * *', function () { 		// 3 notte
 	if (checkDragonTopOn == 1)
 		checkDragonTop();
 	refreshDragonLife();
 });
 
-var j1 = Schedule.scheduleJob('00 8 * * *', function () { //8 di mattina
+var j1 = Schedule.scheduleJob('00 8 * * *', function () { 		// 8 di mattina
 	if (checkDragonTopOn == 1)
 		cleanDragon();
 	setMapCondition();
 });
 
-var j2 = Schedule.scheduleJob('59 23 * * *', function () { //23:59 notte
+var j2 = Schedule.scheduleJob('59 23 * * *', function () { 		// 23:59 notte
 	saveActive();
 	var d = new Date();
 	if ((lootteria == 1) && (d.getDay() == 6))
@@ -162,7 +162,7 @@ var j21 = Schedule.scheduleJob('59 23 1 * *', function () {
 	saveActiveMonthly();
 });
 
-var j3 = Schedule.scheduleJob('01 00 * * *', async function () { //00:01 notte
+var j3 = Schedule.scheduleJob('01 00 * * *', async function () { // 00:01 notte
 	var d = new Date();
 	if ((d.getDay() != 5) && (d.getDay() != 4))
 		autoMana();
@@ -189,7 +189,7 @@ var j3 = Schedule.scheduleJob('01 00 * * *', async function () { //00:01 notte
 	changeTapPrice();
 });
 
-var j4 = Schedule.scheduleJob('05 00 * * *', function () { //00:05 notte
+var j4 = Schedule.scheduleJob('05 00 * * *', function () { 		// 00:05 notte
 	refreshMerchant(0);
 	marketGeneration();
 	resetDungeonSkip();
@@ -200,7 +200,7 @@ var j4 = Schedule.scheduleJob('05 00 * * *', function () { //00:05 notte
 	deleteOneTimeGift();
 });
 
-var j5 = Schedule.scheduleJob('00 15 * * *', function () { //15:00
+var j5 = Schedule.scheduleJob('00 15 * * *', function () { 		// 15:00
 	var d = new Date();
 	if (d.getDay() == 1)
 		updateSpecialItem();
@@ -210,19 +210,19 @@ var j5 = Schedule.scheduleJob('00 15 * * *', function () { //15:00
 	checkResetGlobal();
 });
 
-var j6 = Schedule.scheduleJob('00 10 * * 6', function () { //10:00
+var j6 = Schedule.scheduleJob('00 10 * * 6', function () { 		// 10:00 sabato
 	activateEvent();
 });
 
-var j7 = Schedule.scheduleJob('00 10 * * 1', function () { //10:00
+var j7 = Schedule.scheduleJob('00 10 * * 1', function () { 		// 10:00 lunedì
 	deactivateEvent();
 });
 
-var j8 = Schedule.scheduleJob('0 * * * *', function () { //ogni ora
+var j8 = Schedule.scheduleJob('0 * * * *', function () { 		// ogni ora
 	saveHourGlobal();
 });
 
-var j9 = Schedule.scheduleJob('00 01 * * *', function () { //1 notte
+var j9 = Schedule.scheduleJob('00 01 * * *', function () { 		// 1 notte
 	resetMapCount();
 });
 
@@ -230,7 +230,7 @@ var j10 = Schedule.scheduleJob('0 0 * * 1', function () {
 	resetShopLimit();
 });
 
-var j11 = Schedule.scheduleJob('00 16 * * *', function () {	// 16:00 di giorno
+var j11 = Schedule.scheduleJob('00 16 * * *', function () {		// 16:00 di giorno
 	changeTapPrice();
 });
 
@@ -240,11 +240,16 @@ var j12 = Schedule.scheduleJob('*/10 * * * *', function () {	// ogni 10 min
 	checkBoostStoreNotification();
 });
 
-var j13 = Schedule.scheduleJob('0 0 1 */6 *', function () {	// ogni 6 mesi
+var j13 = Schedule.scheduleJob('0 0 1 */6 *', function () {		// ogni 6 mesi
 	resetHallofFame();
 });
 
-callNTimes(20000, function () { //20 secondi
+var j14 = Schedule.scheduleJob('00 9 * * *', function () { 		// 9:00
+	if (checkDragonTopOn == 1)
+		checkDragonTopNotification();
+});
+
+callNTimes(20000, function () { 								// 20 secondi
 	if (checkDragonTopOn == 1)
 		checkDragonSearch();
 	checkBattleTimeElapsed();
@@ -252,12 +257,12 @@ callNTimes(20000, function () { //20 secondi
 		checkLobbyTime();
 });
 
-callNTimes(40000, function () { //40 secondi
+callNTimes(40000, function () { 								// 40 secondi
 	if (checkDragonTopOn == 1)
 		checkDragonSearchCd();
 });
 
-callNTimes(30000, function () { //Ogni 30 secondi
+callNTimes(30000, function () { 								// Ogni 30 secondi
 	if (eventStory == 1)
 		checkEventMissions();
 	checkDragonArena();
@@ -335,7 +340,7 @@ callNTimes(30000, function () { //Ogni 30 secondi
 	}
 });
 
-callNTimes(60000, function () { //Ogni 1 minuto
+callNTimes(60000, function () { 								// Ogni 1 minuto
 	checkProtection();
 	checkDungeonNotification();
 	checkDungeonNotificationIstance();
@@ -352,7 +357,7 @@ callNTimes(60000, function () { //Ogni 1 minuto
 	checkCardTrade();
 });
 
-callNTimes(120000, function () { //Ogni 2 minuti
+callNTimes(120000, function () { 								// Ogni 2 minuti
 	checkTeamCd();
 	checkTravels();
 	checkEnchant();
@@ -368,19 +373,19 @@ callNTimes(120000, function () { //Ogni 2 minuti
 	checkDragonBoost();
 });
 
-callNTimes(600000, function () { //Ogni 10 minuti
+callNTimes(600000, function () { 								// Ogni 10 minuti
 	checkLifeRush();
 	checkTapTime();
 });
 
-callNTimes(1800000, function () { //Ogni mezz'ora
+callNTimes(1800000, function () { 								// Ogni mezz'ora
 	checkEvents();
 	checkTeamAct();
 	checkAct();
 	checkGnome();
 });
 
-callNTimes(3600000, function () { //Ogni ora
+callNTimes(3600000, function () { 								// Ogni ora
 	calcBaseFunc(1);
 	checkTeamClean();
 	checkTeamPlayers();
@@ -3455,7 +3460,7 @@ bot.onText(/^vetrinetta|torna alla vetrinetta|^vtr$/i, function (message) {
 												}
 											});
 										} else if (answer.text == "Butta") {
-											bot.sendMessage(message.chat.id, "Sei sicuro di voler buttare la bevanda?", kb3).then(function () {
+											bot.sendMessage(message.chat.id, "Sei sicuro di voler buttare la " + boost_name + "?", kb3).then(function () {
 												answerCallbacks[message.chat.id] = async function (answer) {
 													if (answer.text.toLowerCase() == "si") {
 														connection.query('SELECT 1 FROM boost_store WHERE id = ' + boost_row_id, function (err, rows, fields) {
@@ -58406,6 +58411,25 @@ async function dragonDummyStart(top_id, chat_id, my_rank, dragon_id, player_id, 
 		});
 	});
 }
+
+function checkDragonTopNotification() {
+	connection.query('SELECT P.chat_id FROM dragon_top_rank D, player P WHERE D.player_id = P.id', function (err, rows, fields) {
+		if (err) throw err;
+		if (Object.keys(rows).length > 0) {
+			if (Object.keys(rows).length == 1)
+				console.log(getNow("it") + "\x1b[32m 1 notifica vette\x1b[0m");
+			else
+				console.log(getNow("it") + "\x1b[32m " + Object.keys(rows).length + " notifiche vette\x1b[0m");
+			rows.forEach(setDragonTopNotification);
+		}
+	});
+}
+
+function setDragonTopNotification(element, index, array) {
+	var chat_id = element.chat_id;
+
+	bot.sendMessage(chat_id, "Una nuova giornata di Vette inizia! Entra in battaglia e conquista il miglior punteggio!", mark);
+};
 
 function checkDragonTop() {
 	connection.query('SELECT player.chat_id, player.id As player_id, dragon_top_rank.rank, dragon_top_rank.top_id FROM dragon_top_rank, player WHERE dragon_top_rank.player_id = player.id', function (err, rows, fields) {
