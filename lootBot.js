@@ -44059,6 +44059,7 @@ bot.onText(/^Incantesimi/i, function (message) {
 					for (var i = 0, len = Object.keys(rows).length; i < len; i++)
 						iKeys.push(["Lancia " + magicToName(rows[i].type) + " " + rows[i].power + " (" + rows[i].quantity + ")"]);
 
+					iKeys.push(["Sintesi"]);
 					iKeys.push(["Torna al Dungeon"]);
 					iKeys.push(["Torna al menu"]);
 
@@ -44076,7 +44077,7 @@ bot.onText(/^Incantesimi/i, function (message) {
 						parse_mode: "Markdown",
 						reply_markup: {
 							resize_keyboard: true,
-							keyboard: [["Dungeon"], ["Torna al menu"]]
+							keyboard: [["Sintesi"], ["Dungeon"], ["Torna al menu"]]
 						}
 					};
 					bot.sendMessage(message.chat.id, text + "\n\nNon possiedi alcun incantesimo, puoi ottenerli attraverso la Sintesi!", kb);
