@@ -22795,9 +22795,9 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 												if ((dragon_moves.indexOf(move) == -1) && (skip == 0))
 													return;
 
-												var reg = new RegExp("^[a-zA-Z0-9 ]{1,100}$");
+												var reg = new RegExp("^[a-zA-Z0-9\' ]{1,100}$");
 												if (reg.test(move) == false) {
-													bot.sendMessage(message.chat.id, "Drago non valido, riprova", kbBack);
+													bot.sendMessage(message.chat.id, "Mossa non valida, riprova", kbBack);
 													return;
 												}
 
