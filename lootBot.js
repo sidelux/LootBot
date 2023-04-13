@@ -42383,7 +42383,7 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 									parse_mode: "Markdown",
 									reply_markup: {
 										resize_keyboard: true,
-										keyboard: [["Equipaggia " + rarity], ["Torna allo zaino"], ["Torna al menu"]]
+										keyboard: [["Equipaggia " + rarity], ["Torna allo zaino"], ["Torna al dungeon"], ["Torna al menu"]]
 									}
 								};
 
