@@ -11446,7 +11446,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																if (boost_id == 6)
 																	setBoost(player_id, boost_mission, boost_id);
 															});
-															bot.sendMessage(message.chat.id, extra + "Incontri un *" + rows[0].name + "* di livello *" + rows[0].level + "*, puoi sfidarlo per ottenere il suo bottino e proseguire, oppure scappare.", dBattle).then(function () {
+															bot.sendMessage(message.chat.id, dungeonToSym(dir) + " " + extra + "Incontri un *" + rows[0].name + "* di livello *" + rows[0].level + "*, puoi sfidarlo per ottenere il suo bottino e proseguire, oppure scappare.", dBattle).then(function () {
 																answerCallbacks[message.chat.id] = async function (answer) {
 																	if (answer.text == "Scappa") {
 
@@ -11522,7 +11522,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													});
 												});
 											} else if (dir == 1) {
-												bot.sendMessage(message.chat.id, "Nella stanza sembra esserci uno *scrigno* pronto per essere aperto, cosa fai?", dChest).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Nella stanza sembra esserci uno *scrigno* pronto per essere aperto, cosa fai?", dChest).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Prendi") {
 															var rand = Math.round((Math.random() * 99) + 1);
@@ -11658,7 +11658,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												});
 											} else if (dir == 2) {
-												bot.sendMessage(message.chat.id, "Al centro della stanza vedi un mucchietto di monete dall'aria invitante, cosa fai?", dChest).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Al centro della stanza vedi un mucchietto di monete dall'aria invitante, cosa fai?", dChest).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Prendi") {
 															if (player_rank == 0)
@@ -11707,7 +11707,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													var dmg = Math.round(Math.random() * (player_life / 10 * 2) + 1);
 													trap = 1;
 												} else if (rand < 90) {
-													bot.sendMessage(message.chat.id, "Hai schivato con destrezza una trappola piazzata sul muro della stanza, ottieni 3 exp!", dNext);
+													bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Hai schivato con destrezza una trappola piazzata sul muro della stanza, ottieni 3 exp!", dNext);
 													setExp(player_id, 3);
 												} else {
 													var dmg = Math.round(Math.random() * (player_life / 3 * 2) + 1);
@@ -11732,7 +11732,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 														text = dText[index];
 
-														bot.sendMessage(message.chat.id, text, dNext);
+														bot.sendMessage(message.chat.id, dungeonToSym(dir) + " " + text, dNext);
 													});
 												}
 
@@ -11746,7 +11746,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												var items = [];
 												var prices = [];
 
-												var text = "Nella stanza incontri un viandante, ti propone alcuni oggetti a buon prezzo, puoi acquistarne uno oppure ignorarlo e procedere.\n";
+												var text = dungeonToSym(dir) + " Nella stanza incontri un viandante, ti propone alcuni oggetti a buon prezzo, puoi acquistarne uno oppure ignorarlo e procedere.\n";
 
 												connection.query('SELECT I.id As item1id, DM.price_1 As price1, DM.price_2 As price2, DM.price_3 As price3, I.value As item1val, I.name As item1n, I2.id As item2id, I2.value As item2val, I2.name As item2n, I3.id As item3id, I3.value As item3val, I3.name As item3n FROM dungeon_market DM INNER JOIN item I ON DM.item_1 = I.id INNER JOIN item I2 ON DM.item_2 = I2.id INNER JOIN item I3 ON DM.item_3 = I3.id WHERE DM.dungeon_id = ' + dungeon_id + ' AND DM.room_id = ' + room_id, function (err, rows, fields) {
 													if (err) throw err;
@@ -11858,7 +11858,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Il corridoio si stringe in un'umida strettoia, sembrerebbe un vicolo cieco!\nTasti le pareti con una mano e all'improvviso un meccanismo rivela tre leve di legno, logore dal tempo.\nQuale tiri?", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Il corridoio si stringe in un'umida strettoia, sembrerebbe un vicolo cieco!\nTasti le pareti con una mano e all'improvviso un meccanismo rivela tre leve di legno, logore dal tempo.\nQuale tiri?", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if ((answer.text == "Sinistra") || (answer.text == "Centro") || (answer.text == "Destra")) {
 															if (rand <= 50) {
@@ -11897,7 +11897,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 												text = dText[index];
 
-												bot.sendMessage(message.chat.id, "Appena entrato nella stanza vedi nell'angolo " + text + ", cosa fai?", dPeople).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Appena entrato nella stanza vedi nell'angolo " + text + ", cosa fai?", dPeople).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Aiuta") {
 															var rand = Math.random() * 100;
@@ -12024,7 +12024,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 												text = dText[index];
 
-												bot.sendMessage(message.chat.id, "Aprendo la porta ti ritrovi in un ambiente aperto, con alberi e liane che ricoprono ogni cosa. " + text + ", cosa fai?", dPotions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Aprendo la porta ti ritrovi in un ambiente aperto, con alberi e liane che ricoprono ogni cosa. " + text + ", cosa fai?", dPotions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Segui la Vecchia") {
 															var rand = Math.random() * 100;
@@ -12085,7 +12085,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												else if (player_life/player_total_life*100 < 60)
 													heart = "🧡";
 
-												bot.sendMessage(message.chat.id, "Appena aperta la porta della stanza, un freddo polare ti avvolge, appare una pulsantiera congelata, probabilmente uno di quei bottoni potrebbe aprire la porta successiva.\n\n" + heart + " " + formatNumber(player_life) + " hp", dButtons).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Appena aperta la porta della stanza, un freddo polare ti avvolge, appare una pulsantiera congelata, probabilmente uno di quei bottoni potrebbe aprire la porta successiva.\n\n" + heart + " " + formatNumber(player_life) + " hp", dButtons).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 
 														if ((answer.text == "Torna al menu") || (answer.text == "❣️") || (answer.text == "❤️"))
@@ -12264,7 +12264,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 												var rand = Math.random() * 100;
 
-												bot.sendMessage(message.chat.id, "Raggiungi una stanza suddivisa in due, vedi un oggetto per lato, dove ti dirigi?", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Raggiungi una stanza suddivisa in due, vedi un oggetto per lato, dove ti dirigi?", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if ((answer.text == "Più Raro") || (answer.text == "Meno Raro")) {
 
@@ -12428,7 +12428,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													};
 												}
 
-												bot.sendMessage(message.chat.id, "Entri in una stanza piena d'oro luccicante e una spada conficcata nel muro, puoi decidere di raccogliere monete ma un messaggio su un cartello raccomanda di non essere troppo avido, cosa fai?\nFin ora hai accumulato *" + formatNumber(acc_money) + "* § per la probabilità del *" + acc_prob + "*% di rischiare la vita.", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Entri in una stanza piena d'oro luccicante e una spada conficcata nel muro, puoi decidere di raccogliere monete ma un messaggio su un cartello raccomanda di non essere troppo avido, cosa fai?\nFin ora hai accumulato *" + formatNumber(acc_money) + "* § per la probabilità del *" + acc_prob + "*% di rischiare la vita.", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Accumula monete") {
 															var middle = Math.pow(player_rank, 0.60) * 1000
@@ -12546,7 +12546,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Appena entrato nella stanza noti subito una strana fontana situata nel centro, cosa fai?", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Appena entrato nella stanza noti subito una strana fontana situata nel centro, cosa fai?", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Esamina") {
 															connection.query('SELECT COUNT(*) As cnt FROM event_mana_status WHERE player_id = ' + player_id, async function (err, rows, fields) {
@@ -12680,7 +12680,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Questa stanza è strana, scorgi solamente una fessura sul muro di fronte, con l'indicazione di una monetina. A fianco si erge un grosso portone, sembra poco resistente. Cosa fai?", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Questa stanza è strana, scorgi solamente una fessura sul muro di fronte, con l'indicazione di una monetina. A fianco si erge un grosso portone, sembra poco resistente. Cosa fai?", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Inserisci Monete") {
 															connection.query('SELECT money FROM player WHERE id = ' + player_id, async function (err, rows, fields) {
@@ -12757,7 +12757,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Un cartello con un punto esclamativo ti preoccupa, al centro della stanza c'è un taglio che la percorre per tutta la sua larghezza, l'unica alternativa è procedere.", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Un cartello con un punto esclamativo ti preoccupa, al centro della stanza c'è un taglio che la percorre per tutta la sua larghezza, l'unica alternativa è procedere.", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Procedi") {
 															connection.query('SELECT life, total_life FROM player WHERE id = ' + player_id, function (err, rows, fields) {
@@ -12964,7 +12964,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														return;
 													}
 
-													bot.sendMessage(message.chat.id, "In questa stanza non noti nessuna porta, al loro posto 3 incisioni con un pulsante ciascuna, le leggi e rifletti su quale premere.", dOptions).then(function () {
+													bot.sendMessage(message.chat.id, dungeonToSym(dir) + " In questa stanza non noti nessuna porta, al loro posto 3 incisioni con un pulsante ciascuna, le leggi e rifletti su quale premere.", dOptions).then(function () {
 														answerCallbacks[message.chat.id] = async function (answer) {
 
 															if (answer.text == "Cambia Incisione") {
@@ -13067,7 +13067,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 											} else if (dir == -4) {
 												var iKeys = [];
 
-												var text = "Nella stanza incontri un predone del deserto dall'aria docile, ti propone uno scambio, puoi accettarlo o ignorarlo e procedere.\n";
+												var text = dungeonToSym(dir) + "Nella stanza incontri un predone del deserto dall'aria docile, ti propone uno scambio, puoi accettarlo o ignorarlo e procedere.\n";
 
 												connection.query('SELECT I.id As item1id, I.name As item1n, I2.id As item2id, I2.name As item2n FROM dungeon_trade DT INNER JOIN item I ON DT.item_1 = I.id INNER JOIN item I2 ON DT.item_2 = I2.id WHERE DT.dungeon_id = ' + dungeon_id + ' AND DT.room_id = ' + room_id, async function (err, rows, fields) {
 													if (err) throw err;
@@ -13190,7 +13190,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														text += "\n\nPer meditare ulteriormente ti serviranno " + charges + " Cariche Esplorative";
 												}
 
-												bot.sendMessage(message.chat.id, "Raggiungi una stanza con un'incisione profonda: Stanza della Meditazione, cosa vuoi fare?\n" + text, dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Raggiungi una stanza con un'incisione profonda: Stanza della Meditazione, cosa vuoi fare?\n" + text, dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Medita") {															
 															if (param > 6) {
@@ -13273,7 +13273,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Davanti a te si erge un portale completamente rosso, una voce rimbomba al suo interno: esprimi un desiderio avventuriero! 'Vorrei...'", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Davanti a te si erge un portale completamente rosso, una voce rimbomba al suo interno: esprimi un desiderio avventuriero! 'Vorrei...'", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														var rand = Math.random() * 100;
 														if (answer.text == "Tornare in piena salute") {
@@ -13381,7 +13381,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Entri nella stanza e per sbaglio pesti una mattonella leggermente rovinata, il muro si apre ed esce l'immenso drago di LastSoldier95, cosa fai?", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Entri nella stanza e per sbaglio pesti una mattonella leggermente rovinata, il muro si apre ed esce l'immenso drago di LastSoldier95, cosa fai?", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Attacca con il Drago") {
 
@@ -13452,7 +13452,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 												setAchievement(player_id, 50, 1);
 
-												bot.sendMessage(message.chat.id, "Entri in una stanza apparentemente vuota, cosa fai?", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Entri in una stanza apparentemente vuota, cosa fai?", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "...") {
 															var rand = Math.random() * 200;
@@ -13541,7 +13541,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 															var name2 = rows[0].name; //marinaio
 
-															bot.sendMessage(message.chat.id, "Il marinaio aspetta il tuo turno avendo puntato *" + name2 + "*, mentre tu hai puntato *" + name1 + "*, scegli un numero da 1 a 6 e lancia il dado, il vincitore sarà colui che si avvicinerà di più al risultato del dado", dNum).then(function () {
+															bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Il marinaio aspetta il tuo turno avendo puntato *" + name2 + "*, mentre tu hai puntato *" + name1 + "*, scegli un numero da 1 a 6 e lancia il dado, il vincitore sarà colui che si avvicinerà di più al risultato del dado", dNum).then(function () {
 																answerCallbacks[message.chat.id] = async function (answer) {
 																	if (answer.text == "Torna al menu")
 																		return;
@@ -13578,7 +13578,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														});
 													});
 												} else {
-													bot.sendMessage(message.chat.id, "Nella stanza incontri un marinaio dall'aria furba. Ti propone una partita ai dadi, il vincitore otterrà l'oggetto dell'avversario! Vuoi partecipare?", dOptions).then(function () {
+													bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Nella stanza incontri un marinaio dall'aria furba. Ti propone una partita ai dadi, il vincitore otterrà l'oggetto dell'avversario! Vuoi partecipare?", dOptions).then(function () {
 														answerCallbacks[message.chat.id] = async function (answer) {
 															if (answer.text == "Punta") {
 																bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto da puntare, solo oggetti base e rarità fino alla E", back).then(function () {
@@ -13639,7 +13639,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Oltrepassando la porta ti trovi davanti ad altre due porte, una con un'aria familiare, l'altra con un grosso punto interrogativo scolpito sopra, quale apri?", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Oltrepassando la porta ti trovi davanti ad altre due porte, una con un'aria familiare, l'altra con un grosso punto interrogativo scolpito sopra, quale apri?", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Porta Normale") {
 
@@ -13725,7 +13725,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													else
 														text = "_Un ottimo malloppo..._";
 
-													bot.sendMessage(message.chat.id, "Una luce esagerata ti avvolge, esci in un piccolo spiazzo di prato con un pozzo al centro ed uno schermino appoggiato sopra, puoi buttare una porzione di monetine al suo interno, sembra l'unico modo per proseguire, oppure puoi cercare di raccogliere tutto il malloppo.\n\nLo schermino segna: '" + text + "', butti...", dOptions).then(function () {
+													bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Una luce esagerata ti avvolge, esci in un piccolo spiazzo di prato con un pozzo al centro ed uno schermino appoggiato sopra, puoi buttare una porzione di monetine al suo interno, sembra l'unico modo per proseguire, oppure puoi cercare di raccogliere tutto il malloppo.\n\nLo schermino segna: '" + text + "', butti...", dOptions).then(function () {
 														answerCallbacks[message.chat.id] = async function (answer) {
 															if (answer.text.indexOf("§") != -1) {
 
@@ -13827,7 +13827,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												};
 												connection.query('SELECT mkeys FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
-													bot.sendMessage(message.chat.id, "Al centro della stanza vedi un signore anziano con gli occhi sbarrati, si alza e ti porge la mano con un simbolo disegnato sopra: " + keys + " 🗝. Cosa fai?\nAttualmente ne possiedi " + formatNumber(rows[0].mkeys), dOptions).then(function () {
+													bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Al centro della stanza vedi un signore anziano con gli occhi sbarrati, si alza e ti porge la mano con un simbolo disegnato sopra: " + keys + " 🗝. Cosa fai?\nAttualmente ne possiedi " + formatNumber(rows[0].mkeys), dOptions).then(function () {
 														answerCallbacks[message.chat.id] = async function (answer) {
 															if (answer.text.indexOf("Consegna") != -1) {
 																bot.sendMessage(message.chat.id, "Sicuro?", dYesNo).then(function () {
@@ -13955,7 +13955,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "_Ehy amico lo sai chi sono?_. Si presenta così un tipo strano in un angolino della stanza. _Posso fare solo ciò che non vorresti!_. Si gira di schiena e digita qualcosa su un marchingegno strano...", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " _Ehy amico lo sai chi sono?_. Si presenta così un tipo strano in un angolino della stanza. _Posso fare solo ciò che non vorresti!_. Si gira di schiena e digita qualcosa su un marchingegno strano...", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Disturba") {
 
@@ -14001,7 +14001,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Entri in una stanza con un piccolo specchio al centro. Ti avvicini e noti che è morbido, quasi liquido...", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Entri in una stanza con un piccolo specchio al centro. Ti avvicini e noti che è morbido, quasi liquido...", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Tocchi lo specchio") {
 															var new_dir = 0;
@@ -14119,7 +14119,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	}
 																};
 
-																bot.sendMessage(message.chat.id, "Non fai che un passo, una voce mite ma ferma ti paralizza:\n«Io sono l'Alchimista dell'Ovest e ti chiedo, giovane " + gender_text_g + ": scambieresti il tuo *" + item1_name + "*" + item_poss + " per *" + item2_name + "*?»", dOptions).then(function () {
+																bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Non fai che un passo, una voce mite ma ferma ti paralizza:\n«Io sono l'Alchimista dell'Ovest e ti chiedo, giovane " + gender_text_g + ": scambieresti il tuo *" + item1_name + "*" + item_poss + " per *" + item2_name + "*?»", dOptions).then(function () {
 																	answerCallbacks[message.chat.id] = async function (answer) {
 																		if (answer.text.toLowerCase() == "si") {
 
@@ -14246,7 +14246,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												
 												connection.query('SELECT mkeys FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 													if (err) throw err;
-													bot.sendMessage(message.chat.id, "Sull'angolo della stanza noti un uomo magro con un cappello a forma di Bomba, si presenta come Bombarolo e chiede " + keys + "x Chiave Mistica 🗝 in cambio di una delle sue creazioni, cosa fai?\nAttualmente ne possiedi " + formatNumber(rows[0].mkeys), dOptions).then(function () {
+													bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Sull'angolo della stanza noti un uomo magro con un cappello a forma di Bomba, si presenta come Bombarolo e chiede " + keys + "x Chiave Mistica 🗝 in cambio di una delle sue creazioni, cosa fai?\nAttualmente ne possiedi " + formatNumber(rows[0].mkeys), dOptions).then(function () {
 														answerCallbacks[message.chat.id] = async function (answer) {
 															if (answer.text.indexOf("Consegna") != -1) {
 																connection.query('SELECT mkeys FROM player WHERE id = ' + player_id, function (err, rows, fields) {
@@ -14298,7 +14298,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Senti puzza di bruciato, ti accorgi di essere entrato in una stanza piena di esplosivi, vedi un piccolo Scrigno al centro, cosa fai?", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Senti puzza di bruciato, ti accorgi di essere entrato in una stanza piena di esplosivi, vedi un piccolo Scrigno al centro, cosa fai?", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text.indexOf("Attraversa") != -1) {
 															connection.query('SELECT item.id, item.name FROM inventory, item WHERE inventory.item_id = item.id AND cons_val > 0 AND category = 4 AND rarity IN ("C","NC","R","UR") AND quantity > 0 AND player_id = ' + player_id + ' ORDER BY RAND()', async function (err, rows, fields) {
@@ -14394,7 +14394,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															}
 														};
 
-														bot.sendMessage(message.chat.id, "Entri in una stanza completamente luccicante, quasi accecante, un curioso tipo barbuto si presenta come il Gioielliere, offre " + qnt + "x 💎 in cambio di un particolare oggetto, in questo caso: *" + item1_name + "*" + item_poss + ", accetti l'offerta?", dOptions).then(function () {
+														bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Entri in una stanza completamente luccicante, quasi accecante, un curioso tipo barbuto si presenta come il Gioielliere, offre " + qnt + "x 💎 in cambio di un particolare oggetto, in questo caso: *" + item1_name + "*" + item_poss + ", accetti l'offerta?", dOptions).then(function () {
 															answerCallbacks[message.chat.id] = async function (answer) {
 																if (answer.text.toLowerCase()== "si") {
 
@@ -14439,7 +14439,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Spalancata la porta della stanza vieni sbalzato all'indietro da una potentissima energia magica, cosa fai?", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Spalancata la porta della stanza vieni sbalzato all'indietro da una potentissima energia magica, cosa fai?", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text.indexOf("Passi attraverso") != -1) {
 
@@ -14597,7 +14597,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																if (await getItemCnt(player_id, stone1) >= qnt)
 																	poss = " ✅";
 
-																bot.sendMessage(message.chat.id, "Entri in una stanza che non ha affatto le sembianze di una stanza, piuttosto un grosso parco, al centro una ragazza circondata da Draghi, si tratta di un *Mercante Draconico*, fornisce oggetti utili al proprio drago in cambio di " + qnt + "x " + stone_name + poss + ".\nStavolta vuole scambiare " + get_qnt_text + " di *" + item1_name + "*, accetti l'offerta?", dOptions).then(function () {
+																bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Entri in una stanza che non ha affatto le sembianze di una stanza, piuttosto un grosso parco, al centro una ragazza circondata da Draghi, si tratta di un *Mercante Draconico*, fornisce oggetti utili al proprio drago in cambio di " + qnt + "x " + stone_name + poss + ".\nStavolta vuole scambiare " + get_qnt_text + " di *" + item1_name + "*, accetti l'offerta?", dOptions).then(function () {
 																	answerCallbacks[message.chat.id] = async function (answer) {
 																		if (answer.text.toLowerCase() == "si") {
 
@@ -14681,7 +14681,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														text += "\n\nPer concentrarti ulteriormente ti serviranno " + charges + " Cariche Esplorative";
 												}
 
-												bot.sendMessage(message.chat.id, "Raggiungi una stanza completamente trasparente, sembra quasi fluttuare nel cielo, leggi l'insegna: Stanza del Cuore e dello Spirito, sai che concentrarti ti porterà benefici, cosa fai?\n" + text, dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Raggiungi una stanza completamente trasparente, sembra quasi fluttuare nel cielo, leggi l'insegna: Stanza del Cuore e dello Spirito, sai che concentrarti ti porterà benefici, cosa fai?\n" + text, dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Concentrati") {
 															if (param > 6) {
@@ -14754,7 +14754,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												var d = new Date();
 												var day = d.getDay();
 
-												var text = "Entrando nella stanza pesti una leva nascosta, la maledizione Unna t'ha colpito!\n\n_Scricchiolando_ la leva emette un rumore inquietante...\n";
+												var text = dungeonToSym(dir) + " Entrando nella stanza pesti una leva nascosta, la maledizione Unna t'ha colpito!\n\n_Scricchiolando_ la leva emette un rumore inquietante...\n";
 
 												if ((day == 1) || (day == 2)) {				// lunedì-martedì
 													var generated = await connection.queryAsync("SELECT `generated` FROM event_dust_status WHERE extracting = 1 AND player_id = " + player_id);
@@ -14830,7 +14830,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Entri in una stanza che anziché una parete ha un'immenso crepaccio, cosa vuoi fare?", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Entri in una stanza che anziché una parete ha un'immenso crepaccio, cosa vuoi fare?", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Urla") {
 															var rand = Math.random()*100;
@@ -14886,7 +14886,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Entri in una stanza completamente piena di polvere, così fitta da neanche riuscire a vederne l'uscita, cosa vuoi fare?", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Entri in una stanza completamente piena di polvere, così fitta da neanche riuscire a vederne l'uscita, cosa vuoi fare?", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Raccogli") {
 
@@ -14937,7 +14937,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Raggiungi una stanza con un cartello con su scritto 'Questo è un vicolo cieco', cosa fai?", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Raggiungi una stanza con un cartello con su scritto 'Questo è un vicolo cieco', cosa fai?", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Torna indietro") {
 															if (room_id > 1) {
@@ -14977,7 +14977,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Entri in un negozio stranamente elegante, con migliaia di Figurine su tutte le pareti. Il venditore ti chiede con aria eloquente: 'Desidera una delle nostre magnifiche Figurine?'", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Entri in un negozio stranamente elegante, con migliaia di Figurine su tutte le pareti. Il venditore ti chiede con aria eloquente: 'Desidera una delle nostre magnifiche Figurine?'", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Acquista") {
 															var dOptions = {
@@ -15102,7 +15102,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Tra una fitta coltre di fumo grigio appare un maestoso brucaliffo dall'aria assonnata.\nSembra innocuo...", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Tra una fitta coltre di fumo grigio appare un maestoso brucaliffo dall'aria assonnata.\nSembra innocuo...", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Offri...") {
 															bot.sendMessage(message.chat.id, "Scrivi il nome dell'oggetto da regalare al brucaliffo").then(function () {
@@ -15206,7 +15206,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												};
 
-												bot.sendMessage(message.chat.id, "Appena entri nella stanza rimani sorpreso! Erba, piante e fiori crescono rigogliosi in questo luogo.\nUna ragazza seduta su una roccia vicino ad una sorgente d'acqua in lontananza attira la tua attenzione, cosa fai?", dOptions).then(function () {
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Appena entri nella stanza rimani sorpreso! Erba, piante e fiori crescono rigogliosi in questo luogo.\nUna ragazza seduta su una roccia vicino ad una sorgente d'acqua in lontananza attira la tua attenzione, cosa fai?", dOptions).then(function () {
 													answerCallbacks[message.chat.id] = async function (answer) {
 														if (answer.text == "Ti avvicini alla ragazza") {
 															var rand = Math.random()*100;
