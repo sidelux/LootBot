@@ -9231,6 +9231,16 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 												}
 											}
 										}
+										if ((item == undefined) || (item[0] == undefined)) {											
+											// oggetto casuale tra tutti
+											var rand = Math.round(getRandomArbitrary(1, 3));
+											if (rand == 1)
+												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > 0 AND power != 0 AND rarity = '" + rarity + "' ORDER BY RAND()");
+											else if (rand == 2)
+												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > 0 AND power_armor != 0 AND rarity = '" + rarity + "' ORDER BY RAND()");
+											else
+												var item = await connection.queryAsync("SELECT id FROM item WHERE critical > 0 AND power_shield != 0 AND rarity = '" + rarity + "' ORDER BY RAND()");
+										}
 										last_obj_query += ", last_obj_val = '" + item[0].id + ":" + price + "'";
 										isBuild = 1;
 										text += "Raggiungi un " + mapIdToSym(5) + " Centro Scambi, qui puoi scambiare oggetti che ti potranno essere utili.\n";
