@@ -10437,12 +10437,26 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 								keyboard: [["☠️", "⬆️", "🔑"], ["⬅️", "🍵", "➡️"], ["Commenta", "Scappa", "Torna al menu"]]
 							}
 						};
+						var dNav_skip = {
+							parse_mode: "Markdown",
+							reply_markup: {
+								resize_keyboard: true,
+								keyboard: [["☠️", "⬆️", "🔑"], ["⬅️", "🍵", "➡️"], ["Furtività 🥷"], ["Commenta", "Scappa", "Torna al menu"]]
+							}
+						};
 					} else {
 						var dNav = {
 							parse_mode: "Markdown",
 							reply_markup: {
 								resize_keyboard: true,
 								keyboard: [["☠️", "⬆️", "🔑"], ["⬅️", "🍵", "➡️"], ["Scappa", "Torna al menu"]]
+							}
+						};
+						var dNav_skip = {
+							parse_mode: "Markdown",
+							reply_markup: {
+								resize_keyboard: true,
+								keyboard: [["☠️", "⬆️", "🔑"], ["⬅️", "🍵", "➡️"], ["Furtività 🥷"], ["Scappa", "Torna al menu"]]
 							}
 						};
 					}
@@ -10943,6 +10957,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 									} else
 										mapped = await connection.queryAsync('SELECT dir_top, dir_right, dir_left FROM dungeon_map WHERE room_id = ' + room_id + ' AND dungeon_id = ' + dungeon_id + ' AND player_id = ' + player_id);
 
+									var canSkipRoom = 0;
 									if (Object.keys(mapped).length > 0) {
 										var mapped_left = "-";
 										var mapped_top = "-";
@@ -10965,10 +10980,17 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 											if (dir_right > 10)
 												mapped_right += " (" + ((dir_right-10)+extra_lev) + ")";
 										}
+										if ((mapped[0].dir_left == 1) && (mapped[0].dir_top == 1) && (mapped[0].dir_right == 1)) {
+											if ((dir_left > 10) && (dir_top > 10) && (dir_right > 10))
+												canSkipRoom = 1;
+										}
 										text += "\n\n🗺 Mappatura (" + mapped_type + ")\n" + mapped_left + " | " + mapped_top + " | " + mapped_right;
 									}
 
 									var selected_dir = null;
+
+									if (canSkipRoom == 1)
+										dNav = dNav_skip;
 
 									if (last_dir != null) {
 										dNav = dNext2;
@@ -11378,6 +11400,107 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													});
 												});
 												return;
+											} else if (answer.text.indexOf("Furtività") !== -1) {
+												if (canSkipRoom == 0) {
+													bot.sendMessage(message.chat.id, "In queste condizioni non è possibile evitare la stanza!", back);
+													return;
+												}												
+												var rand = Math.random()*100;
+												if (rand < 50) {
+													bot.sendMessage(message.chat.id, "Silenziosamente e con cautela muovi i tuoi passi lungo il corridoio: mostri temibili dovrebbero sorvegliarne i cunicoli, chissà che non siano esausti\nVelocemente ti ritrovi nella stanza successiva, incolume.", dNext);
+													room_id++;
+													connection.query('UPDATE dungeon_status SET room_id = ' + room_id + ', last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+													});
+												} else {
+													var monsterLev = Math.round(Math.random() * Math.round(room_num / 2) + Math.round(room_num / 2));
+
+													if (monsterLev > max_mob_value)
+														monsterLev = max_mob_value;
+
+													connection.query('SELECT id, life, name, level FROM dungeon_monsters WHERE level = ' + monsterLev + ' ORDER BY RAND()', function (err, rows, fields) {
+														if (err) throw err;
+														if (Object.keys(rows).length == 0) {
+															bot.sendMessage(message.chat.id, "Errore selezione mostro: " + monsterLev, back);
+															return;
+														}
+														connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + rows[0].life + ', monster_total_life = ' + rows[0].life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+															if (err) throw err;
+															if (boost_id == 6)
+																setBoost(player_id, boost_mission, boost_id);
+														});
+														bot.sendMessage(message.chat.id, "Silenziosamente ma con poca cautela muovi i tuoi passi lungo il corridoio...\nUno scricchiolio di troppo ed un terribile mostro ti si fionda addosso.\nÈ il momento di combattere!\nSi tratta di un *" + rows[0].name + "* di livello *" + rows[0].level + "*, puoi sfidarlo per ottenere il suo bottino e proseguire, oppure scappare.", dBattle).then(function () {
+															answerCallbacks[message.chat.id] = async function (answer) {
+																if (answer.text == "Scappa") {
+																	bot.sendMessage(message.chat.id, "Sicuro di voler tentare di tornare alla stanza precedente? Il mostro potrebbe colpirti durante la fuga", dYesNo).then(function () {
+																		answerCallbacks[message.chat.id] = async function (answer) {
+																			if (answer.text.toLowerCase() == "si") {
+
+																				var rand = Math.random() * 100;
+																				if (rand < 50)
+																					var dmg = Math.round(player_total_life * 20 / 100);
+																				else
+																					var dmg = Math.round(player_total_life * 30 / 100);
+
+																				var exText = "";
+
+																				connection.query('UPDATE player SET life = life-' + dmg + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																					if (err) throw err;
+																				});
+
+																				if (player_life - dmg <= 0) {
+																					exText = "ma sei stato ucciso e quindi portato fuori dal dungeon ed il tuo rango viene ridotto.";
+
+																					var d = new Date();
+																					d.setHours(d.getHours() + wait_dungeon_long);
+																					var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+																					connection.query('UPDATE player SET death_count = death_count+1, dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																						if (err) throw err;
+																					});
+																					connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+																						if (err) throw err;
+																					});
+																					connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
+																						if (err) throw err;
+																					});
+																					if (cursed == 1) {
+																						if (player_rank == 1) {
+																							connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																								if (err) throw err;
+																							});
+																						} else if (player_rank > 1) {
+																							connection.query('UPDATE player SET rank = rank-2 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																								if (err) throw err;
+																							});
+																						}
+																					} else {
+																						if (player_rank > 0) {
+																							connection.query('UPDATE player SET rank = rank-1 WHERE rank > 0 AND id = ' + player_id, function (err, rows, fields) {
+																								if (err) throw err;
+																							});
+																						}
+																					}
+																				} else {
+																					exText = "e sei sopravvissuto, di conseguenza torni alla stanza precedente, perdi inoltre 10 Cariche Esplorative";
+
+																					await reduceDungeonEnergy(player_id, 10);
+																				}
+																				connection.query('UPDATE dungeon_status SET monster_id = 0, monster_life = 0, monster_total_life = 0, last_dir = NULL, last_selected_dir = NULL, monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
+																					if (err) throw err;
+																				});
+																				bot.sendMessage(message.chat.id, "Tentando la fuga il mostro ti ha colpito e hai perso " + formatNumber(dmg) + " hp, " + exText, back);
+																			}
+																		}
+																	});
+																}
+															};
+														});
+													});
+													connection.query('UPDATE dungeon_status SET last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+													});
+													return;
+												}
 											} else if (last_dir == null)
 												return;
 
@@ -48474,7 +48597,7 @@ async function getPastGlobalStatus() {
 
 function checkResetGlobal() {
 	return;
-	// asd
+	
 	var now = new Date();
 	if (now.getDate() == 1) {
 		// Chiusura globale vecchia
