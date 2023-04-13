@@ -11509,8 +11509,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													connection.query('UPDATE dungeon_status SET last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 														if (err) throw err;
 													});
-													return;
 												}
+												return;
 											} else if (last_dir == null)
 												return;
 
