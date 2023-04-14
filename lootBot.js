@@ -11414,11 +11414,17 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												if (canSkipRoom == 0) {
 													bot.sendMessage(message.chat.id, "In queste condizioni non è possibile evitare la stanza!", back);
 													return;
-												}												
+												}
+												var dungeon = await connection.queryAsync("SELECT dungeon_energy FROM player WHERE id = " + player_id);
+												if ((dungeon[0].dungeon_energy < 10) && (dungeonRush == 0) && ((((boost_id == 8) && (boost_mission == 0)) || (boost_id != 8)))) {
+													bot.sendMessage(message.chat.id, "Non hai abbastanza energia per utilizzare la furtività, ti servono 10 Cariche Esplorative!", dBack);
+													return;
+												}
 												var rand = Math.random()*100;
-												if (rand < 50) {
+												if (rand < 40) {
 													bot.sendMessage(message.chat.id, "Silenziosamente e con cautela muovi i tuoi passi lungo il corridoio: mostri temibili dovrebbero sorvegliarne i cunicoli, chissà che non siano esausti\nVelocemente ti ritrovi nella stanza successiva, incolume.", dNext);
 													room_id++;
+													await reduceDungeonEnergy(player_id, 10);
 													connection.query('UPDATE dungeon_status SET room_id = ' + room_id + ', last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 														if (err) throw err;
 													});
