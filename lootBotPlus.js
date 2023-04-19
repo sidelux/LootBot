@@ -77,7 +77,7 @@ const timevarSpam = []
 const timevarFlood = []
 const rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500]
 const reg = /^[a-zA-Zàèìòùé0-9.*,\\?!'@() ]{1,}$/
-const reItem = new RegExp("^[a-zA-Z0-9\'àèéìòù ]{1,100}$");
+const reItem = new RegExp("^[a-zA-Z0-9\'àèéìòù\* ]{1,100}$");
 
 console.log('Avvio bot...')
 
@@ -8952,7 +8952,7 @@ bot.onText(/^\/oggetti (.+)|^\/oggetti/, async function (message, match) {
 		bot.sendMessage(message.chat.id, "Inserisci il nome parziale dell'oggetto (es. /oggetti Spada Anti) per visualizzare la lista e la quantità, per una ricerca precisa usa l'asterisco")
 		return
 	}
-	if (reg.test(inputMatch) == false) {
+	if (reItem.test(inputMatch) == false) {
 		bot.sendMessage(message.chat.id, 'Oggetto non valido, riprova')
 		return
 	}
