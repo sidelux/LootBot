@@ -6884,8 +6884,9 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 
 			var top_season_wait = 0;
 			var top_season_end = new Date(rows[0].top_season_end);
-			top_season_end.setDate(top_season_end.getDate() + 1);
-			if (now < top_season_end)
+			var top_season_end_next = new Date(rows[0].top_season_end);
+			top_season_end_next.setDate(top_season_end_next.getDate() + 1);
+			if ((now > top_season_end) && (now < top_season_end_next))
 				top_season_wait = 1;
 
 			connection.query('SELECT lobby_id, lobby_wait_end FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
