@@ -77,7 +77,7 @@ const timevarSpam = []
 const timevarFlood = []
 const rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500]
 const reg = /^[a-zA-Zàèìòùé0-9.*,\\?!'@() ]{1,}$/
-const reItem = new RegExp("^[a-zA-Z0-9\'àèéìòù\* ]{1,100}$");
+const reItem = new RegExp("^[a-zA-Z0-9\'àèéìòù\*\, ]{1,100}$");
 
 console.log('Avvio bot...')
 
