@@ -6868,7 +6868,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 			}
 		};
 
-		connection.query('SELECT map_season_end FROM config', function (err, rows, fields) {
+		connection.query('SELECT map_season_end, top_season_end FROM config', function (err, rows, fields) {
 			if (err) throw err;
 
 			var now = new Date();
@@ -6881,6 +6881,12 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 				diff = Math.round(diff_m/60) + " ore";
 			if (diff_m > 60*24)
 				diff = Math.round(diff_m/(60*24)) + " giorni";
+
+			var top_season_wait = 0;
+			var top_season_end = new Date(rows[0].top_season_end);
+			top_season_end.setDate(top_season_end.getDate() + 1);
+			if (now < top_season_end)
+				top_season_wait = 1;
 
 			connection.query('SELECT lobby_id, lobby_wait_end FROM map_lobby WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -6978,6 +6984,8 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 									open = "⛔️ Chiuse per pausa domenicale";
 								if (checkDragonTopOn == 1)
 									open = "⛔️ Chiuse per Vette in corso";
+								if (top_season_wait == 1)
+									open = "⛔️ Chiuse per Vette appena terminate";
 
 								bot.sendMessage(message.chat.id, "Benvenuto nelle <b>Mappe di Lootia</b> 🏹!\n\nAccedi alle lobby per affrontare altri combattenti su una mappa ogni volta differente, scala la classifica ed ottieni 🏆!\n\n<b>" + lobby_players + "</b> ⚔️ combattenti dentro una lobby\n<b>" + trophies + "</b> 🏆 in questa stagione (terminerà tra " + diff + ")\n" + open + conditions + "\n<i>" + conditions_desc + "</i>", kbMain).then(function () {
 									answerCallbacks[message.chat.id] = async function (answer) {
@@ -7021,6 +7029,10 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 											}
 											if (checkDragonTopOn == 1) {
 												bot.sendMessage(message.chat.id, "Non puoi accedere ad una lobby durante le Vette", kbBack);
+												return;
+											}
+											if (top_season_wait == 1) {
+												bot.sendMessage(message.chat.id, "E' necessario attendere il giorno successivo alla chiusura delle Vette per poter accedere alle Mappe", kbBack);
 												return;
 											}
 											if (lobby_id != null) {
@@ -62130,7 +62142,7 @@ function checkMapSeasonEnd() {
 				*/
 				var next_season_end = moment().startOf('month').add(1, 'months').weekday('3').add(2, 'weeks').format('YYYY-MM-DD') + " 12:00:00";
 				console.log("next_season_end", next_season_end);
-				connection.query('UPDATE config SET map_season_end = DATE_SUB("' + next_season_end + '", INTERVAL 7 DAY)', function (err, rows, fields) {
+				connection.query('UPDATE config SET map_season_end = DATE_SUB("' + next_season_end + '", INTERVAL 8 DAY)', function (err, rows, fields) {
 					if (err) throw err;
 				});
 				connection.query('UPDATE player SET last_season_trophies = 0', function (err, rows, fields) {
