@@ -4717,50 +4717,16 @@ bot.onText(/^\/cancellanegozio (.+)|^\/cancellanegozio$/, function (message, mat
 bot.on('callback_query', async function (message) {
 	const func = message.data.split(':')
 	if (func[0] == 'SUGGESTION') {
-		tipsController.manageCallBack(message).then(function (sugg_results) {
-			if (sugg_results.query) {
-				bot.answerCallbackQuery(
-					sugg_results.query.id,
-					sugg_results.query.options
-				).catch(function (err) {
-					// console.log("Query -> " + err.response.body);
-				})
-			}
-			if (sugg_results.toDelete) {
-				bot.deleteMessage(
-					sugg_results.toDelete.chat_id,
-					sugg_results.toDelete.mess_id
-				).catch(function (err) {
-					// console.log("!toDelete -> " + err.response.body.description);
-				})
-			}
-			if (sugg_results.toEdit) {
-				bot.editMessageText(
-					sugg_results.toEdit.message_txt, {
-					chat_id: sugg_results.toEdit.chat_id,
-					message_id: sugg_results.toEdit.mess_id,
-					parse_mode: sugg_results.toEdit.options.parse_mode,
-					disable_web_page_preview: true,
-					reply_markup: sugg_results.toEdit.options.reply_markup
-				}).catch(function (err) {
-					// console.log("Errore toEdit: ");
-					// console.log(err.response.body);
-				})
-			}
-			if (sugg_results.toSend) {
-				bot.sendMessage(
-					sugg_results.toSend.chat_id,
-					sugg_results.toSend.message_txt,
-					sugg_results.toSend.options
-				).catch(function (err) {
-					// console.log("toSend-> " + err.response.body);
-				})
-			}
-		}).catch(function (err) {
-			// console.log("> C'è stato un errore di sotto...");
-			// console.log(err);
-		})
-		return;
+		try {
+			let sugg_results = await tipsController.manageCallBack(message);
+			await tips_utils.bigResponse(sugg_results, bot);
+			return;
+		}
+		catch(err) {
+			console.log("> C'è stato un errore di sotto...");
+			console.log(err);
+			return;
+		}
 	}
 
 	connection.query('SELECT account_id, market_ban, money, id, holiday FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
