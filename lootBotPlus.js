@@ -13,8 +13,10 @@ const fetch = require('isomorphic-fetch')
 
 const config = require('./config.js')
 var tipsController;
+var tips_utils;
 if (config.tips_enabled == true) {
 	tipsController = require('./suggestions/tips_message_controller.js')
+	tips_utils = require('./suggestions/tips_utils.js')
 	tipsController.initialize()
 }
 
@@ -161,43 +163,11 @@ bot.on('message', function (message, match) {
 			}
 
 			if (isSuggestion) {
-				// console.log("> Sugg. da parte di " + message.from.username);
-				tipsController.suggestionManager(message).then(function (responseMessage) {
-					if (typeof (responseMessage) !== 'undefined') {
-						// se c'è da editare qualche cosa...
-						if (typeof (responseMessage.toEdit) !== 'undefined') {
-							bot.editMessageText(
-								responseMessage.toEdit.message_txt, {
-								chat_id: responseMessage.toEdit.chat_id,
-								message_id: responseMessage.toEdit.mess_id,
-								parse_mode: responseMessage.toEdit.options.parse_mode,
-								disable_web_page_preview: true,
-								reply_markup: responseMessage.toEdit.options.reply_markup
-							}).catch(function (err) {
-								bot.sendMessage(
-									16964514,
-									"👮Hey:\nC'è stato un problema!\n" + err.response.body.description +
-									'\nNella chat: ' + responseMessage.toSend.chat_id + '\n' + err.response.body
-								)
-							})
-						}
-						if (typeof (responseMessage.toSend) !== 'undefined') {
-							bot.sendMessage(
-								responseMessage.toSend.chat_id,
-								responseMessage.toSend.message_txt,
-								responseMessage.toSend.options
-							).catch(function (err) {
-								bot.sendMessage(
-									responseMessage.toSend.chat_id,
-									'Upps!\n' +
-									'Sembra tu stia usando uno dei caratteri markdown non correttamente...\n' +
-									'O comunque, questo è quello che dice Telegram:\n\n```' + err.response.body.description + '\n```'
-								)
-							})
-						}
-					}
-				}).catch(function (err) { console.log(err) })
+				return tipsController.suggestionManager(message).then(function (sugg_res){
+					return tips_utils.bigSend(sugg_res, bot);
+				});
 			}
+	
 		}
 
 		// End suggestions
