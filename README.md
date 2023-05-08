@@ -37,9 +37,9 @@ Prima di creare una richiesta è bene verificare che il codice sia funzionante e
 
 Ci sono vari interventi che ho pensato di apportare ma per mancanza di tempo o risorse non sono mai riuscito ad avviare:
 - [x] Predisposizione per l'open source
-- [x] Automazione completa della gestione degli eventi (manca solo l'automazione delle imprese globali)
+- [x] Automazione completa della gestione degli eventi e della globale
 - [ ] Divisione del codice in moduli/file
-- [ ] Aggiunta periodica delle nuove funzionalità sulla base dei suggerimenti della community tramite i contributi dei dev
+- [ ] Aggiunta periodica delle nuove funzionalità sulla base dei suggerimenti della community tramite i contributi degli altri sviluppatori
 - [ ] Bilanciamento generale che nel tempo ha portato ad inflazione e rottura di molte meccaniche del gioco
 - [ ] Aggiunta del supporto al multi lingua (principalmente l'inglese)
 
