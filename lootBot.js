@@ -11438,6 +11438,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													bot.sendMessage(message.chat.id, "Silenziosamente e con cautela muovi i tuoi passi lungo il corridoio: mostri temibili dovrebbero sorvegliarne i cunicoli, chissà che non siano esausti\nVelocemente ti ritrovi nella stanza successiva, incolume.", dNext);
 													room_id++;
 													await reduceDungeonEnergy(player_id, 10);
+													if (await getCurrentGlobal() == 15)
+														globalAchievement(player_id, 1);
 													connection.query('UPDATE dungeon_status SET room_id = ' + room_id + ', last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 														if (err) throw err;
 													});
@@ -24701,7 +24703,7 @@ bot.onText(/^incarichi|torna agli incarichi/i, function (message) {
 											return;
 										}
 
-										var reg = new RegExp("^[a-zA-Z ]{1,100}$");
+										var reg = new RegExp("^[a-zA-Z\' ]{1,100}$");
 										if (reg.test(answer.text) == false) {
 											bot.sendMessage(message.chat.id, "Incarico non valido, riprova", back);
 											return;
@@ -48612,6 +48614,19 @@ bot.onText(/^\/destroylobby (.+)/, function (message, match) {
 	};
 });
 
+bot.onText(/^\/checkResetGlobal (.+)/, function (message, match) {
+	var action = match[1];
+
+	if (message.from.id == config.phenix_id) {
+		if ((action != "close") && (action != "open")) {
+			bot.sendMessage(message.chat.id, "Azione non valida");
+			return;
+		}
+		checkResetGlobal(action);
+		bot.sendMessage(message.chat.id, "Fatto!");
+	};
+});
+
 // FUNZIONI
 
 async function getCurrentGlobal() {
@@ -48624,11 +48639,16 @@ async function getPastGlobalStatus() {
 	return global[0].global_end_status;
 }
 
-function checkResetGlobal() {
-	return;
-	
-	var now = new Date();
-	if (now.getDate() == 1) {
+function checkResetGlobal(action = null) {
+	if (action == null) {
+		var now = new Date();
+		if (now.getDate() == 1)
+			action = "close";
+		else if (now.getDate() == 5)
+			action = "open";
+	}
+
+	if (action == "close") {
 		// Chiusura globale vecchia
 		connection.query('SELECT global_id, global_cap FROM config', function (err, rows, fields) {
 			if (err) throw err;
@@ -48638,12 +48658,13 @@ function checkResetGlobal() {
 				if (err) throw err;
 				var total_value = rows[0].tot;
 				var global_end_status = 0;
+				var tot = rows[0].tot;
 				if (tot >= global_cap) {
 					global_end_status = 1; // completata
-					endglobal(message, 0);
+					endglobal(null, 0);
 				} else {
 					global_end_status = 2; // fallita
-					failglobal(message, 0);
+					failglobal(null, 0);
 				}
 				connection.query('UPDATE global_history SET picked = 1 AND id = ' + global_id, function (err, rows, fields) {
 					if (err) throw err;
@@ -48653,7 +48674,7 @@ function checkResetGlobal() {
 						var picked_filter = "";
 						if (Object.keys(rows).length > 0)
 							picked_filter = "WHERE picked = 0";
-						connection.query("SELECT description, cap, item1, item2, item3, treshold, end_message_win, end_message_fail FROM global_history " + picked_filter + " ORDER BY RAND()", function (err, rows, fields) {
+						connection.query("SELECT description, cap, item1, item2, item3, treshold, end_message_win, end_message_lose FROM global_history " + picked_filter + " ORDER BY RAND()", function (err, rows, fields) {
 							if (err) throw err;
 							var description = rows[0].description;
 							var cap = rows[0].cap;
@@ -48668,11 +48689,11 @@ function checkResetGlobal() {
 							next.setMonth(next.getMonth() + 1, 1);
 							var next_string = toDate("en", next);
 
-							connection.query('UPDATE config SET global_date = "' + next_string + '", global_cap = ' + cap + ', global_item1 = ' + item1 + ', global_item2 = ' + item2 + ', global_item3 = ' + item3 + ', global_treshold = ' + treshold + ', global_end_message = "' + end_message_win + '", global_end_message_lose = "' + end_message_lose + '", global_desc = "' + description + '", global_eventon = 1, global_eventwait = 0, global_eventhide = 1, global_end_status = ' + global_end_status, function (err, rows, fields) {
+							connection.query('UPDATE config SET global_date = "' + next_string + '", global_cap = ' + cap + ', global_item1 = ' + item1 + ', global_item2 = ' + item2 + ', global_item3 = ' + item3 + ', global_treshold = ' + treshold + ', global_end_message = "' + end_message_win + '", global_end_message_fail = "' + end_message_lose + '", global_desc = "' + description + '", global_eventon = 1, global_eventwait = 0, global_eventhide = 1, global_end_status = ' + global_end_status, function (err, rows, fields) {
 								if (err) throw err;
 								connection.query('DELETE FROM achievement_global', function (err, rows, fields) {
 									if (err) throw err;
-									error_log("Nuova globale avviata");
+									console.log("Nuova globale avviata");
 								});
 							});
 						});
@@ -48680,10 +48701,10 @@ function checkResetGlobal() {
 				});
 			});
 		});
-	} else if (now.getDate() == 5) {
+	} else if (action == "open") {
 		connection.query('UPDATE config SET global_eventon = 1, global_eventwait = 0, global_eventhide = 0', function (err, rows, fields) {
 			if (err) throw err;
-			error_log("Globale rivelata");
+			console.log("Globale rivelata");
 		});
 	}
 }
