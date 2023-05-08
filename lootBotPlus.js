@@ -8831,11 +8831,13 @@ bot.onText(/^\/imprese/, function (message) {
 })
 
 bot.onText(/^\/oggetto (.+)|^\/oggetto/, function (message, match) {
-	const oggetto = mysql_real_escape_string(match[1]);
+	var oggetto = match[1];
 	if (oggetto == undefined) {
 		bot.sendMessage(message.chat.id, "Inserisci il nome dell'oggetto (es. /oggetto Spada Antimateria) per visualizzare quanti ne possiedi")
 		return
 	}
+
+	oggetto = mysql_real_escape_string(match[1]);
 
 	if (reg.test(oggetto) == false) {
 		bot.sendMessage(message.chat.id, 'Oggetto non valido, riprova')

@@ -37,11 +37,11 @@ Prima di creare una richiesta è bene verificare che il codice sia funzionante e
 
 Ci sono vari interventi che ho pensato di apportare ma per mancanza di tempo o risorse non sono mai riuscito ad avviare:
 - [x] Predisposizione per l'open source
+- [x] Automazione completa della gestione degli eventi (manca solo l'automazione delle imprese globali)
 - [ ] Divisione del codice in moduli/file
-- [ ] Aggiunta periodica delle nuove funzionalità sulla base dei suggerimenti della community
+- [ ] Aggiunta periodica delle nuove funzionalità sulla base dei suggerimenti della community tramite i contributi dei dev
 - [ ] Bilanciamento generale che nel tempo ha portato ad inflazione e rottura di molte meccaniche del gioco
 - [ ] Aggiunta del supporto al multi lingua (principalmente l'inglese)
-- [ ] Automazione completa della gestione degli eventi (manca solo l'automazione delle imprese globali)
 
 I contributi a questi interventi avranno maggior priorità rispetto alle altre modifiche.
 
@@ -54,7 +54,7 @@ Io o qualcun'altro provvederemo a risolvere il problema o commentare con maggior
 
 * **Edoardo Cortese** - *Programmazione* - [fenix45](http://telegram.me/fenix45)
 * **Emanuele Finiguerra** - *Analisi e bilanciamenti* - [LastSoldier95](http://telegram.me/LastSoldier95)
-* **Dario Emerson** - Fix e migliorie
+* **Dario Emerson** - Fix e migliorie strutturali
 * **@Delooo** - Mob generator
 
 ## Licenza
