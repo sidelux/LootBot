@@ -21224,7 +21224,8 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 				var finish_date_f = addZero(finishD.getDate()) + "/" + addZero(finishD.getMonth() + 1) + " alle " + addZero(finishD.getHours()) + ':' + addZero(finishD.getMinutes());
 
 				startD.setDate(startD.getDate() - 7);
-				var start_date_f = addZero(startD.getDate()) + "/" + addZero(startD.getMonth() + 1) + " alle " + addZero(startD.getHours()) + ':' + addZero(startD.getMinutes());
+				var start_hour = 9;
+				var start_date_f = addZero(startD.getDate()) + "/" + addZero(startD.getMonth() + 1) + " alle " + addZero(start_hour) + ':' + addZero(startD.getMinutes());
 
 				connection.query('SELECT nickname, CONCAT(D.name, " ", D.type) As dragon, L.name, R.rank FROM dragon_top_rank R, dragon D, player, dragon_top_list L WHERE L.id = top_id AND R.dragon_id = D.id AND player.id = R.player_id ORDER BY R.top_id DESC, R.rank DESC LIMIT 25', function (err, rows, fields) {
 					if (err) throw err;
@@ -62162,7 +62163,7 @@ function checkMapSeasonEnd() {
 					if (err) throw err;
 				});
 				*/
-				var next_season_end = moment().startOf('month').add(1, 'months').weekday('3').add(2, 'weeks').format('YYYY-MM-DD') + " 12:00:00";
+				var next_season_end = moment().startOf('month').add(1, 'months').weekday('3').add(2, 'weeks').format('YYYY-MM-DD') + " 23:00:00";
 				console.log("next_season_end", next_season_end);
 				connection.query('UPDATE config SET map_season_end = DATE_SUB("' + next_season_end + '", INTERVAL 8 DAY)', function (err, rows, fields) {
 					if (err) throw err;
@@ -62285,7 +62286,7 @@ function setRestrictMap(element, index, array) {
 };
 
 function checkTopSeasonStart() {
-	connection.query('SELECT 1 FROM config WHERE NOW() >= DATE_SUB(top_season_end, INTERVAL 7 DAY)', function (err, rows, fields) {
+	connection.query('SELECT 1 FROM config WHERE NOW() >= DATE_SUB(CONCAT(DATE(top_season_end), " 09:00:00"), INTERVAL 7 DAY)', function (err, rows, fields) {
 		if (err) throw err;
 		if (Object.keys(rows).length == 1) {
 
@@ -62470,7 +62471,7 @@ function checkTopSeasonEnd() {
 						console.log("Modalità test attiva, nessun messaggio nè aggiornamento");
 
 					// terzo mercoledì di ogni mese
-					var next_season_end = moment().startOf('month').add(1, 'months').weekday('3').add(2, 'weeks').format('YYYY-MM-DD') + " 12:00:00";
+					var next_season_end = moment().startOf('month').add(1, 'months').weekday('3').add(2, 'weeks').format('YYYY-MM-DD') + " 23:00:00";
 					if (test == 0) {
 						connection.query('UPDATE config SET top_season_end = "' + next_season_end + '"', function (err, rows, fields) {
 							if (err) throw err;
