@@ -1,6 +1,5 @@
 config.js
 events.ini
 node_modules/
-suggestions/
 node_modules_old/
 custom_log.log
