@@ -21794,14 +21794,14 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																// fuori
 																return;
 															} else if (answer.text.indexOf("Monti") != -1) {
-																connection.query('SELECT L.name, COUNT(R.top_id) As cnt FROM dragon_top_rank R RIGHT JOIN dragon_top_list L ON L.id = R.top_id GROUP BY R.top_id ORDER BY top_id;', function (err, rows, fields) {
+																connection.query('SELECT L.name, L.id, COUNT(R.top_id) As cnt FROM dragon_top_rank R RIGHT OUTER JOIN dragon_top_list L ON R.top_id = L.id GROUP BY L.id ORDER BY L.id', function (err, rows, fields) {
 																	if (err) throw err;
 																	var text = "";
 																	for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-																		if (top_id == i+1)
-																			text += (i+1) + ". *" + rows[i].name + "* (" + rows[i].cnt + ")\n";
+																		if (rows[i].id == top_id)
+																			text += rows[i].id + ". *" + rows[i].name + "* (" + rows[i].cnt + ")\n";
 																		else
-																			text += (i+1) + ". " + rows[i].name + " (" + rows[i].cnt + ")\n";
+																			text += rows[i].id + ". " + rows[i].name + " (" + rows[i].cnt + ")\n";
 																	}
 																	bot.sendMessage(message.chat.id, "*Informazioni sui Monti:*\n" + text, kbBack);
 																});
