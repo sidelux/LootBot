@@ -8434,7 +8434,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 			var moves_left = rows[0].moves_left;
 			var lobby_training = rows[0].lobby_training;
 
-			connection.query('SELECT map_json, next_restrict_time, conditions FROM map_lobby_list WHERE lobby_id = ' + lobby_id, async function (err, rows, fields) {
+			connection.query('SELECT map_json, next_restrict_time, conditions, flari_active FROM map_lobby_list WHERE lobby_id = ' + lobby_id, async function (err, rows, fields) {
 				if (err) throw err;
 
 				if (Object.keys(rows).length == 0) {
@@ -8462,6 +8462,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 				var next_restrict_time = rows[0].next_restrict_time;
 				var mapMatrix = JSON.parse(rows[0].map_json);
 				var conditions = rows[0].conditions;
+				var flari_active = rows[0].flari_active;
 				var checkEnemy = await connection.queryAsync('SELECT player_id, nickname, chat_id, posX, posY FROM map_lobby M, player P WHERE M.player_id = P.id AND killed = 0 AND enemy_id IS NULL AND player_id != ' + player_id + ' AND lobby_id = ' + lobby_id);
 				var map = printMap(mapMatrix, posX, posY, pulsePosX, pulsePosY, killed, checkEnemy, conditions, 0);
 
@@ -8941,6 +8942,10 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 					var boost_text = "";
 					if (boost_turn > 0)
 						boost_text = "\n" + mapIdToSym(13) + " " + boost_turn;
+
+					var flari_text = "";
+					if (flari_active == 1)
+						flari_text = "\n🔗 Flaridion attivi";
 
 					bot.sendMessage(message.chat.id, "👥 " + total_players_alive + " su " + lobby_total_space + " sopravvissuti\n❤️ " + formatNumber(life) + wait_text + moves_text + restrict_text + boost_text + "\n" + map, kbSel).then(function () {
 						answerCallbacks[message.chat.id] = async function (answer) {
