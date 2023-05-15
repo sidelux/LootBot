@@ -8947,7 +8947,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 					if (flari_active == 1)
 						flari_text = "\n🔗 Flaridion attivi";
 
-					bot.sendMessage(message.chat.id, "👥 " + total_players_alive + " su " + lobby_total_space + " sopravvissuti\n❤️ " + formatNumber(life) + wait_text + moves_text + restrict_text + boost_text + "\n" + map, kbSel).then(function () {
+					bot.sendMessage(message.chat.id, "👥 " + total_players_alive + " su " + lobby_total_space + " sopravvissuti\n❤️ " + formatNumber(life) + wait_text + moves_text + restrict_text + boost_text + flari_text + "\n" + map, kbSel).then(function () {
 						answerCallbacks[message.chat.id] = async function (answer) {
 							if ((answer.text == "Torna alla mappa") || (answer.text == "Torna al menu") || (answer.text.toLowerCase().indexOf("aggiorna") != -1))
 								return;
