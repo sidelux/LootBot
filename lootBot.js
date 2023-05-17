@@ -12035,7 +12035,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																setAchievement(player_id, 73, 1);
 																bot.sendMessage(message.chat.id, "Tiri la leva verso di te ed una parete si apre in un gran fragore: è una scorciatoia che ti permette di superare 2 stanze!", dNext);
 															}
-															await endDungeonRoom(player_id, boost_id, boost_mission);
+															await endDungeonRoom(player_id, boost_id, boost_mission, 0);
 															connection.query('UPDATE dungeon_status SET room_id = ' + room_id + ', last_dir = NULL, last_selected_dir = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
@@ -21604,6 +21604,18 @@ bot.onText(/vette dei draghi|vetta|^vette|^interrompi$/i, function (message) {
 																					return;
 																				}
 
+																				var err = 0;
+																				if (now.getHours() == 2) {
+																					if (now.getMinutes() > 30)
+																						err = 1;
+																				}
+																				if ((now.getHours() < nightEnd) || (now.getHours() >= nightStart))
+																					err = 1;
+																				if (err == 1) {
+																					bot.sendMessage(message.chat.id, "Puoi avviare scontri solo tra le " + nightEnd + ":00 e le " + nightStart + ":00", kbBack);
+																					return;
+																				}
+
 																				connection.query('SELECT combat FROM dragon_top_rank WHERE player_id = ' + player_id, function (err, rows, fields) {
 																					if (err) throw err;
 
@@ -23474,6 +23486,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																	if ((wait_dmg == 1) && (ice == 0)) {
 																		high_dmg = damage;
 																		damage += high_dmg;
+																		wait_dmg = 0;
 																	} else
 																		skip = 1;
 																	connection.query('UPDATE dragon_top_status SET wait_dmg = wait_dmg-1 WHERE wait_dmg > 0 AND dragon_id = ' + dragon_id, function (err, rows, fields) {
@@ -58188,7 +58201,7 @@ function setDungeonEnergy(element, index, array) {
 
 async function endDungeonRoom(player_id, boost_id, boost_mission, global_cnt = 1) {
 	setAchievement(player_id, 63, 1);
-	if (await getCurrentGlobal() == 15)
+	if ((await getCurrentGlobal() == 15) && (global_cnt == 1))
 		globalAchievement(player_id, 1);
 	if (boost_id == 8) {
 		setBoost(player_id, boost_mission, boost_id);
