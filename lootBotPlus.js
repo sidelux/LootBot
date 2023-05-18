@@ -5290,6 +5290,12 @@ bot.on('callback_query', async function (message) {
 							pQnt = await getItemCnt(player_id2, rows[i].item_id)
 							if ((rows[i].quantity < 1) || (pQnt < 1)) { continue }
 
+							var rows_durability = connection.queryAsync("SELECT durability, max_durability FROM inventory WHERE item_id = " + rows[i].item_id + " AND player_id = " + player_id2);
+							if ((rows_durability[0].durability != null) && (rows_durability[0].durability_max != null)) {
+								if (rows_durability[0].durability < rows_durability[0].durability_max)
+									continue;
+							}
+
 							if (pQnt > rows[i].quantity) { pQnt = rows[i].quantity }
 
 							total_price += rows[i].price * pQnt
@@ -5476,7 +5482,7 @@ bot.on('callback_query', async function (message) {
 					return
 				}
 
-				connection.query('SELECT item.name, inventory.quantity FROM inventory, item WHERE inventory.item_id = item.id AND item.id = ' + item_id + ' AND inventory.player_id = ' + player_id2 + ' AND inventory.quantity > 0', async function (err, rows, fields) {
+				connection.query('SELECT item.name, inventory.quantity, inventory.durability, inventory.durability_max FROM inventory, item WHERE inventory.item_id = item.id AND item.id = ' + item_id + ' AND inventory.player_id = ' + player_id2 + ' AND inventory.quantity > 0', async function (err, rows, fields) {
 					if (err) throw err
 					if (Object.keys(rows).length == 0) {
 						bot.answerCallbackQuery(message.id, { text: 'Il proprietario del negozio non possiede l\'oggetto' })
@@ -5487,6 +5493,13 @@ bot.on('callback_query', async function (message) {
 						bot.answerCallbackQuery(message.id, { text: 'Il proprietario del negozio non possiede l\'oggetto' })
 						check.splice(index, 1)
 						return
+					}
+					if ((rows[0].durability != null) && (rows[0].durability_max != null)) {
+						if (rows[0].durability < rows[0].durability_max) {
+							bot.answerCallbackQuery(message.id, { text: 'L\'oggetto del proprietario è deteriorato, non è possibile acquistarlo' })
+							check.splice(index, 1)
+							return
+						}
 					}
 
 					const item_name = rows[0].name
@@ -6206,7 +6219,7 @@ bot.onText(/^\/offri/i, function (message) {
 						return
 					}
 
-					connection.query('SELECT item.allow_sell, item.value, item.max_value, item.id, item.name, inventory.quantity FROM item, inventory WHERE item.id = inventory.item_id AND item.name = "' + item + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
+					connection.query('SELECT item.allow_sell, item.value, item.max_value, item.id, item.name, inventory.quantity, durability, durability_max FROM item, inventory WHERE item.id = inventory.item_id AND item.name = "' + item + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
 						if (err) throw err
 						if (Object.keys(rows).length == 0) {
 							bot.sendMessage(message.from.id, "Non possiedi l'oggetto che hai inserito.")
@@ -6219,6 +6232,12 @@ bot.onText(/^\/offri/i, function (message) {
 						if (rows[0].allow_sell == 0) {
 							bot.sendMessage(message.chat.id, 'Questo oggetto non può essere venduto')
 							return
+						}
+						if ((rows[0].durability != null) && (rows[0].durability_max != null)) {
+							if (rows[0].durability < rows[0].durability_max) {
+								bot.sendMessage(message.from.id, "L'oggetto che stai cercando di vendere si è deteriorato, non è possibile metterlo in vendita.")
+								return
+							}
 						}
 
 						const item_val = rows[0].value
@@ -6540,7 +6559,7 @@ bot.onText(/^\/scambia/i, function (message) {
 						const long_date = d2.getFullYear() + '-' + addZero(d2.getMonth() + 1) + '-' + addZero(d2.getDate()) + ' ' + addZero(d2.getHours()) + ':' + addZero(d2.getMinutes()) + ':' + addZero(d2.getSeconds())
 						const short_date = addZero(d2.getHours()) + ':' + addZero(d2.getMinutes())
 
-						connection.query('SELECT item.id, item.allow_sell, quantity FROM item, inventory WHERE item.id = inventory.item_id AND item.name = "' + item1 + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
+						connection.query('SELECT item.id, item.allow_sell, quantity, durability, durability_max FROM item, inventory WHERE item.id = inventory.item_id AND item.name = "' + item1 + '" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
 							if (err) throw err
 							if (Object.keys(rows).length == 0) {
 								bot.sendMessage(message.from.id, "L'oggetto " + item1 + ' non è presente nel tuo inventario o non è consentito.')
@@ -6555,6 +6574,13 @@ bot.onText(/^\/scambia/i, function (message) {
 							if (rows[0].allow_sell == 0) {
 								bot.sendMessage(message.chat.id, 'Questo oggetto non può essere scambiato')
 								return
+							}
+
+							if ((rows[0].durability != null) && (rows[0].durability_max != null)) {
+								if (rows[0].durability < rows[0].durability_max) {
+									bot.sendMessage(message.from.id, "L'oggetto che stai cercando di scambiare si è deteriorato, non è possibile scambiarlo.")
+									return
+								}
 							}
 
 							const item1_id = rows[0].id
@@ -6780,7 +6806,7 @@ bot.onText(/^\/accettas/i, function (message) {
 					return
 				}
 
-				connection.query('SELECT item.id, item.name, quantity FROM item, inventory WHERE item.id = inventory.item_id AND inventory.item_id = ' + item2 + ' AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
+				connection.query('SELECT item.id, item.name, quantity, durability, max_durability FROM item, inventory WHERE item.id = inventory.item_id AND inventory.item_id = ' + item2 + ' AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
 					if (err) throw err
 
 					if (Object.keys(rows).length == 0) {
@@ -6791,6 +6817,13 @@ bot.onText(/^\/accettas/i, function (message) {
 					if (rows[0].quantity < quantity) {
 						bot.sendMessage(message.from.id, "Non possiedi abbastanza copie dell'oggetto richiesto.")
 						return
+					}
+
+					if ((rows[0].durability != null) && (rows[0].durability_max != null)) {
+						if (rows[0].durability < rows[0].durability_max) {
+							bot.sendMessage(message.from.id, "L'oggetto che stai cercando di scambiare si è deteriorato, non è possibile scambiarlo.")
+							return
+						}
 					}
 
 					connection.query('SELECT id, chat_id, account_id, nickname FROM player WHERE id = ' + player_id2, function (err, rows, fields) {
@@ -11599,17 +11632,36 @@ function setFinishedMarketDirect(element, index, array) {
 
 // Gestione oggetti
 
-async function addItem(player_id, item_id, qnt = 1) {
-	qnt = parseInt(qnt)
+async function addItem(player_id, item_id, qnt = 1, durability = null) {
+	qnt = parseInt(qnt);
 	if (isNaN(qnt)) {
-		console.log('ERRORE! addItem di ' + qnt + 'x ' + item_id + ' per player ' + player_id)
-		return
+		console.log("ERRORE! addItem di " + qnt + "x " + item_id + " per player " + player_id);
+		return;
 	}
 
-	const rows = await connection.queryAsync('UPDATE inventory SET quantity = quantity+' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id)
-	if (rows.affectedRows == 0) {
-		await connection.queryAsync('INSERT INTO inventory (player_id, item_id, quantity) VALUES (' + player_id + ',' + item_id + ', ' + qnt + ')')
-	}
+	if (item_id == 646)
+		setAchievement(player_id, 94, qnt);
+
+	var durability_query = "";
+	if (durability == null) {
+		var rows = await connection.queryAsync('SELECT weapon_id, weapon2_id, weapon3_id FROM player WHERE id = ' + player_id);
+		var weapon_id = rows[0].weapon_id;
+		var weapon2_id = rows[0].weapon2_id;
+		var weapon3_id = rows[0].weapon3_id;
+		var rows = await connection.queryAsync('SELECT power, power_armor, power_shield, rarity FROM item WHERE id = ' + item_id);
+		if ((rows[0].power > 0) || (rows[0].power_armor < 0) || (rows[0].power_shield < 0)) {
+			var durability = getDurability(rows[0].rarity);
+			var rows = await connection.queryAsync('SELECT quantity FROM inventory WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
+			// se non avevo copie dell'oggetto e non è equipaggiato, imposta la durabilità massima, altrimenti mantieni quella attuale
+			if ((rows[0].quantity == 0) && (weapon_id != item_id) && (weapon2_id != item_id) && (weapon3_id != item_id))
+				durability_query = ", durability = " + durability + ', durability_max = ' + durability;
+		}
+	} else
+		durability_query = ", durability = " + durability;
+
+	var rows = await connection.queryAsync('UPDATE inventory SET quantity = quantity+' + qnt + durability_query + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
+	if (rows.affectedRows == 0)
+		await connection.queryAsync('INSERT INTO inventory (player_id, item_id, quantity) VALUES (' + player_id + ',' + item_id + ', ' + qnt + ')');
 }
 
 function delItem(player_id, item_id, qnt = 1) {
@@ -11622,6 +11674,27 @@ function delItem(player_id, item_id, qnt = 1) {
 	connection.query('UPDATE inventory SET quantity = quantity-' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id, function (err, rows, fields) {
 		if (err) throw err
 	})
+}
+
+function getDurability(rarity) {
+	var durability = null;
+	if (rarity == "C")
+		durability = 100;
+	else if (rarity == "NC")
+		durability = 200;
+	else if (rarity == "R")
+		durability = 300;
+	else if (rarity == "UR")
+		durability = 400;
+	else if (rarity == "L")
+		durability = 500;
+	else if (rarity == "E")
+		durability = 600;
+	else if (rarity == "UE")
+		durability = 700;
+	else if (rarity == "X")
+		durability = 1000;
+	return durability;
 }
 
 function delAllItem(player_id, item_id) {

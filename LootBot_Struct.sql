@@ -2125,6 +2125,8 @@ CREATE TABLE `inventory` (
   `player_id` int(11) NOT NULL,
   `item_id` int(11) NOT NULL,
   `quantity` int(11) NOT NULL,
+  `durability` int(11) DEFAULT NULL,
+  `durability_max` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `inventory_no_duplicate` (`player_id`,`item_id`) USING BTREE,
   KEY `player_id` (`player_id`),

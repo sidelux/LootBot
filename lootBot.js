@@ -9578,7 +9578,7 @@ bot.onText(/sacca$/i, function (message) {
 				var map_lobby = await connection.queryAsync('SELECT flari_active FROM map_lobby_list WHERE lobby_id = ' + lobby_id);
 
 				var flari_line = "";
-				if (map_lobby[0].flari_active == 0) {
+				if ((Object.keys(rows).length == 0) || (map_lobby[0].flari_active == 0)) {
 					power_weapon = 0;
 					power_armor = 0;
 					power_shield = 0;
@@ -16507,7 +16507,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																		if (magic == 1)
 																			setAchievement(player_id, 92, 1);
 
-																		connection.query('SELECT * FROM dungeon_status WHERE player_id = ' + player_id + ' AND monster_id != 0', function (err, rows, fields) {
+																		connection.query('SELECT * FROM dungeon_status WHERE player_id = ' + player_id + ' AND monster_id != 0', async function (err, rows, fields) {
 																			if (err) throw err;
 
 																			if (Object.keys(rows).length == 0) {
@@ -17093,8 +17093,10 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							bot.sendMessage(message.chat.id, "Non hai inflitto danno al mostro!");
 																						else
 																							bot.sendMessage(message.chat.id, "Il mostro ha evitato il tuo colpo!");
-																					} else
+																					} else {
+																						await reduceDurability(player_id, 1);
 																						bot.sendMessage(message.chat.id, "Hai colpito il mostro e hai inferto *" + formatNumber(danno) + "* danni" + crit_txt + magic_txt + crit_en2 + "!", mark);
+																					}
 																				} else if (meParalyzed == 1) {
 																					if ((player_paralyzed - 1) != 0)
 																						bot.sendMessage(message.chat.id, "Non sei riuscito a colpire il mostro, sei ancora paralizzato per *" + (player_paralyzed - 1) + "* turni", mark);
@@ -17193,7 +17195,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																				var text2 = " hai perso *" + formatNumber(damage) + "* hp" + en_crit_txt + crit_txt2 + "!" + restored;
 																				var magic_txt2 = "";
 
-																				connection.query('UPDATE player SET life = life-' + damage + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																				connection.query('UPDATE player SET life = life-' + damage + ' WHERE id = ' + player_id, async function (err, rows, fields) {
 																					if (err) throw err;
 																					if (magic == 1) {
 																						if (player_life <= player_total_life*0.2)
@@ -17221,6 +17223,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							bot.sendMessage(message.chat.id, "Il mostro non riesce a " + dmg_part + crit_txt3 + magic_txt2 + "!", dBattle);
 																						}
 																					} else {
+																						await reduceDurability(player_id, 2);
+																						await reduceDurability(player_id, 3);
 																						if (extra != "")
 																							extra += " e ";
 																						bot.sendMessage(message.chat.id, "Il mostro " + extra + "ti ha ferito," + text2 + magic_txt2, dBattle);
@@ -23001,6 +23005,11 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 															move_type = rows[0].move_type;
 														}
 
+														if ((move_type == 5) && (wait_dmg > 1)) {
+															bot.sendMessage(message.chat.id, "Non è possibile utilizzare un colpo pesante mentre un altro si sta caricando (ancora " + wait_dmg + " turni)", kbNext);
+															return;
+														}
+
 														var enemySkip = 0;
 
 														//Per saltare i turni a volte
@@ -23031,6 +23040,10 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																enemySkip = 1;
 
 															dragon_scale -= move_scale;
+
+															// se attacco pesante deve caricare, non consuma scaglie
+															if (wait_dmg > 0)
+																move_scale = 0;
 
 															connection.query('UPDATE dragon SET scale = scale-' + move_scale + ' WHERE id = ' + dragon_id, function (err, rows, fields) {
 																if (err) throw err;
@@ -23486,7 +23499,6 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																	if ((wait_dmg == 1) && (ice == 0)) {
 																		high_dmg = damage;
 																		damage += high_dmg;
-																		wait_dmg = 0;
 																	} else
 																		skip = 1;
 																	connection.query('UPDATE dragon_top_status SET wait_dmg = wait_dmg-1 WHERE wait_dmg > 0 AND dragon_id = ' + dragon_id, function (err, rows, fields) {
@@ -28674,6 +28686,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				setAchievement(player[i].id, 2, damage);
 
 																			player_text += "\n> " + player[i].nickname + " infligge <b>" + formatNumber(damage) + "</b> danni" + status_text + weak;
+																			await reduceDurability(player[i].id, 1);
 
 																			damage = 0;
 																			epic_var++;
@@ -29115,6 +29128,8 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																			diff_damage = divided_damage_att-player_life;
 																			player_life -= divided_damage_att;
+																			await reduceDurability(player[i].id, 2);
+																			await reduceDurability(player[i].id, 3);
 
 																			if (player_life <= 0) {
 																				player_life = 0;
@@ -29434,6 +29449,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																				setAchievement(player[i].id, 2, damage);
 
 																			player_text += "\n> " + player[i].nickname + " infligge <b>" + formatNumber(damage) + "</b> danni" + status_text + weak;
+																			await reduceDurability(player[i].id, 1);
 
 																			damage = 0;
 																			epic_var++;
@@ -38274,6 +38290,7 @@ bot.onText(/zaino/i, function (message) {
 			bottext += "Polvere: " + formatNumber(dust[0].quantity) + " ♨️\n";
 		var inventory_val = await connection.queryAsync('SELECT SUM(I.value*IV.quantity) As val FROM item I, inventory IV WHERE I.id = IV.item_id AND IV.player_id = ' + player_id);
 		bottext += "Valore zaino: " + formatNumber(inventory_val[0].val) + " §\n";
+		// bottext += "_E' possibile conservare al massimo 1.000 copie di ogni oggetto_";
 		bottext += "\n";
 
 		connection.query('SELECT mana_1, mana_2, mana_3 FROM event_mana_status WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -42560,6 +42577,16 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 									}
 								};
 
+								connection.query('SELECT durability FROM inventory WHERE item_id = ' + itemid + ' AND player_id = ' + player_id, async function (err, rows, fields) {
+									if (err) throw err;
+									if (rows[0].durability == null) {
+										var durability = getDurability(rarity);
+										connection.query('UPDATE inventory SET durability = ' + durability + ', durability_max = ' + durability + ' WHERE item_id = ' + itemid + ' AND player_id = ' + player_id, async function (err, rows, fields) {
+											if (err) throw err;
+										});
+									}
+								});
+
 								if (power != 0) { //Arma
 									connection.query('SELECT weapon_id FROM player WHERE weapon_id != 0 AND id = ' + player_id, async function (err, rows, fields) {
 										if (err) throw err;
@@ -42861,49 +42888,45 @@ bot.onText(/^rimuovi$|rimuovi 🚫|rimuovi tutto|rimuovi arma|rimuovi armatura|r
 
 									if (oggetto == "arma") {
 										if (weapon_id != 0) {
-											connection.query('UPDATE player SET weapon=0, weapon_id=0 WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
+											connection.query('UPDATE player SET weapon = 0, weapon_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
 												await addItem(player_id, weapon_id);
 												bot.sendMessage(message.chat.id, "Arma (" + weapon_name + ") rimossa dall'equipaggiamento.", kbEquip);
 											});
-										} else {
+										} else
 											bot.sendMessage(message.chat.id, "Non hai nessun arma equipaggiata.", kbEquip);
-										}
 									} else if (oggetto == "armatura") {
 										if (weapon2_id != 0) {
-											connection.query('UPDATE player SET weapon2=0, weapon2_id=0 WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
+											connection.query('UPDATE player SET weapon2 = 0, weapon2_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
 												await addItem(player_id, weapon2_id);
 												bot.sendMessage(message.chat.id, "Armatura (" + weapon2_name + ") rimossa dall'equipaggiamento.", kbEquip);
 											});
-										} else {
+										} else
 											bot.sendMessage(message.chat.id, "Non hai nessun armatura equipaggiata.", kbEquip);
-										}
 									} else if (oggetto == "scudo") {
 										if (weapon3_id != 0) {
-											connection.query('UPDATE player SET weapon3=0, weapon3_id=0 WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
+											connection.query('UPDATE player SET weapon3 = 0, weapon3_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
 												await addItem(player_id, weapon3_id);
 												bot.sendMessage(message.chat.id, "Scudo (" + weapon3_name + ") rimosso dall'equipaggiamento.", kbEquip);
 											});
-										} else {
+										} else
 											bot.sendMessage(message.chat.id, "Non hai nessuno scudo equipaggiato.", kbEquip);
-										}
 									} else if (oggetto == "talismano") {
 										if (charm_id != 0) {
-											connection.query('UPDATE player SET charm_id=0 WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
+											connection.query('UPDATE player SET charm_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
 												await addItem(player_id, charm_id);
 												bot.sendMessage(message.chat.id, "Talismano (" + charm_name + ") rimosso dall'equipaggiamento.", kbEquip);
 											});
-										} else {
+										} else
 											bot.sendMessage(message.chat.id, "Non hai nessun talismano equipaggiato", kbEquip);
-										}
 									} else if (oggetto == "tutto") {
 										var text = "";
 										if (weapon_id != 0) {
 											text += "> Arma (" + weapon_name + ")\n";
-											connection.query('UPDATE player SET weapon=0, weapon_id=0 WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
+											connection.query('UPDATE player SET weapon = 0, weapon_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
 												await addItem(player_id, weapon_id);
 											});
@@ -43345,6 +43368,7 @@ bot.onText(/^apri/i, function (message) {
 							var currentRarity = [];
 							var special = 0;
 							var opened = 0;
+							var empty = 0;
 
 							var itemSql = "";
 
@@ -43377,6 +43401,7 @@ bot.onText(/^apri/i, function (message) {
 									shuffle(itemSql);
 
 									special = 0;
+									empty = 0;
 									item_name = itemSql[0].name;
 									item_rarity = itemSql[0].rarity;
 									item_id = itemSql[0].id;
@@ -43406,6 +43431,31 @@ bot.onText(/^apri/i, function (message) {
 											special = 1;
 										}
 									}
+
+									/*
+									var empty_perc = 0;
+									if (item_rarity == "C")
+										empty_perc = 12;
+									else if (item_rarity == "NC")
+										empty_perc = 10;
+									else if (item_rarity == "R")
+										empty_perc = 8;
+									else if (item_rarity == "UR")
+										empty_perc = 6;
+									else if (item_rarity == "L")
+										empty_perc = 4;
+									else if (item_rarity == "E")
+										empty_perc = 2;
+
+									if (empty_perc > 0) {
+										var randEmpty = Math.random()*100;
+										if (empty_perc >= randEmpty) {
+											item_name = "Vuoto";
+											item_rarity = "💨";
+											empty = 1;
+										}
+									}
+									*/
 
 									currentRarity.push(item_name + " (" + item_rarity + ")");
 
@@ -49383,6 +49433,19 @@ function getInfo(message, player, myhouse_id) {
 			if (top_win > 0)
 				top_win_text = "Vittorie Vette: " + top_win + " (" + top_win_best + " Ð)\n";
 
+			var weapon_durability = "";
+			var durability = await connection.queryAsync("SELECT durability, durability_max FROM inventory WHERE player_id = " + player_id + " AND item_id = " + weapon_id);
+			if ((Object.keys(durability).length > 0) && (durability[0].durability != null) && (durability[0].durability_max != null))
+				weapon_durability = " ⚒️ " + Math.round((durability[0].durability/durability[0].durability_max)*100) + "%";
+			var weapon2_durability = "";
+			var durability = await connection.queryAsync("SELECT durability, durability_max FROM inventory WHERE player_id = " + player_id + " AND item_id = " + weapon2_id);
+			if ((Object.keys(durability).length > 0) && (durability[0].durability != null) && (durability[0].durability_max != null))
+				weapon2_durability = " ⚒️ " + Math.round((durability[0].durability/durability[0].durability_max)*100) + "%";
+			var weapon3_durability = "";
+			var durability = await connection.queryAsync("SELECT durability, durability_max FROM inventory WHERE player_id = " + player_id + " AND item_id = " + weapon3_id);
+			if ((Object.keys(durability).length > 0) && (durability[0].durability != null) && (durability[0].durability_max != null))
+				weapon3_durability = " ⚒️ " + Math.round((durability[0].durability/durability[0].durability_max)*100) + "%";
+
 			var map_win_text = "";
 			var map_win = await connection.queryAsync("SELECT COUNT(id) As cnt FROM map_history WHERE player_id = " + player_id + " AND position = 1");
 			if (map_win[0].cnt > 0)
@@ -49814,18 +49877,18 @@ function getInfo(message, player, myhouse_id) {
 																							if (weapon_name != "-") {
 																								weapon += power_dmg;
 																								weapon_crit += power_weapon;
-																								weapon_desc = " (+" + Math.round(weapon) + ", " + weapon_crit + "%, " + weapon_enchant + enchant1 + ")";
+																								weapon_desc = " (+" + Math.round(weapon) + ", " + weapon_crit + "%, " + weapon_enchant + enchant1 + ")" + weapon_durability;;
 																							}
 																							var weapon2_desc = "";
 																							if (weapon2_name != "-") {
 																								weapon2 -= power_def;
 																								weapon2_crit += power_armor;
-																								weapon2_desc = " (" + Math.round(weapon2) + ", " + weapon2_crit + "%, " + weapon2_enchant + enchant2 + ")";
+																								weapon2_desc = " (" + Math.round(weapon2) + ", " + weapon2_crit + "%, " + weapon2_enchant + enchant2 + ")" + weapon2_durability;;
 																							}
 																							var weapon3_desc = "";
 																							if (weapon3_name != "-") {
 																								weapon3_crit += power_shield;
-																								weapon3_desc = " (" + Math.round(weapon3) + ", " + weapon3_crit + "%, " + weapon3_enchant + enchant3 + ")";
+																								weapon3_desc = " (" + Math.round(weapon3) + ", " + weapon3_crit + "%, " + weapon3_enchant + enchant3 + ")" + weapon3_durability;
 																							}
 
 																							var Keys = [];
@@ -51520,6 +51583,7 @@ function cercaTermine(message, param, player_id) {
 						var spread = rows[0].spread;
 						var spread_tot = rows[0].spread_tot;
 						var total_cnt = rows[0].total_cnt;
+						var durability = getDurability(rarity);
 
 						var cons = "No";
 						var cons_pnt = "";
@@ -51576,6 +51640,13 @@ function cercaTermine(message, param, player_id) {
 							bottext += "\n*Rarità*: " + rarity + " (" + formatNumber(price) + " §, all'emporio: " + formatNumber(Math.round(price / 2)) + " §)";
 						bottext += "\n*Consumabile*: " + cons + cons_pnt;
 						bottext += "\n*Punti creazione*: " + craft_pnt;
+						/*
+						if (durability != null) {
+							bottext += "\n*Durabilità*: " + formatNumber(durability);
+							if (rarity == "X")
+								bottext += " (parte dell'oggetto tornerà nell'inventario)";
+						}
+						*/
 
 						if (reload_est >= 50) {
 							connection.query('SELECT DISTINCT(from_id), price FROM market_direct_history WHERE time BETWEEN date_sub(NOW(),INTERVAL 1 WEEK) AND NOW() AND price != (SELECT value FROM item WHERE id = ' + item_id + ') AND item_id = ' + item_id + ' AND type = 2', function (err, rows, fields) {
@@ -64758,7 +64829,7 @@ function setExp(player_id, exp) {
 
 // Gestione oggetti
 
-async function addItem(player_id, item_id, qnt = 1) {
+async function addItem(player_id, item_id, qnt = 1, durability = null) {
 	qnt = parseInt(qnt);
 	if (isNaN(qnt)) {
 		console.log("ERRORE! addItem di " + qnt + "x " + item_id + " per player " + player_id);
@@ -64768,9 +64839,95 @@ async function addItem(player_id, item_id, qnt = 1) {
 	if (item_id == 646)
 		setAchievement(player_id, 94, qnt);
 
-	var rows = await connection.queryAsync('UPDATE inventory SET quantity = quantity+' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
-	if (rows.affectedRows == 0) {
+	var durability_query = "";
+	if (durability == null) {
+		var rows = await connection.queryAsync('SELECT weapon_id, weapon2_id, weapon3_id FROM player WHERE id = ' + player_id);
+		var weapon_id = rows[0].weapon_id;
+		var weapon2_id = rows[0].weapon2_id;
+		var weapon3_id = rows[0].weapon3_id;
+		var rows = await connection.queryAsync('SELECT power, power_armor, power_shield, rarity FROM item WHERE id = ' + item_id);
+		if ((rows[0].power > 0) || (rows[0].power_armor < 0) || (rows[0].power_shield < 0)) {
+			var durability = getDurability(rows[0].rarity);
+			var rows = await connection.queryAsync('SELECT quantity FROM inventory WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
+			// se non avevo copie dell'oggetto e non è equipaggiato, imposta la durabilità massima, altrimenti mantieni quella attuale
+			if (((Object.keys(rows).length == 0) || (rows[0].quantity == 0)) && (weapon_id != item_id) && (weapon2_id != item_id) && (weapon3_id != item_id))
+				durability_query = ", durability = " + durability + ', durability_max = ' + durability;
+		}
+	} else
+		durability_query = ", durability = " + durability;
+
+	var rows = await connection.queryAsync('UPDATE inventory SET quantity = quantity+' + qnt + durability_query + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
+	if (rows.affectedRows == 0)
 		await connection.queryAsync('INSERT INTO inventory (player_id, item_id, quantity) VALUES (' + player_id + ',' + item_id + ', ' + qnt + ')');
+}
+
+function getDurability(rarity) {
+	var durability = null;
+	if (rarity == "C")
+		durability = 100;
+	else if (rarity == "NC")
+		durability = 200;
+	else if (rarity == "R")
+		durability = 300;
+	else if (rarity == "UR")
+		durability = 400;
+	else if (rarity == "L")
+		durability = 500;
+	else if (rarity == "E")
+		durability = 600;
+	else if (rarity == "UE")
+		durability = 700;
+	else if (rarity == "X")
+		durability = 1000;
+	return durability;
+}
+
+async function reduceDurability(player_id, weapon_type) {
+	return; // per adesso non riduce nulla
+	const weapon_class = "weapon" + weapon_type;
+	var rows = await connection.queryAsync('SELECT I.durability, I.name, I.id FROM item I, player P WHERE P.' + weapon_class + '_id = I.id AND P.id = ' + player_id);
+	if (rows[0].durability > 0) {
+		connection.query("UPDATE inventory SET durability = durability-1 WHERE item_id = " + rows[0].id + " AND player_id = " + player_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
+	} else if (rows[0].durability <= 1) {
+		var item_name = rows[0].name;
+		var item_id = rows[0].id;
+		var item_rarity = rows[0].rarity;
+		var weapon_extra = "";
+		if (item_raity == "X") {
+			var tears = [674, 641, 691];
+			var rows = await connection.queryAsync('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item_id);
+			if (tears.includes(rows[0].material_1)) {
+				addItem(player_id, rows[0].material_1);
+				var rows = await connection.queryAsync('SELECT name FROM item WHERE id = ' + rows[0].material_1);
+			} else if (tears.includes(rows[0].material_2)) {
+				addItem(player_id, rows[0].material_2);
+				var rows = await connection.queryAsync('SELECT name FROM item WHERE id = ' + rows[0].material_2);
+			} else if (tears.includes(rows[0].material_3)) {
+				addItem(player_id, rows[0].material_3);
+				var rows = await connection.queryAsync('SELECT name FROM item WHERE id = ' + rows[0].material_3);
+			}
+			weapon_extra = " Hai ricevuto *" + rows[0].name + "* per poterla creare nuovamente.";
+		}
+		connection.query('UPDATE player SET ' + weapon_type + ' = 0, ' + weapon_type + '_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
+			if (err) throw err;
+			if (weapon_type == 1)
+				bot.sendMessage(message.chat.id, "L'arma *" + item_name + "* si è rotta!", mark);
+			else if (weapon_type == 2)
+				bot.sendMessage(message.chat.id, "L'armatura *" + item_name + "* si è rotta!", mark);
+			else if (weapon_type == 3)
+				bot.sendMessage(message.chat.id, "Lo scudo *" + item_name + "* si è rotto!", mark);
+			
+			connection.query("SELECT quantity FROM inventory WHERE item_id = " + item_id + " AND player_id = " + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				if (rows[0].quantity > 0) {
+					connection.query("UPDATE inventory SET durability = max_durability WHERE item_id = " + item_id + " AND player_id = " + player_id, function (err, rows, fields) {
+						if (err) throw err;
+					});
+				}
+			});
+		});
 	}
 }
 
@@ -64785,9 +64942,8 @@ async function delItem(player_id, item_id, qnt = 1, sync = 0) {
 		connection.query('UPDATE inventory SET quantity = quantity-' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
-	} else {
+	} else
 		await connection.queryAsync('UPDATE inventory SET quantity = quantity-' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
-	}
 }
 
 function delAllItem(player_id, item_id) {
@@ -64818,9 +64974,8 @@ async function addChest(player_id, chest_id, qnt = 1, shop = 0) {
 	}
 
 	var rows = await connection.queryAsync('UPDATE inventory_chest SET quantity = quantity+' + qnt + ' WHERE player_id = ' + player_id + ' AND chest_id = ' + chest_id);
-	if (rows.affectedRows == 0) {
+	if (rows.affectedRows == 0)
 		await connection.queryAsync('INSERT INTO inventory_chest (player_id, chest_id, quantity) VALUES (' + player_id + ',' + chest_id + ', ' + qnt + ')');
-	}
 
 	if (shop == 0) {
 		if (await getCurrentGlobal() == 13)
