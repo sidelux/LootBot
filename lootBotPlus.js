@@ -10471,6 +10471,19 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 			let top_win_text = ''
 			if (top_win > 0) { top_win_text = 'Vittorie Vette: ' + top_win + ' (' + top_win_best + ' Ð)\n' }
 
+			var weapon_durability = "";
+			var durability = await connection.queryAsync("SELECT durability, durability_max FROM inventory WHERE player_id = " + player_id + " AND item_id = " + weapon_id);
+			if ((Object.keys(durability).length > 0) && (durability[0].durability != null) && (durability[0].durability_max != null))
+				weapon_durability = " ⚒️ " + Math.round((durability[0].durability/durability[0].durability_max)*100) + "%";
+			var weapon2_durability = "";
+			var durability = await connection.queryAsync("SELECT durability, durability_max FROM inventory WHERE player_id = " + player_id + " AND item_id = " + weapon2_id);
+			if ((Object.keys(durability).length > 0) && (durability[0].durability != null) && (durability[0].durability_max != null))
+				weapon2_durability = " ⚒️ " + Math.round((durability[0].durability/durability[0].durability_max)*100) + "%";
+			var weapon3_durability = "";
+			var durability = await connection.queryAsync("SELECT durability, durability_max FROM inventory WHERE player_id = " + player_id + " AND item_id = " + weapon3_id);
+			if ((Object.keys(durability).length > 0) && (durability[0].durability != null) && (durability[0].durability_max != null))
+				weapon3_durability = " ⚒️ " + Math.round((durability[0].durability/durability[0].durability_max)*100) + "%";
+
 			let map_win_text = ''
 			const map_win = await connection.queryAsync('SELECT COUNT(id) As cnt FROM map_history WHERE player_id = ' + player_id + ' AND position = 1')
 			if (map_win[0].cnt > 0) { map_win_text = 'Vittorie Mappe: ' + map_win[0].cnt + ' (' + map_win_best + ' 🏆)\n' }
@@ -10777,22 +10790,22 @@ function getInfo(message, player, myhouse_id, from, account_id) {
 
 																							// Descrizioni
 
-																							let weapon_desc = ''
-																							if (weapon_name != '-') {
-																								weapon += power_dmg
-																								weapon_crit += power_weapon
-																								weapon_desc = ' (+' + Math.round(weapon) + ', ' + weapon_crit + '%, ' + weapon_enchant + enchant1 + ')'
+																							var weapon_desc = "";
+																							if (weapon_name != "-") {
+																								weapon += power_dmg;
+																								weapon_crit += power_weapon;
+																								weapon_desc = " (+" + Math.round(weapon) + ", " + weapon_crit + "%, " + weapon_enchant + enchant1 + ")" + weapon_durability;;
 																							}
-																							let weapon2_desc = ''
-																							if (weapon2_name != '-') {
-																								weapon2 -= power_def
-																								weapon2_crit += power_armor
-																								weapon2_desc = ' (' + Math.round(weapon2) + ', ' + weapon2_crit + '%, ' + weapon2_enchant + enchant2 + ')'
+																							var weapon2_desc = "";
+																							if (weapon2_name != "-") {
+																								weapon2 -= power_def;
+																								weapon2_crit += power_armor;
+																								weapon2_desc = " (" + Math.round(weapon2) + ", " + weapon2_crit + "%, " + weapon2_enchant + enchant2 + ")" + weapon2_durability;;
 																							}
-																							let weapon3_desc = ''
-																							if (weapon3_name != '-') {
-																								weapon3_crit += power_shield
-																								weapon3_desc = ' (' + Math.round(weapon3) + ', ' + weapon3_crit + '%, ' + weapon3_enchant + enchant3 + ')'
+																							var weapon3_desc = "";
+																							if (weapon3_name != "-") {
+																								weapon3_crit += power_shield;
+																								weapon3_desc = " (" + Math.round(weapon3) + ", " + weapon3_crit + "%, " + weapon3_enchant + enchant3 + ")" + weapon3_durability;
 																							}
 
 																							if (player != message.from.username) {
@@ -11653,7 +11666,7 @@ async function addItem(player_id, item_id, qnt = 1, durability = null) {
 			var durability = getDurability(rows[0].rarity);
 			var rows = await connection.queryAsync('SELECT quantity FROM inventory WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 			// se non avevo copie dell'oggetto e non è equipaggiato, imposta la durabilità massima, altrimenti mantieni quella attuale
-			if ((rows[0].quantity == 0) && (weapon_id != item_id) && (weapon2_id != item_id) && (weapon3_id != item_id))
+			if (((Object.keys(rows).length == 0) || (rows[0].quantity == 0)) && (weapon_id != item_id) && (weapon2_id != item_id) && (weapon3_id != item_id))
 				durability_query = ", durability = " + durability + ', durability_max = ' + durability;
 		}
 	} else

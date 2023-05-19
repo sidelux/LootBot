@@ -64882,11 +64882,23 @@ function getDurability(rarity) {
 	return durability;
 }
 
+bot.onText(/dur (.+)/i, function (message, match) {
+	var n = match[1];
+	for (var i = 0; i < n; i++)
+		reduceDurability(1, 1);
+});
+
 async function reduceDurability(player_id, weapon_type) {
-	return; // per adesso non riduce nulla
-	const weapon_class = "weapon" + weapon_type;
-	var rows = await connection.queryAsync('SELECT I.durability, I.name, I.id FROM item I, player P WHERE P.' + weapon_class + '_id = I.id AND P.id = ' + player_id);
-	if (rows[0].durability > 0) {
+	if (player_id != 1)
+		return;
+	var weapon_class = "";
+	if (weapon_type == 1)
+		weapon_class = "weapon";
+	else
+		weapon_class = "weapon" + weapon_type;
+	var rows = await connection.queryAsync('SELECT IV.durability, I.name, I.id, I.rarity FROM item I, player P, inventory IV WHERE P.id = IV.player_id AND I.id = IV.item_id AND P.' + weapon_class + '_id = I.id AND P.id = ' + player_id);
+	console.log(rows[0].durability);
+	if (rows[0].durability > 1) {
 		connection.query("UPDATE inventory SET durability = durability-1 WHERE item_id = " + rows[0].id + " AND player_id = " + player_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
@@ -64894,8 +64906,9 @@ async function reduceDurability(player_id, weapon_type) {
 		var item_name = rows[0].name;
 		var item_id = rows[0].id;
 		var item_rarity = rows[0].rarity;
+		console.log("Oggetto " + item_name + " (" + item_rarity + ") rotto per user " + player_id);
 		var weapon_extra = "";
-		if (item_raity == "X") {
+		if (item_rarity == "X") {
 			var tears = [674, 641, 691];
 			var rows = await connection.queryAsync('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item_id);
 			if (tears.includes(rows[0].material_1)) {
@@ -64910,14 +64923,18 @@ async function reduceDurability(player_id, weapon_type) {
 			}
 			weapon_extra = " Hai ricevuto *" + rows[0].name + "* per poterla creare nuovamente.";
 		}
-		connection.query('UPDATE player SET ' + weapon_type + ' = 0, ' + weapon_type + '_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
+		connection.query('UPDATE player SET ' + weapon_class + ' = 0, ' + weapon_class + '_id = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
-			if (weapon_type == 1)
-				bot.sendMessage(message.chat.id, "L'arma *" + item_name + "* si è rotta!", mark);
-			else if (weapon_type == 2)
-				bot.sendMessage(message.chat.id, "L'armatura *" + item_name + "* si è rotta!", mark);
-			else if (weapon_type == 3)
-				bot.sendMessage(message.chat.id, "Lo scudo *" + item_name + "* si è rotto!", mark);
+
+			connection.query('SELECT chat_id FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				if (weapon_type == 1)
+					bot.sendMessage(rows[0].chat_id, "L'arma *" + item_name + "* si è rotta!" + weapon_extra, mark);
+				else if (weapon_type == 2)
+					bot.sendMessage(rows[0].chat_id, "L'armatura *" + item_name + "* si è rotta!" + weapon_extra, mark);
+				else if (weapon_type == 3)
+					bot.sendMessage(rows[0].chat_id, "Lo scudo *" + item_name + "* si è rotto!" + weapon_extra, mark);
+			});
 			
 			connection.query("SELECT quantity FROM inventory WHERE item_id = " + item_id + " AND player_id = " + player_id, function (err, rows, fields) {
 				if (err) throw err;
