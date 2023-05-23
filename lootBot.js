@@ -43476,13 +43476,13 @@ bot.onText(/^apri/i, function (message) {
 							var plur = "i";
 							if (opened == 1)
 								plur = "o";
-							var msg = "Hai trovato " + opened + " oggett" + plur + ":";
+							var msg = "Hai trovato " + formatNumber(opened) + " oggett" + plur + ":";
 							var itemsGrouped = compressArray(itemsArray);
 							for (i = 0; i < Object.keys(itemsGrouped).length; i++)
 								msg += "\n> " + itemsGrouped[i].count + "x " + itemsGrouped[i].value;
 
 							if (msg.length > 4000)
-								msg = "Hai trovato " + opened + " oggetti!";
+								msg = "Hai trovato " + formatNumber(opened) + " oggetti!";
 							bot.sendMessage(message.chat.id, msg, chestMore);
 
 							setAchievement(player_id, 5, opened);
@@ -51631,7 +51631,7 @@ function cercaTermine(message, param, player_id) {
 							bottext += "\n*Rarità*: " + rarity + " (" + formatNumber(price) + " §, all'emporio: " + formatNumber(Math.round(price / 2)) + " §)";
 						bottext += "\n*Consumabile*: " + cons + cons_pnt;
 						bottext += "\n*Punti creazione*: " + craft_pnt;
-						if (durability != null) {
+						if ((durability != null) && ((rows[0].power != 0) || (rows[0].power_armor != 0) || (rows[0].power_shield))) {
 							bottext += "\n*Durabilità*: " + formatNumber(durability);
 							if (rarity == "X")
 								bottext += " (parte dell'oggetto tornerà nell'inventario)";
@@ -64844,6 +64844,20 @@ async function addItem(player_id, item_id, qnt = 1, durability = null) {
 		}
 	} else
 		durability_query = ", durability = " + durability;
+
+	/*
+	var exclude_items = [646];
+	if (!exclude_items.includes(item_id)) {
+		var inv_quantity = getItemCnt(player_id, item_id);
+		if (inv_quantity >= 1000)
+			return;
+
+		if (inv_quantity+qnt >= 1000) {
+			qnt = 1000-inv_quantity;
+			return;
+		}
+	}
+	*/
 
 	var rows = await connection.queryAsync('UPDATE inventory SET quantity = quantity+' + qnt + durability_query + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 	if (rows.affectedRows == 0)
