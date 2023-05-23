@@ -20136,6 +20136,63 @@ bot.onText(/dai tutte tranne (.+)|dai tutte/i, function (message, match) {
 	});
 });
 
+bot.onText(/^\/statoequip$/i, function (message) {
+	connection.query('SELECT id, weapon_id, weapon2_id, weapon3_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err;
+
+		const player_id = rows[0].id;
+		const weapon_id = rows[0].weapon_id;
+		const weapon2_id = rows[0].weapon2_id;
+		const weapon3_id = rows[0].weapon3_id;
+
+		connection.query('SELECT durability, durability_max, name FROM inventory IV, item I WHERE IV.item_id = I.id AND item_id = ' + weapon_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+			if (err) throw err;
+
+			var weapon_durability = "-";
+			var weapon_durability_max = "-";
+			var weapon_name = "-";
+			if (Object.keys(rows).length > 0) {
+				weapon_durability = rows[0].durability;
+				weapon_durability_max = rows[0].durability_max;
+				weapon_name = rows[0].name;
+			}
+
+			connection.query('SELECT durability, durability_max, name FROM inventory IV, item I WHERE IV.item_id = I.id AND item_id = ' + weapon2_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+	
+				var weapon2_durability = "-";
+				var weapon2_durability_max = "-";
+				var weapon2_name = "-";
+				if (Object.keys(rows).length > 0) {
+					weapon2_durability = rows[0].durability;
+					weapon2_durability_max = rows[0].durability_max;
+					weapon2_name = rows[0].name;
+				}
+
+				connection.query('SELECT durability, durability_max, name FROM inventory IV, item I WHERE IV.item_id = I.id AND item_id = ' + weapon3_id + ' AND player_id = ' + player_id, function (err, rows, fields) {
+					if (err) throw err;
+		
+					var weapon3_durability = "-";
+					var weapon3_durability_max = "-";
+					var weapon3_name = "-";
+					if (Object.keys(rows).length > 0) {
+						weapon3_durability = rows[0].durability;
+						weapon3_durability_max = rows[0].durability_max;
+						weapon3_name = rows[0].name;
+					}
+
+					const text = "Durabilità equipaggiamento:\n" + 
+					weapon_name + ": " + weapon_durability + "/" + weapon_durability_max + "\n" + 
+					weapon2_name + ": " + weapon2_durability + "/" + weapon2_durability_max + "\n" + 
+					weapon3_name + ": " + weapon3_durability + "/" + weapon3_durability_max;
+
+					bot.sendMessage(message.chat.id, text, mark);
+				});
+			});
+		});
+	});
+});
+
 bot.onText(/equipaggia drago/i, function (message) {
 	connection.query('SELECT account_id, holiday, id FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
 		if (err) throw err;
@@ -64901,14 +64958,14 @@ async function reduceDurability(player_id, weapon_type) {
 		weapon_class = "weapon";
 	else
 		weapon_class = "weapon" + weapon_type;
-	var rows = await connection.queryAsync('SELECT IV.durability, I.name, I.id, I.rarity FROM item I, player P, inventory IV WHERE P.id = IV.player_id AND I.id = IV.item_id AND P.' + weapon_class + '_id = I.id AND P.id = ' + player_id);
+	var rows = await connection.queryAsync('SELECT IV.durability, IV.durability_max, I.name, I.id, I.rarity FROM item I, player P, inventory IV WHERE P.id = IV.player_id AND I.id = IV.item_id AND P.' + weapon_class + '_id = I.id AND P.id = ' + player_id);
 	if (Object.keys(rows).length == 0)
 		return;
 	var item_name = rows[0].name;
 	var item_id = rows[0].id;
 	var item_rarity = rows[0].rarity;
-	if (rows[0].durability == null) {
-		connection.query("UPDATE inventory SET durability = " + getDurability(item_rarity) + " WHERE item_id = " + item_id + " AND player_id = " + player_id, function (err, rows, fields) {
+	if ((rows[0].durability == null) || (rows[0].durability_max == null)) {
+		connection.query("UPDATE inventory SET durability = " + getDurability(item_rarity) + ", durability_max = " + getDurability(item_rarity) + " WHERE item_id = " + item_id + " AND player_id = " + player_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
 	} else if (rows[0].durability > 1) {
