@@ -43350,13 +43350,6 @@ bot.onText(/^apri/i, function (message) {
 								return;
 							}
 
-							/*
-							if (((scrigno == "tutti") && (itemqnt > maxChest)) || ((scrigno != "tutti") && (quantity > maxChest))) {
-								bot.sendMessage(message.chat.id, "Purtroppo non puoi aprire così tanti scrigni insieme, massimo " + formatNumber(maxChest) + " alla volta!", chestMore);
-								return;
-							}
-							*/
-
 							var chest_rarity = "";
 							var chest_id = 0;
 							var item_name = "";
@@ -43432,7 +43425,6 @@ bot.onText(/^apri/i, function (message) {
 										}
 									}
 
-									/*
 									var empty_perc = 0;
 									if (item_rarity == "C")
 										empty_perc = 12;
@@ -43455,7 +43447,6 @@ bot.onText(/^apri/i, function (message) {
 											empty = 1;
 										}
 									}
-									*/
 
 									currentRarity.push(item_name + " (" + item_rarity + ")");
 
@@ -51640,13 +51631,11 @@ function cercaTermine(message, param, player_id) {
 							bottext += "\n*Rarità*: " + rarity + " (" + formatNumber(price) + " §, all'emporio: " + formatNumber(Math.round(price / 2)) + " §)";
 						bottext += "\n*Consumabile*: " + cons + cons_pnt;
 						bottext += "\n*Punti creazione*: " + craft_pnt;
-						/*
 						if (durability != null) {
 							bottext += "\n*Durabilità*: " + formatNumber(durability);
 							if (rarity == "X")
 								bottext += " (parte dell'oggetto tornerà nell'inventario)";
 						}
-						*/
 
 						if (reload_est >= 50) {
 							connection.query('SELECT DISTINCT(from_id), price FROM market_direct_history WHERE time BETWEEN date_sub(NOW(),INTERVAL 1 WEEK) AND NOW() AND price != (SELECT value FROM item WHERE id = ' + item_id + ') AND item_id = ' + item_id + ' AND type = 2', function (err, rows, fields) {
@@ -64889,23 +64878,30 @@ bot.onText(/dur (.+)/i, function (message, match) {
 });
 
 async function reduceDurability(player_id, weapon_type) {
+	/*
 	if (player_id != 1)
 		return;
+	*/
 	var weapon_class = "";
 	if (weapon_type == 1)
 		weapon_class = "weapon";
 	else
 		weapon_class = "weapon" + weapon_type;
 	var rows = await connection.queryAsync('SELECT IV.durability, I.name, I.id, I.rarity FROM item I, player P, inventory IV WHERE P.id = IV.player_id AND I.id = IV.item_id AND P.' + weapon_class + '_id = I.id AND P.id = ' + player_id);
-	console.log(rows[0].durability);
-	if (rows[0].durability > 1) {
+	if (Object.keys(rows).length == 0)
+		return;
+	var item_name = rows[0].name;
+	var item_id = rows[0].id;
+	var item_rarity = rows[0].rarity;
+	if (rows[0].durability == null) {
+		connection.query("UPDATE inventory SET durability = " + getDurability(item_rarity) + " WHERE item_id = " + item_id + " AND player_id = " + player_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
+	} else if (rows[0].durability > 1) {
 		connection.query("UPDATE inventory SET durability = durability-1 WHERE item_id = " + rows[0].id + " AND player_id = " + player_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
 	} else if (rows[0].durability <= 1) {
-		var item_name = rows[0].name;
-		var item_id = rows[0].id;
-		var item_rarity = rows[0].rarity;
 		console.log("Oggetto " + item_name + " (" + item_rarity + ") rotto per user " + player_id);
 		var weapon_extra = "";
 		if (item_rarity == "X") {
