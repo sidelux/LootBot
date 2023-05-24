@@ -5290,7 +5290,7 @@ bot.on('callback_query', async function (message) {
 							pQnt = await getItemCnt(player_id2, rows[i].item_id)
 							if ((rows[i].quantity < 1) || (pQnt < 1)) { continue }
 
-							var rows_durability = connection.queryAsync("SELECT durability, max_durability FROM inventory WHERE item_id = " + rows[i].item_id + " AND player_id = " + player_id2);
+							var rows_durability = await connection.queryAsync("SELECT durability, durability_max FROM inventory WHERE item_id = " + rows[i].item_id + " AND player_id = " + player_id2);
 							if ((rows_durability[0].durability != null) && (rows_durability[0].durability_max != null)) {
 								if (rows_durability[0].durability < rows_durability[0].durability_max)
 									continue;
@@ -6806,7 +6806,7 @@ bot.onText(/^\/accettas/i, function (message) {
 					return
 				}
 
-				connection.query('SELECT item.id, item.name, quantity, durability, max_durability FROM item, inventory WHERE item.id = inventory.item_id AND inventory.item_id = ' + item2 + ' AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
+				connection.query('SELECT item.id, item.name, quantity, durability, durability_max FROM item, inventory WHERE item.id = inventory.item_id AND inventory.item_id = ' + item2 + ' AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0', function (err, rows, fields) {
 					if (err) throw err
 
 					if (Object.keys(rows).length == 0) {
