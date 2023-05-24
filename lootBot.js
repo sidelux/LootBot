@@ -20196,9 +20196,9 @@ bot.onText(/^\/statoequip$/i, function (message) {
 					}
 
 					const text = "Durabilità equipaggiamento:\n" + 
-					weapon_name + ": " + weapon_durability + "/" + weapon_durability_max + "\n" + 
-					weapon2_name + ": " + weapon2_durability + "/" + weapon2_durability_max + "\n" + 
-					weapon3_name + ": " + weapon3_durability + "/" + weapon3_durability_max;
+					weapon_name + ": " + formatNumber(weapon_durability) + "/" + formatNumber(weapon_durability_max) + "\n" + 
+					weapon2_name + ": " + formatNumber(weapon2_durability) + "/" + formatNumber(weapon2_durability_max) + "\n" + 
+					weapon3_name + ": " + formatNumber(weapon3_durability) + "/" + formatNumber(weapon3_durability_max);
 
 					bot.sendMessage(message.chat.id, text, mark);
 				});
@@ -29178,10 +29178,12 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																					divided_damage_att = 0;
 																					status.push("🛡");
 																					setAchievement(playerid, 32, 1);
+																					await reduceDurability(player[i].id, 3);
 																				} else if (player_critical_armor > rand1) {
 																					divided_damage_att = divided_damage_att/1.5;
 																					status.push("🥋");
 																					setAchievement(playerid, 31, 1);
+																					await reduceDurability(player[i].id, 2);
 																				}
 																			}
 
@@ -29199,8 +29201,6 @@ bot.onText(/riprendi battaglia/i, function (message) {
 
 																			diff_damage = divided_damage_att-player_life;
 																			player_life -= divided_damage_att;
-																			await reduceDurability(player[i].id, 2);
-																			await reduceDurability(player[i].id, 3);
 
 																			if (player_life <= 0) {
 																				player_life = 0;
@@ -51764,9 +51764,11 @@ function cercaTermine(message, param, player_id) {
 						var poss = await getItemCnt(player_id, item_id);
 
 						var inv_collected = await connection.queryAsync("SELECT collected FROM inventory WHERE item_id = " + item_id + ' AND player_id = ' + player_id);
-
-						bottext += "\n*Posseduti*: " + poss + " (" + spread + "%, " + spread_tot + "%)";
-						bottext += "\n*Collezionati*: " + formatNumber(inv_collected[0].collected);
+						var collected = 0;
+						if (Object.keys(inv_collected).length > 0)
+							collected = inv_collected[0].collected;
+						bottext += "\n*Posseduti*: " + formatNumber(poss) + " (" + spread + "%, " + spread_tot + "%)";
+						bottext += "\n*Collezionati*: " + formatNumber(collected);
 						var total_cnt_view = 0;
 						if (total_cnt < 1000)
 							total_cnt_view = total_cnt;
@@ -59113,7 +59115,7 @@ async function setEvents(element, index, array) {
 	total_life = element.total_life;
 
 	if (mission_id == 1002) {
-		text = "Durante la Missione vieni distratto da una rauca voce che invoca il tuo nome dall'oscuro portone di un edificio in rovina. La voce appartiene a una figura incappucciata che, al tuo apparire, senza mostrare il volto, ti porge cauta un tomo possente. Ne è adorno il fronte, che a una bianca gemma ne cinge tre: così è rossa, gialla ed eguale blu. Scompare la figura, ciò tuttavia s'accresce l'ardore: desideri leggerlo, desideri imparare. Un luogo conosciuto potrebbe aiutarti.";
+		text = "Durante la missione vieni distratto da una rauca voce che invoca il tuo nome dall'oscuro portone di un edificio in rovina. La voce appartiene a una figura incappucciata che, al tuo apparire, senza mostrare il volto, ti porge cauta un tomo possente. Ne è adorno il fronte, che a una bianca gemma ne cinge tre: così è rossa, gialla ed eguale blu. Scompare la figura, ciò tuttavia s'accresce l'ardore: desideri leggerlo, desideri imparare. Un luogo conosciuto potrebbe aiutarti.";
 		bot.sendMessage(chat_id, text);
 
 		connection.query('UPDATE player SET event = 1 WHERE id = ' + player_id, function (err, rows, fields) {
@@ -59704,7 +59706,7 @@ async function setEvents(element, index, array) {
 		setExp(player_id, 15);
 		text = "Durante la missione incontri un folle barcollante sul ciglio della strada, avvicinandoti scopri che si tratta di un elfo delle Lande Immaginarie, una razza ormai estinta, notandolo in fin di vita gli vai a comprare alcune pozioni, e lui ricambia donandoti 15 exp con un incantesimo";
 		bot.sendMessage(chat_id, text);
-	} else if (rand == 51) {	
+	} else if (rand == 51) {
 		connection.query('SELECT item.id, item.name FROM inventory, item WHERE inventory.item_id = item.id AND item.rarity = "L" AND inventory.player_id = ' + player_id + ' AND inventory.quantity > 0 ORDER BY RAND()', function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length == 0) {
@@ -59721,7 +59723,7 @@ async function setEvents(element, index, array) {
 
 				await addItem(player_id, item2_id);
 				await delItem(player_id, item1_id, 1);
-$
+
 				text = "Durante la missione ti rechi all'Emporio della Follia, incuriosito dai prodotti acquisti la Polvere Inverter, da applicare su un oggetto nello zaino ne cambia l'aspetto. Incuriosito procedi subito seguendo le istruzioni e il tuo oggetto " + item1 + " si trasforma in un " + item2 + "!";
 				bot.sendMessage(chat_id, text);
 			});
@@ -64958,12 +64960,6 @@ function getDurability(rarity) {
 		durability = 10000;
 	return durability;
 }
-
-bot.onText(/dur (.+)/i, function (message, match) {
-	var n = match[1];
-	for (var i = 0; i < n; i++)
-		reduceDurability(1, 1);
-});
 
 async function reduceDurability(player_id, weapon_type) {
 	/*
