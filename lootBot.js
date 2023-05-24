@@ -64980,15 +64980,18 @@ async function reduceDurability(player_id, weapon_type) {
 			var rows = await connection.queryAsync('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item_id);
 			if (tears.includes(rows[0].material_1)) {
 				addItem(player_id, rows[0].material_1);
-				var rows = await connection.queryAsync('SELECT name FROM item WHERE id = ' + rows[0].material_1);
+				var rows = await connection.queryAsync('SELECT id, name FROM item WHERE id = ' + rows[0].material_1);
 			} else if (tears.includes(rows[0].material_2)) {
 				addItem(player_id, rows[0].material_2);
-				var rows = await connection.queryAsync('SELECT name FROM item WHERE id = ' + rows[0].material_2);
+				var rows = await connection.queryAsync('SELECT id, name FROM item WHERE id = ' + rows[0].material_2);
 			} else if (tears.includes(rows[0].material_3)) {
 				addItem(player_id, rows[0].material_3);
-				var rows = await connection.queryAsync('SELECT name FROM item WHERE id = ' + rows[0].material_3);
+				var rows = await connection.queryAsync('SELECT id, name FROM item WHERE id = ' + rows[0].material_3);
 			}
-			weapon_extra = " Hai ricevuto *" + rows[0].name + "* per poterla creare nuovamente.";
+			if (Object.keys(item).length > 0) {
+				weapon_extra = " Hai ricevuto *" + rows[0].name + "* per poterla creare nuovamente.";
+				addItem(player_id, rows[0].id);
+			}
 		}
 		connection.query('UPDATE player SET ' + weapon_class + ' = 0, ' + weapon_class + '_id = 0 WHERE id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
