@@ -64924,21 +64924,21 @@ async function addItem(player_id, item_id, qnt = 1, durability = null) {
 function getDurability(rarity) {
 	var durability = null;
 	if (rarity == "C")
-		durability = 100;
-	else if (rarity == "NC")
-		durability = 200;
-	else if (rarity == "R")
-		durability = 300;
-	else if (rarity == "UR")
-		durability = 400;
-	else if (rarity == "L")
-		durability = 500;
-	else if (rarity == "E")
-		durability = 600;
-	else if (rarity == "UE")
-		durability = 700;
-	else if (rarity == "X")
 		durability = 1000;
+	else if (rarity == "NC")
+		durability = 2000;
+	else if (rarity == "R")
+		durability = 3000;
+	else if (rarity == "UR")
+		durability = 4000;
+	else if (rarity == "L")
+		durability = 5000;
+	else if (rarity == "E")
+		durability = 6000;
+	else if (rarity == "UE")
+		durability = 7000;
+	else if (rarity == "X")
+		durability = 10000;
 	return durability;
 }
 

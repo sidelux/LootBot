@@ -2174,7 +2174,7 @@ CREATE TABLE `item` (
   `estimate` int(11) NOT NULL DEFAULT 0,
   `spread` int(11) NOT NULL DEFAULT 0,
   `spread_tot` decimal(5,3) NOT NULL DEFAULT 0.000,
-  `total_cnt` int(11) NOT NULL DEFAULT 0,
+  `total_cnt` int(32) NOT NULL DEFAULT 0,
   `reload_est` int(11) NOT NULL DEFAULT 0,
   `base_sum` int(11) NOT NULL DEFAULT 0,
   `price_sum` int(11) NOT NULL DEFAULT 0,
