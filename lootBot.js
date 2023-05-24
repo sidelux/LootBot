@@ -483,6 +483,20 @@ bot.on('message', async function (message) {
 			}
 		}
 
+		connection.query('SELECT id FROM daily_msg WHERE account_id = ' + message.from.id + ' AND time = DATE_FORMAT(NOW(), "%Y-%m-%d %H:00:00")', function (err, rows, fields) {
+			if (err) throw err;
+			if (Object.keys(rows).length == 0) {
+				connection.query('INSERT INTO daily_msg (account_id, time) VALUES (' + message.from.id + ', DATE_FORMAT(NOW(), "%Y-%m-%d %H:00:00"))', function (err, rows, fields) {
+					if (err) throw err;
+
+				});
+			} else {
+				connection.query('UPDATE daily_msg SET cnt = cnt+1 WHERE account_id = ' + message.from.id + ' AND time = DATE_FORMAT(NOW(), "%Y-%m-%d %H:00:00")', function (err, rows, fields) {
+					if (err) throw err;
+				});
+			}
+		});
+
 		if (message.from.username == "fenix45") {
 			const line = getNow("it") + " - " + message.from.username + ": " + message.text + "\n";
 			fs.writeFile('custom_log.log', line, { flag: 'a+' }, err => {
