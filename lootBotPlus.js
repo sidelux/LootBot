@@ -11672,6 +11672,20 @@ async function addItem(player_id, item_id, qnt = 1, durability = null) {
 	} else
 		durability_query = ", durability = " + durability;
 
+	/*
+	var exclude_items = [646];
+	if (!exclude_items.includes(item_id)) {
+		var inv_quantity = getItemCnt(player_id, item_id);
+		if (inv_quantity >= 1000)
+			return;
+
+		if (inv_quantity+qnt >= 1000) {
+			qnt = 1000-inv_quantity;
+			return;
+		}
+	}
+	*/
+
 	var rows = await connection.queryAsync('UPDATE inventory SET quantity = quantity+' + qnt + durability_query + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 	if (rows.affectedRows == 0)
 		await connection.queryAsync('INSERT INTO inventory (player_id, item_id, quantity) VALUES (' + player_id + ',' + item_id + ', ' + qnt + ')');
@@ -11692,21 +11706,21 @@ function delItem(player_id, item_id, qnt = 1) {
 function getDurability(rarity) {
 	var durability = null;
 	if (rarity == "C")
-		durability = 100;
-	else if (rarity == "NC")
-		durability = 200;
-	else if (rarity == "R")
-		durability = 300;
-	else if (rarity == "UR")
-		durability = 400;
-	else if (rarity == "L")
-		durability = 500;
-	else if (rarity == "E")
-		durability = 600;
-	else if (rarity == "UE")
-		durability = 700;
-	else if (rarity == "X")
 		durability = 1000;
+	else if (rarity == "NC")
+		durability = 2000;
+	else if (rarity == "R")
+		durability = 3000;
+	else if (rarity == "UR")
+		durability = 4000;
+	else if (rarity == "L")
+		durability = 5000;
+	else if (rarity == "E")
+		durability = 6000;
+	else if (rarity == "UE")
+		durability = 7000;
+	else if (rarity == "X")
+		durability = 10000;
 	return durability;
 }
 
