@@ -51646,6 +51646,7 @@ function cercaTermine(message, param, player_id) {
 						var spread_tot = rows[0].spread_tot;
 						var total_cnt = rows[0].total_cnt;
 						var durability = getDurability(rarity);
+						var collected = rows[0].collected;
 
 						var cons = "No";
 						var cons_pnt = "";
@@ -51764,6 +51765,7 @@ function cercaTermine(message, param, player_id) {
 						var poss = await getItemCnt(player_id, item_id);
 
 						bottext += "\n*Posseduti*: " + poss + " (" + spread + "%, " + spread_tot + "%)";
+						bottext += "\n*Collezionati*: " + formatNumber(collected);
 						var total_cnt_view = 0;
 						if (total_cnt < 1000)
 							total_cnt_view = total_cnt;
@@ -64930,7 +64932,7 @@ async function addItem(player_id, item_id, qnt = 1, durability = null) {
 	}
 	*/
 
-	var rows = await connection.queryAsync('UPDATE inventory SET quantity = quantity+' + qnt + durability_query + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
+	var rows = await connection.queryAsync('UPDATE inventory SET quantity = quantity+' + qnt + durability_query + ', collected = collected+' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 	if (rows.affectedRows == 0)
 		await connection.queryAsync('INSERT INTO inventory (player_id, item_id, quantity) VALUES (' + player_id + ',' + item_id + ', ' + qnt + ')');
 }
