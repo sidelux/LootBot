@@ -920,6 +920,24 @@ CREATE TABLE `daily_chest` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `daily_msg`
+--
+
+DROP TABLE IF EXISTS `daily_msg`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `daily_msg` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `account_id` bigint(16) NOT NULL,
+  `time` timestamp NULL DEFAULT NULL,
+  `cnt` int(11) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id`),
+  KEY `daily_msg_account_id` (`account_id`),
+  CONSTRAINT `daily_msg_account_id` FOREIGN KEY (`account_id`) REFERENCES `player` (`account_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `direct_message`
 --
 
@@ -2127,6 +2145,7 @@ CREATE TABLE `inventory` (
   `quantity` int(11) NOT NULL,
   `durability` int(11) DEFAULT NULL,
   `durability_max` int(11) DEFAULT NULL,
+  `collected` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `inventory_no_duplicate` (`player_id`,`item_id`) USING BTREE,
   KEY `player_id` (`player_id`),

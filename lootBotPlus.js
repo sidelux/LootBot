@@ -11645,7 +11645,7 @@ function setFinishedMarketDirect(element, index, array) {
 
 // Gestione oggetti
 
-async function addItem(player_id, item_id, qnt = 1, durability = null) {
+async function addItem(player_id, item_id, qnt = 1, durability = null, collected = true) {
 	qnt = parseInt(qnt);
 	if (isNaN(qnt)) {
 		console.log("ERRORE! addItem di " + qnt + "x " + item_id + " per player " + player_id);
@@ -11686,7 +11686,11 @@ async function addItem(player_id, item_id, qnt = 1, durability = null) {
 	}
 	*/
 
-	var rows = await connection.queryAsync('UPDATE inventory SET quantity = quantity+' + qnt + durability_query + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
+	var collected_qnt = qnt;
+	if (!collected)
+		collected_qnt = 0;
+
+	var rows = await connection.queryAsync('UPDATE inventory SET quantity = quantity+' + qnt + durability_query + ', collected = collected+' + collected_qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 	if (rows.affectedRows == 0)
 		await connection.queryAsync('INSERT INTO inventory (player_id, item_id, quantity) VALUES (' + player_id + ',' + item_id + ', ' + qnt + ')');
 }

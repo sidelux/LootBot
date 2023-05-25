@@ -42569,7 +42569,7 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 									var itemRarity = rows[0].rarity;
 
 									if (charm_id != 0) {
-										await addItem(player_id, charm_id);
+										await addItem(player_id, charm_id, 1, null, false);
 										bot.sendMessage(message.chat.id, "Il Talismano precedentemente equipaggiato è tornato nell'inventario", equip);
 									}
 
@@ -42671,7 +42671,7 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 											power = calcNecro(300, player_level, player_reborn, 2);
 
 										if (weapon_id != 0) {
-											await addItem(player_id, weapon_id);
+											await addItem(player_id, weapon_id, 1, null, false);
 											bot.sendMessage(message.chat.id, "L'Arma precedentemente equipaggiata è tornata nell'inventario", equip);
 										}
 
@@ -42694,7 +42694,7 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 											power_a = -Math.abs(calcNecro(250, player_level, player_reborn, 2));
 
 										if (weapon2_id != 0) {
-											await addItem(player_id, weapon2_id);
+											await addItem(player_id, weapon2_id, 1, null, false);
 											bot.sendMessage(message.chat.id, "L'Armatura precedentemente equipaggiata è tornata nell'inventario", equip);
 										}
 
@@ -42717,7 +42717,7 @@ bot.onText(/equipaggia|^equip$|^equip ([A-Z]{1,3})$/i, function (message) {
 											power_s = -Math.abs(calcNecro(250, player_level, player_reborn, 2));
 
 										if (weapon3_id != 0) {
-											await addItem(player_id, weapon3_id);
+											await addItem(player_id, weapon3_id, 1, null, false);
 											bot.sendMessage(message.chat.id, "Lo Scudo precedentemente equipaggiato è tornato nell'inventario", equip);
 										}
 
@@ -42961,7 +42961,7 @@ bot.onText(/^rimuovi$|rimuovi 🚫|rimuovi tutto|rimuovi arma|rimuovi armatura|r
 										if (weapon_id != 0) {
 											connection.query('UPDATE player SET weapon = 0, weapon_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await addItem(player_id, weapon_id);
+												await addItem(player_id, weapon_id, 1, null, false);
 												bot.sendMessage(message.chat.id, "Arma (" + weapon_name + ") rimossa dall'equipaggiamento.", kbEquip);
 											});
 										} else
@@ -42970,7 +42970,7 @@ bot.onText(/^rimuovi$|rimuovi 🚫|rimuovi tutto|rimuovi arma|rimuovi armatura|r
 										if (weapon2_id != 0) {
 											connection.query('UPDATE player SET weapon2 = 0, weapon2_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await addItem(player_id, weapon2_id);
+												await addItem(player_id, weapon2_id, 1, null, false);
 												bot.sendMessage(message.chat.id, "Armatura (" + weapon2_name + ") rimossa dall'equipaggiamento.", kbEquip);
 											});
 										} else
@@ -42979,7 +42979,7 @@ bot.onText(/^rimuovi$|rimuovi 🚫|rimuovi tutto|rimuovi arma|rimuovi armatura|r
 										if (weapon3_id != 0) {
 											connection.query('UPDATE player SET weapon3 = 0, weapon3_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await addItem(player_id, weapon3_id);
+												await addItem(player_id, weapon3_id, 1, null, false);
 												bot.sendMessage(message.chat.id, "Scudo (" + weapon3_name + ") rimosso dall'equipaggiamento.", kbEquip);
 											});
 										} else
@@ -42988,7 +42988,7 @@ bot.onText(/^rimuovi$|rimuovi 🚫|rimuovi tutto|rimuovi arma|rimuovi armatura|r
 										if (charm_id != 0) {
 											connection.query('UPDATE player SET charm_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await addItem(player_id, charm_id);
+												await addItem(player_id, charm_id, 1, null, false);
 												bot.sendMessage(message.chat.id, "Talismano (" + charm_name + ") rimosso dall'equipaggiamento.", kbEquip);
 											});
 										} else
@@ -42999,28 +42999,28 @@ bot.onText(/^rimuovi$|rimuovi 🚫|rimuovi tutto|rimuovi arma|rimuovi armatura|r
 											text += "> Arma (" + weapon_name + ")\n";
 											connection.query('UPDATE player SET weapon = 0, weapon_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await addItem(player_id, weapon_id);
+												await addItem(player_id, weapon_id, 1, null, false);
 											});
 										}
 										if (weapon2_id != 0) {
 											text += "> Armatura (" + weapon2_name + ")\n";
 											connection.query('UPDATE player SET weapon2 = 0, weapon2_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await addItem(player_id, weapon2_id);
+												await addItem(player_id, weapon2_id, 1, null, false);
 											});
 										}
 										if (weapon3_id != 0) {
 											text += "> Scudo (" + weapon3_name + ")\n";
 											connection.query('UPDATE player SET weapon3 = 0, weapon3_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await addItem(player_id, weapon3_id);
+												await addItem(player_id, weapon3_id, 1, null, false);
 											});
 										}
 										if (charm_id != 0) {
 											text += "> Talismano (" + charm_name + ")\n";
 											connection.query('UPDATE player SET charm_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await addItem(player_id, charm_id);
+												await addItem(player_id, charm_id, 1, null, false);
 											});
 										}
 
@@ -64894,7 +64894,7 @@ function setExp(player_id, exp) {
 
 // Gestione oggetti
 
-async function addItem(player_id, item_id, qnt = 1, durability = null) {
+async function addItem(player_id, item_id, qnt = 1, durability = null, collected = true) {
 	qnt = parseInt(qnt);
 	if (isNaN(qnt)) {
 		console.log("ERRORE! addItem di " + qnt + "x " + item_id + " per player " + player_id);
@@ -64935,7 +64935,11 @@ async function addItem(player_id, item_id, qnt = 1, durability = null) {
 	}
 	*/
 
-	var rows = await connection.queryAsync('UPDATE inventory SET quantity = quantity+' + qnt + durability_query + ', collected = collected+' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
+	var collected_qnt = qnt;
+	if (!collected)
+		collected_qnt = 0;
+
+	var rows = await connection.queryAsync('UPDATE inventory SET quantity = quantity+' + qnt + durability_query + ', collected = collected+' + collected_qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 	if (rows.affectedRows == 0)
 		await connection.queryAsync('INSERT INTO inventory (player_id, item_id, quantity) VALUES (' + player_id + ',' + item_id + ', ' + qnt + ')');
 }
