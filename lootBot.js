@@ -20195,6 +20195,10 @@ bot.onText(/^\/statoequip$/i, function (message) {
 						weapon3_name = rows[0].name;
 					}
 
+					weapon_durability = ("" + weapon_durability).replace(".",",");
+					weapon2_durability = ("" + weapon2_durability).replace(".",",");
+					weapon3_durability = ("" + weapon3_durability).replace(".",",");
+
 					const text = "Durabilità equipaggiamento:\n" + 
 					weapon_name + ": " + formatNumber(weapon_durability) + "/" + formatNumber(weapon_durability_max) + "\n" + 
 					weapon2_name + ": " + formatNumber(weapon2_durability) + "/" + formatNumber(weapon2_durability_max) + "\n" + 
@@ -64966,10 +64970,6 @@ function getDurability(rarity) {
 }
 
 async function reduceDurability(player_id, weapon_type) {
-	/*
-	if (player_id != 1)
-		return;
-	*/
 	var weapon_class = "";
 	if (weapon_type == 1)
 		weapon_class = "weapon";
@@ -64985,11 +64985,11 @@ async function reduceDurability(player_id, weapon_type) {
 		connection.query("UPDATE inventory SET durability = " + getDurability(item_rarity) + ", durability_max = " + getDurability(item_rarity) + " WHERE item_id = " + item_id + " AND player_id = " + player_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
-	} else if (rows[0].durability > 1) {
-		connection.query("UPDATE inventory SET durability = durability-1 WHERE item_id = " + rows[0].id + " AND player_id = " + player_id, function (err, rows, fields) {
+	} else if (rows[0].durability > 0.1) {
+		connection.query("UPDATE inventory SET durability = durability-0.1 WHERE item_id = " + rows[0].id + " AND player_id = " + player_id, function (err, rows, fields) {
 			if (err) throw err;
 		});
-	} else if (rows[0].durability <= 1) {
+	} else if (rows[0].durability <= 0.1) {
 		console.log("Oggetto " + item_name + " (" + item_rarity + ") rotto per user " + player_id);
 		var weapon_extra = "";
 		if (item_rarity == "X") {
