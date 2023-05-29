@@ -4011,7 +4011,7 @@ bot.onText(/annulla bevanda/i, function (message) {
 
 		cost = cost*rows[0].reborn;
 
-		bot.sendMessage(message.chat.id, "Sei sicuro di voler annullare la bevanda attiva? Ti costerà " + formatNumber(cost) + " §", yesno).then(function () {
+		bot.sendMessage(message.chat.id, "Sei sicuro di voler annullare la bevanda attiva? La disintossicazione dal medico del villaggio ti costerà " + formatNumber(cost) + " §", yesno).then(function () {
 			answerCallbacks[message.chat.id] = async function (answer) {
 				if (answer.text.toLowerCase() == "si") {
 					connection.query('SELECT money FROM player WHERE id = ' + player_id, async function (err, rows, fields) {
@@ -32181,7 +32181,7 @@ bot.onText(/cambia admin/i, function (message) {
 											answerCallbacks[message.chat.id] = async function (answer) {
 												if (answer.text == "Torna al team")
 													return;
-
+												
 												if (answer.text == "Rimuovi tutti") {
 													connection.query('UPDATE team_player SET role = 0 WHERE role = 2 AND team_id = ' + team_id, function (err, rows, fields) {
 														if (err) throw err;
@@ -32191,6 +32191,13 @@ bot.onText(/cambia admin/i, function (message) {
 												}
 
 												var player = answer.text;
+
+												var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
+												if (reg.test(player) == false) {
+													bot.sendMessage(message.chat.id, "Giocatore non valido, riprova", back);
+													return;
+												}
+
 												connection.query('SELECT player.nickname FROM team_player, player WHERE team_player.player_id = player.id AND team_id = ' + team_id + ' AND nickname = "' + player + '"', function (err, rows, fields) {
 													if (err) throw err;
 													if (Object.keys(rows).length == 0) {
@@ -50151,7 +50158,6 @@ function mainMenu(message) {
 					 "Iscriviti a @LootBotAvvisi per seguire le novità!",
 					 "<a href='https://www.paypal.me/EdoardoCortese'>Dona</a> e riceverai 🌕 per la Ruota della Luna!",
 					 "Aggiungi @lootplusbot al tuo gruppo!",
-					 "Visita @LaBachecaDiLootia per pubblicizzare o trovare un team!",
 					 "Vota migliorie e bilanciamenti in @Suggerimenti_per_LootBot!",
 					 ((n != 6) && (n != 0) ? "Ricordati di completare le Imprese Giornaliere!" : "In settimana completa le Imprese Giornaliere!")];
 		var rand = Math.round(Math.random() * (Object.keys(links).length - 1));

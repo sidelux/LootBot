@@ -38,9 +38,9 @@ Prima di creare una richiesta è bene verificare che il codice sia funzionante e
 Ci sono vari interventi che ho pensato di apportare ma per mancanza di tempo o risorse non sono mai riuscito ad avviare:
 - [x] Predisposizione per l'open source
 - [x] Automazione completa della gestione degli eventi e della globale
-- [ ] Divisione del codice in moduli/file
+- [ ] Divisione del codice in moduli/file (in corso)
 - [ ] Aggiunta periodica delle nuove funzionalità sulla base dei suggerimenti della community tramite i contributi degli altri sviluppatori
-- [ ] Bilanciamento generale che nel tempo ha portato ad inflazione e rottura di molte meccaniche del gioco
+- [ ] Bilanciamento generale che nel tempo ha portato ad inflazione e rottura di molte meccaniche del gioco (in corso)
 - [ ] Aggiunta del supporto al multi lingua (principalmente l'inglese)
 
 I contributi a questi interventi avranno maggior priorità rispetto alle altre modifiche.
