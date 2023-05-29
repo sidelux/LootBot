@@ -9639,7 +9639,7 @@ bot.onText(/sacca$/i, function (message) {
 
 bot.onText(/^\/legenda$/i, function (message) {
 	var legend = "";
-	for (var i = -28; i < 10; i++)
+	for (var i = -29; i < 10; i++)
 		legend += "\n> " + dungeonToDesc(i) + " - " + dungeonToSym(i);
 	bot.sendMessage(message.chat.id, "Legenda simboli dungeon per la Mappatura:" + legend, back);
 });
@@ -9905,7 +9905,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 	if (message.text.length > 25)
 		return;
 
-	var max_rooms_neg = 28;		// Diventa negativo dopo
+	var max_rooms_neg = 29;		// Diventa negativo dopo
 
 	var dBack = {
 		parse_mode: "Markdown",
@@ -10641,6 +10641,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 								//	Negozio di figurine: -26
 								//	Brucaliffo: -27
 								//  Ninfa: -28
+								// 	Nano fabbro: -29
 
 								var arr = [];
 								var p1 = Math.round((rooms * 3) / 100 * 60);
@@ -15485,6 +15486,78 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															});
 														} else if (answer.text == "Ignora") {
 															bot.sendMessage(message.chat.id, "Hai ignorato la ragazza...", dNext);
+
+															await endDungeonRoom(player_id, boost_id, boost_mission);
+															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+															});
+															return;
+														}
+													}
+												});
+											} else if (dir == -29) {
+												var dOptions = {
+													parse_mode: "Markdown",
+													reply_markup: {
+														resize_keyboard: true,
+														keyboard: [["Paga"], ["Ignora"], ["Torna al menu"]]
+													}
+												};
+
+												bot.sendMessage(message.chat.id, dungeonToSym(dir) + " In una caverna rimbomba un suono di ferro battuto, un nano baffuto è impegnato a forgiare e riparare armi.\nAlza lo sguardo e vede il tuo equipaggiamento rovinato, ti chiede parte del gruzzolo per riparare i tuoi oggetti...", dOptions).then(function () {
+													answerCallbacks[message.chat.id] = async function (answer) {
+														if (answer.text == "Paga") {
+															bot.sendMessage(message.chat.id, "Scrivi l'importo da pagare al nano per la riparazione del tuo equipaggiamento").then(function () {
+																answerCallbacks[message.chat.id] = async function (answer) {
+																	if (answer.text == "Torna al menu")
+																		return;
+
+																	var price = answer.text;
+
+																	if (isNaN(price)) {
+																		bot.sendMessage(message.chat.id, "Importo non valido, riprova.", dNext);
+																		return;
+																	}
+
+																	if (price < 1) {
+																		bot.sendMessage(message.chat.id, "Il nano sogghigna: 'Mi stai prendendo in giro?'", dNext);
+																		return;
+																	}
+
+																	connection.query('SELECT money FROM player WHERE id = ' + player_id, async function (err, rows, fields) {
+																		if (err) throw err;
+
+																		if (price > rows[0].money) {
+																			bot.sendMessage(message.chat.id, "Non hai abbastanza monete, ne possiedi " + formatNumber(rows[0].money), dNext);
+																			return;
+																		}
+
+																		reduceMoney(player_id, price);
+
+																		var rand = Math.random()*100;
+																		var prob = price/100000;
+																		if (prob > 70)
+																			prob = 70;
+																		if (rand <= prob) {
+																			var amount = 0;
+																			amount = Math.round(price/10000);
+																			increaseDurability(player_id, 1, amount);
+																			increaseDurability(player_id, 2, amount);
+																			increaseDurability(player_id, 3, amount);
+																			bot.sendMessage(message.chat.id, "Il nano è contento del tuo pagamento e ripristina " + amount + " utilizzi del tuo equipaggiamento!", dNext);
+																		} else {
+																			bot.sendMessage(message.chat.id, "Il nano non si ritiene soddisfatto del tuo pagamento e riprende a martellare senza più alzare lo sguardo...", dNext);
+																		}
+
+																		await endDungeonRoom(player_id, boost_id, boost_mission);
+																		connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+																			if (err) throw err;
+																		});
+																	});
+																}
+															});
+														} else if (answer.text == "Ignora") {
+															bot.sendMessage(message.chat.id, "Decidi di ignorare il nano che dopo un cenno di saluto torna a concentrarsi sul suo lavoro...", dNext);
 
 															await endDungeonRoom(player_id, boost_id, boost_mission);
 															connection.query('UPDATE dungeon_status SET room_id = room_id+1, last_dir = NULL, last_selected_dir = NULL, param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
@@ -56614,6 +56687,8 @@ function dungeonToDesc(d) {
 		return "Brucaliffo";
 	else if (d == -28)
 		return "Ninfa";
+	else if (d == -29)
+		return "Nano fabbro";
 }
 
 function dungeonToSym(d) {
@@ -56697,6 +56772,8 @@ function dungeonToSym(d) {
 		return "🐛";
 	else if (d == -28)
 		return "🧚‍♀️";
+	else if (d == -29)
+		return "🪚";
 }
 
 function manaToSym(mana) {
@@ -64932,14 +65009,30 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 		durability_query = ", durability = " + durability;
 
 	/*
-	var exclude_items = [646];
+	var item = await connection.queryAsync('SELECT rarity FROM item WHERE id = ' + item_id);
+	var rarity = item[0].rarity;
+	var exclude_items = [646];	// Polvere
 	if (!exclude_items.includes(item_id)) {
 		var inv_quantity = getItemCnt(player_id, item_id);
-		if (inv_quantity >= 1000)
+		var max_quantity = -1;
+		if (rarity == "C")
+			max_quantity = 6000;
+		else if (rarity == "NC")
+			max_quantity = 4500;
+		else if (rarity == "R")
+			max_quantity = 3000;
+		else if (rarity == "UR")
+			max_quantity = 2000;
+		else if ((rarity == "L") || (rarity == "E"))
+			max_quantity = 1000;
+		else if ((rarity == "UE") || (rarity == "X") || (rarity == "U"))
+			max_quantity = 500;
+
+		if ((max_quantity != -1) && (inv_quantity >= max_quantity))
 			return;
 
-		if (inv_quantity+qnt >= 1000) {
-			qnt = 1000-inv_quantity;
+		if (inv_quantity+qnt >= max_quantity) {
+			qnt = max_quantity-inv_quantity;
 			return;
 		}
 	}
@@ -65037,6 +65130,35 @@ async function reduceDurability(player_id, weapon_type) {
 					});
 				}
 			});
+		});
+	}
+}
+
+async function increaseDurability(player_id, weapon_type, amount) {
+	var weapon_class = "";
+	if (weapon_type == 1)
+		weapon_class = "weapon";
+	else
+		weapon_class = "weapon" + weapon_type;
+	var rows = await connection.queryAsync('SELECT IV.durability, IV.durability_max, I.name, I.id, I.rarity FROM item I, player P, inventory IV WHERE P.id = IV.player_id AND I.id = IV.item_id AND P.' + weapon_class + '_id = I.id AND P.id = ' + player_id);
+	if (Object.keys(rows).length == 0)
+		return;
+	var item_name = rows[0].name;
+	var item_id = rows[0].id;
+	var item_rarity = rows[0].rarity;
+	var durability_max = getDurability(item_rarity);
+	if ((rows[0].durability == null) || (rows[0].durability_max == null)) {
+		connection.query("UPDATE inventory SET durability = " + durability_max + ", durability_max = " + durability_max + " WHERE item_id = " + item_id + " AND player_id = " + player_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
+	} else if (rows[0].durability+amount < durability_max) {
+		connection.query("UPDATE inventory SET durability = durability+" + amount + " WHERE item_id = " + rows[0].id + " AND player_id = " + player_id, function (err, rows, fields) {
+			if (err) throw err;
+		});
+	} else if (rows[0].durability < durability_max) {
+		amount = durability_max-rows[0].durability;
+		connection.query("UPDATE inventory SET durability = durability+" + amount + " WHERE item_id = " + rows[0].id + " AND player_id = " + player_id, function (err, rows, fields) {
+			if (err) throw err;
 		});
 	}
 }

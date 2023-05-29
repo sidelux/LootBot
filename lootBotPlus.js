@@ -11673,14 +11673,30 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 		durability_query = ", durability = " + durability;
 
 	/*
-	var exclude_items = [646];
+	var item = await connection.queryAsync('SELECT rarity FROM item WHERE id = ' + item_id);
+	var rarity = item[0].rarity;
+	var exclude_items = [646];	// Polvere
 	if (!exclude_items.includes(item_id)) {
 		var inv_quantity = getItemCnt(player_id, item_id);
-		if (inv_quantity >= 1000)
+		var max_quantity = -1;
+		if (rarity == "C")
+			max_quantity = 6000;
+		else if (rarity == "NC")
+			max_quantity = 4500;
+		else if (rarity == "R")
+			max_quantity = 3000;
+		else if (rarity == "UR")
+			max_quantity = 2000;
+		else if ((rarity == "L") || (rarity == "E"))
+			max_quantity = 1000;
+		else if ((rarity == "UE") || (rarity == "X") || (rarity == "U"))
+			max_quantity = 500;
+
+		if ((max_quantity != -1) && (inv_quantity >= max_quantity))
 			return;
 
-		if (inv_quantity+qnt >= 1000) {
-			qnt = 1000-inv_quantity;
+		if (inv_quantity+qnt >= max_quantity) {
+			qnt = max_quantity-inv_quantity;
 			return;
 		}
 	}
