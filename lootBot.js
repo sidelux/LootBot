@@ -15512,15 +15512,15 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	if (answer.text == "Torna al menu")
 																		return;
 
-																	var price = answer.text;
+																	var price = parseInt(answer.text);
 
 																	if (isNaN(price)) {
 																		bot.sendMessage(message.chat.id, "Importo non valido, riprova.", dNext);
 																		return;
 																	}
 
-																	if (price < 1) {
-																		bot.sendMessage(message.chat.id, "Il nano sogghigna: 'Mi stai prendendo in giro?'", dNext);
+																	if (price < 100000) {
+																		bot.sendMessage(message.chat.id, "Il nano sogghigna: 'Mi stai prendendo in giro? Almeno 100.000§!'", dNext);
 																		return;
 																	}
 
@@ -15545,6 +15545,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			increaseDurability(player_id, 2, amount);
 																			increaseDurability(player_id, 3, amount);
 																			bot.sendMessage(message.chat.id, "Il nano è contento del tuo pagamento e ripristina " + amount + " utilizzi del tuo equipaggiamento!", dNext);
+																			console.log("Nano recupera " + amount + " durabilità per " + price + " monete");
 																		} else {
 																			bot.sendMessage(message.chat.id, "Il nano non si ritiene soddisfatto del tuo pagamento e riprende a martellare senza più alzare lo sguardo...", dNext);
 																		}
