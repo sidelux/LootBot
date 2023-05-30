@@ -11692,12 +11692,12 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 		else if ((rarity == "UE") || (rarity == "X") || (rarity == "U"))
 			max_quantity = 500;
 
-		if ((max_quantity != -1) && (inv_quantity >= max_quantity))
-			return;
+		if (max_quantity != -1) {
+			if (inv_quantity >= max_quantity)
+				return;
 
-		if (inv_quantity+qnt >= max_quantity) {
-			qnt = max_quantity-inv_quantity;
-			return;
+			if (inv_quantity+qnt >= max_quantity)
+				qnt = max_quantity-inv_quantity;
 		}
 	}
 	*/
