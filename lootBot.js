@@ -44551,7 +44551,7 @@ bot.onText(/Torna in Vita/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					keyboard: [["Dungeon"], ["Torna al menu"]]
+					keyboard: [["Dungeon"], ["Assalto"], ["Torna al menu"]]
 				}
 			};
 
@@ -50537,12 +50537,7 @@ function mainMenu(message) {
 							}
 							if (checkDragonTopOn == 0) {
 								var d = new Date();
-								var open = 1;
-								if ((d.getHours() < nightEnd) || (d.getHours() >= nightStart))
-									open = 0;
-								if (d.getDay() == 0)
-									open = 0;
-								if (open == 1)
+								if ((d.getHours() >= nightEnd) && (d.getHours() < nightStart))
 									msgtext += "\n🗺 Puoi esplorare le Mappe" + restrict_text;
 							}
 						}
