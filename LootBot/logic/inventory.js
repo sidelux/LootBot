@@ -41,7 +41,7 @@ function inventory_cap() {
 function inventory_hasItem(item_id, player_inventory) {
 	const item = player_inventory.find((item) => item.item_id === parseInt(item_id));
 	return {
-		has_item: Boolean(item),
+		has_item: Boolean(item) && item.quantity > 0,
 		quantity: item ? item.quantity : -1,
 	};
 }

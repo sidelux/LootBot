@@ -324,6 +324,7 @@ async function commit_craft(craftsman_info, player_info) {
             update_array.push([player_info.id, used_item.id, (inventory_item.quantity - parseInt(used_item.total_quantity))]);
         }
     };
+
     if (!response.used_items_controll) {
         return response;
     }
