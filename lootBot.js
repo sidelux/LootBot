@@ -15512,15 +15512,15 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	if (answer.text == "Torna al menu")
 																		return;
 
-																	var price = answer.text;
+																	var price = parseInt(answer.text);
 
 																	if (isNaN(price)) {
 																		bot.sendMessage(message.chat.id, "Importo non valido, riprova.", dNext);
 																		return;
 																	}
 
-																	if (price < 1) {
-																		bot.sendMessage(message.chat.id, "Il nano sogghigna: 'Mi stai prendendo in giro?'", dNext);
+																	if (price < 100000) {
+																		bot.sendMessage(message.chat.id, "Il nano sogghigna: 'Mi stai prendendo in giro? Almeno 100.000§!'", dNext);
 																		return;
 																	}
 
@@ -15545,6 +15545,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																			increaseDurability(player_id, 2, amount);
 																			increaseDurability(player_id, 3, amount);
 																			bot.sendMessage(message.chat.id, "Il nano è contento del tuo pagamento e ripristina " + amount + " utilizzi del tuo equipaggiamento!", dNext);
+																			console.log("Nano recupera " + amount + " durabilità per " + price + " monete");
 																		} else {
 																			bot.sendMessage(message.chat.id, "Il nano non si ritiene soddisfatto del tuo pagamento e riprende a martellare senza più alzare lo sguardo...", dNext);
 																		}
@@ -26178,11 +26179,18 @@ bot.onText(/^sposta: (.+)|sposta membri/i, function (message, match) {
 					return;
 				}
 
-				connection.query('SELECT id, nickname, chat_id FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
+				connection.query('SELECT id, nickname, chat_id, boss_time FROM player WHERE nickname = "' + match[1] + '"', function (err, rows, fields) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length == 0) {
 						bot.sendMessage(message.chat.id, "Il giocatore richiesto non esiste", kbBack);
+						return;
+					}
+
+					if (rows[0].boss_time != null) {
+						var d = new Date(rows[0].boss_time);
+						var long_date = addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + " del " + addZero(d.getDate()) + "/" + addZero(d.getMonth() + 1) + "/" + d.getFullYear();
+						bot.sendMessage(message.chat.id, "Il giocatore ha appena cambiato team, devi attendere fino alle " + long_date + "!", back)
 						return;
 					}
 
@@ -43043,36 +43051,36 @@ bot.onText(/^rimuovi$|rimuovi 🚫|rimuovi tutto|rimuovi arma|rimuovi armatura|r
 
 									if (oggetto == "arma") {
 										if (weapon_id != 0) {
+											await addItem(player_id, weapon_id, 1, null, false);
 											connection.query('UPDATE player SET weapon = 0, weapon_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await addItem(player_id, weapon_id, 1, null, false);
 												bot.sendMessage(message.chat.id, "Arma (" + weapon_name + ") rimossa dall'equipaggiamento.", kbEquip);
 											});
 										} else
 											bot.sendMessage(message.chat.id, "Non hai nessun arma equipaggiata.", kbEquip);
 									} else if (oggetto == "armatura") {
 										if (weapon2_id != 0) {
+											await addItem(player_id, weapon2_id, 1, null, false);
 											connection.query('UPDATE player SET weapon2 = 0, weapon2_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await addItem(player_id, weapon2_id, 1, null, false);
 												bot.sendMessage(message.chat.id, "Armatura (" + weapon2_name + ") rimossa dall'equipaggiamento.", kbEquip);
 											});
 										} else
 											bot.sendMessage(message.chat.id, "Non hai nessun armatura equipaggiata.", kbEquip);
 									} else if (oggetto == "scudo") {
 										if (weapon3_id != 0) {
+											await addItem(player_id, weapon3_id, 1, null, false);
 											connection.query('UPDATE player SET weapon3 = 0, weapon3_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await addItem(player_id, weapon3_id, 1, null, false);
 												bot.sendMessage(message.chat.id, "Scudo (" + weapon3_name + ") rimosso dall'equipaggiamento.", kbEquip);
 											});
 										} else
 											bot.sendMessage(message.chat.id, "Non hai nessuno scudo equipaggiato.", kbEquip);
 									} else if (oggetto == "talismano") {
 										if (charm_id != 0) {
+											await addItem(player_id, charm_id, 1, null, false);
 											connection.query('UPDATE player SET charm_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await addItem(player_id, charm_id, 1, null, false);
 												bot.sendMessage(message.chat.id, "Talismano (" + charm_name + ") rimosso dall'equipaggiamento.", kbEquip);
 											});
 										} else
@@ -43081,30 +43089,30 @@ bot.onText(/^rimuovi$|rimuovi 🚫|rimuovi tutto|rimuovi arma|rimuovi armatura|r
 										var text = "";
 										if (weapon_id != 0) {
 											text += "> Arma (" + weapon_name + ")\n";
+											await addItem(player_id, weapon_id, 1, null, false);
 											connection.query('UPDATE player SET weapon = 0, weapon_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await addItem(player_id, weapon_id, 1, null, false);
 											});
 										}
 										if (weapon2_id != 0) {
 											text += "> Armatura (" + weapon2_name + ")\n";
+											await addItem(player_id, weapon2_id, 1, null, false);
 											connection.query('UPDATE player SET weapon2 = 0, weapon2_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await addItem(player_id, weapon2_id, 1, null, false);
 											});
 										}
 										if (weapon3_id != 0) {
 											text += "> Scudo (" + weapon3_name + ")\n";
+											await addItem(player_id, weapon3_id, 1, null, false);
 											connection.query('UPDATE player SET weapon3 = 0, weapon3_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await addItem(player_id, weapon3_id, 1, null, false);
 											});
 										}
 										if (charm_id != 0) {
 											text += "> Talismano (" + charm_name + ")\n";
+											await addItem(player_id, charm_id, 1, null, false);
 											connection.query('UPDATE player SET charm_id = 0 WHERE id = ' + player_id, async function (err, rows, fields) {
 												if (err) throw err;
-												await addItem(player_id, charm_id, 1, null, false);
 											});
 										}
 
@@ -44543,7 +44551,7 @@ bot.onText(/Torna in Vita/i, function (message) {
 				parse_mode: "Markdown",
 				reply_markup: {
 					resize_keyboard: true,
-					keyboard: [["Dungeon"], ["Torna al menu"]]
+					keyboard: [["Dungeon"], ["Assalto"], ["Torna al menu"]]
 				}
 			};
 
@@ -50529,12 +50537,7 @@ function mainMenu(message) {
 							}
 							if (checkDragonTopOn == 0) {
 								var d = new Date();
-								var open = 1;
-								if ((d.getHours() < nightEnd) || (d.getHours() >= nightStart))
-									open = 0;
-								if (d.getDay() == 0)
-									open = 0;
-								if (open == 1)
+								if ((d.getHours() >= nightEnd) && (d.getHours() < nightStart))
 									msgtext += "\n🗺 Puoi esplorare le Mappe" + restrict_text;
 							}
 						}
@@ -65008,7 +65011,6 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 	} else
 		durability_query = ", durability = " + durability;
 
-	/*
 	var item = await connection.queryAsync('SELECT rarity FROM item WHERE id = ' + item_id);
 	var rarity = item[0].rarity;
 	var exclude_items = [646];	// Polvere
@@ -65028,15 +65030,16 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 		else if ((rarity == "UE") || (rarity == "X") || (rarity == "U"))
 			max_quantity = 500;
 
-		if ((max_quantity != -1) && (inv_quantity >= max_quantity))
-			return;
+		if (max_quantity != -1) {
+			if (inv_quantity >= max_quantity) {
+				error_log("Cap oggetto raggiunto " + inv_quantity + "/" + max_quantity);
+				return;
+			}
 
-		if (inv_quantity+qnt >= max_quantity) {
-			qnt = max_quantity-inv_quantity;
-			return;
+			if (inv_quantity+qnt >= max_quantity)
+				qnt = max_quantity-inv_quantity;
 		}
 	}
-	*/
 
 	var collected_qnt = qnt;
 	if (!collected)
