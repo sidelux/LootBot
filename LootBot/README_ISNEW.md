@@ -17,7 +17,7 @@ Nel model va solo e solamente la comunicazione con la persistenza (al momento da
 - modles specifici: sono quelli che andranno pian piano aggiornati (e ne serviranno di nuovi). È importante specificare che questi moduli si limiteranno a dichiarare delle funzioni, eseguire le query specifiche e restituire i risultati in alto. **STOP!**
 
 .**JSON_managers**
-Il concetto è lo stesso che per il database. La pratica piu semplice.
+- Il concetto è lo stesso che per il database. La pratica piu semplice.
 json_model contiene le funzione di verifica file, lettura ed aggiornamento. 
 Nei modelli specifici si dichiarano i percorsi e le funzioni specifiche.
 
