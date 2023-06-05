@@ -103,12 +103,10 @@ var PDFDocument = require('./pdfkit-tables.js');
 var captcha = require("nodejs-captcha");
 
 // nuova logica a moduli (wip)
-/*
-const items_logic = require("LootBot/logic/items");
-const bot_response = require("LootBot/utility/bot_response");
-let items_persistence = await items_logic.init();
-const master_craftsman_controller = require("LootBot/message_managers/specific/master_craftsman");
-*/
+const items_logic = require("./LootBot/logic/items");
+const bot_response = require("./LootBot/utility/bot_response");
+// let items_persistence = await items_logic.init();
+const master_craftsman_controller = require("./LootBot/message_managers/specific/master_craftsman");
 
 // Eventi
 var crazyMode;					// nulla
@@ -50545,7 +50543,14 @@ function mainMenu(message) {
 							}
 							if (checkDragonTopOn == 0) {
 								var d = new Date();
-								if ((d.getHours() >= nightEnd) && (d.getHours() < nightStart))
+								var open = 0;
+								if ((d.getHours() >= nightEnd) && (d.getHours() < nightStart) && d.getDay() != 0)
+									open = 1;
+
+								if ((d.getDay() == 0) && (crazyMode == 1))
+									open = 1;
+									
+								if (open == 1)
 									msgtext += "\n🗺 Puoi esplorare le Mappe" + restrict_text;
 							}
 						}
@@ -65023,7 +65028,7 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 	var rarity = item[0].rarity;
 	var exclude_items = [646];	// Polvere
 	if (!exclude_items.includes(item_id)) {
-		var inv_quantity = getItemCnt(player_id, item_id);
+		var inv_quantity = await getItemCnt(player_id, item_id);
 		var max_quantity = -1;
 		if (rarity == "C")
 			max_quantity = 6000;
@@ -65037,6 +65042,8 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 			max_quantity = 1000;
 		else if ((rarity == "UE") || (rarity == "X") || (rarity == "U"))
 			max_quantity = 500;
+
+		console.log(inv_quantity + " " + max_quantity);
 
 		if (max_quantity != -1) {
 			if (inv_quantity >= max_quantity) {

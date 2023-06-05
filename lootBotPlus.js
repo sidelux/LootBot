@@ -11676,7 +11676,7 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 	var rarity = item[0].rarity;
 	var exclude_items = [646];	// Polvere
 	if (!exclude_items.includes(item_id)) {
-		var inv_quantity = getItemCnt(player_id, item_id);
+		var inv_quantity = await getItemCnt(player_id, item_id);
 		var max_quantity = -1;
 		if (rarity == "C")
 			max_quantity = 6000;
