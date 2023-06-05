@@ -9,11 +9,10 @@ db_config.dbdatabase = config.database.main_database
 db_config.host = config.database.main_host;
 
 db_config.tables = {
-    inventory: "inventory", //"inventory",
-    items: "item", //"item",
+    inventory: "inventory",
+    items: "item",
     craft: "craft",
     players: "player",
-
 }
 
 db_config.structures = utility.db_structures; // Per comodità

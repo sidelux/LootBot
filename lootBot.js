@@ -105,7 +105,10 @@ var captcha = require("nodejs-captcha");
 // nuova logica a moduli (wip)
 const items_logic = require("./LootBot/logic/items");
 const bot_response = require("./LootBot/utility/bot_response");
-// let items_persistence = await items_logic.init();
+async function init() {
+	let items_persistence = await items_logic.init();
+}
+init();
 const master_craftsman_controller = require("./LootBot/message_managers/specific/master_craftsman");
 
 // Eventi
@@ -1972,7 +1975,6 @@ bot.onText(/Donazioni|Lunari/i, function (message) {
 });
 
 bot.onText(/Fai una Donazione!/i, function (message) {
-
 	var iKeys = [];
 	iKeys.push([{
 		text: "Paypal",
@@ -2009,21 +2011,37 @@ bot.onText(/Fai una Donazione!/i, function (message) {
 	});
 });
 
+bot.onText(/^\/craftbeta$/i, async function (message) {
+	let response = await master_craftsman_controller.add_betaTester(message.from.id, message.text);
+	return bot_response.manage(response, bot);
+});
+
+bot.onText(/^mastro/i, async function (message) {
+	let response = await master_craftsman_controller.menu(message.chat.id);
+	return bot_response.manage(response, bot);
+});
+
 Array.prototype.randomElement = function () {
 	return this[Math.floor(Math.random() * this.length)]
 }
 
 bot.on('callback_query', function (message) {
+
 	var text = message.data;
 	var func = text.split(":")[0];
 	var param = text.split(":")[1];
 
-	connection.query('SELECT id, chat_id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+	connection.query('SELECT id, chat_id FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0) {
 			bot.answerCallbackQuery(message.id, {text: 'Registrati per utilizzare questa funzione!'});
 			return;
+		}
+
+		if (func == "CRAFTSMAN") {
+			let response = await master_craftsman_controller.queryDispatcher(query);
+			return bot.manage(response, bot);
 		}
 
 		var player_id = rows[0].id;
@@ -48918,7 +48936,7 @@ function checkResetGlobal(action = null) {
 							next.setMonth(next.getMonth() + 1, 1);
 							var next_string = toDate("en", next);
 
-							connection.query('UPDATE config SET global_date = "' + next_string + '", global_cap = ' + cap + ', global_item1 = ' + item1 + ', global_item2 = ' + item2 + ', global_item3 = ' + item3 + ', global_treshold = ' + treshold + ', global_end_message = "' + end_message_win + '", global_end_message_fail = "' + end_message_lose + '", global_desc = "' + description + '", global_eventon = 1, global_eventwait = 0, global_eventhide = 1, global_end_status = ' + global_end_status, function (err, rows, fields) {
+							connection.query('UPDATE config SET global_id = ' + global_id + ', global_date = "' + next_string + '", global_cap = ' + cap + ', global_item1 = ' + item1 + ', global_item2 = ' + item2 + ', global_item3 = ' + item3 + ', global_treshold = ' + treshold + ', global_end_message = "' + end_message_win + '", global_end_message_fail = "' + end_message_lose + '", global_desc = "' + description + '", global_eventon = 1, global_eventwait = 0, global_eventhide = 1, global_end_status = ' + global_end_status, function (err, rows, fields) {
 								if (err) throw err;
 								connection.query('DELETE FROM achievement_global', function (err, rows, fields) {
 									if (err) throw err;
@@ -65043,11 +65061,10 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 		else if ((rarity == "UE") || (rarity == "X") || (rarity == "U"))
 			max_quantity = 500;
 
-		console.log(inv_quantity + " " + max_quantity);
-
 		if (max_quantity != -1) {
 			if (inv_quantity >= max_quantity) {
-				error_log("Cap oggetto raggiunto " + inv_quantity + "/" + max_quantity);
+				console.log("Cap oggetto raggiunto " + inv_quantity + "/" + max_quantity);
+				// await connection.queryAsync('UPDATE inventory SET quantity = ' + max_quantity + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 				return;
 			}
 

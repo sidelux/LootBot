@@ -1,7 +1,7 @@
 // "Mastro Artigiano ⚒" (sotto il menu Piazza) -> gestisce il craft (per l'intera linea) di piu oggetti, 
 
-// Per la fretta non sono ancora riuscito a scrivere bene questo modulo. In particolare c'è molts logica che deve stare dove deve stare (craftsman_controller)
 const utils = require("../../utility/utils");                               // Utilità è sempre utile…
+const config = require("../../utility/config");
 
 const view_utils = require("../views_util");                                 // Modulo utilità stringhe (generico)
 const craftsman_view = require("../../views/specific/master_craftsman");    // Modulo per le stringhe specifiche di master_craftsman
@@ -17,7 +17,6 @@ const bot_response = require("../../utility/bot_response");                 // �
 // Costanti temporanee per testing esteso
 const beta_tester_ids = [];
 const in_beta = true;
-
 
 module.exports = {
     menu: master_craftsman_menu,                                        // "mastro artigiano".indexOf(message.text.toLowerCase())>= 0   <- (Stringa da definire in: ./views.strings.js
@@ -40,7 +39,6 @@ async function master_craftsman_menu(telegram_user_id) {
 
     const player_info = preload.player_info;
     const craftsman_info = preload.craftsman_info;
-
 
     return menu_textAndButtons(response, player_info, craftsman_info, false);         // restituisce il menu formattato
 
@@ -1083,14 +1081,12 @@ async function add_betaTester(message_user_id, message_text) {
     }
 
     //Questo comando è riservato agli amministratori
-    if (!config.isDev(message_user_id)) {
+    if (message_user_id != 20471035)
         return;
-    }
 
     let target_user_id_array = message_text.split(" ").slice(1).join(" ").split("\n").join(" ").trim().split(" ");
-    if (target_user_id_array.length === 1 && target_user_id_array[0] === "") {
+    if (target_user_id_array.length === 1 && target_user_id_array[0] === "")
         target_user_id_array = [];
-    }
 
     //target_user_id_array.push(message_user_id)
 
@@ -1116,13 +1112,12 @@ async function add_betaTester(message_user_id, message_text) {
 
     // Carico le informazioni giocatore player_info (e se non riesco informo l'admin)
     let player_info_controll = await player_logics.main_info(random_controll);
-
     if (player_info_controll.esit == false) {
         response.toSend.message_text = player_info_controll.message_text;
         return response;
     }
-    let player_info = player_info_controll.player_info;
 
+    let player_info = player_info_controll.player_info;
     // Aggiungo l'id all'array teporaneo
     target_user_id_array.forEach((user_id) => {
         let parsed_id = parseInt(user_id)

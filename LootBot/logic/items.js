@@ -34,7 +34,7 @@ async function load_in_ram() {
             return;
 
         await normalize_itemsRawData(db_items, lootItems_array);                // carica i necessari dalla tabella craft
-        console.log(`> Tempo items.init -> ${Date.now() - inizio}ms`);
+        // console.log(`> Tempo items.init -> ${Date.now() - inizio}ms`);
 
         return lootItems_array.length;
     }
@@ -46,15 +46,9 @@ async function load_in_ram() {
 // Funzione usata nell'inizializzazione del modulo:   
 // Normalizza ed effetivamente inizializza l'array pubblico lootItems
 async function normalize_itemsRawData(raw_data, target_array) {
-    console.log("Normalizzo... ");                                              // log. rimuovi: solo per test iniziale
-
     if (!utils.isNully(raw_data)) {                                             // grazie furins
         for (let i = 0; i < raw_data.length; i++) {
-            if (raw_data[i][utils.db_structures.items.key] === 624){
-                    console.log(raw_data[i]);
-            }
             if (raw_data[i][utils.db_structures.items.craftable] === 1) {                                  // per i creabili calcolo ed aggiungo:
-                
                 let item_info = craftInfo_fromRarity(raw_data[i][utils.db_structures.items.rarity]);       // > costo craft e pc
                 raw_data[i].craft_pnt = item_info.craft_pnt;
                 raw_data[i].craft_cost = item_info.craft_cost;
