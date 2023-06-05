@@ -22,7 +22,7 @@ const { console_log } = require("../../../Utilities");
 
 // Costanti temporanee per testing esteso
 const beta_tester_ids = [];
-const in_beta = false;
+const in_beta = true;
 
 
 module.exports = {
@@ -1178,17 +1178,17 @@ async function add_betaTester(message_user_id, message_text) {
         toSend: bot_response.responses.toSend(message_user_id),
     }
 
-    // Questo comando è riservato agli amministratori
-    // if (!config.isAdmin(message_user_id)) {
-    //     return;
-    // }
+    //Questo comando è riservato agli amministratori
+    if (!config.isAdmin(message_user_id)) {
+        return;
+    }
 
     let target_user_id_array = message_text.split(" ").slice(1).join(" ").split("\n").join(" ").trim().split(" ");
     if (target_user_id_array.length === 1 && target_user_id_array[0] === "") {
         target_user_id_array = [];
     }
 
-    target_user_id_array.push(message_user_id)
+    //target_user_id_array.push(message_user_id)
 
     // Stampo la lista dei betatester
     if (message_text.split(" ").length == 1 || utils.isNully(target_user_id_array) || target_user_id_array.length < 1) {
