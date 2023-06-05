@@ -1,16 +1,11 @@
 // Gestisce la parte della logica dedicata agli oggetti (LootItems)
-
-
-
 const model = require("../model/DB_managers/specific/players");
 const utils = require("../utility/utils");
 const error_views = require("../views/errors");
 
-
 module.exports = {
     main_info: get_player_info
 }
-
 
 async function player_main_info(telegram_user_id) {
     let raw_infos = await model.player_info(telegram_user_id);
@@ -36,4 +31,3 @@ async function get_player_info(telegram_user_id) {
         player_info: player_info
     }
 }
-

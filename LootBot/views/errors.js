@@ -27,11 +27,7 @@ const strings = {
         closing: '▸ Errore durante la chiusura della connessione al database:',
         query: '▸ Errore durante la query: {#}'
     }
-
-   
-
 }
-
 
 module.exports = {
     // Funzione per stampare un messaggio, sostituendone {#} con una variabile

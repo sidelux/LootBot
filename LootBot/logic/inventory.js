@@ -1,6 +1,4 @@
 // Gestisce la parte della logica dedicata agli zaini (inventories)
-
-
 const model = require("../model/DB_managers/specific/inventory");					// Il modello che cura l'interazione con il database (per le specifiche su inventory)
 //const view = require("../views/");										// Non sono affatto sicuro sia un buon modo di gestire le stringhe…	
 
@@ -9,7 +7,6 @@ module.exports = {
 	update_items_quantityOf: model.items.update_quantities_Of,
 	hasItem: inventory_hasItem,														// Controlla se in uno zaino è presente un oggetto (LootItem)
 	inventory_cap: inventory_cap,
-
 }
 
 function inventory_cap() {
@@ -36,7 +33,6 @@ function inventory_cap() {
 	};
 }
 
-
 // controlla se nello zaino è presente oggetto, non saprei cosa altro aggiungere al commento.  
 function inventory_hasItem(item_id, player_inventory) {
 	const item = player_inventory.find((item) => item.item_id === parseInt(item_id));
@@ -45,16 +41,6 @@ function inventory_hasItem(item_id, player_inventory) {
 		quantity: item ? item.quantity : -1,
 	};
 }
-
-
-
-
-
-
-
-
-
-
 
 /*  Metto in pausa il portin di queste funzioni. C'è troppa roba e va divisa diversamente…
 
@@ -74,8 +60,6 @@ async function get_playerEquip(player_id){
 	}
 
 	let raw_data= await model.equip.complete(player_id);
-
-
 }
 
 async function durability_controll_onAdd(player_id, item_durability,){
@@ -111,7 +95,6 @@ async function addItem(player_id, item_id, item_quantity = 1, item_durability = 
 		message_text: ""
 	}
 
-
 	item_quantity = parseInt(item_quantity);
 	if (isNaN(item_quantity)) {
 		let function_paparameters = [{player_id: player_id, item_id: item_id, item_quantity: item_quantity}]
@@ -125,8 +108,6 @@ async function addItem(player_id, item_id, item_quantity = 1, item_durability = 
 
 	var durability_query = "";
 	
-
-	
 	var exclude_items = [646];
 	if (!exclude_items.includes(item_id)) {
 		var inv_quantity = getItemCnt(player_id, item_id);
@@ -139,7 +120,6 @@ async function addItem(player_id, item_id, item_quantity = 1, item_durability = 
 		}
 	}
 	
-
 	var collected_qnt = item_quantity;
 	if (!item_iscollected)
 		collected_qnt = 0;

@@ -1,10 +1,6 @@
 // "Mastro Artigiano ⚒" (sotto il menu Piazza) -> gestisce il craft (per l'intera linea) di piu oggetti, 
 
 // Per la fretta non sono ancora riuscito a scrivere bene questo modulo. In particolare c'è molts logica che deve stare dove deve stare (craftsman_controller)
-
-
-
-
 const utils = require("../../utility/utils");                               // Utilità è sempre utile…
 
 const view_utils = require("../views_util");                                 // Modulo utilità stringhe (generico)
@@ -18,7 +14,6 @@ const craft_logics = require("../../logic/craft");                      // Logic
 
 const bot_response = require("../../utility/bot_response");                 // È il modulo che si occupa dell'invio, modifica etc...
 
-
 // Costanti temporanee per testing esteso
 const beta_tester_ids = [];
 const in_beta = true;
@@ -29,9 +24,6 @@ module.exports = {
     queryDispatcher: master_craftsman_queryDispatcher,                  //  query.data.split(":")[0] == "CRAFTSMAN"                     <- (Stringa da definire in: ./views.strings.js
     add_betaTester: add_betaTester                                      // "/craftbeta"                                                 <- (Stringa da definire in: ./views.strings.js
 }
-
-
-
 
 // **************************************  MESSAGGIO - MENU
 // Il menu del Maestro Artigiano. Gestisce (esclusivamente) la risposta al messaggio testuale views_struct.menu.square.master_craftsman
@@ -56,7 +48,6 @@ async function master_craftsman_menu(telegram_user_id) {
 
 // **************************************  QUERIES
 
-
 // Lo smistatore di query (in response prepara già la risposta)
 async function master_craftsman_queryDispatcher(callback_query) {
     let query_data = callback_query.data.split(":").slice(1);
@@ -66,8 +57,6 @@ async function master_craftsman_queryDispatcher(callback_query) {
     response.query.id = callback_query.id;
     //response.query.options.text = query_data.join(", ");
     //response.query.options.show_alert = true;
-
-
 
     let sub_structure = utils.query_structure.query_tree.master_craftsman;
 
@@ -98,8 +87,6 @@ async function master_craftsman_queryDispatcher(callback_query) {
     return response;
 }
 
-
-
 // ********************************************************************************  SUB_VIEWS
 
 
@@ -121,9 +108,6 @@ async function menu_view(response, telegram_user_id, message_id) {
         }
         console.log(saved_message_id);
         console.log(response);
-
-        
-
 
         menu_textAndButtons(response, query_controll.player_info, query_controll.craftsman_info, message_id);
     }
@@ -169,7 +153,6 @@ function menu_textAndButtons(response, player_info, craftsman_info, message_id =
     }
     menu_text += "»\n";
 
-
     // Bottoni (inline_keyboard)
     menu_keyboard.push(
         [
@@ -184,7 +167,6 @@ function menu_textAndButtons(response, player_info, craftsman_info, message_id =
         ]);
     }
 
-
     if (!message_id) {
         response.toSend.message_text = menu_text;
         response.toSend.options.reply_markup.inline_keyboard = menu_keyboard;
@@ -193,14 +175,10 @@ function menu_textAndButtons(response, player_info, craftsman_info, message_id =
         response.toEdit.options.reply_markup.inline_keyboard = menu_keyboard;
     }
 
-
     return response;
 }
 
-
-
 // ******************************************  GUIDE
-
 
 // Vista con le informazioni sul MastroArtigiano
 async function guide_view(response, telegram_user_id, message_id, preloaded_player_info, preloaded_craftsman_info) {
@@ -240,9 +218,6 @@ async function guide_view(response, telegram_user_id, message_id, preloaded_play
     guide_message_text += `\t\t${craftsman_view.guide.navigation_prefix}\n`;
     guide_message_text += "\n\n";
 
-
-
-
     //  Censura (si player.reborn)
     guide_message_text += `${craftsman_view.guide.settings_title}\n`;
     if (craftsman_info.censure_view === false) {
@@ -272,11 +247,9 @@ async function guide_view(response, telegram_user_id, message_id, preloaded_play
         view_keyboard[0].push(preserve_button);
     }
 
-
     response.toEdit.new_text = guide_message_text;
     response.toEdit.options.reply_markup.inline_keyboard = view_keyboard;
 }
-
 
 // ******************************************  LIST
 
@@ -312,7 +285,6 @@ function show_list_messageAndButtons(response, player_info, craftsman_info) {
             craftsman_view.keyboard_buttons.back_to_menu,
             craftsman_view.keyboard_buttons.list_view_main,
             craftsman_view.keyboard_buttons.delete_list,
-
         ]
     ];
     let message_text = `*${craftsman_view.list.title}*\n\n`;
@@ -335,14 +307,11 @@ function show_list_messageAndButtons(response, player_info, craftsman_info) {
             message_text += "\n";
         })
 
-
-
         message_text += `\n${craftsman_view.list.list_total_quantity} ${craftsman_logics.list_total_quantity(craftsman_info.items_list)}\n`;
     }
 
     response.toEdit.new_text = message_text;
     response.toEdit.options.reply_markup.inline_keyboard = view_keyboard;
-
 }
 
 // vista list_view, ma per query
@@ -359,7 +328,6 @@ async function list_view_updates(response, player_info, craftsman_info, message_
     let type = query_data[0];
     let new_value = query_data[1];
     let query_controll = query_data[2];
-
 
     // Questa sezione di codice è diventato troppo lunga, va divisa nelle 4 (...3) sotto_sezioni (come list_view_buttons)
     if (type == sub_structure.set_preserve_bool.stmp) {
@@ -439,10 +407,7 @@ async function list_view_updates(response, player_info, craftsman_info, message_
         craftsman_logics.clear_craftsman_info(craftsman_info);
         response.query.options.text = craftsman_view.list.list_clear;
         response.query.options.show_alert = true;
-
-
     }
-
 
     if (controll) {
         let update = await craftsman_logics.update_craftsman_info(player_info.account_id, craftsman_info);
@@ -464,7 +429,6 @@ async function list_view_updates(response, player_info, craftsman_info, message_
 function list_view_message_text(craftables_array, craftsman_info, query_data) {
     let message_text = `*${craftsman_view.list.title}*\n\n`;
     // ***** Testo
-
 
     // Lista oggetti
     if (craftsman_info.items_list.length == 0) {
@@ -489,8 +453,6 @@ function list_view_message_text(craftables_array, craftsman_info, query_data) {
         message_text += `${craftsman_view.list.rarity_select}\n`;
     } 
     
-     
-
     // Prefisso
     if (craftsman_info.current_prefix.length > 0) {
         let current_prefix = craftsman_info.current_prefix.length == 1 ? craftsman_info.current_prefix : craftsman_info.current_prefix.split("").join(", ")
@@ -498,7 +460,6 @@ function list_view_message_text(craftables_array, craftsman_info, query_data) {
     }
 
     return message_text
-
 }
 
 // list_view è diviso in due parti, questi sono i bottoni 
@@ -584,8 +545,6 @@ function list_view_buttons(craftables_array, craftsman_info, player_info, query_
             list_buttons_array = prefixes_array;
             button_template = { ...craftsman_view.keyboard_buttons.index_button };
         }
-
-
     } 
 
     // Bottone lista
@@ -650,7 +609,6 @@ async function validate_view_dispatch(response, telegram_user_id, message_id, qu
 
         //... qui possono essere inseriti altri controlli
 
-
         if (query_data.length > 0) {
             if (query_data[0] == sub_structure.show_used.stmp) {
                 validate_used_items_view(response, player_info, craftsman_info, message_id)
@@ -669,19 +627,13 @@ async function validate_view_dispatch(response, telegram_user_id, message_id, qu
             if (craft_line) { // response è già stato gestito da craft_line_controll
                 await validate_view(response, player_info, craftsman_info, craft_line, message_id); // Asincrona perche aggiorna craftsman_info
             }
-
         } 
-
-
-
     }
 }
 
 // la lista viene stralciata e l'utente notificato (show_allert = true) -> quindi menu_textAndButtons
 async function validate_view_fail(response, craftsman_info, player_info, unavaible_craftables, message_id) {
     let item_info = craftsman_logics.item_infos(unavaible_craftables[0].id);
-
-
     response.query.options.show_alert = true;
     response.query.options.text = `${craftsman_view.validate.unable.first_line}\n\n`;
     response.query.options.text += `«${item_info.name}??\n${craftsman_view.validate.unable.quote}»\n\n`;
@@ -689,7 +641,6 @@ async function validate_view_fail(response, craftsman_info, player_info, unavaib
 
     craftsman_logics.clear_craftsman_info(craftsman_info);
     await craftsman_logics.update_craftsman_info(player_info.account_id, craftsman_info);
-
 
     return menu_textAndButtons(response, player_info, craftsman_info, true, true);
 }
@@ -700,7 +651,6 @@ async function validate_view(response, player_info, craftsman_info, craft_line, 
 
     let can_proceed_controll = validate_can_proceed(craft_line, player_info);     // Questo controllo sarà applicato solo alla fine, per permettere comunque di vedere mancanti e/o usati
     let to_craft_total_quantity = craftsman_logics.list_total_quantity(craftsman_info.items_list);
-
 
     // Sulla lista
     message_text += `_${craftsman_view.validate.introduction}_\n`;
@@ -729,7 +679,6 @@ async function validate_view(response, player_info, craftsman_info, craft_line, 
             }`;
         message_text += "»\n\n";
 
-
         // Stampo la lista
         if (craft_line.missing_baseItems.length < fixed_missing_max_quantity) {
             craft_line.missing_baseItems.forEach((item) => {
@@ -749,10 +698,8 @@ async function validate_view(response, player_info, craftsman_info, craft_line, 
 
     }
 
-
     // Oggetti consumati
     // Aggiungo il bottone "Consumati"
-
 
     // Spesa e Guadagno PC
     if (!can_proceed_controll) {
@@ -772,15 +719,11 @@ async function validate_view(response, player_info, craftsman_info, craft_line, 
         // Aggiungo il bottone "Commit"
     }
 
-
     // Aggiorno la cache in craftsman_info
     await craftsman_logics.update_craftsman_info(player_info.account_id, craftsman_info);
 
-
     response.toEdit.new_text = message_text;
     response.toEdit.options.reply_markup.inline_keyboard = validate_view_keyboard(can_proceed_controll);
-
-
 }
 
 function validate_view_keyboard(can_proceed_controll) {
@@ -856,9 +799,6 @@ function validate_used_items_view(response, player_info, craftsman_info, message
         response.toEdit.new_text = message_text;
         response.toEdit.options.reply_markup.inline_keyboard = validate_view_keyboard(can_proceed_controll);
         response.query.options.text = `«${craftsman_view.validate.show_used.quote}»`;
-
-
-
     } else {
         response.query.options.show_alert = true;
         response.query.options.text = `«${craftsman_view.validate.show_used.quote}»`;
@@ -880,7 +820,6 @@ function validate_toSendObject(craft_line, craftsman_info, telegram_user_id) {
         print_text += `${craftsman_view.list_print.missing} (${craft_line.missing_baseItems.length})\n`;
         print_text += validate_print_list(craft_line.missing_baseItems);
         caption_text += `${craftsman_view.list_print.missing} (${craft_line.missing_baseItems.length})\n`;
-
     }
 
     caption_text += `+${craftsman_view.list_print.used_items} (${craft_line.used_items.base.length + craft_line.used_items.crafted.length})\n`;
@@ -900,7 +839,6 @@ function validate_toSendObject(craft_line, craftsman_info, telegram_user_id) {
     }
 
     return bot_response.responses.sendObject(telegram_user_id, `${craftsman_view.list_print.file_name}`, print_text, caption_text);
-
 }
 
 function validate_print_list(items_list) {
@@ -921,12 +859,9 @@ function validate_print_list(items_list) {
     return print_text;
 }
 
-
-// ******************************************  COMMIT
-//                
+// ******************************************  COMMIT         
 
 async function commit_view(response, player_info, craftsman_info, message_id) {
-
     let commit_esit = await craftsman_logics.commit_craft(craftsman_info, player_info);
 
     if (!commit_esit.money_controll) {
@@ -967,10 +902,7 @@ async function commit_view(response, player_info, craftsman_info, message_id) {
             message_text += `_${b_event}_\n`;
         })
 
-
         message_text += `${craftsman_view.commit.ending_text}\n`;
-
-        
 
         response.sendObject = commit_report(player_info.account_id, commit_esit.update_array)
         response.toEdit.new_text = message_text;
@@ -998,22 +930,8 @@ function commit_report(telegram_user_id, update_array) {
     });
     report_text += `${craftsman_view.list_print.line}\n\n`;
 
-
-
     return bot_response.responses.sendObject(telegram_user_id, `${craftsman_view.commit.file_name}`, report_text, caption_text, view_keyboard);
-
 }
-
-
-
-
-
-
-
-
-
-
-
 
 // *******************************************  CONTROLLI E PRELOAD
 
@@ -1041,7 +959,6 @@ async function query_preload(response, telegram_user_id, message_id) {
         }
     }
 }
-
 
 // In questa funzione si possono ospitare tutti i controlli da fare sull'utente (ed eventualmente gestire limiti o errori con preload_response)
 async function menu_controlls(telegram_user_id, message_id = false) {
@@ -1073,7 +990,6 @@ async function menu_controlls(telegram_user_id, message_id = false) {
     // (response contiene ora pleyer_info e craftsman_info)
     return response;
 }
-
 
 // Controllo betatester
 function beta_tester_controll(response, telegram_user_id, message_id = false) {
@@ -1152,16 +1068,6 @@ async function craft_line_controll(response, player_info, craftsman_info, player
     return craft_line;
 }
 
-
-
-
-
-
-
-
-
-
-
 // **************************************  TESTING ()
 
 // Comando /craftbeta 
@@ -1233,10 +1139,6 @@ async function add_betaTester(message_user_id, message_text) {
     response.toSend.message_text += `${player_info.nickname} ${craftsman_view.beta_tester.insert_success}\n`;
 
     return response;
-
 }
-
-
-
 
 // :)

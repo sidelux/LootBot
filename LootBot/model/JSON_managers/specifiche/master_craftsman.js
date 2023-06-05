@@ -47,7 +47,6 @@ module.exports = {
     new_query_random_char: () => String.fromCharCode(65 + Math.floor(Math.random() * 26))
 };
 
-
 // Funzione per controllare se un file esiste
 async function has_list(telegram_user_id) {
     return await json_model.exists(telegram_user_id, craftsman_file_name);

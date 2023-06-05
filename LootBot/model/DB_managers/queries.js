@@ -1,11 +1,9 @@
 // le query verso il database
 // Online dicono di non farlo, di non creare query in questo modo e di usare ? . Ma è impossibile che gli input di queste funzioni siano compromessi. O no? 
 
-
 const tables_util = require("./specific/db_config")
 const tables_names = tables_util.tables;
 const tables_structs = tables_util.structures;
-
 
 module.exports = {
     tables_structs: tables_structs,
@@ -31,12 +29,7 @@ module.exports = {
     }
 }
 
-
-
-
-
 // ****************************************************************************   SELECT
-
 
 // PLAYERS
 function player_full_info (telegram_user_id) {
@@ -52,7 +45,6 @@ function inventory_equip_item_info(item_id){
     return `SELECT ${tables_structs.printObject(tables_structs.players.equip_item_info)} FROM ${tables_names.items} WHERE ${tables_structs.items.key} = ${item_id}`;
 }
 
-
 // ITEMS
 function allItems() {
     return `SELECT * FROM ${tables_names.items}`
@@ -62,22 +54,16 @@ function items_neededFor (item_id) {
     return `SELECT ${tables_structs.printObject(tables_structs.craft.needed)} FROM ${tables_names.craft} WHERE ${tables_structs.craft.key} = ${item_id}`;
 }
 
-
 // INVENTORY
 function inventory_item_infos(item_id, player_id) {
     return `SELECT * FROM ${tables_names.inventory} WHERE ${tables_structs.inventory.item_id} = ${item_id} AND ${tables_structs.inventory.player_id} = ${player_id}`;
 }
 
-
 function complete_inventoriOf(player_id){
     return `SELECT * FROM ${tables_names.inventory} WHERE ${tables_structs.inventory.player_id} = ${player_id}`;
 }
 
-
-
 // ****************************************************************************   UPDATE
-
-
 
 // INVENTORY
 function reduce_item_quantity(updates_array){ // in ingresso, updates_array è un array di [playerId, itemId, reduce_quantity]
@@ -106,4 +92,3 @@ function update_equip_item_durability(item_id, player_id, new_durability, max_du
     query += `WHERE ${tables_structs.inventory.player_id} = ${player_id} AND ${tables_structs.inventory.item_id} = ${item_id}`
     return query
 }
-

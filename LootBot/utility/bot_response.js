@@ -1,8 +1,4 @@
-
-
 const util = require("./utils");
-
-
 
 let stats = {
     loops: 0,
@@ -30,10 +26,6 @@ let stats = {
     }
 };
 
-
-
-
-
 async function manage(response, bot_instance) {
     stats.loops++;
 
@@ -46,7 +38,6 @@ async function manage(response, bot_instance) {
         responses.forEach(async (response) => {
             await switch_response(bot_instance, response);
         })
-
     }
 }
 
@@ -56,7 +47,6 @@ async function manage(response, bot_instance) {
 function normalize_response(response) {
     return Array.isArray(response) ? response : [response];
 }
-
 
 // Accessoria di manage. È dove avviene lo switch nel singolo elemento di response
 async function switch_response(bot_instance, response) {
@@ -95,8 +85,6 @@ async function switch_response(bot_instance, response) {
     if ("sendObject" in response) {
         await manage_sendObject(bot_instance, response)
     }
-
-
 }
 
 // Accessoria di manage (ma potrebbe esserlo solo di toSend?)
@@ -118,8 +106,6 @@ function chunkSubstr(str, size) { // il text_msg e una lunghezza *limite*
             tmp_size_counter = 0;
         }
     }
-
-
     return (chunks); //L'array finale. Ogni elemento contiene il testo_parziale (un messaggio)
 }
 
@@ -247,8 +233,6 @@ async function manage_sendObject(bot_instance, response) {
     return esit;
 }
 
-
-
 module.exports = {
     manage: manage,
     stats: stats,
@@ -272,7 +256,6 @@ module.exports = {
 
             },
             options: { filename: filename, contentType: "text/plain" }
-
         })
     }
 }

@@ -5,8 +5,6 @@ module.exports = {
     player_info: load_player_info,
 }
 
-
-
 async function load_player_info(telegram_user_id) {
     return new Promise(async function (player_main_info_res) {
         let results = await db.query(db.queries.players.full_info(telegram_user_id));

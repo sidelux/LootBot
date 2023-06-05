@@ -1,5 +1,3 @@
-
-
 module.exports = {
     //L'albero query di master_craftsman
     query_tree: {
@@ -77,5 +75,4 @@ module.exports = {
             },
         }
     }
-
 }

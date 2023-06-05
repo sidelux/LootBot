@@ -1,6 +1,4 @@
 // Gestisce la parte della logica dedicata agli oggetti (LootItems)
-
-
 const model = require("../model/DB_managers/specific/items");                   // Il modello che cura l'interazione con il database (per le specifiche su LootItems)
 const utils = require("../utility/utils");                                      // Le utilità
 
@@ -13,7 +11,6 @@ module.exports = {
     // ******** Funzioni generiche
     item_infos: item_infos_fromID,
 
-
     // ******** Funzioni oggetti creati
     all_craftables_forReborn: all_craftables_forReborn,
     craftables_ofRarity: craftables_list_fromRarity,                            // restituisce tutti i creabili di una rarità
@@ -21,10 +18,8 @@ module.exports = {
     get_craftable_array_groupedIndexes: get_craftable_array_groupedIndexes,                   // restituisce un array con le iniziali usate nei creati
     get_all_craftable_rarity: get_all_craftable_rarity,
 
-
     // ******** Funzioni per il Craft
     craftItemInfo_FromItemId: craft_item_info_From,                                   //  craft_item_info usato nella logica del craft (l'oggetto item_info in [allItems_array], semplificato)
-
 }
 
 // ******** INIT
@@ -35,9 +30,8 @@ async function load_in_ram() {
         let inizio = Date.now();                                                // rimuovi: solo per test iniziale
         let db_items = await model.loadAllItems();
 
-        if (db_items === false) {
+        if (db_items === false)
             return;
-        }
 
         await normalize_itemsRawData(db_items, lootItems_array);                // carica i necessari dalla tabella craft
         console.log(`> Tempo items.init -> ${Date.now() - inizio}ms`);
@@ -86,15 +80,11 @@ async function normalize_itemsRawData(raw_data, target_array) {
     return false;
 }
 
-
 // ******** ACCESSORIE GENERICHE
 
 function item_infos_fromID(item_id){
    return lootItems_array.find((item) => (item.id == item_id));
 }
-
-
-
 
 // ******** ACCESSORIE CRAFTABLE = 1
 
@@ -104,12 +94,12 @@ function all_craftables(){
 
 function all_craftables_forReborn(player_reborn) {
     return lootItems_array.filter((item) => (item.craftable == 1 && item.reborn <= parseInt(player_reborn)));
-  }
+}
 
 // I creati di una rarità, se reborn è specificato il filtro si estende alla rinascita
 function craftables_list_fromRarity(item_rarity, player_reborn = false) {
     return lootItems_array.filter((item) => player_reborn === false ? (item.craftable == 1 && item.rarity == item_rarity) : item.craftable == 1 && item.rarity == item_rarity && item.reborn <= parseInt(player_reborn));
-  }
+}
   
 // I creati, ma da un array di rarità
 function craftables_list_fromRarities(rarity_array) {
@@ -120,7 +110,6 @@ function craftables_list_fromRarities(rarity_array) {
 function get_craftable_subset_fromPrefix(prefix, craftable_array){
     return craftable_array.map(item_info => ({name: item_info.name, id: item_info.id})).filter(item => item.name.toUpperCase().startsWith(prefix.toUpperCase()) ).sort();
 }
-
 
 // restituisce un array delle iniziali usate per i creati nell'array craftable_array
 function get_craftable_array_prefixes(craftable_array) {
@@ -175,12 +164,6 @@ function get_all_craftable_rarity(player_reborn= false) {
     const uniqueRarities = raritiesArray.filter((rarity, index) => raritiesArray.indexOf(rarity) === index);
     return uniqueRarities;
 }
-
-
-
-
-
-
 
 // ******** ACCESSORIE CRAFT
 

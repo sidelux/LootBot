@@ -1,6 +1,4 @@
 // Gestisce la parte della logica dedicata al craft di oggetti (LootItems)
-
-
 const items_controller = require("./items");
 const inventory_controller = require("./inventory");
 const utils = require("../utility/utils");                                      // Le utilità
@@ -11,9 +9,6 @@ module.exports = {
     full_line_craft: full_line_craft, // Funzione pubblica per l'analisti della linea craft di un array di LootItems
     fixed_max_loops: fixed_max_loops
 }
-
-
-
 
 /*  full_line_craft
     ingresso:
@@ -39,8 +34,6 @@ async function full_line_craft(toCraft_array, player_inventory, preserve_crafted
         skipped: [],                                                                // Array con gli itemId che non è stato possibile processare. Idealmente è sempre vuoto
     }
 
-
-
     let flatten_toCraftIDs_array = process_toCraftArray(toCraft_array);             // preparo array degli id dei creati da realizzare
     let process_startDate = Date.now();                                             // per il log qui sotto
     process_recoursiveCraft(flatten_toCraftIDs_array, player_inventory, preserve_crafted, response);
@@ -62,8 +55,6 @@ function process_toCraftArray(toCraft_array) {
     return array_risultato;
 }
 
-
-
 /* process_recoursiveCraft
     la funzione utilizza la lista degli oggetti allItems confrontandola con quella dello zaino_utente 
     ingresso:
@@ -84,8 +75,6 @@ function process_recoursiveCraft(currdeep_array, player_inventory, preserve_zain
         }
     });
 
-
-
     // Continuare con il loop o fermarsi? Dipende da craft_can_continue e cosa c'è in nextdeep_array… 
     if (craft_can_continue(response) && nextdeep_array.length > 0) {                                                                         // Ci sono id di oggetti ancora da valutare
         return process_recoursiveCraft(nextdeep_array, player_inventory, preserve_zaino, response);          // Il ciclo ricomincia
@@ -104,15 +93,13 @@ function craft_logic(item, fromInventory_item, nextdeep_array, preserve_zaino, r
     } else {                                                                                                  // È gia tra i consumati. 
         craft_logic_alreadyUsed(item, fromInventory_item, nextdeep_array, response);
     }
-
 }
 
 // Accessoria di craft_logic() ->  gestisce la logica per oggetti (base o creati) usati per la prima volta all'interno della linea
 function craft_logic_newUsed(item, fromInventory_item, nextdeep_array, response) {
     // Per gli oggetti base eseguo sempre il controllo sullo zaino
-    if (fromInventory_item.item_id === 624){
+    if (fromInventory_item.item_id === 624)
         console.log(raw_data[i]);
-}
     if (item.craftable == 0) {
         if (fromInventory_item.has_item == false) {                                         // se non è presente aggiorno la lista dei base mancanti
                 add_item_inList(response.missing_baseItems, item);
@@ -127,7 +114,6 @@ function craft_logic_newUsed(item, fromInventory_item, nextdeep_array, response)
             add_item_inList(response.used_items.crafted, item);
             response.used_items.ids.push(item.id);                                               // ... ora anche :)
         }
-
     }
 }
 
@@ -183,6 +169,6 @@ function check_if_is_partial(response){
     if (response.loops >= fixed_max_loops){
         response = {
             partial: response,
-          };
+        };
     }
 }

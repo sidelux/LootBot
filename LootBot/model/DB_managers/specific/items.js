@@ -1,13 +1,9 @@
 const db = require("../db.js");
 
-
-
 module.exports = {
     loadAllItems: loadAllItems,
     load_neededOf: load_neededOf,
 }
-
-
 
 async function loadAllItems() {
 

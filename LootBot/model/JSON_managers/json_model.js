@@ -4,15 +4,10 @@ const path = require('path');
 const appMainPath = path.dirname(require.main.filename);
 const players_dir = path.join(appMainPath, '/LootBot/sources/players/');
 
-
-
-
 module.exports = {
     read: readJSONFile,
     write: writeJSONFile
 }
-
-
 
 // Funzione per controllare se un file esiste
 async function fileExists(directoryPath) {

@@ -19,7 +19,4 @@ module.exports = {
     beta_test: {
         master_craftsman: true,
     }
-
-
-  
 }

@@ -102,6 +102,14 @@ var moment = require('moment');
 var PDFDocument = require('./pdfkit-tables.js');
 var captcha = require("nodejs-captcha");
 
+// nuova logica a moduli (wip)
+/*
+const items_logic = require("LootBot/logic/items");
+const bot_response = require("LootBot/utility/bot_response");
+let items_persistence = await items_logic.init();
+const master_craftsman_controller = require("LootBot/message_managers/specific/master_craftsman");
+*/
+
 // Eventi
 var crazyMode;					// nulla
 var luckyMode;					// svuota contest

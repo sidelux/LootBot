@@ -5,7 +5,6 @@ const config = require('./specific/db_config');
 const queries = require("./queries");
 const error_messages = require("../../views/errors");
 
-
 module.exports.queries = queries;
 module.exports.messaggi_errore = error_messages;
 
@@ -24,7 +23,6 @@ const pool = mysql.createPool({
   password: config.dbpassword,
   database: config.dbdatabase,
 })
-
 
 // Funzione per query sul DB
 function query(queryString, values=[]) {

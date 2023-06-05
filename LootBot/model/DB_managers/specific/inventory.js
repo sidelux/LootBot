@@ -1,6 +1,5 @@
 const db = require("../db");
 
-
 module.exports = {
     complete: get_complete_inventoryOf,
     items: {
@@ -14,11 +13,7 @@ module.exports = {
     }
 }
 
-
-
 // GETS
-
-
 
 // Lo zaino completo per player_lootId
 async function get_complete_inventoryOf(player_lootId) {
@@ -55,27 +50,7 @@ async function update_quantities_Of(update_array) { // [player_Id, item_Id, new_
     });
 }
 
-
-
-
-
-
 // SETS
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //*************************************************************************************************************
 // Qelle che seguono sono funzioni di test, un tentativo di porting attualmente in pausa…
@@ -135,10 +110,6 @@ async function get_equipInfo_ofItem(item_id) {
         }); // 
     });
 }
-
-
-
-
 
 // UPDATES
 

@@ -26,8 +26,6 @@ module.exports = {
         show_craft_used_base: { text: "Creati", callback_data: query_util.generate_callback_rute(sub_tree.validate.show_used.used_crafted.stmp, sub_tree) }, // "Cancella la lista",
         show_craft_used_base: { text: "Raccogli lista", callback_data: query_util.generate_callback_rute(sub_tree.validate.show_used.all_used.stmp, sub_tree) }, // "Cancella la lista",
         commit_craft: { text: "Commissiona il craft", callback_data: query_util.generate_callback_rute(sub_tree.validate.craft_line_commit.stmp, sub_tree) }, // "Cancella la lista",
-
-
     },
     beta_tester: {
         user_message: "La fucina dell'Artigiano è in fase di allestimento…\nManda `/craftbeta` per avviare una sessione di test…",
@@ -36,8 +34,6 @@ module.exports = {
         show_list: "*Lista dei betatester*\n_per questa sessione_\n\n",
         query_user_not_listed: "La tua sessione di testing è terminata…",
         query_user_error: "Errore!"
-
-
     },
     menu: {
         introduction: "...tra il fragore di incudini e martelli una figura emerge dalle ombre.\nCon sguardo penetrante il Mastro Artigiano ti fissa...\n",
@@ -90,10 +86,6 @@ module.exports = {
         censure_unset: "• Scorrerai solo tra gli oggetti che puoi creare: ◎",
         preserve_is_set: "• Consegnerai al Mastro solo oggetti base",
         preserve_unset: "• Se serviranno, il Mastro potrà consumare creati dal tuo zaino",
-
-
-
-
     },
     list: {
         title: "Oggetti da creare",
@@ -113,7 +105,6 @@ module.exports = {
 
         rarity_select: "• Seleziona una rarità",
         prefix_select: "• Seleziona un prefisso indice",
-
     },
     validate: {
         unable: {
@@ -173,7 +164,6 @@ module.exports = {
                 default: "oggetti creati"
             },
         }
-
     },
     list_print: {
         file_name: "Riepilogo.txt",
@@ -234,14 +224,11 @@ module.exports = {
             "Zunk, Crack, Yonk, fiiix!",
             "Aaaaaaaa!"
         ],
-
         ending_text: "_E in un attimo è tutto finito\n" +
             "non riesci a vedere l'artigiano, ti sei distratto e l'hai perso…\n" +
             "Ai tuoi piedi c'è uno gnomo\n" +
             "Lo guardi, ti guarda, ti butta addosso una cartaccia…_\n" +
             "«È il report», _dice…_\n" +
             "«La tua roba è gia nello zaino!»\n_Sparisce…_"
-
-
     }
 }

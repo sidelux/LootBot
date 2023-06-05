@@ -5,8 +5,6 @@
 */ 
 const master_craftsman_utils = require("./specifics/master_craftsman")
 
-
-
 // In questo oggetto è tenuta traccia delle strutture nelle tabelle del database
 const db_structures = {
     players:{
@@ -60,8 +58,6 @@ const db_structures = {
     printObject: (object) => Object.values(object).join(", ")
 }
 
-
-
 // In questo oggetto è tenuta traccia dei percorsi delle query. (e passandolo a generate_callback_rute è possibile generarli)
 const query_tree = {
     /*
@@ -88,29 +84,23 @@ function generate_callback_rute(last_rute, sub_tree) {
 function findIn_query_tree(node, tmp_line, rute_string, full_rute) {
     if (node.hasOwnProperty("stmp")) {
         tmp_line.push(node.stmp);
-
-        if (node.stmp === rute_string) {
+        if (node.stmp === rute_string)
             full_rute.push(...tmp_line);
-        }
     }
 
     for (const chiave in node) {
-        if (typeof node[chiave] === 'object') {
+        if (typeof node[chiave] === 'object')
             findIn_query_tree(node[chiave], tmp_line, rute_string, full_rute);
-        }
     }
 
-    if (tmp_line.length > 0) {
+    if (tmp_line.length > 0)
         tmp_line.pop();
-    }
 }
 
 const query_structure = {
     generate_callback_rute: generate_callback_rute,
     query_tree: query_tree
 }
-
-
 
 // ACCESSORIE GENERALI
 
@@ -120,19 +110,11 @@ function isNull  (value) {return  typeof value === "object" && !value};
 // vera se value ===  null o undefined
 function isNully  (value) {return  isNull(value) || typeof value === 'undefined'};
 
-
-
 module.exports = {
     db_structures: db_structures,
     query_structure: query_structure,
-
-
     isNull: isNull,
     isNully: isNully,
-
-   
-
     simple_number_formatter: (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."),
     player_max_money: 1000000000,                                                                           // qui perche non saprei dove metterlo :(
-
 }
