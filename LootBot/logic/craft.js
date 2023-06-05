@@ -97,7 +97,6 @@ function process_recoursiveCraft(currdeep_array, player_inventory, preserve_zain
 
 // la logica del craft (che viente riflessa nell'oggetto response).
 function craft_logic(item, fromInventory_item, nextdeep_array, preserve_zaino, response) {
-
     if (item.craftable == 1 && preserve_zaino == true) {                                                      // Se è un creato e preserve_zaino == true passo i necessari al prossimo livello
         update_craft(item, nextdeep_array, response);                                                         // Manda ad accessoria (nextdeep_array e response vengono aggiornati)
     } else if (response.used_items.ids.indexOf(item.id) < 0) {                                                // L'oggetto NON è già tra quelli utilizzati fino a questo momento
@@ -111,15 +110,18 @@ function craft_logic(item, fromInventory_item, nextdeep_array, preserve_zaino, r
 // Accessoria di craft_logic() ->  gestisce la logica per oggetti (base o creati) usati per la prima volta all'interno della linea
 function craft_logic_newUsed(item, fromInventory_item, nextdeep_array, response) {
     // Per gli oggetti base eseguo sempre il controllo sullo zaino
+    if (fromInventory_item.item_id === 624){
+        console.log(raw_data[i]);
+}
     if (item.craftable == 0) {
-        if (fromInventory_item.has_iteml == false) {                                         // se non è presente aggiorno la lista dei base mancanti
-            add_item_inList(response.missing_baseItems, item);
+        if (fromInventory_item.has_item == false) {                                         // se non è presente aggiorno la lista dei base mancanti
+                add_item_inList(response.missing_baseItems, item);
         } else {                                                                            // se è presente 
             add_item_inList(response.used_items.base, item);                                // aggiorno la lista dei consumati (base)
             response.used_items.ids.push(item.id);                                               // aggiorno la lista degli id (consumati)
         }
     } else {                                                                                // se l'oggetto è un creato (e l'utilizzo di creati dallo zaino è abilitato)
-        if (fromInventory_item.has_iteml == false || fromInventory_item.quantity < 1) {      // Non è presente o quantità insufficente 
+        if (fromInventory_item.has_item == false || fromInventory_item.quantity < 1) {      // Non è presente o quantità insufficente 
             update_craft(item, nextdeep_array, response);                                   // -> aggiungo i necessari al prossimo livello ed aggiorno i contatori in response
         } else {                                                                            // Aggiorno la lista degli oggetti usati.
             add_item_inList(response.used_items.crafted, item);

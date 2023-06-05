@@ -56,8 +56,11 @@ async function normalize_itemsRawData(raw_data, target_array) {
 
     if (!utils.isNully(raw_data)) {                                             // grazie furins
         for (let i = 0; i < raw_data.length; i++) {
-
+            if (raw_data[i][utils.db_structures.items.key] === 624){
+                    console.log(raw_data[i]);
+            }
             if (raw_data[i][utils.db_structures.items.craftable] === 1) {                                  // per i creabili calcolo ed aggiungo:
+                
                 let item_info = craftInfo_fromRarity(raw_data[i][utils.db_structures.items.rarity]);       // > costo craft e pc
                 raw_data[i].craft_pnt = item_info.craft_pnt;
                 raw_data[i].craft_cost = item_info.craft_cost;
@@ -167,7 +170,7 @@ function get_craftable_array_groupedIndexes(craftable_array) {
 
 // Restituisce l'array delle rarità che hanno almeno un creabile
 function get_all_craftable_rarity(player_reborn= false) {
-    const filteredItems = player_reborn == false ? all_craftables() : all_craftables_forReborn(player_reborn);
+    const filteredItems = player_reborn === false ? all_craftables() : all_craftables_forReborn(player_reborn);
     const raritiesArray = filteredItems.map(item => item.rarity);
     const uniqueRarities = raritiesArray.filter((rarity, index) => raritiesArray.indexOf(rarity) === index);
     return uniqueRarities;

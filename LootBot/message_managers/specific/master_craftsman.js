@@ -17,6 +17,7 @@ const inventory_logics = require("../../logic/inventory");              // Logic
 const craft_logics = require("../../logic/craft");                      // Logica per i craft
 
 const bot_response = require("../../utility/bot_response");                 // È il modulo che si occupa dell'invio, modifica etc...
+const { console_log } = require("../../../Utilities");
 
 
 // Costanti temporanee per testing esteso
@@ -50,8 +51,8 @@ async function master_craftsman_menu(telegram_user_id) {
     const craftsman_info = preload.craftsman_info;
 
 
-
     return menu_textAndButtons(response, player_info, craftsman_info, false);         // restituisce il menu formattato
+
 }
 
 // **************************************  QUERIES
@@ -66,6 +67,7 @@ async function master_craftsman_queryDispatcher(callback_query) {
     response.query.id = callback_query.id;
     //response.query.options.text = query_data.join(", ");
     //response.query.options.show_alert = true;
+
 
 
     let sub_structure = utils.query_structure.query_tree.master_craftsman;
@@ -104,6 +106,30 @@ async function master_craftsman_queryDispatcher(callback_query) {
 
 // ******************************************  MENU
 
+// la vista menu, ma per una callback_query
+async function menu_view(response, telegram_user_id, message_id) {
+    let query_controll = await query_preload(response, telegram_user_id, message_id);
+
+    if (query_controll.esit == true) {
+        let saved_message_id = query_controll.craftsman_info.current_message_id;
+        if (saved_message_id != -1 && saved_message_id != message_id){
+            response.toDetete = bot_response.responses.toDelete(telegram_user_id, saved_message_id)
+        }
+
+        if (saved_message_id != message_id){
+            query_controll.craftsman_info.current_message_id = message_id;
+            await craftsman_logics.update_craftsman_info(telegram_user_id, query_controll.craftsman_info);
+        }
+        console.log(saved_message_id);
+        console.log(response);
+
+        
+
+
+        menu_textAndButtons(response, query_controll.player_info, query_controll.craftsman_info, message_id);
+    }
+}
+
 // Testo e bottoni del menu master_craftsman_menu
 // message_id è trattato come un booleano, vero solo se il menù non è attivato da una query
 function menu_textAndButtons(response, player_info, craftsman_info, message_id = false, has_failed_validation = false) {
@@ -111,6 +137,7 @@ function menu_textAndButtons(response, player_info, craftsman_info, message_id =
     let menu_keyboard = [];
     let menu_text = `_${craftsman_view.menu.introduction}_\n`;
 
+    // Testo del Mastro...
     menu_text += "«";
     if (!message_id) {
         if (craftsman_info.is_new) {
@@ -171,13 +198,7 @@ function menu_textAndButtons(response, player_info, craftsman_info, message_id =
     return response;
 }
 
-// la vista menu, ma per una callback_query
-async function menu_view(response, telegram_user_id, message_id) {
-    let query_controll = await query_preload(response, telegram_user_id, message_id);
-    if (query_controll.esit == true) {
-        menu_textAndButtons(response, query_controll.player_info, query_controll.craftsman_info, message_id);
-    }
-}
+
 
 // ******************************************  GUIDE
 
@@ -223,21 +244,21 @@ async function guide_view(response, telegram_user_id, message_id, preloaded_play
 
 
 
-    // Bottone censura
-    if (!craftsman_info.censure_view) {
-        guide_message_text += `> ${craftsman_view.guide.censure_is_set}\n`;
+    //  Censura (si player.reborn)
+    guide_message_text += `${craftsman_view.guide.settings_title}\n`;
+    if (craftsman_info.censure_view === false) {
+        guide_message_text += `${craftsman_view.guide.censure_is_set}\n`;
 
         let censure_button = { ...craftsman_view.keyboard_buttons.censure_view_set };
         censure_button.callback_data += `:${player_info.reborn}`;
         view_keyboard[0].push(censure_button);
     } else {
-        guide_message_text += `> ${craftsman_view.guide.censure_unset}\n`;
-
+        guide_message_text += `${craftsman_view.guide.censure_unset}\n`;
         view_keyboard[0].push(craftsman_view.keyboard_buttons.censure_view_remove);
     }
     // Preserva zaino
     if (!craftsman_info.preserve_crafted) {
-        guide_message_text += `> ${craftsman_view.guide.preserve_unset}\n`;
+        guide_message_text += `${craftsman_view.guide.preserve_unset}\n`;
 
         let preserve_button = { ...craftsman_view.keyboard_buttons.preserve_confirm };
         if (player_info.gender == "F") {
@@ -245,7 +266,7 @@ async function guide_view(response, telegram_user_id, message_id, preloaded_play
         }
         view_keyboard[0].push(preserve_button);
     } else {
-        guide_message_text += `> ${craftsman_view.guide.preserve_is_set}\n`;
+        guide_message_text += `${craftsman_view.guide.preserve_is_set}\n`;
 
 
         let preserve_button = { ...craftsman_view.keyboard_buttons.preserve_remove };
@@ -269,6 +290,14 @@ async function list_view_dispatch(telegram_user_id, response, message_id, query_
         if (query_data[0] == sub_structure.show_list.stmp) {
             show_list_messageAndButtons(response, query_controll.player_info, query_controll.craftsman_info)
         } else if (query_data.length <= 1) {
+            if (query_data[0] == sub_structure.set_rarity.stmp){
+                query_controll.craftsman_info.current_rarity = "";
+                query_controll.craftsman_info.current_prefix = "";
+                await craftsman_logics.update_craftsman_info(telegram_user_id, query_controll.craftsman_info);
+            } else if (query_data[0] == sub_structure.set_prefix.stmp){
+                query_controll.craftsman_info.current_prefix = "";
+                await craftsman_logics.update_craftsman_info(telegram_user_id, query_controll.craftsman_info);
+            }
             response.query.options.show_alert = false;
             list_view(response, query_controll.craftsman_info, query_controll.player_info, query_data)
         } else {
@@ -277,7 +306,7 @@ async function list_view_dispatch(telegram_user_id, response, message_id, query_
     }
 }
 
-// vista show_list
+// vista show_list: mostra la lista attuale
 function show_list_messageAndButtons(response, player_info, craftsman_info) {
     let view_keyboard = [
         [
@@ -317,13 +346,14 @@ function show_list_messageAndButtons(response, player_info, craftsman_info) {
 
 }
 
-// vista lista
+// vista list_view, ma per query
 function list_view(response, craftsman_info, player_info, query_data) {
-    response.toEdit.new_text = list_view_message_text(craftsman_info, query_data);
-    response.toEdit.options.reply_markup.inline_keyboard = list_view_buttons(craftsman_info, player_info, query_data);
+    let craftables_array = craftsman_logics.get_craftables_ofRarity(craftsman_info.current_rarity, craftsman_info.censure_view);
+    response.toEdit.new_text = list_view_message_text(craftables_array, craftsman_info, query_data);
+    response.toEdit.options.reply_markup.inline_keyboard = list_view_buttons(craftables_array, craftsman_info, player_info, query_data);
 }
 
-// vista lista, ma prima aggiorna la persistenza di craftsman_info
+// vista list_view, ma prima aggiorna la persistenza di craftsman_info (c'è un po troppa logica qui...)
 async function list_view_updates(response, player_info, craftsman_info, message_id, query_data) {
     let controll = false;
     let sub_structure = utils.query_structure.query_tree.master_craftsman.list;
@@ -343,9 +373,9 @@ async function list_view_updates(response, player_info, craftsman_info, message_
         controll = true;
         response.query.options.show_alert = true;
 
-        if (!craftsman_info.censure_view) {
+        if (craftsman_info.censure_view === false) {
             craftsman_info.censure_view = player_info.reborn;
-            response.query.options.text = `${craftsman_view.list.censure_set} (r${player_info.reborn})`
+            response.query.options.text = `${craftsman_view.list.censure_set} (r${player_info.reborn-1})`
         } else {
             craftsman_info.censure_view = false;
             response.query.options.text = `${craftsman_view.list.censure_remove}`
@@ -431,12 +461,11 @@ async function list_view_updates(response, player_info, craftsman_info, message_
     }
 }
 
-// message_text per le viste di lista 
-function list_view_message_text(craftsman_info, query_data) {
-    let sub_structure = utils.query_structure.query_tree.master_craftsman.list;
-
+// list_view è diviso in due parti, questo è il message_text  
+function list_view_message_text(craftables_array, craftsman_info, query_data) {
     let message_text = `*${craftsman_view.list.title}*\n\n`;
     // ***** Testo
+
 
     // Lista oggetti
     if (craftsman_info.items_list.length == 0) {
@@ -445,21 +474,26 @@ function list_view_message_text(craftsman_info, query_data) {
         message_text += `${craftsman_view.list.list_length} ${craftsman_info.items_list.length}\n`;
         message_text += `${craftsman_view.list.list_total_quantity} ${craftsman_logics.list_total_quantity(craftsman_info.items_list)}\n`;
     }
-
-    message_text += "\n";
-
-    // Preserva zaino
-    if (craftsman_info.preserve_crafted) {
-        message_text += `${craftsman_view.list.is_preserving}\n`;
-    } else {
-        message_text += `${craftsman_view.list.is_not_preserving}\n`;
+    if (craftables_array.length > 1){
+        message_text += `• ${craftables_array.length} ${craftsman_view.list.craftables_in_list}\n`;
     }
 
+    message_text += "\n\n";
+
     // Rarità
-    message_text += `\n${craftsman_view.list.selected_rarity} ${craftsman_info.current_rarity}\n`;
+    if(craftsman_info.current_rarity.length > 0){
+        message_text += `${craftsman_view.list.selected_rarity} ${craftsman_info.current_rarity}\n`;
+        if(craftsman_info.current_prefix.length <= 0){
+            message_text += `${craftsman_view.list.prefix_select}\n`;
+        }
+    } else {
+        message_text += `${craftsman_view.list.rarity_select}\n`;
+    } 
+    
+     
 
     // Prefisso
-    if (craftsman_info.current_prefix.length > 0 && (query_data[1] && query_data[1] != sub_structure.set_prefix.stmp)) {
+    if (craftsman_info.current_prefix.length > 0) {
         let current_prefix = craftsman_info.current_prefix.length == 1 ? craftsman_info.current_prefix : craftsman_info.current_prefix.split("").join(", ")
         message_text += `${craftsman_view.list.selected_prefix} ${current_prefix}\n`;
     }
@@ -468,38 +502,40 @@ function list_view_message_text(craftsman_info, query_data) {
 
 }
 
-// Bottoni per le viste di lista
-// Questa roba è cresciuta e cresciuta e cresciuta con una velocità impressionante. E parlo anche di list_view_updates e un po tutte le robe di list.
+// list_view è diviso in due parti, questi sono i bottoni 
+// Questa roba è cresciuta e cresciuta e cresciuta con una velocità impressionante. E parlo anche di list_view_updates e un po tutte le robe di list_view.
 // Urge un po di pulizia…
-function list_view_buttons(craftsman_info, player_info, query_data) {
+function list_view_buttons(craftables_array, craftsman_info, player_info, query_data, ) {
     let sub_structure = utils.query_structure.query_tree.master_craftsman.list;
     // Bottoni
     let list_buttons_array;                                                                         // La lista di Stringhe da cui generare i bottoni
     let button_template;                                                                            // Il template (text e callback_data per il bottone)
     let result_buttoms_array = [];
     let type = query_data[0]                                                                       // Array di Array restituito dalla funzione
-    let is_items_list = ((type == sub_structure.set_prefix.stmp && query_data[1]) || type == sub_structure.items_page.stmp || type == sub_structure.add_to_list.stmp);
     // Prima linea
 
     let first_line_buttons = [
         craftsman_view.keyboard_buttons.back_to_menu,
     ]
 
-
-
+    let show_rarity_submenu = craftsman_info.current_rarity.length <= 0 || (type == sub_structure.set_rarity.stmp && query_data.length == 1);
+    let show_items_list_submenu = craftsman_info.current_rarity.length > 0 && craftsman_info.current_prefix.length > 0 
+    // ((type == sub_structure.set_prefix.stmp && query_data[1]) || type == sub_structure.items_page.stmp || type == sub_structure.add_to_list.stmp);
 
     //Definizione di list_buttons_array e button_template
-    if (type == sub_structure.set_rarity.stmp && query_data.length == 1) {                                                              // Bottoni "rarità con creati"
+    if (show_rarity_submenu) {                                                              // Bottoni "rarità con creati"
         list_buttons_array = craftsman_logics.avaible_rarities(craftsman_info.censure_view);
         button_template = { ...craftsman_view.keyboard_buttons.set_rarity };
-    } else if (is_items_list) {
+    } else if (show_items_list_submenu) {
         first_line_buttons.push(craftsman_view.keyboard_buttons.set_rarity)
         first_line_buttons.push(craftsman_view.keyboard_buttons.index_button)
 
         const hard_coded_paging = 5;
+        const hard_code_tollerance= 2; // se gli elementi sono solo 7...
+
         let nav_buttons = [];
 
-        list_buttons_array = craftsman_logics.get_craftable_subset_fromPrefixes(query_data[1], craftsman_info.current_rarity, craftsman_info.censure_view);
+        list_buttons_array = craftsman_logics.get_craftable_subset_fromPrefixes(craftsman_info.current_prefix, craftables_array);
 
         let original_length = list_buttons_array.length;
 
@@ -507,7 +543,7 @@ function list_view_buttons(craftsman_info, player_info, query_data) {
         let current_page = !isNaN(parseInt(query_data[2])) ? parseInt(query_data[2]) : 0;
         let max_index = Math.min(list_buttons_array.length, current_page + hard_coded_paging);
 
-        if (type == sub_structure.items_page.stmp || (type == sub_structure.add_to_list.stmp && original_length > (hard_coded_paging + 3))) {
+        if (type == sub_structure.items_page.stmp || (type == sub_structure.add_to_list.stmp && original_length > (hard_coded_paging + hard_code_tollerance))) {
             list_buttons_array = list_buttons_array.slice(current_page, max_index);
             if (current_page > 0) {
                 let min_index = Math.max(0, current_page - hard_coded_paging);
@@ -522,7 +558,7 @@ function list_view_buttons(craftsman_info, player_info, query_data) {
                 forward_button.callback_data += `:${query_data[1]}:${max_index}`
                 nav_buttons.push(forward_button);
             }
-        } else if (original_length > (hard_coded_paging + 3)) {
+        } else if (original_length > (hard_coded_paging + hard_code_tollerance)) {
             list_buttons_array = list_buttons_array.slice(0, hard_coded_paging);
             let forward_button = { ...craftsman_view.keyboard_buttons.items_page_button_forward }
             forward_button.callback_data += `:${query_data[1]}:${max_index}`
@@ -538,18 +574,25 @@ function list_view_buttons(craftsman_info, player_info, query_data) {
     } else if (craftsman_info.current_rarity.length > 0) {                                                    // Bottoni "prefissi di una rarità" (default, perché current_rarity è sempre settato)
         first_line_buttons.push(craftsman_view.keyboard_buttons.set_rarity)
 
-        let craftables_array = craftsman_logics.get_craftables_ofRarity(craftsman_info.current_rarity, craftsman_info.censure_view);
-        list_buttons_array = craftsman_logics.get_craftable_array_groupedPrefixes(craftables_array);
-        button_template = { ...craftsman_view.keyboard_buttons.index_button };
+        let prefixes_array = craftsman_logics.get_craftable_array_groupedPrefixes(craftables_array);
+        
+        if ( prefixes_array.length <= 5 && craftables_array.length <= 5 ){
+            list_buttons_array = craftsman_logics.get_craftable_subset_fromPrefixes(prefixes_array.join(""), craftables_array);
+            button_template = { ...craftsman_view.keyboard_buttons.add_to_list };
+            show_items_list_submenu = true;
+        } else{
 
-    }
+            list_buttons_array = prefixes_array;
+            button_template = { ...craftsman_view.keyboard_buttons.index_button };
+        }
+
+
+    } 
 
     // Bottone lista
     if (craftsman_info.items_list.length > 0) {
         first_line_buttons.push(craftsman_view.keyboard_buttons.show_items_list);
     }
-
-
 
     result_buttoms_array.push(first_line_buttons);
 
@@ -558,7 +601,7 @@ function list_view_buttons(craftsman_info, player_info, query_data) {
         let indexes_buttons = [];                                                                   // Generazione dell'array bottoni
         list_buttons_array.forEach(index => {                                                       // Generazione grezza (partendo da list_buttons_array)
             let index_button = { ...button_template };
-            if (is_items_list) {                                                                     // nel caso dei nomi c'è il paging, quindi mi devo comportare in maniera leggermente diversa
+            if (show_items_list_submenu) {                                                                     // nel caso dei nomi c'è il paging, quindi mi devo comportare in maniera leggermente diversa
                 let current_page = !isNaN(parseInt(query_data[2])) ? parseInt(query_data[2]) : 0;
                 index_button.text = `${index.name}`;                                                // Il testo del bottone è la la propietà .name
                 index_button.callback_data += `:${query_data[1]}:${current_page}:${index.id}:${craftsman_info.query_random_char}`;   // La callback_data specifica è concatenata con la propietà .id e query_random_char (una misura anti userbot)
@@ -570,14 +613,14 @@ function list_view_buttons(craftsman_info, player_info, query_data) {
         });
 
         // Controllo sul numero di elementi per la stampa
-        if (is_items_list) {
+        if (show_items_list_submenu) {
             for (let i = 0; i < indexes_buttons.length; i++) {                       // divido in chunk secondo medium_length
                 result_buttoms_array.push([indexes_buttons[i]]);                                                           // aggiungo (singolarmente) i chunk all'array risultato
             }
         } else if (indexes_buttons.length <= 6) {                                                          // Piu di 8 bottoni su una stessa riga non si riescono a leggere
             result_buttoms_array.push(indexes_buttons);
         } else {
-            let medium_length = indexes_buttons.length > 10 ? 5 : (1 + Math.floor(indexes_buttons.length / 2));   // Calcolo una lunghezza media per le righe
+            let medium_length = indexes_buttons.length >= 10 ? 5 : (1 + Math.floor(indexes_buttons.length / 2));   // Calcolo una lunghezza media per le righe
             for (let i = 0; i < indexes_buttons.length; i += medium_length) {                       // divido in chunk secondo medium_length
                 const chunk = indexes_buttons.slice(i, i + medium_length);
                 result_buttoms_array.push(chunk);                                                           // aggiungo (singolarmente) i chunk all'array risultato
@@ -628,7 +671,9 @@ async function validate_view_dispatch(response, telegram_user_id, message_id, qu
                 await validate_view(response, player_info, craftsman_info, craft_line, message_id); // Asincrona perche aggiorna craftsman_info
             }
 
-        }
+        } 
+
+
         console.log(response)
 
     }
@@ -754,6 +799,7 @@ function validate_can_proceed(craft_line, player_info) {
     return (
         parseInt(craft_line.craft_cost) < utils.player_max_money &&                // forse in questo caso la lista andrebbe semplicemente stralciata...
         parseInt(craft_line.craft_cost) <= player_info.money &&
+        craft_line.missing_baseItems.length <= 0 &&
         (craft_line.used_items.base.length + craft_line.used_items.crafted.length) > 0
     );
 }
@@ -807,8 +853,10 @@ function validate_used_items_view(response, player_info, craftsman_info, message
             })
         }
 
+        let can_proceed_controll = validate_can_proceed(craftsman_info.controll, player_info);
+
         response.toEdit.new_text = message_text;
-        response.toEdit.options.reply_markup.inline_keyboard = validate_view_keyboard(true);
+        response.toEdit.options.reply_markup.inline_keyboard = validate_view_keyboard(can_proceed_controll);
         response.query.options.text = `«${craftsman_view.validate.show_used.quote}»`;
 
 
@@ -910,7 +958,7 @@ async function commit_view(response, player_info, craftsman_info, message_id) {
     } else {
         response.query.options.text = `«commissione accettata!»`;
 
-        let bizzarre_fixed = 5;
+        let bizzarre_fixed = Math.min((parseInt(craftsman_info.controll.loops) < 20 ? 2 : parseInt(craftsman_info.controll.loops)%10), craftsman_view.commit.bizzarre_events.length/2);
         let message_text = `${craftsman_view.commit.text}\n`
         let bizzarre_event_number = Math.floor(Math.random() * bizzarre_fixed) + bizzarre_fixed;
         craftsman_view.commit.bizzarre_events.sort(() => Math.random() - 0.5); // così, sull'oggetto!

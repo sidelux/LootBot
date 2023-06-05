@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const appMainPath = path.dirname(require.main.filename);
-const players_dir = path.join(appMainPath, 'controllers/LootBot/sources/players/');
+const players_dir = path.join(appMainPath, '/LootBot/sources/players/');
 
 
 

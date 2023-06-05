@@ -148,37 +148,51 @@ function item_infos_forList(list) {
 }
 
 // Estrae da craftable_array gli oggetti che iniziano per uno dei caratteri di prefixes_array
-function get_craftable_subset_fromPrefixes(prefixes_array, current_rarity, censure_view) {
-    let craftables_array = item_logics.craftables_ofRarity(current_rarity, censure_view);
+function get_craftable_subset_fromPrefixes(prefixes_array, craftables_array) {
     return craftables_array.map(item_info => ({ name: item_info.name, id: item_info.id })).filter(item => prefixes_array.indexOf(item.name.charAt(0).toUpperCase()) >= 0).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 // restituisce un array delle iniziali usate per i creati nell'array craftable_array
 // come get_craftable_array_prefixes, ma raggruppa le lettere (prefissi) con pochi elementi (fixed_minimum)
 function get_craftable_array_groupedPrefixes(craftable_array) {
+    let indexes_array = get_craftable_array_prefixes(craftable_array);
+
     let grouped_prefixes = [];
 
-    let fixed_minimum = 5;
-    let indexes_array = get_craftable_array_prefixes(craftable_array);
-    let count = 0;
-    let group = '';
+    let fixed_maximum = 8;
+    let fixed_minimum = 4;
+    let fixed_absolute_maximum = 10;
+
+
+
+    let tmp_occurrences_counter = 0;
+    let tmp_prew_occurrences = 0;
+    let tmp_group_string = '';
+
 
     for (let i = 0; i < indexes_array.length; i++) {
         let currentIndex = indexes_array[i];
-        let occurrences = craftable_array.reduce((occurrences_counter, item_info) => {
-            if (item_info.name.charAt(0).toUpperCase() === currentIndex) {
-                occurrences_counter++;
+        let occurrences = craftable_array.filter(item_info => item_info.name.charAt(0).toUpperCase() === currentIndex).length;
+
+        tmp_occurrences_counter += occurrences;
+        tmp_group_string += currentIndex;
+
+        if (tmp_occurrences_counter >= fixed_maximum || i === indexes_array.length - 1) {
+            if (grouped_prefixes.length === 0) {
+                grouped_prefixes.push(tmp_group_string);
+            } else {
+                if (i === indexes_array.length - 1 &&
+                    occurrences < fixed_minimum &&
+                    tmp_prew_occurrences + occurrences <= fixed_absolute_maximum + fixed_minimum
+                ) {
+                    grouped_prefixes[grouped_prefixes.length - 1] += tmp_group_string;
+                } else {
+                    tmp_prew_occurrences = occurrences;
+                    grouped_prefixes.push(tmp_group_string);
+                }
             }
-            return occurrences_counter;
-        }, 0);
-
-        count += occurrences;
-        group += currentIndex;
-
-        if (count >= fixed_minimum || i === indexes_array.length - 1) {
-            grouped_prefixes.push(group);
-            group = '';
-            count = 0;
+            tmp_group_string = '';
+            tmp_occurrences_counter = 0;
         }
     }
 
@@ -318,13 +332,15 @@ async function commit_craft(craftsman_info, player_info) {
         let inventory_item = inventory_logics.hasItem(used_item.id, player_inventory);
 
         if (!inventory_item.has_item || inventory_item.quantity < parseInt(used_item.total_quantity)) {
+            console.log(used_item);
+            console.log(inventory_item);
+
             response.used_items_controll = false;
             break;
         } else {
             update_array.push([player_info.id, used_item.id, (inventory_item.quantity - parseInt(used_item.total_quantity))]);
         }
     };
-
     if (!response.used_items_controll) {
         return response;
     }
@@ -333,7 +349,7 @@ async function commit_craft(craftsman_info, player_info) {
     for (target_item of craftsman_info.controll.target_items_list) {
         let already_in_list_index = update_array.findIndex((item) => (item[1] == target_item.id));
 
-        if (already_in_list_index >= 0) {            
+        if (already_in_list_index >= 0) {
             let new_quantity = update_array[already_in_list_index][2] + parseInt(target_item.total_quantity);
             // Controllo sul cap oggetti
             let cap_check = inventory_logics.inventory_cap().cap_check(target_item.rarity, new_quantity);

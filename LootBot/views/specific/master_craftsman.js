@@ -15,8 +15,8 @@ module.exports = {
         preserve_remove: { text: "🎒", callback_data: query_util.generate_callback_rute(sub_tree.list.set_preserve_bool.change.stmp, sub_tree) }, // "Cancella la lista",
         preserve_confirm: { text: "🙅‍♂️", callback_data: query_util.generate_callback_rute(sub_tree.list.set_preserve_bool.change.stmp, sub_tree) }, // "Cancella la lista",
         index_button: { text: "¶", callback_data: query_util.generate_callback_rute(sub_tree.list.set_prefix.stmp, sub_tree) }, // "Cancella la lista",
-        items_page_button_forward: { text: "⏵", callback_data: query_util.generate_callback_rute(sub_tree.list.items_page.stmp, sub_tree) }, // "Cancella la lista",
-        items_page_button_backward: { text: "⏴", callback_data: query_util.generate_callback_rute(sub_tree.list.items_page.stmp, sub_tree) }, // "Cancella la lista",
+        items_page_button_forward: { text: "→", callback_data: query_util.generate_callback_rute(sub_tree.list.items_page.stmp, sub_tree) }, // "Cancella la lista",
+        items_page_button_backward: { text: "←", callback_data: query_util.generate_callback_rute(sub_tree.list.items_page.stmp, sub_tree) }, // "Cancella la lista",
         censure_view_remove: { text: "◎", callback_data: query_util.generate_callback_rute(sub_tree.list.censure.remove.stmp, sub_tree) }, // "Cancella la lista",
         censure_view_set: { text: "◉", callback_data: query_util.generate_callback_rute(sub_tree.list.censure.set_censure.stmp, sub_tree) }, // "Cancella la lista",
 
@@ -78,17 +78,18 @@ module.exports = {
     },
     guide: {
         title: "Liste craft 📋",
-        text: "Aggiungi oggetti alla lista e consegnala al Mastro Atrigiano\nAnalizzerà la richiesta e ne valuterà il costo.",
+        text: "Aggiungi oggetti alla lista e consegnala al Mastro Artigiano che analizzerà la richiesta e ne valuterà il costo…",
         navigation_title: "Scorrimento della lista creati",
         navigation_rarity: "Seleziona una rarità: ⭑",
         navigation_prefix: "Seleziona un sottoelenco: ¶",
 
-        commit_text: "Commissiona il craft e riceverai gli oggetti richiesti.\nValuta seprmpre costo e oggetti utilizzati",
+        commit_text: "Valuta ben costo e oggetti utilizzati e se sei soddisfatto Commissiona il craft, riceverai immediatamente gli oggetti richiesti.",
 
-        censure_is_set: "Scorrerai tra tutti i creabili: ◉",
-        censure_unset: "Scorrerai solo tra gli oggetti che puoi creare: ◎",
-        preserve_is_set: "Consegnerai al Mastro solo oggetti base",
-        preserve_unset: "Se serviranno, il Mastro potrà consumare creati dal tuo zaino",
+        settings_title: "Attualmente:",
+        censure_is_set: "• Scorrerai tra tutti i creabili: ◉",
+        censure_unset: "• Scorrerai solo tra gli oggetti che puoi creare: ◎",
+        preserve_is_set: "• Consegnerai al Mastro solo oggetti base",
+        preserve_unset: "• Se serviranno, il Mastro potrà consumare creati dal tuo zaino",
 
 
 
@@ -104,9 +105,15 @@ module.exports = {
         selected_rarity: "• Rarità:",
         selected_prefix: "• Prefisso:",
         show_list_length: "oggetti",
+        craftables_in_list: "oggetti creabili",
+
         list_clear: "Hai stralciato l'elenco craft…",
         censure_set: "Ti saranno mostrati solo i creati compatibili con la tua rinascita",
-        censure_remove: "Puoi scorrere liberamente tra tutti i creabili"
+        censure_remove: "Puoi scorrere liberamente tra tutti i creabili",
+
+        rarity_select: "• Seleziona una rarità",
+        prefix_select: "• Seleziona un prefisso indice",
+
     },
     validate: {
         unable: {
@@ -192,13 +199,13 @@ module.exports = {
             "…resti fermo.\nResti a guardare…_",
         bizzarre_events: [ // (questo quando erano 22...) Se ho fatto bene i conti sono 2024 combinazioni se ne mostro 3, 12.650 mostrandone 4. Non sono sicuro di quanto sia la somma…
             "…ci sono gnomi, sono gnomi quelli?",
-            "…ci sono gnomi che sbattono",
-            "…ci sono gnomi che sbattono",
-            "…ci sono gnomi che squotono",
-            "…ci sono gnomi che corrono",
-            "…ci sono gnomi che urlano",
-            "…ci sono nani che battono",
-            "…ci sono nani che zampettano",
+            "…ci sono gnomi che sbattono.",
+            "…ci sono gnomi che sbattono.",
+            "…ci sono gnomi che squotono.",
+            "…ci sono gnomi che corrono.",
+            "…ci sono gnomi che urlano.",
+            "…ci sono nani che battono.",
+            "…ci sono nani che zampettano.",
             "…due nani si azzuffano…",
             "…quei nani stanno, stanno...",
             "…c'è un nano che sembra essersi ferito…\nSanguina?\n....aiutatelo!",
@@ -208,12 +215,19 @@ module.exports = {
             "…senti il calore degli ioni",
             "i tuoi occhi provano a seguire la scena…",
             "le tue orecchie iniziano a fischiare…",
-            "lapilli di materiale fuso zampettano dell'aria…",
+            "lapilli di materiale fuso zampettano nell'aria…",
             "c'è un pony?",
             "senti freddo…",
             "fa freddo…",
             "buio!",
             "luce!",
+            "qualche cosa di celeste?!\nMETALLO!",
+            "qualche cosa di diabolico e galattico...",
+            "qualche cosa di acciaio...",
+            "scalpello, avorio",
+            "Scalpello, laccio antico, scalpello...\nSCALPELLO!",
+            "un Rubino Primordiale!",
+            "Martello Acciaio.\nÈ il suo nome...\nMartello Acciaio\n",
             "Sbang, Crack, Sdong!",
             "Sbang, Sdong!",
             "Crack, Sbang, Sdong!",
