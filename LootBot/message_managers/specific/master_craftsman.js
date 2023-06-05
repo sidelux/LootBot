@@ -17,7 +17,6 @@ const inventory_logics = require("../../logic/inventory");              // Logic
 const craft_logics = require("../../logic/craft");                      // Logica per i craft
 
 const bot_response = require("../../utility/bot_response");                 // È il modulo che si occupa dell'invio, modifica etc...
-const { console_log } = require("../../../Utilities");
 
 
 // Costanti temporanee per testing esteso
@@ -674,7 +673,6 @@ async function validate_view_dispatch(response, telegram_user_id, message_id, qu
         } 
 
 
-        console.log(response)
 
     }
 }
@@ -1179,7 +1177,7 @@ async function add_betaTester(message_user_id, message_text) {
     }
 
     //Questo comando è riservato agli amministratori
-    if (!config.isAdmin(message_user_id)) {
+    if (!config.isDev(message_user_id)) {
         return;
     }
 
