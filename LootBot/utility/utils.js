@@ -18,6 +18,11 @@ const db_structures = {
             money: "money",
             exp: "exp",
         },
+        craft: {
+            craft_point: "craft_count",
+            weekly_point: "craft_week",
+            daily_pint: "craft_day",
+        },
         dungeon_info: {},
         cave_info: {},
         mission_info: {},

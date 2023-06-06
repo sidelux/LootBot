@@ -72,11 +72,12 @@ function process_recoursiveCraft(currdeep_array, player_inventory, preserve_zain
             let fromInventory_item = inventory_controller.hasItem(item_id, player_inventory);            // controllo di oggetto nello zaino utente (la quantità è sempre quella assoluta e può essere 0)
             craft_logic(tmp_item, fromInventory_item, nextdeep_array, preserve_zaino, response);
         }
-        response.loops++;                                                                                // Incremento il contatore di loops
     });
+    
 
     // Continuare con il loop o fermarsi? Dipende da craft_can_continue e cosa c'è in nextdeep_array… 
     if (craft_can_continue(response) && nextdeep_array.length > 0) {                                                                         // Ci sono id di oggetti ancora da valutare
+        response.loops++;                                                                                // Incremento il contatore di loops
         return process_recoursiveCraft(nextdeep_array, player_inventory, preserve_zaino, response);          // Il ciclo ricomincia
     } else {
         return true;                                                                                         // Fine! (La funzione non restituisce nulla. Ha aggiornato durante i sui cicli i valori in response…)

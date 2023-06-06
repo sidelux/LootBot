@@ -222,6 +222,7 @@ function get_craftables_ofRarity(item_rarity, player_reborn) {
     return item_logics.craftables_ofRarity(item_rarity, player_reborn);
 }
 
+// queste sono funzioni che appartengono ad intems, non a qui
 function sort_items_fromRarity_accessory(item1, item2, rarityOrder) {
     let rarity1 = item1.rarity;
     let rarity2 = item2.rarity;
@@ -239,7 +240,7 @@ function sort_items_fromRarity_accessory(item1, item2, rarityOrder) {
             return 1;
         } else if (quantity1 > quantity2) {
             return -1;
-        } else {
+        } else if (item1.name){
             let name1 = item1.name.toLowerCase();
             let name2 = item2.name.toLowerCase();
 
@@ -250,12 +251,15 @@ function sort_items_fromRarity_accessory(item1, item2, rarityOrder) {
             } else {
                 return 0;
             }
+        } else {
+            return 0;
         }
 
 
     }
 }
 
+// queste sono funzioni che appartengono ad intems, non a qui
 function sort_items_fromRarity(items_list) {
     let rarityOrder = {
         C: 0,
@@ -434,6 +438,9 @@ async function commit_craft(craftsman_info, player_info) {
 
     response.craft_report = craft_report;
     response.update_quantity = await inventory_logics.update_items_quantityOf([update_array]);
+    response.update_money = await player_logics.money.decrease(craftsman_info.controll.craft_cost, player_info.account_id);
+    response.update_craft_point = await player_logics.increase_player_craft_point(craftsman_info.controll.craft_point, player_info.account_id);
+
 
 
     return response;

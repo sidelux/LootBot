@@ -10,6 +10,14 @@ module.exports = {
     tables_names: tables_names,
     players: {
         full_info: player_full_info,
+
+        //Soldi
+        set_player_money: set_player_money,
+        increase_player_money: increase_player_money,
+        decrease_player_money: decrease_player_money,
+
+        // PC
+        increase_player_craft_point: increase_player_craft_point
     },
     items: {
         allItems: allItems,
@@ -65,22 +73,57 @@ function complete_inventoriOf(player_id){
 
 // ****************************************************************************   UPDATE
 
+// PLAYERS
+function increase_player_money(increase_ammount, telegram_user_id){
+    let query = `UPDATE ${tables_names.players} SET ${tables_structs.players.main_info.money} = ${increase_ammount}`;
+    query += ` WHERE ${tables_structs.players.main_info.account_id} = ${telegram_user_id}`;
+
+    return query;
+}
+
+function decrease_player_money(decrease_ammount, telegram_user_id){
+    let query = `UPDATE ${tables_names.players} SET ${tables_structs.players.main_info.money} =`;
+    query += ` GREATEST( ${tables_structs.players.main_info.money} - ${decrease_ammount}, 0)`;
+    query += ` WHERE ${tables_structs.players.main_info.account_id} = ${telegram_user_id}`;
+
+    return query;
+}
+
+
+function set_player_money(new_ammount, telegram_user_id){
+    let query = `UPDATE ${tables_names.players} SET ${tables_structs.players.main_info.money} = ${new_ammount}`;
+    query += ` WHERE ${tables_structs.players.main_info.account_id} = ${telegram_user_id}`;
+
+    return query;
+}
+
+
+function  increase_player_craft_point(increase_ammount, telegram_user_id){
+    let query = `UPDATE ${tables_names.players} SET`;
+    query += ` ${tables_structs.players.craft.craft_point} = ${tables_structs.players.craft.craft_point} + ${increase_ammount},`;
+    query += ` ${tables_structs.players.craft.daily_pint} = ${tables_structs.players.craft.daily_pint} + ${increase_ammount},`;
+    query += ` ${tables_structs.players.craft.weekly_point} = ${tables_structs.players.craft.weekly_point} + ${increase_ammount}`;
+    query += ` WHERE ${tables_structs.players.main_info.account_id} = ${telegram_user_id}`;
+
+    return query;
+}
+
 // INVENTORY
 function reduce_item_quantity(updates_array){ // in ingresso, updates_array è un array di [playerId, itemId, reduce_quantity]
     let query = `INSERT INTO ${tables_names.inventory}  (${tables_structs.inventory.player_id},  ${tables_structs.inventory.item_id}, ${tables_structs.inventory.quantity}) `;
-    query += `VALUES ? ON DUPLICATE KEY UPDATE quantity = GREATEST(quantity - VALUES(quantity), 0)`
+    query += `VALUES ? ON DUPLICATE KEY UPDATE ${tables_structs.inventory.quantity} = GREATEST(${tables_structs.inventory.quantity} - VALUES(${tables_structs.inventory.quantity}), 0)`
     return query;
 }
 
 function increment_item_quantity(updates_array){ // in ingresso, updates_array è un array di [player_Id, item_Id, reduce_quantity]
     let query = `INSERT INTO ${tables_names.inventory}  (${tables_structs.inventory.player_id},  ${tables_structs.inventory.item_id}, ${tables_structs.inventory.quantity}) `;
-    query += `VALUES ? ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)`
+    query += `VALUES ? ON DUPLICATE KEY UPDATE ${tables_structs.inventory.quantity} = ${tables_structs.inventory.quantity} + VALUES(${tables_structs.inventory.quantity})`
     return query;
 }
 
 function update_items_quantity(){ // in ingresso, updates_array è un array di [player_Id, item_Id, new_quantity]
     let query = `INSERT INTO ${tables_names.inventory}  (${tables_structs.inventory.player_id},  ${tables_structs.inventory.item_id}, ${tables_structs.inventory.quantity}) `;
-    query += `VALUES ? ON DUPLICATE KEY UPDATE quantity = VALUES(quantity)`
+    query += `VALUES ? ON DUPLICATE KEY UPDATE ${tables_structs.inventory.quantity} = VALUES(${tables_structs.inventory.quantity})`
     return query;
 }
 

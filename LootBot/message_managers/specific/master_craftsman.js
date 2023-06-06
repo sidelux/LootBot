@@ -791,9 +791,10 @@ function validate_used_items_view(response, player_info, craftsman_info, message
 
 function validate_toSendObject(craft_line, craftsman_info, telegram_user_id) {
     let caption_text = "";
+    let print_text = "";
 
     //Obbiettivo
-    let print_text = `${craftsman_view.list_print.line}\n\n`;
+    print_text += `\n${craftsman_view.list_print.line.repeat(50)}\n\n`;
     print_text += `${craftsman_view.list_print.target_items} (${craftsman_info.items_list.length})\n`;
     print_text += validate_print_list(craftsman_logics.item_infos_forList(craftsman_info.items_list))
     caption_text += `${craftsman_view.list_print.target_items} (${craftsman_info.items_list.length})\n`;
@@ -825,9 +826,10 @@ function validate_toSendObject(craft_line, craftsman_info, telegram_user_id) {
 }
 
 function validate_print_list(items_list) {
-    let print_text = `${craftsman_view.list_print.line}\n\n`;
+    let print_text = "";
     craftsman_logics.sort_items_fromRarity(items_list);
 
+    print_text += `\n${craftsman_view.list_print.line.repeat(50)}\n\n`;
     let rarity_title = items_list[0].rarity;
     print_text += `${craftsman_view.list_print.list_tab}${rarity_title}\n`;
     for (let i = 0; i < items_list.length; i++) {
@@ -838,7 +840,7 @@ function validate_print_list(items_list) {
             print_text += `\n${craftsman_view.list_print.list_tab}${rarity_title}\n`;
         }
     };
-    print_text += `\n${craftsman_view.list_print.line}\n\n`;
+    print_text += `\n${craftsman_view.list_print.line.repeat(50)}\n\n`;
     return print_text;
 }
 
@@ -900,6 +902,8 @@ async function commit_view(response, player_info, craftsman_info, message_id) {
 
 
 function commit_report(telegram_user_id, craft_report) {
+    // ad oggi tutto questo casino che faccio qui è inutile, perche sembra il txt non supporti il padding... :(
+
     let view_keyboard = [[view_utils.menu_strings.square.master_craftsman, view_utils.menu_strings.square.main], [view_utils.menu_strings.back_to_menu]];
     let report_text = "";
     let caption_text = `${craftsman_view.list_print.all_used_items}: ${craft_report.used_items.length}`;
@@ -913,6 +917,8 @@ function commit_report(telegram_user_id, craft_report) {
             after_craft_quantity: raw_item.after_craft_quantity
         }
     })
+    craftsman_logics.sort_items_fromRarity(craft_report.used_items);
+
 
     let to_format_crafted_items = craft_report.crafted_items.map((raw_item) => {
         let item_info = craftsman_logics.item_infos(raw_item.item_id);
@@ -923,6 +929,7 @@ function commit_report(telegram_user_id, craft_report) {
             after_craft_quantity: raw_item.after_craft_quantity
         }
     })
+    craftsman_logics.sort_items_fromRarity(craft_report.crafted_items);
 
 
     // tiene traccia della larghezza massima per ogni colonna
@@ -936,24 +943,25 @@ function commit_report(telegram_user_id, craft_report) {
     const mergedArray = to_format_used_items.concat(to_format_crafted_items);
     mergedArray.forEach(item => {
         columnWidths.name = Math.max(columnWidths.name, item.name.length);
-        columnWidths.rarity = Math.max(columnWidths.rarity, item.rarity.length);
+        columnWidths.rarity = Math.max(columnWidths.rarity, item.rarity.length+2);
         columnWidths.new_quantity = Math.max(columnWidths.new_quantity, item.new_quantity.toString().length);
-        columnWidths.after_craft_quantity = Math.max(columnWidths.after_craft_quantity, item.after_craft_quantity.toString().length);
+        columnWidths.after_craft_quantity = Math.max(columnWidths.after_craft_quantity, item.after_craft_quantity.toString().length+4);
     });
 
-    // Crea un nuovo array di stringhe formattate
+    console.log(columnWidths);
+
     const formatted_used_items = to_format_used_items.map(item => {
         const formattedName = `${item.name} (${item.rarity}): `.padEnd(columnWidths.name + columnWidths.rarity + 4);
-        const formattedQuantity = item.new_quantity.toString().padEnd(columnWidths.new_quantity);
-        const formattedAfterCraftQuantity = `(-${item.after_craft_quantity.toString()})`.padEnd(columnWidths.after_craft_quantity);
+        const formattedQuantity = item.new_quantity.toString().padStart(columnWidths.new_quantity);
+        const formattedAfterCraftQuantity = `(-${item.after_craft_quantity.toString()})`.padStart(columnWidths.after_craft_quantity);
         return `${formattedName} ${formattedQuantity}  ${formattedAfterCraftQuantity}`;
     }).join("\n");
 
 
     const formatted_crafted_items = to_format_crafted_items.map(item => {
         const formattedName = `${item.name} (${item.rarity}): `.padEnd(columnWidths.name + columnWidths.rarity + 4);
-        const formattedQuantity = item.new_quantity.toString().padEnd(columnWidths.new_quantity);
-        const formattedAfterCraftQuantity = `(+${item.after_craft_quantity.toString()})`.padEnd(columnWidths.after_craft_quantity);
+        const formattedQuantity = item.new_quantity.toString().padStart(columnWidths.new_quantity);
+        const formattedAfterCraftQuantity = `(+${item.after_craft_quantity.toString()})`.padStart(columnWidths.after_craft_quantity);
         return `${formattedName} ${formattedQuantity}  ${formattedAfterCraftQuantity}`;
     }).join("\n");
 
@@ -963,11 +971,12 @@ function commit_report(telegram_user_id, craft_report) {
 
     const formattedOutput = [
         craftsman_view.commit.report_title,
+        separator,
         `${craftsman_view.list_print.craft_cost}: ${utils.simple_number_formatter(craft_report.craft_cost)}`,
         `${craftsman_view.list_print.craft_gained_pc}: ${craft_report.craft_gained_pc}`,
-
         separator,
-        ``,
+        ``, ``,
+        separator,
         craftsman_view.list_print.all_used_items,
         separator,
         formatted_used_items,
@@ -975,7 +984,8 @@ function commit_report(telegram_user_id, craft_report) {
         ``,
         craftsman_view.list_print.crafted,
         separator,
-        formatted_crafted_items
+        formatted_crafted_items,
+        separator,
     ];
 
     report_text += formattedOutput.join("\n");
