@@ -705,12 +705,12 @@ async function validate_view(response, player_info, craftsman_info, craft_line, 
         message_text += `«_${craftsman_view.validate.craft_commission.introduction} `;
         message_text += `${view_utils.ita_gender_impl_singular(craftsman_view.validate.craft_commission.introduction_genere_gr, player_info.gender) } `;
         message_text += `${craftsman_view.validate.craft_commission.introduction_part2} ${utils.simple_number_formatter(craft_line.craft_cost)} `;
-        message_text += `${craftsman_view.validate.craft_commission.commission} ${utils.simple_number_formatter((craft_line.craft_cost*10-craft_line.craft_cost))}_»\n\n`;
+        message_text += `${craftsman_view.validate.craft_commission.commission} ${utils.simple_number_formatter((craft_line.craft_cost*utils.master_craftsman_cost_multiplier-craft_line.craft_cost))}_»\n\n`;
 
 
 
         message_text += `• ${craftsman_view.validate.craft_pc}: ${utils.simple_number_formatter(craft_line.craft_point)}pc\n`;
-        message_text += `• ${craftsman_view.validate.craft_total_cost}: ${utils.simple_number_formatter(craft_line.craft_cost*10)}§\n`;
+        message_text += `• ${craftsman_view.validate.craft_total_cost}: ${utils.simple_number_formatter(craft_line.craft_cost*utils.master_craftsman_cost_multiplier)}§\n`;
 
 
         // aggiorno il controll di craftsman_info
@@ -980,8 +980,8 @@ function commit_report(telegram_user_id, craft_report) {
     const formattedOutput = [
         craftsman_view.commit.report_title,
         separator,
-        `${craftsman_view.list_print.craft_cost}: ${utils.simple_number_formatter(craft_report.craft_cost*10)}`,
-        `${craftsman_view.list_print.craft_commission}: ${utils.simple_number_formatter((craft_report.craft_cost*10)-craft_report.craft_cost)}`,
+        `${craftsman_view.list_print.craft_cost}: ${utils.simple_number_formatter(craft_report.craft_cost*utils.master_craftsman_cost_multiplier)}`,
+        `${craftsman_view.list_print.craft_commission}: ${utils.simple_number_formatter((craft_report.craft_cost*utils.master_craftsman_cost_multiplier)-craft_report.craft_cost)}`,
 
         `${craftsman_view.list_print.craft_gained_pc}: ${craft_report.craft_gained_pc}`,
         separator,
