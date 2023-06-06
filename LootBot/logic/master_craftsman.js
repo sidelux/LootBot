@@ -309,6 +309,10 @@ async function commit_craft(craftsman_info, player_info) {
         target_items_controll: true,
     }
 
+    let formatted_update_array = {
+        used_items: [],
+        crafted_items: []
+    };
     let update_array = [];                                                                                             // [player_Id, item_Id, new_quantity]
     let player_inventory_controll;
     let player_inventory;
@@ -338,7 +342,9 @@ async function commit_craft(craftsman_info, player_info) {
             response.used_items_controll = false;
             break;
         } else {
-            update_array.push([player_info.id, used_item.id, (inventory_item.quantity - parseInt(used_item.total_quantity))]);
+            let new_quantity = (inventory_item.quantity - parseInt(used_item.total_quantity));
+            update_array.push([player_info.id, used_item.id, new_quantity]);
+            formatted_update_array.used_items.push({item_id: used_item.id, new_quantity: new_quantity, after_craft_quantity: used_item.total_quantity})
         }
     };
     if (!response.used_items_controll) {
@@ -348,9 +354,10 @@ async function commit_craft(craftsman_info, player_info) {
     // QUANTITÀ INCREMENTATE: per ogni oggetto creato controllo che quantity <= cap(rarity)    
     for (target_item of craftsman_info.controll.target_items_list) {
         let already_in_list_index = update_array.findIndex((item) => (item[1] == target_item.id));
+        let new_quantity = 0;
 
         if (already_in_list_index >= 0) {
-            let new_quantity = update_array[already_in_list_index][2] + parseInt(target_item.total_quantity);
+            new_quantity = update_array[already_in_list_index][2] + parseInt(target_item.total_quantity);
             // Controllo sul cap oggetti
             let cap_check = inventory_logics.inventory_cap().cap_check(target_item.rarity, new_quantity);
             if (!cap_check) {
@@ -360,9 +367,12 @@ async function commit_craft(craftsman_info, player_info) {
             update_array[already_in_list_index][2] = new_quantity
         } else {
             let inventory_item = inventory_logics.hasItem(target_item.id, player_inventory);
-            update_array.push([player_info.id, target_item.id, (inventory_item.quantity + parseInt(target_item.total_quantity))]);
-
+            new_quantity = (inventory_item.quantity + parseInt(target_item.total_quantity));
+            update_array.push([player_info.id, target_item.id, new_quantity]);
         }
+
+        formatted_update_array.crafted_items.push({item_id: target_item.id, new_quantity: new_quantity, after_craft_quantity: target_item.total_quantity})
+
     };
 
     if (!response.target_items_controll) {
@@ -370,7 +380,7 @@ async function commit_craft(craftsman_info, player_info) {
     }
 
 
-    response.update_array = update_array;
+    response.report_array = formatted_update_array;
     response.update_quantity = await inventory_logics.update_items_quantityOf([update_array]);
 
 

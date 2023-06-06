@@ -913,23 +913,91 @@ async function commit_view(response, player_info, craftsman_info, message_id) {
 
 }
 
-function commit_report(telegram_user_id, update_array) {
-    let view_keyboard = [[view_utils.menu_strings.square.master_craftsman, view_utils.menu_strings.square.main], [view_utils.menu_strings.back_to_menu]];
 
-    let caption_text = `${update_array.length}`;
-    let report_text = `${craftsman_view.list_print.line}\n\n`;
-    report_text += `${craftsman_view.commit.report_title}\n\n`;
-    report_text += `${craftsman_view.list_print.line}\n\n`;
-    update_array.forEach((item) => {
-        let item_info = craftsman_logics.item_infos(item[1]);
-        if (item_info) {
-            report_text += `>${item_info.name} (${item_info.rarity}):\t\t\t${item[2]}\n`
+function commit_report(telegram_user_id, report_array) {
+    let view_keyboard = [[view_utils.menu_strings.square.master_craftsman, view_utils.menu_strings.square.main], [view_utils.menu_strings.back_to_menu]];
+    let report_text = "";
+    let caption_text = `${craftsman_view.list_print.all_used_items}: ${report_array.used_items.length}`;
+
+
+    let to_format_used_items = report_array.used_items.map((raw_item) => {
+        let item_info = craftsman_logics.item_infos(raw_item.item_id);
+        return {
+            name: item_info.name,
+            rarity: item_info.rarity,
+            new_quantity: raw_item.new_quantity,
+            after_craft_quantity: raw_item.after_craft_quantity
         }
+    })
+
+    let to_format_crafted_items = report_array.crafted_items.map((raw_item) => {
+        let item_info = craftsman_logics.item_infos(raw_item.item_id);
+        return {
+            name: item_info.name,
+            rarity: item_info.rarity,
+            new_quantity: raw_item.new_quantity,
+            after_craft_quantity: raw_item.after_craft_quantity
+        }
+    })
+
+
+    // tiene traccia della larghezza massima per ogni colonna
+    const columnWidths = {
+        name: 0,
+        rarity: 0,
+        new_quantity: 0,
+        after_craft_quantity: 0
+    };
+
+    const mergedArray = to_format_used_items.concat(to_format_crafted_items);
+    mergedArray.forEach(item => {
+        columnWidths.name = Math.max(columnWidths.name, item.name.length);
+        columnWidths.rarity = Math.max(columnWidths.rarity, item.rarity.length);
+        columnWidths.new_quantity = Math.max(columnWidths.new_quantity, item.new_quantity.toString().length);
+        columnWidths.after_craft_quantity = Math.max(columnWidths.after_craft_quantity, item.after_craft_quantity.toString().length);
     });
-    report_text += `${craftsman_view.list_print.line}\n\n`;
+
+    // Crea un nuovo array di stringhe formattate
+    const formatted_used_items = to_format_used_items.map(item => {
+        const formattedName = `${item.name} (${item.rarity}): `.padEnd(columnWidths.name + columnWidths.rarity + 4);
+        const formattedQuantity = item.new_quantity.toString().padEnd(columnWidths.new_quantity);
+        const formattedAfterCraftQuantity = `(-${item.after_craft_quantity.toString()})`.padEnd(columnWidths.after_craft_quantity);
+        return `${formattedName} ${formattedQuantity}  ${formattedAfterCraftQuantity}`;
+    }).join("\n");
+
+
+    const formatted_crafted_items = to_format_crafted_items.map(item => {
+        const formattedName = `${item.name} (${item.rarity}): `.padEnd(columnWidths.name + columnWidths.rarity + 4);
+        const formattedQuantity = item.new_quantity.toString().padEnd(columnWidths.new_quantity);
+        const formattedAfterCraftQuantity = `(+${item.after_craft_quantity.toString()})`.padEnd(columnWidths.after_craft_quantity);
+        return `${formattedName} ${formattedQuantity}  ${formattedAfterCraftQuantity}`;
+    }).join("\n");
+
+    const separator = Object.values(columnWidths)
+        .map(width => '-'.repeat(width))
+        .join('-'.repeat(2));
+
+    const formattedOutput = [
+        craftsman_view.commit.report_title,
+        separator,
+        ``,
+        craftsman_view.list_print.all_used_items,
+        separator,
+        formatted_used_items,
+        separator,
+        ``,
+        craftsman_view.list_print.crafted,
+        separator,
+        formatted_crafted_items
+    ];
+
+    report_text += formattedOutput.join("\n");
 
     return bot_response.responses.sendObject(telegram_user_id, `${craftsman_view.commit.file_name}`, report_text, caption_text, view_keyboard);
+
 }
+
+
 
 // *******************************************  CONTROLLI E PRELOAD
 
