@@ -17,3 +17,13 @@ module.exports = {
 async function update_player_money() {
     // controllo che 
 }
+
+
+async function decrease_player_money() {
+    // controllo che 
+}
+
+
+async function increase_player_money() {
+    // controllo che 
+}
