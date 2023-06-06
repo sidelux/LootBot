@@ -621,7 +621,6 @@ async function validate_view_dispatch(response, telegram_user_id, message_id, qu
             }
         } 
     }
-    console.log(response);
 }
 
 // la lista viene stralciata e l'utente notificato (show_allert = true) -> quindi menu_textAndButtons
@@ -701,8 +700,10 @@ async function validate_view(response, player_info, craftsman_info, craft_line, 
 
         
     } else {
-        message_text += `• ${craftsman_view.validate.craft_cost}: ${utils.simple_number_formatter(craft_line.craft_cost)}§\n`;
         message_text += `• ${craftsman_view.validate.craft_pc}: ${craft_line.craft_point}pc\n`;
+        message_text += `• ${craftsman_view.validate.craft_commission}: ${utils.simple_number_formatter((craft_line.craft_cost*10)-craft_line.craft_cost)}§\n`;
+        message_text += `• ${craftsman_view.validate.craft_total_cost}: ${utils.simple_number_formatter(craft_line.craft_cost*10)}§\n`;
+
 
         // aggiorno il controll di craftsman_info
         craftsman_logics.craftman_info_craftUpdate(craftsman_info, craft_line, message_id);
@@ -948,7 +949,6 @@ function commit_report(telegram_user_id, craft_report) {
         columnWidths.after_craft_quantity = Math.max(columnWidths.after_craft_quantity, item.after_craft_quantity.toString().length+4);
     });
 
-    console.log(columnWidths);
 
     const formatted_used_items = to_format_used_items.map(item => {
         const formattedName = `${item.name} (${item.rarity}): `.padEnd(columnWidths.name + columnWidths.rarity + 4);
@@ -972,7 +972,9 @@ function commit_report(telegram_user_id, craft_report) {
     const formattedOutput = [
         craftsman_view.commit.report_title,
         separator,
-        `${craftsman_view.list_print.craft_cost}: ${utils.simple_number_formatter(craft_report.craft_cost)}`,
+        `${craftsman_view.list_print.craft_cost}: ${utils.simple_number_formatter(craft_report.craft_cost*10)}`,
+        `${craftsman_view.list_print.craft_commission}: ${utils.simple_number_formatter((craft_report.craft_cost*10)-craft_report.craft_cost)}`,
+
         `${craftsman_view.list_print.craft_gained_pc}: ${craft_report.craft_gained_pc}`,
         separator,
         ``, ``,

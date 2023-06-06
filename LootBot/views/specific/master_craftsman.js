@@ -152,7 +152,10 @@ module.exports = {
             not_much: "...ed userò anche",
             a_fiew: "...oltre a",
         },
-        craft_cost: "Spenderai in totale",
+        craft_cost: "Ci sarebbe una spesa di",
+        craft_commission: "La mia commissione è",
+        craft_total_cost: "Il costo totale sarà",
+
         craft_pc: "Guadagnerai",
         too_expensive_craft_cost: "Dovresti spendere",
         too_expensive_craft_pc: "Guadagneresti",
@@ -183,6 +186,7 @@ module.exports = {
         line: "-",
         all_used_items: "Oggetti consumati",
         craft_cost: "Edollari spesi",
+        craft_commission: "Costi di commissione",
         craft_gained_pc: "Punti craft ottenuti"
 
     },

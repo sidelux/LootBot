@@ -91,7 +91,6 @@ async function increase_player_craft_point(increase_ammount, telegram_user_id) {
         let increase_res = await db.query(db.queries.players.increase_player_craft_point(increase_ammount, telegram_user_id));
 
         if (!increase_res) {
-            console.log(increase_res);
             return increase_craft_point_res({
                 esit: false,
             });

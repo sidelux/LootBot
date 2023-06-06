@@ -99,8 +99,7 @@ function craft_logic(item, fromInventory_item, nextdeep_array, preserve_zaino, r
 // Accessoria di craft_logic() ->  gestisce la logica per oggetti (base o creati) usati per la prima volta all'interno della linea
 function craft_logic_newUsed(item, fromInventory_item, nextdeep_array, response) {
     // Per gli oggetti base eseguo sempre il controllo sullo zaino
-    if (fromInventory_item.item_id === 624)
-        console.log(raw_data[i]);
+    
     if (item.craftable == 0) {
         if (fromInventory_item.has_item == false) {                                         // se non è presente aggiorno la lista dei base mancanti
                 add_item_inList(response.missing_baseItems, item);

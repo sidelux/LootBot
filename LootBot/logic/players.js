@@ -24,7 +24,6 @@ async function set_player_money(new_ammount, telegram_user_id) {
         return false;
     }
     let set_result = await model.update_player_money(parseInt(new_ammount), telegram_user_id, model.types.money.set);
-    console.log(set_result);
     return set_result;
 }
 
@@ -34,7 +33,6 @@ async function decrease_player_money(decrease_ammount, telegram_user_id) {
         return false;
     }
     let set_result = await model.update_player_money(parseInt(decrease_ammount), telegram_user_id, model.types.money.decrease);
-    console.log(set_result);
     return set_result;
 }
 
@@ -44,6 +42,5 @@ async function increase_player_money(increase_ammount, telegram_user_id) {
         return false;
     }
     let set_result = await model.update_player_money(parseInt(increase_ammount), telegram_user_id, model.types.money.increase);
-    console.log(set_result);
     return set_result;
 }
