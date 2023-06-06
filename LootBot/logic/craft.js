@@ -3,7 +3,7 @@ const items_controller = require("./items");
 const inventory_controller = require("./inventory");
 const utils = require("../utility/utils");                                      // Le utilità
 
-const fixed_max_loops = 80000;                                                   // Numero massimo di iterazioni sulla linea craft. (nel caso venga raggiunto la linea craft è solo parziale)
+const fixed_max_loops = 10000;                                                   // Numero massimo di iterazioni sulla linea craft. (nel caso venga raggiunto la linea craft è solo parziale)
 
 module.exports = {
     full_line_craft: full_line_craft, // Funzione pubblica per l'analisti della linea craft di un array di LootItems
