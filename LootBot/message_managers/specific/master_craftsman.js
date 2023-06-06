@@ -647,8 +647,8 @@ async function validate_view(response, player_info, craftsman_info, craft_line, 
     // Sulla lista
     message_text += `_${craftsman_view.validate.introduction}_\n`;
     message_text += "\n«";
-    message_text += `${craft_line.loops == 1 ? craftsman_view.validate.loops.just_one :
-        craft_line.loops < 25 ? craftsman_view.validate.loops.a_fiew :
+    message_text += `${craft_line.loops <= 3 ? craftsman_view.validate.loops.just_one :
+        craft_line.loops < 50 ? craftsman_view.validate.loops.a_fiew :
             craft_line.loops < 150 ? craftsman_view.validate.loops.not_much :
                 craftsman_view.validate.loops.a_lot
         }`
