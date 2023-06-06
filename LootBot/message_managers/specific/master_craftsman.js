@@ -705,7 +705,11 @@ async function validate_view(response, player_info, craftsman_info, craft_line, 
         message_text += `«_${craftsman_view.validate.craft_commission.introduction} `;
         message_text += `${view_utils.ita_gender_impl_singular(craftsman_view.validate.craft_commission.introduction_genere_gr, player_info.gender) } `;
         message_text += `${craftsman_view.validate.craft_commission.introduction_part2} ${utils.simple_number_formatter(craft_line.craft_cost)} `;
-        message_text += `${craftsman_view.validate.craft_commission.commission} ${utils.simple_number_formatter((craft_line.craft_cost*utils.master_craftsman_cost_multiplier-craft_line.craft_cost))}_»\n\n`;
+        message_text += `${craftsman_view.validate.craft_commission.commission}`;
+        let phrases_random_index = Math.floor(Math.random() * craftsman_view.validate.craft_commission.commission_excuses.length);
+        message_text += `${craftsman_view.validate.craft_commission.commission_excuses[phrases_random_index]}`;
+        message_text += `${craftsman_view.validate.craft_commission.commission_end}`;
+        message_text += `${utils.simple_number_formatter((craft_line.craft_cost*utils.master_craftsman_cost_multiplier-craft_line.craft_cost))}§_»\n\n`;
 
 
 

@@ -163,10 +163,29 @@ module.exports = {
             a_fiew: "...oltre a",
         },
         craft_commission: {
-            introduction: "Se dovessi creare questa roba da",
+            introduction: "Creando questa roba da",
             introduction_genere_gr: "sol",
-            introduction_part2: "probabilmente spenderesti meno di",
-            commission: "ma qui la Fenice impone una maggiorazione di"
+            introduction_part2: "spenderesti",
+            commission: "§ ma...",
+            commission_excuses: [
+                "La Fenice",
+                "gli gnomi",
+                "ho famiglia",
+                "sai, il mio gatto",
+                "sai, quello gnomo è incinto!",
+                "il costo delle materie prime",
+                "tutto ha un costo",
+                "cioè, vorrei… ma… ",
+                "ci sono le tasse alla Fenice e…\n",
+                "hai visto che Fucina che abbiamo?",
+                "Il contrabbando va forte, e noi restiamo senza fornitori… cioè… insomma… ",
+                "c'è il nostro lavoro, e il mana…\ne le tasse",
+                "c'è il nostro lavoro, e il pozzo…\ne gli gnomi",
+                "c'è il nostro lavoro, e la Fenice…\ne la fenice… La Fenice!\n",
+
+
+            ],
+            commission_end: "…devo chiederti altri "
         },
         craft_total_cost: "Il costo totale sarà",
 
