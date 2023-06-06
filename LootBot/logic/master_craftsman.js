@@ -302,7 +302,7 @@ async function craft_line_controll(player_info, craftsman_info, player_inventory
         has_error: false,
         is_incompleate: false,
         is_too_expensive: false,
-        craft_line
+        craft_line: {}
     }
 
     let craft_line = await  craft_logics.full_line_craft(craftsman_info.items_list, player_inventory, craftsman_info.preserve_crafted);

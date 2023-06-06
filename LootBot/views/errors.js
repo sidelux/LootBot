@@ -31,7 +31,7 @@ const strings = {
 
 module.exports = {
     // Funzione per stampare un messaggio, sostituendone {#} con una variabile
-    print: (error_message, variable) => typeof variable !== "undefined" ? error_message.split("{#}").join(variable) : error_message, // sostituisce a {#} la variabile in ingresso
+    print: (error_message, variable) => typeof variable !== "undefined" ? error_message.split("{#}").join(variable.split("_").join("\\_")) : error_message, // sostituisce a {#} la variabile in ingresso
     // Funzione per generare una stringa a partire dagli elementi di un oggetto (da passare come variabile a print) 
     flatted_function_paparameters: (array) => array.map(obj => { 
         return Object.entries(obj).map(([key, value]) => `> ${key}: ${value}\n`);

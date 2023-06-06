@@ -65,7 +65,6 @@ function process_recoursiveCraft(currdeep_array, player_inventory, preserve_zain
     // L'array della prossima chiamata a questa funzione. viene popolato (eventualmente) in craft_logic()
 
     currdeep_array.forEach((item_id) => {                                                                // Scorro la lista di id del livello attuale
-        response.loops++;                                                                                // Incremento il contatore di loops
         let tmp_item = items_controller.craftItemInfo_FromItemId(item_id);                               // L'oggetto per (id)
         if (utils.isNully(tmp_item)) {                                                                    // Aggiorna l'array skipped (Male!)
             response.skipped.push(item_id);
@@ -73,6 +72,7 @@ function process_recoursiveCraft(currdeep_array, player_inventory, preserve_zain
             let fromInventory_item = inventory_controller.hasItem(item_id, player_inventory);            // controllo di oggetto nello zaino utente (la quantità è sempre quella assoluta e può essere 0)
             craft_logic(tmp_item, fromInventory_item, nextdeep_array, preserve_zaino, response);
         }
+        response.loops++;                                                                                // Incremento il contatore di loops
     });
 
     // Continuare con il loop o fermarsi? Dipende da craft_can_continue e cosa c'è in nextdeep_array… 
@@ -86,7 +86,7 @@ function process_recoursiveCraft(currdeep_array, player_inventory, preserve_zain
 
 // la logica del craft (che viente riflessa nell'oggetto response).
 function craft_logic(item, fromInventory_item, nextdeep_array, preserve_zaino, response) {
-    if (item.craftable == 1 && preserve_zaino == true) {                                                      // Se è un creato e preserve_zaino == true passo i necessari al prossimo livello
+    if (item.craftable == 1 && (response.loops == 0 || preserve_zaino == true)) {                                                      // Se è un creato e preserve_zaino == true passo i necessari al prossimo livello
         update_craft(item, nextdeep_array, response);                                                         // Manda ad accessoria (nextdeep_array e response vengono aggiornati)
     } else if (response.used_items.ids.indexOf(item.id) < 0) {                                                // L'oggetto NON è già tra quelli utilizzati fino a questo momento
         craft_logic_newUsed(item, fromInventory_item, nextdeep_array, response);

@@ -1,19 +1,16 @@
 // "Mastro Artigiano ⚒" (sotto il menu Piazza) -> gestisce il craft (per l'intera linea) di piu oggetti, 
 
 const utils = require("../../utility/utils");                               // Utilità è sempre utile…
-const config = require("../../utility/config");
-
 const view_utils = require("../views_util");                                 // Modulo utilità stringhe (generico)
-const craftsman_view = require("../../views/specific/master_craftsman");    // Modulo per le stringhe specifiche di master_craftsman
 
+const craftsman_view = require("../../views/specific/master_craftsman");    // Modulo per le stringhe specifiche di master_craftsman
 const craftsman_logics = require("../../logic/master_craftsman");       // Logica specifico
   
-
 const bot_response = require("../../utility/bot_response");                 // È il modulo che si occupa dell'invio, modifica etc...
 
 // Costanti temporanee per testing esteso
 const beta_tester_ids = [];
-const in_beta = true;
+const in_beta = false;
 
 module.exports = {
     menu: master_craftsman_menu,                                        // "mastro artigiano".indexOf(message.text.toLowerCase())>= 0   <- (Stringa da definire in: ./views.strings.js
@@ -624,6 +621,7 @@ async function validate_view_dispatch(response, telegram_user_id, message_id, qu
             }
         } 
     }
+    console.log(response);
 }
 
 // la lista viene stralciata e l'utente notificato (show_allert = true) -> quindi menu_textAndButtons
@@ -1066,10 +1064,11 @@ function beta_tester_controll(response, telegram_user_id, message_id = false) {
 async function pleyer_info_controll(response, telegram_user_id, message_id) {
     let player_info_controll = await craftsman_logics.pleyer_info_controll(telegram_user_id)
     if (player_info_controll.esit == false) {
-        response.preload_response.message_text = player_info_controll.message_text;
+        response.preload_response.message_text = player_info_controll.error_text;
         if (message_id != false) {
-            response.preload_response.query_text = `${craftsman_view.beta_tester.query_user_error}`
-        }
+            response.preload_response.query_text = `${player_info_controll.error_text}`
+        } 
+        
         return false;
     }
 
@@ -1081,9 +1080,9 @@ async function pleyer_info_controll(response, telegram_user_id, message_id) {
 async function pleyer_inventory_controll(response, player_info, message_id) {
     let player_inventory_controll = await craftsman_logics.pleyer_inventory_controll(player_info.id);
     if (player_inventory_controll.esit == false) {
-        response.preload_response.message_text = player_inventory_controll.message_text;
+        response.preload_response.message_text = player_inventory_controll.error_text;
         if (message_id != false) {
-            response.preload_response.query_text = `${craftsman_view.beta_tester.query_user_error}`
+            response.preload_response.query_text = `${player_inventory_controll.error_text}`
         }
         return false;
     }
@@ -1096,9 +1095,9 @@ async function pleyer_inventory_controll(response, player_info, message_id) {
 async function craftsman_info_controll(response, telegram_user_id, message_id) {
     let craftsman_info_controll = await craftsman_logics.get_craftsman_info(telegram_user_id);
     if (craftsman_info_controll == false) {
-        response.preload_response.toSend.message_text = craftsman_info_controll.message_text;
+        response.preload_response.message_text = craftsman_info_controll.error_text;
         if (message_id != false) {
-            response.preload_response.query_text = `${craftsman_view.beta_tester.query_user_error}`
+            response.preload_response.query_text = `${craftsman_info_controll.error_text}`
         }
         return false
     }

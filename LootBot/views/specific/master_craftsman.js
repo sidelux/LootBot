@@ -30,14 +30,11 @@ module.exports = {
 
     },
     beta_tester: {
-        user_message: "La fucina dell'Artigiano è in fase di allestimento…\nManda `/craftbeta` per avviare una sessione di test…",
+        user_message: "La fucina dell'Artigiano è in fase di allestimento…\n",
         insert_success: " account abilitato a: `Mastro Artigiano`",
         empty_list: "Nessun betatester per questa sessione",
         show_list: "*Lista dei betatester*\n_per questa sessione_\n\n",
         query_user_not_listed: "La tua sessione di testing è terminata…",
-        query_user_error: "Errore!"
-
-
     },
     menu: {
         introduction: "...tra il fragore di incudini e martelli una figura emerge dalle ombre.\nCon sguardo penetrante il Mastro Artigiano ti fissa...\n",
