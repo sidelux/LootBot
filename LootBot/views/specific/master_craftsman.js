@@ -48,14 +48,18 @@ module.exports = {
             "Compila la tua lista, viandante",
             "Sto aspettando…",
             "Avrei da lavorare…",
-            "Se hai qualche cosa da creare, aggiungilo alla lista…"
+            "Se hai qualche cosa da creare, aggiungilo alla lista…",
+            "Ancora qui?",
+            "...Ohibo!\npensavo non ci fosse piu nessuno…"
         ],
         long_list_phrases: [
             "Ci vorrà un eternità a creare quella roba li…",
             "Urca!",
-            "Che lista! Avrai tutto il necessario?",
+            "Che lista!\nE tu ha tutto il necessario?",
             "Spero tu non abbia altro da aggiungere…",
             "Prima iniziamo, prima finiamo…",
+            "La tua lista sembra impegnativa, viandante…",
+
         ],
         short_list_phrases: [
             "Se quello è quello che hai da creare, ci vorrà meno che un batter d'occhi",
@@ -65,6 +69,7 @@ module.exports = {
             "Sarà un lavoretto da nulla…",
             "Tutto qui!?",
             "Quindi è questa la tua lista?",
+            "Queste cose le può creare anche un nano!"
 
         ],
         failed_validation_phrases: [
@@ -80,7 +85,7 @@ module.exports = {
         navigation_rarity: "Seleziona una rarità: ⭑",
         navigation_prefix: "Seleziona un sottoelenco: ¶",
 
-        commit_text: "Valuta ben costo e oggetti utilizzati e se sei soddisfatto Commissiona il craft, riceverai immediatamente gli oggetti richiesti.",
+        commit_text: "Valuta attentamente costo e oggetti utilizzati e se sei soddisfatto Commissiona il craft, riceverai immediatamente gli oggetti richiesti.",
 
         settings_title: "Attualmente:",
         censure_is_set: "• Scorrerai tra tutti i creabili: ◉",
@@ -136,7 +141,9 @@ module.exports = {
             "Non dovrei metterci poi molto…",
             "Va bene",
             "D'accordo!",
-            "Si, si può fare…"
+            "Si, si può fare…",
+            "E sia!",
+            "Possiamo anche inizaire subito…",
         ],
         inventory_is_missing: {
             not_much: "Peccato! Manca della roba qui…",
