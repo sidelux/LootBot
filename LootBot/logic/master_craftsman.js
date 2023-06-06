@@ -274,6 +274,8 @@ function avaible_rarities(player_reborn) {
     return item_logics.get_all_craftable_rarity(player_reborn);
 }
 
+
+
 function craftman_info_craftUpdate(craftsman_info, craft_line, message_id) {
     let target_items_list = [];
     craftsman_info.items_list.forEach((item) => {
@@ -309,7 +311,9 @@ async function commit_craft(craftsman_info, player_info) {
         target_items_controll: true,
     }
 
-    let formatted_update_array = {
+    let craft_report = {
+        craft_cost: craftsman_info.controll.craft_cost,
+        craft_gained_pc: craftsman_info.controll.craft_point,
         used_items: [],
         crafted_items: []
     };
@@ -344,7 +348,7 @@ async function commit_craft(craftsman_info, player_info) {
         } else {
             let new_quantity = (inventory_item.quantity - parseInt(used_item.total_quantity));
             update_array.push([player_info.id, used_item.id, new_quantity]);
-            formatted_update_array.used_items.push({item_id: used_item.id, new_quantity: new_quantity, after_craft_quantity: used_item.total_quantity})
+            craft_report.used_items.push({item_id: used_item.id, new_quantity: new_quantity, after_craft_quantity: used_item.total_quantity})
         }
     };
     if (!response.used_items_controll) {
@@ -371,7 +375,7 @@ async function commit_craft(craftsman_info, player_info) {
             update_array.push([player_info.id, target_item.id, new_quantity]);
         }
 
-        formatted_update_array.crafted_items.push({item_id: target_item.id, new_quantity: new_quantity, after_craft_quantity: target_item.total_quantity})
+        craft_report.crafted_items.push({item_id: target_item.id, new_quantity: new_quantity, after_craft_quantity: target_item.total_quantity})
 
     };
 
@@ -380,7 +384,7 @@ async function commit_craft(craftsman_info, player_info) {
     }
 
 
-    response.report_array = formatted_update_array;
+    response.craft_report = craft_report;
     response.update_quantity = await inventory_logics.update_items_quantityOf([update_array]);
 
 
