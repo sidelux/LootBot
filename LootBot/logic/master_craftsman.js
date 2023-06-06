@@ -292,8 +292,8 @@ function avaible_rarities(player_reborn) {
 
 function validate_can_proceed(craft_line, player_info) {
     return (
-        parseInt(craft_line.craft_cost)*10 < utils.player_max_money &&                // forse in questo caso la lista andrebbe semplicemente stralciata...
-        parseInt(craft_line.craft_cost)*10 <= player_info.money &&
+        parseInt(craft_line.craft_cost)*utils.master_craftsman_cost_multiplier < utils.player_max_money &&                // forse in questo caso la lista andrebbe semplicemente stralciata...
+        parseInt(craft_line.craft_cost)*utils.master_craftsman_cost_multiplier <= player_info.money &&
         craft_line.missing_baseItems.length <= 0 &&
         (craft_line.used_items.base.length + craft_line.used_items.crafted.length) > 0
     );
@@ -315,7 +315,7 @@ async function craft_line_controll(player_info, craftsman_info, player_inventory
         response.is_incompleate = true;
         clear_craftsman_info(craftsman_info);
         await update_craftsman_info(player_info.account_id, craftsman_info);
-    } else if (parseInt(craft_line.craft_cost)*10 > utils.player_max_money) {
+    } else if (parseInt(craft_line.craft_cost)*utils.master_craftsman_cost_multiplier > utils.player_max_money) {
         response.is_incompleate = true;
         clear_craftsman_info(craftsman_info);
         await update_craftsman_info(player_info.account_id, craftsman_info);
@@ -433,7 +433,7 @@ async function commit_craft(craftsman_info, player_info) {
 
     response.craft_report = craft_report;
     response.update_quantity = await inventory_logics.update_items_quantityOf([update_array]);
-    response.update_money = await player_logics.money.decrease((craftsman_info.controll.craft_cost)*10, player_info.account_id);
+    response.update_money = await player_logics.money.decrease((craftsman_info.controll.craft_cost)*utils.master_craftsman_cost_multiplier, player_info.account_id);
     response.update_craft_point = await player_logics.increase_player_craft_point(craftsman_info.controll.craft_point, player_info.account_id);
 
 

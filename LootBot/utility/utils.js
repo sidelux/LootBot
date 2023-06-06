@@ -107,6 +107,9 @@ const query_structure = {
     query_tree: query_tree
 }
 
+
+
+
 // ACCESSORIE GENERALI
 
 // vera solo per value === null
@@ -122,4 +125,5 @@ module.exports = {
     isNully: isNully,
     simple_number_formatter: (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."),
     player_max_money: 1000000000,                                                                           // qui perche non saprei dove metterlo :(
+    master_craftsman_cost_multiplier: 10,
 }
