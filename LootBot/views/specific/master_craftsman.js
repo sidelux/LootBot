@@ -85,7 +85,7 @@ module.exports = {
         navigation_rarity: "Seleziona una rarità: ⭑",
         navigation_prefix: "Seleziona un sottoelenco: ¶",
 
-        commit_text: "Valuta attentamente costo e oggetti utilizzati e se sei soddisfatto Commissiona il craft, riceverai immediatamente gli oggetti richiesti.",
+        commit_text: "Ed anche tu valuta attentamente costo e oggetti utilizzati…\nSe sei soddisfatto 'Commissiona' il craft, riceverai immediatamente gli oggetti richiesti.",
 
         settings_title: "Attualmente:",
         censure_is_set: "• Scorrerai tra tutti i creabili: ◉",
@@ -130,7 +130,7 @@ module.exports = {
         loops: {
             just_one: "Un solo craft?\nAvresti potuto anche farlo tu…",
             not_much: "Fiuuu!",
-            a_fiew: "M!",
+            a_fiew: "Mmh… !",
             a_lot: "Urca!"
         },
         quote_on_items_quantity: "oggetti?\nVediamo un po…",
