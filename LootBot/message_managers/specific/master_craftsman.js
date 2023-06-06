@@ -3,16 +3,11 @@
 const utils = require("../../utility/utils");                               // Utilità è sempre utile…
 const config = require("../../utility/config");
 
-// test. ho bisogno di questi test, io.
-
 const view_utils = require("../views_util");                                 // Modulo utilità stringhe (generico)
 const craftsman_view = require("../../views/specific/master_craftsman");    // Modulo per le stringhe specifiche di master_craftsman
 
 const craftsman_logics = require("../../logic/master_craftsman");       // Logica specifico
-
-const player_logics = require("../../logic/players");                   // Logica di players                 (per ottenere le informazioni sul giocatore)
-const inventory_logics = require("../../logic/inventory");              // Logica per l'inventario utente    
-const craft_logics = require("../../logic/craft");                      // Logica per i craft
+  
 
 const bot_response = require("../../utility/bot_response");                 // È il modulo che si occupa dell'invio, modifica etc...
 
@@ -649,7 +644,7 @@ async function validate_view_fail(response, craftsman_info, player_info, unavaib
 async function validate_view(response, player_info, craftsman_info, craft_line, message_id) {
     let message_text = "";
 
-    let can_proceed_controll = validate_can_proceed(craft_line, player_info);     // Questo controllo sarà applicato solo alla fine, per permettere comunque di vedere mancanti e/o usati
+    let can_proceed_controll = craftsman_logics.validate_can_proceed(craft_line, player_info);     // Questo controllo sarà applicato solo alla fine, per permettere comunque di vedere mancanti e/o usati
     let to_craft_total_quantity = craftsman_logics.list_total_quantity(craftsman_info.items_list);
 
     // Sulla lista
@@ -734,14 +729,6 @@ function validate_view_keyboard(can_proceed_controll) {
     return view_keyboard;
 }
 
-function validate_can_proceed(craft_line, player_info) {
-    return (
-        parseInt(craft_line.craft_cost) < utils.player_max_money &&                // forse in questo caso la lista andrebbe semplicemente stralciata...
-        parseInt(craft_line.craft_cost) <= player_info.money &&
-        craft_line.missing_baseItems.length <= 0 &&
-        (craft_line.used_items.base.length + craft_line.used_items.crafted.length) > 0
-    );
-}
 
 // Risponde al bottone  "creati"
 function validate_used_items_view(response, player_info, craftsman_info, message_id) {
@@ -792,7 +779,7 @@ function validate_used_items_view(response, player_info, craftsman_info, message
             })
         }
 
-        let can_proceed_controll = validate_can_proceed(craftsman_info.controll, player_info);
+        let can_proceed_controll = craftsman_logics.validate_can_proceed(craftsman_info.controll, player_info);
 
         response.toEdit.new_text = message_text;
         response.toEdit.options.reply_markup.inline_keyboard = validate_view_keyboard(can_proceed_controll);
@@ -1077,7 +1064,7 @@ function beta_tester_controll(response, telegram_user_id, message_id = false) {
 
 //Carico playerinfo
 async function pleyer_info_controll(response, telegram_user_id, message_id) {
-    let player_info_controll = await player_logics.player_full_infos(telegram_user_id)
+    let player_info_controll = await craftsman_logics.pleyer_info_controll(telegram_user_id)
     if (player_info_controll.esit == false) {
         response.preload_response.message_text = player_info_controll.message_text;
         if (message_id != false) {
@@ -1087,6 +1074,21 @@ async function pleyer_info_controll(response, telegram_user_id, message_id) {
     }
 
     response.player_info = player_info_controll.results;
+    return true;
+}
+
+//Carico player_inventory
+async function pleyer_inventory_controll(response, player_info, message_id) {
+    let player_inventory_controll = await craftsman_logics.pleyer_inventory_controll(player_info.id);
+    if (player_inventory_controll.esit == false) {
+        response.preload_response.message_text = player_inventory_controll.message_text;
+        if (message_id != false) {
+            response.preload_response.query_text = `${craftsman_view.beta_tester.query_user_error}`
+        }
+        return false;
+    }
+
+    response.player_inventory = player_inventory_controll.player_inventory;
     return true;
 }
 
@@ -1104,39 +1106,27 @@ async function craftsman_info_controll(response, telegram_user_id, message_id) {
     return true;
 }
 
-//Carico player_inventory
-async function pleyer_inventory_controll(response, player_info, message_id) {
-    let player_inventory_controll = await inventory_logics.complete(player_info.id);
-    if (player_inventory_controll.esit == false) {
-        response.preload_response.message_text = player_inventory_controll.message_text;
-        if (message_id != false) {
-            response.preload_response.query_text = `${craftsman_view.beta_tester.query_user_error}`
-        }
-        return false;
-    }
-
-    response.player_inventory = player_inventory_controll.player_inventory;
-    return true;
-}
 
 async function craft_line_controll(response, player_info, craftsman_info, player_inventory) {
-    let craft_line = await craft_logics.full_line_craft(craftsman_info.items_list, player_inventory, craftsman_info.preserve_crafted);
-    if (utils.isNully(craft_line) || craft_line.loops <= 0 || craft_line.used_items.base.length <= 0 || craft_line.skipped.length > 0) { // La linea craft non è stata generata correttamente...
+    let craft_controll = await craftsman_logics.craft_line_controll(player_info, craftsman_info, player_inventory);
+    if (craft_controll.has_error) { // La linea craft non è stata generata correttamente...
         response.toEdit.new_text += `_${craftsman_logics.craf_line_error(craftsman_info.items_list, player_info.account_id)}_\n`;
         return false;
-    } else if (craft_line.loops > craft_logics.fixed_max_loops) {
-        craftsman_logics.clear_craftsman_info(craftsman_info);
-        await craftsman_logics.update_craftsman_info(player_info.account_id, craftsman_info);
+    } else if (craft_controll.is_incompleate) {
         response.toEdit.new_text += `_${craftsman_view.validate.introduction}_\n\n`;
         response.toEdit.new_text += `«${craftsman_view.validate.unable.too_much}»\n\n`;
         response.toEdit.new_text += `_${craftsman_view.validate.unable.too_much_conclusion}_\n`;
         response.toEdit.options.reply_markup.inline_keyboard = [];
         return false;
-    } else if (parseInt(craft_line.craft_cost) > utils.player_max_money) {
-        craftsman_logics.clear_craftsman_info(craftsman_info);
+    } else if (craft_controll.is_too_expensive) {
+
+        return false;
     }
-    return craft_line;
+
+    return craft_controll.craft_line;
 }
+
+
 
 // **************************************  TESTING ()
 
@@ -1183,7 +1173,7 @@ async function add_betaTester(message_user_id, message_text) {
         target_user_id_array[Math.floor(Math.random() * target_user_id_array.length)];
 
     // Carico le informazioni giocatore player_info (e se non riesco informo l'admin)
-    let player_info_controll = await player_logics.player_full_infos(random_controll);
+    let player_info_controll = await craftsman_logics.pleyer_info_controll(random_controll);
     if (player_info_controll.esit == false) {
         response.toSend.message_text = player_info_controll.message_text;
         return response;

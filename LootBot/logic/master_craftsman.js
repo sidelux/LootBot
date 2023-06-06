@@ -1,8 +1,12 @@
 const model = require("../model/JSON_managers/specifiche/master_craftsman");
 const error_views = require("../views/errors");
 
+const utils = require("../utility/utils"); 
+
+const craft_logics = require("./craft");                      // Logica per i craft
 const item_logics = require("./items");
 const inventory_logics = require("./inventory");
+const player_logics = require("./players");
 
 
 module.exports = {
@@ -17,8 +21,15 @@ module.exports = {
 
     item_infos_forList: item_infos_forList,
 
-    craftman_info_craftUpdate: craftman_info_craftUpdate,
+    pleyer_info_controll: pleyer_info_controll,
+    pleyer_inventory_controll: pleyer_inventory_controll,
+
+
+    validate_can_proceed: validate_can_proceed,
+    craft_line_controll: craft_line_controll,
     commit_craft: commit_craft,
+    craftman_info_craftUpdate: craftman_info_craftUpdate,
+
 
     // Vista
     craf_line_error: craf_line_error,
@@ -276,6 +287,43 @@ function avaible_rarities(player_reborn) {
 
 
 
+
+function validate_can_proceed(craft_line, player_info) {
+    return (
+        parseInt(craft_line.craft_cost) < utils.player_max_money &&                // forse in questo caso la lista andrebbe semplicemente stralciata...
+        parseInt(craft_line.craft_cost) <= player_info.money &&
+        craft_line.missing_baseItems.length <= 0 &&
+        (craft_line.used_items.base.length + craft_line.used_items.crafted.length) > 0
+    );
+}
+
+async function craft_line_controll(player_info, craftsman_info, player_inventory) {
+    let response = {
+        has_error: false,
+        is_incompleate: false,
+        is_too_expensive: false,
+        craft_line
+    }
+
+    let craft_line = await  craft_logics.full_line_craft(craftsman_info.items_list, player_inventory, craftsman_info.preserve_crafted);
+    
+    if (utils.isNully(craft_line) || craft_line.loops <= 0 || craft_line.used_items.base.length <= 0 || craft_line.skipped.length > 0) { // La linea craft non è stata generata correttamente...
+        response.has_error = true;
+    } else if (craft_line.loops > craft_logics.fixed_max_loops) {
+        response.is_incompleate = true;
+        clear_craftsman_info(craftsman_info);
+        await update_craftsman_info(player_info.account_id, craftsman_info);
+    } else if (parseInt(craft_line.craft_cost) > utils.player_max_money) {
+        response.is_incompleate = true;
+        clear_craftsman_info(craftsman_info);
+        await update_craftsman_info(player_info.account_id, craftsman_info);
+    }
+
+    response.craft_line= craft_line;
+    return response;
+}
+
+
 function craftman_info_craftUpdate(craftsman_info, craft_line, message_id) {
     let target_items_list = [];
     craftsman_info.items_list.forEach((item) => {
@@ -389,6 +437,17 @@ async function commit_craft(craftsman_info, player_info) {
 
 
     return response;
+}
+
+
+//Carico playerinfo
+async function pleyer_info_controll(telegram_user_id) {
+    return await player_logics.player_full_infos(telegram_user_id)
+}
+
+//Carico player_inventory
+async function pleyer_inventory_controll(player_id) {
+    return await inventory_logics.complete(player_id);
 }
 
 
