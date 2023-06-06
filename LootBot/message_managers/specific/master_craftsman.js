@@ -704,7 +704,7 @@ async function validate_view(response, player_info, craftsman_info, craft_line, 
         // Commissione
         message_text += `«_${craftsman_view.validate.craft_commission.introduction} `;
         message_text += `${view_utils.ita_gender_impl_singular(craftsman_view.validate.craft_commission.introduction_genere_gr, player_info.gender) } `;
-        message_text += `${craftsman_view.validate.craft_commission.introduction_part2} ${utils.simple_number_formatter(craft_line.craft_cost)} `;
+        message_text += `${craftsman_view.validate.craft_commission.introduction_part2} ${utils.simple_number_formatter(craft_line.craft_cost)}. `;
         message_text += `${craftsman_view.validate.craft_commission.commission} ${utils.simple_number_formatter((craft_line.craft_cost*10-craft_line.craft_cost))}_»\n\n`;
 
 

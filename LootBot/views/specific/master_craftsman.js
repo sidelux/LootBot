@@ -156,7 +156,7 @@ module.exports = {
             introduction: "Se dovessi creare questa roba da",
             introduction_genere_gr: "sol",
             introduction_part2: "probabilmente spenderesti meno di",
-            commission: "da noi ci sarà una comissione di"
+            commission: "Da noi ci sarà una comissione di"
         },
         craft_total_cost: "Il costo totale sarà",
 
