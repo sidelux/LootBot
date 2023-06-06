@@ -9,14 +9,14 @@ module.exports = {
     init: load_in_ram,                                                          // Inizzializza il modulo caricando gli oggetti da item e craft
 
     // ******** Funzioni generiche
-    item_infos: item_infos_fromID,
+    item_infos: item_infos_fromID,                                              // Tutte le informazioni item_infos per un item_id
 
     // ******** Funzioni oggetti creati
-    all_craftables_forReborn: all_craftables_forReborn,
     craftables_ofRarity: craftables_list_fromRarity,                            // restituisce tutti i creabili di una rarità
-    craftables_ofRarities: craftables_list_fromRarities,
+    all_craftables_forReborn: all_craftables_forReborn,                         // Lista dei creabili, data una rinascita
+    craftables_ofRarities: craftables_list_fromRarities,                        // Lista dei creabili, data una rarità
     get_craftable_array_groupedIndexes: get_craftable_array_groupedIndexes,                   // restituisce un array con le iniziali usate nei creati
-    get_all_craftable_rarity: get_all_craftable_rarity,
+    get_all_craftable_rarity: get_all_craftable_rarity,                         // Lista delle rarità che hanno almeno un creato
 
     // ******** Funzioni per il Craft
     craftItemInfo_FromItemId: craft_item_info_From,                                   //  craft_item_info usato nella logica del craft (l'oggetto item_info in [allItems_array], semplificato)
@@ -100,10 +100,6 @@ function craftables_list_fromRarities(rarity_array) {
     return lootItems_array.filter((item) => (item.craftable == 1 && rarity_array.indexOf(item.rarity) >= 0));
 }
 
-// Estrae da craftable_array gli oggetti che iniziano per prefix
-function get_craftable_subset_fromPrefix(prefix, craftable_array){
-    return craftable_array.map(item_info => ({name: item_info.name, id: item_info.id})).filter(item => item.name.toUpperCase().startsWith(prefix.toUpperCase()) ).sort();
-}
 
 // restituisce un array delle iniziali usate per i creati nell'array craftable_array
 function get_craftable_array_prefixes(craftable_array) {

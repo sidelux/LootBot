@@ -704,9 +704,7 @@ async function validate_view(response, player_info, craftsman_info, craft_line, 
         message_text += `• ${craftsman_view.validate.too_expensive_craft_cost}: ${utils.simple_number_formatter(craft_line.craft_cost)}§\n`;
         message_text += `• ${craftsman_view.validate.too_expensive_craft_pc}: ${craft_line.craft_point}pc\n`;
 
-        if (parseInt(craft_line.craft_cost) > utils.player_max_money) {
-            craftsman_logics.clear_craftsman_info(craftsman_info);
-        }
+        
     } else {
         message_text += `• ${craftsman_view.validate.craft_cost}: ${utils.simple_number_formatter(craft_line.craft_cost)}§\n`;
         message_text += `• ${craftsman_view.validate.craft_pc}: ${craft_line.craft_point}pc\n`;
@@ -902,7 +900,7 @@ async function commit_view(response, player_info, craftsman_info, message_id) {
 
         message_text += `${craftsman_view.commit.ending_text}\n`;
 
-        response.sendObject = commit_report(player_info.account_id, commit_esit.update_array)
+        response.sendObject = commit_report(player_info.account_id, commit_esit.craft_report)
         response.toEdit.new_text = message_text;
         response.toEdit.options.reply_markup.keyboard = [];
         response.query.options.text = `«${craftsman_view.validate.show_used.quote}»`;
@@ -914,13 +912,12 @@ async function commit_view(response, player_info, craftsman_info, message_id) {
 }
 
 
-function commit_report(telegram_user_id, report_array) {
+function commit_report(telegram_user_id, craft_report) {
     let view_keyboard = [[view_utils.menu_strings.square.master_craftsman, view_utils.menu_strings.square.main], [view_utils.menu_strings.back_to_menu]];
     let report_text = "";
-    let caption_text = `${craftsman_view.list_print.all_used_items}: ${report_array.used_items.length}`;
+    let caption_text = `${craftsman_view.list_print.all_used_items}: ${craft_report.used_items.length}`;
 
-
-    let to_format_used_items = report_array.used_items.map((raw_item) => {
+    let to_format_used_items = craft_report.used_items.map((raw_item) => {
         let item_info = craftsman_logics.item_infos(raw_item.item_id);
         return {
             name: item_info.name,
@@ -930,7 +927,7 @@ function commit_report(telegram_user_id, report_array) {
         }
     })
 
-    let to_format_crafted_items = report_array.crafted_items.map((raw_item) => {
+    let to_format_crafted_items = craft_report.crafted_items.map((raw_item) => {
         let item_info = craftsman_logics.item_infos(raw_item.item_id);
         return {
             name: item_info.name,
@@ -974,11 +971,14 @@ function commit_report(telegram_user_id, report_array) {
     }).join("\n");
 
     const separator = Object.values(columnWidths)
-        .map(width => '-'.repeat(width))
-        .join('-'.repeat(2));
+        .map(width => craftsman_view.list_print.line.repeat(width))
+        .join(craftsman_view.list_print.line.repeat(4));
 
     const formattedOutput = [
         craftsman_view.commit.report_title,
+        `${craftsman_view.list_print.craft_cost}: ${utils.simple_number_formatter(craft_report.craft_cost)}`,
+        `${craftsman_view.list_print.craft_gained_pc}: ${craft_report.craft_gained_pc}`,
+
         separator,
         ``,
         craftsman_view.list_print.all_used_items,
@@ -1075,7 +1075,7 @@ function beta_tester_controll(response, telegram_user_id, message_id = false) {
 
 //Carico playerinfo
 async function pleyer_info_controll(response, telegram_user_id, message_id) {
-    let player_info_controll = await player_logics.main_info(telegram_user_id)
+    let player_info_controll = await player_logics.player_full_infos(telegram_user_id)
     if (player_info_controll.esit == false) {
         response.preload_response.message_text = player_info_controll.message_text;
         if (message_id != false) {
@@ -1084,7 +1084,7 @@ async function pleyer_info_controll(response, telegram_user_id, message_id) {
         return false;
     }
 
-    response.player_info = player_info_controll.player_info;
+    response.player_info = player_info_controll.results;
     return true;
 }
 
@@ -1130,6 +1130,8 @@ async function craft_line_controll(response, player_info, craftsman_info, player
         response.toEdit.new_text += `_${craftsman_view.validate.unable.too_much_conclusion}_\n`;
         response.toEdit.options.reply_markup.inline_keyboard = [];
         return false;
+    } else if (parseInt(craft_line.craft_cost) > utils.player_max_money) {
+        craftsman_logics.clear_craftsman_info(craftsman_info);
     }
     return craft_line;
 }
@@ -1179,13 +1181,13 @@ async function add_betaTester(message_user_id, message_text) {
         target_user_id_array[Math.floor(Math.random() * target_user_id_array.length)];
 
     // Carico le informazioni giocatore player_info (e se non riesco informo l'admin)
-    let player_info_controll = await player_logics.main_info(random_controll);
+    let player_info_controll = await player_logics.player_full_infos(random_controll);
     if (player_info_controll.esit == false) {
         response.toSend.message_text = player_info_controll.message_text;
         return response;
     }
 
-    let player_info = player_info_controll.player_info;
+    let player_info = player_info_controll.results;
     // Aggiungo l'id all'array teporaneo
     target_user_id_array.forEach((user_id) => {
         let parsed_id = parseInt(user_id)
