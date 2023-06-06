@@ -1,8 +1,12 @@
 const model = require("../model/JSON_managers/specifiche/master_craftsman");
 const error_views = require("../views/errors");
 
+const utils = require("../utility/utils"); 
+
+const craft_logics = require("./craft");                      // Logica per i craft
 const item_logics = require("./items");
 const inventory_logics = require("./inventory");
+const player_logics = require("./players");
 
 
 module.exports = {
@@ -17,8 +21,15 @@ module.exports = {
 
     item_infos_forList: item_infos_forList,
 
-    craftman_info_craftUpdate: craftman_info_craftUpdate,
+    pleyer_info_controll: pleyer_info_controll,
+    pleyer_inventory_controll: pleyer_inventory_controll,
+
+
+    validate_can_proceed: validate_can_proceed,
+    craft_line_controll: craft_line_controll,
     commit_craft: commit_craft,
+    craftman_info_craftUpdate: craftman_info_craftUpdate,
+
 
     // Vista
     craf_line_error: craf_line_error,
@@ -274,6 +285,45 @@ function avaible_rarities(player_reborn) {
     return item_logics.get_all_craftable_rarity(player_reborn);
 }
 
+
+
+
+function validate_can_proceed(craft_line, player_info) {
+    return (
+        parseInt(craft_line.craft_cost) < utils.player_max_money &&                // forse in questo caso la lista andrebbe semplicemente stralciata...
+        parseInt(craft_line.craft_cost) <= player_info.money &&
+        craft_line.missing_baseItems.length <= 0 &&
+        (craft_line.used_items.base.length + craft_line.used_items.crafted.length) > 0
+    );
+}
+
+async function craft_line_controll(player_info, craftsman_info, player_inventory) {
+    let response = {
+        has_error: false,
+        is_incompleate: false,
+        is_too_expensive: false,
+        craft_line
+    }
+
+    let craft_line = await  craft_logics.full_line_craft(craftsman_info.items_list, player_inventory, craftsman_info.preserve_crafted);
+    
+    if (utils.isNully(craft_line) || craft_line.loops <= 0 || craft_line.used_items.base.length <= 0 || craft_line.skipped.length > 0) { // La linea craft non è stata generata correttamente...
+        response.has_error = true;
+    } else if (craft_line.loops > craft_logics.fixed_max_loops) {
+        response.is_incompleate = true;
+        clear_craftsman_info(craftsman_info);
+        await update_craftsman_info(player_info.account_id, craftsman_info);
+    } else if (parseInt(craft_line.craft_cost) > utils.player_max_money) {
+        response.is_incompleate = true;
+        clear_craftsman_info(craftsman_info);
+        await update_craftsman_info(player_info.account_id, craftsman_info);
+    }
+
+    response.craft_line= craft_line;
+    return response;
+}
+
+
 function craftman_info_craftUpdate(craftsman_info, craft_line, message_id) {
     let target_items_list = [];
     craftsman_info.items_list.forEach((item) => {
@@ -309,6 +359,12 @@ async function commit_craft(craftsman_info, player_info) {
         target_items_controll: true,
     }
 
+    let craft_report = {
+        craft_cost: craftsman_info.controll.craft_cost,
+        craft_gained_pc: craftsman_info.controll.craft_point,
+        used_items: [],
+        crafted_items: []
+    };
     let update_array = [];                                                                                             // [player_Id, item_Id, new_quantity]
     let player_inventory_controll;
     let player_inventory;
@@ -338,7 +394,9 @@ async function commit_craft(craftsman_info, player_info) {
             response.used_items_controll = false;
             break;
         } else {
-            update_array.push([player_info.id, used_item.id, (inventory_item.quantity - parseInt(used_item.total_quantity))]);
+            let new_quantity = (inventory_item.quantity - parseInt(used_item.total_quantity));
+            update_array.push([player_info.id, used_item.id, new_quantity]);
+            craft_report.used_items.push({item_id: used_item.id, new_quantity: new_quantity, after_craft_quantity: used_item.total_quantity})
         }
     };
     if (!response.used_items_controll) {
@@ -348,9 +406,10 @@ async function commit_craft(craftsman_info, player_info) {
     // QUANTITÀ INCREMENTATE: per ogni oggetto creato controllo che quantity <= cap(rarity)    
     for (target_item of craftsman_info.controll.target_items_list) {
         let already_in_list_index = update_array.findIndex((item) => (item[1] == target_item.id));
+        let new_quantity = 0;
 
         if (already_in_list_index >= 0) {
-            let new_quantity = update_array[already_in_list_index][2] + parseInt(target_item.total_quantity);
+            new_quantity = update_array[already_in_list_index][2] + parseInt(target_item.total_quantity);
             // Controllo sul cap oggetti
             let cap_check = inventory_logics.inventory_cap().cap_check(target_item.rarity, new_quantity);
             if (!cap_check) {
@@ -360,9 +419,12 @@ async function commit_craft(craftsman_info, player_info) {
             update_array[already_in_list_index][2] = new_quantity
         } else {
             let inventory_item = inventory_logics.hasItem(target_item.id, player_inventory);
-            update_array.push([player_info.id, target_item.id, (inventory_item.quantity + parseInt(target_item.total_quantity))]);
-
+            new_quantity = (inventory_item.quantity + parseInt(target_item.total_quantity));
+            update_array.push([player_info.id, target_item.id, new_quantity]);
         }
+
+        craft_report.crafted_items.push({item_id: target_item.id, new_quantity: new_quantity, after_craft_quantity: target_item.total_quantity})
+
     };
 
     if (!response.target_items_controll) {
@@ -370,11 +432,22 @@ async function commit_craft(craftsman_info, player_info) {
     }
 
 
-    response.update_array = update_array;
+    response.craft_report = craft_report;
     response.update_quantity = await inventory_logics.update_items_quantityOf([update_array]);
 
 
     return response;
+}
+
+
+//Carico playerinfo
+async function pleyer_info_controll(telegram_user_id) {
+    return await player_logics.player_full_infos(telegram_user_id)
+}
+
+//Carico player_inventory
+async function pleyer_inventory_controll(player_id) {
+    return await inventory_logics.complete(player_id);
 }
 
 
