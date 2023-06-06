@@ -174,6 +174,8 @@ module.exports = {
                 "sai, il mio gatto",
                 "sai, quello gnomo è incinto!",
                 "il costo delle materie prime",
+                "il costo delle materie prime…\n…e l'assicurazione per i nani…\n Mi spiace",
+                "portare avanti questo posto è un impresa!\n",
                 "tutto ha un costo",
                 "cioè, vorrei… ma… ",
                 "ci sono le tasse alla Fenice e…\n",
