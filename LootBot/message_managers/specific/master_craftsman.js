@@ -3,6 +3,8 @@
 const utils = require("../../utility/utils");                               // Utilità è sempre utile…
 const config = require("../../utility/config");
 
+// test. ho bisogno di questi test, io.
+
 const view_utils = require("../views_util");                                 // Modulo utilità stringhe (generico)
 const craftsman_view = require("../../views/specific/master_craftsman");    // Modulo per le stringhe specifiche di master_craftsman
 
