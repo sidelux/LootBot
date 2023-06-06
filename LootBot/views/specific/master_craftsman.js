@@ -152,8 +152,12 @@ module.exports = {
             not_much: "...ed userò anche",
             a_fiew: "...oltre a",
         },
-        craft_cost: "Ci sarebbe una spesa di",
-        craft_commission: "La mia commissione è",
+        craft_commission: {
+            introduction: "Se dovessi creare questa roba da",
+            introduction_genere_gr: "sol",
+            introduction_part2: "probabilmente spenderesti meno di ",
+            commission: "da noi ci sarà una comissione di "
+        },
         craft_total_cost: "Il costo totale sarà",
 
         craft_pc: "Guadagnerai",
