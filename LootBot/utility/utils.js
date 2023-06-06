@@ -125,5 +125,5 @@ module.exports = {
     isNully: isNully,
     simple_number_formatter: (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."),
     player_max_money: 1000000000,                                                                           // qui perche non saprei dove metterlo :(
-    master_craftsman_cost_multiplier: 10,
+    master_craftsman_cost_multiplier: 3,
 }
