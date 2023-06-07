@@ -1582,7 +1582,7 @@ bot.onText(/^\/marketban (.+)/, function (message, match) {
 	};
 });
 
-bot.onText(/^\/sendmsg/, function (message, match) {
+bot.onText(/^\/sendmsg_active$/, function (message, match) {
 	if (message.from.id == config.phenix_id) {
 		connection.query('DELETE FROM global_msg', function (err, rows, fields) {
 			if (err) throw err;
@@ -1591,6 +1591,24 @@ bot.onText(/^\/sendmsg/, function (message, match) {
 				connection.query('UPDATE config SET global_msg_on = 1', function (err, rows, fields) {
 					if (err) throw err;
 					connection.query('INSERT INTO global_msg (chat_id) SELECT P.chat_id FROM last_command L, player P WHERE L.account_id = P.account_id AND L.time > NOW() - INTERVAL 4 WEEK AND P.global_msg = 1 AND P.account_id NOT IN (SELECT account_id FROM banlist)', function (err, rows, fields) {
+						if (err) throw err;
+						bot.sendMessage(message.chat.id, "Inserite " + rows.affectedRows + " voci");
+					});
+				});
+			});
+		});
+	}
+});
+
+bot.onText(/^\/sendmsg_inactive$/, function (message, match) {
+	if (message.from.id == config.phenix_id) {
+		connection.query('DELETE FROM global_msg', function (err, rows, fields) {
+			if (err) throw err;
+			connection.query('ALTER TABLE global_msg AUTO_INCREMENT=1', function (err, rows, fields) {
+				if (err) throw err;
+				connection.query('UPDATE config SET global_msg_on = 1', function (err, rows, fields) {
+					if (err) throw err;
+					connection.query('INSERT INTO global_msg (chat_id) SELECT P.chat_id FROM last_command L, player P WHERE L.account_id = P.account_id AND L.time < NOW() - INTERVAL 4 WEEK AND P.global_msg = 1 AND P.account_id NOT IN (SELECT account_id FROM banlist)', function (err, rows, fields) {
 						if (err) throw err;
 						bot.sendMessage(message.chat.id, "Inserite " + rows.affectedRows + " voci");
 					});
