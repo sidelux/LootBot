@@ -3,3 +3,4 @@ events.ini
 node_modules/
 node_modules_old/
 custom_log.log
+LootBot/sources/players/
