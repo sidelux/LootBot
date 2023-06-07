@@ -621,6 +621,7 @@ async function validate_view_dispatch(response, telegram_user_id, message_id, qu
             }
         } 
     }
+    console.log(response);
 }
 
 // la lista viene stralciata e l'utente notificato (show_allert = true) -> quindi menu_textAndButtons
@@ -708,7 +709,7 @@ async function validate_view(response, player_info, craftsman_info, craft_line, 
         let phrases_random_index = Math.floor(Math.random() * craftsman_view.validate.craft_commission.commission_excuses.length);
         message_text += `${craftsman_view.validate.craft_commission.commission_excuses[phrases_random_index]}`;
         message_text += `${craftsman_view.validate.craft_commission.commission_end}`;
-        message_text += `${utils.simple_number_formatter((craft_line.craft_cost*utils.master_craftsman_cost_multiplier-craft_line.craft_cost))}§_»\n\n`;
+        message_text += `${utils.simple_number_formatter((craft_line.craft_cost*utils.master_craftsman_cost_multiplier-craft_line.craft_cost))}§»\n\n`;
 
 
 
