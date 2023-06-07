@@ -42,17 +42,17 @@ async function writeJSONFile(telegram_user_id, filename, new_craftsman_info) {
     try {
 
         if (!(await fileExists(directoryPath))) { // Nel caso in cui la cartella utente non esista, la creo
-            console.log("creo "+directoryPath);
+            // console.log("creo "+directoryPath);
             await fs.promises.mkdir(directoryPath, { recursive: true });
         } else{
-            console.log("la directory esiste...");
+            // console.log("la directory esiste...");
         }
 
         const jsonData = JSON.stringify(new_craftsman_info, null, 2);
         await fs.promises.writeFile(filePath, jsonData, 'utf8');
         return new_craftsman_info;
     } catch (error) {
-        console.error(`Errore durante la scrittura del file JSON "${filePath}": ${error}`);
+        // console.error(`Errore durante la scrittura del file JSON "${filePath}": ${error}`);
         return false;
     }
 }
