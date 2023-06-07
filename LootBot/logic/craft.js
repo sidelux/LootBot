@@ -89,7 +89,7 @@ function process_recoursiveCraft(currdeep_array, player_inventory, preserve_zain
 function craft_logic(item, fromInventory_item, nextdeep_array, preserve_zaino, response) {
     if (item.craftable == 1 && (response.loops == 0 || preserve_zaino == true)) {                                                      // Se è un creato e preserve_zaino == true passo i necessari al prossimo livello
         update_craft(item, nextdeep_array, response);                                                         // Manda ad accessoria (nextdeep_array e response vengono aggiornati)
-    } else if (response.used_items.ids.indexOf(item.id) < 0) {                                                // L'oggetto NON è già tra quelli utilizzati fino a questo momento
+    } else if (response.used_items.ids.indexOf(item.id) <= 0) {                                                // L'oggetto NON è già tra quelli utilizzati fino a questo momento
         craft_logic_newUsed(item, fromInventory_item, nextdeep_array, response);
     } else {                                                                                                  // È gia tra i consumati. 
         craft_logic_alreadyUsed(item, fromInventory_item, nextdeep_array, response);
