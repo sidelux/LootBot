@@ -30,35 +30,36 @@ module.exports = {
 
     },
     beta_tester: {
-        user_message: "La fucina dell'Artigiano è in fase di allestimento…\nManda `/craftbeta` per avviare una sessione di test…",
+        user_message: "La fucina dell'Artigiano è in fase di allestimento…\n",
         insert_success: " account abilitato a: `Mastro Artigiano`",
         empty_list: "Nessun betatester per questa sessione",
         show_list: "*Lista dei betatester*\n_per questa sessione_\n\n",
         query_user_not_listed: "La tua sessione di testing è terminata…",
-        query_user_error: "Errore!"
-
-
     },
     menu: {
         introduction: "...tra il fragore di incudini e martelli una figura emerge dalle ombre.\nCon sguardo penetrante il Mastro Artigiano ti fissa...\n",
         is_banned: "...sembra deluso e dispiaciuto…",
         not_allowed: "Abbassa infine gli occhi, si gira e senza voltarsi torna al suo battere e forgiare…",
-        wellcome: "Benvenut",
+        wellcome: "Benvenut*",
         wellcome_new: "Viandante",
-        wellcome_back: "Bentornat",
+        wellcome_back: "Bentornat*",
         waiting_phrases: [
             "Hai bisogno d'aiuto? … Hai letto il cartello?",
             "Compila la tua lista, viandante",
             "Sto aspettando…",
             "Avrei da lavorare…",
-            "Se hai qualche cosa da creare, aggiungilo alla lista…"
+            "Se hai qualche cosa da creare, aggiungilo alla lista…",
+            "Ancora qui?",
+            "...Ohibo!\npensavo non ci fosse piu nessuno…"
         ],
         long_list_phrases: [
             "Ci vorrà un eternità a creare quella roba li…",
             "Urca!",
-            "Che lista! Avrai tutto il necessario?",
+            "Che lista!\nE tu ha tutto il necessario?",
             "Spero tu non abbia altro da aggiungere…",
             "Prima iniziamo, prima finiamo…",
+            "La tua lista sembra impegnativa, viandante…",
+
         ],
         short_list_phrases: [
             "Se quello è quello che hai da creare, ci vorrà meno che un batter d'occhi",
@@ -68,6 +69,7 @@ module.exports = {
             "Sarà un lavoretto da nulla…",
             "Tutto qui!?",
             "Quindi è questa la tua lista?",
+            "Queste cose le può creare anche un nano!"
 
         ],
         failed_validation_phrases: [
@@ -83,7 +85,7 @@ module.exports = {
         navigation_rarity: "Seleziona una rarità: ⭑",
         navigation_prefix: "Seleziona un sottoelenco: ¶",
 
-        commit_text: "Valuta ben costo e oggetti utilizzati e se sei soddisfatto Commissiona il craft, riceverai immediatamente gli oggetti richiesti.",
+        commit_text: "Ed anche tu valuta attentamente costo e oggetti utilizzati…\nSe sei soddisfatt* 'Commissiona' il craft, riceverai immediatamente gli oggetti richiesti.",
 
         settings_title: "Attualmente:",
         censure_is_set: "• Scorrerai tra tutti i creabili: ◉",
@@ -128,7 +130,7 @@ module.exports = {
         loops: {
             just_one: "Un solo craft?\nAvresti potuto anche farlo tu…",
             not_much: "Fiuuu!",
-            a_fiew: "M!",
+            a_fiew: "Mmh… !",
             a_lot: "Urca!"
         },
         quote_on_items_quantity: "oggetti?\nVediamo un po…",
@@ -138,8 +140,13 @@ module.exports = {
             "Andata!",
             "Non dovrei metterci poi molto…",
             "Va bene",
+            "…\nE va bene!",
+            "Mmh… !\n…Va bene!",
             "D'accordo!",
-            "Si, si può fare…"
+            "Si, si può fare.",
+            "Si, si, si…\nSi può fare",
+            "E sia!",
+            "Possiamo anche inizaire subito…",
         ],
         inventory_is_missing: {
             not_much: "Peccato! Manca della roba qui…",
@@ -155,7 +162,33 @@ module.exports = {
             not_much: "...ed userò anche",
             a_fiew: "...oltre a",
         },
-        craft_cost: "Spenderai in totale",
+        craft_commission: {
+            introduction: "Creando questa roba da sol* spenderesti",
+            commission: "§ ma...",
+            commission_excuses: [
+                "La Fenice",
+                "gli gnomi",
+                "ho famiglia",
+                "sai, il mio gatto",
+                "sai, quello gnomo è incinto!",
+                "il costo delle materie prime",
+                "il costo delle materie prime…\n…e l'assicurazione per i nani…\n Mi spiace",
+                "portare avanti questo posto è un impresa!\n",
+                "tutto ha un costo",
+                "cioè, vorrei… ma… ",
+                "ci sono le tasse alla Fenice e…\n",
+                "hai visto che Fucina che abbiamo?",
+                "Il contrabbando va forte, e noi restiamo senza fornitori… cioè… insomma… ",
+                "c'è il nostro lavoro, e il mana…\ne le tasse",
+                "c'è il nostro lavoro, e il pozzo…\ne gli gnomi",
+                "c'è il nostro lavoro, e la Fenice…\ne la fenice… La Fenice!\n",
+
+
+            ],
+            commission_end: "…devo chiederti altri "
+        },
+        craft_total_cost: "Il costo totale sarà",
+
         craft_pc: "Guadagnerai",
         too_expensive_craft_cost: "Dovresti spendere",
         too_expensive_craft_pc: "Guadagneresti",
@@ -186,6 +219,7 @@ module.exports = {
         line: "-",
         all_used_items: "Oggetti consumati",
         craft_cost: "Edollari spesi",
+        craft_commission: "Costi di commissione",
         craft_gained_pc: "Punti craft ottenuti"
 
     },

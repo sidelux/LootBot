@@ -3,7 +3,7 @@ const items_controller = require("./items");
 const inventory_controller = require("./inventory");
 const utils = require("../utility/utils");                                      // Le utilità
 
-const fixed_max_loops = 80000;                                                   // Numero massimo di iterazioni sulla linea craft. (nel caso venga raggiunto la linea craft è solo parziale)
+const fixed_max_loops = 10000;                                                   // Numero massimo di iterazioni sulla linea craft. (nel caso venga raggiunto la linea craft è solo parziale)
 
 module.exports = {
     full_line_craft: full_line_craft, // Funzione pubblica per l'analisti della linea craft di un array di LootItems
@@ -65,7 +65,6 @@ function process_recoursiveCraft(currdeep_array, player_inventory, preserve_zain
     // L'array della prossima chiamata a questa funzione. viene popolato (eventualmente) in craft_logic()
 
     currdeep_array.forEach((item_id) => {                                                                // Scorro la lista di id del livello attuale
-        response.loops++;                                                                                // Incremento il contatore di loops
         let tmp_item = items_controller.craftItemInfo_FromItemId(item_id);                               // L'oggetto per (id)
         if (utils.isNully(tmp_item)) {                                                                    // Aggiorna l'array skipped (Male!)
             response.skipped.push(item_id);
@@ -74,9 +73,11 @@ function process_recoursiveCraft(currdeep_array, player_inventory, preserve_zain
             craft_logic(tmp_item, fromInventory_item, nextdeep_array, preserve_zaino, response);
         }
     });
+    
 
     // Continuare con il loop o fermarsi? Dipende da craft_can_continue e cosa c'è in nextdeep_array… 
     if (craft_can_continue(response) && nextdeep_array.length > 0) {                                                                         // Ci sono id di oggetti ancora da valutare
+        response.loops++;                                                                                // Incremento il contatore di loops
         return process_recoursiveCraft(nextdeep_array, player_inventory, preserve_zaino, response);          // Il ciclo ricomincia
     } else {
         return true;                                                                                         // Fine! (La funzione non restituisce nulla. Ha aggiornato durante i sui cicli i valori in response…)
@@ -86,7 +87,7 @@ function process_recoursiveCraft(currdeep_array, player_inventory, preserve_zain
 
 // la logica del craft (che viente riflessa nell'oggetto response).
 function craft_logic(item, fromInventory_item, nextdeep_array, preserve_zaino, response) {
-    if (item.craftable == 1 && preserve_zaino == true) {                                                      // Se è un creato e preserve_zaino == true passo i necessari al prossimo livello
+    if (item.craftable == 1 && (response.loops == 0 || preserve_zaino == true)) {                                                      // Se è un creato e preserve_zaino == true passo i necessari al prossimo livello
         update_craft(item, nextdeep_array, response);                                                         // Manda ad accessoria (nextdeep_array e response vengono aggiornati)
     } else if (response.used_items.ids.indexOf(item.id) < 0) {                                                // L'oggetto NON è già tra quelli utilizzati fino a questo momento
         craft_logic_newUsed(item, fromInventory_item, nextdeep_array, response);
@@ -98,8 +99,7 @@ function craft_logic(item, fromInventory_item, nextdeep_array, preserve_zaino, r
 // Accessoria di craft_logic() ->  gestisce la logica per oggetti (base o creati) usati per la prima volta all'interno della linea
 function craft_logic_newUsed(item, fromInventory_item, nextdeep_array, response) {
     // Per gli oggetti base eseguo sempre il controllo sullo zaino
-    if (fromInventory_item.item_id === 624)
-        console.log(raw_data[i]);
+    
     if (item.craftable == 0) {
         if (fromInventory_item.has_item == false) {                                         // se non è presente aggiorno la lista dei base mancanti
                 add_item_inList(response.missing_baseItems, item);
