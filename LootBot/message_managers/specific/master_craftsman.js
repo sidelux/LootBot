@@ -117,10 +117,10 @@ function menu_textAndButtons(response, player_info, craftsman_info, message_id =
     if (!message_id) {
         if (craftsman_info.is_new) {
             menu_text +=
-                `${view_utils.ita_gender_impl_singular(craftsman_view.menu.wellcome, player_info.gender)} ${craftsman_view.menu.wellcome_new}!`;
+                `${view_utils.ita_gender_impl_singular_all(craftsman_view.menu.wellcome, player_info.gender)} ${craftsman_view.menu.wellcome_new}!`;
         } else {
             menu_text +=
-                `${view_utils.ita_gender_impl_singular(craftsman_view.menu.wellcome_back, player_info.gender)} ${player_info.username}!\n`;
+                `${view_utils.ita_gender_impl_singular_all(craftsman_view.menu.wellcome_back, player_info.gender)} ${player_info.username}!\n`;
         }
     } else {
         let fixed_big_quantity = 25;
@@ -203,7 +203,7 @@ async function guide_view(response, telegram_user_id, message_id, preloaded_play
 
     guide_message_text = `*${craftsman_view.guide.title}*\n\n`;
     guide_message_text += `_${craftsman_view.guide.text}_\n`;
-    guide_message_text += `_${craftsman_view.guide.commit_text}_\n\n`;
+    guide_message_text += `_${view_utils.ita_gender_impl_singular_all(craftsman_view.guide.commit_text, player_info.gender)}_\n\n`;
 
     guide_message_text += `${craftsman_view.guide.navigation_title}\n`;
     guide_message_text += `\t\t${craftsman_view.guide.navigation_rarity}\n`;
@@ -702,9 +702,8 @@ async function validate_view(response, player_info, craftsman_info, craft_line, 
     } else {
 
         // Commissione
-        message_text += `«_${craftsman_view.validate.craft_commission.introduction} `;
-        message_text += `${view_utils.ita_gender_impl_singular(craftsman_view.validate.craft_commission.introduction_genere_gr, player_info.gender) } `;
-        message_text += `${craftsman_view.validate.craft_commission.introduction_part2} ${utils.simple_number_formatter(craft_line.craft_cost)} `;
+        message_text += `«${view_utils.ita_gender_impl_singular_all(craftsman_view.validate.craft_commission.introduction, player_info.gender) } `;
+        message_text += `${utils.simple_number_formatter(craft_line.craft_cost)} `;
         message_text += `${craftsman_view.validate.craft_commission.commission}`;
         let phrases_random_index = Math.floor(Math.random() * craftsman_view.validate.craft_commission.commission_excuses.length);
         message_text += `${craftsman_view.validate.craft_commission.commission_excuses[phrases_random_index]}`;

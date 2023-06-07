@@ -40,9 +40,9 @@ module.exports = {
         introduction: "...tra il fragore di incudini e martelli una figura emerge dalle ombre.\nCon sguardo penetrante il Mastro Artigiano ti fissa...\n",
         is_banned: "...sembra deluso e dispiaciuto…",
         not_allowed: "Abbassa infine gli occhi, si gira e senza voltarsi torna al suo battere e forgiare…",
-        wellcome: "Benvenut",
+        wellcome: "Benvenut*",
         wellcome_new: "Viandante",
-        wellcome_back: "Bentornat",
+        wellcome_back: "Bentornat*",
         waiting_phrases: [
             "Hai bisogno d'aiuto? … Hai letto il cartello?",
             "Compila la tua lista, viandante",
@@ -85,7 +85,7 @@ module.exports = {
         navigation_rarity: "Seleziona una rarità: ⭑",
         navigation_prefix: "Seleziona un sottoelenco: ¶",
 
-        commit_text: "Ed anche tu valuta attentamente costo e oggetti utilizzati…\nSe sei soddisfatto 'Commissiona' il craft, riceverai immediatamente gli oggetti richiesti.",
+        commit_text: "Ed anche tu valuta attentamente costo e oggetti utilizzati…\nSe sei soddisfatt* 'Commissiona' il craft, riceverai immediatamente gli oggetti richiesti.",
 
         settings_title: "Attualmente:",
         censure_is_set: "• Scorrerai tra tutti i creabili: ◉",
@@ -163,9 +163,7 @@ module.exports = {
             a_fiew: "...oltre a",
         },
         craft_commission: {
-            introduction: "Creando questa roba da",
-            introduction_genere_gr: "sol",
-            introduction_part2: "spenderesti",
+            introduction: "Creando questa roba da sol* spenderesti",
             commission: "§ ma...",
             commission_excuses: [
                 "La Fenice",
