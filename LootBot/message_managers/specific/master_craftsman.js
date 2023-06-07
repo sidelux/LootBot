@@ -621,7 +621,6 @@ async function validate_view_dispatch(response, telegram_user_id, message_id, qu
             }
         } 
     }
-    console.log(response);
 }
 
 // la lista viene stralciata e l'utente notificato (show_allert = true) -> quindi menu_textAndButtons
