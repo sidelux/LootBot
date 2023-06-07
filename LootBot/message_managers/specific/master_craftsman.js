@@ -1,6 +1,7 @@
 // "Mastro Artigiano ⚒" (sotto il menu Piazza) -> gestisce il craft (per l'intera linea) di piu oggetti, 
 
 const utils = require("../../utility/utils");                               // Utilità è sempre utile…
+const config = require("../../utility/config");                               // Per isDev
 const view_utils = require("../views_util");                                 // Modulo utilità stringhe (generico)
 
 const craftsman_view = require("../../views/specific/master_craftsman");    // Modulo per le stringhe specifiche di master_craftsman
@@ -1165,7 +1166,7 @@ async function add_betaTester(message_user_id, message_text) {
     }
 
     //Questo comando è riservato agli amministratori
-    if (message_user_id != 20471035)
+    if (!config.isDev(message_user_id))
         return;
 
     let target_user_id_array = message_text.split(" ").slice(1).join(" ").split("\n").join(" ").trim().split(" ");

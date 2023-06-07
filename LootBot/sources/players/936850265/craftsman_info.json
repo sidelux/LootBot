@@ -1,0 +1,36 @@
+{
+  "query_random_char": "U",
+  "preserve_crafted": true,
+  "is_new": true,
+  "censure_view": 6,
+  "current_rarity": "E",
+  "current_prefix": "BC",
+  "current_message_id": 1588555816,
+  "ban_until": -1,
+  "stats": {
+    "total_loops": 0,
+    "total_pc": 0,
+    "total_craft_cost": 0,
+    "total_crafted_items": 0,
+    "total_base_items_used": 0
+  },
+  "items_list": [
+    {
+      "id": "542",
+      "quantity": 2
+    }
+  ],
+  "controll": {
+    "target_items_list": [],
+    "loops": 0,
+    "controll_date": -1,
+    "craft_point": 0,
+    "craft_cost": 0,
+    "missing_baseItems": [],
+    "used_items": {
+      "base": [],
+      "crafted": []
+    },
+    "skipped": []
+  }
+}

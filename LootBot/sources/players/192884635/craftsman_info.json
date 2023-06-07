@@ -1,0 +1,31 @@
+{
+  "query_random_char": "R",
+  "preserve_crafted": true,
+  "is_new": true,
+  "censure_view": false,
+  "current_rarity": "",
+  "current_prefix": "",
+  "current_message_id": 1588556106,
+  "ban_until": -1,
+  "stats": {
+    "total_loops": 0,
+    "total_pc": 0,
+    "total_craft_cost": 0,
+    "total_crafted_items": 0,
+    "total_base_items_used": 0
+  },
+  "items_list": [],
+  "controll": {
+    "target_items_list": [],
+    "loops": 0,
+    "controll_date": -1,
+    "craft_point": 0,
+    "craft_cost": 0,
+    "missing_baseItems": [],
+    "used_items": {
+      "base": [],
+      "crafted": []
+    },
+    "skipped": []
+  }
+}
