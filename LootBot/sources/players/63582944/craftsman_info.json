@@ -1,10 +1,10 @@
 {
-  "query_random_char": "J",
+  "query_random_char": "S",
   "preserve_crafted": false,
   "is_new": true,
   "censure_view": false,
   "current_rarity": "NC",
-  "current_prefix": "",
+  "current_prefix": "AB",
   "current_message_id": 1588556246,
   "ban_until": -1,
   "stats": {
@@ -16,9 +16,15 @@
   },
   "items_list": [],
   "controll": {
-    "target_items_list": [],
-    "loops": 0,
+    "target_items_list": [
+      {
+        "id": "35",
+        "total_quantity": 2,
+        "rarity": "NC"
+      }
+    ],
     "controll_date": -1,
+    "loops": 1,
     "craft_point": 0,
     "craft_cost": 0,
     "missing_baseItems": [],

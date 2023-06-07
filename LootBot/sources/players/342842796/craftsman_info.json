@@ -1,11 +1,11 @@
 {
-  "query_random_char": "O",
-  "preserve_crafted": true,
+  "query_random_char": "C",
+  "preserve_crafted": false,
   "is_new": true,
   "censure_view": false,
-  "current_rarity": "NC",
-  "current_prefix": "",
-  "current_message_id": -1,
+  "current_rarity": "X",
+  "current_prefix": "CN",
+  "current_message_id": 1588556481,
   "ban_until": -1,
   "stats": {
     "total_loops": 0,
@@ -14,7 +14,12 @@
     "total_crafted_items": 0,
     "total_base_items_used": 0
   },
-  "items_list": [],
+  "items_list": [
+    {
+      "id": "221",
+      "quantity": 1
+    }
+  ],
   "controll": {
     "target_items_list": [],
     "loops": 0,

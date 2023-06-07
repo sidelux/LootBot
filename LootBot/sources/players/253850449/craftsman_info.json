@@ -1,5 +1,5 @@
 {
-  "query_random_char": "H",
+  "query_random_char": "O",
   "preserve_crafted": true,
   "is_new": true,
   "censure_view": false,
@@ -17,6 +17,14 @@
   "items_list": [
     {
       "id": "35",
+      "quantity": 1
+    },
+    {
+      "id": "388",
+      "quantity": 1
+    },
+    {
+      "id": "228",
       "quantity": 1
     }
   ],

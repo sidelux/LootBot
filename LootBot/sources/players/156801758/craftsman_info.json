@@ -1,5 +1,5 @@
 {
-  "query_random_char": "L",
+  "query_random_char": "D",
   "preserve_crafted": true,
   "is_new": true,
   "censure_view": false,
@@ -14,12 +14,7 @@
     "total_crafted_items": 0,
     "total_base_items_used": 0
   },
-  "items_list": [
-    {
-      "id": "626",
-      "quantity": 1
-    }
-  ],
+  "items_list": [],
   "controll": {
     "target_items_list": [],
     "loops": 0,

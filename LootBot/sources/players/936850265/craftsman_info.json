@@ -1,5 +1,5 @@
 {
-  "query_random_char": "U",
+  "query_random_char": "K",
   "preserve_crafted": true,
   "is_new": true,
   "censure_view": 6,
@@ -14,16 +14,17 @@
     "total_crafted_items": 0,
     "total_base_items_used": 0
   },
-  "items_list": [
-    {
-      "id": "542",
-      "quantity": 2
-    }
-  ],
+  "items_list": [],
   "controll": {
-    "target_items_list": [],
-    "loops": 0,
+    "target_items_list": [
+      {
+        "id": "542",
+        "total_quantity": 1,
+        "rarity": "E"
+      }
+    ],
     "controll_date": -1,
+    "loops": 6,
     "craft_point": 0,
     "craft_cost": 0,
     "missing_baseItems": [],

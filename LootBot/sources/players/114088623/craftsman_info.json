@@ -3,9 +3,9 @@
   "preserve_crafted": true,
   "is_new": true,
   "censure_view": false,
-  "current_rarity": "NC",
+  "current_rarity": "",
   "current_prefix": "",
-  "current_message_id": -1,
+  "current_message_id": 1588556404,
   "ban_until": -1,
   "stats": {
     "total_loops": 0,
