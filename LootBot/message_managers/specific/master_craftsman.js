@@ -99,8 +99,8 @@ async function menu_view(response, telegram_user_id, message_id) {
             query_controll.craftsman_info.current_message_id = message_id;
             await craftsman_logics.update_craftsman_info(telegram_user_id, query_controll.craftsman_info);
         }
-        console.log(saved_message_id);
-        console.log(response);
+        // console.log(saved_message_id);
+        // console.log(response);
 
         menu_textAndButtons(response, query_controll.player_info, query_controll.craftsman_info, message_id);
     }
@@ -410,7 +410,7 @@ async function list_view_updates(response, player_info, craftsman_info, message_
             }
             return list_view(response, craftsman_info, player_info, query_data);
         } else {
-            console.log(update);
+            // console.log(update);
             // qui andrebbe mandata una query di errore, quantomeno
         }
     } else {
@@ -1091,8 +1091,7 @@ async function pleyer_info_controll(response, telegram_user_id, message_id) {
         response.preload_response.message_text = player_info_controll.error_text;
         if (message_id != false) {
             response.preload_response.query_text = `${player_info_controll.error_text}`
-        } 
-        
+        }
         return false;
     }
 
@@ -1142,14 +1141,11 @@ async function craft_line_controll(response, player_info, craftsman_info, player
         response.toEdit.options.reply_markup.inline_keyboard = [];
         return false;
     } else if (craft_controll.is_too_expensive) {
-
         return false;
     }
 
     return craft_controll.craft_line;
 }
-
-
 
 // **************************************  TESTING ()
 

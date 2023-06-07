@@ -15,7 +15,7 @@ async function fileExists(directoryPath) {
         await fs.promises.access(directoryPath, fs.constants.F_OK);
         return true;
     } catch (error) {
-        console.error(error);
+        // console.error(error);
         return false;
     }
 }
@@ -29,7 +29,7 @@ async function readJSONFile(telegram_user_id, filename) {
         const data = await fs.promises.readFile(filePath);
         return JSON.parse(data);
     } catch (error) {
-        console.error(`Errore durante la lettura del file JSON "${filePath}": ${error}`);
+        // console.error(`Errore durante la lettura del file JSON "${filePath}": ${error}`);
         return false;
     }
 }
@@ -40,7 +40,6 @@ async function writeJSONFile(telegram_user_id, filename, new_craftsman_info) {
     const filePath = path.join(directoryPath, filename);
 
     try {
-
         if (!(await fileExists(directoryPath))) { // Nel caso in cui la cartella utente non esista, la creo
             // console.log("creo "+directoryPath);
             await fs.promises.mkdir(directoryPath, { recursive: true });
