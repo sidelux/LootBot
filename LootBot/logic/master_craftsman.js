@@ -309,7 +309,8 @@ async function craft_line_controll(player_info, craftsman_info, player_inventory
 
     let craft_line = await  craft_logics.full_line_craft(craftsman_info.items_list, player_inventory, craftsman_info.preserve_crafted);
     
-    if (utils.isNully(craft_line) || craft_line.loops <= 0 || craft_line.used_items.base.length <= 0 || craft_line.skipped.length > 0) { // La linea craft non è stata generata correttamente...
+    if (utils.isNully(craft_line) || craft_line.loops <= 0 || craft_line.used_items.ids.length <= 0 || craft_line.skipped.length > 0
+       ) { // La linea craft non è stata generata correttamente...
         response.has_error = true;
     } else if (craft_line.loops > craft_logics.fixed_max_loops) {
         response.is_incompleate = true;
