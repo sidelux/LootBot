@@ -2011,7 +2011,7 @@ bot.onText(/Fai una Donazione!/i, function (message) {
 	});
 });
 
-bot.onText(/^\/craftbeta$/i, async function (message) {
+bot.onText(/^\/craftbeta/i, async function (message) {
 	let response = await master_craftsman_controller.add_betaTester(message.from.id, message.text);
 	return bot_response.manage(response, bot);
 });
@@ -2040,8 +2040,8 @@ bot.on('callback_query', function (message) {
 		}
 
 		if (func == "CRAFTSMAN") {
-			let response = await master_craftsman_controller.queryDispatcher(query);
-			return bot.manage(response, bot);
+			let response = await master_craftsman_controller.queryDispatcher(message);
+			return bot_response.manage(response, bot);
 		}
 
 		var player_id = rows[0].id;
@@ -36114,6 +36114,7 @@ bot.onText(/piazza di lootia|piazza/i, function (message) {
 			gender_text = "o";
 
 		var iKeys = [];
+		iKeys.push(["Mastro Artigiano 🛠 (Beta)"]);
 		iKeys.push(["Emporio 💸","Mercante Pazzo 👝"]);
 		iKeys.push(["Contrabbandiere dell'Est 🔩"]);
 		iKeys.push(["Affari Passati 💬", "Poste 🎁"]);

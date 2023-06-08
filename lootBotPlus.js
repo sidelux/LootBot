@@ -11693,7 +11693,7 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 
 		if (max_quantity != -1) {
 			if (inv_quantity >= max_quantity) {
-				error_log("Cap oggetto raggiunto " + inv_quantity + "/" + max_quantity);
+				console.log("Cap oggetto raggiunto " + inv_quantity + "/" + max_quantity);
 				return;
 			}
 
