@@ -17198,6 +17198,8 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																												bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*, possiedi " + now_rank + " rango!\n" + refill, dBack);
 																										});
 
+																										await addArtifactFragment(player_id);
+
 																										var rand = Math.round(Math.random() * 100);
 																										if ((rand <= 5) && (rank > 20)) {
 																											await addItem(player_id, 618);
@@ -41398,7 +41400,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 		parse_mode: "Markdown",
 		reply_markup: {
 			resize_keyboard: true,
-			keyboard: [["Artefatto Fiammeggiante 🔥"], ["Artefatto Elettrico ⚡️"], ["Artefatto Tempesta ⛈"], ["Artefatto Buio 🌑"], ["Artefatto Divinatorio 🔮"], ["Artefatto Ventoso 🌪"], ["Torna al menu"]]
+			keyboard: [["Artefatto Fiammeggiante 🔥"], ["Artefatto Elettrico ⚡️"], ["Artefatto Tempesta ⛈"], ["Artefatto Buio 🌑"], ["Artefatto Divinatorio 🔮"], ["Artefatto Ventoso 🌪"], ["Artefatto Luminescente 💡"], ["Torna al menu"]]
 		}
 	};
 
@@ -42027,7 +42029,10 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 							});
 						});
 					} else if (answer.text.indexOf("Artefatto Luminescente") != -1) {
-						return; // wip
+
+						bot.sendMessage(message.chat.id, "Presto disponibile!", rBack);
+						return;
+
 						connection.query('SELECT id FROM artifacts WHERE item_id = 788 AND player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
 							if (Object.keys(rows).length == 0) {
@@ -56162,6 +56167,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 
 										bot.sendMessage(rows[i].chat_id, final_report + reward + increm_text, kbBack2);
 										setAchievement(rows[i].id, 19, 1);
+										await addArtifactFragment(rows[i].id);
 
 										if ((boss_num == 31) && (is_boss == 1) && (lockNextBoss == 0)) {
 											if (rows[i].kill_streak+1 >= 3) {
@@ -61346,6 +61352,8 @@ function setFinishedTeamMission(element, index, array) {
 
 											bot.sendMessage(rows[i].chat_id, "Hai completato l'incarico insieme al tuo party come richiesto da " + mandator + "!\nEcco il rapporto dell'incarico:\n<i>" + endText + "</i>\n\nL'ufficio incarichi vi premia con: " + rewardText + extra, html);
 
+											await addArtifactFragment(rows[i].id);
+
 											if (isExp == 1)
 												setExp(rows[i].id, qnt);
 											else if (isItem == 1)
@@ -62676,6 +62684,8 @@ function setFinishedLobbyEnd(element, index, array) {
 							setAchievement(rows[i].id, 91, 1);
 						else
 							setAchievement(rows[i].id, 88, 1);
+
+						await addArtifactFragment(rows[i].id);
 
 						if ((villa == 1) && (trophies_count > 0)) {
 							var villaPnt = await connection.queryAsync('SELECT player_id, points FROM event_villa_status WHERE player_id = ' + rows[i].id);
@@ -64795,6 +64805,7 @@ function setFinishedTravel(element, index, array) {
 	
 						await addChest(element.id, chest_id, qnt);
 						setExp(element.id, exp);
+						await addArtifactFragment(element.id);
 	
 						await addMoney(element.id, money);
 						connection.query('UPDATE player SET travel_limit = 0, travel_count = travel_count+1 WHERE id = ' + element.id, function (err, rows, fields) {
@@ -65012,6 +65023,7 @@ async function setFinishedCave(element, index, array) {
 		bot.sendMessage(chat_id, "Hai ottenuto un Respiro di Morte! Che fortuna!");
 	}
 	setAchievement(element.id, 11, 1);
+	await addArtifactFragment(element.id);
 
 	connection.query('UPDATE cave_history SET end_time = NOW() WHERE player_id = ' + element.id + ' AND end_time IS NULL', function (err, rows, fields) {
 		if (err) throw err;
@@ -65527,6 +65539,7 @@ async function delItem(player_id, item_id, qnt = 1, sync = 0) {
 }
 
 async function addArtifactFragment(player_id) {
+	return; // wip
 	const art6 = await getItemCnt(player_id, 788);
 	if (art6 == 0)
 		return;
@@ -65536,7 +65549,7 @@ async function addArtifactFragment(player_id) {
 	connection.query('SELECT chat_id, artifact_fragment_prob FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 		if (err) throw err;
 		const prob = rows[0].artifact_fragment_prob;
-		const rand = Math.random()*1000;
+		const rand = Math.random()*100;
 		if (prob < rand) {
 			bot.sendMessage(rows[0].chat_id, "Dal terreno una luce ti pervade, e lentamente appare un *Frammento di Artefatto*!", mark);
 			connection.query('UPDATE player SET artifact_fragment = artifact_fragment+1, artifact_fragment_prob = 1 WHERE id = ' + player_id, function (err, rows, fields) {
