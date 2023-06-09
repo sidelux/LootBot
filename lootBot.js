@@ -41438,13 +41438,6 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 		connection.query('SELECT COUNT(id) As cnt FROM artifacts WHERE player_id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
 
-			/*
-			if (rows[0].cnt == 6) {
-				bot.sendMessage(message.chat.id, "Hai ottenuto tutti gli Artefatti!", back);
-				return;
-			}
-			*/
-
 			bot.sendMessage(message.chat.id, "Gli Artefatti 🔱\nSono strumenti di incredibile *potenza*, premio degli avventurieri piu tenaci.\nPer ambire a questi riconoscimenti sarà necessario dimostrare le proprie *abilità* nel commercio, il proprio coraggio nell'esplorazione delle terre remote, la propria dedizione alle nobili arti del combattimento, della truffa e dell'allevamento di draghi.\n_Pochi sono i guerrieri che possono vantarsi d'una collezione completa, vuoi aspirare ad ottenerne uno?_", artifacts).then(function () {
 				answerCallbacks[message.chat.id] = async function (answer) {
 					if (answer.text.indexOf("Artefatto Fiammeggiante") != -1) {
@@ -54728,7 +54721,7 @@ function getRankAt(message, size) {
 }
 
 function getRankArt(message, size) {
-	connection.query('SELECT P.nickname, A.get_date FROM artifacts A, player P WHERE P.account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id AND item_id = 788 ORDER BY get_date DESC', function (err, rows, fields) {
+	connection.query('SELECT P.nickname, A.get_date FROM artifacts A, player P WHERE P.account_id NOT IN (SELECT account_id FROM banlist) AND P.id NOT IN (1,3) AND A.player_id = P.id AND item_id = 810 ORDER BY get_date DESC', function (err, rows, fields) {
 		if (err) throw err;
 
 		if (Object.keys(rows).length == 0) {
@@ -65533,11 +65526,17 @@ async function delItem(player_id, item_id, qnt = 1, sync = 0) {
 		await connection.queryAsync('UPDATE inventory SET quantity = quantity-' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 }
 
-function getArtifactFragment(player_id) {
+async function addArtifactFragment(player_id) {
+	const art6 = await getItemCnt(player_id, 788);
+	if (art6 == 0)
+		return;
+	const art7 = await getItemCnt(player_id, 810);
+	if (art7 == 1)
+		return;
 	connection.query('SELECT chat_id, artifact_fragment_prob FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 		if (err) throw err;
-		var prob = rows[0].artifact_fragment_prob;
-		var rand = Math.random()*1000;
+		const prob = rows[0].artifact_fragment_prob;
+		const rand = Math.random()*1000;
 		if (prob < rand) {
 			bot.sendMessage(rows[0].chat_id, "Dal terreno una luce ti pervade, e lentamente appare un *Frammento di Artefatto*!", mark);
 			connection.query('UPDATE player SET artifact_fragment = artifact_fragment+1, artifact_fragment_prob = 1 WHERE id = ' + player_id, function (err, rows, fields) {
