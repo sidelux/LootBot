@@ -18343,7 +18343,7 @@ bot.onText(/scomponi/i, function (message) {
 
 bot.onText(/^Incanta|Torna all'incantamento|rerolla/i, function (message) {
 
-	if (message.text == "Incantaspade")
+	if ((message.text == "Incantaspade") || (message.text == "Incantatore Professionista"))
 		return;
 
 	connection.query('SELECT account_id, holiday, id, gems, class, reborn, exp, weapon, weapon2, weapon3, weapon_enchant, weapon2_enchant, weapon3_enchant, weapon_enchant_end, weapon2_enchant_end, weapon3_enchant_end, weapon_enchant_bonus, weapon2_enchant_bonus, weapon3_enchant_bonus, power_weapon, power_armor, power_shield FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
@@ -30244,6 +30244,10 @@ bot.onText(/cura completa|cura parziale|^cura$|^❣️$|^❤️$|^cc$|^cp$/i, fu
 });
 
 bot.onText(/incremento|^inc$/i, function (message) {
+
+	if (message.text == "Incremento Potente")
+		return;
+
 	var kbBack = {
 		parse_mode: "HTML",
 		reply_markup: {
@@ -41855,7 +41859,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 														if (err) throw err;
 
 														if (Math.floor(rows[0].exp / 10) < 1000) {
-															bot.sendMessage(message.chat.id, "Non hai raggiunto il livello necessario (" + Math.floor(rows[0].exp / 10) + "/1000)", back);
+															bot.sendMessage(message.chat.id, "Non hai raggiunto il livello necessario (" + formatNumber(Math.floor(rows[0].exp / 10)) + "/1.000)", back);
 															return;
 														}
 
@@ -42025,6 +42029,177 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 												});
 											}
 										}
+									});
+								});
+							});
+						});
+					} else if (answer.text.indexOf("Artefatto Luminescente") != -1) {
+						return; // wip
+						connection.query('SELECT id FROM artifacts WHERE item_id = 788 AND player_id = ' + player_id, function (err, rows, fields) {
+							if (err) throw err;
+							if (Object.keys(rows).length == 0) {
+								bot.sendMessage(message.chat.id, "Devi prima ottenere l'*Artefatto Ventoso*!", rBack);
+								return;
+							}
+
+							var req1 = "";
+							var req2 = "";
+							var req3 = "";
+							var req4 = "";
+							var req5 = "";
+							var req6 = "";
+							var req7 = "";
+							var req8 = "";
+							var req9 = "";
+
+							connection.query('SELECT reborn, exp, achievement_count_all, global_event, rank, money, craft_count, moon_coin, artifact_fragment FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+
+								const realLevel = getRealLevel(rows[0].reborn, Math.floor(rows[0].exp / 10));
+								if (realLevel >= 7500)
+									req1 = " ✅";
+								else
+									req1 = " (" + formatNumber(realLevel) + "/7.500)";
+
+								if (rows[0].rank >= 2500)
+									req3 = " ✅";
+								else
+									req3 = " (" + formatNumber(rows[0].rank) + "/2.500)";
+								
+								if (rows[0].global_event >= 30)
+									req4 = " ✅";
+								else
+									req4 = " (" + rows[0].global_event + "/30)";
+
+								if (rows[0].money >= 1000000000)
+									req5 = " ✅";
+								else
+									req5 = " (" + formatNumber(rows[0].money) + "/1.000.000.000)";
+
+								if (rows[0].craft_count >= 1000000)
+									req6 = " ✅";
+								else
+									req6 = " (" + formatNumber(rows[0].craft_count) + "/1.000.000)";
+
+								if (rows[0].achievement_count_all >= 1000)
+									req7 = " ✅";
+								else
+									req7 = " (" + formatNumber(rows[0].achievement_count_all) + "/1.000)";
+
+								if (rows[0].moon_coin >= 200)
+									req8 = " ✅";
+								else
+									req8 = " (" + formatNumber(rows[0].moon_coin) + "/200)";
+
+								if (rows[0].artifact_fragment >= 1000)
+									req10 = " ✅";
+								else
+									req10 = " (" + formatNumber(rows[0].artifact_fragment) + "/1.00)";
+
+								connection.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE quantity > 0 AND player_id = ' + player_id, function (err, rows, fields) {
+									if (err) throw err;
+
+									if (rows[0].cnt >= 4500)
+										req9 = " ✅";
+									else
+										req9 = " (" + formatNumber(rows[0].cnt) + "/4.500)";
+
+									connection.query('SELECT level FROM dragon WHERE player_id = ' + player_id, function (err, rows, fields) {
+										if (err) throw err;
+
+										if (rows[0].cnt >= 300)
+											req2 = " ✅";
+										else
+											req2 = " (" + rows[0].cnt + "/300)";
+
+										bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
+														"> Aver raggiunto il livello assoluto 7.500 del giocatore" + req1 + "\n" +
+														"> Aver portato il drago al livello 300" + req2 + "\n" +
+														"> Aver raggiunto almeno rango dungeon 2.500" + req3 + "\n" +
+														"> Aver partecipato attivamente ad almeno 30 imprese globali" + req4 + "\n" +
+														"> Possedere 1.000.000.000 § (verranno consumate)" + req5 + "\n" +
+														"> Avere ottenuto almeno 1.000.000 punti creazione" + req6 + "\n" +
+														"> Aver ottenuto almeno 1.000 triplette" + req7 + "\n" +
+														"> Possedere 200 Monete Lunari (verranno consumate)" + req8 + "\n" +
+														"> Possedere 4.500 figurine diverse" + req9 + "\n" +
+														"> Possedere almeno 1.000 Frammenti di Artefatto" + req10, get).then(function () {
+											answerCallbacks[message.chat.id] = async function (answer) {
+												if (answer.text.indexOf("Ottieni Artefatto") != -1) {
+													connection.query('SELECT id FROM artifacts WHERE item_id = 810 AND player_id = ' + player_id, function (err, rows, fields) {
+														if (err) throw err;
+
+														if (Object.keys(rows).length > 0) {
+															bot.sendMessage(message.chat.id, "Hai già ottenuto questo artefatto!", back);
+															return;
+														}
+
+														connection.query('SELECT achievement_count_all, global_event, power_pnt, rank, top_win, top_rank_count FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+															if (err) throw err;
+
+															const realLevel = getRealLevel(rows[0].reborn, Math.floor(rows[0].exp / 10));
+															if (realLevel < 7500) {
+																bot.sendMessage(message.chat.id, "Non possiedi il livello richiesto (" + formatNumber(realLevel) + "/7.500)", back);
+																return;
+															}
+
+															if (rows[0].rank < 2500) {
+																bot.sendMessage(message.chat.id, "Non possiedi il rango richiesto (" + formatNumber(rows[0].rank) + "/2.500)", back);
+																return;
+															}
+															
+															if (rows[0].global_event < 30) {
+																bot.sendMessage(message.chat.id, "Non hai raggiunto abbastanza vittorie globali (" + rows[0].global_event + "/30)", back);
+																return;
+															}
+
+															if (rows[0].money < 1000000000) {
+																bot.sendMessage(message.chat.id, "Non possiedi abbastanza monete (" + formatNumber(rows[0].money) + "/1.000.000.000)", back);
+																return;
+															}
+
+															if (rows[0].craft_count < 1000000) {
+																bot.sendMessage(message.chat.id, "Non hai raggiunto abbastanza punti creazione (" + formatNumber(rows[0].craft_count) + "/1.000.000)", back);
+																return;
+															}
+
+															if (rows[0].achievement_count_all < 1000) {
+																bot.sendMessage(message.chat.id, "Non hai raggiunto abbastanza triplette (" + formatNumber(rows[0].achievement_count_all) + "/1.000)", back);
+																return;
+															}
+
+															if (rows[0].moon_coin < 200) {
+																bot.sendMessage(message.chat.id, "Non possiedi abbastanza Monete Lunari (" + formatNumber(rows[0].moon_coin) + "/200)", back);
+																return;
+															}
+
+															if (rows[0].artifact_fragment < 1000) {
+																bot.sendMessage(message.chat.id, "Non possiedi abbastanza Frammenti di Artefatto (" + formatNumber(rows[0].artifact_fragment) + "/1.000)", back);
+																return;
+															}
+
+															connection.query('SELECT COUNT(id) As cnt FROM card_inventory WHERE quantity > 0 AND player_id = ' + player_id, function (err, rows, fields) {
+																if (err) throw err;
+
+																if (rows[0].cnt < 4500) {
+																	bot.sendMessage(message.chat.id, "Non possiedi abbastanza Figurine diverse (" + formatNumber(rows[0].cnt) + "/4.500)", back);
+																	return;
+																}
+
+																connection.query('INSERT INTO artifacts (player_id, item_id) VALUES (' + player_id + ', 810)', function (err, rows, fields) {
+																	if (err) throw err;
+																	connection.query('UPDATE player SET money = money-1000000000, moon_coin = moon_coin-200 WHERE id = ' + player_id, async function (err, rows, fields) {
+																		if (err) throw err;
+																		await addItem(player_id, 810);
+																		bot.sendMessage(message.chat.id, "Hai ottenuto l'*Artefatto Luminescente*!", back);
+																		console.log(message.from.username + " Artefatto 7");
+																	});
+																});
+															});
+														});
+													});
+												}
+											}
+										});
 									});
 								});
 							});
@@ -42322,7 +42497,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 							if (answer.text == "Torna al menu")
 								return;
 							answer.text = answer.text.replace(" ✅", "");
-							var reg = new RegExp("^[a-zA-Z ]{1,100}$");
+							var reg = new RegExp("^[a-zA-Zè ]{1,100}$");
 							if (reg.test(answer.text) == false) {
 								bot.sendMessage(message.chat.id, "Talento non valido, riprova", back);
 								return;
@@ -48615,6 +48790,9 @@ bot.onText(/^semplificato/i, function (message) {
 bot.onText(/esplorazioni|viaggi/i, function (message) {
 	var iKeys = [];
 
+	if (message.text == "Viaggiatore Attento")
+		return;
+
 	connection.query('SELECT mission_special_id, mission_special_time_end, mission_id, id, reborn, exp, life, account_id, global_end, mission_party, holiday, class, travel_limit, cave_limit, mission_count, dungeon_count FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
 		if (err) throw err;
 
@@ -51430,6 +51608,10 @@ function getValue(keyName) {
 }
 
 function cercaTermine(message, param, player_id) {
+
+	if (message.text == "Cercatore di Unici")
+		return;
+
 	var search = {
 		parse_mode: "Markdown",
 		reply_markup: {
@@ -57917,7 +58099,7 @@ function autoMana() {
 					if (err) throw err;
 			
 					if (Object.keys(rows).length > 0)
-						rows[i].quantity += rows[i].quantity*(rows[0].ability_level * rows[0].val);
+						rows[i].quantity += rows[i].quantity*((rows[0].ability_level * rows[0].val)/10);
 
 					rows[i].quantity = Math.floor(rows[i].quantity);
 
@@ -65349,6 +65531,24 @@ async function delItem(player_id, item_id, qnt = 1, sync = 0) {
 		});
 	} else
 		await connection.queryAsync('UPDATE inventory SET quantity = quantity-' + qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
+}
+
+function getArtifactFragment(player_id) {
+	connection.query('SELECT chat_id, artifact_fragment_prob FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+		if (err) throw err;
+		var prob = rows[0].artifact_fragment_prob;
+		var rand = Math.random()*1000;
+		if (prob < rand) {
+			bot.sendMessage(rows[0].chat_id, "Dal terreno una luce ti pervade, e lentamente appare un *Frammento di Artefatto*!", mark);
+			connection.query('UPDATE player SET artifact_fragment = artifact_fragment+1, artifact_fragment_prob = 1 WHERE id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+		} else {
+			connection.query('UPDATE player SET artifact_fragment_prob = artifact_fragment_prob+1, artifact_fragment_prob = 1 WHERE id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+			});
+		}
+	});
 }
 
 function delAllItem(player_id, item_id) {
