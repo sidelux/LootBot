@@ -48,7 +48,7 @@ CREATE TABLE `ability_list` (
   `name` varchar(64) NOT NULL,
   `description` varchar(255) NOT NULL,
   `prev` int(1) NOT NULL DEFAULT 0,
-  `val` int(11) NOT NULL DEFAULT 0,
+  `val` decimal(10,2) NOT NULL DEFAULT 0.00,
   `det` text NOT NULL,
   `enabled` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
@@ -3232,6 +3232,8 @@ CREATE TABLE `player` (
   `token_streak` int(11) NOT NULL DEFAULT 0,
   `tap_price` int(11) DEFAULT NULL,
   `last_card_date` timestamp NULL DEFAULT NULL,
+  `artifact_fragment` int(11) NOT NULL DEFAULT 0,
+  `artifact_fragment_prob` int(11) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   UNIQUE KEY `nickname` (`nickname`),
   UNIQUE KEY `account_id` (`account_id`),

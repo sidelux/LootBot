@@ -34547,40 +34547,47 @@ bot.onText(/Miniere di Mana|Raccolta|^miniera$|^miniere$/i, function (message) {
 							}
 						}
 
-						quantity = Math.floor(quantity);
-
-						connection.query('SELECT mana.name, chat_id, nickname, player_id, rate, type, ROUND(TIMESTAMPDIFF(MINUTE,time_start,NOW())/60*rate,0) As quantity FROM event_mana_status, event_mana_zone, player, mana WHERE mana.id = event_mana_zone.type AND player.id = player_id AND event_mana_status.time_start IS NOT NULL AND event_mana_status.zone_id = event_mana_zone.id AND player.id = ' + player_id, function (err, rows, fields) {
+						connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 30', function (err, rows, fields) {
 							if (err) throw err;
+					
+							if (Object.keys(rows).length > 0)
+								quantity += quantity*((rows[0].ability_level * rows[0].val)/10);
 
-							hours = Math.round(hours);
-							var plur = "a";
-							if (hours >= 1)
-								plur = "e";
-							if (hours == 0)
-								hours = "meno di 1";
+							quantity = Math.floor(quantity);
 
-							bot.sendMessage(message.chat.id, "Stai estraendo Mana " + name + " da " + hours + " or" + plur + ", vuoi interrompere ottenendo " + quantity + " unità di mana grezzo?" + extra_mana, mYesNo2).then(function () {
-								answerCallbacks[message.chat.id] = async function (answer) {
-									if (answer.text.toLowerCase() == "si") {
-										connection.query('SELECT zone_id FROM event_mana_status WHERE player_id = ' + player_id, function (err, rows, fields) {
-											if (err) throw err;
+							connection.query('SELECT mana.name, chat_id, nickname, player_id, rate, type, ROUND(TIMESTAMPDIFF(MINUTE,time_start,NOW())/60*rate,0) As quantity FROM event_mana_status, event_mana_zone, player, mana WHERE mana.id = event_mana_zone.type AND player.id = player_id AND event_mana_status.time_start IS NOT NULL AND event_mana_status.zone_id = event_mana_zone.id AND player.id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
 
-											if (rows[0].zone_id == 0) {
-												bot.sendMessage(message.chat.id, "Attualmente non stai estraendo", mBack);
-												return;
-											}
+								hours = Math.round(hours);
+								var plur = "a";
+								if (hours >= 1)
+									plur = "e";
+								if (hours == 0)
+									hours = "meno di 1";
 
-											var mana_type = 'mana_' + type;
-											connection.query('UPDATE event_mana_status SET ' + mana_type + ' = ' + mana_type + ' + ' + quantity + ', zone_id = 0, time_start = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+								bot.sendMessage(message.chat.id, "Stai estraendo Mana " + name + " da " + hours + " or" + plur + ", vuoi interrompere ottenendo " + quantity + " unità di mana grezzo?" + extra_mana, mYesNo2).then(function () {
+									answerCallbacks[message.chat.id] = async function (answer) {
+										if (answer.text.toLowerCase() == "si") {
+											connection.query('SELECT zone_id FROM event_mana_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
-												if (quantity > 0)
-													bot.sendMessage(message.chat.id, "Hai ricevuto " + quantity + " Mana " + name + "!", mBack);
-												else
-													bot.sendMessage(message.chat.id, "Non hai raccolto mana!", mBack);
+
+												if (rows[0].zone_id == 0) {
+													bot.sendMessage(message.chat.id, "Attualmente non stai estraendo", mBack);
+													return;
+												}
+
+												var mana_type = 'mana_' + type;
+												connection.query('UPDATE event_mana_status SET ' + mana_type + ' = ' + mana_type + ' + ' + quantity + ', zone_id = 0, time_start = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+													if (err) throw err;
+													if (quantity > 0)
+														bot.sendMessage(message.chat.id, "Hai ricevuto " + quantity + " Mana " + name + "!", mBack);
+													else
+														bot.sendMessage(message.chat.id, "Non hai raccolto mana!", mBack);
+												});
 											});
-										});
-									}
-								};
+										}
+									};
+								});
 							});
 						});
 					});
@@ -42054,10 +42061,10 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 								if (err) throw err;
 
 								const realLevel = getRealLevel(rows[0].reborn, Math.floor(rows[0].exp / 10));
-								if (realLevel >= 7500)
+								if (realLevel >= 4250)
 									req1 = " ✅";
 								else
-									req1 = " (" + formatNumber(realLevel) + "/7.500)";
+									req1 = " (" + formatNumber(realLevel) + "/4.250)";
 
 								if (rows[0].rank >= 2500)
 									req3 = " ✅";
@@ -42111,7 +42118,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 											req2 = " (" + rows[0].cnt + "/300)";
 
 										bot.sendMessage(message.chat.id, "Per ottenere questo artefatto devi:\n" +
-														"> Aver raggiunto il livello assoluto 7.500 del giocatore" + req1 + "\n" +
+														"> Aver raggiunto il livello assoluto 4.250 del giocatore" + req1 + "\n" +
 														"> Aver portato il drago al livello 300" + req2 + "\n" +
 														"> Aver raggiunto almeno rango dungeon 2.500" + req3 + "\n" +
 														"> Aver partecipato attivamente ad almeno 30 imprese globali" + req4 + "\n" +
@@ -42135,8 +42142,8 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 															if (err) throw err;
 
 															const realLevel = getRealLevel(rows[0].reborn, Math.floor(rows[0].exp / 10));
-															if (realLevel < 7500) {
-																bot.sendMessage(message.chat.id, "Non possiedi il livello richiesto (" + formatNumber(realLevel) + "/7.500)", back);
+															if (realLevel < 4250) {
+																bot.sendMessage(message.chat.id, "Non possiedi il livello richiesto (" + formatNumber(realLevel) + "/4.250)", back);
 																return;
 															}
 
@@ -53761,7 +53768,7 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 
 		var max_quantity = 3;
 		if (Object.keys(rows).length > 0)
-			max_quantity += rows[0].ability_val*rows[0].ability_level;
+			max_quantity += rows[0].val*rows[0].ability_level;
 
 		if (player_id != 1) {
 			if ((quantity < 1) || (quantity > max_quantity)) {
@@ -54043,9 +54050,9 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 
 															var resQuantity = await getItemCnt(player_id, matR);
 															if (quantity == 1)
-																bot.sendMessage(message.chat.id, "Hai creato *" + oggetto + "* (ne possiedi " + resQuantity + ")" + extra_craft + "!", craft);
+																bot.sendMessage(message.chat.id, "Hai creato *" + oggetto + "* (ne possiedi " + formatNumber(resQuantity) + ")" + extra_craft + "!", craft);
 															else
-																bot.sendMessage(message.chat.id, "Hai creato " + quantity + "x *" + oggetto + "* (ne possiedi " + resQuantity + ")" + extra_craft + "!", craft);
+																bot.sendMessage(message.chat.id, "Hai creato " + quantity + "x *" + oggetto + "* (ne possiedi " + formatNumber(resQuantity) + ")" + extra_craft + "!", craft);
 
 															connection.query('UPDATE player SET craft_week = craft_week + ' + craftexp + ', craft_count = craft_count + ' + craftexp + ', craft_day = craft_day + ' + craftexp + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
@@ -58063,6 +58070,7 @@ function autoMana() {
 
 		var mana_type = "";
 		if (Object.keys(rows).length > 0) {
+			console.log(Object.keys(rows).length + " miniere da terminare");
 			for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 				mana_type = 'mana_' + rows[i].type;
 				if ((rows[i].class == 2) && (rows[i].reborn > 1))
@@ -58094,18 +58102,23 @@ function autoMana() {
 					}
 				}
 
+				var quantity = rows[i].quantity;
+				var player_id = rows[i].player_id;
+				var chat_id = rows[i].chat_id;
+				var name = rows[i].name;
+
 				connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 30', function (err, rows, fields) {
 					if (err) throw err;
 			
 					if (Object.keys(rows).length > 0)
-						rows[i].quantity += rows[i].quantity*((rows[0].ability_level * rows[0].val)/10);
+						quantity += quantity*((rows[0].ability_level * rows[0].val)/10);
 
-					rows[i].quantity = Math.floor(rows[i].quantity);
+					quantity = Math.floor(quantity);
 
-					connection.query('UPDATE event_mana_status SET ' + mana_type + ' = ' + mana_type + ' + ' + rows[i].quantity + ', zone_id = 0, time_start = NULL WHERE player_id = ' + rows[i].player_id, function (err, rows, fields) {
+					connection.query('UPDATE event_mana_status SET ' + mana_type + ' = ' + mana_type + ' + ' + quantity + ', zone_id = 0, time_start = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
 						if (err) throw err;
 					});
-					bot.sendMessage(rows[i].chat_id, "Le miniere sono state chiuse, hai ricevuto " + formatNumber(rows[i].quantity) + " Mana " + rows[i].name + "!" + extra_mana);
+					bot.sendMessage(chat_id, "Le miniere sono state chiuse, hai ricevuto " + formatNumber(quantity) + " Mana " + name + "!" + extra_mana);
 				});
 			}
 		} else
