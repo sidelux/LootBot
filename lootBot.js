@@ -18562,6 +18562,7 @@ bot.onText(/^Incanta|Torna all'incantamento|rerolla/i, function (message) {
 												}
 												var rand = 0;
 												rand = Math.random() * 5 + 25; //5-30
+												rand += bonus;
 												rand = Math.round(rand);
 
 												setEnchant(message, player_id, type, rand, class_id, reborn);
@@ -58102,24 +58103,17 @@ function autoMana() {
 					}
 				}
 
-				var quantity = rows[i].quantity;
-				var player_id = rows[i].player_id;
-				var chat_id = rows[i].chat_id;
-				var name = rows[i].name;
-
-				connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 30', function (err, rows, fields) {
-					if (err) throw err;
+				var ability = await connection.queryAsync('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + rows[i].player_id + ' AND ability_id = 30');
 			
-					if (Object.keys(rows).length > 0)
-						quantity += quantity*((rows[0].ability_level * rows[0].val)/10);
+				if (Object.keys(ability).length > 0)
+					rows[i].quantity += rows[i].quantity*((ability[0].ability_level * ability[0].val)/10);
 
-					quantity = Math.floor(quantity);
+				rows[i].quantity = Math.floor(rows[i].quantity);
 
-					connection.query('UPDATE event_mana_status SET ' + mana_type + ' = ' + mana_type + ' + ' + quantity + ', zone_id = 0, time_start = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
-						if (err) throw err;
-					});
-					bot.sendMessage(chat_id, "Le miniere sono state chiuse, hai ricevuto " + formatNumber(quantity) + " Mana " + name + "!" + extra_mana);
+				connection.query('UPDATE event_mana_status SET ' + mana_type + ' = ' + mana_type + ' + ' + rows[i].quantity + ', zone_id = 0, time_start = NULL WHERE player_id = ' + rows[i].player_id, function (err, rows, fields) {
+					if (err) throw err;
 				});
+				bot.sendMessage(rows[i].chat_id, "Le miniere sono state chiuse, hai ricevuto " + formatNumber(rows[i].quantity) + " Mana " + rows[i].name + "!" + extra_mana);
 			}
 		} else
 			console.log("Nessuna miniera da terminare");
