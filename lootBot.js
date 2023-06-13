@@ -55079,9 +55079,11 @@ function calcPnt(base_id, item_id) {
 }
 
 bot.onText(/refreshMerchant/i, async function (message, match) {
-	await refreshMerchant(0);
-	bot.sendMessage(message.chat.id, "Fatto!");
-	return;
+	if (message.from.id == config.phenix_id) {
+		await refreshMerchant(0);
+		bot.sendMessage(message.chat.id, "Fatto!");
+		return;
+	}
 });
 
 async function merchantPrice(item_id) {
@@ -59114,7 +59116,7 @@ function setDragonSearch(element, index, array) {
 							if (Object.keys(rows).length > 0)
 								abBonus = rows[0].ability_level * rows[0].val;
 
-							if (abBonus < rand) {
+							if (abBonus > rand) {
 								scale = 5;
 								abText = " Grazie al talento inizi lo scontro con 5 Scaglie!";
 							}
@@ -59122,13 +59124,13 @@ function setDragonSearch(element, index, array) {
 							connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + enemy_player_id + ' AND ability_id = 33', function (err, rows, fields) {
 								if (err) throw err;
 
-								abBonus = 0;
+								var enemyAbBonus = 0;
 								var abEnemyText = "";
 								rand = Math.random()*100;
 								if (Object.keys(rows).length > 0)
-									abBonus = rows[0].ability_level * rows[0].val;
+									enemyAbBonus = rows[0].ability_level * rows[0].val;
 
-								if (abBonus < rand) {
+								if (enemyAbBonus > rand) {
 									enemy_scale = 5;
 									abEnemyText = " Grazie al talento inizi lo scontro con 5 Scaglie!";
 								}
