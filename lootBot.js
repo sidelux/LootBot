@@ -1306,11 +1306,13 @@ bot.onText(/\/captcha/i, function (message, match) {
 });
 
 bot.onText(/testspam (.+)/i, function (message, match) {
-	var n = match[1];
-	if (n > 10)
-		return;
-	for (var i = 0; i < n; i++) {
-		bot.sendMessage(message.chat.id, i);
+	if (message.from.id == config.phenix_id) {
+		var n = match[1];
+		if (n > 10)
+			return;
+		for (var i = 0; i < n; i++) {
+			bot.sendMessage(message.chat.id, i);
+		}
 	}
 });
 
