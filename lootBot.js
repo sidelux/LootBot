@@ -37587,7 +37587,8 @@ bot.onText(/sfoglia pagina (.+)|figurine/i, function (message, match) {
 	if ((message.text.toLowerCase().indexOf("pacchetto") == "negozio") || 
 		(message.text.toLowerCase() == "figurine collezionate") || 
 		(message.text.toLowerCase().indexOf("pacchetto") != -1) ||
-		(message.text.toLowerCase().indexOf("stanza") != -1))
+		(message.text.toLowerCase().indexOf("stanza") != -1) ||
+		(message.text.toLowerCase().indexOf("collezionista") != -1))
 		return;
 
 	connection.query('SELECT id, account_id, holiday, reborn FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
@@ -42471,9 +42472,9 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 				} else {
 					if (rows[i].ability_level == 10) {
 						completed++;
-						ablist += "> *" + rows[i].name + "* (Liv " + rows[i].ability_level + ", " + (rows[i].ability_level * rows[i].val) + rows[i].det + ")\n";
+						ablist += "> *" + rows[i].name + "* (Liv " + rows[i].ability_level + ", " + roundDecimal(rows[i].ability_level * rows[i].val) + rows[i].det + ")\n";
 					} else
-						ablist += "> " + rows[i].name + " (Liv " + rows[i].ability_level + ", " + (rows[i].ability_level * rows[i].val) + rows[i].det + ")\n";
+						ablist += "> " + rows[i].name + " (Liv " + rows[i].ability_level + ", " + roundDecimal(rows[i].ability_level * rows[i].val) + rows[i].det + ")\n";
 				}
 
 				abarr[rows[i].ability_id] = rows[i].ability_level;
@@ -42820,6 +42821,18 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 									} else if (ability_id == 31) {
 										text3 += val + sym + " " + forlevel;
 										money = 5000000 * (level + 1);
+										text2 += "\n> " + formatNumber(money) + " §";
+									} else if (ability_id == 32) {
+										text3 += val + sym + " " + forlevel;
+										money = 1000000 * (level + 1);
+										text2 += "\n> " + formatNumber(money) + " §";
+									} else if (ability_id == 33) {
+										text3 += val + sym + " " + forlevel;
+										money = 15000000 * (level + 1);
+										text2 += "\n> " + formatNumber(money) + " §";
+									} else if (ability_id == 34) {
+										text3 += val + sym + " " + forlevel;
+										money = 80000000 * (level + 1);
 										text2 += "\n> " + formatNumber(money) + " §";
 									} else {
 										bot.sendMessage(message.chat.id, "Talento non valido", prev);
@@ -43826,155 +43839,165 @@ bot.onText(/^apri/i, function (message) {
 						else
 							allsql = 'chest.id != 8 AND ';
 
-						var query = 'SELECT inventory_chest.id, inventory_chest.chest_id, chest.rarity_shortname, inventory_chest.quantity FROM inventory_chest, chest WHERE ' + allsql + 'inventory_chest.chest_id = chest.id AND player_id = "' + player_id + '" AND quantity > 0 ORDER BY chest.id';
-						connection.query(query,  async function (err, rows, fields) {
+						connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 32', function (err, rows, fields) {
 							if (err) throw err;
 
-							var itemqnt = 0;
-							for (i = 0; i < Object.keys(rows).length; i++)
-								itemqnt += parseInt(rows[i].quantity);
+							var abBonus = 0;
+							if (Object.keys(rows).length > 0)
+								abBonus = rows[0].ability_level * rows[0].val;
 
-							if (itemqnt == 0) {
-								bot.sendMessage(message.chat.id, "Non possiedi gli scrigni indicati", chestMore);
-								return;
-							}
+							var query = 'SELECT inventory_chest.id, inventory_chest.chest_id, chest.rarity_shortname, inventory_chest.quantity FROM inventory_chest, chest WHERE ' + allsql + 'inventory_chest.chest_id = chest.id AND player_id = "' + player_id + '" AND quantity > 0 ORDER BY chest.id';
+							connection.query(query,  async function (err, rows, fields) {
+								if (err) throw err;
 
-							var chest_rarity = "";
-							var chest_id = 0;
-							var item_name = "";
-							var item_rarity = "";
-							var item_id = 0;
-							var itemsArray = [];
-							var itemsToAdd = [];
-							var chestToDel = [];
-							var currentRarity = [];
-							var special = 0;
-							var opened = 0;
-							var empty = 0;
+								var itemqnt = 0;
+								for (i = 0; i < Object.keys(rows).length; i++)
+									itemqnt += parseInt(rows[i].quantity);
 
-							var itemSql = "";
-
-							var quantity_left = maxChest;
-
-							for (j = 0; j < Object.keys(rows).length; j++) {	// per ogni rarità
-								if (scrigno == "tutti")
-									quantity = rows[j].quantity;
-
-								if (quantity > quantity_left)
-									quantity = quantity_left;
-
-								if (quantity_left <= 0)
-									break;
-
-								quantity_left -= quantity;
-
-								chest_rarity = rows[j].rarity_shortname;
-								chest_id = rows[j].chest_id;
-
-								if (chest_id == 10)	// cangiante
-									itemSql = await connection.queryAsync('SELECT id, name, rarity FROM item WHERE rarity IN ("C", "NC", "R", "UR", "L", "E", "D", "U") AND id NOT IN (92, 93, 94) AND craftable = 0');
-								else
-									itemSql = await connection.queryAsync('SELECT id, name, rarity FROM item WHERE rarity = "' + chest_rarity + '" AND id NOT IN (92, 93, 94) AND craftable = 0');
-
-								currentRarity = [];
-
-								for (i = 0; i < quantity; i++) {	// quantity oggetti estratti
-
-									shuffle(itemSql);
-
-									special = 0;
-									empty = 0;
-									item_name = itemSql[0].name;
-									item_rarity = itemSql[0].rarity;
-									item_id = itemSql[0].id;
-
-									if (item_rarity == "U") {
-										if (chest_id != 10) {
-											var randU = Math.random() * 100;
-											var perc = 0;
-											if (reborn <= 2)
-												perc = 5;
-											else if (reborn == 3)
-												perc = 10;
-											else if (reborn == 4)
-												perc = 15;
-											else if (reborn == 5)
-												perc = 20;
-											else if (reborn == 6)
-												perc = 25;
-											else
-												perc = 30;
-										} else
-											perc = 60;
-
-										if (perc >= randU) {
-											item_name = "Gemma";
-											item_rarity = "💎";
-											special = 1;
-										}
-									}
-
-									var empty_perc = 0;
-									if (item_rarity == "C")
-										empty_perc = 12;
-									else if (item_rarity == "NC")
-										empty_perc = 10;
-									else if (item_rarity == "R")
-										empty_perc = 8;
-									else if (item_rarity == "UR")
-										empty_perc = 6;
-									else if (item_rarity == "L")
-										empty_perc = 4;
-									else if (item_rarity == "E")
-										empty_perc = 2;
-
-									if (empty_perc > 0) {
-										var randEmpty = Math.random()*100;
-										if (empty_perc >= randEmpty) {
-											item_name = "Vuoto";
-											item_rarity = "💨";
-											empty = 1;
-										}
-									}
-
-									currentRarity.push(item_name + " (" + item_rarity + ")");
-
-									if (special == 0)
-										itemsToAdd.push(item_id);
-									else {
-										connection.query('UPDATE player SET gems = gems+1 WHERE id = ' + player_id, function (err, rows, fields) {
-											if (err) throw err;
-										});
-									}
-
-									chestToDel.push(chest_id);
-									opened++;
+								if (itemqnt == 0) {
+									bot.sendMessage(message.chat.id, "Non possiedi gli scrigni indicati", chestMore);
+									return;
 								}
 
-								currentRarity.sort();
-								itemsArray = itemsArray.concat(currentRarity);
-							}
+								var chest_rarity = "";
+								var chest_id = 0;
+								var item_name = "";
+								var item_rarity = "";
+								var item_id = 0;
+								var itemsArray = [];
+								var itemsToAdd = [];
+								var chestToDel = [];
+								var currentRarity = [];
+								var special = 0;
+								var opened = 0;
+								var empty = 0;
 
-							var itemsGrouped = compressArray(itemsToAdd);
-							for (i = 0; i < Object.keys(itemsGrouped).length; i++)
-								await addItem(player_id, itemsGrouped[i].value, itemsGrouped[i].count);
-							var chestGrouped = compressArray(chestToDel);
-							for (i = 0; i < Object.keys(chestGrouped).length; i++)
-								delChest(player_id, chestGrouped[i].value, chestGrouped[i].count);
+								var itemSql = "";
 
-							var plur = "i";
-							if (opened == 1)
-								plur = "o";
-							var msg = "Hai trovato " + formatNumber(opened) + " oggett" + plur + ":";
-							var itemsGrouped = compressArray(itemsArray);
-							for (i = 0; i < Object.keys(itemsGrouped).length; i++)
-								msg += "\n> " + itemsGrouped[i].count + "x " + itemsGrouped[i].value;
+								var quantity_left = maxChest;
 
-							if (msg.length > 4000)
-								msg = "Hai trovato " + formatNumber(opened) + " oggetti!";
-							bot.sendMessage(message.chat.id, msg, chestMore);
+								for (j = 0; j < Object.keys(rows).length; j++) {	// per ogni rarità
+									if (scrigno == "tutti")
+										quantity = rows[j].quantity;
 
-							setAchievement(player_id, 5, opened);
+									if (quantity > quantity_left)
+										quantity = quantity_left;
+
+									if (quantity_left <= 0)
+										break;
+
+									quantity_left -= quantity;
+
+									chest_rarity = rows[j].rarity_shortname;
+									chest_id = rows[j].chest_id;
+
+									if (chest_id == 10)	// cangiante
+										itemSql = await connection.queryAsync('SELECT id, name, rarity FROM item WHERE rarity IN ("C", "NC", "R", "UR", "L", "E", "D", "U") AND id NOT IN (92, 93, 94) AND craftable = 0');
+									else
+										itemSql = await connection.queryAsync('SELECT id, name, rarity FROM item WHERE rarity = "' + chest_rarity + '" AND id NOT IN (92, 93, 94) AND craftable = 0');
+
+									currentRarity = [];
+
+									for (i = 0; i < quantity; i++) {	// quantity oggetti estratti
+
+										shuffle(itemSql);
+
+										special = 0;
+										empty = 0;
+										item_name = itemSql[0].name;
+										item_rarity = itemSql[0].rarity;
+										item_id = itemSql[0].id;
+
+										if (item_rarity == "U") {
+											if (chest_id != 10) {
+												var randU = Math.random() * 100;
+												var perc = 0;
+												if (reborn <= 2)
+													perc = 5;
+												else if (reborn == 3)
+													perc = 10;
+												else if (reborn == 4)
+													perc = 15;
+												else if (reborn == 5)
+													perc = 20;
+												else if (reborn == 6)
+													perc = 25;
+												else
+													perc = 30;
+											} else
+												perc = 60;
+
+											if (perc >= randU) {
+												item_name = "Gemma";
+												item_rarity = "💎";
+												special = 1;
+											}
+										}
+
+										var empty_perc = 0;
+										if (item_rarity == "C")
+											empty_perc = 12;
+										else if (item_rarity == "NC")
+											empty_perc = 10;
+										else if (item_rarity == "R")
+											empty_perc = 8;
+										else if (item_rarity == "UR")
+											empty_perc = 6;
+										else if (item_rarity == "L")
+											empty_perc = 4;
+										else if (item_rarity == "E")
+											empty_perc = 2;
+
+										empty_perc -= abBonus;
+
+										if (empty_perc > 0) {
+											var randEmpty = Math.random()*100;
+											if (empty_perc >= randEmpty) {
+												item_name = "Vuoto";
+												item_rarity = "💨";
+												empty = 1;
+											}
+										}
+
+										currentRarity.push(item_name + " (" + item_rarity + ")");
+
+										if (special == 0)
+											itemsToAdd.push(item_id);
+										else {
+											connection.query('UPDATE player SET gems = gems+1 WHERE id = ' + player_id, function (err, rows, fields) {
+												if (err) throw err;
+											});
+										}
+
+										chestToDel.push(chest_id);
+										opened++;
+									}
+
+									currentRarity.sort();
+									itemsArray = itemsArray.concat(currentRarity);
+								}
+
+								var itemsGrouped = compressArray(itemsToAdd);
+								for (i = 0; i < Object.keys(itemsGrouped).length; i++)
+									await addItem(player_id, itemsGrouped[i].value, itemsGrouped[i].count);
+								var chestGrouped = compressArray(chestToDel);
+								for (i = 0; i < Object.keys(chestGrouped).length; i++)
+									delChest(player_id, chestGrouped[i].value, chestGrouped[i].count);
+
+								var plur = "i";
+								if (opened == 1)
+									plur = "o";
+								var msg = "Hai trovato " + formatNumber(opened) + " oggett" + plur + ":";
+								var itemsGrouped = compressArray(itemsArray);
+								for (i = 0; i < Object.keys(itemsGrouped).length; i++)
+									msg += "\n> " + itemsGrouped[i].count + "x " + itemsGrouped[i].value;
+
+								if (msg.length > 4000)
+									msg = "Hai trovato " + formatNumber(opened) + " oggetti!";
+								bot.sendMessage(message.chat.id, msg, chestMore);
+
+								setAchievement(player_id, 5, opened);
+							});
 						});
 					};
 				};
@@ -49180,6 +49203,12 @@ bot.onText(/^\/checkResetGlobal (.+)/, function (message, match) {
 });
 
 // FUNZIONI
+
+function roundDecimal(number) {
+	if (number < 1)
+		return number.toFixed(1);
+	return number;
+}
 
 async function getCurrentGlobal() {
 	var global = await connection.queryAsync("SELECT global_id FROM config");
@@ -56100,7 +56129,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 	
 											if (Object.keys(ability).length > 0)
 												chest7 += ability[0].val*ability[0].ability_level;
-												
+
 											chest7 = Math.floor(chest7);
 										}
 
@@ -56235,6 +56264,15 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 												var prob = (100-card[0].rarity*10)*0.5;	// 1 => 45, 9 => 5
 												if (prob == 0)
 													prob = 1;
+
+												var ability = await connection.queryAsync('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + rows[i].id + ' AND ability_id = 34');
+											
+												var abBonus = 0;
+												if (Object.keys(ability).length > 0)
+													abBonus = parseInt(ability[0].ability_level) * ability[0].val;
+
+												prob += abBonus;
+
 												if (randVal < prob) {
 													var have = await connection.queryAsync('SELECT COUNT(id) As cnt FROM card_inventory WHERE player_id = ' + rows[i].id + ' AND card_id = ' + card[0].id);
 													if (have[0].cnt == 0)
@@ -59067,18 +59105,48 @@ function setDragonSearch(element, index, array) {
 								enemy_scale = 2;
 						}
 
-						connection.query('UPDATE dragon_top_status SET poison = 0, protection = 0, dmg_boost = 0, confusion = 0, wait_dmg = 0, ice = 0, flari_active = ' + flari_active + ' WHERE dragon_id = ' + enemy_dragon_id, function (err, rows, fields) {
+						connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 33', function (err, rows, fields) {
 							if (err) throw err;
 
-							connection.query('UPDATE dragon SET scale = ' + enemy_scale + ' WHERE id = ' + enemy_dragon_id, function (err, rows, fields) {
-								if (err) throw err;
-								connection.query('UPDATE dragon SET scale = ' + scale + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
-									if (err) throw err;
-									bot.sendMessage(chat_id, "La ♨️ <i>Fiamma del Prescelto</i> si muove sopra i nomi dei draghi del monte e si ferma sul drago <b>" + name + " " + type + "</b> " + dragonSym(type) + ". Questo sfidante ha raggiunto <b>" + rank + " Ð</b> ed è un drago di livello <b>" + level + "</b>. Buona fortuna!", kbCombat);
-									bot.sendMessage(chat_id2, "Il tuo drago è stato sfidato nella vetta da <b>" + dragon_name + " " + my_dragon_type + "</b> con <b>" + my_rank + " Ð</b>!", html);
+							var abBonus = 0;
+							var abText = "";
+							var rand = Math.random()*100;
+							if (Object.keys(rows).length > 0)
+								abBonus = rows[0].ability_level * rows[0].val;
 
-									connection.query("UPDATE dragon_top_rank SET combat = 0 WHERE dragon_id IN (SELECT dragon_id FROM dragon_top_unlinked)", function (err, rows, fields) {
+							if (abBonus < rand) {
+								scale = 5;
+								abText = " Grazie al talento inizi lo scontro con 5 Scaglie!";
+							}
+
+							connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + enemy_player_id + ' AND ability_id = 33', function (err, rows, fields) {
+								if (err) throw err;
+
+								abBonus = 0;
+								var abEnemyText = "";
+								rand = Math.random()*100;
+								if (Object.keys(rows).length > 0)
+									abBonus = rows[0].ability_level * rows[0].val;
+
+								if (abBonus < rand) {
+									enemy_scale = 5;
+									abEnemyText = " Grazie al talento inizi lo scontro con 5 Scaglie!";
+								}
+
+								connection.query('UPDATE dragon_top_status SET poison = 0, protection = 0, dmg_boost = 0, confusion = 0, wait_dmg = 0, ice = 0, flari_active = ' + flari_active + ' WHERE dragon_id = ' + enemy_dragon_id, function (err, rows, fields) {
+									if (err) throw err;
+
+									connection.query('UPDATE dragon SET scale = ' + enemy_scale + ' WHERE id = ' + enemy_dragon_id, function (err, rows, fields) {
 										if (err) throw err;
+										connection.query('UPDATE dragon SET scale = ' + scale + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+											if (err) throw err;
+											bot.sendMessage(chat_id, "La ♨️ <i>Fiamma del Prescelto</i> si muove sopra i nomi dei draghi del monte e si ferma sul drago <b>" + name + " " + type + "</b> " + dragonSym(type) + ". Questo sfidante ha raggiunto <b>" + rank + " Ð</b> ed è un drago di livello <b>" + level + "</b>. Buona fortuna!" + abText, kbCombat);
+											bot.sendMessage(chat_id2, "Il tuo drago è stato sfidato nella vetta da <b>" + dragon_name + " " + my_dragon_type + "</b> con <b>" + my_rank + " Ð</b>!" + abEnemyText, html);
+
+											connection.query("UPDATE dragon_top_rank SET combat = 0 WHERE dragon_id IN (SELECT dragon_id FROM dragon_top_unlinked)", function (err, rows, fields) {
+												if (err) throw err;
+											});
+										});
 									});
 								});
 							});
@@ -59164,28 +59232,43 @@ async function dragonDummyStart(top_id, chat_id, my_rank, dragon_id, player_id, 
 				scale = 2;
 		}
 
-		connection.query('INSERT INTO dragon_top_dummy (dragon_id, top_id) VALUES (' + dummy_id + ',' + top_id + ')', function (err, rows, fields) {
+		connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 33', function (err, rows, fields) {
 			if (err) throw err;
 
-			var enemy_dragon_id = dummy_id;
+			var abBonus = 0;
+			var abText = "";
+			var rand = Math.random()*100;
+			if (Object.keys(rows).length > 0)
+				abBonus = rows[0].ability_level * rows[0].val;
 
-			connection.query('UPDATE dragon_top_status SET poison = 0, protection = 0, dmg_boost = 0, confusion = 0, wait_dmg = 0, ice = 0, enemy_dragon_id = ' + enemy_dragon_id + ', battle_time = "' + long_date + '", no_match_time = NULL, is_dummy = 1 WHERE player_id = ' + player_id, function (err, rows, fields) {
+			if (abBonus < rand) {
+				scale = 5;
+				abText = " Grazie al talento inizi lo scontro con 5 Scaglie!";
+			}
+
+			connection.query('INSERT INTO dragon_top_dummy (dragon_id, top_id) VALUES (' + dummy_id + ',' + top_id + ')', function (err, rows, fields) {
 				if (err) throw err;
 
-				connection.query('UPDATE dragon_top_rank SET combat = 1 WHERE dragon_id = ' + dragon_id, function (err, rows, fields) {
+				var enemy_dragon_id = dummy_id;
+
+				connection.query('UPDATE dragon_top_status SET poison = 0, protection = 0, dmg_boost = 0, confusion = 0, wait_dmg = 0, ice = 0, enemy_dragon_id = ' + enemy_dragon_id + ', battle_time = "' + long_date + '", no_match_time = NULL, is_dummy = 1 WHERE player_id = ' + player_id, function (err, rows, fields) {
 					if (err) throw err;
-					connection.query('UPDATE dragon SET scale = ' + scale + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
+
+					connection.query('UPDATE dragon_top_rank SET combat = 1 WHERE dragon_id = ' + dragon_id, function (err, rows, fields) {
 						if (err) throw err;
-
-						var dummy_rank = my_rank;
-
-						bot.sendMessage(chat_id, "La ♨️ <i>Fiamma del Prescelto</i> si muove sopra i nomi dei draghi del monte e si ferma sul drago <b>" + dummy_name + " " + dummy_type + "</b> " + dragonSym(dummy_type) + ". Questo sfidante ha raggiunto <b>" + dummy_rank + " Ð</b> ed è un drago di livello <b>" + dummy_level + "</b>. Buona fortuna!", kbCombat);
-
-						connection.query("UPDATE dragon_top_rank SET combat = 0 WHERE dragon_id IN (SELECT dragon_id FROM dragon_top_unlinked)", function (err, rows, fields) {
+						connection.query('UPDATE dragon SET scale = ' + scale + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 							if (err) throw err;
-						});
-						connection.query('UPDATE player SET status_cnt = 0, status = NULL WHERE id = ' + player_id, function (err, rows, fields) {
-							if (err) throw err;
+
+							var dummy_rank = my_rank;
+
+							bot.sendMessage(chat_id, "La ♨️ <i>Fiamma del Prescelto</i> si muove sopra i nomi dei draghi del monte e si ferma sul drago <b>" + dummy_name + " " + dummy_type + "</b> " + dragonSym(dummy_type) + ". Questo sfidante ha raggiunto <b>" + dummy_rank + " Ð</b> ed è un drago di livello <b>" + dummy_level + "</b>. Buona fortuna!" + abText, kbCombat);
+
+							connection.query("UPDATE dragon_top_rank SET combat = 0 WHERE dragon_id IN (SELECT dragon_id FROM dragon_top_unlinked)", function (err, rows, fields) {
+								if (err) throw err;
+							});
+							connection.query('UPDATE player SET status_cnt = 0, status = NULL WHERE id = ' + player_id, function (err, rows, fields) {
+								if (err) throw err;
+							});
 						});
 					});
 				});
@@ -65044,7 +65127,8 @@ async function setFinishedCave(element, index, array) {
 		bot.sendMessage(chat_id, "Hai ottenuto un Respiro di Morte! Che fortuna!");
 	}
 	setAchievement(element.id, 11, 1);
-	await addArtifactFragment(element.id);
+	if (!cave_gem)
+		await addArtifactFragment(element.id);
 
 	connection.query('UPDATE cave_history SET end_time = NOW() WHERE player_id = ' + element.id + ' AND end_time IS NULL', function (err, rows, fields) {
 		if (err) throw err;
@@ -65409,6 +65493,18 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 
 		if (max_quantity != -1) {
 			if (inv_quantity >= max_quantity) {
+				if (rarity == "C")
+					await addMoney(player_id, 100);
+				else if (rarity == "NC")
+					await addMoney(player_id, 200);
+				else if (rarity == "R")
+					await addMoney(player_id, 300);
+				else if (rarity == "UR")
+					await addMoney(player_id, 400);
+				else if ((rarity == "L") || (rarity == "E"))
+					await addMoney(player_id, 500);
+				else if ((rarity == "UE") || (rarity == "X") || (rarity == "U"))
+					await addMoney(player_id, 600);
 				console.log("Cap oggetto raggiunto " + inv_quantity + "/" + max_quantity);
 				// await connection.queryAsync('UPDATE inventory SET quantity = ' + max_quantity + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 				return;
@@ -65577,7 +65673,7 @@ async function addArtifactFragment(player_id) {
 			});
 			console.log("Frammento trovato da " + player_id);
 		} else {
-			connection.query('UPDATE player SET artifact_fragment_prob = artifact_fragment_prob+1, artifact_fragment_prob = 1 WHERE id = ' + player_id, function (err, rows, fields) {
+			connection.query('UPDATE player SET artifact_fragment_prob = artifact_fragment_prob+1 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
 			console.log("Frammento non trovato da " + player_id + " con prob " + prob);
