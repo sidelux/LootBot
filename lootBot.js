@@ -11896,7 +11896,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																if (err) throw err;
 
 																if (Object.keys(rows).length > 0)
-																	rand += rand*parseInt((rows[0].val*rows[0].ability_level)/10);
+																	rand += rand*parseInt((rows[0].val*rows[0].ability_level)/100);
 
 																if (cursed == 1)
 																	rand = rand*2;
@@ -59120,7 +59120,7 @@ function setDragonSearch(element, index, array) {
 
 							if (abBonus > rand) {
 								scale = 5;
-								abText = " Grazie al talento inizi lo scontro con 5 Scaglie!";
+								abText = "\nGrazie al talento inizi lo scontro con 5 Scaglie!";
 							}
 
 							connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + enemy_player_id + ' AND ability_id = 33', function (err, rows, fields) {
@@ -59134,7 +59134,7 @@ function setDragonSearch(element, index, array) {
 
 								if (enemyAbBonus > rand) {
 									enemy_scale = 5;
-									abEnemyText = " Grazie al talento inizi lo scontro con 5 Scaglie!";
+									abEnemyText = "\nGrazie al talento inizi lo scontro con 5 Scaglie!";
 								}
 
 								connection.query('UPDATE dragon_top_status SET poison = 0, protection = 0, dmg_boost = 0, confusion = 0, wait_dmg = 0, ice = 0, flari_active = ' + flari_active + ' WHERE dragon_id = ' + enemy_dragon_id, function (err, rows, fields) {
@@ -59245,9 +59245,9 @@ async function dragonDummyStart(top_id, chat_id, my_rank, dragon_id, player_id, 
 			if (Object.keys(rows).length > 0)
 				abBonus = rows[0].ability_level * rows[0].val;
 
-			if (abBonus < rand) {
+			if (abBonus > rand) {
 				scale = 5;
-				abText = " Grazie al talento inizi lo scontro con 5 Scaglie!";
+				abText = "\nGrazie al talento inizi lo scontro con 5 Scaglie!";
 			}
 
 			connection.query('INSERT INTO dragon_top_dummy (dragon_id, top_id) VALUES (' + dummy_id + ',' + top_id + ')', function (err, rows, fields) {
@@ -64078,6 +64078,9 @@ function setFinishedMission(element, index, array) {
 							bot.sendMessage(chat_id, "Hai trovato una Chiave Mistica 🗝!");
 						});
 					}
+
+					if ((mission_gem == 0) && (mission_chest >= 3))
+						await addArtifactFragment(element.id);
 
 					setAchievement(element.id, 37, achPnt);
 
