@@ -14607,12 +14607,12 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														}
 													}
 
-													connection.query('SELECT name, rarity FROM item WHERE id = ' + item1, function (err, rows, fields) {
+													connection.query('SELECT name, rarity FROM item WHERE id = ' + item1, async function (err, rows, fields) {
 														if (err) throw err;
 
 														var item1_name = rows[0].name;
 														var item1_rarity = rows[0].rarity;
-														var item1_inv = "(" + getItemCnt(player_id, item1) + ")";
+														var item1_inv = " (" + await getItemCnt(player_id, item1) + ")";
 
 														var qnt = 1;
 														if (item1_rarity == "L")
@@ -14621,7 +14621,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															qnt = 2;
 
 														if (cursed == 1)
-															qnt = 2;
+															qnt = qnt*2;
 
 														var dOptions = {
 															parse_mode: "Markdown",
