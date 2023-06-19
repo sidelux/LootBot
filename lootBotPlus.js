@@ -178,8 +178,11 @@ bot.on('message', function (message, match) {
 
 		if (message.from.id != config.phenix_id && message.chat.id === -1001097316494) {
 			let banFromGroup = 0
+			console.log(message);
 			if (message.text != undefined) {
-				if (!message.text.startsWith('Negozio di')) { banFromGroup = 1 } else if (message.text.startsWith('@lootplusbot')) {
+				if (!message.text.startsWith('Negozio di')) { 
+					banFromGroup = 1 
+				} else if (message.text.startsWith('@lootplusbot')) {
 					bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
 						if (result != true) { console.log('Errore cancellazione messaggio ' + message.chat.id + ' ' + message.message_id) }
 					})
@@ -208,7 +211,9 @@ bot.on('message', function (message, match) {
 						})
 					})
 				}
-			} else { banFromGroup = 1 }
+			} else { 
+				banFromGroup = 1 
+			}
 
 			if (banFromGroup == 1) {
 				const time = Math.round((Date.now() + ms('3 days')) / 1000)
@@ -558,9 +563,10 @@ bot.onText(/^\/comandigiocatore/, function (message) {
 		'/posizioneteam - Indica la posizione in classifica globale di tutti i membri del team\n' +
 		'/globaleteam - Indica quali persone nel team hanno raggiunto la soglia per la globale\n' +
 		'/figurine - Visualizza un riassunto delle figurine possedute raggruppate per rarità\n' +
-		"/figurinel - Visualizza le figurine possedute (specifica anche la rarità, il nome parziale, 'doppie', rarità o raritàinv e il numero della pagina con p1, ps2, ecc.)\n" +
+		"/figurinel - Visualizza le figurine possedute (specifica anche la rarità, il nome parziale, 'doppie', rarità o raritàinv e il numero della pagina con p1, p2, ecc.)\n" +
 		'/figurina - Visualizza i dettagli delle figurine\n' +
-		'/figurinem - Visualizza le figurine mancanti per la rarità indicata', mark)
+		'/figurinem - Visualizza le figurine mancanti per la rarità indicata\n' +
+		'/figurines - Specificando rarità e nickname mostra la lista delle doppie che mancano al giocatore inserito', mark)
 })
 
 bot.onText(/^\/comandioggetto/, function (message) {
@@ -9477,6 +9483,58 @@ bot.onText(/^\/figurine$/, function (message, match) {
 	})
 })
 
+bot.onText(/^\/figurines (\d+) (\w+)|^\/figurines/, function (message, match) {
+	var rarity = 0;
+	if ((match[1] < 1) || (match[1] > 10)) {
+		bot.sendMessage(message.chat.id, 'La rarità deve essere compresa tra 1 e 10!')
+		return
+	} else
+		rarity = mysql_real_escape_string(match[1]);
+
+	const nick = mysql_real_escape_string(match[2]);
+
+	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err
+		if (Object.keys(rows).length == 0) {
+			bot.sendMessage(message.chat.id, 'Non sei registrato!');
+			return;
+		}
+
+		const player_id = rows[0].id;
+
+		connection.query('SELECT id FROM player WHERE nickname = "' + nick + '"', function (err, rows, fields) {
+			if (err) throw err
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, 'Il giocatore inserito non esiste');
+				return;
+			}
+
+			const player_id2 = rows[0].id;
+
+			connection.query('SELECT I.card_id, L.name, I.quantity FROM card_inventory I, card_list L WHERE I.card_id = L.card_id AND I.player_id = ' + player_id + ' AND I.quantity > 1 AND L.rarity = ' + rarity, async function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, 'Non possiedi alcuna figurina doppia');
+					return;
+				}
+				var list = "Al giocatore inserito mancano le seguenti figurine di rarità " + rarity + " che tu possiedi in almeno duplice copia:\n";
+				for (i = 0, len = Object.keys(rows).length; i < len; i++) { 
+					var check = await connection.queryAsync("SELECT quantity FROM card_inventory WHERE player_id = " + player_id2 + " AND card_id = " + rows[i].card_id);
+					if (check[0].quantity == 0)
+						list += "> " + rows[i].name + " (" + rows[i].quantity + ")";
+				}
+
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, 'Al giocatore inserito non manca nessuna figurina doppia');
+					return;
+				}
+
+				bot.sendMessage(message.chat.id, list);
+			});
+		});
+	});
+});
+
 bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
 	var rarity = -1;
 	if (match[1] != undefined) {
@@ -9506,7 +9564,9 @@ bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
 				}
 
 				let text = message.from.username + ', ti mancano ' + formatNumber(Object.keys(rows).length) + ' figurine per rarità ' + rarity + ':\n'
-				for (i = 0, len = Object.keys(rows).length; i < len; i++) { text += '> ' + rows[i].name + ' (' + rows[i].rarity + ')\n' }
+				for (i = 0, len = Object.keys(rows).length; i < len; i++) { 
+					text += '> ' + rows[i].name + ' (' + rows[i].rarity + ')\n' 
+				}
 
 				if (text.length >= 3500) {
 					bot.sendMessage(message.chat.id, message.from.username + ', troppi risultati, prova con una rarità diversa', html)

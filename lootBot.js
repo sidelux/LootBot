@@ -177,10 +177,7 @@ var j3 = Schedule.scheduleJob('01 00 * * *', async function () { // 00:01 notte
 		autoMana();
 	if (d.getDay() != 2)
 		autoDust();
-	if ((d.getDay() != 6) && (d.getDay() != 0))
-		await reloadAchievement();
-	else
-		resetAchievement();
+	await reloadAchievement();
 	craftDay();
 	expDay();
 	resetTeamMission();
@@ -10947,7 +10944,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 											}
 											connection.query('UPDATE dungeon_status SET boss_battle = 1, monster_id = ' + rows[0].id + ', monster_life = ' + (rows[0].life * 3) + ', monster_total_life = ' + (rows[0].life * 3) + ' WHERE player_id = ' + player_id, function (err, rows, fields) {
 												if (err) throw err;
-												if (boost_id == 6)
+												if ((boost_id == 6) && (player_paralyzed == 0))
 													setBoost(player_id, boost_mission, boost_id);
 											});
 
@@ -11661,7 +11658,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 															connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + monster_life + ', monster_total_life = ' + monster_life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
-																if (boost_id == 6)
+																if ((boost_id == 6) && (player_paralized == 0))
 																	setBoost(player_id, boost_mission, boost_id);
 															});
 															bot.sendMessage(message.chat.id, dungeonToSym(dir) + " " + extra + "Incontri un *" + rows[0].name + "* di livello *" + rows[0].level + "*, puoi sfidarlo per ottenere il suo bottino e proseguire, oppure scappare.", dBattle).then(function () {
@@ -11797,7 +11794,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	}
 																	connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + rows[0].life + ', monster_total_life = ' + rows[0].life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
-																		if (boost_id == 6)
+																		if ((boost_id == 6) && (player_paralyzed == 0))
 																			setBoost(player_id, boost_mission, boost_id);
 																	});
 																	bot.sendMessage(message.chat.id, "Hai trovato uno Scrigno! Ma appena lo tocchi esso assume le sembianze di un *" + rows[0].name + "* di livello *" + rows[0].level + "*, puoi sfidarlo per ottenere il suo bottino e proseguire, oppure scappare.", dBattle).then(function () {
@@ -12149,7 +12146,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	}
 																	connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + rows[0].life + ', monster_total_life = ' + rows[0].life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
-																		if (boost_id == 6)
+																		if ((boost_id == 6) && (player_paralyzed == 0))
 																			setBoost(player_id, boost_mission, boost_id);
 																	});
 
@@ -12534,7 +12531,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	}
 																	connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + rows[0].life + ', monster_total_life = ' + rows[0].life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
-																		if (boost_id == 6)
+																		if ((boost_id == 6) && (player_paralyzed == 0))
 																			setBoost(player_id, boost_mission, boost_id);
 																	});
 																	var mName = rows[0].name;
@@ -12827,7 +12824,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		}
 																		connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + rows[0].life + ', monster_total_life = ' + rows[0].life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																			if (err) throw err;
-																			if (boost_id == 6)
+																			if ((boost_id == 6) && (player_paralyzed == 0))
 																				setBoost(player_id, boost_mission, boost_id);
 																		});
 																		bot.sendMessage(message.chat.id, "Ti avvicini alla fontana per esaminarla meglio, appena provi a toccare l'acqua dal suo interno esce un *" + rows[0].name + "* di livello *" + rows[0].level + "*, puoi sfidarlo per ottenere il suo bottino e proseguire, oppure scappare.", dBattle).then(function () {
@@ -14581,11 +14578,6 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													}
 												});
 											} else if (dir == -18) {
-
-												var qnt = 1;
-												if (cursed == 1)
-													qnt = 2;
-
 												connection.query('SELECT id FROM item WHERE estimate BETWEEN 50000 AND 250000 AND rarity IN ("E","L") AND craftable = 1 ORDER BY RAND()', async function (err, rows, fields) {
 													if (err) throw err;
 
@@ -14615,10 +14607,21 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														}
 													}
 
-													connection.query('SELECT name FROM item WHERE id = ' + item1, function (err, rows, fields) {
+													connection.query('SELECT name, rarity FROM item WHERE id = ' + item1, function (err, rows, fields) {
 														if (err) throw err;
 
 														var item1_name = rows[0].name;
+														var item1_rarity = rows[0].rarity;
+														var item1_inv = "(" + getItemCnt(player_id, item1) + ")";
+
+														var qnt = 1;
+														if (item1_rarity == "L")
+															qnt = 1;
+														else if (item1_rarity == "E")
+															qnt = 2;
+
+														if (cursed == 1)
+															qnt = 2;
 
 														var dOptions = {
 															parse_mode: "Markdown",
@@ -14628,7 +14631,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															}
 														};
 
-														bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Entri in una stanza completamente luccicante, quasi accecante, un curioso tipo barbuto si presenta come il Gioielliere, offre " + qnt + "x 💎 in cambio di un particolare oggetto, in questo caso: *" + item1_name + "*" + item_poss + ", accetti l'offerta?", dOptions).then(function () {
+														bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Entri in una stanza completamente luccicante, quasi accecante, un curioso tipo barbuto si presenta come il Gioielliere, offre " + qnt + "x 💎 in cambio di un particolare oggetto, in questo caso: *" + item1_name + "*" + item1_inv + item_poss + ", accetti l'offerta?", dOptions).then(function () {
 															answerCallbacks[message.chat.id] = async function (answer) {
 																if (answer.text.toLowerCase()== "si") {
 
@@ -15467,7 +15470,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	}
 																	connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + rows[0].life + ', monster_total_life = ' + rows[0].life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																		if (err) throw err;
-																		if (boost_id == 6)
+																		if ((boost_id == 6) && (player_paralyzed == 0))
 																			setBoost(player_id, boost_mission, boost_id);
 																	});
 																	bot.sendMessage(message.chat.id, "Decidi di avvicinarti, scopri che non si tratta di una ragazza, ma sembra essere un *" + rows[0].name + "* di livello *" + rows[0].level + "*, puoi sfidarlo per ottenere il suo bottino e proseguire, oppure scappare.", dBattle).then(function () {
@@ -16973,6 +16976,7 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																					if (err) throw err;
 
 																					var chest_id = Math.ceil(room_id / 10);
+																					var chestQnt = 1;
 																					var money = 0;
 																					var moneyText = "";
 																					var rand = Math.random() * 100;
@@ -17006,248 +17010,260 @@ bot.onText(/attacca$|^Lancia ([a-zA-Z ]+) ([0-9]+)/i, function (message, match) 
 																							chest_id++;
 																					}
 
-																					connection.query('SELECT name FROM chest WHERE id = ' + chest_id, async function (err, rows, fields) {
+																					connection.query('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + player_id + ' AND ability_id = 29', async function (err, rows, fields) {
 																						if (err) throw err;
+						
+																						var fullRand = Math.random()*100;
+																						var prob = 0;
+																						if (Object.keys(rows).length > 0)
+																							prob = rows[0].val*rows[0].ability_level;
 
-																						var chestName = rows[0].name;
-																						var randS = Math.random() * 100;
-																						var chest = 0;
-																						if (randS <= 90) {
-																							await addChest(player_id, chest_id);
-																							chest = 1;
-																						}
-																						if ((boss_battle == 1) && (chest == 0)) {
-																							await addChest(player_id, chest_id);
-																							chest = 1;
-																						}
-																						if ((boost_mission > 0) && (boost_id == 7)) {
-																							money = money*10;
-																							setBoost(player_id, boost_mission, boost_id);
-																						}
-																						if (boss_battle == 1)
-																							money = money*3;
+																						if (fullRand < prob)
+																							chestQnt++;
 
-																						if ((await getCurrentGlobal() == 10) && (global_end == 1)) {
-																							if (await getPastGlobalStatus() == 1) {
-																								money = money*2;
-																								chest++;
-																								await addChest(player_id, chest_id);
-																							} else if (await getPastGlobalStatus() == 2) {
-																								money = Math.round(money/2);
-																							}
-																						}
-
-																						money = Math.round(money);
-																						moneyText = formatNumber(money) + " §";
-
-																						if (enemy_magic == magicToName(2))
-																							bot.sendMessage(message.chat.id, "Prima di esalare l'ultimo respiro, lancia *" + enemy_magic + "*", mark);
-
-																						if (restored != "")
-																							bot.sendMessage(message.chat.id, restored.trim());
-
-																						if (player_weapon_id == 373)
-																							setAchievement(player_id, 52, 1);
-
-																						if ((player_weapon_id == 264) || (player_weapon2_id == 266) || (player_weapon3_id == 272))
-																							setAchievement(player_id, 76, 1);
-
-																						if (danno >= monster_total_life)
-																							setAchievement(player_id, 84, 1);
-																						
-																						if ((boost_id == 4) && (exp > 0)) {
-																							exp = Math.round(exp*3);
-																							setBoost(player_id, boost_mission, boost_id);
-																						}
-
-																						if (exp > 10)
-																							exp = 10;
-																						var exp_text = "";
-																						if (exp > 0)
-																							exp_text =  " ed ottenuto " + exp + " exp";
-
-																						if (chest > 0)
-																							bot.sendMessage(message.chat.id, "Hai ucciso il mostro, infliggendo " + formatNumber(danno) + " danni" + magic_kill + exp_text + ".\nFrugando tra le sue cose hai ottenuto *" + moneyText + "* e " + chest + "x *" + chestName + "*!", dNext);
-																						else if (chest == 0)
-																							bot.sendMessage(message.chat.id, "Hai ucciso il mostro, infliggendo " + formatNumber(danno) + " danni" + magic_kill + exp_text + ".\nFrugando tra le sue cose hai ottenuto *" + moneyText + "*!", dNext);
-
-																						getSnowball(message.chat.id, message.from.username, player_id, 1);
-
-																						if (villa == 1) {
-																							var rand = Math.random()*100;
-																							if (rand <= 50) {
-																								var villaPnt = await connection.queryAsync('SELECT player_id, points FROM event_villa_status WHERE player_id = ' + player_id);
-																								if (Object.keys(villaPnt).length > 0) {
-																									var points = parseInt(villaPnt[0].points);
-																									await connection.queryAsync('UPDATE event_villa_status SET points = points+1 WHERE player_id = ' + player_id);
-																									bot.sendMessage(message.chat.id, "Hai ricevuto 1 punto per l'evento della Villa di LastSoldier95! Ora ne possiedi *" + (points + 1) + "*!", mark);
-																								};
-																							}
-																						}
-
-																						setAchievement(player_id, 3, 1);
-																						if (await getCurrentGlobal() == 10)
-																							globalAchievement(player_id, 1);
-
-																						connection.query('UPDATE player SET mob_count = mob_count+1 WHERE id = ' + player_id, function (err, rows, fields) {
+																						connection.query('SELECT name FROM chest WHERE id = ' + chest_id, async function (err, rows, fields) {
 																							if (err) throw err;
-																						});
 
-																						if (boss_battle == 1) {
-																							connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
+																							var chestName = rows[0].name;
+																							var randS = Math.random() * 100;
+																							var chest = 0;
+																							if (randS <= 90) {
+																								await addChest(player_id, chest_id, chestQnt);
+																								chest += chestQnt;
+																							}
+																							if ((boss_battle == 1) && (chest == 0)) {
+																								await addChest(player_id, chest_id, chestQnt);
+																								chest += chestQnt;
+																							}
+																							if ((boost_mission > 0) && (boost_id == 7)) {
+																								money = money*10;
+																								setBoost(player_id, boost_mission, boost_id);
+																							}
+																							if (boss_battle == 1)
+																								money = money*3;
+
+																							if ((await getCurrentGlobal() == 10) && (global_end == 1)) {
+																								if (await getPastGlobalStatus() == 1) {
+																									money = money*2;
+																									chest++;
+																									await addChest(player_id, chest_id);
+																								} else if (await getPastGlobalStatus() == 2) {
+																									money = Math.round(money/2);
+																								}
+																							}
+
+																							money = Math.round(money);
+																							moneyText = formatNumber(money) + " §";
+
+																							if (enemy_magic == magicToName(2))
+																								bot.sendMessage(message.chat.id, "Prima di esalare l'ultimo respiro, lancia *" + enemy_magic + "*", mark);
+
+																							if (restored != "")
+																								bot.sendMessage(message.chat.id, restored.trim());
+
+																							if (player_weapon_id == 373)
+																								setAchievement(player_id, 52, 1);
+
+																							if ((player_weapon_id == 264) || (player_weapon2_id == 266) || (player_weapon3_id == 272))
+																								setAchievement(player_id, 76, 1);
+
+																							if (danno >= monster_total_life)
+																								setAchievement(player_id, 84, 1);
+																							
+																							if ((boost_id == 4) && (exp > 0)) {
+																								exp = Math.round(exp*3);
+																								setBoost(player_id, boost_mission, boost_id);
+																							}
+
+																							if (exp > 10)
+																								exp = 10;
+																							var exp_text = "";
+																							if (exp > 0)
+																								exp_text =  " ed ottenuto " + exp + " exp";
+
+																							if (chest > 0)
+																								bot.sendMessage(message.chat.id, "Hai ucciso il mostro, infliggendo " + formatNumber(danno) + " danni" + magic_kill + exp_text + ".\nFrugando tra le sue cose hai ottenuto *" + moneyText + "* e " + chest + "x *" + chestName + "*!", dNext);
+																							else if (chest == 0)
+																								bot.sendMessage(message.chat.id, "Hai ucciso il mostro, infliggendo " + formatNumber(danno) + " danni" + magic_kill + exp_text + ".\nFrugando tra le sue cose hai ottenuto *" + moneyText + "*!", dNext);
+
+																							getSnowball(message.chat.id, message.from.username, player_id, 1);
+
+																							if (villa == 1) {
+																								var rand = Math.random()*100;
+																								if (rand <= 50) {
+																									var villaPnt = await connection.queryAsync('SELECT player_id, points FROM event_villa_status WHERE player_id = ' + player_id);
+																									if (Object.keys(villaPnt).length > 0) {
+																										var points = parseInt(villaPnt[0].points);
+																										await connection.queryAsync('UPDATE event_villa_status SET points = points+1 WHERE player_id = ' + player_id);
+																										bot.sendMessage(message.chat.id, "Hai ricevuto 1 punto per l'evento della Villa di LastSoldier95! Ora ne possiedi *" + (points + 1) + "*!", mark);
+																									};
+																								}
+																							}
+
+																							setAchievement(player_id, 3, 1);
+																							if (await getCurrentGlobal() == 10)
+																								globalAchievement(player_id, 1);
+
+																							connection.query('UPDATE player SET mob_count = mob_count+1 WHERE id = ' + player_id, function (err, rows, fields) {
 																								if (err) throw err;
+																							});
 
-																								var rankPoint = 1;
-																								if (luckyMode == 1) {
-																									var d = new Date();
-																									var rand = Math.random() * 100;
-																									if (d.getDay() == 6) {
-																										if (rand < 25)
-																											rankPoint = 2;
-																									} else if (d.getDay() == 0) {
-																										if (rand < 25)
-																											rankPoint = 2;
-																										else if ((rand > 25) && (rand < 50))
-																											rankPoint = 0;
-																									}
-																								}
-
-																								if (crazyMode == 1) {
-																									var prob = Math.round()*100;
-																									if (prob < 50)
-																										rankPoint = 2;
-																								}
-
-																								if (cursed == 1)
-																									rankPoint = 2;
-
-																								var refill = "";
-																								if (player_life < player_total_life / 2) {
-																									connection.query('UPDATE player SET life = ROUND(total_life/2,0) WHERE id = ' + player_id, function (err, rows, fields) {
-																										if (err) throw err;
-																									});
-																									refill = "Inoltre la tua salute è stata ricaricata fino al 50%!";
-																								}
-
-																								var plur = "i";
-																								if (rankPoint == 1)
-																									plur = "o";
-
-																								connection.query('SELECT min_rank FROM dungeon_list WHERE main = 1 AND min_rank > ' + dungeon_min_rank + ' ORDER BY min_rank ASC LIMIT 1', function (err, rows, fields) {
+																							if (boss_battle == 1) {
+																								connection.query('DELETE FROM dungeon_status WHERE player_id = ' + player_id, function (err, rows, fields) {
 																									if (err) throw err;
 
-																									var min_rank_succ = 9999;	// per l'ultimo, da 1000 a 9999
-																									if (Object.keys(rows).length > 0)
-																										min_rank_succ = rows[0].min_rank;
+																									var rankPoint = 1;
+																									if (luckyMode == 1) {
+																										var d = new Date();
+																										var rand = Math.random() * 100;
+																										if (d.getDay() == 6) {
+																											if (rand < 25)
+																												rankPoint = 2;
+																										} else if (d.getDay() == 0) {
+																											if (rand < 25)
+																												rankPoint = 2;
+																											else if ((rand > 25) && (rand < 50))
+																												rankPoint = 0;
+																										}
+																									}
 
-																									connection.query('SELECT chat_id, rank FROM player WHERE id = ' + pass_id, async function (err, rows, fields) {
+																									if (crazyMode == 1) {
+																										var prob = Math.round()*100;
+																										if (prob < 50)
+																											rankPoint = 2;
+																									}
+
+																									if (cursed == 1)
+																										rankPoint = 2;
+
+																									var refill = "";
+																									if (player_life < player_total_life / 2) {
+																										connection.query('UPDATE player SET life = ROUND(total_life/2,0) WHERE id = ' + player_id, function (err, rows, fields) {
+																											if (err) throw err;
+																										});
+																										refill = "Inoltre la tua salute è stata ricaricata fino al 50%!";
+																									}
+
+																									var plur = "i";
+																									if (rankPoint == 1)
+																										plur = "o";
+
+																									connection.query('SELECT min_rank FROM dungeon_list WHERE main = 1 AND min_rank > ' + dungeon_min_rank + ' ORDER BY min_rank ASC LIMIT 1', function (err, rows, fields) {
 																										if (err) throw err;
 
-																										var getrank1 = 0;
+																										var min_rank_succ = 9999;	// per l'ultimo, da 1000 a 9999
+																										if (Object.keys(rows).length > 0)
+																											min_rank_succ = rows[0].min_rank;
 
-																										if (pass_id != 0) {
-																											var getrank2 = 0;
+																										connection.query('SELECT chat_id, rank FROM player WHERE id = ' + pass_id, async function (err, rows, fields) {
+																											if (err) throw err;
 
-																											if ((dungeon_min_rank <= rank) && (min_rank_succ >= rank)) {	// stessa fascia di rango
-																												getrank1 = 1;
-																												getrank2 = 1;
-																											} else if (rank - rows[0].rank >= 150)
-																												getrank2 = 1;
-																											else {
-																												getrank1 = 1;
-																												getrank2 = 1;
-																											}
+																											var getrank1 = 0;
 
-																											if (getrank1 == 1) {
+																											if (pass_id != 0) {
+																												var getrank2 = 0;
+
+																												if ((dungeon_min_rank <= rank) && (min_rank_succ >= rank)) {	// stessa fascia di rango
+																													getrank1 = 1;
+																													getrank2 = 1;
+																												} else if (rank - rows[0].rank >= 150)
+																													getrank2 = 1;
+																												else {
+																													getrank1 = 1;
+																													getrank2 = 1;
+																												}
+
+																												if (getrank1 == 1) {
+																													connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + player_id, function (err, rows, fields) {
+																														if (err) throw err;
+																													});
+																												}
+
+																												if (getrank2 == 1) {
+																													connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + pass_id, function (err, rows, fields) {
+																														if (err) throw err;
+																													});
+																												}
+
+																												if (getrank2 == 1)
+																													bot.sendMessage(rows[0].chat_id, "Il tuo compagno " + message.from.username + " ha completato il dungeon ed hai ottenuto " + rankPoint + " punt" + plur + " rango!");
+																												else
+																													bot.sendMessage(rows[0].chat_id, "Il tuo compagno " + message.from.username + " ha completato il dungeon!");
+																											} else {
 																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																													if (err) throw err;
 																												});
+																												getrank1 = 1;
 																											}
-
-																											if (getrank2 == 1) {
-																												connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + pass_id, function (err, rows, fields) {
-																													if (err) throw err;
-																												});
-																											}
-
-																											if (getrank2 == 1)
-																												bot.sendMessage(rows[0].chat_id, "Il tuo compagno " + message.from.username + " ha completato il dungeon ed hai ottenuto " + rankPoint + " punt" + plur + " rango!");
-																											else
-																												bot.sendMessage(rows[0].chat_id, "Il tuo compagno " + message.from.username + " ha completato il dungeon!");
-																										} else {
-																											connection.query('UPDATE player SET rank = rank+' + rankPoint + ' WHERE id = ' + player_id, function (err, rows, fields) {
-																												if (err) throw err;
-																											});
-																											getrank1 = 1;
-																										}
-
-																										if (getrank1 == 1)
-																											now_rank += rankPoint;
-
-																										setAchievement(player_id, 26, 1);
-
-																										connection.query('SELECT name FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
-																											if (err) throw err;
-
-																											var dungeon_name = rows[0].name;
-
-																											var dBack = {
-																												parse_mode: "Markdown",
-																												reply_markup: {
-																													resize_keyboard: true,
-																													keyboard: [["Torna al dungeon"], ["Torna al menu"]]
-																												}
-																											};
 
 																											if (getrank1 == 1)
-																												bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*! Hai ottenuto " + rankPoint + " punt" + plur + " rango, ne possiedi " + now_rank + "!\n" + refill, dBack);
-																											else
-																												bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*, possiedi " + now_rank + " rango!\n" + refill, dBack);
-																										});
+																												now_rank += rankPoint;
 
-																										await addArtifactFragment(player_id);
+																											setAchievement(player_id, 26, 1);
 
-																										var rand = Math.round(Math.random() * 100);
-																										if ((rand <= 5) && (rank > 20)) {
-																											await addItem(player_id, 618);
-																											bot.sendMessage(message.chat.id, "Sul pavimento appena fuori dal dungeon hai trovato una *Capsula Estrazione*! Che fortuna!", mark);
-																										}
+																											connection.query('SELECT name FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
+																												if (err) throw err;
 
-																										var d = new Date();
-																										d.setHours(d.getHours() + wait_dungeon);
-																										var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+																												var dungeon_name = rows[0].name;
 
-																										connection.query('UPDATE player SET dungeon_count = dungeon_count+1, dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
-																											if (err) throw err;
-																										});
+																												var dBack = {
+																													parse_mode: "Markdown",
+																													reply_markup: {
+																														resize_keyboard: true,
+																														keyboard: [["Torna al dungeon"], ["Torna al menu"]]
+																													}
+																												};
 
-																										connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
-																											if (err) throw err;
-																											if (Object.keys(rows).length > 0) {
-																												var team_id = rows[0].team_id;
-																												connection.query('SELECT rooms FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
-																													if (err) throw err;
-																													connection.query('UPDATE team SET dungeon_count = dungeon_count+1, dungeon_room_count = dungeon_room_count+' + rows[0].rooms + ', dungeon_room_count_tmp = dungeon_room_count_tmp+' + rows[0].rooms + ' WHERE id = ' + team_id, function (err, rows, fields) {
-																														if (err) throw err;
-																													});
-																												});
+																												if (getrank1 == 1)
+																													bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*! Hai ottenuto " + rankPoint + " punt" + plur + " rango, ne possiedi " + now_rank + "!\n" + refill, dBack);
+																												else
+																													bot.sendMessage(message.chat.id, "Hai completato il dungeon *" + dungeon_name + "*, possiedi " + now_rank + " rango!\n" + refill, dBack);
+																											});
+
+																											await addArtifactFragment(player_id);
+
+																											var rand = Math.round(Math.random() * 100);
+																											if ((rand <= 5) && (rank > 20)) {
+																												await addItem(player_id, 618);
+																												bot.sendMessage(message.chat.id, "Sul pavimento appena fuori dal dungeon hai trovato una *Capsula Estrazione*! Che fortuna!", mark);
 																											}
-																										});
 
-																										connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
-																											if (err) throw err;
+																											var d = new Date();
+																											d.setHours(d.getHours() + wait_dungeon);
+																											var long_date = d.getFullYear() + "-" + addZero(d.getMonth() + 1) + "-" + addZero(d.getDate()) + " " + addZero(d.getHours()) + ':' + addZero(d.getMinutes()) + ':' + addZero(d.getSeconds());
+
+																											connection.query('UPDATE player SET dungeon_count = dungeon_count+1, dungeon_time = "' + long_date + '" WHERE id = ' + player_id, function (err, rows, fields) {
+																												if (err) throw err;
+																											});
+
+																											connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
+																												if (err) throw err;
+																												if (Object.keys(rows).length > 0) {
+																													var team_id = rows[0].team_id;
+																													connection.query('SELECT rooms FROM dungeon_list WHERE id = ' + dungeon_id, function (err, rows, fields) {
+																														if (err) throw err;
+																														connection.query('UPDATE team SET dungeon_count = dungeon_count+1, dungeon_room_count = dungeon_room_count+' + rows[0].rooms + ', dungeon_room_count_tmp = dungeon_room_count_tmp+' + rows[0].rooms + ' WHERE id = ' + team_id, function (err, rows, fields) {
+																															if (err) throw err;
+																														});
+																													});
+																												}
+																											});
+
+																											connection.query('UPDATE dungeon_list SET duration = duration-1 WHERE id = ' + dungeon_id, function (err, rows, fields) {
+																												if (err) throw err;
+																											});
 																										});
 																									});
 																								});
-																							});
-																						}
+																							}
 
-																						await endDungeonRoom(player_id, boost_id, boost_mission);
+																							await endDungeonRoom(player_id, boost_id, boost_mission);
 
-																						if (exp > 0)
-																							setExp(player_id, exp);
+																							if (exp > 0)
+																								setExp(player_id, exp);
 
-																						await addMoney(player_id, money);
+																							await addMoney(player_id, money);
+																						});
 																					});
 																				});
 																				return;
@@ -42452,6 +42468,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 		}
 
 		var player_id = rows[0].id;
+		var reborn = rows[0].reborn;
 		var my_money = rows[0].money;
 		var my_gems = rows[0].gems;
 		var iKeys = [];
@@ -42511,7 +42528,9 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 					if (rows[0].cnt == (tot * 10))
 						setAchievement(player_id, 18, 999);
 
-					bot.sendMessage(message.chat.id, "Seleziona il *Talento* da apprendere o potenziare (" + completed + " su " + total + " completati):\n" + ablist, ability_list).then(function () {
+					const slot = 5+(reborn*5);
+
+					bot.sendMessage(message.chat.id, "Al momento puoi imparare *" + slot + "* Talenti in base alla tua rinascita.\nSeleziona il *Talento* da apprendere o potenziare (" + completed + " su " + total + " completati):\n" + ablist, ability_list).then(function () {
 						answerCallbacks[message.chat.id] = async function (answer) {
 							if (answer.text == "Torna al menu")
 								return;
@@ -42521,394 +42540,401 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 								bot.sendMessage(message.chat.id, "Talento non valido, riprova", back);
 								return;
 							}
-							connection.query('SELECT * FROM ability_list WHERE name = "' + answer.text + '"', function (err, rows, fields) {
+							connection.query('SELECT COUNT(Id) As cnt FROM ability WHERE player_id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
-								if (Object.keys(rows).length == 0) {
-									bot.sendMessage(message.chat.id, "Talento non valido", prev);
+								if (rows[0].cnt+1 > slot) {
+									bot.sendMessage(message.chat.id, "Hai già sbloccato il numero massimo di talenti per la tua rinascita", prev);
 									return;
 								}
-								if (rows[0].enabled == 0) {
-									bot.sendMessage(message.chat.id, "Questo talento al momento non può essere appreso", prev);
-									return;
-								}
-
-								var ability_id = rows[0].id;
-								var ability_desc = rows[0].description;
-								var ability_prev = rows[0].prev;
-								var ability_name = rows[0].name;
-								var val = rows[0].val;
-								var sym = rows[0].det;
-
-								if (ability_prev != 0) {
-									if (abarr[ability_prev] == undefined) {
-										bot.sendMessage(message.chat.id, "Questo Talento richiede prima il potenziamento di: " + abname[ability_prev], prev);
-										return;
-									} else {
-										if (abarr[ability_prev] < 10) {
-											bot.sendMessage(message.chat.id, "Questo Talento richiede prima il potenziamento al livello massimo di: " + abname[ability_prev], prev);
-											return;
-										}
-									}
-								}
-
-								connection.query('SELECT ability_level FROM ability WHERE player_id = ' + player_id + ' AND ability_id = ' + ability_id, function (err, rows, fields) {
+								connection.query('SELECT * FROM ability_list WHERE name = "' + answer.text + '"', function (err, rows, fields) {
 									if (err) throw err;
-
-									var text = "Caratteristiche Talento " + ability_name + ":\n" + ability_desc;
-									var text2 = "";
-									var text3 = "\n\nFornisce: ";
-									var text4 = "\nLivello massimo: 10";
-									var money = 0;
-									var gems = 0;
-									var learn = "apprendere questo talento";
-									var level = 0;
-									var maxlev = 10;
-									var forlevel = "per livello";
-
-									if (Object.keys(rows).length > 0) {
-										level = parseInt(rows[0].ability_level);
-										learn = "potenziare questo talento al livello " + (level + 1);
-									}
-
-									if (ability_id == 1) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 1)
-											money = 2000000;
-										else if (level < 2)
-											money = 5000000;
-										else if (level < 3)
-											money = 7500000;
-										else if (level < 4)
-											money = 10000000;
-										else if (level < 5)
-											money = 12500000;
-										else if (level < 6)
-											money = 15000000;
-										else if (level < 7)
-											money = 17500000;
-										else if (level < 8)
-											money = 22500000;
-										else if (level < 9)
-											money = 30000000;
-										else if (level < 10)
-											money = 50000000;
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 2) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 10)
-											money = 500000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 3) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 1)
-											money = 10000000;
-										else if (level < 2)
-											money = 20000000;
-										else if (level < 3)
-											money = 30000000;
-										else if (level < 4)
-											money = 40000000;
-										else if (level < 5)
-											money = 50000000;
-										else if (level < 6)
-											money = 60000000;
-										else if (level < 7)
-											money = 70000000;
-										else if (level < 8)
-											money = 80000000;
-										else if (level < 9)
-											money = 90000000;
-										else if (level < 10)
-											money = 100000000;
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 4) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 1)
-											money = 500000 * (level + 1);
-										else if (level < 2)
-											money = 500000 * (level + 1);
-										else if (level < 4)
-											money = 500000 * (level + 1);
-										else if (level < 5)
-											money = 500000 * (level + 1);
-										else if (level < 6)
-											money = 600000 * (level + 1);
-										else if (level < 7)
-											money = 600000 * (level + 1);
-										else if (level < 8)
-											money = 600000 * (level + 1);
-										else if (level < 9)
-											money = 700000 * (level + 1);
-										else if (level < 10)
-											money = 900000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 5) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 5)
-											money = 300000 * (level + 1);
-										else if (level < 10)
-											money = 350000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 6) {
-										text3 += "+1 utilizzo ogni 2 livelli, " + val + sym + " salute recuperata quando si torna in vita " + forlevel;
-										if (level < 2)
-											money = 500000 * (level + 1);
-										else if (level < 6)
-											money = 1000000 * (level + 1);
-										else if (level < 8)
-											money = 1000000 * (level + 1);
-										else if (level < 10)
-											money = 1500000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 7) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 10)
-											gems = 10 * (level+1);
-										text2 += "\n> " + gems + " 💎";
-									} else if (ability_id == 8) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 10)
-											money = 500000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 9) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 5)
-											money = 150000 * (level + 1);
-										else if (level < 10)
-											money = 150000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 10) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 2)
-											money = 250000 * (level + 1);
-										else if (level < 4)
-											money = 500000 * (level + 1);
-										else if (level < 5)
-											money = 500000 * (level + 1);
-										else if (level < 6)
-											money = 500000 * (level + 1);
-										else if (level < 7)
-											money = 750000 * (level + 1);
-										else if (level < 8)
-											money = 900000 * (level + 1);
-										else if (level < 9)
-											money = 1000000 * (level + 1);
-										else if (level < 10)
-											money = 1000000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 11) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 1)
-											money = 500000 * (level + 1);
-										else if (level < 2)
-											money = 500000 * (level + 1);
-										else if (level < 3)
-											money = 500000 * (level + 1);
-										else if (level < 4)
-											money = 500000 * (level + 1);
-										else if (level < 6)
-											money = 500000 * (level + 1);
-										else if (level < 8)
-											money = 500000 * (level + 1);
-										else if (level < 10)
-											money = 500000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 12) {
-										text3 += val + sym + " " + forlevel;
-										money = 5000000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 13) {
-										text3 += val + sym + " " + forlevel;
-										money = 200000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 14) {
-										text3 += val + sym + " " + forlevel;
-										if (level == 0)
-											money = 3000000;
-										else if (level == 1)
-											money = 4000000;
-										else if (level >= 2)
-											money = 5000000;
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 15) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 5)
-											money = 300000 * (level + 1);
-										else if (level < 10)
-											money = 400000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 16) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 3)
-											money = 1000000 * (level + 1);
-										else if (level < 5)
-											money = 2000000 * (level + 1);
-										else if (level < 8)
-											money = 3000000 * (level + 1);
-										else if (level < 9)
-											money = 4000000 * (level + 1);
-										else if (level < 10)
-											money = 5000000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 17) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 5)
-											money = 500000 * (level + 1);
-										else if (level < 10)
-											money = 250000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 18) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 3)
-											money = 200000 * (level + 1);
-										else if (level < 6)
-											money = 200000 * (level + 1);
-										else if (level < 8)
-											money = 200000 * (level + 1);
-										else if (level < 10)
-											money = 200000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 19) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 10)
-											money = 300000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 20) {
-										text3 += val + sym + " " + forlevel;
-										if (level < 5)
-											money = 300000 * (level + 1);
-										else if (level < 10)
-											money = 500000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 21) {
-										text3 += val + sym + " " + forlevel;
-										money = 10000000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 22) {
-										text3 += val + sym + " " + forlevel;
-										money = 20000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 23) {
-										text3 += val + sym + " " + forlevel;
-										money = 50000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 24) {
-										text3 += val + sym + " " + forlevel;
-										money = 50000000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 25) {
-										text3 += val + sym + " " + forlevel;
-										money = 1000000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 26) {
-										text3 += val + sym + " " + forlevel;
-										money = 2000000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 27) {
-										text3 += val + sym + " " + forlevel;
-										money = 2000000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 28) {
-										text3 += val + sym + " " + forlevel;
-										money = 2500000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 29) {
-										text3 += val + sym + " " + forlevel;
-										money = 15000000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 30) {
-										text3 += val + sym + " " + forlevel;
-										money = 10000000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 31) {
-										text3 += val + sym + " " + forlevel;
-										money = 5000000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 32) {
-										text3 += val + sym + " " + forlevel;
-										money = 1000000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 33) {
-										text3 += val + sym + " " + forlevel;
-										money = 15000000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else if (ability_id == 34) {
-										text3 += val + sym + " " + forlevel;
-										money = 80000000 * (level + 1);
-										text2 += "\n> " + formatNumber(money) + " §";
-									} else {
+									if (Object.keys(rows).length == 0) {
 										bot.sendMessage(message.chat.id, "Talento non valido", prev);
 										return;
 									}
-
-									if (level >= maxlev) {
-										bot.sendMessage(message.chat.id, text + text3 + "\nLivello massimo raggiunto", prev);
+									if (rows[0].enabled == 0) {
+										bot.sendMessage(message.chat.id, "Questo talento al momento non può essere appreso", prev);
 										return;
 									}
 
-									var text5 = "";
-									if (money > 0) {
-										if (my_money < money)
-											text5 = "\n🚫 Monete non sufficienti (" + formatNumber(my_money) + " su " + formatNumber(money) + ")";
-									} else {
-										if (my_gems < gems)
-											text5 = "\n🚫 Gemme non sufficienti (" + my_gems + " su " + gems + ")";
+									var ability_id = rows[0].id;
+									var ability_desc = rows[0].description;
+									var ability_prev = rows[0].prev;
+									var ability_name = rows[0].name;
+									var val = rows[0].val;
+									var sym = rows[0].det;
+
+									if (ability_prev != 0) {
+										if (abarr[ability_prev] == undefined) {
+											bot.sendMessage(message.chat.id, "Questo Talento richiede prima il potenziamento di: " + abname[ability_prev], prev);
+											return;
+										} else {
+											if (abarr[ability_prev] < 10) {
+												bot.sendMessage(message.chat.id, "Questo Talento richiede prima il potenziamento al livello massimo di: " + abname[ability_prev], prev);
+												return;
+											}
+										}
 									}
 
-									var ability_pot = {
-										parse_mode: "Markdown",
-										reply_markup: {
-											resize_keyboard: true,
-											keyboard: [["Conferma"], ["Torna all'Albero"], ["Torna al menu"]]
+									connection.query('SELECT ability_level FROM ability WHERE player_id = ' + player_id + ' AND ability_id = ' + ability_id, function (err, rows, fields) {
+										if (err) throw err;
+
+										var text = "Caratteristiche Talento " + ability_name + ":\n" + ability_desc;
+										var text2 = "";
+										var text3 = "\n\nFornisce: ";
+										var text4 = "\nLivello massimo: 10";
+										var money = 0;
+										var gems = 0;
+										var learn = "apprendere questo talento";
+										var level = 0;
+										var maxlev = 10;
+										var forlevel = "per livello";
+
+										if (Object.keys(rows).length > 0) {
+											level = parseInt(rows[0].ability_level);
+											learn = "potenziare questo talento al livello " + (level + 1);
 										}
-									};
 
-									bot.sendMessage(message.chat.id, text + "\n\nPer " + learn + " sono necessari:" + text2 + text5 + text3 + text4, ability_pot).then(function () {
-										answerCallbacks[message.chat.id] = async function (answer) {
-											if (answer.text.toLowerCase() == "conferma") {
-												connection.query('SELECT money, gems FROM player WHERE id = ' + player_id, async function (err, rows, fields) {
-													if (err) throw err;
+										if (ability_id == 1) {
+											text3 += val + sym + " " + forlevel;
+											if (level < 1)
+												money = 2000000;
+											else if (level < 2)
+												money = 5000000;
+											else if (level < 3)
+												money = 7500000;
+											else if (level < 4)
+												money = 10000000;
+											else if (level < 5)
+												money = 12500000;
+											else if (level < 6)
+												money = 15000000;
+											else if (level < 7)
+												money = 17500000;
+											else if (level < 8)
+												money = 22500000;
+											else if (level < 9)
+												money = 30000000;
+											else if (level < 10)
+												money = 50000000;
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 2) {
+											text3 += val + sym + " " + forlevel;
+											if (level < 10)
+												money = 500000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 3) {
+											text3 += val + sym + " " + forlevel;
+											if (level < 1)
+												money = 10000000;
+											else if (level < 2)
+												money = 20000000;
+											else if (level < 3)
+												money = 30000000;
+											else if (level < 4)
+												money = 40000000;
+											else if (level < 5)
+												money = 50000000;
+											else if (level < 6)
+												money = 60000000;
+											else if (level < 7)
+												money = 70000000;
+											else if (level < 8)
+												money = 80000000;
+											else if (level < 9)
+												money = 90000000;
+											else if (level < 10)
+												money = 100000000;
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 4) {
+											text3 += val + sym + " " + forlevel;
+											if (level < 1)
+												money = 500000 * (level + 1);
+											else if (level < 2)
+												money = 500000 * (level + 1);
+											else if (level < 4)
+												money = 500000 * (level + 1);
+											else if (level < 5)
+												money = 500000 * (level + 1);
+											else if (level < 6)
+												money = 600000 * (level + 1);
+											else if (level < 7)
+												money = 600000 * (level + 1);
+											else if (level < 8)
+												money = 600000 * (level + 1);
+											else if (level < 9)
+												money = 700000 * (level + 1);
+											else if (level < 10)
+												money = 900000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 5) {
+											text3 += val + sym + " " + forlevel;
+											if (level < 5)
+												money = 300000 * (level + 1);
+											else if (level < 10)
+												money = 350000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 6) {
+											text3 += "+1 utilizzo ogni 2 livelli, " + val + sym + " salute recuperata quando si torna in vita " + forlevel;
+											if (level < 2)
+												money = 500000 * (level + 1);
+											else if (level < 6)
+												money = 1000000 * (level + 1);
+											else if (level < 8)
+												money = 1000000 * (level + 1);
+											else if (level < 10)
+												money = 1500000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 7) {
+											text3 += val + sym + " " + forlevel;
+											if (level < 10)
+												gems = 10 * (level+1);
+											text2 += "\n> " + gems + " 💎";
+										} else if (ability_id == 8) {
+											text3 += val + sym + " " + forlevel;
+											if (level < 10)
+												money = 500000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 9) {
+											text3 += val + sym + " " + forlevel;
+											if (level < 5)
+												money = 150000 * (level + 1);
+											else if (level < 10)
+												money = 150000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 10) {
+											text3 += val + sym + " " + forlevel;
+											if (level < 2)
+												money = 250000 * (level + 1);
+											else if (level < 4)
+												money = 500000 * (level + 1);
+											else if (level < 5)
+												money = 500000 * (level + 1);
+											else if (level < 6)
+												money = 500000 * (level + 1);
+											else if (level < 7)
+												money = 750000 * (level + 1);
+											else if (level < 8)
+												money = 900000 * (level + 1);
+											else if (level < 9)
+												money = 1000000 * (level + 1);
+											else if (level < 10)
+												money = 1000000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 11) {
+											text3 += val + sym + " " + forlevel;
+											if (level < 1)
+												money = 500000 * (level + 1);
+											else if (level < 2)
+												money = 500000 * (level + 1);
+											else if (level < 3)
+												money = 500000 * (level + 1);
+											else if (level < 4)
+												money = 500000 * (level + 1);
+											else if (level < 6)
+												money = 500000 * (level + 1);
+											else if (level < 8)
+												money = 500000 * (level + 1);
+											else if (level < 10)
+												money = 500000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 12) {
+											text3 += val + sym + " " + forlevel;
+											money = 5000000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 13) {
+											text3 += val + sym + " " + forlevel;
+											money = 200000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 14) {
+											text3 += val + sym + " " + forlevel;
+											if (level == 0)
+												money = 3000000;
+											else if (level == 1)
+												money = 4000000;
+											else if (level >= 2)
+												money = 5000000;
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 15) {
+											text3 += val + sym + " " + forlevel;
+											if (level < 5)
+												money = 300000 * (level + 1);
+											else if (level < 10)
+												money = 400000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 16) {
+											text3 += val + sym + " " + forlevel;
+											if (level < 3)
+												money = 1000000 * (level + 1);
+											else if (level < 5)
+												money = 2000000 * (level + 1);
+											else if (level < 8)
+												money = 3000000 * (level + 1);
+											else if (level < 9)
+												money = 4000000 * (level + 1);
+											else if (level < 10)
+												money = 5000000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 17) {
+											text3 += val + sym + " " + forlevel;
+											if (level < 5)
+												money = 500000 * (level + 1);
+											else if (level < 10)
+												money = 250000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 18) {
+											text3 += val + sym + " " + forlevel;
+											if (level < 3)
+												money = 200000 * (level + 1);
+											else if (level < 6)
+												money = 200000 * (level + 1);
+											else if (level < 8)
+												money = 200000 * (level + 1);
+											else if (level < 10)
+												money = 200000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 19) {
+											text3 += val + sym + " " + forlevel;
+											if (level < 10)
+												money = 300000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 20) {
+											text3 += val + sym + " " + forlevel;
+											if (level < 5)
+												money = 300000 * (level + 1);
+											else if (level < 10)
+												money = 500000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 21) {
+											text3 += val + sym + " " + forlevel;
+											money = 10000000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 22) {
+											text3 += val + sym + " " + forlevel;
+											money = 20000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 23) {
+											text3 += val + sym + " " + forlevel;
+											money = 50000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 24) {
+											text3 += val + sym + " " + forlevel;
+											money = 50000000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 25) {
+											text3 += val + sym + " " + forlevel;
+											money = 1000000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 26) {
+											text3 += val + sym + " " + forlevel;
+											money = 2000000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 27) {
+											text3 += val + sym + " " + forlevel;
+											money = 2000000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 28) {
+											text3 += val + sym + " " + forlevel;
+											money = 2500000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 29) {
+											text3 += val + sym + " " + forlevel;
+											money = 15000000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 30) {
+											text3 += val + sym + " " + forlevel;
+											money = 10000000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 31) {
+											text3 += val + sym + " " + forlevel;
+											money = 5000000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 32) {
+											text3 += val + sym + " " + forlevel;
+											money = 1000000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 33) {
+											text3 += val + sym + " " + forlevel;
+											money = 15000000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else if (ability_id == 34) {
+											text3 += val + sym + " " + forlevel;
+											money = 80000000 * (level + 1);
+											text2 += "\n> " + formatNumber(money) + " §";
+										} else {
+											bot.sendMessage(message.chat.id, "Talento non valido", prev);
+											return;
+										}
 
-													if (rows[0].money - money < 0) {
-														bot.sendMessage(message.chat.id, "Non hai abbastanza monete", prev);
-														return;
-													}
+										if (level >= maxlev) {
+											bot.sendMessage(message.chat.id, text + text3 + "\nLivello massimo raggiunto", prev);
+											return;
+										}
 
-													if (rows[0].gems - gems < 0) {
-														bot.sendMessage(message.chat.id, "Non hai abbastanza 💎", prev);
-														return;
-													}
+										var text5 = "";
+										if (money > 0) {
+											if (my_money < money)
+												text5 = "\n🚫 Monete non sufficienti (" + formatNumber(my_money) + " su " + formatNumber(money) + ")";
+										} else {
+											if (my_gems < gems)
+												text5 = "\n🚫 Gemme non sufficienti (" + my_gems + " su " + gems + ")";
+										}
 
-													if (level >= maxlev) {
-														bot.sendMessage(message.chat.id, "Questo talento è stato potenziato al massimo", prev);
-														return;
-													}
-
-													setAchievement(player_id, 18, 1);
-
-													await reduceMoney(player_id, money);
-													connection.query('UPDATE player SET gems = gems-' + gems + ' WHERE id = ' + player_id, function (err, rows, fields) {
-														if (err) throw err;
-
-														connection.query('SELECT 1 FROM ability WHERE player_id = ' + player_id + ' AND ability_id = ' + ability_id, function (err, rows, fields) {
-															if (err) throw err;
-
-															if (Object.keys(rows).length > 0) {
-																connection.query('UPDATE ability SET ability_level = ability_level+1 WHERE player_id = ' + player_id + ' AND ability_id = ' + ability_id, async function (err, rows, fields) {
-																	if (err) throw err;
-																	bot.sendMessage(message.chat.id, "Talento potenziato! Livello: *" + level + " -> " + (level + 1) + "*", prev);
-																});
-															} else {
-																connection.query('INSERT INTO ability (player_id, ability_level, ability_id) VALUES (' + player_id + ',1,' + ability_id + ')', async function (err, rows, fields) {
-																	if (err) throw err;
-																	bot.sendMessage(message.chat.id, "Talento appreso!", prev);
-																});
-															}
-														});
-													});
-												});
+										var ability_pot = {
+											parse_mode: "Markdown",
+											reply_markup: {
+												resize_keyboard: true,
+												keyboard: [["Conferma"], ["Torna all'Albero"], ["Torna al menu"]]
 											}
 										};
+
+										bot.sendMessage(message.chat.id, text + "\n\nPer " + learn + " sono necessari:" + text2 + text5 + text3 + text4, ability_pot).then(function () {
+											answerCallbacks[message.chat.id] = async function (answer) {
+												if (answer.text.toLowerCase() == "conferma") {
+													connection.query('SELECT money, gems FROM player WHERE id = ' + player_id, async function (err, rows, fields) {
+														if (err) throw err;
+
+														if (rows[0].money - money < 0) {
+															bot.sendMessage(message.chat.id, "Non hai abbastanza monete", prev);
+															return;
+														}
+
+														if (rows[0].gems - gems < 0) {
+															bot.sendMessage(message.chat.id, "Non hai abbastanza 💎", prev);
+															return;
+														}
+
+														if (level >= maxlev) {
+															bot.sendMessage(message.chat.id, "Questo talento è stato potenziato al massimo", prev);
+															return;
+														}
+
+														setAchievement(player_id, 18, 1);
+
+														await reduceMoney(player_id, money);
+														connection.query('UPDATE player SET gems = gems-' + gems + ' WHERE id = ' + player_id, function (err, rows, fields) {
+															if (err) throw err;
+
+															connection.query('SELECT 1 FROM ability WHERE player_id = ' + player_id + ' AND ability_id = ' + ability_id, function (err, rows, fields) {
+																if (err) throw err;
+
+																if (Object.keys(rows).length > 0) {
+																	connection.query('UPDATE ability SET ability_level = ability_level+1 WHERE player_id = ' + player_id + ' AND ability_id = ' + ability_id, async function (err, rows, fields) {
+																		if (err) throw err;
+																		bot.sendMessage(message.chat.id, "Talento potenziato! Livello: *" + level + " -> " + (level + 1) + "*", prev);
+																	});
+																} else {
+																	connection.query('INSERT INTO ability (player_id, ability_level, ability_id) VALUES (' + player_id + ',1,' + ability_id + ')', async function (err, rows, fields) {
+																		if (err) throw err;
+																		bot.sendMessage(message.chat.id, "Talento appreso!", prev);
+																	});
+																}
+															});
+														});
+													});
+												}
+											};
+										});
 									});
 								});
 							});
@@ -45841,7 +45867,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 		var heist_streak = rows[0].heist_streak;
 		var global_end = rows[0].global_end;
 
-		connection.query('SELECT * FROM heist_progress WHERE from_id = ' + player_id, function (err, rows, fields) {
+		connection.query('SELECT * FROM heist_progress WHERE from_id = ' + player_id, async function (err, rows, fields) {
 			if (err) throw err;
 
 			var kbBack = {
@@ -45921,17 +45947,7 @@ bot.onText(/Contatta lo Gnomo|Torna dallo Gnomo|^gnomo|^clg/i, function (message
 
 				my_comb = String(my_comb);
 
-				var now = new Date();
-				now.setMinutes(now.getMinutes() + 5);
-				var long_date = now.getFullYear() + "-" + addZero(now.getMonth() + 1) + "-" + addZero(now.getDate()) + " " + addZero(now.getHours()) + ':' + addZero(now.getMinutes()) + ':' + addZero(now.getSeconds());
-				var short_date = addZero(now.getHours()) + ":" + addZero(now.getMinutes());
-
-				connection.query('UPDATE heist_progress SET my_combination = ' + my_comb + ', wait_time = "' + long_date + '", travel=travel+1 WHERE from_id = ' + player_id, function (err, rows, fields) {
-					if (err) throw err;
-
-					bot.sendMessage(message.chat.id, "Il tuo gnomo è andato a recuperare alcune rune, dovrai attendere il suo ritorno alle " + short_date, back);
-				});
-				return;
+				await connection.queryAsync('UPDATE heist_progress SET my_combination = ' + my_comb + ', travel = travel+1 WHERE from_id = ' + player_id);
 			} else
 				my_comb = String(rows[0].my_combination);
 
@@ -58250,7 +58266,12 @@ async function reloadAchievement() {
 	let map_query = "(0, 1)";
 	if (checkDragonTopOn == 1) map_query = "(0)";
 
-	const newAchievements = await connection.queryAsync('SELECT id, name, item_rarity, type FROM (SELECT * FROM achievement_list WHERE enabled = 1 AND only_map IN ' + map_query + ' ORDER BY RAND()) as t WHERE id NOT IN (SELECT achievement_id FROM achievement_daily) GROUP BY type ORDER BY RAND() LIMIT 3')
+	var d = new Date();
+	var weekend_query = '';
+	if ((d.getDay() == 6) || (d.getDay() == 0))
+		weekend_query = ' AND weekend = 1'
+
+	const newAchievements = await connection.queryAsync('SELECT id, name, item_rarity, type FROM (SELECT * FROM achievement_list WHERE enabled = 1' + weekend_query + ' AND only_map IN ' + map_query + ' ORDER BY RAND()) as t WHERE id NOT IN (SELECT achievement_id FROM achievement_daily) GROUP BY type ORDER BY RAND() LIMIT 3')
 
 	// Clear current daily achievement and statuses
 	await connection.queryAsync('DELETE FROM achievement_daily')

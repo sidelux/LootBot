@@ -108,6 +108,7 @@ CREATE TABLE `achievement_list` (
   `limit_reborn` int(11) NOT NULL DEFAULT 0,
   `only_map` tinyint(1) NOT NULL DEFAULT 0,
   `enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `weekend` int(11) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `type` (`type`)
@@ -2109,7 +2110,7 @@ CREATE TABLE `house_game_4` (
   `end` tinyint(1) NOT NULL DEFAULT 0,
   `end_phase` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
