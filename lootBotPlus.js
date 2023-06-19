@@ -9484,6 +9484,11 @@ bot.onText(/^\/figurine$/, function (message, match) {
 })
 
 bot.onText(/^\/figurines (\d+) (\w+)|^\/figurines/, function (message, match) {
+	if ((match.length < 3) || (match[2] == undefined)) {
+		bot.sendMessage(message.chat.id, 'È necessario specificare entrambi i parametri rarità e nome giocatore. Esempio: /figurines 1 fenix45')
+		return
+	}
+
 	var rarity = 0;
 	if ((match[1] < 1) || (match[1] > 10)) {
 		bot.sendMessage(message.chat.id, 'La rarità deve essere compresa tra 1 e 10!')
@@ -9502,7 +9507,7 @@ bot.onText(/^\/figurines (\d+) (\w+)|^\/figurines/, function (message, match) {
 
 		const player_id = rows[0].id;
 
-		connection.query('SELECT id FROM player WHERE nickname = "' + nick + '"', function (err, rows, fields) {
+		connection.query('SELECT id, nickname FROM player WHERE nickname = "' + nick + '"', function (err, rows, fields) {
 			if (err) throw err
 			if (Object.keys(rows).length == 0) {
 				bot.sendMessage(message.chat.id, 'Il giocatore inserito non esiste');
@@ -9510,18 +9515,26 @@ bot.onText(/^\/figurines (\d+) (\w+)|^\/figurines/, function (message, match) {
 			}
 
 			const player_id2 = rows[0].id;
+			const player_nickname2 = rows[0].nickname;
 
-			connection.query('SELECT I.card_id, L.name, I.quantity FROM card_inventory I, card_list L WHERE I.card_id = L.card_id AND I.player_id = ' + player_id + ' AND I.quantity > 1 AND L.rarity = ' + rarity, async function (err, rows, fields) {
+			connection.query('SELECT I.card_id, L.name, I.quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = ' + player_id + ' AND I.quantity > 1 AND L.rarity = ' + rarity + ' ORDER BY L.name', async function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, 'Non possiedi alcuna figurina doppia');
 					return;
 				}
-				var list = "Al giocatore inserito mancano le seguenti figurine di rarità " + rarity + " che tu possiedi in almeno duplice copia:\n";
-				for (i = 0, len = Object.keys(rows).length; i < len; i++) { 
+				var list = "Al giocatore <b>" + player_nickname2 + "</b> mancano le seguenti figurine di rarità <b>" + rarity + "</b> che tu possiedi in almeno duplice copia:\n";
+				for (i = 0, len = Object.keys(rows).length; i < len; i++) {
+					var add = 0;
 					var check = await connection.queryAsync("SELECT quantity FROM card_inventory WHERE player_id = " + player_id2 + " AND card_id = " + rows[i].card_id);
-					if (check[0].quantity == 0)
-						list += "> " + rows[i].name + " (" + rows[i].quantity + ")";
+					if (Object.keys(check).length == 0)
+						add = 1;
+					else {
+						if (check[0].quantity == 0)
+							add = 1;
+					}
+					if (add == 1)
+						list += "> " + rows[i].name + " (" + rows[i].quantity + ")\n";
 				}
 
 				if (Object.keys(rows).length == 0) {
@@ -9529,7 +9542,7 @@ bot.onText(/^\/figurines (\d+) (\w+)|^\/figurines/, function (message, match) {
 					return;
 				}
 
-				bot.sendMessage(message.chat.id, list);
+				bot.sendMessage(message.chat.id, list, html);
 			});
 		});
 	});

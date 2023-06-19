@@ -11658,7 +11658,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 															connection.query('UPDATE dungeon_status SET monster_id = ' + rows[0].id + ', monster_life = ' + monster_life + ', monster_total_life = ' + monster_life + ', monster_paralyzed = 0, monster_critic = 0 WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
-																if ((boost_id == 6) && (player_paralized == 0))
+																if ((boost_id == 6) && (player_paralyzed == 0))
 																	setBoost(player_id, boost_mission, boost_id);
 															});
 															bot.sendMessage(message.chat.id, dungeonToSym(dir) + " " + extra + "Incontri un *" + rows[0].name + "* di livello *" + rows[0].level + "*, puoi sfidarlo per ottenere il suo bottino e proseguire, oppure scappare.", dBattle).then(function () {
@@ -43748,6 +43748,7 @@ bot.onText(/^apri/i, function (message) {
 
 								var itemList = [];
 								var itemQnt = [];
+								var itemRarity = [];
 
 								for (i = 0; i < chestQnt; i++) {
 									var rows = await connection.queryAsync('SELECT shortname FROM rarity WHERE id > 2 AND id < 7 ORDER BY RAND()');
@@ -43771,11 +43772,12 @@ bot.onText(/^apri/i, function (message) {
 									else {
 										itemList.push(rows[0].name);
 										itemQnt.push(qnt);
+										itemRarity.push(rarity);
 									}
 								}
 
 								for (i = 0; i < itemList.length; i++)
-									text += "\n> " + itemQnt[i] + "x *" + itemList[i] + "*";
+									text += "\n> " + itemQnt[i] + "x *" + itemList[i] + "* (" + itemRarity[i] + ")";
 
 								connection.query('UPDATE player SET gems = gems+' + chestQnt + ' WHERE id = ' + player_id, function (err, rows, fields) {
 									if (err) throw err;
@@ -65522,17 +65524,17 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 		if (max_quantity != -1) {
 			if (inv_quantity >= max_quantity) {
 				if (rarity == "C")
-					await addMoney(player_id, 100);
+					await addMoney(player_id, 100*qnt);
 				else if (rarity == "NC")
-					await addMoney(player_id, 200);
+					await addMoney(player_id, 200*qnt);
 				else if (rarity == "R")
-					await addMoney(player_id, 300);
+					await addMoney(player_id, 300*qnt);
 				else if (rarity == "UR")
-					await addMoney(player_id, 400);
+					await addMoney(player_id, 400*qnt);
 				else if ((rarity == "L") || (rarity == "E"))
-					await addMoney(player_id, 500);
+					await addMoney(player_id, 500*qnt);
 				else if ((rarity == "UE") || (rarity == "X") || (rarity == "U"))
-					await addMoney(player_id, 600);
+					await addMoney(player_id, 600*qnt);
 				console.log("Cap oggetto raggiunto " + inv_quantity + "/" + max_quantity);
 				// await connection.queryAsync('UPDATE inventory SET quantity = ' + max_quantity + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 				return;
