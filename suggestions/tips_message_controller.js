@@ -5184,13 +5184,11 @@ function manageSuggestionMessage(mess_id, user_role, sugg_infos, opzione) { // S
 		testo_messaggio += "\n· 🔨   _Funzione in beta_";
 		testo_messaggio += "\n· ❌   _Linee guida_";
 		testo_messaggio += "\n· ⭕️   _Non fattibile_";
-		testo_messaggio += "\n";
 		testo_messaggio += "\n· 🪞   _Troppo simile_";
 		testo_messaggio += "\n· ⚖   _Sbilanciato_";
 		testo_messaggio += "\n· 🧠   _Fuori-filosofia_";
 		testo_messaggio += "\n· 👎   _Non necessario_";
 		testo_messaggio += "\n· 👥   _Non piaciuto_";
-
 		testo_messaggio += "\n· 💭   _Altro_\n";
 
 		if (sugg_infos.status < 0) {
