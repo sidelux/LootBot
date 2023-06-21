@@ -4309,7 +4309,7 @@ function closedSuggestionUpdated_text(sugg_infos, new_role, option) {
 	} else if (option == "JOB") {
 		final_text += " perché tratta di una funzione non ancora definita 🔨 \n\n";
 	} else if (option == "IMPOSSIBLE") { // 
-		final_text += " perché impossibile da attuare ⭕️ \n\n";
+		final_text += " perché al momento impossibile da attuare ⭕️ \n\n";
 	} else if (option == "BAL") {
 		final_text += " perché sbilancerebbe le attuali meccaniche ⚖ \n\n";
 	} else if (option == "FILO") {

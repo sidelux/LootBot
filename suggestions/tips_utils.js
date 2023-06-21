@@ -31,8 +31,6 @@ function chunkSubstr(str, size) { // il text_msg e una lunghezza *limite*
 
 
 function bigSend(res_mess, istanza_bot) {
-    console.log("********\nGestita da bigSend")
-
     if (typeof (res_mess) != "undefined") {
         let res_array = [];
         if (!(res_mess instanceof Array)) {
