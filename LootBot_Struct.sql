@@ -1,8 +1,8 @@
--- MySQL dump 10.19  Distrib 10.3.38-MariaDB, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.19  Distrib 10.3.39-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: LootBot
 -- ------------------------------------------------------
--- Server version	10.3.38-MariaDB-0+deb10u1
+-- Server version	10.3.39-MariaDB-0+deb10u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -48,7 +48,7 @@ CREATE TABLE `ability_list` (
   `name` varchar(64) NOT NULL,
   `description` varchar(255) NOT NULL,
   `prev` int(1) NOT NULL DEFAULT 0,
-  `val` int(11) NOT NULL DEFAULT 0,
+  `val` decimal(10,2) NOT NULL DEFAULT 0.00,
   `det` text NOT NULL,
   `enabled` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
@@ -108,6 +108,7 @@ CREATE TABLE `achievement_list` (
   `limit_reborn` int(11) NOT NULL DEFAULT 0,
   `only_map` tinyint(1) NOT NULL DEFAULT 0,
   `enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `weekend` int(11) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `type` (`type`)
@@ -2109,7 +2110,7 @@ CREATE TABLE `house_game_4` (
   `end` tinyint(1) NOT NULL DEFAULT 0,
   `end_phase` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3232,6 +3233,8 @@ CREATE TABLE `player` (
   `token_streak` int(11) NOT NULL DEFAULT 0,
   `tap_price` int(11) DEFAULT NULL,
   `last_card_date` timestamp NULL DEFAULT NULL,
+  `artifact_fragment` int(11) NOT NULL DEFAULT 0,
+  `artifact_fragment_prob` int(11) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   UNIQUE KEY `nickname` (`nickname`),
   UNIQUE KEY `account_id` (`account_id`),

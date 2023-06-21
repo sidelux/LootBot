@@ -178,8 +178,11 @@ bot.on('message', function (message, match) {
 
 		if (message.from.id != config.phenix_id && message.chat.id === -1001097316494) {
 			let banFromGroup = 0
+			console.log(message);
 			if (message.text != undefined) {
-				if (!message.text.startsWith('Negozio di')) { banFromGroup = 1 } else if (message.text.startsWith('@lootplusbot')) {
+				if (!message.text.startsWith('Negozio di')) { 
+					banFromGroup = 1 
+				} else if (message.text.startsWith('@lootplusbot')) {
 					bot.deleteMessage(message.chat.id, message.message_id).then(function (result) {
 						if (result != true) { console.log('Errore cancellazione messaggio ' + message.chat.id + ' ' + message.message_id) }
 					})
@@ -208,7 +211,9 @@ bot.on('message', function (message, match) {
 						})
 					})
 				}
-			} else { banFromGroup = 1 }
+			} else { 
+				banFromGroup = 1 
+			}
 
 			if (banFromGroup == 1) {
 				const time = Math.round((Date.now() + ms('3 days')) / 1000)
@@ -558,9 +563,10 @@ bot.onText(/^\/comandigiocatore/, function (message) {
 		'/posizioneteam - Indica la posizione in classifica globale di tutti i membri del team\n' +
 		'/globaleteam - Indica quali persone nel team hanno raggiunto la soglia per la globale\n' +
 		'/figurine - Visualizza un riassunto delle figurine possedute raggruppate per rarità\n' +
-		"/figurinel - Visualizza le figurine possedute (specifica anche la rarità, il nome parziale, 'doppie', rarità o raritàinv e il numero della pagina con p1, ps2, ecc.)\n" +
+		"/figurinel - Visualizza le figurine possedute (specifica anche la rarità, il nome parziale, 'doppie', rarità o raritàinv e il numero della pagina con p1, p2, ecc.)\n" +
 		'/figurina - Visualizza i dettagli delle figurine\n' +
-		'/figurinem - Visualizza le figurine mancanti per la rarità indicata', mark)
+		'/figurinem - Visualizza le figurine mancanti per la rarità indicata\n' +
+		'/figurines - Specificando rarità e nickname mostra la lista delle doppie che mancano al giocatore inserito', mark)
 })
 
 bot.onText(/^\/comandioggetto/, function (message) {
@@ -3975,8 +3981,8 @@ bot.onText(/^\/negoziodesc (.+),(.+)|^\/negoziodesc/, function (message, match) 
 
 		text = capitalizeFirstLetter(text.trim())
 
-		reg = new RegExp("^[0-9]{1,100}$");
-		if (reg.test(code) == false) {
+		const codeReg = new RegExp("^[0-9]{1,100}$");
+		if (codeReg.test(code) == false) {
 			bot.sendMessage(message.chat.id, "Codice non valido, riprova");
 			return;
 		}
@@ -8124,54 +8130,62 @@ bot.onText(/^\/statistiche|^\/stats$/, function (message) {
 																																								let death_count = 0
 																																								if (rows[0].cnt != null) { death_count = rows[0].cnt }
 
-																																								bot.sendMessage(message.chat.id, '*Statistiche:*\n\n' +
-																																									'*Giocatori registrati:* ' + formatNumber(tot) + '\n' +
-																																									'*Missioni in corso*: ' + miss + '\n' +
-																																									'*Missioni completate*: ' + formatNumber(miss2) + '\n' +
-																																									'*Viaggi in corso*: ' + travel + '\n' +
-																																									'*Utenti attivi (1):* ' + formatNumber(act) + '\n' +
-																																									'_Dei quali ' + formatNumber(act_male) + ' esploratori e ' + formatNumber(act_female) + ' esploratrici_\n' +
-																																									'_Età media: ' + avg_age + ' anni_\n' +
-																																									birthday +
-																																									'*Utenti attivi mensili (2):* ' + formatNumber(act_monthly) + '\n' +
-																																									'*Utenti attivi settimanali (3):* ' + formatNumber(act_weekly) + '\n' +
-																																									'*Monete attuali*: ' + formatNumber(money) + ' §\n' +
-																																									'*Oggetti*: ' + formatNumber(inv) + '\n' +
-																																									'*Scrigni attuali*: ' + formatNumber(chest) + '\n' +
-																																									'*Creazioni*: ' + formatNumber(craft) + '\n' +
-																																									'*Draghi*: ' + formatNumber(dragon) + '\n' +
-																																									'*Team:* ' + formatNumber(teamn) + '\n' +
-																																									'*Ispezioni/in corso/rapporto:* ' + formatNumber(heist) + '/' + heistn + '/' + perc + '%\n' +
-																																									'*Lotterie:* ' + formatNumber(lottery) + '\n' +
-																																									'*Oggetti nei negozi:* ' + formatNumber(shop) + '\n' +
-																																									'*Oggetti acquistati:* ' + formatNumber(shop_tot) + '\n' +
-																																									'*Scrigni giornalieri consegnati:* ' + formatNumber(daily) + '\n' +
-																																									'*Dungeon completati:* ' + formatNumber(dungeon_tot) + '\n' +
-																																									'*Dungeon creati:* ' + formatNumber(dungeon) + '\n' +
-																																									'*Stanze create:* ' + formatNumber(room) + '\n' +
-																																									'*Livelli skill:* ' + formatNumber(ablevel) + '\n' +
-																																									'*Utenti invitati:* ' + formatNumber(invite) + '\n' +
-																																									'*Mana grezzo:* ' + formatNumber(mana) + '\n' +
-																																									'*Polvere:* ' + formatNumber(dust) + '\n' +
-																																									'*Incantesimi:* ' + formatNumber(magic) + '\n' +
-																																									'*Oggetti cercati:* ' + formatNumber(search) + '\n' +
-																																									'*Imprese completate:* ' + formatNumber(achievement) + '\n' +
-																																									'*Spese Casa dei Giochi:* ' + formatNumber(house_tot) + ' §\n' +
-																																									'*Battaglie nella Vetta:* ' + formatNumber(top_log) + '\n' +
-																																									'*Vittorie nella Vetta:* ' + formatNumber(top_win) + ' (max ' + top_win_best + ' Ð)\n' +
-																																									'*Incarichi in corso/completati:* ' + formatNumber(mission_team_current) + '/' + formatNumber(mission_team) + '\n' +
-																																									'*Artefatti ottenuti:* ' + formatNumber(artifacts) + '\n' +
-																																									'*Assalti in corso/completati/falliti:* ' + formatNumber(assaults) + '/' + formatNumber(assaults_win) + '/' + formatNumber(assaults_lost) + '\n' +
-																																									'*Figurine:* ' + formatNumber(cards) + '\n' +
-																																									'*Partite giocate nelle Mappe:* ' + formatNumber(map_plays) + '\n' +
-																																									'*Uccisioni nelle Mappe:* ' + formatNumber(map_kills) + '\n' +
-																																									'*Uccisioni giocatori:* ' + formatNumber(death_count) + '\n' +
-																																									'*Vittorie mappe:* ' + formatNumber(map_win_cnt) + '\n' +
-																																									'*Trofei ottenuti:* ' + formatNumber(trophies) + '\n' +
-																																									'\n*Gruppi attivi (4):* ' + formatNumber(groups) + '\n' +
-																																									'*Membri nei gruppi attivi (4):* ' + formatNumber(members) + '\n' +
+																																								connection.query('SELECT SUM(money) As cnt FROM team_safe', function (err, rows, fields) {
+																																									if (err) throw err
+																																									var money_safe = 0;
+																																									if (rows[0].cnt != null)
+																																										money_safe = rows[0].cnt;
 
-																																									"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti che hanno inviato un comando negli ultimi 30 giorni\n(3) Utenti che hanno inviato un comando negli ultimi 7 giorni\n(4) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark)
+																																									bot.sendMessage(message.chat.id, '*Statistiche:*\n\n' +
+																																										'*Giocatori registrati:* ' + formatNumber(tot) + '\n' +
+																																										'*Missioni in corso*: ' + miss + '\n' +
+																																										'*Missioni completate*: ' + formatNumber(miss2) + '\n' +
+																																										'*Viaggi in corso*: ' + travel + '\n' +
+																																										'*Utenti attivi (1):* ' + formatNumber(act) + '\n' +
+																																										'_Dei quali ' + formatNumber(act_male) + ' esploratori e ' + formatNumber(act_female) + ' esploratrici_\n' +
+																																										'_Età media: ' + avg_age + ' anni_\n' +
+																																										birthday +
+																																										'*Utenti attivi mensili (2):* ' + formatNumber(act_monthly) + '\n' +
+																																										'*Utenti attivi settimanali (3):* ' + formatNumber(act_weekly) + '\n' +
+																																										'*Monete attuali*: ' + formatNumber(money) + ' §\n' +
+																																										'*Monete in cassaforte*: ' + formatNumber(money_safe) + ' §\n' +
+																																										'*Oggetti*: ' + formatNumber(inv) + '\n' +
+																																										'*Scrigni attuali*: ' + formatNumber(chest) + '\n' +
+																																										'*Creazioni*: ' + formatNumber(craft) + '\n' +
+																																										'*Draghi*: ' + formatNumber(dragon) + '\n' +
+																																										'*Team:* ' + formatNumber(teamn) + '\n' +
+																																										'*Ispezioni/in corso/rapporto:* ' + formatNumber(heist) + '/' + heistn + '/' + perc + '%\n' +
+																																										'*Lotterie:* ' + formatNumber(lottery) + '\n' +
+																																										'*Oggetti nei negozi:* ' + formatNumber(shop) + '\n' +
+																																										'*Oggetti acquistati:* ' + formatNumber(shop_tot) + '\n' +
+																																										'*Scrigni giornalieri consegnati:* ' + formatNumber(daily) + '\n' +
+																																										'*Dungeon completati:* ' + formatNumber(dungeon_tot) + '\n' +
+																																										'*Dungeon creati:* ' + formatNumber(dungeon) + '\n' +
+																																										'*Stanze create:* ' + formatNumber(room) + '\n' +
+																																										'*Livelli skill:* ' + formatNumber(ablevel) + '\n' +
+																																										'*Utenti invitati:* ' + formatNumber(invite) + '\n' +
+																																										'*Mana grezzo:* ' + formatNumber(mana) + '\n' +
+																																										'*Polvere:* ' + formatNumber(dust) + '\n' +
+																																										'*Incantesimi:* ' + formatNumber(magic) + '\n' +
+																																										'*Oggetti cercati:* ' + formatNumber(search) + '\n' +
+																																										'*Imprese completate:* ' + formatNumber(achievement) + '\n' +
+																																										'*Spese Casa dei Giochi:* ' + formatNumber(house_tot) + ' §\n' +
+																																										'*Battaglie nella Vetta:* ' + formatNumber(top_log) + '\n' +
+																																										'*Vittorie nella Vetta:* ' + formatNumber(top_win) + ' (max ' + top_win_best + ' Ð)\n' +
+																																										'*Incarichi in corso/completati:* ' + formatNumber(mission_team_current) + '/' + formatNumber(mission_team) + '\n' +
+																																										'*Artefatti ottenuti:* ' + formatNumber(artifacts) + '\n' +
+																																										'*Assalti in corso/completati/falliti:* ' + formatNumber(assaults) + '/' + formatNumber(assaults_win) + '/' + formatNumber(assaults_lost) + '\n' +
+																																										'*Figurine:* ' + formatNumber(cards) + '\n' +
+																																										'*Partite giocate nelle Mappe:* ' + formatNumber(map_plays) + '\n' +
+																																										'*Uccisioni nelle Mappe:* ' + formatNumber(map_kills) + '\n' +
+																																										'*Uccisioni giocatori:* ' + formatNumber(death_count) + '\n' +
+																																										'*Vittorie mappe:* ' + formatNumber(map_win_cnt) + '\n' +
+																																										'*Trofei ottenuti:* ' + formatNumber(trophies) + '\n' +
+																																										'\n*Gruppi attivi (4):* ' + formatNumber(groups) + '\n' +
+																																										'*Membri nei gruppi attivi (4):* ' + formatNumber(members) + '\n' +
+
+																																										"\n(1) Utenti che hanno inviato un comando oggi\n(2) Utenti che hanno inviato un comando negli ultimi 30 giorni\n(3) Utenti che hanno inviato un comando negli ultimi 7 giorni\n(4) Utenti/gruppi che hanno inviato un comando nell'ultima settimana", mark)
+																																								});
 																																							})
 																																						})
 																																					})
@@ -9469,6 +9483,71 @@ bot.onText(/^\/figurine$/, function (message, match) {
 	})
 })
 
+bot.onText(/^\/figurines (\d+) (\w+)|^\/figurines/, function (message, match) {
+	if ((match.length < 3) || (match[2] == undefined)) {
+		bot.sendMessage(message.chat.id, 'È necessario specificare entrambi i parametri rarità e nome giocatore. Esempio: /figurines 1 fenix45')
+		return
+	}
+
+	var rarity = 0;
+	if ((match[1] < 1) || (match[1] > 10)) {
+		bot.sendMessage(message.chat.id, 'La rarità deve essere compresa tra 1 e 10!')
+		return
+	} else
+		rarity = mysql_real_escape_string(match[1]);
+
+	const nick = mysql_real_escape_string(match[2]);
+
+	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
+		if (err) throw err
+		if (Object.keys(rows).length == 0) {
+			bot.sendMessage(message.chat.id, 'Non sei registrato!');
+			return;
+		}
+
+		const player_id = rows[0].id;
+
+		connection.query('SELECT id, nickname FROM player WHERE nickname = "' + nick + '"', function (err, rows, fields) {
+			if (err) throw err
+			if (Object.keys(rows).length == 0) {
+				bot.sendMessage(message.chat.id, 'Il giocatore inserito non esiste');
+				return;
+			}
+
+			const player_id2 = rows[0].id;
+			const player_nickname2 = rows[0].nickname;
+
+			connection.query('SELECT I.card_id, L.name, I.quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = ' + player_id + ' AND I.quantity > 1 AND L.rarity = ' + rarity + ' ORDER BY L.name', async function (err, rows, fields) {
+				if (err) throw err;
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, 'Non possiedi alcuna figurina doppia');
+					return;
+				}
+				var list = "Al giocatore <b>" + player_nickname2 + "</b> mancano le seguenti figurine di rarità <b>" + rarity + "</b> che tu possiedi in almeno duplice copia:\n";
+				for (i = 0, len = Object.keys(rows).length; i < len; i++) {
+					var add = 0;
+					var check = await connection.queryAsync("SELECT quantity FROM card_inventory WHERE player_id = " + player_id2 + " AND card_id = " + rows[i].card_id);
+					if (Object.keys(check).length == 0)
+						add = 1;
+					else {
+						if (check[0].quantity == 0)
+							add = 1;
+					}
+					if (add == 1)
+						list += "> " + rows[i].name + " (" + rows[i].quantity + ")\n";
+				}
+
+				if (Object.keys(rows).length == 0) {
+					bot.sendMessage(message.chat.id, 'Al giocatore inserito non manca nessuna figurina doppia');
+					return;
+				}
+
+				bot.sendMessage(message.chat.id, list, html);
+			});
+		});
+	});
+});
+
 bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
 	var rarity = -1;
 	if (match[1] != undefined) {
@@ -9498,7 +9577,9 @@ bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
 				}
 
 				let text = message.from.username + ', ti mancano ' + formatNumber(Object.keys(rows).length) + ' figurine per rarità ' + rarity + ':\n'
-				for (i = 0, len = Object.keys(rows).length; i < len; i++) { text += '> ' + rows[i].name + ' (' + rows[i].rarity + ')\n' }
+				for (i = 0, len = Object.keys(rows).length; i < len; i++) { 
+					text += '> ' + rows[i].name + ' (' + rows[i].rarity + ')\n' 
+				}
 
 				if (text.length >= 3500) {
 					bot.sendMessage(message.chat.id, message.from.username + ', troppi risultati, prova con una rarità diversa', html)
