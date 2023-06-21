@@ -9160,6 +9160,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 										var item_type = 0;
 										var item_power = 0;
 										var item_crit = 0;
+										var item_icon = "";
 										text += "Hai trovato uno " + mapIdToSym(1) + " <b>Scrigno</b> con al suo interno:\n";
 										if ((conditions == 6) || (conditions == 8))
 											rand = 60;
@@ -9184,15 +9185,18 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											if (item[0].power > 0) {
 												item_type = 1;
 												item_power = item[0].power;
+												item_icon = "🗡 ";
 											} else if (item[0].power_armor < 0) {
 												item_type = 2;
 												item_power = item[0].power_armor;
+												item_icon = "🥋 ";
 											} else if (item[0].power_shield < 0) {
 												item_type = 3;
 												item_power = item[0].power_shield;
+												item_icon = "🛡 ";
 											}
 											item_id = item[0].id;
-											text += "> " + item[0].name + " (" + item[0].rarity + ", " + item_power + ", " + item_crit + "%)";
+											text += "> " + item_icon + item[0].name + " (" + item[0].rarity + ", " + item_power + ", " + item_crit + "%)";
 										}
 										toClear = 1;
 										setAchievement(player_id, 89, 1);
@@ -9221,15 +9225,18 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 											if (item[0].power > 0) {
 												item_type = 1;
 												item_power = item[0].power;
+												item_icon = "🗡 ";
 											} else if (item[0].power_armor < 0) {
 												item_type = 2;
 												item_power = item[0].power_armor;
+												item_icon = "🥋 ";
 											} else if (item[0].power_shield < 0) {
 												item_type = 3;
 												item_power = item[0].power_shield;
+												item_icon = "🛡 ";
 											}
 											item_id = item[0].id;
-											text += "> " + item[0].name + " (" + item[0].rarity + ", " + item_power + ", " + item_crit + "%)";
+											text += "> " + item_icon + item[0].name + " (" + item[0].rarity + ", " + item_power + ", " + item_crit + "%)";
 										}
 										toClear = 1;
 										setAchievement(player_id, 89, 1);
@@ -10757,9 +10764,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 										var est2 = parseInt(craftableRarity[1].estimate);
 										var est3 = parseInt(craftableRarity[2].estimate);
 
-										var price1 = Math.round(Math.random() * (est1 * 0.1) + (est1));
-										var price2 = Math.round(Math.random() * (est2 * 0.1) + (est2));
-										var price3 = Math.round(Math.random() * (est3 * 0.1) + (est3));
+										var price1 = Math.round(Math.random() * (est1 * 0.1) + (est1)) * 5;
+										var price2 = Math.round(Math.random() * (est2 * 0.1) + (est2)) * 5;
+										var price3 = Math.round(Math.random() * (est3 * 0.1) + (est3)) * 5;
 
 										await connection.queryAsync('INSERT INTO dungeon_market (room_id, dungeon_id, item_1, item_2, item_3, price_1, price_2, price_3) VALUES (' + (i + 1) + ',' + dungeon_id + ',' + item1 + ',' + item2 + ',' + item3 + ',' + price1 + ',' + price2 + ',' + price3 + ')')
 									}
@@ -11990,10 +11997,9 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 														return;
 													}
 
-													var multi = 15;
-													text += "\n> " + rows[0].item1n + " (" + formatNumber(rows[0].price1) + " §)";
-													text += "\n> " + rows[0].item2n + " (" + formatNumber(rows[0].price2) + " §)";
-													text += "\n> " + rows[0].item3n + " (" + formatNumber(rows[0].price3) + " §)";
+													text += "\n> 5x " + rows[0].item1n + " (" + formatNumber(rows[0].price1) + " §)";
+													text += "\n> 5x " + rows[0].item2n + " (" + formatNumber(rows[0].price2) + " §)";
+													text += "\n> 5x " + rows[0].item3n + " (" + formatNumber(rows[0].price3) + " §)";
 
 													iKeys.push(["Accetta Oggetto 1"]);
 													iKeys.push(["Accetta Oggetto 2"]);
@@ -12061,7 +12067,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	bot.sendMessage(message.chat.id, "Acquistare " + rows[0].name + " per " + formatNumber(item_price) + " §?", dYesNo).then(function () {
 																		answerCallbacks[message.chat.id] = async function (answer) {
 																			if (answer.text.toLowerCase() == "si") {
-																				await addItem(player_id, item_id);
+																				await addItem(player_id, item_id, 5);
 																				await reduceMoney(player_id, item_price);
 																				await endDungeonRoom(player_id, boost_id, boost_mission);
 
@@ -14350,7 +14356,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																	}
 																};
 
-																bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Non fai che un passo, una voce mite ma ferma ti paralizza:\n«Io sono l'Alchimista dell'Ovest e ti chiedo, giovane " + gender_text_g + ": scambieresti il tuo *" + item1_name + "*" + item_poss + " per *" + item2_name + "*?»", dOptions).then(function () {
+																bot.sendMessage(message.chat.id, dungeonToSym(dir) + " Non fai che un passo, una voce mite ma ferma ti paralizza:\n«Io sono l'Alchimista dell'Ovest e ti chiedo, giovane " + gender_text_g + ": scambieresti il tuo *" + item1_name + "* (" + item1qnt + ")" + item_poss + " per *" + item2_name + "*?»", dOptions).then(function () {
 																	answerCallbacks[message.chat.id] = async function (answer) {
 																		if (answer.text.toLowerCase() == "si") {
 
@@ -20807,10 +20813,24 @@ bot.onText(/cassaforte/i, function (message, match) {
 
 				var safe_tot = 0;
 				var text = "";
+				var iKeys = [];
+				var keyLimit = 20;
 				for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 					safe_tot += parseInt(rows[i].money);
 					text += "> " + rows[i].nickname + " - " + formatNumber(rows[i].money) + " §\n";
+					if (i <= keyLimit)
+						iKeys.push([rows[i].nickname + " (" + formatNumber(rows[i].money) + " §)"]);
 				}
+
+				iKeys.push(["Torna alla cassaforte"]);
+
+				var kbPlayer = {
+					parse_mode: "Markdown",
+					reply_markup: {
+						resize_keyboard: true,
+						keyboard: iKeys
+					}
+				};
 
 				var current = "\nNon contiene monete";
 				if (safe_tot > 0)
@@ -20885,90 +20905,119 @@ bot.onText(/cassaforte/i, function (message, match) {
 								return;
 							}
 
-							var kbNum = {
-								parse_mode: "HTML",
-								reply_markup: {
-									resize_keyboard: true,
-									keyboard: [[safe_tot.toString()], ['Torna alla cassaforte']]
-								}
-							};
-
-							bot.sendMessage(message.chat.id, "Quante monete vuoi ritirare?\nNella cassaforte ce ne sono " + formatNumber(safe_tot), kbNum).then(function () {
+							bot.sendMessage(message.chat.id, "Da quale giocatore vuoi ritirare le monete?", kbPlayer).then(function () {
 								answerCallbacks[message.chat.id] = async function (answer) {
-									if (isNaN(parseInt(answer.text))) {
-										bot.sendMessage(message.from.id, "Valore non valido", kbBack);
+
+									var player = answer.text;
+									if (reg.test(player) == false) {
+										bot.sendMessage(message.chat.id, "Giocatore non valido, riprova", kbBack);
 										return;
 									}
 
-									answer.text = answer.text.trim().replaceAll(/\./, "").replaceAll(/\k/, "000");
+									connection.query('SELECT id FROM player WHERE nickname = "' + player + '"', function (err, rows, fields) {
+										if (err) throw err;
 
-									var get = parseInt(answer.text);
-									if (get < 1) {
-										bot.sendMessage(message.from.id, "Inserisci un valore maggiore di zero", kbBack);
-										return;
-									}
+										if (Object.keys(rows).length == 0) {
+											bot.sendMessage(message.chat.id, "Il giocatore non esiste, riprova", kbBack);
+											return;
+										}
 
-									if (get > safe_tot) {
-										bot.sendMessage(message.from.id, "Non puoi ritirare più monete di quante ne siano disponibili", kbBack);
-										return;
-									}
+										var get_player_id = rows[0].id;
 
-									bot.sendMessage(message.chat.id, "Sei sicuro di voler ritirare " + formatNumber(get) + " §?", kbYesNo).then(function () {
-										answerCallbacks[message.chat.id] = async function (answer) {
-											if (answer.text.toLowerCase() == "si") {
-												connection.query('SELECT money FROM player WHERE id = ' + player_id, function (err, rows, fields) {
-													if (err) throw err;
+										connection.query('SELECT money FROM safe WHERE player_id = ' + get_player_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
+											if (err) throw err;
 
-													if (rows[0].money + get > 1000000000) {
-														bot.sendMessage(message.from.id, "Ritirando tutte queste monete supereresti il limite massimo, riprova", kbBack);
+											if (Object.keys(rows).length == 0) {
+												bot.sendMessage(message.chat.id, "Giocatore non trovato nel deposito, riprova", kbBack);
+												return;
+											}
+
+											var max_money = rows[0].money;
+
+											var kbNum = {
+												parse_mode: "HTML",
+												reply_markup: {
+													resize_keyboard: true,
+													keyboard: [[max_money.toString()], ['Torna alla cassaforte']]
+												}
+											};
+
+											bot.sendMessage(message.chat.id, "Quante monete vuoi ritirare?\nIl giocatore ne ha depositate " + formatNumber(max_money), kbNum).then(function () {
+												answerCallbacks[message.chat.id] = async function (answer) {
+													if (isNaN(parseInt(answer.text))) {
+														bot.sendMessage(message.from.id, "Valore non valido", kbBack);
 														return;
 													}
 
-													connection.query('SELECT money FROM team_safe WHERE team_id = ' + team_id, async function (err, rows, fields) {
-														if (err) throw err;
+													answer.text = answer.text.trim().replaceAll(/\./, "").replaceAll(/\k/, "000");
 
-														var restore = 0;
-														var text = "";
-														for (var i = 0, len = Object.keys(rows).length; i < len; i++)
-															restore += parseInt(rows[i].money);
+													var get = parseInt(answer.text);
+													if (get < 1) {
+														bot.sendMessage(message.from.id, "Inserisci un valore maggiore di zero", kbBack);
+														return;
+													}
 
-														var quantityReq = get;
-														connection.query('SELECT id, money FROM team_safe WHERE team_id = ' + team_id, async function (err, rows, fields) {
-															if (err) throw err;
-															for (var k = 0, len = Object.keys(rows).length; k < len; k++) {
-																if (rows[k].money == quantityReq) {
-																	connection.query('DELETE FROM team_safe WHERE id = ' + rows[k].id, function (err, rows, fields) {
-																		if (err) throw err;
-																	});
-																	break;
-																} else {
-																	if (quantityReq >= rows[k].money) {
-																		connection.query('DELETE FROM team_safe WHERE id = ' + rows[k].id, function (err, rows, fields) {
-																			if (err) throw err;
-																		});
-																		quantityReq -= rows[k].money;
-																	} else {
-																		connection.query('UPDATE team_safe SET money = money-' + quantityReq + ' WHERE id = ' + rows[k].id, function (err, rows, fields) {
-																			if (err) throw err;
-																		});
-																		break;
+													if (get > max_money) {
+														bot.sendMessage(message.from.id, "Non puoi ritirare più monete di quante ne siano state depositate", kbBack);
+														return;
+													}
+
+													bot.sendMessage(message.chat.id, "Sei sicuro di voler ritirare " + formatNumber(get) + " §?", kbYesNo).then(function () {
+														answerCallbacks[message.chat.id] = async function (answer) {
+															if (answer.text.toLowerCase() == "si") {
+																connection.query('SELECT money FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+																	if (err) throw err;
+
+																	if (rows[0].money + get > 1000000000) {
+																		bot.sendMessage(message.from.id, "Ritirando tutte queste monete supereresti il limite massimo, riprova", kbBack);
+																		return;
 																	}
-																}
-															}
-														});
 
-														await addMoney(player_id, get);
-														bot.sendMessage(message.from.id, "Hai ritirato correttamente " + formatNumber(get) + " §!", kbBack);
-														
-														connection.query('INSERT INTO team_safe_get_log (team_id, player_id, money) VALUES (' + team_id + ',' + player_id + ',' + get + ')', function (err, rows, fields) {
-															if (err) throw err;
-														});
+																	connection.query('SELECT money FROM team_safe WHERE player_id = ' + get_player_id + ' AND team_id = ' + team_id, async function (err, rows, fields) {
+																		if (err) throw err;
+
+																		if (Object.keys(rows).length == 0) {
+																			bot.sendMessage(message.chat.id, "Giocatore non trovato nel deposito, riprova", kbBack);
+																			return;
+																		}
+
+																		var max_money = rows[0].money;
+																		var quantityReq = get;
+
+																		if (quantityReq > max_money) {
+																			bot.sendMessage(message.chat.id, "Il giocatore non possiede così tante monete, riprova", kbBack);
+																			return;
+																		}
+
+																		connection.query('SELECT id, money FROM team_safe WHERE player_id = ' + get_player_id + ' AND team_id = ' + team_id, async function (err, rows, fields) {
+																			if (err) throw err;
+																			if (quantityReq == rows[0].money) {
+																				connection.query('DELETE FROM team_safe WHERE id = ' + rows[0].id, function (err, rows, fields) {
+																					if (err) throw err;
+																				});
+																			} else {
+																				connection.query('UPDATE team_safe SET money = money-' + quantityReq + ' WHERE id = ' + rows[0].id, function (err, rows, fields) {
+																					if (err) throw err;
+																				});
+																			}
+																		});
+
+																		await addMoney(player_id, get);
+																		bot.sendMessage(message.from.id, "Hai ritirato correttamente " + formatNumber(get) + " § dal giocatore selezionato!", kbBack);
+																		
+																		connection.query('INSERT INTO team_safe_get_log (team_id, player_id, money, from_player_id) VALUES (' + team_id + ',' + player_id + ',' + get + ', ' + get_player_id + ')', function (err, rows, fields) {
+																			if (err) throw err;
+																		});
+																	});
+																});
+															}
+														}
 													});
-												});
-											}
-										}
+												}
+											});
+										});
 									});
-								}
+								};
 							});
 						} else if (answer.text == "Log") {
 							connection.query('SELECT P.nickname, L.money, L.insert_date FROM team_safe_log L, player P WHERE L.player_id = P.id AND L.team_id = ' + team_id + ' ORDER BY L.insert_date DESC LIMIT 25', function (err, rows, fields) {
@@ -20980,7 +21029,7 @@ bot.onText(/cassaforte/i, function (message, match) {
 									text += "> " + rows[i].nickname + " - " + formatNumber(rows[i].money) + " § il " + toDate("it", d) + "\n";
 								}
 								
-								connection.query('SELECT P.nickname, L.money, L.insert_date FROM team_safe_get_log L, player P WHERE L.player_id = P.id AND L.team_id = ' + team_id + ' ORDER BY L.insert_date DESC LIMIT 25', function (err, rows, fields) {
+								connection.query('SELECT P1.nickname, P2.nickname, L.money, L.insert_date FROM team_safe_get_log L, player P1, player P2 WHERE L.from_player_id = P2.id AND L.player_id = P1.id AND L.team_id = ' + team_id + ' ORDER BY L.insert_date DESC LIMIT 25', function (err, rows, fields) {
 									if (err) throw err;
 
 									text += "\nUltimi 25 ritiri:\n";
@@ -55793,10 +55842,12 @@ function assaultIncrement(message, player_id, team_id) {
 						return;
 					}
 
+					/*
 					var val = Math.round(rows[0].level*10/rows[0].max_level); // per globale
 					
 					if (await getCurrentGlobal() == 14)
 						globalAchievement(player_id, val);
+					*/
 				});
 			});
 		});
@@ -56155,6 +56206,8 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											chest7 = Math.floor(chest7);
 										}
 
+										// todo mob_turn
+
 										if ((await getCurrentGlobal() == 14) && (global_end == 1)) {
 											if (await getPastGlobalStatus() == 1) {
 												chest1 = chest1*2;
@@ -56177,6 +56230,13 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 												chest8 = Math.round(chest8/2);
 												chest9 = Math.round(chest9/2);
 											}
+										}
+
+										if (await getCurrentGlobal() == 14) {
+											var val = (30 - mob_turn);
+											if (val < 0) val = 0;
+											val += boss_num; // giorno assalto
+											globalAchievement(rows[i].id, val);
 										}
 
 										// costruzione testo e consegna
@@ -64100,6 +64160,7 @@ function setFinishedMission(element, index, array) {
 							if (err) throw err;
 							bot.sendMessage(chat_id, "Hai trovato una Chiave Mistica 🗝!");
 						});
+						achPnt++;
 					}
 
 					if ((mission_gem == 0) && (mission_chest >= 3))
