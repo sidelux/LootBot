@@ -2019,22 +2019,22 @@ function integrateMessage(chat_id, curr_user, fullCommand, is_confirm) {
 						authorMsg_text = moji + " *Nuovo commento...*\n\nDeloo ";
 
 						if (sugg_infos.sugg_text.indexOf("#tools") >= 0) {
-							updated_text += "\n" + moji + "* Risposta del Tools*"
+							updated_text += moji + "* Risposta del Tools*"
 						} else {
 							return integrateMessage_resolve(simpleDeletableMessage(340271798, "😕\nIl suggerimento " + sugg_id + " non è per te, Deloo..."));
 						}
 					} else if (curr_user.id == amministratore) {
 						moji = "⚡️";
 						authorMsg_text = moji + " *Nuovo commento...*\n\nLa _Fenice_ ";
-						updated_text += "\n" + moji + "* Risposta dalla Fenice*";
+						updated_text += moji + "* Risposta dalla Fenice*";
 					} else if (curr_user.role == 3) {
 						moji = "⭐";
 						authorMsg_text = moji + " *Nuovo commento...*\n\nUn moderatore ";
-						updated_text += "\n" + moji + "* Risposta da un moderatore*";
+						updated_text += moji + "* Risposta da un moderatore*";
 					} else if (curr_user.id == amministratore_suggerimenti) {
 						moji = "🤖";
 						authorMsg_text = moji + " *Nuovo commento...*\n\nIl bot dei suggerimenti ";
-						updated_text += "\n" + moji + "* Risposta dal bot dei Suggerimenti*";
+						updated_text += moji + "* Risposta dal bot dei Suggerimenti*";
 					}
 
 					updated_text += "\n" + fullCommand.comment.charAt(0).toUpperCase() + fullCommand.comment.slice(1);
