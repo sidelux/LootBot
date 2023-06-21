@@ -20908,7 +20908,8 @@ bot.onText(/cassaforte/i, function (message, match) {
 							bot.sendMessage(message.chat.id, "Da quale giocatore vuoi ritirare le monete?", kbPlayer).then(function () {
 								answerCallbacks[message.chat.id] = async function (answer) {
 
-									var player = answer.text;
+									var player = answer.text.split(" (")[0];
+									var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
 									if (reg.test(player) == false) {
 										bot.sendMessage(message.chat.id, "Giocatore non valido, riprova", kbBack);
 										return;
@@ -20924,7 +20925,7 @@ bot.onText(/cassaforte/i, function (message, match) {
 
 										var get_player_id = rows[0].id;
 
-										connection.query('SELECT money FROM safe WHERE player_id = ' + get_player_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
+										connection.query('SELECT money FROM team_safe WHERE player_id = ' + get_player_id + ' AND team_id = ' + team_id, function (err, rows, fields) {
 											if (err) throw err;
 
 											if (Object.keys(rows).length == 0) {
@@ -56205,8 +56206,6 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 
 											chest7 = Math.floor(chest7);
 										}
-
-										// todo mob_turn
 
 										if ((await getCurrentGlobal() == 14) && (global_end == 1)) {
 											if (await getPastGlobalStatus() == 1) {
