@@ -9483,20 +9483,37 @@ bot.onText(/^\/figurine$/, function (message, match) {
 	})
 })
 
-bot.onText(/^\/figurines (\d+) (\w+)|^\/figurines/, function (message, match) {
-	if ((match.length < 3) || (match[2] == undefined)) {
-		bot.sendMessage(message.chat.id, 'È necessario specificare entrambi i parametri rarità e nome giocatore. Esempio: /figurines 1 fenix45')
-		return
+bot.onText(/^\/figurines (\d+) (\w+)|^\/figurines (\d+)|^\/figurines/, function (message, match) {
+	var nick = "";
+	if (message.reply_to_message != undefined) {
+		if ((match.length < 2) || (match[1] == undefined))
+			var rarity = 0;
+		else
+			var rarity = match[1];
+
+		nick = message.reply_to_message.from.username;
+	} else {
+		if ((match.length < 3) || (match[2] == undefined)) {
+			bot.sendMessage(message.chat.id, 'È necessario specificare entrambi i parametri rarità e nome giocatore. Esempio: /figurines 1 fenix45, in risposta si può omettere il parametro giocatore');
+			return;
+		}
+
+		nick = mysql_real_escape_string(match[2]);
+		var reg = new RegExp("^[a-zA-Z0-9_]{1,100}$");
+		if (reg.test(nick) == false) {
+			bot.sendMessage(message.chat.id, "Giocatore non valido, riprova");
+			return;
+		}
+		var rarity = match[1];
 	}
 
-	var rarity = 0;
-	if ((match[1] < 1) || (match[1] > 10)) {
-		bot.sendMessage(message.chat.id, 'La rarità deve essere compresa tra 1 e 10!')
-		return
-	} else
-		rarity = mysql_real_escape_string(match[1]);
-
-	const nick = mysql_real_escape_string(match[2]);
+	if (rarity != 0) {
+		if ((rarity < 1) || (rarity > 10)) {
+			bot.sendMessage(message.chat.id, 'La rarità deve essere compresa tra 1 e 10!');
+			return
+		} else
+			rarity = mysql_real_escape_string(rarity);
+	}
 
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err
@@ -9517,13 +9534,27 @@ bot.onText(/^\/figurines (\d+) (\w+)|^\/figurines/, function (message, match) {
 			const player_id2 = rows[0].id;
 			const player_nickname2 = rows[0].nickname;
 
-			connection.query('SELECT I.card_id, L.name, I.quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = ' + player_id + ' AND I.quantity > 1 AND L.rarity = ' + rarity + ' ORDER BY L.name', async function (err, rows, fields) {
+			if (player_id == player_id2) {
+				bot.sendMessage(message.chat.id, 'Non puoi confrontarti con te stesso...');
+				return;
+			}
+
+			var query = "";
+			var rarity_text = "";
+			if (rarity > 0) {
+				query = "SELECT I.card_id, L.name, I.quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = " + player_id + " AND I.quantity > 1 AND L.rarity = " + rarity + " ORDER BY L.name LIMIT 50";
+				rarity_text = " di rarità <b>" + rarity + "</b>";
+			} else if (rarity == 0) {
+				query = "SELECT I.card_id, L.name, I.quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = " + player_id + " AND I.quantity > 1 ORDER BY L.name LIMIT 50";
+				rarity_text = "";
+			}
+			connection.query(query, async function (err, rows, fields) {
 				if (err) throw err;
 				if (Object.keys(rows).length == 0) {
 					bot.sendMessage(message.chat.id, 'Non possiedi alcuna figurina doppia');
 					return;
 				}
-				var list = "Al giocatore <b>" + player_nickname2 + "</b> mancano le seguenti figurine di rarità <b>" + rarity + "</b> che tu possiedi in almeno duplice copia:\n";
+				var list = "Al giocatore <b>" + player_nickname2 + "</b> mancano le seguenti figurine" + rarity_text + " che tu possiedi in almeno duplice copia:\n";
 				for (i = 0, len = Object.keys(rows).length; i < len; i++) {
 					var add = 0;
 					var check = await connection.queryAsync("SELECT quantity FROM card_inventory WHERE player_id = " + player_id2 + " AND card_id = " + rows[i].card_id);
@@ -11267,43 +11298,45 @@ function checkStatus(message, nickname, accountid, type) {
 			}
 
 			if (type == 0) {
-				let welcome = rows[0].welcome_text.replaceAll("#n#", "\n");
-				const on = rows[0].welcome
+				if (rows[0].welcome_text != null) {
+					let welcome = rows[0].welcome_text.replaceAll("#n#", "\n");
+					const on = rows[0].welcome;
 
-				if ((on == 1) && (exist == 1) && (welcome != null)) {
-					connection.query('SELECT name, type FROM dragon WHERE player_id = ' + player_id, async function (err, rows, fields) {
-						if (err) throw err
+					if ((on == 1) && (exist == 1) && (welcome != null)) {
+						connection.query('SELECT name, type FROM dragon WHERE player_id = ' + player_id, async function (err, rows, fields) {
+							if (err) throw err
 
-						if (Object.keys(rows).length > 0) { welcome = welcome.replace(new RegExp('#drago#', 'g'), rows[0].name + ' ' + rows[0].type) } else { welcome = welcome.replace(new RegExp('#drago#', 'g'), '-') }
+							if (Object.keys(rows).length > 0) { welcome = welcome.replace(new RegExp('#drago#', 'g'), rows[0].name + ' ' + rows[0].type) } else { welcome = welcome.replace(new RegExp('#drago#', 'g'), '-') }
 
-						welcome = welcome.replace(new RegExp('#giocatore#', 'g'), nickname)
-						welcome = welcome.replace(new RegExp('#livello#', 'g'), lev)
-						welcome = welcome.replace(new RegExp('#rinascita#', 'g'), reb - 1)
-						if (await isBanned(accountid) != null) { welcome = welcome.replace(new RegExp('#iscritto#', 'g'), '🚫') } // Bannato
-						else {
-							if (market == 1) { welcome = welcome.replace(new RegExp('#iscritto#', 'g'), '❌') } // Bannato dal mercato
-							else { welcome = welcome.replace(new RegExp('#iscritto#', 'g'), '👍') } // Iscritto
-						}
-						if (chat_id == '-1001069842056') {
-							const team = await connection.queryAsync('SELECT team_id FROM team_player WHERE player_id = ' + player_id)
-							let haveTeam = 0
-							if (Object.keys(team).length == 1) { haveTeam = 1 }
+							welcome = welcome.replace(new RegExp('#giocatore#', 'g'), nickname)
+							welcome = welcome.replace(new RegExp('#livello#', 'g'), lev)
+							welcome = welcome.replace(new RegExp('#rinascita#', 'g'), reb - 1)
+							if (await isBanned(accountid) != null) { welcome = welcome.replace(new RegExp('#iscritto#', 'g'), '🚫') } // Bannato
+							else {
+								if (market == 1) { welcome = welcome.replace(new RegExp('#iscritto#', 'g'), '❌') } // Bannato dal mercato
+								else { welcome = welcome.replace(new RegExp('#iscritto#', 'g'), '👍') } // Iscritto
+							}
+							if (chat_id == '-1001069842056') {
+								const team = await connection.queryAsync('SELECT team_id FROM team_player WHERE player_id = ' + player_id)
+								let haveTeam = 0
+								if (Object.keys(team).length == 1) { haveTeam = 1 }
 
-							let custom_name_text = ''
-							if (player_custom_nickname != null) { custom_name_text = ' detto <i>' + player_custom_nickname + '</i>' }
+								let custom_name_text = ''
+								if (player_custom_nickname != null) { custom_name_text = ' detto <i>' + player_custom_nickname + '</i>' }
 
-							if (haveTeam == 0) {
-								welcome = 'Benvenuto nella Taverna, giovane <b>' + nickname + '</b> 🍻\nStai cercando un gruppo di avventurieri a cui unirti?\nPotrebbe esserci qualcuno pronto ad accogliere un Lv ' + lev + ' R' + (reb - 1) + "...\nPer imparare le basi del gioco, entra nella <a href='https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg'>LootBot School</a>!"
-							} else if ((haveTeam == 1) && (lev < 250)) {
-								var team_name = await connection.queryAsync('SELECT name FROM team WHERE id = ' + team[0].team_id)
-								welcome = 'Benvenuto nella Taverna, <b>' + nickname + '</b> del team <b>' + team_name[0].name + '</b>\nCosa porta un Lv ' + lev + ' R' + (reb - 1) + ' da queste parti?'
-							} else if (haveTeam == 1) {
-								var team_name = await connection.queryAsync('SELECT name FROM team WHERE id = ' + team[0].team_id)
-								welcome = 'Bentornato nella Taverna, <b>' + nickname + '</b>' + custom_name_text + ' del team <b>' + team_name[0].name + '</b> 🍻'
-							} else { welcome = 'Bentornato nella Taverna, <b>' + nickname + '</b>' + custom_name_text + ' 🍻' }
-						}
-						bot.sendMessage(message.chat.id, welcome, html)
-					})
+								if (haveTeam == 0) {
+									welcome = 'Benvenuto nella Taverna, giovane <b>' + nickname + '</b> 🍻\nStai cercando un gruppo di avventurieri a cui unirti?\nPotrebbe esserci qualcuno pronto ad accogliere un Lv ' + lev + ' R' + (reb - 1) + "...\nPer imparare le basi del gioco, entra nella <a href='https://t.me/joinchat/EXFobEDH8FaawvMWE7p-Jg'>LootBot School</a>!"
+								} else if ((haveTeam == 1) && (lev < 250)) {
+									var team_name = await connection.queryAsync('SELECT name FROM team WHERE id = ' + team[0].team_id)
+									welcome = 'Benvenuto nella Taverna, <b>' + nickname + '</b> del team <b>' + team_name[0].name + '</b>\nCosa porta un Lv ' + lev + ' R' + (reb - 1) + ' da queste parti?'
+								} else if (haveTeam == 1) {
+									var team_name = await connection.queryAsync('SELECT name FROM team WHERE id = ' + team[0].team_id)
+									welcome = 'Bentornato nella Taverna, <b>' + nickname + '</b>' + custom_name_text + ' del team <b>' + team_name[0].name + '</b> 🍻'
+								} else { welcome = 'Bentornato nella Taverna, <b>' + nickname + '</b>' + custom_name_text + ' 🍻' }
+							}
+							bot.sendMessage(message.chat.id, welcome, html)
+						})
+					};
 				};
 			};
 		})
