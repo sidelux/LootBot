@@ -183,7 +183,9 @@ async function manage_toEdit(bot_instance, response) {
     } catch (err) {
         esit = false;
         stats.errors.messages.edited++;
-        console.error(err.response.body);
+        if (err.error_code && err.error_code != 400){ // messaggio già aggiornato...
+            console.error(err.response.body);
+        }
     }
 
     return esit;
