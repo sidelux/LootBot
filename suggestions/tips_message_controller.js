@@ -2019,22 +2019,22 @@ function integrateMessage(chat_id, curr_user, fullCommand, is_confirm) {
 						authorMsg_text = moji + " *Nuovo commento...*\n\nDeloo ";
 
 						if (sugg_infos.sugg_text.indexOf("#tools") >= 0) {
-							updated_text += "\n" + moji + "* Risposta del Tools*"
+							updated_text += moji + "* Risposta del Tools*"
 						} else {
 							return integrateMessage_resolve(simpleDeletableMessage(340271798, "😕\nIl suggerimento " + sugg_id + " non è per te, Deloo..."));
 						}
 					} else if (curr_user.id == amministratore) {
 						moji = "⚡️";
 						authorMsg_text = moji + " *Nuovo commento...*\n\nLa _Fenice_ ";
-						updated_text += "\n" + moji + "* Risposta dalla Fenice*";
+						updated_text += moji + "* Risposta dalla Fenice*";
 					} else if (curr_user.role == 3) {
 						moji = "⭐";
 						authorMsg_text = moji + " *Nuovo commento...*\n\nUn moderatore ";
-						updated_text += "\n" + moji + "* Risposta da un moderatore*";
+						updated_text += moji + "* Risposta da un moderatore*";
 					} else if (curr_user.id == amministratore_suggerimenti) {
 						moji = "🤖";
 						authorMsg_text = moji + " *Nuovo commento...*\n\nIl bot dei suggerimenti ";
-						updated_text += "\n" + moji + "* Risposta dal bot dei Suggerimenti*";
+						updated_text += moji + "* Risposta dal bot dei Suggerimenti*";
 					}
 
 					updated_text += "\n" + fullCommand.comment.charAt(0).toUpperCase() + fullCommand.comment.slice(1);
@@ -4309,7 +4309,7 @@ function closedSuggestionUpdated_text(sugg_infos, new_role, option) {
 	} else if (option == "JOB") {
 		final_text += " perché tratta di una funzione non ancora definita 🔨 \n\n";
 	} else if (option == "IMPOSSIBLE") { // 
-		final_text += " perché impossibile da attuare ⭕️ \n\n";
+		final_text += " perché al momento impossibile da attuare ⭕️ \n\n";
 	} else if (option == "BAL") {
 		final_text += " perché sbilancerebbe le attuali meccaniche ⚖ \n\n";
 	} else if (option == "FILO") {
@@ -5184,13 +5184,11 @@ function manageSuggestionMessage(mess_id, user_role, sugg_infos, opzione) { // S
 		testo_messaggio += "\n· 🔨   _Funzione in beta_";
 		testo_messaggio += "\n· ❌   _Linee guida_";
 		testo_messaggio += "\n· ⭕️   _Non fattibile_";
-		testo_messaggio += "\n";
 		testo_messaggio += "\n· 🪞   _Troppo simile_";
 		testo_messaggio += "\n· ⚖   _Sbilanciato_";
 		testo_messaggio += "\n· 🧠   _Fuori-filosofia_";
 		testo_messaggio += "\n· 👎   _Non necessario_";
 		testo_messaggio += "\n· 👥   _Non piaciuto_";
-
 		testo_messaggio += "\n· 💭   _Altro_\n";
 
 		if (sugg_infos.status < 0) {

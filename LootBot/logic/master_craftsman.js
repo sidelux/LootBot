@@ -419,7 +419,7 @@ async function commit_craft(craftsman_info, player_info) {
             update_array[already_in_list_index][2] = new_quantity
         } else {
             let inventory_item = inventory_logics.hasItem(target_item.id, player_inventory);
-            new_quantity = (inventory_item.quantity + parseInt(target_item.total_quantity));
+            new_quantity = inventory_item.has_item ? (inventory_item.quantity + parseInt(target_item.total_quantity)) : parseInt(target_item.total_quantity);
             update_array.push([player_info.id, target_item.id, new_quantity]);
         }
 
