@@ -61813,7 +61813,7 @@ bot.onText(/^\/incarico/, function (message, match) {
 			var new_part_id = part_id+1;
 
 			if (rows[0].wait == 0) {
-				bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nSiete alla <b>" + (part_id+1) + "</b> scelta e la prossima inizierà alle alle <i>" + short_date + "</i>!\nL'incarico scadrà alle " + short_date_limit, back_html);
+				bot.sendMessage(message.chat.id, "<b>Incarico in corso</b>\n\nSiete alla scelta <b>" + (part_id+1) + "</b> e la prossima inizierà alle <i>" + short_date + "</i>!\nL'incarico scadrà alle " + short_date_limit, back_html);
 			} else if (rows[0].wait == 1) {
 				//console.log("Richiamo manuale incarico per party " + party_id + " e team " + team_id);
 
