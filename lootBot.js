@@ -62875,7 +62875,8 @@ function setFinishedLobbyEnd(element, index, array) {
 						else
 							setAchievement(rows[i].id, 88, 1);
 
-						await addArtifactFragment(rows[i].id);
+						if (lobby_training == 0)
+							await addArtifactFragment(rows[i].id);
 
 						if ((villa == 1) && (trophies_count > 0)) {
 							var villaPnt = await connection.queryAsync('SELECT player_id, points FROM event_villa_status WHERE player_id = ' + rows[i].id);

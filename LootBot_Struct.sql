@@ -3812,6 +3812,7 @@ CREATE TABLE `team_safe_get_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
   `player_id` int(11) NOT NULL,
+  `from_player_id` int(11) NOT NULL,
   `money` bigint(20) NOT NULL,
   `insert_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
