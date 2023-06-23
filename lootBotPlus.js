@@ -9487,10 +9487,10 @@ bot.onText(/^\/figurine$/, function (message, match) {
 bot.onText(/^\/figurines (\d+) (\w+)|^\/figurines (\d+)|^\/figurines/, function (message, match) {
 	var nick = "";
 	if (message.reply_to_message != undefined) {
-		if ((match.length < 2) || (match[1] == undefined))
+		if (match[3] == undefined)
 			var rarity = 0;
 		else
-			var rarity = match[1];
+			var rarity = match[3];
 
 		nick = message.reply_to_message.from.username;
 	} else {
@@ -9583,10 +9583,10 @@ bot.onText(/^\/figurines (\d+) (\w+)|^\/figurines (\d+)|^\/figurines/, function 
 bot.onText(/^\/figurinels (\d+) (\w+)|^\/figurinels (\d+)|^\/figurinels/, function (message, match) {
 	var nick = "";
 	if (message.reply_to_message != undefined) {
-		if ((match.length < 2) || (match[1] == undefined))
+		if (match[3] == undefined)
 			var rarity = 0;
 		else
-			var rarity = match[1];
+			var rarity = match[3];
 
 		nick = message.reply_to_message.from.username;
 	} else {
