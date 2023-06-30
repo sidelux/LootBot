@@ -193,7 +193,7 @@ bot.on('message', function (message, match) {
 							if (err) throw err
 
 							if (Object.keys(rows).length > 1) {
-								if (rows[0].id - rows[1].id < 5) {
+								if (rows[0].id - rows[1].id < 3) {
 									bot.banChatMember(message.chat.id, message.from.id).then(function (result) {
 										bot.sendMessage(message.chat.id, message.from.username + ", hai postato un negozio troppo vicino all'ultimo, sei stato kickato.")
 										bot.sendMessage(message.from.id, "Sei stato kickato dal gruppo Loot Negozi perchè hai postato un negozio troppo vicino all'ultimo")
@@ -9676,7 +9676,7 @@ bot.onText(/^\/figurinels (\d+) (\w+)|^\/figurinels (\d+)|^\/figurinels/, functi
 	});
 });
 
-bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
+bot.onText(/^\/figurinem (\d+)?(\sp\d+)?|^\/figurinem/, function (message, match) {
 	var rarity = -1;
 	if (match[1] != undefined) {
 		if ((match[1] < 1) || (match[1] > 10)) {
@@ -9684,6 +9684,21 @@ bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
 			return
 		} else
 			rarity = mysql_real_escape_string(match[1]);
+	}
+	var pageFilter = "";
+	if ((match[1] != undefined && match[1].indexOf("p") != -1) ||
+		(match[2] != undefined && match[2].indexOf("p") != -1)) {
+			let page = 0;
+			if (match[1] != undefined && match[1].startsWith("p"))
+				page = match[1].replace("p", "");
+			else if (match[2] != undefined && match[2].startsWith("p"))
+				page = match[2].replace("p", "");
+			page = page-1;
+			if (isNaN(page)) {
+				bot.sendMessage(message.chat.id, 'Il numero pagina deve essere un intero');
+				return;
+			}
+			pageFilter = " LIMIT " + (page*50) + ",50";
 	}
 
 	connection.query('SELECT id FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
@@ -9696,7 +9711,7 @@ bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
 		const player_id = rows[0].id
 
 		if (rarity != -1) {
-			connection.query('SELECT name, rarity FROM card_list WHERE id NOT IN (SELECT card_id FROM card_inventory WHERE player_id = ' + player_id + ' AND quantity > 0) AND rarity = ' + rarity + ' ORDER BY name, rarity', function (err, rows, fields) {
+			connection.query('SELECT name, rarity FROM card_list WHERE id NOT IN (SELECT card_id FROM card_inventory WHERE player_id = ' + player_id + ' AND quantity > 0) AND rarity = ' + rarity + ' ORDER BY name, rarity' + pageFilter, function (err, rows, fields) {
 				if (err) throw err
 
 				if (Object.keys(rows).length == 0) {
@@ -9717,7 +9732,7 @@ bot.onText(/^\/figurinem (\d+)?|^\/figurinem/, function (message, match) {
 				bot.sendMessage(message.chat.id, text, html)
 			})
 		} else {
-			connection.query('SELECT rarity, COUNT(I.id) As cnt FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = ' + player_id + ' AND I.quantity > 0 GROUP BY rarity', function (err, inventory_cards, fields) {
+			connection.query('SELECT rarity, COUNT(I.id) As cnt FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = ' + player_id + ' AND I.quantity > 0 GROUP BY rarity' + pageFilter, function (err, inventory_cards, fields) {
 				if (err) throw err
 
 				if (Object.keys(inventory_cards).length == 0) {

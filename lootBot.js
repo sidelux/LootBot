@@ -9007,7 +9007,7 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 							if ((answer.text == "Torna alla mappa") || (answer.text == "Torna al menu") || (answer.text.toLowerCase().indexOf("aggiorna") != -1))
 								return;
 
-							connection.query('SELECT killed, enemy_id FROM map_lobby WHERE player_id = ' + player_id, async function (err, rows, fields) {
+							connection.query('SELECT killed, enemy_id, moves_left FROM map_lobby WHERE player_id = ' + player_id, async function (err, rows, fields) {
 								if (err) throw err;
 
 								if (rows[0].killed == 1) {
@@ -9022,6 +9022,8 @@ bot.onText(/^vai in battaglia$|accedi all'edificio|^torna alla mappa|aggiorna ma
 
 								if (answer.text.toLowerCase().indexOf("sacca") != -1)
 									return;
+
+								moves_left = rows[0].moves_left;
 
 								if (map_moves_mode == 0) {
 									var time = await connection.queryAsync("SELECT wait_time FROM map_lobby WHERE player_id = " + player_id);
@@ -34729,7 +34731,7 @@ bot.onText(/Miniere di Mana|Raccolta|^miniera$|^miniere$/i, function (message) {
 
 							var zone = answer.text.substring(0, answer.text.indexOf("(") - 1);
 
-							var reg = new RegExp("^[a-zA-Z ]{1,100}$");
+							var reg = new RegExp("^[a-zA-Z'àèìòù ]{1,100}$");
 							if (reg.test(zone) == false) {
 								bot.sendMessage(message.chat.id, "Zona non valida, riprova", mBack);
 								return;
@@ -36221,7 +36223,7 @@ bot.onText(/[1-9][.] [a-z1-9\s]+/i, function (message) {
 
 bot.onText(/piazza di lootia|piazza/i, function (message) {
 
-	if (message.text == "Piazza degli Affilamenti")
+	if (message.text.toLowerCase().indexOf("affilamenti") != -1)
 		return;
 
 	connection.query('SELECT account_id, gender FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
@@ -51082,9 +51084,7 @@ function mainMenu(message) {
 													msgtext = msgtext + "\n🔦 Gnomo in ispezione fino alle " + addZero(heist_end.getHours()) + ":" + addZero(heist_end.getMinutes());
 												} else {
 													var heist_count_limit = ((10 - heist_count) < 0 ? 0 : (10 - heist_count));
-													if (heist_count_limit == 0) {
-														msgtext += "\n🔦 nessuna ispezione possibile oggi";
-													} else {
+													if (heist_count_limit > 0) {
 														var plur = "i";
 														if (heist_count_limit == 1)
 															plur = "e";
@@ -55632,11 +55632,9 @@ async function getTeamMembers(answerText) {
 
 	// return "Questa funzione non è al momento disponibile";
 
-	var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-	if (reg.test(answerText) == false) {
-		bot.sendMessage(message.chat.id, "Team non valido, riprova", back);
-		return;
-	}
+	var reg = new RegExp("^[a-zA-Z0-9 ]{1,100}$");
+	if (reg.test(answerText) == false)
+		return "Team non valido, riprova";
 
 	var query = 'LIKE "%' + answerText + '%"';
 	if (answerText.indexOf("*") != -1) {
