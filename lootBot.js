@@ -14853,7 +14853,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																						return;
 
 																					if (await getItemCnt(player_id, stone1) < qnt) {
-																						bot.sendMessage(message.chat.id, "Non possiedi abbastanza copie della pietra richiesto", dBack);
+																						bot.sendMessage(message.chat.id, "Non possiedi abbastanza copie della pietra richiesta", dBack);
 																						return;
 																					}
 
@@ -37519,7 +37519,8 @@ bot.onText(/utilizza polvere/i, function (message) {
 								return;
 							}
 
-							connection.query('SELECT id, estimate, craftable, rarity, name FROM item WHERE rarity IN ("R","UR","L","E") AND power = 0 AND power_shield = 0 AND power_armor = 0 AND dragon_power = 0 AND name = "' + item_sel + '"', async function (err, rows, fields) {
+							const sql = 'SELECT id, estimate, craftable, rarity, name, power, power_armor, power_shield, dragon_power FROM item WHERE rarity IN ("R","UR","L","E") AND power = 0 AND power_shield = 0 AND power_armor = 0 AND dragon_power = 0 AND name = "' + item_sel + '"';
+							connection.query(sql, async function (err, rows, fields) {
 								if (err) throw err;
 								if (Object.keys(rows).length == 0) {
 									bot.sendMessage(message.chat.id, "L'oggetto non esiste, la rarità non è consentita o stai cercando di creare un equipaggiamento", alchemy);
@@ -37531,9 +37532,14 @@ bot.onText(/utilizza polvere/i, function (message) {
 								var rarity = rows[0].rarity;
 								var craft = rows[0].craftable;
 								var estimate = rows[0].estimate;
+								var power = rows[0].power;
+								var power_armor = rows[0].power_armor;
+								var power_shield = rows[0].power_shield;
+								var dragon_power = rows[0].dragon_power;
+
+								bot.sendMessage(20471035, "Avvio generazione di " + itemName + " (" + rarity + ") da " + message.chat.id);
 
 								var nec = 0;
-
 								if (rarity == "R")
 									nec = rar1;
 								else if (rarity == "UR")
@@ -37542,6 +37548,17 @@ bot.onText(/utilizza polvere/i, function (message) {
 									nec = rar3;
 								else if (rarity == "E")
 									nec = rar4;
+								else {
+									bot.sendMessage(20471035, sql);
+									bot.sendMessage(message.chat.id, "Rarità oggetto non valida", alchemy);
+									return;
+								}
+
+								if ((power != 0) || (power_armor != 0) || (power_shield != 0) || (dragon_power != 0)) {
+									bot.sendMessage(message.chat.id, "Oggetto non valido, riprova", alchemy);
+									return;
+								}
+
 								if (craft == 1) {
 									nec = nec * 2;
 									nec += Math.round(estimate / 10000);
@@ -42594,10 +42611,7 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 							}
 							connection.query('SELECT COUNT(Id) As cnt FROM ability WHERE player_id = ' + player_id, function (err, rows, fields) {
 								if (err) throw err;
-								if (rows[0].cnt+1 > slot) {
-									bot.sendMessage(message.chat.id, "Hai già sbloccato il numero massimo di talenti per la tua rinascita", prev);
-									return;
-								}
+								var ability_tot = rows[0].cnt;
 								connection.query('SELECT * FROM ability_list WHERE name = "' + answer.text + '"', function (err, rows, fields) {
 									if (err) throw err;
 									if (Object.keys(rows).length == 0) {
@@ -42645,6 +42659,11 @@ bot.onText(/^Albero Talenti$|Albero/i, function (message) {
 										if (Object.keys(rows).length > 0) {
 											level = parseInt(rows[0].ability_level);
 											learn = "potenziare questo talento al livello " + (level + 1);
+										} else {
+											if (ability_tot+1 > slot) {
+												bot.sendMessage(message.chat.id, "Hai già sbloccato il numero massimo di talenti per la tua rinascita (massimo " + slot + " sbloccabili)", prev);
+												return;
+											}
 										}
 
 										if (ability_id == 1) {
@@ -49327,8 +49346,9 @@ function checkResetGlobal(action = null) {
 						var picked_filter = "";
 						if (Object.keys(rows).length > 0)
 							picked_filter = "WHERE picked = 0";
-						connection.query("SELECT description, cap, item1, item2, item3, treshold, end_message_win, end_message_lose FROM global_history " + picked_filter + " ORDER BY RAND()", function (err, rows, fields) {
+						connection.query("SELECT id, description, cap, item1, item2, item3, treshold, end_message_win, end_message_lose FROM global_history " + picked_filter + " ORDER BY RAND()", function (err, rows, fields) {
 							if (err) throw err;
+							var new_global_id = rows[0].id;
 							var description = rows[0].description;
 							var cap = rows[0].cap;
 							var treshold = rows[0].treshold;
@@ -49342,7 +49362,7 @@ function checkResetGlobal(action = null) {
 							next.setMonth(next.getMonth() + 1, 1);
 							var next_string = toDate("en", next);
 
-							connection.query('UPDATE config SET global_id = ' + global_id + ', global_date = "' + next_string + '", global_cap = ' + cap + ', global_item1 = ' + item1 + ', global_item2 = ' + item2 + ', global_item3 = ' + item3 + ', global_treshold = ' + treshold + ', global_end_message = "' + end_message_win + '", global_end_message_fail = "' + end_message_lose + '", global_desc = "' + description + '", global_eventon = 1, global_eventwait = 0, global_eventhide = 1, global_end_status = ' + global_end_status, function (err, rows, fields) {
+							connection.query('UPDATE config SET global_id = ' + new_global_id + ', global_date = "' + next_string + '", global_cap = ' + cap + ', global_item1 = ' + item1 + ', global_item2 = ' + item2 + ', global_item3 = ' + item3 + ', global_treshold = ' + treshold + ', global_end_message = "' + end_message_win + '", global_end_message_fail = "' + end_message_lose + '", global_desc = "' + description + '", global_eventon = 1, global_eventwait = 0, global_eventhide = 1, global_end_status = ' + global_end_status, function (err, rows, fields) {
 								if (err) throw err;
 								connection.query('DELETE FROM achievement_global', function (err, rows, fields) {
 									if (err) throw err;
