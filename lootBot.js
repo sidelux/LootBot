@@ -10193,7 +10193,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 											var this_istance_number = rows[0].cnt;
 
-											connection.query('SELECT name, duration, cursed, IF(creator_id=' + player_id + ', 1, 0) As createdbyme FROM dungeon_list WHERE name LIKE "' + name1 + '%" AND duration < ' + max_duration + ' ORDER BY createdbyme DESC, duration DESC', function (err, rows, fields) {
+											connection.query('SELECT id, rooms, name, duration, cursed, IF(creator_id = ' + player_id + ', 1, 0) As createdbyme FROM dungeon_list WHERE name LIKE "' + name1 + '%" AND duration < ' + max_duration + ' ORDER BY createdbyme DESC, duration DESC', async function (err, rows, fields) {
 												if (err) throw err;
 
 												if (Object.keys(rows).length == 0) {
@@ -10203,6 +10203,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 												var iKeys = [];
 												var cursedSym = "";
+												var mapped_str = "";
 												iKeys.push(["Genera Nuova Istanza"]);
 
 												for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
@@ -10212,7 +10213,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															cursedSym = "";
 															if (rows[i].cursed == 1)
 																cursedSym = " 🧨";
-															iKeys.push([rows[i].name + " (" + (max_duration - rows[i].duration) + " posti liberi)" + cursedSym]);
+															var mapped = await connection.queryAsync("SELECT COUNT(DISTINCT room_id) As cnt FROM dungeon_map WHERE dungeon_id = " + rows[i].id)
+															mapped_str = " 0% 🗺️";
+															if (Object.keys(mapped).length > 0)
+																mapped_str = " " + Math.round((mapped[0].cnt/rows[i].rooms)/100) + "% 🗺️";
+															iKeys.push([rows[i].name + " (" + (max_duration - rows[i].duration) + " posti)" + cursedSym + mapped_str]);
 														}
 													}
 												}
@@ -12915,7 +12920,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													parse_mode: "Markdown",
 													reply_markup: {
 														resize_keyboard: true,
-														keyboard: [["Inserisci Monete"], ["Sfonda il Muro"], ["❣️", "❤️"], ["Torna al menu"]]
+														keyboard: [["Inserisci Monete"], ["Sfonda il Portone"], ["❣️", "❤️"], ["Torna al menu"]]
 													}
 												};
 
@@ -12938,8 +12943,8 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 																setAchievement(player_id, 77, 1);
 															});
-														} else if (answer.text == "Sfonda il Muro") {
-															bot.sendMessage(message.chat.id, "Sicuro di voler sfondare il muro?", yesno).then(function () {
+														} else if (answer.text == "Sfonda il Portone") {
+															bot.sendMessage(message.chat.id, "Sicuro di voler sfondare il portone?", yesno).then(function () {
 																answerCallbacks[message.chat.id] = async function (answer) {
 																	if (answer.text.toLowerCase() == "si") {
 																		connection.query('SELECT life, total_life FROM player WHERE id = ' + player_id, async function (err, rows, fields) {
@@ -17872,7 +17877,7 @@ bot.onText(/Ritorna/i, function (message) {
 			cave_extra_text = ", " + gems_price + " 💎";
 		}
 		if (((travel_extra == 1) && (travel_id != 0)) || ((cave_extra == 1) && (cave_id != 0)))
-			travel_warning = " e dato che sei già tornato troppe volte, proseguendo consumerai anche " + gems_price + " 💎";
+			travel_warning = " e dato che sei già tornato troppe volte, proseguendo consumerai anche " + gems_price + " 💎 (ne possiedi " + formatNumber(gems) + ")";
 
 		bot.sendMessage(message.chat.id, "Sicuro di voler annullare il viaggio? Ti costerà 5 exp" + travel_warning, yesno).then(function () {
 			answerCallbacks[message.chat.id] = async function (answer) {
@@ -24180,6 +24185,7 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 
 																							if (is_dummy == 0) {
 																								bot.sendMessage(chat_id2, "Il tuo drago è stato sconfitto nella vetta da " + dragon_name + " ed hai perso " + rank_lost + " Ð! Fallo riposare per tornare a combattere!");
+																								await addArtifactFragment(player_id);
 																							}
 
 																							if (dragon_arms_id != 0) {
@@ -24277,8 +24283,10 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 																							if (is_dummy == 0)
 																								await addChest(player_id2, 9);
 
-																							if (is_dummy == 0)
+																							if (is_dummy == 0) {
 																								bot.sendMessage(chat_id2, "Il tuo drago ha vinto durante il combattimento contro " + dragon_name + " " + dragon_type + "!\nHai ottenuto uno Scrigno Scaglia e " + rank + " Ð!");
+																								await addArtifactFragment(player_id2);
+																							}
 
 																							if (dragon_arms_id != 0) {
 																								if (dragon_arms_duration <= 1) {
@@ -37537,8 +37545,6 @@ bot.onText(/utilizza polvere/i, function (message) {
 								var power_shield = rows[0].power_shield;
 								var dragon_power = rows[0].dragon_power;
 
-								bot.sendMessage(20471035, "Avvio generazione di " + itemName + " (" + rarity + ") da " + message.chat.id);
-
 								var nec = 0;
 								if (rarity == "R")
 									nec = rar1;
@@ -37549,7 +37555,6 @@ bot.onText(/utilizza polvere/i, function (message) {
 								else if (rarity == "E")
 									nec = rar4;
 								else {
-									bot.sendMessage(20471035, sql);
 									bot.sendMessage(message.chat.id, "Rarità oggetto non valida", alchemy);
 									return;
 								}

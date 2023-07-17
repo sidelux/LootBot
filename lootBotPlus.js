@@ -9543,10 +9543,10 @@ bot.onText(/^\/figurines (\d+) (\w+)|^\/figurines (\d+)|^\/figurines/, function 
 			var query = "";
 			var rarity_text = "";
 			if (rarity > 0) {
-				query = "SELECT I.card_id, L.name, I.quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = " + player_id + " AND I.quantity > 1 AND L.rarity = " + rarity + " ORDER BY L.name LIMIT 50";
+				query = "SELECT I.card_id, L.name, I.quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = " + player_id + " AND I.quantity > 1 AND L.rarity = " + rarity + " ORDER BY L.name LIMIT 200";
 				rarity_text = " di rarità <b>" + rarity + "</b>";
 			} else if (rarity == 0) {
-				query = "SELECT I.card_id, L.name, I.quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = " + player_id + " AND I.quantity > 1 ORDER BY L.name LIMIT 50";
+				query = "SELECT I.card_id, L.name, I.quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = " + player_id + " AND I.quantity > 1 ORDER BY L.name LIMIT 200";
 				rarity_text = "";
 			}
 			connection.query(query, async function (err, rows, fields) {
