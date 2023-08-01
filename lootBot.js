@@ -7990,6 +7990,7 @@ bot.onText(/attacca!/i, function (message) {
 											var partialProtected = 0;
 											var shieldText = "";
 											if ((enemy_battle_shield == 1) && (isScrap == 0)) {
+												/*
 												var defenceRand = Math.random()*100;
 												if (enemy_full_armor >= defenceRand) {
 													text += "L'avversario si protegge con l'armatura e per il contraccolpo vieni stordito!";
@@ -8000,6 +8001,9 @@ bot.onText(/attacca!/i, function (message) {
 													partialProtected = 1;
 													set_enemy_battle_shield = 0;
 												}
+												*/
+												partialProtected = 1;
+												set_enemy_battle_shield = 0;
 											}
 											if (fullProtected == 0) {
 												var randDodge = Math.random()*100;
@@ -10206,6 +10210,11 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 												var mapped_str = "";
 												iKeys.push(["Genera Nuova Istanza"]);
 
+												var isMapTeam = 1;
+												var team = await connection.queryAsync('SELECT team_id FROM team_player WHERE player_id = ' + player_id);
+												if (Object.keys(team).length == 0)
+													isMapTeam = 0;
+
 												for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
 													if (i < 120) {
 														var num = rows[i].name.match(/\d+/g);
@@ -10213,10 +10222,13 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 															cursedSym = "";
 															if (rows[i].cursed == 1)
 																cursedSym = " 🧨";
-															var mapped = await connection.queryAsync("SELECT COUNT(DISTINCT room_id) As cnt FROM dungeon_map WHERE dungeon_id = " + rows[i].id)
+															if (isMapTeam == 1) {
+																var mapped = await connection.queryAsync('SELECT SUM(tot) As tot FROM (SELECT (IF(SUM(dir_top) > 0, 1, 0)+IF(SUM(dir_right), 1, 0)+IF(SUM(dir_left), 1, 0)) As tot FROM dungeon_map M, team T, team_player TP WHERE M.player_id = TP.player_id AND TP.team_id = T.id AND dungeon_id = ' + rows[i].id + ' AND T.id = ' + team[0].team_id + ' GROUP BY room_id) As t');
+															} else
+																var mapped = await connection.queryAsync("SELECT (IF(SUM(dir_top) > 0, 1, 0)+IF(SUM(dir_right), 1, 0)+IF(SUM(dir_left), 1, 0)) As tot FROM dungeon_map WHERE dungeon_id = " + rows[i].id + " AND player_id = " + player_id);
 															mapped_str = " 0% 🗺️";
 															if (Object.keys(mapped).length > 0)
-																mapped_str = " " + Math.round((mapped[0].cnt/rows[i].rooms)/100) + "% 🗺️";
+																mapped_str = " " + Math.round(mapped[0].tot/(rows[i].rooms*3)*100) + "% 🗺️";
 															iKeys.push([rows[i].name + " (" + (max_duration - rows[i].duration) + " posti)" + cursedSym + mapped_str]);
 														}
 													}
@@ -49321,8 +49333,13 @@ function checkResetGlobal(action = null) {
 		var now = new Date();
 		if (now.getDate() == 1)
 			action = "close";
-		else if (now.getDate() == 5)
+			if (now.getMonth()+1 == 9)
+				action = null;
+		else if (now.getDate() == 5) {
 			action = "open";
+			if (now.getMonth()+1 == 8)
+				action = null;
+		}
 	}
 
 	if (action == "close") {

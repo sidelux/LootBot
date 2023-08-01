@@ -9543,10 +9543,10 @@ bot.onText(/^\/figurines (\d+) (\w+)|^\/figurines (\d+)|^\/figurines/, function 
 			var query = "";
 			var rarity_text = "";
 			if (rarity > 0) {
-				query = "SELECT I.card_id, L.name, I.quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = " + player_id + " AND I.quantity > 1 AND L.rarity = " + rarity + " ORDER BY L.name LIMIT 200";
+				query = "SELECT I.card_id, L.name, I.quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = " + player_id + " AND I.quantity > 1 AND L.rarity = " + rarity + " ORDER BY L.name";
 				rarity_text = " di rarità <b>" + rarity + "</b>";
 			} else if (rarity == 0) {
-				query = "SELECT I.card_id, L.name, I.quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = " + player_id + " AND I.quantity > 1 ORDER BY L.name LIMIT 200";
+				query = "SELECT I.card_id, L.name, I.quantity FROM card_inventory I, card_list L WHERE I.card_id = L.id AND I.player_id = " + player_id + " AND I.quantity > 1 ORDER BY L.name";
 				rarity_text = "";
 			}
 			connection.query(query, async function (err, rows, fields) {
@@ -9556,6 +9556,7 @@ bot.onText(/^\/figurines (\d+) (\w+)|^\/figurines (\d+)|^\/figurines/, function 
 					return;
 				}
 				var list = "Al giocatore <b>" + player_nickname2 + "</b> mancano le seguenti figurine" + rarity_text + " che tu possiedi in almeno duplice copia:\n";
+				var c = 0;
 				for (i = 0, len = Object.keys(rows).length; i < len; i++) {
 					var add = 0;
 					var check = await connection.queryAsync("SELECT quantity FROM card_inventory WHERE player_id = " + player_id2 + " AND card_id = " + rows[i].card_id);
@@ -9565,8 +9566,10 @@ bot.onText(/^\/figurines (\d+) (\w+)|^\/figurines (\d+)|^\/figurines/, function 
 						if (check[0].quantity == 0)
 							add = 1;
 					}
-					if (add == 1)
+					if ((add == 1) && (c < 100)) {
 						list += "> " + rows[i].name + " (" + rows[i].quantity + ")\n";
+						c++;
+					}
 				}
 
 				if (Object.keys(rows).length == 0) {
