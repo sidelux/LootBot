@@ -7990,9 +7990,8 @@ bot.onText(/attacca!/i, function (message) {
 											var partialProtected = 0;
 											var shieldText = "";
 											if ((enemy_battle_shield == 1) && (isScrap == 0)) {
-												/*
 												var defenceRand = Math.random()*100;
-												if (enemy_full_armor >= defenceRand) {
+												if ((enemy_full_armor >= defenceRand) && (battle_heavy == 1)) {
 													text += "L'avversario si protegge con l'armatura e per il contraccolpo vieni stordito!";
 													enemy_text += "Riesci a proteggerti completamente dall'attacco del tuo avversario, inoltre per il contraccolpo l'avversario rimane stordito!";
 													fullProtected = 1;
@@ -8001,9 +8000,6 @@ bot.onText(/attacca!/i, function (message) {
 													partialProtected = 1;
 													set_enemy_battle_shield = 0;
 												}
-												*/
-												partialProtected = 1;
-												set_enemy_battle_shield = 0;
 											}
 											if (fullProtected == 0) {
 												var randDodge = Math.random()*100;
@@ -38744,7 +38740,11 @@ bot.onText(/zaino completo|^znc$/i, function (message) {
 							bottext = bottext + "\n<b>" + rows[i].rname + "</b>:\n";
 						if (rows[i].craftable == 0)
 							rows[i].name = "<b>" + rows[i].name + "</b>";
-						bottext = bottext + "> " + rows[i].name + " (" + formatNumber(rows[i].num) + ")\n";
+						var max_quantity = getMaxQuantity(rarity);
+						if (max_quantity != -1)
+							bottext = bottext + "> " + rows[i].name + " (" + formatNumber(rows[i].num) + ", -" + formatNumber(max_quantity-rows[i].num) + ")\n";
+						else
+							bottext = bottext + "> " + rows[i].name + " (" + formatNumber(rows[i].num) + ")\n";
 						raritypre = rows[i].id;
 					}
 				} else {
@@ -44295,6 +44295,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 		}
 	};
 
+	/*
 	var d = new Date();
 	if ((luckyMode == 0) && (blackfriday == 0)) {
 		if ((d.getDay() == 0) || (d.getDay() == 6)) {
@@ -44302,6 +44303,7 @@ bot.onText(/ruota della luna|ruota/i, function (message) {
 			return;
 		}
 	}
+	*/
 
 	var moon = "Dorata";
 	if (d.getDay() == 0)
@@ -58126,6 +58128,9 @@ function getRankName(rank, opt) {
 function globalAchievement(player_id, value = 1) {
 	if (value == 0)
 		return;
+	var d = new Date();
+	if (d.getMonth()+1 == 8)
+		return;
 	connection.query('SELECT global_eventon, global_cap, global_eventwait FROM config', function (err, rows, fields) {
 		if (err) throw err;
 		if (rows[0].global_eventon == 1) {
@@ -65608,19 +65613,7 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 	var exclude_items = [646];	// Polvere
 	if (!exclude_items.includes(item_id)) {
 		var inv_quantity = await getItemCnt(player_id, item_id);
-		var max_quantity = -1;
-		if (rarity == "C")
-			max_quantity = 6000;
-		else if (rarity == "NC")
-			max_quantity = 4500;
-		else if (rarity == "R")
-			max_quantity = 3000;
-		else if (rarity == "UR")
-			max_quantity = 2000;
-		else if ((rarity == "L") || (rarity == "E"))
-			max_quantity = 1000;
-		else if ((rarity == "UE") || (rarity == "X") || (rarity == "U"))
-			max_quantity = 500;
+		var max_quantity = getMaxQuantity(rarity);
 
 		if (max_quantity != -1) {
 			if (inv_quantity >= max_quantity) {
@@ -65653,6 +65646,23 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 	var rows = await connection.queryAsync('UPDATE inventory SET quantity = quantity+' + qnt + durability_query + ', collected = collected+' + collected_qnt + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 	if (rows.affectedRows == 0)
 		await connection.queryAsync('INSERT INTO inventory (player_id, item_id, quantity) VALUES (' + player_id + ',' + item_id + ', ' + qnt + ')');
+}
+
+function getMaxQuantity(rarity) {
+	var max_quantity = -1;
+	if (rarity == "C")
+		max_quantity = 6000;
+	else if (rarity == "NC")
+		max_quantity = 4500;
+	else if (rarity == "R")
+		max_quantity = 3000;
+	else if (rarity == "UR")
+		max_quantity = 2000;
+	else if ((rarity == "L") || (rarity == "E"))
+		max_quantity = 1000;
+	else if ((rarity == "UE") || (rarity == "X") || (rarity == "U"))
+		max_quantity = 500;
+	return max_quantity;
 }
 
 function getDurability(rarity) {
