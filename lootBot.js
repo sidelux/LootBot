@@ -38726,7 +38726,7 @@ bot.onText(/zaino completo|^znc$/i, function (message) {
 		var player_life = rows[0].life;
 		var bag_min = rows[0].bag_min;
 
-		connection.query('SELECT inventory.player_id, item.craftable, item.name, rarity.id, rarity.name As rname, inventory.quantity As num FROM inventory, item, rarity WHERE player_id = ' + player_id + ' AND rarity.shortname = item.rarity AND inventory.item_id = item.id AND rarity.shortname != "IN" AND inventory.quantity > 0 ORDER BY rarity.id DESC, item.name ASC', function (err, rows, fields) {
+		connection.query('SELECT IV.player_id, I.craftable, I.name, R.id, R.name As rname, IV.quantity As num, I.rarity FROM inventory IV, item I, rarity R WHERE player_id = ' + player_id + ' AND R.shortname = I.rarity AND IV.item_id = I.id AND R.shortname != "IN" AND IV.quantity > 0 ORDER BY R.id DESC, I.name ASC', function (err, rows, fields) {
 			if (err) throw err;
 			if (Object.keys(rows).length > 0) {
 
@@ -38740,7 +38740,7 @@ bot.onText(/zaino completo|^znc$/i, function (message) {
 							bottext = bottext + "\n<b>" + rows[i].rname + "</b>:\n";
 						if (rows[i].craftable == 0)
 							rows[i].name = "<b>" + rows[i].name + "</b>";
-						var max_quantity = getMaxQuantity(rarity);
+						var max_quantity = getMaxQuantity(rows[i].rarity);
 						if (max_quantity != -1)
 							bottext = bottext + "> " + rows[i].name + " (" + formatNumber(rows[i].num) + ", -" + formatNumber(max_quantity-rows[i].num) + ")\n";
 						else
@@ -49312,7 +49312,37 @@ bot.onText(/^\/checkResetGlobal (.+)/, function (message, match) {
 	};
 });
 
+bot.onText(/^\/getItemPresence/, async function (message, match) {
+	if (message.from.id == config.phenix_id)
+		await getItemPresence();
+});
+
 // FUNZIONI
+
+async function getItemPresence() {
+	await connection.queryAsync("DELETE FROM item_craft_presence");
+	var items = await connection.queryAsync("SELECT id FROM item ORDER BY id");
+	for (var i = 0, len = Object.keys(items).length; i < len; i++) {
+		console.log("Working with " + items[i].id + "...");
+		await connection.queryAsync("INSERT INTO item_craft_presence (item_id, item_quantity) VALUES (" + items[i].id + ", 0)");
+		await getItemPresenceSingle(items[i].id);
+	}
+}
+
+async function getItemPresenceSingle(item_id) {
+	var craft = await connection.queryAsync("SELECT material_1, material_2, material_3, I1.craftable As craftable_1, I2.craftable As craftable_2, I3.craftable As craftable_3 FROM craft C, item I1, item I2, item I3 WHERE C.material_1 = I1.id AND C.material_2 = I2.id AND C.material_3 = I3.id AND C.material_result = " + item_id);
+	if (Object.keys(craft).length > 0) {
+		await connection.queryAsync("UPDATE item_craft_presence SET item_quantity = item_quantity + 1 WHERE item_id = " + craft[0].material_1);
+		await connection.queryAsync("UPDATE item_craft_presence SET item_quantity = item_quantity + 1 WHERE item_id = " + craft[0].material_2);
+		await connection.queryAsync("UPDATE item_craft_presence SET item_quantity = item_quantity + 1 WHERE item_id = " + craft[0].material_3);
+		if (craft[0].craftable_1 == 1)
+			await getItemPresenceSingle(craft[0].material_1);
+		if (craft[0].craftable_2 == 1)
+			await getItemPresenceSingle(craft[0].material_2);
+		if (craft[0].craftable_3 == 1)
+			await getItemPresenceSingle(craft[0].material_3);
+	}
+}
 
 function roundDecimal(number) {
 	if (number < 1)
