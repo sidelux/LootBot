@@ -2199,6 +2199,7 @@ CREATE TABLE `item` (
   `base_sum` int(11) NOT NULL DEFAULT 0,
   `price_sum` int(11) NOT NULL DEFAULT 0,
   `pnt_sum` int(11) NOT NULL DEFAULT 0,
+  `presence_sum` int(11) NOT NULL DEFAULT 0,
   `craftable` tinyint(1) NOT NULL,
   `searchable` int(11) NOT NULL DEFAULT 1,
   `reborn` int(3) NOT NULL DEFAULT 1,

@@ -13781,6 +13781,14 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 
 												if (param != null) {
 
+													if (param.indexOf(",") != -1) {
+														connection.query('UPDATE dungeon_status SET param = NULL WHERE player_id = ' + player_id, function (err, rows, fields) {
+															if (err) throw err;
+															bot.sendMessage(message.chat.id, "Parametro non valido, riprova", dBack);
+														});
+														return;
+													}
+
 													var id = param.split(":");
 
 													connection.query('SELECT name FROM item WHERE id = ' + id[0], function (err, rows, fields) {
@@ -49317,7 +49325,57 @@ bot.onText(/^\/getItemPresence/, async function (message, match) {
 		await getItemPresence();
 });
 
+bot.onText(/^\/contrabb (.+)/, async function (message, match) {
+	if (message.from.id == config.phenix_id) {
+		connection.query('SELECT presence_sum FROM item WHERE name = "' + match[1] + '"', function (err, rows, fields) {
+			if (err) throw err;
+			var presence_sum = rows[0].presence_sum;
+			bot.sendMessage(message.chat.id, match[1] + ": " + formatNumber(presence_sum));
+		});
+	}
+});
+
+bot.onText(/^\/getBaseSumValue/, async function (message, match) {
+	if (message.from.id == config.phenix_id)
+		await getBaseSumValue();
+});
+
 // FUNZIONI
+
+async function getBaseSumValue() {
+	await connection.queryAsync("UPDATE item SET presence_sum = 0");
+	var items = await connection.queryAsync("SELECT id FROM item WHERE rarity IN ('C', 'NC', 'R', 'UR', 'L', 'E') AND craftable = 1 ORDER BY id");
+	for (var i = 0, len = Object.keys(items).length; i < len; i++) {
+		console.log("Working with " + items[i].id + "...");
+		await getBaseSumValueSingle(items[i].id, items[i].id);
+	}
+}
+
+async function getBaseSumValueSingle(main_item_id, item_id) {
+	var craft = await connection.queryAsync("SELECT material_1, material_2, material_3, I1.craftable As craftable_1, I2.craftable As craftable_2, I3.craftable As craftable_3, I1.rarity As rarity_1, I2.rarity As rarity_2, I3.rarity As rarity_3 FROM craft C, item I1, item I2, item I3 WHERE C.material_1 = I1.id AND C.material_2 = I2.id AND C.material_3 = I3.id AND C.material_result = " + item_id);
+	if (Object.keys(craft).length > 0) {
+		if (craft[0].craftable_1 == 1)
+			await getBaseSumValueSingle(main_item_id, craft[0].material_1);
+		else
+			await precenseSum(craft[0].rarity_1, craft[0].material_1, main_item_id);
+		if (craft[0].craftable_2 == 1)
+			await getBaseSumValueSingle(main_item_id, craft[0].material_2);
+		else
+			await precenseSum(craft[0].rarity_2, craft[0].material_2, main_item_id);
+		if (craft[0].craftable_3 == 1)
+			await getBaseSumValueSingle(main_item_id, craft[0].material_3);
+		else
+			await precenseSum(craft[0].rarity_3, craft[0].material_3, main_item_id);
+	}
+}
+
+async function precenseSum(rarity, material, main_item_id) {
+	var chest_value = await connection.queryAsync('SELECT value FROM chest WHERE rarity_shortname = "' + rarity + '"');
+	var chest_qnt = await connection.queryAsync('SELECT COUNT(id) As cnt FROM item WHERE rarity = "' + rarity + '" AND craftable = 0');
+	var item_sum_quantity = await connection.queryAsync("SELECT item_quantity FROM item_craft_presence WHERE item_id = " + material);
+	var tot = chest_value[0].value * chest_qnt[0].cnt / 30 + item_sum_quantity[0].item_quantity * 20;
+	await connection.queryAsync("UPDATE item SET presence_sum = presence_sum+" + tot + " WHERE id = " + main_item_id);
+}
 
 async function getItemPresence() {
 	await connection.queryAsync("DELETE FROM item_craft_presence");
