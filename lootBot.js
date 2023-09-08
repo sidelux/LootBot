@@ -54301,6 +54301,9 @@ function creaOggetto(message, player_id, oggetto, money, reborn, quantity = 1, g
 															connection.query('UPDATE player SET craft_week = craft_week + ' + craftexp + ', craft_count = craft_count + ' + craftexp + ', craft_day = craft_day + ' + craftexp + ' WHERE id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 															});
+															connection.query('UPDATE item SET craft_tot = craft_tot + ' + quantity + ' WHERE id = ' + matR, function (err, rows, fields) {
+																if (err) throw err;
+															});
 
 															connection.query('SELECT team_id FROM team_player WHERE player_id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
@@ -64532,7 +64535,7 @@ function setFinishedMission(element, index, array) {
 								if (mission_gem == 0) {
 									getSnowball(chat_id, element.nickname, element.id, chest_id);
 									if (await getCurrentGlobal() == 11)
-										globalAchievement(element.id, 1);
+										globalAchievement(element.id, 1*chest_id);
 								}
 								setAchievement(element.id, 1, 1);
 							});
