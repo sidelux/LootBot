@@ -2194,11 +2194,13 @@ CREATE TABLE `item` (
   `estimate` int(11) NOT NULL DEFAULT 0,
   `spread` int(11) NOT NULL DEFAULT 0,
   `spread_tot` decimal(5,3) NOT NULL DEFAULT 0.000,
+  `craft_tot` int(11) NOT NULL DEFAULT 0,
   `total_cnt` int(32) NOT NULL DEFAULT 0,
   `reload_est` int(11) NOT NULL DEFAULT 0,
   `base_sum` int(11) NOT NULL DEFAULT 0,
   `price_sum` int(11) NOT NULL DEFAULT 0,
   `pnt_sum` int(11) NOT NULL DEFAULT 0,
+  `presence_sum` int(11) NOT NULL DEFAULT 0,
   `craftable` tinyint(1) NOT NULL,
   `searchable` int(11) NOT NULL DEFAULT 1,
   `reborn` int(3) NOT NULL DEFAULT 1,
@@ -2218,6 +2220,23 @@ CREATE TABLE `item` (
   KEY `craft` (`craftable`),
   KEY `boost_id` (`boost_id`),
   CONSTRAINT `ITEM_RARITYSN` FOREIGN KEY (`rarity`) REFERENCES `rarity` (`shortname`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `item_craft_presence`
+--
+
+DROP TABLE IF EXISTS `item_craft_presence`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `item_craft_presence` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `item_id` int(11) NOT NULL,
+  `item_quantity` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `item_id_presence` (`item_id`),
+  CONSTRAINT `item_id_presence` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -3812,6 +3831,7 @@ CREATE TABLE `team_safe_get_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
   `player_id` int(11) NOT NULL,
+  `from_player_id` int(11) NOT NULL,
   `money` bigint(20) NOT NULL,
   `insert_date` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
