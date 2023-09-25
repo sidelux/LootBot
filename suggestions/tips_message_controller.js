@@ -298,7 +298,7 @@ function suggestionManager(message) {
 				if (simple_log) console.log("Ultimo controllo: " + user_info.lastcheck + " Booleano: " + (start_time - user_info.lastcheck));
 				let controll = true;
 
-				// Gestione della variabile "controll"
+				// Gestione della variabile "controll". che poi è abbastanza ridondante come cosa. Ma vabbeh…
 				if (user_info.id == amministratore) {
 					controll = false;
 				} else if (user_info.lastcheck > 0) {
@@ -307,6 +307,8 @@ function suggestionManager(message) {
 
 				if (simple_log) console.log("Messaggio da: " + message.from.username + ", controllo: " + controll);
 				try {
+
+					//informazioni da api/…/players/nick_name
 					const loot_user = await tips_handler.getLootUser(message.from.username,  (message.from.id == amministratore ? false : controll), message.from.id);
 
 					if (loot_user == null) {
@@ -315,6 +317,7 @@ function suggestionManager(message) {
 						});
 					}
 					let check_player = playerCheck(message, loot_user);
+
 					if (check_player.resolve) {
 						return suggestion_resolve({ toSend: check_player.resolve.toSend });
 					}
@@ -355,7 +358,7 @@ function playerCheck(query, loot_user) {
 		return true;
 	} else if (query.from.id == amministratore) {
 		return true;
-	} else if (loot_user == false) {
+	} else if (loot_user == false) { // nei casi di problemi contattando l'api
 		return false;
 	} else { // catch per gli utenti da controllare: exp greater_50
 		if (loot_user.nickname.toLowerCase() == query.from.username.toLowerCase()) {
@@ -366,7 +369,7 @@ function playerCheck(query, loot_user) {
 						query: { id: query.id, options: { text: "Whoops!" } }
 					}
 				});
-			} else {
+			} else if (loot_user.greater_50 == 1){
 				return true;
 			}
 		} else {
