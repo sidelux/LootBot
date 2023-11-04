@@ -58354,7 +58354,7 @@ function autoMana() {
 
 				var extra_mana = "";
 				// modifiche anche il ritiro manuale
-				if ((await getCurrentGlobal() == 12) && (global_end == 1)) {
+				if ((await getCurrentGlobal() == 12) && (rows[i].global_end == 1)) {
 					if (await getPastGlobalStatus() == 1) {
 						rows[i].quantity = rows[i].quantity*2;
 						extra_mana = " (aumentato grazie al bonus globale)";
@@ -58376,6 +58376,7 @@ function autoMana() {
 				});
 				bot.sendMessage(rows[i].chat_id, "Le miniere sono state chiuse, hai ricevuto " + formatNumber(rows[i].quantity) + " Mana " + rows[i].name + "!" + extra_mana);
 			}
+			console.log("Miniere terminate correttamente");
 		} else
 			console.log("Nessuna miniera da terminare");
 	});
@@ -65712,7 +65713,7 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 					await addMoney(player_id, 500*qnt);
 				else if ((rarity == "UE") || (rarity == "X") || (rarity == "U"))
 					await addMoney(player_id, 600*qnt);
-				console.log("Cap oggetto raggiunto " + inv_quantity + "/" + max_quantity);
+				// console.log("Cap oggetto raggiunto " + inv_quantity + "/" + max_quantity);
 				// await connection.queryAsync('UPDATE inventory SET quantity = ' + max_quantity + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 				return;
 			}
@@ -65895,7 +65896,7 @@ async function addArtifactFragment(player_id) {
 			connection.query('UPDATE player SET artifact_fragment = artifact_fragment+1, artifact_fragment_prob = 1 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			console.log("Frammento trovato da " + player_id);
+			console.log("Frammento trovato da " + player_id + " con prob " + prob);
 		} else {
 			connection.query('UPDATE player SET artifact_fragment_prob = artifact_fragment_prob+1 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
