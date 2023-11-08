@@ -22807,7 +22807,8 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 			return;
 		}
 
-		var damage_multiply = 10;
+		var damage_multiply = 1;
+		var defence_multiply = 1;
 
 		var player_id = rows[0].id;
 		var reborn = rows[0].reborn;
@@ -23174,6 +23175,8 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 
 										dragon_damage = dragon_damage*damage_multiply;
 										enemy_dragon_damage = enemy_dragon_damage*damage_multiply;
+										dragon_defence = dragon_defence*defence_multiply;
+										enemy_dragon_defence = enemy_dragon_defence*defence_multiply;
 
 										var status = "Avversario " + dragonSym(enemy_dragon_type) + ": " + formatNumber(enemy_dragon_life) + " 🔺 (" + enemy_altered + ")\n|" + progressBar(enemy_dragon_life, enemy_dragon_total_life) + "|\n\n";
 
@@ -53472,6 +53475,7 @@ function setFinishedArena(element, index, array) {
 		var win = rows[0].win;
 		var lose = rows[0].lose;
 		var reborn = element.reborn;
+		var damage_multiply = 10;
 
 		if (choice == 0) {
 			connection.query('UPDATE event_arena_status SET extracted = 0, dragon_1 = 0, dragon_2 = 0, land_type = 0, choice = 0, bet_id = 0, bet_qnt = 0, fight_time = NULL WHERE player_id = ' + watcher_id, function (err, rows, fields) {
@@ -53495,7 +53499,7 @@ function setFinishedArena(element, index, array) {
 				name1 = name1.substring(0, 30) + "...";
 			var myLife = Math.round(parseInt(rows[0].exp * 10));
 			var totMyLife = myLife;
-			var myDmg = parseInt(rows[0].damage) + parseInt(rows[0].claws);
+			var myDmg = (parseInt(rows[0].damage) + parseInt(rows[0].claws)) * damage_multiply;
 			var myCrit = parseInt(rows[0].critical);
 			var myType = rows[0].type;
 			var myLevel = rows[0].level;
@@ -53540,7 +53544,7 @@ function setFinishedArena(element, index, array) {
 					if (name2.lenght > 30)
 						name2 = name2.substring(0, 30) + "...";
 					var enemyLife = Math.round(parseInt(rows[0].exp * 10));
-					var enemyDmg = parseInt(rows[0].damage) + parseInt(rows[0].claws);
+					var enemyDmg = (parseInt(rows[0].damage) + parseInt(rows[0].claws)) * damage_multiply;
 					var enemyCrit = parseInt(rows[0].critical);
 					var enemyType = rows[0].type;
 					var enemyLevel = rows[0].level;
@@ -65806,7 +65810,7 @@ async function reduceDurability(player_id, weapon_type) {
 				addItem(player_id, rows[0].material_3);
 				var rows = await connection.queryAsync('SELECT id, name FROM item WHERE id = ' + rows[0].material_3);
 			}
-			if (Object.keys(item).length > 0) {
+			if (Object.keys(rows).length > 0) {
 				weapon_extra = " Hai ricevuto *" + rows[0].name + "* per poterla creare nuovamente.";
 				addItem(player_id, rows[0].id);
 			}
@@ -65827,7 +65831,7 @@ async function reduceDurability(player_id, weapon_type) {
 			connection.query("SELECT quantity FROM inventory WHERE item_id = " + item_id + " AND player_id = " + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (rows[0].quantity > 0) {
-					connection.query("UPDATE inventory SET durability = max_durability WHERE item_id = " + item_id + " AND player_id = " + player_id, function (err, rows, fields) {
+					connection.query("UPDATE inventory SET durability = durability_max WHERE item_id = " + item_id + " AND player_id = " + player_id, function (err, rows, fields) {
 						if (err) throw err;
 					});
 				}
