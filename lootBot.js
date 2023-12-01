@@ -39222,22 +39222,22 @@ bot.onText(/^set$|^set 💣$|torna ai set|^Imposta (.+)/i, function (message) {
 									return;
 								}
 								var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-								if (reg.test(weapon1) == false) {
+								if ((weapon1 != "") && (reg.test(weapon1) == false)) {
 									bot.sendMessage(message.chat.id, "Arma non valida, riprova", back);
 									return;
 								}
 								var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-								if (reg.test(weapon2) == false) {
+								if ((weapon2 != "") && (reg.test(weapon2) == false)) {
 									bot.sendMessage(message.chat.id, "Armatura non valida, riprova", back);
 									return;
 								}
 								var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-								if (reg.test(weapon3) == false) {
+								if ((weapon3 != "") && (reg.test(weapon3) == false)) {
 									bot.sendMessage(message.chat.id, "Scudo non valido, riprova", back);
 									return;
 								}
 								var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-								if (reg.test(weapon4) == false) {
+								if ((weapon4 != "") && (reg.test(weapon4) == false)) {
 									bot.sendMessage(message.chat.id, "Talismano non valido, riprova", back);
 									return;
 								}
@@ -49527,7 +49527,7 @@ function checkResetGlobal(action = null) {
 }
 
 async function endglobal(message, output) {
-	var rows = await connection_async.query('SELECT I.id As id1, I.name As name1, I2.id As id2, I2.name As name2, I3.id As id3, I3.name As name3, global_treshold, global_end_message, global_desc FROM config C INNER JOIN item I ON C.global_item1 = I.id INNER JOIN item I2 ON C.global_item2 = I2.id INNER JOIN item I3 ON C.global_item3 = I3.id');
+	var rows = await connection.queryAsync('SELECT I.id As id1, I.name As name1, I2.id As id2, I2.name As name2, I3.id As id3, I3.name As name3, global_treshold, global_end_message, global_desc FROM config C INNER JOIN item I ON C.global_item1 = I.id INNER JOIN item I2 ON C.global_item2 = I2.id INNER JOIN item I3 ON C.global_item3 = I3.id');
 
 	var item_1 = rows[0].name1;
 	var item_2 = rows[0].name2;
@@ -49540,14 +49540,14 @@ async function endglobal(message, output) {
 	var minValue = rows[0].global_treshold;
 	var bonusText = rows[0].global_end_message;
 
-	var rows = await connection_async.query('SELECT global_cap FROM config');
+	var rows = await connection.queryAsync('SELECT global_cap FROM config');
 	const global_cap = rows[0].global_cap;
 	console.log("cap " + global_cap);
 
-	var rows = await connection_async.query('SELECT COUNT(player_id) As cnt FROM achievement_global');
+	var rows = await connection.queryAsync('SELECT COUNT(player_id) As cnt FROM achievement_global');
 	const tot = rows[0].cnt;
 
-	var rows = await connection_async.query('SELECT SUM(value) As val FROM achievement_global');
+	var rows = await connection.queryAsync('SELECT SUM(value) As val FROM achievement_global');
 	if (output == 1) {
 		bot.sendMessage(message.chat.id, "Il valore attuale è " + formatNumber(rows[0].val) + " per " + formatNumber(tot) + " persone, sicuro di chiudere l'impresa? Ricorda il messaggio e il valore del bonus", yesno).then(function () {
 			answerCallbacks[message.chat.id] = async function (answer) {
@@ -49626,9 +49626,9 @@ async function endglobal(message, output) {
 			}
 		});
 	} else {
-		await connection_async.query('UPDATE player SET global_end = 0');
+		await connection.queryAsync('UPDATE player SET global_end = 0');
 
-		var rows = await connection_async.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val, P.reborn FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (SELECT account_id FROM banlist) HAVING val > 0 ORDER BY val DESC');
+		var rows = await connection.queryAsync('SELECT P.nickname, P.chat_id, A.player_id, A.value As val, P.reborn FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (SELECT account_id FROM banlist) HAVING val > 0 ORDER BY val DESC');
 
 		var text = "";
 		var global_limit_perc = 0;
@@ -49648,7 +49648,7 @@ async function endglobal(message, output) {
 			text += "> " + item_3 + "\n";
 
 			if (rows[i].val >= minValue) {
-				await connection_async.query('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id);
+				await connection.queryAsync('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id);
 				text += "> Bonus completamento: *" + bonusText + "*!\n";
 			}
 
@@ -49661,28 +49661,28 @@ async function endglobal(message, output) {
 					await addChest(rows[i].player_id, 7);
 					text += "> Scrigno Capsula extra per la top 25\n";
 				}
-				await connection_async.query('UPDATE player SET global_event = global_event+1 WHERE id = ' + rows[i].player_id);
+				await connection.queryAsync('UPDATE player SET global_event = global_event+1 WHERE id = ' + rows[i].player_id);
 				text += "> Punto globale\n";
 			}
 
 			if (i == 0)
-				await connection_async.query('UPDATE player SET global_win = global_win+1 WHERE id = ' + rows[i].player_id);
+				await connection.queryAsync('UPDATE player SET global_win = global_win+1 WHERE id = ' + rows[i].player_id);
 
 			text += "\n*Grazie per aver partecipato!*";
 
 			bot.sendMessage(rows[i].chat_id, "Per il completamento dell'*Impresa Globale* hai ricevuto:\n" + text, mark);
 		}
 
-		await connection_async.query('DELETE FROM global_hourly');
+		await connection.queryAsync('DELETE FROM global_hourly');
 	}
 }
 
 async function failglobal(message, output) {
-	var rows = await connection_sync.query('SELECT COUNT(player_id) As cnt FROM achievement_global');
+	var rows = await connection.queryAsync('SELECT COUNT(player_id) As cnt FROM achievement_global');
 
 	var tot = rows[0].cnt;
 
-	var rows = await connection_sync.query('SELECT global_desc, global_cap, global_item1, global_item2, global_item3, global_treshold, global_end_message_fail FROM config');
+	var rows = await connection.queryAsync('SELECT global_desc, global_cap, global_item1, global_item2, global_item3, global_treshold, global_end_message_fail FROM config');
 
 	var global_desc = rows[0].global_desc;
 	var global_cap = rows[0].global_cap;
@@ -49692,7 +49692,7 @@ async function failglobal(message, output) {
 	var global_treshold = rows[0].global_treshold;
 	var global_end_message = rows[0].global_end_message_fail;
 
-	var rows = await connection_sync.query('SELECT SUM(value) As val FROM achievement_global');
+	var rows = await connection.queryAsync('SELECT SUM(value) As val FROM achievement_global');
 	if (output == 1) {
 		bot.sendMessage(message.chat.id, "Il valore attuale è " + formatNumber(rows[0].val) + " per " + formatNumber(tot) + " persone, sicuro di chiudere l'impresa FALLITA?", yesno).then(function () {
 			answerCallbacks[message.chat.id] = async function (answer) {
@@ -49725,14 +49725,14 @@ async function failglobal(message, output) {
 			}
 		});
 	} else {
-		await connection_sync.query('UPDATE player SET global_end = 0');
+		await connection.queryAsync('UPDATE player SET global_end = 0');
 
 		var minValue = global_treshold;
 		var text = global_end_message;
 
-		var rows = await connection_sync.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM player P LEFT JOIN achievement_global A ON A.player_id = P.id WHERE P.reborn > 1 AND P.account_id NOT IN (SELECT account_id FROM banlist) AND (A.value < ' + minValue + ' OR A.value IS NULL) GROUP BY P.id ORDER BY val DESC');
+		var rows = await connection.queryAsync('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM player P LEFT JOIN achievement_global A ON A.player_id = P.id WHERE P.reborn > 1 AND P.account_id NOT IN (SELECT account_id FROM banlist) AND (A.value < ' + minValue + ' OR A.value IS NULL) GROUP BY P.id ORDER BY val DESC');
 		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-			await connection_sync.query('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id);
+			await connection.queryAsync('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id);
 			bot.sendMessage(rows[i].chat_id, "Per il fallimento dell'Impresa Globale (minimo *" + formatNumber(minValue) + "* " + global_desc.trim() + "), da questo momento fino al termine della prossima impresa subirai il seguente malus: *" + text + "*", mark);
 			console.log(rows[i].nickname + " - Fallito");
 		}
