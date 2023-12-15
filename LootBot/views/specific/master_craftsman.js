@@ -281,5 +281,9 @@ module.exports = {
             "«La tua roba è gia nello zaino!»\n_Sparisce…_"
 
 
+    },
+    errors: {
+        title: "Woops!",
+        beta_wrong_input: "Sintassi: `/craftbeta` _?id\\_utente ?id\\_utente …_\n\nEsempio:\n> `/craftbeta 354140824 153738969`"
     }
 }

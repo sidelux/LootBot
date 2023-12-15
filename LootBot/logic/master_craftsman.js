@@ -44,7 +44,7 @@ module.exports = {
     avaible_rarities: avaible_rarities
 }
 
-// Funzione pubblica per creare una nuova lista craft. (se ne esiste già una, sara sovrascritta)
+// Funzione pubblica per creare una nuova lista craft. (se ne esiste già una sarà sovrascritta)
 async function new_craftsman_info(telegram_user_id) {
     let craftman_info = model.template.craftman_info;
     craftman_info.query_random_char = model.new_query_random_char();
@@ -220,7 +220,7 @@ function get_craftables_ofRarity(item_rarity, player_reborn) {
     return item_logics.craftables_ofRarity(item_rarity, player_reborn);
 }
 
-// queste sono funzioni che appartengono ad intems, non a qui
+// queste sono funzioni che appartengono ad items!!, non a qui
 function sort_items_fromRarity_accessory(item1, item2, rarityOrder) {
     let rarity1 = item1.rarity;
     let rarity2 = item2.rarity;
@@ -257,7 +257,7 @@ function sort_items_fromRarity_accessory(item1, item2, rarityOrder) {
     }
 }
 
-// queste sono funzioni che appartengono ad intems, non a qui
+// queste sono funzioni che appartengono ad items!!, non a qui
 function sort_items_fromRarity(items_list) {
     let rarityOrder = {
         C: 0,
@@ -288,8 +288,7 @@ function avaible_rarities(player_reborn) {
 }
 
 
-
-
+//Booleano: Le condizioni di validazione lista
 function validate_can_proceed(craft_line, player_info) {
     return (
         parseInt(craft_line.craft_cost)*utils.master_craftsman_cost_multiplier < utils.player_max_money &&                // forse in questo caso la lista andrebbe semplicemente stralciata...
@@ -299,6 +298,8 @@ function validate_can_proceed(craft_line, player_info) {
     );
 }
 
+
+// controlli sulla linea già creata
 async function craft_line_controll(player_info, craftsman_info, player_inventory) {
     let response = {
         has_error: false,
@@ -326,7 +327,7 @@ async function craft_line_controll(player_info, craftsman_info, player_inventory
     return response;
 }
 
-
+// Aggiornamento del file craftman_info
 function craftman_info_craftUpdate(craftsman_info, craft_line, message_id) {
     let target_items_list = [];
     craftsman_info.items_list.forEach((item) => {
@@ -353,7 +354,7 @@ function craftman_info_craftUpdate(craftsman_info, craft_line, message_id) {
 
 }
 
-// Tutti i controlli del caso... infondo agli if la query sul database
+// Il craft effettivo (Tutti i controlli del caso... infondo agli if la query sul database)
 async function commit_craft(craftsman_info, player_info) {
     let response = {
         money_controll: false,

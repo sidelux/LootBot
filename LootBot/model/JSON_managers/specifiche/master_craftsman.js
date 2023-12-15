@@ -2,7 +2,11 @@
 // Per ogni utente esiste una cartella (nominata secondo il suo telegram_user_id). (questo perche possa ospitare anche altre cose, oltre a craftsman_info.json (idealmente si potrebbe mirare qui gran parte della persistenza, lasciando sul database solo quello che ha senso mettere in relazione))
 
 const json_model = require("../json_model");
+const path = require('path');
+
 const craftsman_file_name = "craftsman_info.json";
+const players_dir = path.join(path.dirname(require.main.filename), '/LootBot/sources/players/');
+
 
 module.exports = {
     has_list: has_list,
@@ -49,16 +53,23 @@ module.exports = {
 
 // Funzione per controllare se un file esiste
 async function has_list(telegram_user_id) {
-    return await json_model.exists(telegram_user_id, craftsman_file_name);
+    const filePath = path.join(path.join(players_dir, telegram_user_id.toString()), craftsman_file_name);
+
+    return await json_model.check(filePath);
 }
 
 // Funzione per leggere il contenuto di un file JSON
 async function get_craftsman_info(telegram_user_id) {
-    return await json_model.read(telegram_user_id.toString(), craftsman_file_name); // restituisce false o craftsman_info
+    const filePath = path.join(path.join(players_dir, telegram_user_id.toString()), craftsman_file_name);
+
+    return await json_model.read(filePath); // restituisce false o craftsman_info
 }
 
 // Funzione per scrivere il contenuto in un file JSON
 async function update_craftsman_info(telegram_user_id, new_craftsman_info) {
-    return await json_model.write(telegram_user_id.toString(), craftsman_file_name, new_craftsman_info);
+    let directory_path = path.join(players_dir, telegram_user_id.toString());
+    const filePath = path.join(directory_path, craftsman_file_name);
+
+    return await json_model.write(directory_path, filePath, new_craftsman_info);
 }
 

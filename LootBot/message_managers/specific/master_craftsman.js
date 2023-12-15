@@ -35,6 +35,8 @@ async function master_craftsman_menu(telegram_user_id) {
     const player_info = preload.player_info;
     const craftsman_info = preload.craftsman_info;
 
+    console.log(craftsman_info);
+
     return menu_textAndButtons(response, player_info, craftsman_info, false);         // restituisce il menu formattato
 
 }
@@ -107,7 +109,7 @@ async function menu_view(response, telegram_user_id, message_id) {
 }
 
 // Testo e bottoni del menu master_craftsman_menu
-// message_id è trattato come un booleano, vero solo se il menù non è attivato da una query
+// message_id è trattato come un booleano, vero solo se il menù è attivato da una query
 function menu_textAndButtons(response, player_info, craftsman_info, message_id = false, has_failed_validation = false) {
     // Testo del messaggio
     let menu_keyboard = [];
@@ -1194,7 +1196,7 @@ async function add_betaTester(message_user_id, message_text) {
     // Carico le informazioni giocatore player_info (e se non riesco informo l'admin)
     let player_info_controll = await craftsman_logics.pleyer_info_controll(random_controll);
     if (player_info_controll.esit == false) {
-        response.toSend.message_text = player_info_controll.message_text;
+        response.toSend.message_text = player_info_controll.error_text;
         return response;
     }
 
@@ -1203,7 +1205,7 @@ async function add_betaTester(message_user_id, message_text) {
     target_user_id_array.forEach((user_id) => {
         let parsed_id = parseInt(user_id)
         if (isNaN(parsed_id)) {
-            response.toSend.message_text = `${craftsman_view.errors.title}\n${craftsman_view.errors.loading.beta_tester_infos}`;
+            response.toSend.message_text = `*${craftsman_view.errors.title}*\n\n${craftsman_view.errors.beta_wrong_input}`;
             return response;
         }
         if (!beta_tester_ids.includes(parsed_id)) {
@@ -1213,6 +1215,9 @@ async function add_betaTester(message_user_id, message_text) {
 
     // Testo della risposta
     response.toSend.message_text += `${player_info.nickname} ${craftsman_view.beta_tester.insert_success}\n`;
+    if(target_user_id_array.length > 1){
+        response.toSend.message_text += `(e ${target_user_id_array.length -1} altri…)\n`;
+    }
 
     return response;
 }
