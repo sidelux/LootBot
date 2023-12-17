@@ -94,7 +94,7 @@ async function update_instance_info(team_id, new_instance_info) {
 
 // *********************   MAZE
 
-// Genera un nuovo labirinto e lo aggiunge (modificandolo) ad instance_info.
+// Genera un nuovo labirinto e lo aggiunge ad instance_info (modificandolo) 
 // la funzione è chiamata da new_altar (prima inizializzazione) ed ogni volta che un labirinto viene distrutto…
 function init_maze(instance_info) {
     let new_maze = nd_maze.new_maze();

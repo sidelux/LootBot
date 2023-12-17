@@ -17,8 +17,9 @@ const nd_logic = require("../../logic/necro_descent/nd_logic");             // L
 
 
 // Costanti per testing esteso
-const beta_tester_ids = [];
-const in_beta = true;
+// Bruttissimo, ma mandare il comando ad ogni riavvio è snervante e non mi metto a fare pure una persistenza
+const beta_tester_ids = config.beta_tester_ids.slice() 
+const in_beta = beta_tester_ids.length > 0;
 
 module.exports = {
     menu: nd_messageDispatcher,

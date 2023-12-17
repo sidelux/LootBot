@@ -20,6 +20,18 @@ module.exports = {
 
     },
     maze: {
+        rooms_icons: ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"],
+        branch_types: {tunnes: 0, passage: 1},
+        room_types: {micro: 0, small: 1, large: 2, special: 3, blind: 4},
+        gate_types: {door: 0, passage: 1, uphill_passage: 2, downhill_passage: 3, tunnel: 4, uphill_tunnel: 5, downhill_tunnel: 6},
+
+        global_directions: ['nord', 'sud', 'est', 'ovest'],
+        relative_direction: {
+            nord: ['ovest', 'sud', 'est'],
+            sud: ['est', 'nord', 'ovest'],
+            est: ['nord', 'ovest', 'sud'],
+            ovest: ['sud', 'est', 'nord'],
+        },
         player: {
             already_in_maze: "🌬",
             current_room: {
@@ -30,8 +42,6 @@ module.exports = {
             },
             firs_jump_impressions: ["Buio.", "Solo buio.", "Brividi.", "Abisso.", "Oscurità", "Soltanto oscurità.", "Nel nulla.", "Silenzio.", "Non un rumore.", "Coraggio?", "Nel Vuoto…", "Sconsideratezza…", "Senza percepire la caduta…", "Il corpo non ha peso…"]
         },
-        global_directions: ['nord', 'sud', 'est', 'ovest'],
-        rooms_icons: ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"],
         room_descriptions: {
             room_dimension_prefix: "una",
             room_dimension: [ // una … sala

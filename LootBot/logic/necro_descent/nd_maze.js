@@ -29,7 +29,7 @@ module.exports = {
 // maze_difficulty a questo stadio indica semplicemente il numero di porte minime per trovare la stanza finale (partendo da starting_room).
 // (maze_difficulty verrà effettivamente calcolato e normalizzato in nd_logic (che chiama questa funzione))
 function new_maze() {
-    const maze = generate_maze();
+    //const maze = generate_maze();
     const [starting_room, maze_difficulty] = find_starting_room(maze, maze.length);
     // TODO qui si deve riempire la final_chest tenendo conto di new_maze.maze_difficulty
 
@@ -88,47 +88,304 @@ function facing_gates(room, direction) {
 
 // Data una direzione restituisce un array ordinato "contestualizzato"
 function relative_facing(facing_direction) {
-    const relative_direction = {
-        nord: ['ovest', 'sud', 'est'],
-        sud: ['est', 'nord', 'ovest'],
-        est: ['nord', 'ovest', 'sud'],
-        ovest: ['sud', 'est', 'nord'],
-    };
+    const relative_direction = nd_view.maze.relative_direction;
     return relative_direction[facing_direction];
 }
 
 // ******* DEDALO NEWTONIANO (tirato in ballo un artista, tirati in ballo tutti… :) )
 
-function newtonian_maze(){
+function newtonian_maze() {
+    // Quello newtoniano è un grafo strutturato (con struttura!)
     // Il labirinto è un grafo di oggetti rooms (stanze) collegati da gates (passaggi) (gate è una proprietà dell'oggetto room. gate.id punta ad un room.id)
     // Il labirinto consiste in N-livelli (stanze dello stesso livello condividono level_deep, che aumenta con N)
 
     // ogni livello è collegato ad altri due (level_deep +-1) da al piu (M - N)rooms.gate (sepre meno collegamenti al crescere di level_deep)
     // ogni livello ha (K - (M - N))rooms (sempre meno stanze al crescere di level_deep)
-    // con K >> M >> N, definiti in range in fase di inizzializazione
+    // con K >> M >> N, definiti in range in fase di inizzializazione. O forse partendo da k?
     // Escluso level_deep == 0 (primo livello) i livelli possono contenere "isole" (non necessariamente tutte le stanze sono collegate da un percorso)
 
-    // i livelli sono di tipo: cunicolo (tutte le stanze sono cunicoli) o corridoio (piccole stanze) (altro? volendo se ne potrebbero aggiungere…)
-    // per entrambi i tipi c'è almeno una "stanza principale" (al piu (K - (M - N))/N).
+    // i livelli sono di tipo_livello: cunicolo (tutte le stanze sono cunicoli) o corridoio (piccole stanze) (altro? volendo se ne potrebbero aggiungere…)
+    // A prescindere dal tipo_livello, in ogni livello c'è almeno una "stanza principale" (al piu (K - (M - N))/N).
 
     // Per generare un livello-cunicolo:
-    // i passaggi tra le stanze sono di tipo_gate 5 (cunicoli) o tipo_gate 6/7 (cunicolo in salita/discesa) o (raramente) 2 (porte)
-    // Si generana un solo ramo (collegamenti singoli tra stanze del livello)
+    // i passaggi tra le stanze sono di tipo_gate 4 (cunicoli) o tipo_gate 5/6 (cunicolo in salita/discesa) o (raramente?) 0 (porte)
+    // -passaggi_principali: Si generana 1 ramo (collegamento lineare tra stanze dello stesso livello)
     // si generano m-stanzelaterali (collegamenti tra 3/7-stanzecieche in cui solo una ha un collegamento con una stanza nel ramo)
-    // "stanza principale": la stanza-coda di ogni subramo-stanzelaterali è stanza speciale (di tipo_stanza 0 (invalicabile))
+    // "stanza principale": la stanza-coda di ogni subramo-stanzelaterali è stanza speciale (di tipo_stanza 4 (vicolo cieco))
     // (solo) testa e coda del ramo principale sono collegati a due stanze di diversi (o stesso?) livello-corridoio (tipo_gate 5/6/7 in base al confronto tra level_deep)
 
     // Per generare un livello-corridoio:
-    // i passaggi tra le stanze sono di tipo_gate 1 (passaggi) o 2 (porte)
-    // -passaggi_principali: Si generano L-rami (collegamento lineare tra stanze dello stesso livello) (per level_deep == 0 -> L = 1)  (isole)
+    // i passaggi tra le stanze sono di tipo_gate 1 (passaggi) o 0 (porte)
+    // -passaggi_principali: Si generano L-rami (collegamento lineare tra stanze dello stesso livello)   (isole)
     // -passaggi_secondari: Si generano k-tracce (collegamento casuale tra stanze dello stesso livello)
     // si generano m-stanzelaterali (collegamenti tra 3/7-stanzecieche in cui solo una ha un collegamento con una stanza in un ramo)
     // "stanze principali": si estraggono tipo_stanza 0 (invalicabile) nelle stanzelaterali, e tipo_stanza 1/2/3/4/5 nei rami (scrigno, npc_craft, npc_healt, npc_energy, npc_ability)
     // Ad (M - N) stanze (scelte casualmente) si collegeranno (M - N) stanze in un altro livello-corridoio (passaggi tra livello-corridoio)
-    // i passaggi tra livello-corridoio sono di tipo_gate 3/4 (passaggio in salita/discesa) in base al confronto tra level_deep)
+    // i passaggi tra livello-corridoio sono di tipo_gate 2/3 (passaggio in salita/discesa) in base al confronto tra level_deep)
 
-    // Alla fine, in base a tipo_stanza e tipo_gate si generano le descrizioni delle stanze e dei passaggi
+    // Questa era l'idea... adesso provo ad implementarla con le funzioni appena definite
+
+
+
+
 }
+
+
+// funzione per generare un livello di tipo passaggio
+function passage_maze_level(used_ids, level_deep, branch_length) {
+    const level_type = nd_view.maze.branch_types.tunnes;
+    const fixed_max_islands = 3;
+    const islands_counter = 1 + Math.floor(Math.random() * fixed_max_islands)
+    const dead_ends_counter = fixed_max_islands + Math.floor(Math.random() * branch_length); // si puo fare decisamente di meglio
+
+    let passage_level = [];
+    let dead_ends = [];
+    let main_branch = []; //generate_branch(used_ids, level_type, level_deep, branch_length);
+    let first_rooms = []; //main_branch[0];
+    let last_rooms = []; //main_branch[main_branch.length - 1];
+
+    // genero i main_branch e riempio first_rooms e last_rooms
+    for (let i = 0; i < islands_counter; i++) {
+        const curr_branch = generate_branch(used_ids, level_type, level_deep, Math.floor(branch_length / islands_counter));
+        first_rooms.push(curr_branch[0]);
+        last_rooms.push(curr_branch[curr_branch.length]);
+        main_branch.push(curr_branch);
+
+        // vicoli ciechi
+        if (dead_ends.length <= dead_ends_counter) {
+            let dead_end_length = 1 + Math.floor(Math.random() * (1 + Math.floor(curr_branch.length / 2)));         // sono lunghi, al massimo, un terzo di curr_branch+1
+            dead_ends.push(generate_branch(used_ids, level_type, level_deep, dead_end_length));
+        }
+    }
+    let main_branch_flattened = main_branch.reduce((acc, branch) => acc.concat(branch), []);
+
+
+    // ...e tutte le stanze del main_branch nel passage_level
+    passage_level.push(...main_branch_flattened);
+
+
+    // collego le teste dei vicoli a stanze casuali nel main_branch
+    // ...e aggiorno il room_type delle code dei vicoli ciechi
+    // ...e inserisco le stanze formate nel passage_level
+    dead_ends.forEach(dead_end => {
+        let starting_room = dead_end[0];
+        let final_room = dead_end[dead_end.length - 1];
+        let random_main_branch_room = array_get_random_element(main_branch_flattened);
+        link_rooms(starting_room, random_main_branch_room, level_type);
+
+        final_room.description = set_room_description(final_room.type); // Aggiorno il testo coerentemente con il type
+
+        passage_level = [...passage_level, ...dead_end];
+    });
+
+    // definisco le stanze speciali
+    for (let i = 0; i < islands_counter; i++){
+        let random_main_branch_room = array_get_random_element(main_branch);
+        random_main_branch_room.type = nd_view.maze.room_types.special
+        random_main_branch_room.description = set_room_description(random_main_branch_room.type); // Aggiorno il testo coerentemente con il type
+
+    }
+
+
+    return {
+        level: passage_level,
+        first_rooms,
+        last_rooms
+    }
+}
+
+// funzione per generare un livello di tipo cunicolo
+function narrow_maze_level(used_ids, level_deep, branch_length) {
+    const level_type = nd_view.maze.branch_types.tunnes;
+    const dead_ends_counter = Math.max(1, Math.floor(branch_length / 3));
+    let narrow_level = [];
+    let dead_ends = [];
+    let main_branch = generate_branch(used_ids, level_type, level_deep, branch_length);
+    let first_room = main_branch[0];
+    let last_room = main_branch[main_branch.length - 1];
+    // Volendo si potrebbero evitare vicoli che partono dalla stessa stanza con un array di controllo... ma anche no!
+
+    // creo i vicoli ciechi
+    for (let i = 0; i < dead_ends_counter; i++) {
+        let dead_end_length = 1 + Math.floor(Math.random() * (1 + Math.floor(branch_length / 2)));         // sono lunghi, al massimo, la metà di branch_length+1
+        dead_ends.push(generate_branch(used_ids, level_type, level_deep, dead_end_length));
+    }
+
+    // collego le teste dei vicoli a stanze casuali nel main_branch
+    // ...e aggiorno il room_type delle code dei vicoli ciechi
+    // ...e inserisco le stanze formate nel narrow_level
+    narrow_level.push(...main_branch); // prima il main_branch
+    dead_ends.forEach(dead_end => {
+        let starting_room = dead_end[0];
+        let final_room = dead_end[dead_end.length - 1];
+        let random_main_branch_room = array_get_random_element(main_branch);
+        link_rooms(starting_room, random_main_branch_room, level_type);
+        final_room.type = nd_view.maze.room_types.blind;
+        final_room.description = set_room_description(final_room.type); // Aggiorno il testo coerentemente con il type
+
+        narrow_level = [...narrow_level, ...dead_end];
+    });
+
+    return {
+        level: narrow_level,
+        first_room,
+        last_room
+    }
+}
+
+
+// Scheletro di una stanza
+const room_skeleton = (used_ids, room_type, level_deep) => {
+    return {
+        id: manage_room_id(used_ids),
+        type: room_type, // tipo della stanza
+        room_nd_players: [], // Aggiornato da update_room_nd_players(account_id) <- giocatori nella stanza,             ?, tipo di oggetto: (account_id, message_id, nd_player_state)
+        duel_id: -1,  //                                                                                                i combattimenti sono gestiti in un file a parte ../sources/necro_descent/Combacts/duel_id.js
+        level_deep: level_deep,
+
+        description: set_room_description(room_type),
+        room_clues: [], // set_room_clues(type)                             <- descrizioni aggiuntive (intuizioni),      ?, tipo di oggetti: (vocazione, descrizione)
+        items: [], // Aggiornato da update_room_items(account_id, item_id)  <- Oggetti per terra,                        ?, tipo di oggetto: (account_id, item_id, quantity)
+        chests: [], // set_room_chests(type)                                <- Scrigni,                                  ?, tipo odi oggetto: items                         (solo per room_types.BONUS)
+        npc: [], // set_room_npcs(type)                                     <- aiutanti,                                 ?, tipo di oggetto: nd_npc                         (solo per room_types.BONUS)
+        traps: [], // set_room_traps(type)                                  <- trappole e malus,                         ?, tipo di oggetto: nd_trap                        (solo per room_types.MALUS)
+        mobs: [], // set_room_mobs(type)                                    <- i nemici nascosti nella stanza,           ?, tipo di oggetto: nd_mob                         (solo per room_types.COMBATTIMENTO)
+        gates: [], // Aggiornato da update_room_gates()                     <- Collegamenti ad altre stanze,      almeno 1, tipi di oggetto: room_gate                      (visibili solo quelle in facing_direction)
+    }
+}
+
+// Scheletro di un passaggio/tunnel
+const gate_skeleton = (gate_direction, gate_type, target_room_id) => {
+    return {
+        target_room: target_room_id,
+        direction: gate_direction,
+        type: gate_type,
+        description: set_gate_descrtiption(gate_type)
+    }
+};
+
+// il tipo delle stanze è determinato da branch_type 
+const determinate_room_type = (level_type) => {
+    switch (level_type) {
+        case nd_view.maze.branch_types.tunnes: {       // Stanze anguste o piccole 
+            let casual_type = (Math.random() * 5 < 3 ? nd_view.maze.room_types.micro : nd_view.maze.room_types.small);
+            return casual_type;
+        }
+        case nd_view.maze.branch_types.passage: {    // Stanze piccole o grandi   
+            let casual_type = (Math.random() * 5 < 3 ? nd_view.maze.room_types.small : nd_view.maze.room_types.large);
+            return casual_type;
+        }
+    }
+}
+
+// Dal punto di vista di first_room_level_deep, determina il tipo di passaggio
+const determinate_gate_type = (level_type, first_room_level_deep, second_room_level_deep = first_room_level_deep) => {
+    let tunnel_complexity = 5; // Probabilità (inversa, su 100, di generazione porte)
+    let passage_complexity = 3; // Probabilità (inversa, su 100, di generazione porte)
+
+    switch (level_type) {
+        case nd_view.maze.branch_types.tunnes: {
+            let casual_type = (Math.random() * tunnel_complexity < 1 ? nd_view.maze.gate_types.door : nd_view.maze.gate_types.tunnel);
+            let change_level_type = first_room_level_deep < second_room_level_deep ? nd_view.maze.gate_types.downhill_tunnel : nd_view.maze.gate_types.uphill_tunnel;
+            return first_room_level_deep == second_room_level_deep ? casual_type : change_level_type;
+        }
+        case nd_view.maze.branch_types.passage: {
+            let casual_type = (Math.random() * passage_complexity < 1 ? nd_view.maze.gate_types.door : nd_view.maze.gate_types.passage);
+            let change_level_type = first_room_level_deep < second_room_level_deep ? nd_view.maze.gate_types.downhill_passage : nd_view.maze.gate_types.uphill_passage;
+            return first_room_level_deep == second_room_level_deep ? casual_type : change_level_type;
+        }
+    }
+}
+
+// Una direzione casuale, ma non troppo (si può decisamente migliorare)
+const determinate_gate_pseudorandom_direction = (last_directions) => {
+    const directions_cycle = nd_view.maze.global_directions.concat(nd_view.maze.global_directions); // creo un ciclo chiuso
+
+    // Converto gli array delle direzioni in una stringa per facilitare il controllo
+    const directions_string = directions_cycle.join('-');
+    const last_directions_string = last_directions.join("-")
+    let casual_direction;
+
+    if (last_directions.length < 2 || !directions_string.includes(last_directions_string)) {
+        casual_direction = random_direction();
+    } else {
+        let not_so_casual_direction_set = directions_cycle.filter(direction => !last_directions.includes(direction))
+        casual_direction = array_get_random_element(not_so_casual_direction_set);
+    }
+    return casual_direction;
+}
+
+const set_room_description = (room_type) => {
+    return `${room_type}`;
+}
+
+const set_gate_descrtiption = (room_type) => {
+    return `${room_type}`;
+}
+
+// Crea un id per una stanza (unico, non usato) e aggiorna used_ids
+function manage_room_id(used_ids) {
+    // il massimo room.id attualmente presente nelle stanze
+    const maxId = used_ids.reduce((max, used) => (used > max ? used : max), 0);
+
+    // Genera un nuovo ID incrementando il massimo ID di 1
+    const newId = maxId + 1;
+
+    // controllo un po paranoico, ma anche no
+    const isUnique = used_ids.every(room => room.id !== newId);
+
+    // Se il nuovo ID è unico lo restituisco (aggiornando used_ids); altrimenti, genera un nuovo ID in modo ricorsivo
+    if (isUnique) {
+        used_ids.push(parseInt(newId));
+        return newId;
+    } else {
+        return manage_room_id(used_ids); // Chiama nuovamente la funzione per generare un nuovo ID
+    }
+}
+
+// Funzione per generare un ramo (o traccia)
+function generate_branch(used_ids, level_type, level_deep, branch_length) {
+    console.log("Ramo di lunghezza %d", branch_length)
+    // Il ramo è una catena di oggetti room: Esepio: A.room.id = 1, A.room.gates.id = B.room.id
+    let last_directions = []; // per evitare la generazione di anelli chiusi
+
+    let branch = [];
+
+    for (let index = 0; index < branch_length; index++) {
+        const room_type = determinate_room_type(level_type);
+        // Definizione di un passaggio o tunnel
+        const gate_type = determinate_gate_type(level_type, level_deep);
+        const gate_direction = determinate_gate_pseudorandom_direction(last_directions);
+
+        let room = room_skeleton(used_ids, room_type, level_deep);
+        let gate = gate_skeleton(gate_direction, gate_type, array_get_random_element(used_ids))
+        room.gates.push(gate);
+        branch.push(room);
+
+        if (last_directions.length >= 2) { last_directions.shift(); } // Rimuove il primo elemento
+        last_directions.push(gate_direction);
+    }
+    return branch;
+
+}
+
+// Funzione esterna per collegare due stanze (confrontando room.level_deep) 
+function link_rooms(first_room, second_room, level_type) {
+    const first_gate_type = determinate_gate_type(level_type, first_room.level_deep, second_room.level_deep);
+    const first_gate_direction = determinate_gate_pseudorandom_direction([]);
+    const second_gate_type = determinate_gate_type(level_type, second_room.level_deep, first_room.level_deep);
+    const second_gate_direction = relative_facing(first_gate_direction)[1];
+
+    first_room.gates.push(gate_skeleton(first_gate_direction, first_gate_type, second_room.id));
+    second_room.gates.push(gate_skeleton(second_gate_direction, second_gate_type, second_room.id));
+}
+
+
+
+
+
+
+
 
 
 // ******* DEDALO ESCHERIANO (il primo algoritmo che ho definito...) 
@@ -485,6 +742,10 @@ function relative_gateN(room_gates, player_frontdirection) {
 }
 
 
+
+
+
+
 // ******* UTILITARIE 
 
 // Funzione accessoria usata da generate_room_description e generate_gate_description
@@ -516,7 +777,7 @@ function random_direction() {
 
 
 // ******* CARATTERIZZAZIONE (funzioni chiamate su un oggetto maze)
- 
+
 function generate_noise_rooms(maze) {
     let source_room = find_notspecialroom_in_maze(maze).room; // fortissimo
     let first_level_rooms = []; // un
@@ -589,8 +850,29 @@ function generate_finds_trail(maze) {
 }
 
 
+
+
+
 // TEST 
 /*
+let used_ids = [];
+let nd = narrow_maze_level(used_ids, 1, 6);
+let nd2 = narrow_maze_level(used_ids, 1, 6);
+let nd3 = narrow_maze_level(used_ids, 1, 9);
+
+let ndm = passage_maze_level(used_ids, 1, 15);
+let ndm2 = passage_maze_level(used_ids, 1, 15);
+let ndm3 = passage_maze_level(used_ids, 1, 10);
+
+
+console.log("nd: %j",nd.level.length);
+console.log("nd2: %j",nd2.level.length);
+console.log("nd3: %j",nd3.level.length);
+console.log("ndm-ndm: %j",ndm.level.length);
+console.log("ndm-2: %j",ndm2.level.length);
+console.log("ndm-3: %j",ndm3.level.length);
+console.log("ID (stanze): %d ->"+used_ids, used_ids.length);
+
 const labirinto = generate_maze();
 const [starting_room, maxDistanza] = find_starting_room(labirinto, labirinto.length);
 
