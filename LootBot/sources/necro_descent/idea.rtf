@@ -1,0 +1,110 @@
+/*
+
+
+
+
+
+__________________
+
+IDEA INIZIALE: 
+ 
+Fino a 5 componenti di un team possono sacrificare, una volta al mese, un E/UE/S (specifico) + una certa quantità di edollari a testa per tentare la discesa nei 10 gironi Infernali. 
+ 
+L'istanza, generata casualmente ad inizio, è simile ai Dungeon: 
+• Dura 6 ore e 6 minuti 
+• È composta da 9 stanze con 3 direzioni da prendere in ognuna, piu la possibilità di tornare a quella precedente 
+• In ogni stanza è presente un bonus o malus tattico (1) o istantaneo (2) 
+• Il passaggio alla stanza successiva avvine 6 minuti dopo che l'ultimo componente ha scelto la sua direzione 
+• 9 super-boss che combinano i tre elementi - fuoco, elettro, acqua - con i tipi drago. 
+ 
+La ricompensa finale avviene al raggiungimento della Camera di Lucifero, questa: 
+• È sbloccabile solo tramite tre campanelli, uno per tipo - dispersi casualmente nei 9 gironi (🛎) 
+• Presenta un ultimo Super Boss: Lucifero 
+ 
+Sconfitto il maligno, si avranno bonus in U, Pietre Drago, Mana e/o edollari: 
+• In base al percorso coperto durante la discesa dall'intero sub-team 
+• Concedendo ulteriori bonus nel caso che tutti i 9 super boss siano stati sconfitti 
+
+
+(1) - Inidicazioni sull'istanza, Consumabili, Edollari, swich delle direzioni in 3 stanze, retrocessione/avanzamento forzato di stanza 
+ 
+(2) - Piccole quantità di Mana, Super-Boss(3), danni in hp (Giocatore/Drago) e stat (drago), cetera. 
+ 
+(3) Sono Boss il cui equipaggiamento è calcolato in relazione a 2 componenti del sub team scelti casualmente e gli hp il risultato della somma degli altri tre. Si accompagnano eventualmente ad un drago, antitesi di uno dei draghi del sub team. 
+ 
+🛎  
+Tre tipi con diverse probabilità di spawn. Possono essere in qualunque tipo di stanza e il loro suono viene avvertito nella stanza precedente in base al tipo di Talismano (X) equipaggiato.
+
+__________________
+
+IDEA IN PROGRESSO:
+
+
+0.a: Iscrizione
+Avviene tramite "sacrifici" di oggetti fatti all'altare della magione:
+ogni giocatore di un team può sacrificare al massimo un oggetto al giorno, 
+in base alla rarità dell'oggetto viene scalato di un certo valore un contatore (definito dinamicamente in range)
+I giocatori che hanno eseguito un sacrificio vengono segnati in una lista.
+Quando il contatore è a zero avviene una verifica sugli attuali membri del team e la lista dei sacrifici,
+dall'unione vengono estratti al piu 5 giocatori che potranno entrare nel dedalo (che viene generato in quel momento).
+L'accesso al dedalo resterà aperto per 12 ore (dalla generazione).
+Il dedalo crolla al piu dopo 24 ore.
+Quando un giocatore entra nel dedalo si ritrova, nudo, nella prima stanza del dedalo.
+
+
+
+0.b: attributi giocatori:
+• hp (<r3 = 20, r4= 50, r5(+?)= 100)
+• attacco semplice, attacco speciale, difesa, difesa speciale, velocità. -> sono definiti in base alla vocazione
+• equip: arma, scudo, armatura, talismano
+• sacca: contiene al massimo 5 oggetti e non piu di 10 unità di peso (peso di S= 0, C = 1, IN= 2, NC= 3, R= 4 etcc…)
+• Stato (di tipo combattimento C… o movimento M… (avanzamento (MA), guarigione (MG), craft (MC), apprendimento (MI) ) o morte (DT) )
+• Abilità (skill): mosse speciali in combattimento
+
+NOTA: se gli hp del giocatore scendono a 0 questi esce dal dedalo. Il ripristino avverrà dopo 3 ore.
+
+
+
+
+1: Dedalo
+• i giocatori possono accedere indipendentemente al dedalo.
+• Il dedalo è coposto da un numero variabile di stanze. 
+• Ogni stanza ha una descrizione che la definisce univocamente (calda, fredda, buia/accecante, floreale…) e, come minimo, una porta.
+• La descrizione ha una parte conclusiva che varia in base agli attributi del giocatore e può permettere di avere informazioni sulle porte.
+• Le potre sono di 4 tipi:
+1) COMBATTIMENTO    -> portano ad affrontare un mob (attributi sempre casuali bilanciati su 1 giocatore) o un boss (attributi fissi bilanciati su 5 giocatori), 
+2) AVANZAMENTO      -> conducono ad un altra stanza con tempi di attesa variabili tra 1 e 15 minuti (cunicolo stretto, fanghiglia, vegetazione...). Eccezzionalente 30 e 45 minuti (crepaccio, lago sotterraneo...)
+3) MALUS            -> scatenano trappole: danni istantanei ad uno o piu attributi del giocatore
+4) BONUS            -> contengono scrigni o attrezzature o png aiutanti: oggetti (anche equipagiabili), bonus agli attributi o craft di oggetti
+5) INQUIETANTE      -> se nelle sacche dei giocatori nella stanza ci sono 3 campanelle, contiene il boss finale. Altrimenti mostra altre 3 porte.
+6) DEL BOTTINO      -> contiene 5 scrigni U. È l'unica porta dopo il boss finale (sconfitto). 
+
+
+- COMBATTIMENTO: turni simmultanei con battito
+i battiti sono ogni  30 secondi (nei quali giocatori e npc possono scegliere la loro mossa).
+Un algoritmo decide l'ordine di azione (in base a velocità e contatore "azione successiva")
+ - Mosse: 
+    🐗
+        Attacco: infligge un danno fisso in base all'attributo di attacco, potenziato da eventuale arma e decrementato da eventuale armatura. +1 all'ordine per l'azione successiva
+        Attacco speciale: (buio, luce, fulmine, onda, fiamma) infligge un danno variabile in base alla combinazione di tipo ed attributi (attacco s. & difesa s.) tra attaccante e difensore. -1 all'ordine per l'azione successiva
+    👤
+        Guardia: possibilità di ridurre o neutralizzare i danni da attacco semplice. -3 all'ordine per l'azione successiva
+        Concentrazione: recupera energie. +2 all'ordine per l'azione successiva
+    👥
+        Guarigione: possibilità di aumentare gli hp di un altro giocatore
+        Supporto:   possibilità di incrementare gli attributi di attacco di un giocatore
+
+ - Stati:
+        (CF) Fomentato: +2 all'ordine per l'azione successiva. Attivato da algoritmo. Termina dopo 2-5 battiti.
+        (CS) Sgomentato: salta l'azione successiva. Attivato da attacco semplice. Termina alla fine del battito.
+        (CP) Paralizzato: salta l'azione successiva. Attivato da attacco speciale. Termina dopo 1-3 battiti.
+        (CB) Bruciato: danno fisso agli hp. Attivato da attacco speciale. Termina dopo 1-3 battiti.
+        (CR) Rallentato: -2 all'ordine per l'azione successiva. Attivato da attacco speciale. Termina dopo 1-3 battiti.
+        (CI) Inerme: Salta l'azione corrente. Attivato quando i danni subiti nel turno corrente sono > del 50% degli hp rimasti. Termina alla fine del battito.
+        (CF) Furia (npc): Attacca da 2 a 5 giocatori. Attivato da algoritmo. Termina alla fine del battito.
+        (CF) Furia (pg): Ripete l'attacco da 2 a 5 volte. Attivato da algoritmo o Supporto. Termina alla fine del battito.
+
+
+
+
+*/

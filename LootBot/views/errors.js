@@ -6,7 +6,9 @@ const strings = {
         craft_line: "`▸ Errore generando la linea craft per {#}`"
     },
     players: {
-        load_mainInfo: `▸ Errore caricando player_main_info per account_id: {#}`,
+        bad_input: `▸ Errore input: {#}`,
+        load_mainInfo: `▸ Errore caricando player\\_main\\_info per account\\_id: {#}`,
+        load_teamId: `▸ Errore cercando di ottenere team_id per player_id: {#}`,
         load_craftsman_info: `▸ Errore accedendo alle preferenze craft per account_id: {#}`,
         load_equipInfo: `▸ Errore caricando player_info per account_id: {#}`,
 
@@ -31,7 +33,7 @@ const strings = {
 
 module.exports = {
     // Funzione per stampare un messaggio, sostituendone {#} con una variabile
-    print: (error_message, variable) => typeof variable !== "undefined" ? error_message.split("{#}").join(variable.split("_").join("\\_")) : error_message, // sostituisce a {#} la variabile in ingresso
+    print: (error_message, variable) => typeof variable !== "undefined" ? error_message.split("{#}").join(variable.split("_").join("\\_")).split("_").join("\\_") : error_message, // sostituisce a {#} la variabile in ingresso
     // Funzione per generare una stringa a partire dagli elementi di un oggetto (da passare come variabile a print) 
     flatted_function_paparameters: (array) => array.map(obj => { 
         return Object.entries(obj).map(([key, value]) => `> ${key}: ${value}\n`);

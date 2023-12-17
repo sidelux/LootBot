@@ -4,6 +4,7 @@
  struttura database e query (quest'ultima con funzione formatter)
 */ 
 const master_craftsman_utils = require("./specifics/master_craftsman")
+const nd_utils =  require("./specifics/necro_descent")
 
 // In questo oggetto è tenuta traccia delle strutture nelle tabelle del database
 const db_structures = {
@@ -16,6 +17,7 @@ const db_structures = {
             gender: "gender",
             reborn: "reborn",
             money: "money",
+            class: "class", // Vocazione
             exp: "exp",
         },
         craft: {
@@ -38,6 +40,10 @@ const db_structures = {
             armor_power: "power_armor",
             shield_power: "power_shield"
         }
+    },
+    teams:{
+        team_id: "team_id",
+        player_id: "player_id"
     },
     items: {
         key: "id",
@@ -75,7 +81,8 @@ const query_tree = {
 
     // Questo oggetto va astratto in un modulo dedicato... ma si dovrebbe trovare una soluzione per i nomi duplicati che non sia l'attuale (e poco efficace) sistema di (ultimo, primo)
     // Così come è non è scalabile... :(
-    master_craftsman: master_craftsman_utils.query_tree
+    master_craftsman: master_craftsman_utils.query_tree,
+    necro_descent: nd_utils.query_tree,
 }
 
 // In last_rute l'ultimo stmp della query. In sub_tree l'albero su cui fare la ricerca <- puo essere l'intero query_tree o solo una parte (ad esempio query_tree.mastercraftsman.menu) 
