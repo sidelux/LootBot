@@ -637,6 +637,20 @@ bot.on('message', async function (message) {
 		var month = now_d.getMonth();
 		var year = now_d.getFullYear();
 
+		if ((day == 31) && (month == 9) && (hour >= 12) && (year == 2023)) {
+			connection.query('SELECT COUNT(*) As cnt FROM one_time_gift WHERE player_id = ' + player_id, function (err, rows, fields) {
+				if (err) throw err;
+				if (rows[0].cnt == 0) {
+					connection.query('INSERT INTO one_time_gift (player_id) VALUES (' + player_id + ')', async function (err, rows, fields) {
+						if (err) throw err;
+						await addItem(player_id, 811);
+						bot.sendMessage(message.chat.id, "Buon Halloween 🎃!\nPer la tua presenza costante nel gioco, hai ricevuto una nuova IN non commerciabile: una *Zucchetta di Halloween 2023 (IN)*!", mark);
+						console.log("One time gift a " + message.from.username);
+					});
+				}
+			});
+		}
+
 		if ((day == 31) && (month == 9) && (hour >= 12) && (year == 2022)) {
 			connection.query('SELECT COUNT(*) As cnt FROM one_time_gift WHERE player_id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
@@ -1197,9 +1211,9 @@ bot.onText(/^\/endglobal$/, function (message, match) {
 		endglobal(message, 1);
 });
 
-bot.onText(/^\/failglobal/, function (message, match) {
+bot.onText(/^\/failglobal/, async function (message, match) {
 	if (message.from.id == config.phenix_id)
-		failglobal(message, 1);
+		await failglobal(message, 1);
 });
 
 bot.onText(/^\/refreshSpread/i, async function (message) {
@@ -11517,7 +11531,10 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 													return;
 												}
 												var rand = Math.random()*100;
-												if (rand < 40) {
+												var prob = 40;
+												if (player_paralyzed == 1)
+													prob = 10;
+												if (rand < prob) {
 													bot.sendMessage(message.chat.id, "Silenziosamente e con cautela muovi i tuoi passi lungo il corridoio: mostri temibili dovrebbero sorvegliarne i cunicoli, chissà che non siano esausti\nVelocemente ti ritrovi nella stanza successiva, incolume.", dNext);
 													room_id++;
 													await reduceDungeonEnergy(player_id, 10);
@@ -22790,6 +22807,9 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 			return;
 		}
 
+		var damage_multiply = 1;
+		var defence_multiply = 1;
+
 		var player_id = rows[0].id;
 		var reborn = rows[0].reborn;
 		var charm_id = rows[0].charm_id;
@@ -23152,6 +23172,11 @@ bot.onText(/Entra in combattimento|Continua a combattere/i, function (message) {
 												scale += "⚜️ ";
 										} else
 											scale = "-";
+
+										dragon_damage = dragon_damage*damage_multiply;
+										enemy_dragon_damage = enemy_dragon_damage*damage_multiply;
+										dragon_defence = dragon_defence*defence_multiply;
+										enemy_dragon_defence = enemy_dragon_defence*defence_multiply;
 
 										var status = "Avversario " + dragonSym(enemy_dragon_type) + ": " + formatNumber(enemy_dragon_life) + " 🔺 (" + enemy_altered + ")\n|" + progressBar(enemy_dragon_life, enemy_dragon_total_life) + "|\n\n";
 
@@ -30952,7 +30977,14 @@ bot.onText(/Hall of Fame/i, function (message) {
 
 		connection.query('SELECT top_min FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 			if (err) throw err;
-			var desc = "\n\nIl calcolo tiene conto del tempo trascorso negli Incarichi, dei punti creazione del team, dei dungeon completati in team e degli Assalti completati con successo. Si resetta ogni 6 mesi.";
+			var now = new Date();
+			var year = now.getFullYear();
+			var reset_date = "";
+			if ((now >= (new Date(year + "-07-01"))) && (now <= (new Date(year + "-12-31"))))
+				reset_date = "01/01/" + (year+1);
+			else
+				reset_date = "01/07/" + year;
+			var desc = "\n\nIl calcolo tiene conto del tempo trascorso negli Incarichi, dei punti creazione del team, dei dungeon completati in team e degli Assalti completati con successo. Si resetta ogni 6 mesi, attualmente il " + reset_date + ".";
 			var query = "SELECT name As name, ((500*mission_time_count_tmp)+(craft_count_tmp)+(3000*boss_count_tmp)+(125000*(A.completed_tmp+kill_num_tmp))+(dungeon_room_count_tmp)) As pnt FROM team T LEFT JOIN assault A ON T.id = A.team_id GROUP BY T.id ORDER BY pnt DESC";
 			if (rows[0].top_min == 1) {
 				connection.query(query, function (err, rows, fields) {
@@ -39190,22 +39222,22 @@ bot.onText(/^set$|^set 💣$|torna ai set|^Imposta (.+)/i, function (message) {
 									return;
 								}
 								var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-								if (reg.test(weapon1) == false) {
+								if ((weapon1 != "") && (reg.test(weapon1) == false)) {
 									bot.sendMessage(message.chat.id, "Arma non valida, riprova", back);
 									return;
 								}
 								var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-								if (reg.test(weapon2) == false) {
+								if ((weapon2 != "") && (reg.test(weapon2) == false)) {
 									bot.sendMessage(message.chat.id, "Armatura non valida, riprova", back);
 									return;
 								}
 								var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-								if (reg.test(weapon3) == false) {
+								if ((weapon3 != "") && (reg.test(weapon3) == false)) {
 									bot.sendMessage(message.chat.id, "Scudo non valido, riprova", back);
 									return;
 								}
 								var reg = new RegExp("^[a-zA-Z ]{1,100}$");
-								if (reg.test(weapon4) == false) {
+								if ((weapon4 != "") && (reg.test(weapon4) == false)) {
 									bot.sendMessage(message.chat.id, "Talismano non valido, riprova", back);
 									return;
 								}
@@ -49438,7 +49470,7 @@ function checkResetGlobal(action = null) {
 			if (err) throw err;
 			var global_id = rows[0].global_id;
 			var global_cap = rows[0].global_cap;
-			connection.query('SELECT SUM(value) As tot FROM achievement_global', function (err, rows, fields) {
+			connection.query('SELECT SUM(value) As tot FROM achievement_global', async function (err, rows, fields) {
 				if (err) throw err;
 				var total_value = rows[0].tot;
 				var global_end_status = 0;
@@ -49448,7 +49480,7 @@ function checkResetGlobal(action = null) {
 					endglobal(null, 0);
 				} else {
 					global_end_status = 2; // fallita
-					failglobal(null, 0);
+					await failglobal(null, 0);
 				}
 				connection.query('UPDATE global_history SET picked = 1 AND id = ' + global_id, function (err, rows, fields) {
 					if (err) throw err;
@@ -49494,233 +49526,177 @@ function checkResetGlobal(action = null) {
 	}
 }
 
-function endglobal(message, output) {
-	connection.query('SELECT I.id As id1, I.name As name1, I2.id As id2, I2.name As name2, I3.id As id3, I3.name As name3, global_treshold, global_end_message, global_desc FROM config C INNER JOIN item I ON C.global_item1 = I.id INNER JOIN item I2 ON C.global_item2 = I2.id INNER JOIN item I3 ON C.global_item3 = I3.id', function (err, rows, fields) {
-		if (err) throw err;
+async function endglobal(message, output) {
+	var rows = await connection.queryAsync('SELECT I.id As id1, I.name As name1, I2.id As id2, I2.name As name2, I3.id As id3, I3.name As name3, global_treshold, global_end_message, global_desc FROM config C INNER JOIN item I ON C.global_item1 = I.id INNER JOIN item I2 ON C.global_item2 = I2.id INNER JOIN item I3 ON C.global_item3 = I3.id');
 
-		var item_1 = rows[0].name1;
-		var item_2 = rows[0].name2;
-		var item_3 = rows[0].name3;
-		var item_1id = rows[0].id1;
-		var item_2id = rows[0].id2;
-		var item_3id = rows[0].id3;
-		var global_desc = rows[0].global_desc;
+	var item_1 = rows[0].name1;
+	var item_2 = rows[0].name2;
+	var item_3 = rows[0].name3;
+	var item_1id = rows[0].id1;
+	var item_2id = rows[0].id2;
+	var item_3id = rows[0].id3;
+	var global_desc = rows[0].global_desc;
 
-		var minValue = rows[0].global_treshold;
-		var bonusText = rows[0].global_end_message;
+	var minValue = rows[0].global_treshold;
+	var bonusText = rows[0].global_end_message;
 
-		connection.query('SELECT global_cap FROM config', function (err, rows, fields) {
-			if (err) throw err;
+	var rows = await connection.queryAsync('SELECT global_cap FROM config');
+	const global_cap = rows[0].global_cap;
+	console.log("cap " + global_cap);
 
-			const global_cap = rows[0].global_cap;
+	var rows = await connection.queryAsync('SELECT COUNT(player_id) As cnt FROM achievement_global');
+	const tot = rows[0].cnt;
 
-			console.log("cap " + global_cap);
+	var rows = await connection.queryAsync('SELECT SUM(value) As val FROM achievement_global');
+	if (output == 1) {
+		bot.sendMessage(message.chat.id, "Il valore attuale è " + formatNumber(rows[0].val) + " per " + formatNumber(tot) + " persone, sicuro di chiudere l'impresa? Ricorda il messaggio e il valore del bonus", yesno).then(function () {
+			answerCallbacks[message.chat.id] = async function (answer) {
+				if (answer.text.toLowerCase() == "si") {
 
-			connection.query('SELECT COUNT(player_id) As cnt FROM achievement_global', function (err, rows, fields) {
-				if (err) throw err;
+					connection.query('UPDATE player SET global_end = 0', function (err, rows, fields) {
+						if (err) throw err;
 
-				const tot = rows[0].cnt;
-
-				connection.query('SELECT SUM(value) As val FROM achievement_global', function (err, rows, fields) {
-					if (err) throw err;
-
-					if (output == 1) {
-						bot.sendMessage(message.chat.id, "Il valore attuale è " + formatNumber(rows[0].val) + " per " + formatNumber(tot) + " persone, sicuro di chiudere l'impresa? Ricorda il messaggio e il valore del bonus", yesno).then(function () {
-							answerCallbacks[message.chat.id] = async function (answer) {
-								if (answer.text.toLowerCase() == "si") {
-
-									connection.query('UPDATE player SET global_end = 0', function (err, rows, fields) {
-										if (err) throw err;
-
-										connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val, P.reborn FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (SELECT account_id FROM banlist) HAVING val > 0 ORDER BY val DESC', async function (err, rows, fields) {
-											if (err) throw err;
-
-											var text = "";
-											var global_limit_perc = 0;
-											var global_limit_val = 0;
-
-											for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-												text = "";
-												if (rows[i].val >= (rows[0].val / 3)) {
-													await addItem(rows[i].player_id, item_1id);
-													text += "> " + item_1 + "\n";
-												}
-												if (rows[i].val >= (rows[0].val / 10)) {
-													await addItem(rows[i].player_id, item_2id);
-													text += "> " + item_2 + "\n";
-												}
-												await addItem(rows[i].player_id, item_3id);
-												text += "> " + item_3 + "\n";
-
-												if (rows[i].val >= minValue) {
-													connection.query('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
-														if (err) throw err;
-													});
-													text += "> Bonus completamento: *" + bonusText + "*!\n";
-												}
-
-												// punto globale
-												global_limit_perc = 0.15+(rows[i].reborn*0.03);
-												global_limit_val = Math.round(global_cap*global_limit_perc/100);
-
-												if (rows[i].val >= global_limit_val) {
-													if (i < 25) {
-														await addChest(rows[i].player_id, 7);
-														text += "> Scrigno Capsula extra per la top 25\n";
-													}
-													connection.query('UPDATE player SET global_event = global_event+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
-														if (err) throw err;
-													});
-													text += "> Punto globale\n";
-												}
-
-												if (i == 0) {
-													connection.query('UPDATE player SET global_win = global_win+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
-														if (err) throw err;
-													});
-												}
-
-												text += "\n*Grazie per aver partecipato!*";
-
-												bot.sendMessage(rows[i].chat_id, "Per il completamento dell'*Impresa Globale* hai ricevuto:\n" + text, mark);
-											}
-										});
-
-										connection.query('DELETE FROM global_hourly', function (err, rows, fields) {
-											if (err) throw err;
-										});
-
-										connection.query('UPDATE config SET global_eventon = 0, global_eventwait = 1, global_eventhide = 1', function (err, rows, fields) {
-											if (err) throw err;
-										});
-
-										bot.sendMessage(message.chat.id, "Fatto!", back);
-
-										getGlobalPDF(message);
-									});
-								}
-							}
-						});
-					} else {
-						connection.query('UPDATE player SET global_end = 0', function (err, rows, fields) {
+						connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val, P.reborn FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (SELECT account_id FROM banlist) HAVING val > 0 ORDER BY val DESC', async function (err, rows, fields) {
 							if (err) throw err;
 
-							connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val, P.reborn FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (SELECT account_id FROM banlist) HAVING val > 0 ORDER BY val DESC', async function (err, rows, fields) {
-								if (err) throw err;
+							var text = "";
+							var global_limit_perc = 0;
+							var global_limit_val = 0;
 
-								var text = "";
-								var global_limit_perc = 0;
-								var global_limit_val = 0;
-
-								for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-									text = "";
-									if (rows[i].val >= (rows[0].val / 3)) {
-										await addItem(rows[i].player_id, item_1id);
-										text += "> " + item_1 + "\n";
-									}
-									if (rows[i].val >= (rows[0].val / 10)) {
-										await addItem(rows[i].player_id, item_2id);
-										text += "> " + item_2 + "\n";
-									}
-									await addItem(rows[i].player_id, item_3id);
-									text += "> " + item_3 + "\n";
-
-									if (rows[i].val >= minValue) {
-										connection.query('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
-											if (err) throw err;
-										});
-										text += "> Bonus completamento: *" + bonusText + "*!\n";
-									}
-
-									// punto globale
-									global_limit_perc = 0.15+(rows[i].reborn*0.03);
-									global_limit_val = Math.round(global_cap*global_limit_perc/100);
-
-									if (rows[i].val >= global_limit_val) {
-										if (i < 25) {
-											await addChest(rows[i].player_id, 7);
-											text += "> Scrigno Capsula extra per la top 25\n";
-										}
-										connection.query('UPDATE player SET global_event = global_event+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
-											if (err) throw err;
-										});
-										text += "> Punto globale\n";
-									}
-
-									if (i == 0) {
-										connection.query('UPDATE player SET global_win = global_win+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
-											if (err) throw err;
-										});
-									}
-
-									text += "\n*Grazie per aver partecipato!*";
-
-									bot.sendMessage(rows[i].chat_id, "Per il completamento dell'*Impresa Globale* hai ricevuto:\n" + text, mark);
+							for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+								text = "";
+								if (rows[i].val >= (rows[0].val / 3)) {
+									await addItem(rows[i].player_id, item_1id);
+									text += "> " + item_1 + "\n";
 								}
-							});
+								if (rows[i].val >= (rows[0].val / 10)) {
+									await addItem(rows[i].player_id, item_2id);
+									text += "> " + item_2 + "\n";
+								}
+								await addItem(rows[i].player_id, item_3id);
+								text += "> " + item_3 + "\n";
 
-							connection.query('DELETE FROM global_hourly', function (err, rows, fields) {
-								if (err) throw err;
-							});
+								if (rows[i].val >= minValue) {
+									connection.query('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
+										if (err) throw err;
+									});
+									text += "> Bonus completamento: *" + bonusText + "*!\n";
+								}
+
+								// punto globale
+								global_limit_perc = 0.15+(rows[i].reborn*0.03);
+								global_limit_val = Math.round(global_cap*global_limit_perc/100);
+
+								if (rows[i].val >= global_limit_val) {
+									if (i < 25) {
+										await addChest(rows[i].player_id, 7);
+										text += "> Scrigno Capsula extra per la top 25\n";
+									}
+									connection.query('UPDATE player SET global_event = global_event+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
+										if (err) throw err;
+									});
+									text += "> Punto globale\n";
+								}
+
+								if (i == 0) {
+									connection.query('UPDATE player SET global_win = global_win+1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
+										if (err) throw err;
+									});
+								}
+
+								text += "\n*Grazie per aver partecipato!*";
+
+								bot.sendMessage(rows[i].chat_id, "Per il completamento dell'*Impresa Globale* hai ricevuto:\n" + text, mark);
+							}
 						});
-					}
-				});
-			});
+
+						connection.query('DELETE FROM global_hourly', function (err, rows, fields) {
+							if (err) throw err;
+						});
+
+						connection.query('UPDATE config SET global_eventon = 0, global_eventwait = 1, global_eventhide = 1', function (err, rows, fields) {
+							if (err) throw err;
+						});
+
+						bot.sendMessage(message.chat.id, "Fatto!", back);
+
+						getGlobalPDF(message);
+					});
+				}
+			}
 		});
-	});
+	} else {
+		await connection.queryAsync('UPDATE player SET global_end = 0');
+
+		var rows = await connection.queryAsync('SELECT P.nickname, P.chat_id, A.player_id, A.value As val, P.reborn FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (SELECT account_id FROM banlist) HAVING val > 0 ORDER BY val DESC');
+
+		var text = "";
+		var global_limit_perc = 0;
+		var global_limit_val = 0;
+
+		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+			text = "";
+			if (rows[i].val >= (rows[0].val / 3)) {
+				await addItem(rows[i].player_id, item_1id);
+				text += "> " + item_1 + "\n";
+			}
+			if (rows[i].val >= (rows[0].val / 10)) {
+				await addItem(rows[i].player_id, item_2id);
+				text += "> " + item_2 + "\n";
+			}
+			await addItem(rows[i].player_id, item_3id);
+			text += "> " + item_3 + "\n";
+
+			if (rows[i].val >= minValue) {
+				await connection.queryAsync('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id);
+				text += "> Bonus completamento: *" + bonusText + "*!\n";
+			}
+
+			// punto globale
+			global_limit_perc = 0.15+(rows[i].reborn*0.03);
+			global_limit_val = Math.round(global_cap*global_limit_perc/100);
+
+			if (rows[i].val >= global_limit_val) {
+				if (i < 25) {
+					await addChest(rows[i].player_id, 7);
+					text += "> Scrigno Capsula extra per la top 25\n";
+				}
+				await connection.queryAsync('UPDATE player SET global_event = global_event+1 WHERE id = ' + rows[i].player_id);
+				text += "> Punto globale\n";
+			}
+
+			if (i == 0)
+				await connection.queryAsync('UPDATE player SET global_win = global_win+1 WHERE id = ' + rows[i].player_id);
+
+			text += "\n*Grazie per aver partecipato!*";
+
+			bot.sendMessage(rows[i].chat_id, "Per il completamento dell'*Impresa Globale* hai ricevuto:\n" + text, mark);
+		}
+
+		await connection.queryAsync('DELETE FROM global_hourly');
+	}
 }
 
-function failglobal(message, output) {
-	connection.query('SELECT COUNT(player_id) As cnt FROM achievement_global', function (err, rows, fields) {
-		if (err) throw err;
+async function failglobal(message, output) {
+	var rows = await connection.queryAsync('SELECT COUNT(player_id) As cnt FROM achievement_global');
 
-		var tot = rows[0].cnt;
+	var tot = rows[0].cnt;
 
-		connection.query('SELECT global_desc, global_cap, global_item1, global_item2, global_item3, global_treshold, global_end_message_fail FROM config', function (err, rows, fields) {
-			if (err) throw err;
+	var rows = await connection.queryAsync('SELECT global_desc, global_cap, global_item1, global_item2, global_item3, global_treshold, global_end_message_fail FROM config');
 
-			var global_desc = rows[0].global_desc;
-			var global_cap = rows[0].global_cap;
-			var global_item1 = rows[0].global_item1;
-			var global_item2 = rows[0].global_item2;
-			var global_item3 = rows[0].global_item3;
-			var global_treshold = rows[0].global_treshold;
-			var global_end_message = rows[0].global_end_message_fail;
+	var global_desc = rows[0].global_desc;
+	var global_cap = rows[0].global_cap;
+	var global_item1 = rows[0].global_item1;
+	var global_item2 = rows[0].global_item2;
+	var global_item3 = rows[0].global_item3;
+	var global_treshold = rows[0].global_treshold;
+	var global_end_message = rows[0].global_end_message_fail;
 
-			connection.query('SELECT SUM(value) As val FROM achievement_global', function (err, rows, fields) {
-				if (err) throw err;
-				if (output == 1) {
-					bot.sendMessage(message.chat.id, "Il valore attuale è " + formatNumber(rows[0].val) + " per " + formatNumber(tot) + " persone, sicuro di chiudere l'impresa FALLITA?", yesno).then(function () {
-						answerCallbacks[message.chat.id] = async function (answer) {
-							if (answer.text.toLowerCase() == "si") {
-								connection.query('UPDATE player SET global_end = 0', function (err, rows, fields) {
-									if (err) throw err;
-
-									var minValue = global_treshold;
-									var text = global_end_message;
-
-									connection.query('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM player P LEFT JOIN achievement_global A ON A.player_id = P.id WHERE P.reborn > 1 AND P.account_id NOT IN (SELECT account_id FROM banlist) AND (A.value < ' + minValue + ' OR A.value IS NULL) GROUP BY P.id ORDER BY val DESC', function (err, rows, fields) {
-										if (err) throw err;
-										for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
-											connection.query('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id, function (err, rows, fields) {
-												if (err) throw err;
-											});
-											bot.sendMessage(rows[i].chat_id, "Per il fallimento dell'Impresa Globale (minimo *" + formatNumber(minValue) + "* " + global_desc.trim() + "), da questo momento fino al termine della prossima impresa subirai il seguente malus: *" + text + "*", mark);
-											console.log(rows[i].nickname + " - Fallito");
-										}
-									});
-
-									connection.query('UPDATE config SET global_eventon = 0, global_eventwait = 1', function (err, rows, fields) {
-										if (err) throw err;
-										bot.sendMessage(message.chat.id, "Fatto!");
-
-										getGlobalPDF(message);
-									});
-								});
-							}
-						}
-					});
-				} else {
+	var rows = await connection.queryAsync('SELECT SUM(value) As val FROM achievement_global');
+	if (output == 1) {
+		bot.sendMessage(message.chat.id, "Il valore attuale è " + formatNumber(rows[0].val) + " per " + formatNumber(tot) + " persone, sicuro di chiudere l'impresa FALLITA?", yesno).then(function () {
+			answerCallbacks[message.chat.id] = async function (answer) {
+				if (answer.text.toLowerCase() == "si") {
 					connection.query('UPDATE player SET global_end = 0', function (err, rows, fields) {
 						if (err) throw err;
 
@@ -49737,11 +49713,30 @@ function failglobal(message, output) {
 								console.log(rows[i].nickname + " - Fallito");
 							}
 						});
+
+						connection.query('UPDATE config SET global_eventon = 0, global_eventwait = 1', function (err, rows, fields) {
+							if (err) throw err;
+							bot.sendMessage(message.chat.id, "Fatto!");
+
+							getGlobalPDF(message);
+						});
 					});
 				}
-			});
+			}
 		});
-	});
+	} else {
+		await connection.queryAsync('UPDATE player SET global_end = 0');
+
+		var minValue = global_treshold;
+		var text = global_end_message;
+
+		var rows = await connection.queryAsync('SELECT P.nickname, P.chat_id, A.player_id, A.value As val FROM player P LEFT JOIN achievement_global A ON A.player_id = P.id WHERE P.reborn > 1 AND P.account_id NOT IN (SELECT account_id FROM banlist) AND (A.value < ' + minValue + ' OR A.value IS NULL) GROUP BY P.id ORDER BY val DESC');
+		for (var i = 0, len = Object.keys(rows).length; i < len; i++) {
+			await connection.queryAsync('UPDATE player SET global_end = 1 WHERE id = ' + rows[i].player_id);
+			bot.sendMessage(rows[i].chat_id, "Per il fallimento dell'Impresa Globale (minimo *" + formatNumber(minValue) + "* " + global_desc.trim() + "), da questo momento fino al termine della prossima impresa subirai il seguente malus: *" + text + "*", mark);
+			console.log(rows[i].nickname + " - Fallito");
+		}
+	}
 }
 
 function nFormatter(num, digits) {
@@ -53480,6 +53475,7 @@ function setFinishedArena(element, index, array) {
 		var win = rows[0].win;
 		var lose = rows[0].lose;
 		var reborn = element.reborn;
+		var damage_multiply = 10;
 
 		if (choice == 0) {
 			connection.query('UPDATE event_arena_status SET extracted = 0, dragon_1 = 0, dragon_2 = 0, land_type = 0, choice = 0, bet_id = 0, bet_qnt = 0, fight_time = NULL WHERE player_id = ' + watcher_id, function (err, rows, fields) {
@@ -53503,7 +53499,7 @@ function setFinishedArena(element, index, array) {
 				name1 = name1.substring(0, 30) + "...";
 			var myLife = Math.round(parseInt(rows[0].exp * 10));
 			var totMyLife = myLife;
-			var myDmg = parseInt(rows[0].damage) + parseInt(rows[0].claws);
+			var myDmg = (parseInt(rows[0].damage) + parseInt(rows[0].claws)) * damage_multiply;
 			var myCrit = parseInt(rows[0].critical);
 			var myType = rows[0].type;
 			var myLevel = rows[0].level;
@@ -53548,7 +53544,7 @@ function setFinishedArena(element, index, array) {
 					if (name2.lenght > 30)
 						name2 = name2.substring(0, 30) + "...";
 					var enemyLife = Math.round(parseInt(rows[0].exp * 10));
-					var enemyDmg = parseInt(rows[0].damage) + parseInt(rows[0].claws);
+					var enemyDmg = (parseInt(rows[0].damage) + parseInt(rows[0].claws)) * damage_multiply;
 					var enemyCrit = parseInt(rows[0].critical);
 					var enemyType = rows[0].type;
 					var enemyLevel = rows[0].level;
@@ -58362,7 +58358,7 @@ function autoMana() {
 
 				var extra_mana = "";
 				// modifiche anche il ritiro manuale
-				if ((await getCurrentGlobal() == 12) && (global_end == 1)) {
+				if ((await getCurrentGlobal() == 12) && (rows[i].global_end == 1)) {
 					if (await getPastGlobalStatus() == 1) {
 						rows[i].quantity = rows[i].quantity*2;
 						extra_mana = " (aumentato grazie al bonus globale)";
@@ -58384,6 +58380,7 @@ function autoMana() {
 				});
 				bot.sendMessage(rows[i].chat_id, "Le miniere sono state chiuse, hai ricevuto " + formatNumber(rows[i].quantity) + " Mana " + rows[i].name + "!" + extra_mana);
 			}
+			console.log("Miniere terminate correttamente");
 		} else
 			console.log("Nessuna miniera da terminare");
 	});
@@ -65720,7 +65717,7 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 					await addMoney(player_id, 500*qnt);
 				else if ((rarity == "UE") || (rarity == "X") || (rarity == "U"))
 					await addMoney(player_id, 600*qnt);
-				console.log("Cap oggetto raggiunto " + inv_quantity + "/" + max_quantity);
+				// console.log("Cap oggetto raggiunto " + inv_quantity + "/" + max_quantity);
 				// await connection.queryAsync('UPDATE inventory SET quantity = ' + max_quantity + ' WHERE player_id = ' + player_id + ' AND item_id = ' + item_id);
 				return;
 			}
@@ -65813,7 +65810,7 @@ async function reduceDurability(player_id, weapon_type) {
 				addItem(player_id, rows[0].material_3);
 				var rows = await connection.queryAsync('SELECT id, name FROM item WHERE id = ' + rows[0].material_3);
 			}
-			if (Object.keys(item).length > 0) {
+			if (Object.keys(rows).length > 0) {
 				weapon_extra = " Hai ricevuto *" + rows[0].name + "* per poterla creare nuovamente.";
 				addItem(player_id, rows[0].id);
 			}
@@ -65834,7 +65831,7 @@ async function reduceDurability(player_id, weapon_type) {
 			connection.query("SELECT quantity FROM inventory WHERE item_id = " + item_id + " AND player_id = " + player_id, function (err, rows, fields) {
 				if (err) throw err;
 				if (rows[0].quantity > 0) {
-					connection.query("UPDATE inventory SET durability = max_durability WHERE item_id = " + item_id + " AND player_id = " + player_id, function (err, rows, fields) {
+					connection.query("UPDATE inventory SET durability = durability_max WHERE item_id = " + item_id + " AND player_id = " + player_id, function (err, rows, fields) {
 						if (err) throw err;
 					});
 				}
@@ -65903,7 +65900,7 @@ async function addArtifactFragment(player_id) {
 			connection.query('UPDATE player SET artifact_fragment = artifact_fragment+1, artifact_fragment_prob = 1 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
 			});
-			console.log("Frammento trovato da " + player_id);
+			console.log("Frammento trovato da " + player_id + " con prob " + prob);
 		} else {
 			connection.query('UPDATE player SET artifact_fragment_prob = artifact_fragment_prob+1 WHERE id = ' + player_id, function (err, rows, fields) {
 				if (err) throw err;
