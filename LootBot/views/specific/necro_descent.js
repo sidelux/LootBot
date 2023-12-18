@@ -22,7 +22,7 @@ module.exports = {
     maze: {
         rooms_icons: ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"],
         branch_types: {tunnes: 0, passage: 1},
-        room_types: {micro: 0, small: 1, large: 2, special: 3, blind: 4},
+        room_types: {micro: 0, small: 1, large: 2, special: 3, blind: 4, final: 5},
         gate_types: {door: 0, passage: 1, uphill_passage: 2, downhill_passage: 3, tunnel: 4, uphill_tunnel: 5, downhill_tunnel: 6},
 
         global_directions: ['nord', 'sud', 'est', 'ovest'],
@@ -62,12 +62,12 @@ module.exports = {
                 "punteggiate di minerali",
             ],
             celing_prefix: ", con un",
+            ceiling_ornaments_prefix: "soffitto",
             ceiling_dimension: [ // con un 
                 "basso",
                 "ampio",
                 "irregolare",
             ],
-            ceiling_ornaments_prefix: "soffitto",
             ceiling_ornaments: [ // soffitto ...
                 "costellato di piccole stalattiti",
                 "da dove scendono enormi stalattiti",
