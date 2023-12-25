@@ -81,7 +81,7 @@ function pg_types(vocazione){
     */
     switch (vocazione) {
         case (2): { // ("Sciamano Elementalista"): {
-            return Math.floor(Math.random()*2)+3;
+            return 3+Math.floor(Math.random()*2); // uno qualunque ma non luce o ombra...
         }
         case (3): { //("Esploratore Druido"): {
             return 3;

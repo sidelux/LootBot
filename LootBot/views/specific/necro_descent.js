@@ -21,17 +21,6 @@ module.exports = {
     },
     maze: {
         rooms_icons: ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"],
-        branch_types: {tunnes: 0, passage: 1},
-        room_types: {micro: 0, small: 1, large: 2, special: 3, blind: 4, final: 5},
-        gate_types: {door: 0, passage: 1, uphill_passage: 2, downhill_passage: 3, tunnel: 4, uphill_tunnel: 5, downhill_tunnel: 6},
-
-        global_directions: ['nord', 'sud', 'est', 'ovest'],
-        relative_direction: {
-            nord: ['ovest', 'sud', 'est'],
-            sud: ['est', 'nord', 'ovest'],
-            est: ['nord', 'ovest', 'sud'],
-            ovest: ['sud', 'est', 'nord'],
-        },
         player: {
             already_in_maze: "🌬",
             current_room: {
@@ -42,63 +31,90 @@ module.exports = {
             },
             firs_jump_impressions: ["Buio.", "Solo buio.", "Brividi.", "Abisso.", "Oscurità", "Soltanto oscurità.", "Nel nulla.", "Silenzio.", "Non un rumore.", "Coraggio?", "Nel Vuoto…", "Sconsideratezza…", "Senza percepire la caduta…", "Il corpo non ha peso…"]
         },
-        room_descriptions: {
-            room_dimension_prefix: "una",
-            room_dimension: [ // una … sala
-                "spaziosa",
-                "grande",
-                "angusta",
-                "piccola",
-                "stretta"
-            ],
-            walls_prefix: "sala dalle pareti",
-            walls: [ // dalle pareti 
-                "ruvide",
-                "lisce",
-                "taglienti",
-                "porose",
-                "irregolari",
-                "marmoree",
-                "punteggiate di minerali",
-            ],
-            celing_prefix: ", con un",
-            ceiling_ornaments_prefix: "soffitto",
-            ceiling_dimension: [ // con un 
-                "basso",
-                "ampio",
-                "irregolare",
-            ],
-            ceiling_ornaments: [ // soffitto ...
-                "costellato di piccole stalattiti",
-                "da dove scendono enormi stalattiti",
-                "di rocce affioranti",
-                "coperto da fitte trame di ragnatele",
-                "ricoperto da una folta vegetazione",
-                "scuro, costellato di minuscoli cristalli"
-            ],
-            light_source: [
-                "Fioche torce incastonate nella pietra muovono ombre di qua e di là",
-                "Il tenue blu-verde di minuscoli funghi bioluminescenti si diffonde opaco",
-                "Impalpabili globi luminosi fluttuano pigramente",
-                "Misteriose fiamme impalpabili si accendono e spengono",
-                "Una serie di pozzi di fuoco, lingue degli inferi, illuminano l'ambiente",
-                "Qua e la, maestosi cristalli brillano",
-                "Alghe luminose si attaccano avide alle crepe illuminando l'aria"
-            ],
-            light_color: [
-                "tra una densa coltre nebbiosa…",
-                "tra una sottile nebbia gelata…",
-                "con un bagliore giallastro…",
-                "con un bagliore caldo e mutevole…",
-                "con una luce intensa…",
-                "con una luce calda e rossastra…",
-                "con una luce fredda…",
-                "con una luce multicolore, allucinante…",
-                "di una luce delicata…",
-                "di una luce abbagliante…",
-                "di una luce inquietante, tetra…",
-            ]
+        nodes: {
+            types: { final: 0, tunnel: 1, passage: 2, way: 3, room: 4, blind: 5, special: 6 },
+            dimensions_types: { micro: 0, small: 1, medium: 2, large: 3 },
+            gate_types: { narrow: 0, standard: 1, large: 2 },
+            gate_direction: { nord: 0, sud: 1, est: 2, ovest: 3 },
+            node_description: {
+                types: ["cunicolo", "passaggio", "corridoio", "salaone",],
+                dimensions: ["un", "un piccolo", "un angusto", "un intricato", "un grande", "un meraviglioso", "uno strano", "un curioso"],
+                walls: [ // dalle pareti 
+                    "ruvide",
+                    "lisce",
+                    "taglienti",
+                    "porose",
+                    "irregolari",
+                    "marmoree",
+                    "punteggiate di minerali",
+                ],
+                ceeling: {
+                    types: [ // con un 
+                        "basso",
+                        "ampio",
+                        "irregolare",
+                    ],
+                    ornaments: [ // soffitto ...
+                        "",
+                        "costellato di piccole stalattiti",
+                        "da dove scendono colonne di sedimenti",
+                        "di rocce affioranti",
+                        "coperto da fitte trame di ragnatele",
+                        "ricoperto da una folta vegetazione",
+                        "scuro, costellato di minuscoli cristalli"
+                    ]
+                },
+                light: {
+                    sources: [
+                        "Fioche torce incastonate nella pietra muovono ombre di qua e di là",
+                        "Il tenue blu-verde di minuscoli funghi bioluminescenti si diffonde opaco",
+                        "Impalpabili globi luminosi fluttuano pigramente",
+                        "Misteriose fiamme impalpabili si accendono e spengono",
+                        "Una serie di pozzi di fuoco, lingue degli inferi, illuminano l'ambiente",
+                        "Qua e la, maestosi cristalli brillano",
+                        "Alghe luminose si attaccano avide alle crepe illuminando l'aria"
+                    ],
+                    colors: [
+                        "con un bagliore giallastro…",
+                        "con un bagliore caldo e mutevole…",
+                        "con una luce intensa…",
+                        "con una luce calda e rossastra…",
+                        "con una luce fredda…",
+                        "con una luce multicolore, allucinante…",
+                        "di una luce delicata…",
+                        "di una luce abbagliante…",
+                        "di una luce inquietante, tetra…",
+                    ]
+                }
+            },
+            gate_descriptions: {
+                surrounding: [
+                    "",
+                    "nel terreno",
+                    "tra i rovi",
+                    "tra spesse radici",
+                    "tra umidi massi",
+                    "tra le rocce",
+                    "tra rocce spoglie",
+                    "nella nuda roccia",
+                ],
+                dimensions: ["un", "uno stretto", "un agevole", "uno scomodo", "uno strano", "un intricato", "un curioso"],
+                types: ["cunicolo", "passaggio", "continua il",],
+                ornament: [
+                    "",
+                    "avvolto in una fitta nebbia",
+                    "avvolto in una fitta vegetazione",
+                    "circondato di funghi rossi",
+                    "circondato di funghi gialli e viola",
+                    "vicino ad un piccolo corso d'acqua",
+                ]
+            },
+
+
+
         },
+
+
         room_noises: [
             {
                 main_noise: "\nAl centro:\nUn meraviglioso cenote incastonata nel cuore della roccia, l'acqua cristallina e trasparente riflette colori innaturali…",
@@ -136,6 +152,21 @@ module.exports = {
                 finding: "\nOvunque:\nnere piume…",
             }
         ],
+
+        // DA qui si elimina...
+        room_dimension_types: { micro: 0, small: 1, medium: 2, large: 3 },
+        room_types: { tunnel: 0, passage: 1, way: 2, special: 3, blind: 4, final: 5 }, // cunicolo, passaggio, corridoio, 
+        gate_types: { narrow: 0, standard: 1, large: "2" },
+
+        global_directions: ['nord', 'sud', 'est', 'ovest'],
+        relative_direction: {
+            nord: ['ovest', 'sud', 'est'],
+            sud: ['est', 'nord', 'ovest'],
+            est: ['nord', 'ovest', 'sud'],
+            ovest: ['sud', 'est', 'nord'],
+        },
+
+
         gate_descriptions: {
             door: {
                 name: "portone",
@@ -158,7 +189,7 @@ module.exports = {
                 optional_attribute: ["infestato di rovi e radici", "tra umidi massi", "fangoso", "nel terreno", ""],
                 optional_smell: ["avvolto nella penombra ", "immerso nell'oscurità ", "avvolto dal silenzio ", "coperto da ragnatele ", "", ""]
             }
-        }
+        },
     },
     keyboard_buttons: {
         start_descent: { text: "(?) Salta…", callback_data: query_util.generate_callback_rute(sub_tree.altar.descent.stmp, sub_tree) },
