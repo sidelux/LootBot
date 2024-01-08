@@ -320,11 +320,11 @@ function generate_narrow_level(used_ids, level_deep, branch_length) {
     }
 }
 
-// Funzione per generare un ramo (o traccia)
+// Funzione per generare un ramo (o traccia) ()
 function generate_branch(node_type, branch_length, node_dimension, level_deep, used_ids) {
     console.log("Ramo %s di lunghezza %d (livello:%d)", (node_type, branch_length, level_deep));
-    // Il ramo è una catena di oggetti room: Esepio: A.room.id = 1, A.room.gates.id = B.room.id
-    // che condividono gli attributi di node_type
+    // Il ramo è una catena di oggetti node: Esepio: A.room.id = 1, A.room.links.id = B.room.id
+    // ...che condividono gli attributi di node_type
 
     let last_directions = []; // Array delle ultime due direzioni nella generazione del ramo. Per evitare la generazione di anelli chiusi
     let branch_node_description = generate_node_description(false); // Definisco gli attributi di description in base a node_type (1/2/3 -> tunnel, passage, way)
@@ -334,7 +334,7 @@ function generate_branch(node_type, branch_length, node_dimension, level_deep, u
     let branch = [];
 
     for (let index = 0; index < branch_length; index++) {
-        // Definizione degli attributi
+        // Definizione della direzione
         const gate_direction = determinate_gate_pseudorandom_direction(last_directions);
 
         // generazione di nodo e collegamenti
@@ -476,11 +476,11 @@ const generate_new_node = (used_ids, node_level_deep, node_type, node_dimension,
 // Scheletro di un collegamento
 const generate_new_link = (link_direction, link_type, target_node_id, target_node_level_deep) => {
     return {
-        target_id: target_node_id,
-        target_level_deep: target_node_level_deep,
-        direction: link_direction,
-        type: link_type,
-        is_locked: false,
+        target_id: target_node_id, // id del nodo collegato
+        target_level_deep: target_node_level_deep, // level_deep del nodo collegato
+        direction: link_direction, // direzione (nord, est, sud, ovest)
+        type: link_type, // tipo di collegamento
+        is_locked: false, // di default i collegamenti sono aperti
         description: generate_link_description(link_type)
     }
 };
