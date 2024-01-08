@@ -21,6 +21,11 @@ module.exports = {
         // PC
         increase_player_craft_point: increase_player_craft_point
     },
+    assault: {
+        place: player_assault_place,
+        phase: player_assault_phase,
+        upgrade_items: player_assault_placeUpgrade_items
+    },
     items: {
         allItems: allItems,
         needed: items_neededFor,
@@ -43,16 +48,27 @@ module.exports = {
 
 // PLAYERS 
 function player_full_info (telegram_user_id) {
-    return `SELECT  ${tables_structs.printObject(tables_structs.players.main_info)} FROM ${tables_names.players} WHERE ${tables_structs.players.telegram_id} = ${telegram_user_id}`;
+    return `SELECT ${tables_structs.printObject(tables_structs.players.main_info)} FROM ${tables_names.players} WHERE ${tables_structs.players.telegram_id} = ${telegram_user_id}`;
 }
 
-// PLAYERS 
 function full_info_from_nickname (telegram_nickname) {
-    return `SELECT  ${tables_structs.printObject(tables_structs.players.main_info)} FROM ${tables_names.players} WHERE LOWER(${tables_structs.players.main_info.nickname}) = LOWER("${telegram_nickname}")`;
+    return `SELECT ${tables_structs.printObject(tables_structs.players.main_info)} FROM ${tables_names.players} WHERE LOWER(${tables_structs.players.main_info.nickname}) = LOWER("${telegram_nickname}")`;
 }
 
 function player_teamId (player_id) {
-    return `SELECT  ${tables_structs.teams.team_id} FROM ${tables_names.team_player} WHERE ${tables_structs.teams.player_id} = ${player_id}`;
+    return `SELECT ${tables_structs.teams.team_id} FROM ${tables_names.team_player} WHERE ${tables_structs.teams.player_id} = ${player_id}`;
+}
+
+function player_assault_place (player_id) {
+    return `SELECT ${tables_structs.assault.places} FROM ${tables_names.assault_places} WHERE ${tables_structs.teams.player_id} = ${player_id}`;
+}
+
+function player_assault_phase (team_id) {
+    return `SELECT ${tables_structs.assault.phase} FROM ${tables_names.assault} WHERE ${tables_structs.teams.team_id} = ${team_id}`;
+}
+
+function player_assault_placeUpgrade_items (team_id, place_id) {
+    return `SELECT ${tables_structs.assault.item_id}, ${tables_structs.assault.item_quantity} FROM ${tables_names.assault_items} WHERE ${tables_structs.teams.team_id} = ${team_id} AND ${tables_structs.assault.places} = ${place_id}`;
 }
 
 function inventory_equip(player_id){

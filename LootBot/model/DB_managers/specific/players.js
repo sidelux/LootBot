@@ -16,6 +16,12 @@ module.exports = {
     update_player_money: update_player_money,
     increase_player_craft_point: increase_player_craft_point,
 
+    assault: {
+        get_player_place: get_player_assault_place,
+        get_phase: get_player_assault_phase,
+        get_upgrade_items: get_player_assault_upgrade_items
+    },
+
 
     types: query_types
 }
@@ -78,6 +84,66 @@ async function get_player_team_id(player_id) {
         });
     });
 }
+
+async function get_player_assault_place(player_id) {
+    return new Promise(async function (player_main_info_res) {
+        let player_assault_place = await db.query(db.queries.assault.place(player_id));
+
+        if (player_assault_place == false ||
+            utils.isNully(player_assault_place) ||
+            !Array.isArray(player_assault_place) ||
+            player_assault_place.length <= 0) {
+            return player_main_info_res({
+                esit: false,
+            });
+        }
+        return player_main_info_res({
+            esit: true,
+            results: player_assault_place[0].place_id
+        });
+    });
+}
+
+
+async function get_player_assault_phase(team_id) {
+    return new Promise(async function (player_main_info_res) {
+        let player_assault_phase = await db.query(db.queries.assault.phase(team_id));
+
+        if (player_assault_phase == false ||
+            utils.isNully(player_assault_phase) ||
+            !Array.isArray(player_assault_phase) ||
+            player_assault_phase.length <= 0) {
+            return player_main_info_res({
+                esit: false,
+            });
+        }
+        return player_main_info_res({
+            esit: true,
+            results: player_assault_phase[0].phase
+        });
+    });
+}
+
+async function get_player_assault_upgrade_items(team_id, place_id) {
+    return new Promise(async function (player_main_info_res) {
+        let player_assault_upgrade_items = await db.query(db.queries.assault.upgrade_items(team_id, place_id));
+
+        if (player_assault_upgrade_items == false ||
+            utils.isNully(player_assault_upgrade_items) ||
+            !Array.isArray(player_assault_upgrade_items)
+            ){
+            return player_main_info_res({
+                esit: false,
+                results: []
+            });
+        }
+        return player_main_info_res({
+            esit: true,
+            results: player_assault_upgrade_items
+        });
+    });
+}
+
 
 
 async function update_player_money(ammount, telegram_user_id, type) {

@@ -41,6 +41,12 @@ const db_structures = {
             shield_power: "power_shield"
         }
     },
+    assault: {
+        places: "place_id",
+        item_id: "item_id",
+        item_quantity: "quantity",
+        phase: "phase"
+    },
     teams:{
         team_id: "team_id",
         player_id: "player_id"

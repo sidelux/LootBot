@@ -10,6 +10,21 @@ module.exports = {
             stmp: "MENU",
             
         },
+        assault: {
+            stmp: "ASSAULT",
+            missing: {
+                stmp: "UP_MISSING",
+                add_missing_to_list: {
+                    stmp: "UP_ADDMISS",
+                },
+            },
+            all: {
+                stmp: "UP_ALL",
+                add_all_to_list: {
+                    stmp: "UP_ADDALL",
+                }
+            },
+        },
         list: {
             stmp: "LIST",
             main_view: {
