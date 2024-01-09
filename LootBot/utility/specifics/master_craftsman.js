@@ -4,11 +4,17 @@ module.exports = {
         stmp: "CRAFTSMAN",
         guide: {
             stmp: "GUIDE",
-            
+
         },
         menu: {
             stmp: "MENU",
-            
+
+        },
+        smuggler: {
+            stmp: "SMUGGLER",
+            add_smuggler_to_list: {
+                stmp: "SMUG_ADD",
+            }
         },
         assault: {
             stmp: "ASSAULT",
@@ -28,42 +34,42 @@ module.exports = {
         list: {
             stmp: "LIST",
             main_view: {
-                stmp: "MAIN_VIEW",  
+                stmp: "MAIN_VIEW",
             },
             set_prefix: {
-                stmp: "PREFIX",  
+                stmp: "PREFIX",
             },
             items_page: {
-                stmp: "ITEMS_PAGE",  
+                stmp: "ITEMS_PAGE",
             },
             set_rarity: {
-                stmp: "SET_RARITY",  
+                stmp: "SET_RARITY",
             },
             show_list: {
-                stmp: "SHOW_LIST",  
+                stmp: "SHOW_LIST",
             },
             clear_list: {
-                stmp: "CLEAR",  
+                stmp: "CLEAR",
                 confirm: {
-                    stmp: "CLEAR_CONFIRM",  
+                    stmp: "CLEAR_CONFIRM",
                 }
             },
             censure: {
-                stmp: "CENSURE",  
+                stmp: "CENSURE",
                 remove: {
-                    stmp: "REMOVE",  
+                    stmp: "REMOVE",
                 },
                 set_censure: {
-                    stmp: "SET_CENSURE",  
+                    stmp: "SET_CENSURE",
                 }
             },
             add_to_list: {
-                stmp: "ADD",  
+                stmp: "ADD",
             },
             set_preserve_bool: {
                 stmp: "PRESERVE_CRAFTED",
                 change: {
-                    stmp: "CHANGE",  
+                    stmp: "CHANGE",
                 }
             }
         },
@@ -84,7 +90,7 @@ module.exports = {
                     stmp: "ALL_USED",
                 },
             },
-            
+
             craft_line_commit: {
                 stmp: "CRAFT_LINE_COMMIT",
             },

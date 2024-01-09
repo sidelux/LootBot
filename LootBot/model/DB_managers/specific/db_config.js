@@ -15,6 +15,7 @@ db_config.tables = {
     players: "player",
     team_player: "team_player",
     assault: "assault",
+    smuggler_offerts: "merchant_offer",
     assault_places: "assault_place_player_id",
     assault_items: "assault_place_item",
 }

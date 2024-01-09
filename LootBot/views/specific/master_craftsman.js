@@ -11,6 +11,9 @@ module.exports = {
         assault_show_all: { text: "Tutti", callback_data: query_util.generate_callback_rute(sub_tree.assault.all.stmp, sub_tree) },// "Assalto",
         assault_addMissing_to_list: { text: "Aggiungi alla lista", callback_data: query_util.generate_callback_rute(sub_tree.assault.missing.add_missing_to_list.stmp, sub_tree) },// "Assalto",
         assault_addAll_to_list: { text: "Aggiungi alla lista", callback_data: query_util.generate_callback_rute(sub_tree.assault.all.add_all_to_list.stmp, sub_tree) },// "Assalto",
+        smuggler_view_main: { text: "🔩", callback_data: query_util.generate_callback_rute(sub_tree.smuggler.stmp, sub_tree) },// "Assalto",
+        smuggler_add_offert: { text: "Aggiungi alla lista", callback_data: query_util.generate_callback_rute(sub_tree.smuggler.add_smuggler_to_list.stmp, sub_tree) },// "Assalto",
+
 
         list_view_main: { text: "📝", callback_data: query_util.generate_callback_rute(sub_tree.list.main_view.stmp, sub_tree) },// "Compila la lista",
         delete_list: { text: "🗑", callback_data: query_util.generate_callback_rute(sub_tree.list.clear_list.confirm.stmp, sub_tree) }, // "Cancella la lista",
@@ -101,6 +104,18 @@ module.exports = {
 
 
 
+
+    },
+    smuggler: {
+        title: "Offerta di Contrabbando 🔩",
+        items_needed: "Richiesta:",
+        items_added: "Aggiunte alla lista",
+
+        errors: {
+            title: "🔩\nWoops!\n\n",
+            nothing_to_do: "Sembra non ci siano più offerte per te…",
+
+        }
 
     },
     assault: {

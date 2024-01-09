@@ -28,6 +28,7 @@ module.exports = {
     pleyer_inventory_controll: pleyer_inventory_controll,
     player_assault_infos: player_assault_infos,
     player_assault_upgrade_needs: player_assault_upgrade_needs,
+    player_smuggler_offert: player_smuggler_current_offert,
 
 
     validate_can_proceed: validate_can_proceed,
@@ -447,6 +448,10 @@ async function player_assault_infos(player_id){
 
 async function player_assault_upgrade_needs(team_id, place_id){
     return await player_logics.assault.items_needed(team_id, place_id);
+}
+
+async function player_smuggler_current_offert(player_info){
+    return await player_logics.smuggler.current_offert(player_info.id);
 }
 
 //Carico player_inventory

@@ -41,6 +41,9 @@ const db_structures = {
             shield_power: "power_shield"
         }
     },
+    smuggler: {
+        item_id: "item_id",
+    },
     assault: {
         places: "place_id",
         item_id: "item_id",

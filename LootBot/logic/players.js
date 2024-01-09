@@ -10,6 +10,9 @@ module.exports = {
         infos: player_assault_infos,
         items_needed: player_assoult_upgrade_items,
     },
+    smuggler: {
+        current_offert: player_smuggler_current_offert,
+    },
     money: {
         set: set_player_money,
         decrease: decrease_player_money,
@@ -46,8 +49,14 @@ async function player_assault_infos(player_id){
     return result;
 }
 
+// gli oggetti richiesti per il potenziamento di una postazione
 async function player_assoult_upgrade_items(team_id, place_id){
     return await model.assault.get_upgrade_items(team_id, place_id);
+}
+
+// il/gli oggetti richiesti dal contrabbandiere
+async function player_smuggler_current_offert(player_id){
+    return await model.smuggler.get_current_offert(player_id);
 }
 
 
