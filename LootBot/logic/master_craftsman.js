@@ -16,13 +16,18 @@ module.exports = {
     clear_craftsman_info: clear_craftsman_info,
     list_total_quantity: list_total_quantity,
     add_item_to_items_list: add_item_to_items_list,
+    add_itemAndQuantity_to_items_list: add_itemAndQuantity_to_items_list,
     generate_query_random_char: generate_query_random_char,
     validate_items_list_forReborn: validate_items_list_forReborn,
 
     item_infos_forList: item_infos_forList,
+    item_infos_forList_craftable_check: item_infos_forList_with_craftable_check,
+    filter_list_for_inventory: filter_list_for_inventory,
 
     pleyer_info_controll: pleyer_info_controll,
     pleyer_inventory_controll: pleyer_inventory_controll,
+    player_assault_infos: player_assault_infos,
+    player_assault_upgrade_needs: player_assault_upgrade_needs,
 
 
     validate_can_proceed: validate_can_proceed,
@@ -44,7 +49,7 @@ module.exports = {
     avaible_rarities: avaible_rarities
 }
 
-// Funzione pubblica per creare una nuova lista craft. (se ne esiste già una, sara sovrascritta)
+// Funzione pubblica per creare una nuova lista craft. (se ne esiste già una sarà sovrascritta)
 async function new_craftsman_info(telegram_user_id) {
     let craftman_info = model.template.craftman_info;
     craftman_info.query_random_char = model.new_query_random_char();
@@ -97,7 +102,22 @@ function add_item_to_items_list(item_id, item_list) {
         quantity: 1
     });
     return 1;
+}
 
+function add_itemAndQuantity_to_items_list(item, item_list) {
+    for (let i = 0; i < item_list.length; i++) {
+        if (item_list[i].id == item.id) {
+            item_list[i].quantity = parseInt(item_list[i].quantity) + item.quantity;
+            return item_list[i].quantity;
+        }
+    }
+
+    item_list.push({
+        id: item.id,
+        quantity: item.quantity
+    });
+
+    return item.quantity;
 }
 
 // Reset di craftsman_info
@@ -154,6 +174,48 @@ function item_infos_forList(list) {
         }
         return item_info;
     });
+}
+
+// Partendo da una lista di {item_id, quantity}
+function item_infos_forList_with_craftable_check(list) {
+    return list.map((item) => {
+        let item_info = item_infos(item.item_id);
+
+        if (item.quantity) {
+            item_info.quantity = item.quantity;
+        } else {
+            item_info.quantity = 1;
+        }
+
+        if (item_info.craftable == 1){
+            return item_info;
+        } else{
+            return null;
+        }
+    }).filter((item) => item !== null);
+}
+
+// Controlla lo zaino del giocatore e filtra la lista escludendo le quantità già presenti
+function filter_list_for_inventory(item_list, player_inventory){
+    let filtered_list = [];
+    
+
+    item_list.forEach(item => {
+        console.log(item);
+
+        let item_check = inventory_logics.hasItem(item.id, player_inventory);
+        if (item_check.has_item == false ){
+            console.log(`Mancante ${item.name}`);
+
+            filtered_list.push(item);
+        } else if (item_check.quantity < item.quantity){
+            console.log(`Mancante ${item.name} di ${item.quantity-item_check.quantity}`);
+
+            filtered_list.push({id: item.id, quantity: item.quantity-item_check.quantity, name: item.name, rarity: item.rarity});
+        }
+    });
+
+    return filtered_list;
 }
 
 // Estrae da craftable_array gli oggetti che iniziano per uno dei caratteri di prefixes_array
@@ -220,76 +282,7 @@ function get_craftables_ofRarity(item_rarity, player_reborn) {
     return item_logics.craftables_ofRarity(item_rarity, player_reborn);
 }
 
-// queste sono funzioni che appartengono ad intems, non a qui
-function sort_items_fromRarity_accessory(item1, item2, rarityOrder) {
-    let rarity1 = item1.rarity;
-    let rarity2 = item2.rarity;
-
-    if (rarityOrder[rarity1] < rarityOrder[rarity2]) {
-        return -1;
-    } else if (rarityOrder[rarity1] > rarityOrder[rarity2]) {
-        return 1;
-    } else {
-        // Se la rarità è la stessa, ordina per nome, volendo si può aggiungere qui sopra anche per total_quantity
-        let quantity1 = item1.quantity ? item1.quantity : item1.total_quantity;
-        let quantity2 = item2.quantity ? item2.quantity : item2.total_quantity;
-
-        if (quantity1 < quantity2) {
-            return 1;
-        } else if (quantity1 > quantity2) {
-            return -1;
-        } else if (item1.name){
-            let name1 = item1.name.toLowerCase();
-            let name2 = item2.name.toLowerCase();
-
-            if (name1 < name2) {
-                return -1;
-            } else if (name1 > name2) {
-                return 1;
-            } else {
-                return 0;
-            }
-        } else {
-            return 0;
-        }
-
-
-    }
-}
-
-// queste sono funzioni che appartengono ad intems, non a qui
-function sort_items_fromRarity(items_list) {
-    let rarityOrder = {
-        C: 0,
-        NC: 1,
-        R: 2,
-        UR: 3,
-        L: 4,
-        E: 5,
-        UE: 6,
-        X: 7,
-        U: 8,
-        S: 9,
-    };
-    return items_list.sort((a, b) => sort_items_fromRarity_accessory(a, b, rarityOrder))
-}
-
-function get_prefixes_ofRarity(item_rarity, player_reborn = false) {
-    let craftables_array = get_craftables_ofRarity(item_rarity, player_reborn);
-    return get_craftable_array_groupedPrefixes(craftables_array);
-}
-
-function is_craftable_rarity(item_rarity) {
-    return (item_logics.get_all_craftable_rarity().indexOf(item_rarity) >= 0);
-}
-
-function avaible_rarities(player_reborn) {
-    return item_logics.get_all_craftable_rarity(player_reborn);
-}
-
-
-
-
+//Booleano: Le condizioni di validazione lista
 function validate_can_proceed(craft_line, player_info) {
     return (
         parseInt(craft_line.craft_cost)*utils.master_craftsman_cost_multiplier < utils.player_max_money &&                // forse in questo caso la lista andrebbe semplicemente stralciata...
@@ -299,6 +292,7 @@ function validate_can_proceed(craft_line, player_info) {
     );
 }
 
+// controlli sulla linea già creata
 async function craft_line_controll(player_info, craftsman_info, player_inventory) {
     let response = {
         has_error: false,
@@ -326,7 +320,7 @@ async function craft_line_controll(player_info, craftsman_info, player_inventory
     return response;
 }
 
-
+// Aggiornamento del file craftman_info
 function craftman_info_craftUpdate(craftsman_info, craft_line, message_id) {
     let target_items_list = [];
     craftsman_info.items_list.forEach((item) => {
@@ -353,7 +347,7 @@ function craftman_info_craftUpdate(craftsman_info, craft_line, message_id) {
 
 }
 
-// Tutti i controlli del caso... infondo agli if la query sul database
+// Il craft effettivo (Tutti i controlli del caso... infondo agli if la query sul database)
 async function commit_craft(craftsman_info, player_info) {
     let response = {
         money_controll: false,
@@ -442,10 +436,17 @@ async function commit_craft(craftsman_info, player_info) {
     return response;
 }
 
-
 //Carico playerinfo
 async function pleyer_info_controll(telegram_user_id) {
     return await player_logics.player_full_infos(telegram_user_id)
+}
+
+async function player_assault_infos(player_id){
+    return await player_logics.assault.infos(player_id);
+}
+
+async function player_assault_upgrade_needs(team_id, place_id){
+    return await player_logics.assault.items_needed(team_id, place_id);
 }
 
 //Carico player_inventory
@@ -453,5 +454,69 @@ async function pleyer_inventory_controll(player_id) {
     return await inventory_logics.complete(player_id);
 }
 
+// queste sono funzioni che appartengono ad items!!, non dovrebbero essere qui
+function sort_items_fromRarity_accessory(item1, item2, rarityOrder) {
+    let rarity1 = item1.rarity;
+    let rarity2 = item2.rarity;
 
+    if (rarityOrder[rarity1] < rarityOrder[rarity2]) {
+        return -1;
+    } else if (rarityOrder[rarity1] > rarityOrder[rarity2]) {
+        return 1;
+    } else {
+        // Se la rarità è la stessa, ordina per nome, volendo si può aggiungere qui sopra anche per total_quantity
+        let quantity1 = item1.quantity ? item1.quantity : item1.total_quantity;
+        let quantity2 = item2.quantity ? item2.quantity : item2.total_quantity;
+
+        if (quantity1 < quantity2) {
+            return 1;
+        } else if (quantity1 > quantity2) {
+            return -1;
+        } else if (item1.name){
+            let name1 = item1.name.toLowerCase();
+            let name2 = item2.name.toLowerCase();
+
+            if (name1 < name2) {
+                return -1;
+            } else if (name1 > name2) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else {
+            return 0;
+        }
+
+
+    }
+}
+
+function sort_items_fromRarity(items_list) {
+    let rarityOrder = {
+        C: 0,
+        NC: 1,
+        R: 2,
+        UR: 3,
+        L: 4,
+        E: 5,
+        UE: 6,
+        X: 7,
+        U: 8,
+        S: 9,
+    };
+    return items_list.sort((a, b) => sort_items_fromRarity_accessory(a, b, rarityOrder))
+}
+
+function get_prefixes_ofRarity(item_rarity, player_reborn = false) {
+    let craftables_array = get_craftables_ofRarity(item_rarity, player_reborn);
+    return get_craftable_array_groupedPrefixes(craftables_array);
+}
+
+function is_craftable_rarity(item_rarity) {
+    return (item_logics.get_all_craftable_rarity().indexOf(item_rarity) >= 0);
+}
+
+function avaible_rarities(player_reborn) {
+    return item_logics.get_all_craftable_rarity(player_reborn);
+}
 

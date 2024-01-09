@@ -269,13 +269,17 @@ function suggestionManager(message) {
 					return suggestion_resolve({ toSend: simpleMessage(message.chat.id, "🤖 *???* \nNon è questo il contesto per certe cose…") });
 				}
 
-			} else if (message.reply_to_message.from.is_bot == true) {
-				if (message.reply_to_message.from.username == 'LootPlusBot') {
-					return suggestion_resolve({ toSend: simpleMessage(message.chat.id, "🤖 *???* \nMa quello sono io!") });
-				} else {
-					return suggestion_resolve({ toSend: simpleDeletableMessage(message.chat.id, "🤖*??*\nMa quello è un bot!") });
-				}
 			}
+
+			// È un vecchio controllo che interferisce con comandi per mod 
+
+			// else if (message.reply_to_message.from.is_bot == true) {
+			// 	if (message.reply_to_message.from.username == 'LootPlusBot') {
+			// 		return suggestion_resolve({ toSend: simpleMessage(message.chat.id, "🤖 *???* \nMa quello sono io!") });
+			// 	} else {
+			// 		return suggestion_resolve({ toSend: simpleDeletableMessage(message.chat.id, "🤖*??*\nMa quello è un bot!") });
+			// 	}
+			//}
 
 
 
@@ -309,7 +313,7 @@ function suggestionManager(message) {
 				try {
 
 					//informazioni da api/…/players/nick_name
-					const loot_user = await tips_handler.getLootUser(message.from.username,  (message.from.id == amministratore ? false : controll), message.from.id);
+					const loot_user = await tips_handler.getLootUser(message.from.username, (message.from.id == amministratore ? false : controll), message.from.id);
 
 					if (loot_user == null) {
 						return suggestion_resolve({
@@ -369,7 +373,7 @@ function playerCheck(query, loot_user) {
 						query: { id: query.id, options: { text: "Whoops!" } }
 					}
 				});
-			} else if (loot_user.greater_50 == 1){
+			} else if (loot_user.greater_50 == 1) {
 				return true;
 			}
 		} else {
@@ -4361,48 +4365,47 @@ function userPointCalc(suggStats) {
 
 function userRushManager(user_info, entities) {
 	return new Promise(function (userRushManager_resolve) {
-		let condition = false //(user_info.id == theCreator) || (user_info.id == phenix_id); //|| user_info.id == 399772013; (user_info.id == theCreator) || 
-		condition = (entities.indexOf("#discussione") >= 0);
-		if (condition) {
-			return userRushManager_resolve(true);
-		} else {
-			return tips_handler.getSuggestionsCount(user_info.id).then(function (sugg_count) {
-				let err_text = "😶\n\n";
-				if (simple_log) console.log("Limite: " + sugg_count.suggLimit + ", Aperti: " + sugg_count.opens);
-				if (sugg_count.suggLimit < 0) {
-					err_text += "_La Fenice_ ha temporaneamente chiuso la possibilità di inviare nuovi suggerimenti. Riprova più tardi...";
-					return userRushManager_resolve(err_text);
-				} else if (sugg_count.suggLimit > 0 && (sugg_count.opens >= (sugg_count.suggLimit))) {
-					err_text += "_La Fenice_ ha impostato a " + sugg_count.suggLimit;
-					err_text += " il limite di nuovi suggerimenti che possono essere aperti contemporaneamente.";
-					err_text += "\nProva a riproporre la tua idea tra un po'...";
+		return tips_handler.getSuggestionsCount(user_info.id).then(function (sugg_count) {
+			let err_text = "😶\n\n";
+			
+
+			if (simple_log) console.log("Limite: " + sugg_count.suggLimit + ", Aperti: " + sugg_count.opens);
+			if (sugg_count.suggLimit < 0) {
+				err_text += "_La Fenice_ ha temporaneamente chiuso la possibilità di inviare nuovi suggerimenti o discussioni...\nRiprova più tardi...";
+				return userRushManager_resolve(err_text);
+			} else if (entities.indexOf("#discussione") >= 0) {
+				return userRushManager_resolve(true);
+			} else if (sugg_count.suggLimit > 0 && (sugg_count.opens >= (sugg_count.suggLimit))) {
+				err_text += "_La Fenice_ ha impostato a " + sugg_count.suggLimit;
+				err_text += " il limite di nuovi suggerimenti che possono essere aperti contemporaneamente.";
+				err_text += "\nProva a riproporre la tua idea tra un po'...";
+				return userRushManager_resolve(err_text);
+			} else {
+				if (user_info.lastSugg == 0) {
+					return userRushManager_resolve(true);
+				}
+				let time_enlapsed = (Date.now() / 1000) - user_info.lastSugg;
+				let new_coolDown = userPointCalc(sugg_count);
+				if (time_enlapsed < new_coolDown) {
+					let towait = (new_coolDown - time_enlapsed) / 60;
+					let hours = towait / 60;
+					let time_str;
+					if (hours < 2) {
+						time_str = (towait >= 2 ? Math.floor(towait) + " minuti" : Math.floor(towait * 60) + " secondi");
+					} else {
+						time_str = Math.round(hours) + " ore";
+					}
+					err_text = "*Wow!* 😲\nÈ bello tu abbia tante idee e voglia di condividerle!\n\nMa sarebbe meglio aspettassi almeno " + time_str;
+					err_text += " prima di chiedere la pubblicazione di un nuovo suggerimento.";
+					err_text += "\n\nDi default l'attesa tra un suggerimento ed un altro è stata impostata ad 8 ore.\n";
+					err_text += "Varia poi in base alla tua attività sul canale, presente e passata.";
 					return userRushManager_resolve(err_text);
 				} else {
-					if (user_info.lastSugg == 0) {
-						return userRushManager_resolve(true);
-					}
-					let time_enlapsed = (Date.now() / 1000) - user_info.lastSugg;
-					let new_coolDown = userPointCalc(sugg_count);
-					if (time_enlapsed < new_coolDown) {
-						let towait = (new_coolDown - time_enlapsed) / 60;
-						let hours = towait / 60;
-						let time_str;
-						if (hours < 2) {
-							time_str = (towait >= 2 ? Math.floor(towait) + " minuti" : Math.floor(towait * 60) + " secondi");
-						} else {
-							time_str = Math.round(hours) + " ore";
-						}
-						err_text = "*Wow!* 😲\nÈ bello tu abbia tante idee e voglia di condividerle!\n\nMa sarebbe meglio aspettassi almeno " + time_str;
-						err_text += " prima di chiedere la pubblicazione di un nuovo suggerimento.";
-						err_text += "\n\nDi default l'attesa tra un suggerimento ed un altro è stata impostata ad 8 ore.\n";
-						err_text += "Varia poi in base alla tua attività sul canale, presente e passata.";
-						return userRushManager_resolve(err_text);
-					} else {
-						return userRushManager_resolve(true);
-					}
+					return userRushManager_resolve(true);
 				}
-			});
-		}
+			}
+		});
+
 	})
 }
 

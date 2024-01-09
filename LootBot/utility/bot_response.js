@@ -57,8 +57,8 @@ async function switch_response(bot_instance, response) {
 
     // TO SEND
     if ("toSend" in response) {
-        if (response.toSend.message_text.length >= 3500) {                                                  // questo limite di 3500 andrebbe astratto
-            let message_text_array = chunkSubstr(to_check, 100);                        // anche questo di 100…
+        if (response.toSend.message_text.length >= 3500) {                                                  // questo limite di 3500 andrebbe reso astratto
+            let message_text_array = chunkSubstr(to_check, 100);                                            // anche questo di 100…
             for (let l = 0; l < message_text_array.length; l++) {
                 await manage_toSend(bot_instance, {
                     chat_id: response.toSend.chat_id,

@@ -4,6 +4,9 @@ module.exports = {
         square: {
             main: "Piazza 💰",
             master_craftsman: "Mastro Artigiano ⚒"
+        },
+        team: {
+            mansionsAltare: "Altare Sacrificale ⛩️",
         }
     },
     ita_gender_impl_singular: (string, gender) => `${string}${gender == "F" ? "a": "o"}`,

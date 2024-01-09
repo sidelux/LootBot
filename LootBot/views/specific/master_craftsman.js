@@ -6,6 +6,12 @@ module.exports = {
     keyboard_buttons: {
         back_to_menu: { text: "↵", callback_data: query_util.generate_callback_rute(sub_tree.menu.stmp, sub_tree) },
         master_craftsman_guide: { text: "ⓘ", callback_data: query_util.generate_callback_rute(sub_tree.guide.stmp, sub_tree) },
+        assault_view_main: { text: "🐺", callback_data: query_util.generate_callback_rute(sub_tree.assault.stmp, sub_tree) },// "Assalto",
+        assault_show_missing: { text: "Mancanti", callback_data: query_util.generate_callback_rute(sub_tree.assault.missing.stmp, sub_tree) },// "Assalto",
+        assault_show_all: { text: "Tutti", callback_data: query_util.generate_callback_rute(sub_tree.assault.all.stmp, sub_tree) },// "Assalto",
+        assault_addMissing_to_list: { text: "Aggiungi alla lista", callback_data: query_util.generate_callback_rute(sub_tree.assault.missing.add_missing_to_list.stmp, sub_tree) },// "Assalto",
+        assault_addAll_to_list: { text: "Aggiungi alla lista", callback_data: query_util.generate_callback_rute(sub_tree.assault.all.add_all_to_list.stmp, sub_tree) },// "Assalto",
+
         list_view_main: { text: "📝", callback_data: query_util.generate_callback_rute(sub_tree.list.main_view.stmp, sub_tree) },// "Compila la lista",
         delete_list: { text: "🗑", callback_data: query_util.generate_callback_rute(sub_tree.list.clear_list.confirm.stmp, sub_tree) }, // "Cancella la lista",
         add_to_list: { text: "", callback_data: query_util.generate_callback_rute(sub_tree.list.add_to_list.stmp, sub_tree) }, // "Cancella la lista",
@@ -97,6 +103,22 @@ module.exports = {
 
 
     },
+    assault: {
+        title: "Potenziamento Postazione 🐺",
+        items_needed: "oggetti richiesti",
+        items_added: "oggetti aggiunti alla lista",
+
+        errors: {
+            title: "🐺\nWoops!\n\n",
+            no_team: "Sembra che tu non sia piu in un team…",
+            not_now: "Torna durante il giorno della preparazione…",
+            not_in_place: "Non sei ancora in postazione!",
+            nothing_to_do: "Sembra non ci siano lavori da fare nella tua postazione\n\n💪️️",
+            nothing_important_to_do: "Hai gia copie a sufficenza\n\n💪️️"
+
+        }
+
+    },
     list: {
         title: "Oggetti da creare",
         empty_list: "• Ancora nessun oggetto in elenco",
@@ -104,8 +126,8 @@ module.exports = {
         list_total_quantity: "• Quantità totale:",
         is_preserving: "Solo oggetti base",
         is_not_preserving: "Userai anche i creati nello zaino",
-        selected_rarity: "• Rarità:",
-        selected_prefix: "• Prefisso:",
+        selected_rarity: "Rarità",
+        selected_prefix: "Prefisso",
         show_list_length: "oggetti",
         craftables_in_list: "oggetti creabili",
 
@@ -281,5 +303,9 @@ module.exports = {
             "«La tua roba è gia nello zaino!»\n_Sparisce…_"
 
 
+    },
+    errors: {
+        title: "Woops!",
+        beta_wrong_input: "Sintassi: `/craftbeta` _?id\\_utente ?id\\_utente …_\n\nEsempio:\n> `/craftbeta 354140824 153738969`"
     }
 }

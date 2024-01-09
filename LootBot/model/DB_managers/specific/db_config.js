@@ -13,6 +13,10 @@ db_config.tables = {
     items: "item",
     craft: "craft",
     players: "player",
+    team_player: "team_player",
+    assault: "assault",
+    assault_places: "assault_place_player_id",
+    assault_items: "assault_place_item",
 }
 
 db_config.structures = utility.db_structures; // Per comodità
