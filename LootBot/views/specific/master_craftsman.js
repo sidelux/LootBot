@@ -157,12 +157,19 @@ module.exports = {
         },
         quote_on_items_quantity: "oggetti?\nVediamo un po…",
         inventory_lookup: "Ti si avvicina e comincia a rovistare nel tuo zaino. In breve è di nuovo in piedi davanti a te",
+        inventory_no_money: [
+            "Si potrebbe fare... ma mancano i fondi!",
+            "Potremmo inizaire anche subito, se solo avessi gli edollari necessari…",
+            "Ma con quali soldi?",
+            "Ok, ma servono i dindi",
+            "Mi spiace, ma sembra che tu non possa peretterti la spesa..."
+        ],
         inventory_no_missing: [
             "Si può fare!",
             "Andata!",
             "Non dovrei metterci poi molto…",
             "Va bene",
-            "…\nE va bene!",
+            "…E va bene!",
             "Mmh… !\n…Va bene!",
             "D'accordo!",
             "Si, si può fare.",

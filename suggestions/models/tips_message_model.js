@@ -8,15 +8,15 @@ const mysql = require('mysql');
 const got = require('got');
 const fs = require('fs');
 const path = require("path");
-const config = require('../../config');
+const config = require('../../LootBot/utility/config');
 module.exports.config = config;
 
 const manual_log = config.manual_log; //log orribile! 
 
-const databaseUser = config.databaseLootUser;
-const databaseHost = config.databaseHost;
-const databasePsw = config.databasePsw;
-const databaseName = config.databaseSuggName;
+const databaseUser = config.database.suggestion_user;
+const databaseHost = config.database.host;
+const databasePsw = config.database.suggestion_user_password;
+const databaseName = config.database.suggestion_database;
 
 
 const tables_names = {
@@ -1245,6 +1245,28 @@ function updateUserLastDiscussion(user_id, msg_time, text) {
 	});
 }
 module.exports.updateUserLastDiscussion = updateUserLastDiscussion;
+
+function getUserFromDiscussionDate(discussion_date) {
+	return new Promise(function (getUserFromDiscussionDate_resolve) {
+		return sugg_pool.query("SELECT USER_ID AS 'user_id' FROM " + tables_names.usr + " WHERE USER_LAST_DISCUSSION = ?",
+			discussion_date,
+			function (error, results) {
+				if (!error) {
+					if (results.length > 0) {
+						return getUserFromDiscussionDate_resolve(results[0]);
+					} else {
+						console.log(results);
+						return getUserFromDiscussionDate_resolve(-1);
+					}
+				}
+				else {
+					console.log(error);
+					return getUserFromDiscussionDate_resolve(-2);
+				}
+			});
+	});
+}
+module.exports.getUserFromDiscussionDate = getUserFromDiscussionDate;
 
 function updateAfterPublish(user_id, msg_time, sugg_time) {
 	return new Promise(function (updateAfterPublish_resolve) {

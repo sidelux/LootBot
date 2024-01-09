@@ -811,6 +811,10 @@ async function validate_view(response, player_info, craftsman_info, craft_line, 
         message_text += "\n";
 
         // Aggiungo il bottone "Mancanti"
+    } else if (!can_proceed_controll){
+        let phrases_random_index = Math.floor(Math.random() * craftsman_view.validate.inventory_no_money.length);
+        message_text += `${craftsman_view.validate.inventory_no_money[phrases_random_index]}`;
+        message_text += "»\n\n";
     } else {
         let phrases_random_index = Math.floor(Math.random() * craftsman_view.validate.inventory_no_missing.length);
         message_text += `${craftsman_view.validate.inventory_no_missing[phrases_random_index]}`;
@@ -825,8 +829,6 @@ async function validate_view(response, player_info, craftsman_info, craft_line, 
     if (!can_proceed_controll) {
         message_text += `• ${craftsman_view.validate.too_expensive_craft_cost}: ${utils.simple_number_formatter(craft_line.craft_cost)}§\n`;
         message_text += `• ${craftsman_view.validate.too_expensive_craft_pc}: ${craft_line.craft_point}pc\n`;
-
-
     } else {
 
         // Commissione

@@ -8,8 +8,8 @@ const simple_log = config.simple_log; // log orribile2, meno verbroso
 
 const channel_name = config.LootSuggChannel; // "ArgoTest" //"Suggerimenti_per_LootBot" -> nome del canale per pubblicare. Il bot deve esserne admin. "ArgoTest" per testing;
 const avvisi_channel_name = config.LootAvvisiChannel; // "ArgoTest"; // "LootBotAvvisi" -> nome del canale per Avvisi. Il bot deve esserne admin. "ArgoTest" per testing;
-const amministratore_suggerimenti = config.creatore_id; // Per funzioni di debug e testing
-const amministratore = config.phenix_id;  //telegram id per @fenix45
+const amministratore_suggerimenti = config.devs.nrc_id; // Per funzioni di debug e testing
+const amministratore = config.devs.phenix_id;  //telegram id per @fenix45
 
 const mantenimento = false; // analizza solo messaggi e query di creatore_id
 
@@ -3003,7 +3003,7 @@ function manageMenu(query, user_info) {
 				if (queryQ === "LIMIT") {
 					new_warm = query.data.split(":")[4];
 				} else if (queryQ == "CLOSE") {
-					new_warm = -1 * Math.abs(user_info.warn);
+					new_warm = -1 * Math.max(1, Math.abs(user_info.warn));
 				} else {
 					new_warm = Math.abs(user_info.warn);
 				}
@@ -4370,7 +4370,7 @@ function userRushManager(user_info, entities) {
 			
 
 			if (simple_log) console.log("Limite: " + sugg_count.suggLimit + ", Aperti: " + sugg_count.opens);
-			if (sugg_count.suggLimit < 0) {
+			if (sugg_count.suggLimit <= 0) {
 				err_text += "_La Fenice_ ha temporaneamente chiuso la possibilità di inviare nuovi suggerimenti o discussioni...\nRiprova più tardi...";
 				return userRushManager_resolve(err_text);
 			} else if (entities.indexOf("#discussione") >= 0) {
