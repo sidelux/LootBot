@@ -107,7 +107,7 @@ module.exports = {
 
     },
     smuggler: {
-        title: "Offerta di Contrabbando 🔩",
+        title: "Offerte di Contrabbando 🔩",
         items_needed: "Richiesta:",
         items_added: "Aggiunte alla lista",
 
