@@ -21,6 +21,9 @@ module.exports = {
         // PC
         increase_player_craft_point: increase_player_craft_point
     },
+    smuggler: {
+        current_offert: player_smuggler_current_offert
+    },
     assault: {
         place: player_assault_place,
         phase: player_assault_phase,
@@ -69,6 +72,10 @@ function player_assault_phase (team_id) {
 
 function player_assault_placeUpgrade_items (team_id, place_id) {
     return `SELECT ${tables_structs.assault.item_id}, ${tables_structs.assault.item_quantity} FROM ${tables_names.assault_items} WHERE ${tables_structs.teams.team_id} = ${team_id} AND ${tables_structs.assault.places} = ${place_id}`;
+}
+
+function player_smuggler_current_offert (player_id) {
+    return `SELECT ${tables_structs.smuggler.item_id} FROM ${tables_names.smuggler_offerts} WHERE ${tables_structs.teams.player_id} = ${player_id}`;
 }
 
 function inventory_equip(player_id){

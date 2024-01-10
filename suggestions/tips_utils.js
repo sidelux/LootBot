@@ -177,8 +177,6 @@ module.exports.bigSend = bigSend;
 
 
 async function bigResponse(risposte, istanza_bot) {
-
-    console.log("********\nGestita da bigResponse")
     let res_array = [];
 
     // Normalizzo

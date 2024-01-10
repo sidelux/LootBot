@@ -21,6 +21,9 @@ module.exports = {
         get_phase: get_player_assault_phase,
         get_upgrade_items: get_player_assault_upgrade_items
     },
+    smuggler: {
+        get_current_offert: get_current_offert
+    },
 
 
     types: query_types
@@ -30,7 +33,7 @@ module.exports = {
 
 
 
-
+// Scheda giocatore
 async function load_player_info(telegram_id) {
     return new Promise(async function (player_main_info_res) {
         if (typeof telegram_id != "string" && isNaN(telegram_id)){
@@ -65,6 +68,7 @@ async function load_player_info(telegram_id) {
     });
 }
 
+// Id del team giocatore
 async function get_player_team_id(player_id) {
     return new Promise(async function (player_main_info_res) {
         let player_team_id = await db.query(db.queries.players.team_id(player_id));
@@ -85,6 +89,7 @@ async function get_player_team_id(player_id) {
     });
 }
 
+// Postazione in assalto per un giocatore
 async function get_player_assault_place(player_id) {
     return new Promise(async function (player_main_info_res) {
         let player_assault_place = await db.query(db.queries.assault.place(player_id));
@@ -104,7 +109,7 @@ async function get_player_assault_place(player_id) {
     });
 }
 
-
+// Fase corrente in assalto
 async function get_player_assault_phase(team_id) {
     return new Promise(async function (player_main_info_res) {
         let player_assault_phase = await db.query(db.queries.assault.phase(team_id));
@@ -124,6 +129,7 @@ async function get_player_assault_phase(team_id) {
     });
 }
 
+// Oggetti richiesti per potenziamento di una postazione
 async function get_player_assault_upgrade_items(team_id, place_id) {
     return new Promise(async function (player_main_info_res) {
         let player_assault_upgrade_items = await db.query(db.queries.assault.upgrade_items(team_id, place_id));
@@ -144,6 +150,24 @@ async function get_player_assault_upgrade_items(team_id, place_id) {
     });
 }
 
+// oggetto/i richiesti dal contrabbandiere
+async function get_current_offert(player_id){
+    let player_current_offert = await db.query(db.queries.smuggler.current_offert(player_id));
+
+    if (player_current_offert == false ||
+        utils.isNully(player_current_offert) ||
+        !Array.isArray(player_current_offert)
+        ){
+        return ({
+            esit: false,
+            results: []
+        });
+    }
+    return ({
+        esit: true,
+        results: player_current_offert
+    });
+}
 
 
 async function update_player_money(ammount, telegram_user_id, type) {

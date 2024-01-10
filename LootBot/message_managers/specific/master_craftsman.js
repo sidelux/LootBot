@@ -64,6 +64,10 @@ async function master_craftsman_queryDispatcher(callback_query) {
             await menu_view(response, telegram_user_id, message_id);
             break;
         }
+        case sub_structure.smuggler.stmp: {
+            await smuggler_view_dispatch(response, telegram_user_id, message_id, query_data.slice(1));
+            break;
+        }
         case sub_structure.assault.stmp: {
             await assault_view_dispatch(response, telegram_user_id, message_id, query_data.slice(1));
             break;
@@ -119,6 +123,8 @@ async function menu_textAndButtons(response, player_info, craftsman_info, messag
     let menu_keyboard = [];
     let menu_text = `_${craftsman_view.menu.introduction}_\n`;
     let has_assault_affairs = await craftsman_logics.player_assault_infos(player_info.id)
+    let has_smuggler_offert = await craftsman_logics.player_smuggler_offert(player_info);
+
 
     // Testo del Mastro...
     menu_text += "«";
@@ -164,12 +170,17 @@ async function menu_textAndButtons(response, player_info, craftsman_info, messag
         menu_keyboard[0].splice(1, 0, craftsman_view.keyboard_buttons.assault_view_main)
     }
 
+    if (has_smuggler_offert.esit == true && has_smuggler_offert.results.length > 0) {
+        menu_keyboard[0].splice(1, 0, craftsman_view.keyboard_buttons.smuggler_view_main)
+    }
+
     if (craftsman_info.items_list.length > 0) {
         menu_keyboard[0].push(craftsman_view.keyboard_buttons.show_items_list);
         menu_keyboard.push([
             craftsman_view.keyboard_buttons.validate_list,
         ]);
     }
+
 
     if (!message_id) {
         response.toSend.message_text = menu_text;
@@ -371,7 +382,51 @@ async function assault_view_dispatch(response, telegram_user_id, message_id, que
 
 }
 
-// ******************************************  LIST
+// ******************************************  (SMUGGLER) CONTRABBANDIERE
+
+async function smuggler_view_dispatch(response, telegram_user_id, message_id, query_data) {
+    let query_controll = await query_preload(response, telegram_user_id, message_id);
+    let player_info = query_controll.player_info;
+    let craftsman_info = query_controll.craftsman_info;
+    let has_smuggler_offert = await craftsman_logics.player_smuggler_offert(player_info);
+    let offerts_text = `*${craftsman_view.smuggler.title}*\n\n`;
+    let sub_structure = utils.query_structure.query_tree.master_craftsman.smuggler;
+    let view_keyboard = [ [craftsman_view.keyboard_buttons.back_to_menu] ];
+
+
+    if (has_smuggler_offert.esit == false || has_smuggler_offert.results.length < 0) {
+        response.query.options.text = `${craftsman_view.smuggler.errors.title}${craftsman_view.smuggler.errors.nothing_to_do}`;
+        response.query.options.show_alert = true;
+        return;
+    } else if (query_data[0] == sub_structure.add_smuggler_to_list.stmp){
+        has_smuggler_offert.results.forEach(item => {
+            craftsman_logics.add_item_to_items_list(item.item_id, craftsman_info.items_list)
+        });
+        response.query.options.text = `${craftsman_view.smuggler.title}\n\n${craftsman_view.smuggler.items_added}`;
+        response.query.options.show_alert = true;
+
+        await craftsman_logics.update_craftsman_info(telegram_user_id, craftsman_info);
+        return await menu_textAndButtons(response, player_info, craftsman_info, message_id)
+
+    } else {
+        response.toEdit = bot_response.responses.toEdit();
+        response.toEdit.options.chat_id = player_info.account_id;
+        response.toEdit.options.message_id = message_id;
+    
+        view_keyboard.push([craftsman_view.keyboard_buttons.smuggler_add_offert])
+    
+        offerts_text += `${craftsman_view.smuggler.items_needed}\n`;
+        has_smuggler_offert.results.forEach(item => {
+            let item_info = craftsman_logics.item_infos(item.item_id);
+            offerts_text += `• ${item_info.name} (${item_info.rarity})\n`;
+        });
+    
+        response.toEdit.new_text = offerts_text;
+        response.toEdit.options.reply_markup.inline_keyboard = view_keyboard;
+    }
+}
+
+// ******************************************  LIST (lista oggetti da creare)
 
 // *******  DISPATCH -> Query che iniziano per LIST
 async function list_view_dispatch(telegram_user_id, response, message_id, query_data) {
@@ -811,7 +866,7 @@ async function validate_view(response, player_info, craftsman_info, craft_line, 
         message_text += "\n";
 
         // Aggiungo il bottone "Mancanti"
-    } else if (!can_proceed_controll){
+    } else if (!can_proceed_controll) {
         let phrases_random_index = Math.floor(Math.random() * craftsman_view.validate.inventory_no_money.length);
         message_text += `${craftsman_view.validate.inventory_no_money[phrases_random_index]}`;
         message_text += "»\n\n";
