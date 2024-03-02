@@ -27106,6 +27106,7 @@ bot.onText(/^assalto|accedi all'assalto|torna all'assalto|panoramica|attendi l'a
 																	items += "> " + rows[i].name + " (" + rows[i].rarity + ") " + myqnt + "/" + rows[i].quantity + compl + "\n";
 																}
 																iKeys.push(["Potenzia istantaneamente (" + paPrice + " 🦋)"]);
+																iKeys.push(["Mastro Artigiano 🛠"]);
 																iKeys.push(["Torna all'assalto"]);
 																iKeys.push(["Torna al menu"]);
 
@@ -28497,7 +28498,7 @@ bot.onText(/riprendi battaglia/i, function (message) {
 																		var ability = await connection.queryAsync('SELECT ability_level, val FROM ability, ability_list WHERE ability.ability_id = ability_list.id AND player_id = ' + miniboost[i].player_id + ' AND ability_id = 25');
 																		if (Object.keys(ability).length > 0)
 																			minival += ability[0].ability_level*ability[0].val;
-																		minivalTot = minival*miniboost[i].cnt;
+																		minivalTot = (minival*miniboost[i].cnt).toFixed(2)
 																		miniboost_text += "\n> " + miniboost[i].name + " (+<b>" + minivalTot.toString().replace(".",",") + "</b>" + miniunit + " " + minitext + ")";
 																	}
 																	miniboost_text += "\n\n";
@@ -36310,7 +36311,7 @@ bot.onText(/piazza di lootia|piazza/i, function (message) {
 			gender_text = "o";
 
 		var iKeys = [];
-		iKeys.push(["Mastro Artigiano 🛠 (Beta)"]);
+		iKeys.push(["Mastro Artigiano 🛠"]);
 		iKeys.push(["Emporio 💸","Mercante Pazzo 👝"]);
 		iKeys.push(["Contrabbandiere dell'Est 🔩"]);
 		iKeys.push(["Affari Passati 💬", "Poste 🎁"]);
@@ -42430,7 +42431,7 @@ bot.onText(/^Biblioteca|Torna alla biblioteca/i, function (message) {
 					answerCallbacks[message.chat.id] = async function (answer) {
 						if (answer.text == "Torna al menu")
 							return;
-						var reg = new RegExp("^[a-zA-Z ]{1,100}$");
+						var reg = new RegExp("^[a-zA-Z()’'⚙️\- ]{1,100}$");
 						if (reg.test(answer.text) == false) {
 							bot.sendMessage(message.chat.id, "Titolo non valido, riprova", kbBack);
 							return;
@@ -64477,11 +64478,13 @@ function setFinishedMission(element, index, array) {
 
 								bot.sendMessage(chat_id, "Missione completata! Hai ottenuto:\n" + crazyText + "*" + rows[0].name + "* (" + rows[0].rarity_shortname + ")" + evolved_text + ", *" + formatNumber(money) + "* § e *" + exp + "* exp " + extra + "!" + chest_bonus + rarity_miss, mark);
 
-								if (mission_gem == 1)
+								if (mission_gem == 1) {
 									await addChest(element.id, chest_id, 1, 1);
-								else
+									setExp(element.id, exp, 0);
+								} else {
 									await addChest(element.id, chest_id);
-								setExp(element.id, exp);
+									setExp(element.id, exp);
+								}
 
 								if (mission_count+1 >= 5) {
 									connection.query("SELECT referral_list.id, referral_list.player_id, player.chat_id FROM referral_list, player WHERE player.id = referral_list.player_id AND referral_list.new_player = " + element.id + " AND referral_list.reward = 0", async function (err, rows, fields) {
@@ -65101,7 +65104,7 @@ function setFinishedTravel(element, index, array) {
 							exp += exp*(parseInt((rows[0].val*rows[0].ability_level)/10));
 
 						bot.sendMessage(chat_id, "Ferie completate, hai ottenuto *" + formatNumber(exp) + "* exp!", mark);
-						setExp(element.id, exp);
+						setExp(element.id, exp, 0);
 						connection.query('UPDATE player SET travel_limit = 0, travel_count = travel_count+1 WHERE id = ' + element.id, function (err, rows, fields) {
 							if (err) throw err;
 						});
@@ -65610,7 +65613,7 @@ function setFinishedGnomorraInvite(element, index, array) {
 	});
 };
 
-function setExp(player_id, exp) {
+function setExp(player_id, exp, global = 1) {
 	connection.query('SELECT chat_id, exp, reborn, global_end FROM player WHERE id = ' + player_id, async function (err, rows, fields) {
 		if (err) throw err;
 
@@ -65659,7 +65662,7 @@ function setExp(player_id, exp) {
 		}
 
 		setAchievement(player_id, 57, exp);
-		if (await getCurrentGlobal() == 17)
+		if ((await getCurrentGlobal() == 17) && global == 1)
 			globalAchievement(player_id, exp);
 		connection.query('UPDATE player SET exp_week = exp_week+' + exp + ', exp_day = exp_day+' + exp + ' WHERE id = ' + player_id, function (err, rows, fields) {
 			if (err) throw err;
