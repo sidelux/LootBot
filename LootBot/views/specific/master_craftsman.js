@@ -54,6 +54,9 @@ module.exports = {
         wellcome_back: "Bentornat*",
         waiting_phrases: [
             "Hai bisogno d'aiuto? … Hai letto il cartello?",
+            "\n💡\nRispondi a 📝 per una ricerca veloce per nomeogetto\n",
+            "\n💡\nRispondi a 📋 per modificare le quantità degli oggetti in lista\n",
+            "Si si, stai pur qui ad ascoltarmi...\nSia mai che possa dire qualche perla di saggezza 💡",
             "Compila la tua lista, viandante",
             "Sto aspettando…",
             "Avrei da lavorare…",
@@ -135,7 +138,9 @@ module.exports = {
 
     },
     list: {
-        title: "Oggetti da creare",
+        title: "Lista commissione",
+        edit_moji: "📝",
+        list_moji: "📋",
         empty_list: "• Ancora nessun oggetto in elenco",
         list_length: "• Oggetti nell'elenco:",
         list_total_quantity: "• Quantità totale:",

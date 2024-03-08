@@ -14,9 +14,10 @@ const beta_tester_ids = [];
 const in_beta = false;
 
 module.exports = {
+    add_betaTester: add_betaTester,                                     // "/craftbeta"                                                 <- (Stringa da definire in: ./views.strings.js
     menu: master_craftsman_menu,                                        // "mastro artigiano".indexOf(message.text.toLowerCase())>= 0   <- (Stringa da definire in: ./views.strings.js
     queryDispatcher: master_craftsman_queryDispatcher,                  //  query.data.split(":")[0] == "CRAFTSMAN"                     <- (Stringa da definire in: ./views.strings.js
-    add_betaTester: add_betaTester                                      // "/craftbeta"                                                 <- (Stringa da definire in: ./views.strings.js
+    replyDispatcher: master_craftsman_replyDispatcher
 }
 
 // **************************************  MESSAGGIO - MENU
@@ -42,7 +43,6 @@ async function master_craftsman_menu(telegram_user_id) {
 }
 
 // **************************************  QUERIES
-
 // Lo smistatore di query (in response prepara già la risposta)
 async function master_craftsman_queryDispatcher(callback_query) {
     let query_data = callback_query.data.split(":").slice(1);
@@ -88,6 +88,13 @@ async function master_craftsman_queryDispatcher(callback_query) {
     }
 
     return response;
+}
+
+// ************************************** REPLY_TO
+// Smista la risposta ad un messaggio del mastro. response esiste solo se un delegato è stato trovato
+async function master_craftsman_replyDispatcher(original_message, message){
+    console.log(original_message);
+    console.log(message);
 }
 
 // ********************************************************************************  SUB_VIEWS
@@ -434,7 +441,7 @@ async function list_view_dispatch(telegram_user_id, response, message_id, query_
     let sub_structure = utils.query_structure.query_tree.master_craftsman.list;
 
     if (query_controll.esit == true) {
-        if (query_data[0] == sub_structure.show_list.stmp) {
+        if (query_data[0] == sub_structure.show_list.stmp) { // SHOW LIST
             show_list_messageAndButtons(response, query_controll.player_info, query_controll.craftsman_info)
         } else if (query_data.length <= 1) {
             if (query_data[0] == sub_structure.set_rarity.stmp) {
@@ -462,10 +469,10 @@ function show_list_messageAndButtons(response, player_info, craftsman_info) {
             craftsman_view.keyboard_buttons.delete_list,
         ]
     ];
-    let message_text = `*${craftsman_view.list.title}*\n\n`;
+    let message_text = `*${craftsman_view.list.title}* ${craftsman_view.list.list_moji}\n\n`;
 
     // Lista oggetti
-    if (craftsman_info.items_list.length == 0) {
+    if (craftsman_info.items_list.length == 0) { // ...vuota
         message_text += `${craftsman_view.list.empty_list}\n`;
     } else {
         if (craftsman_info.items_list.length > 1) {
@@ -602,7 +609,7 @@ async function list_view_updates(response, player_info, craftsman_info, message_
 
 // list_view è diviso in due parti, questo è il message_text  
 function list_view_message_text(craftables_array, craftsman_info, query_data) {
-    let message_text = `*${craftsman_view.list.title}*\n\n`;
+    let message_text = `*${craftsman_view.list.title}* ${craftsman_view.list.edit_moji}\n\n`;
     // ***** Testo
 
     // Lista oggetti
@@ -653,6 +660,7 @@ function list_view_buttons(craftables_array, craftsman_info, player_info, query_
         craftsman_view.keyboard_buttons.back_to_menu,
     ]
 
+    // Condizioni per l'opbrobrio subito sotto
     let show_rarity_submenu = craftsman_info.current_rarity.length <= 0 || (type == sub_structure.set_rarity.stmp && query_data.length == 1);
     let show_items_list_submenu = craftsman_info.current_rarity.length > 0 && craftsman_info.current_prefix.length > 0
     // ((type == sub_structure.set_prefix.stmp && query_data[1]) || type == sub_structure.items_page.stmp || type == sub_structure.add_to_list.stmp);
@@ -661,7 +669,7 @@ function list_view_buttons(craftables_array, craftsman_info, player_info, query_
     if (show_rarity_submenu) {                                                              // Bottoni "rarità con creati"
         list_buttons_array = craftsman_logics.avaible_rarities(craftsman_info.censure_view);
         button_template = { ...craftsman_view.keyboard_buttons.set_rarity };
-    } else if (show_items_list_submenu) {
+    } else if (show_items_list_submenu) {                                                   // Bottoni con gli oggetti 
         first_line_buttons.push(craftsman_view.keyboard_buttons.set_rarity)
         first_line_buttons.push(craftsman_view.keyboard_buttons.index_button)
 
@@ -706,7 +714,7 @@ function list_view_buttons(craftables_array, craftsman_info, player_info, query_
 
         button_template = { ...craftsman_view.keyboard_buttons.add_to_list };
 
-    } else if (craftsman_info.current_rarity.length > 0) {                                                    // Bottoni "prefissi di una rarità" (default, perché current_rarity è sempre settato)
+    } else if (craftsman_info.current_rarity.length > 0) {                                  // Bottoni "prefissi di una rarità" (default, perché current_rarity è sempre settato)
         first_line_buttons.push(craftsman_view.keyboard_buttons.set_rarity)
 
         let prefixes_array = craftsman_logics.get_craftable_array_groupedPrefixes(craftables_array);
@@ -753,10 +761,10 @@ function list_view_buttons(craftables_array, craftsman_info, player_info, query_
         } else if (indexes_buttons.length <= 6) {                                                          // Piu di 8 bottoni su una stessa riga non si riescono a leggere
             result_buttoms_array.push(indexes_buttons);
         } else {
-            let medium_length = indexes_buttons.length >= 10 ? 5 : (1 + Math.floor(indexes_buttons.length / 2));   // Calcolo una lunghezza media per le righe
-            for (let i = 0; i < indexes_buttons.length; i += medium_length) {                       // divido in chunk secondo medium_length
+            let medium_length = indexes_buttons.length >= 10 ? 5 : (1 + Math.floor(indexes_buttons.length / 2));    // Calcolo una lunghezza media per le righe
+            for (let i = 0; i < indexes_buttons.length; i += medium_length) {                                       // divido in chunk secondo medium_length
                 const chunk = indexes_buttons.slice(i, i + medium_length);
-                result_buttoms_array.push(chunk);                                                           // aggiungo (singolarmente) i chunk all'array risultato
+                result_buttoms_array.push(chunk);                                                                   // aggiungo (singolarmente) i chunk all'array risultato
             }
         }
     }
