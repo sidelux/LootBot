@@ -125,8 +125,6 @@ async function menu_textAndButtons(response, player_info, craftsman_info, messag
     let has_assault_affairs = await craftsman_logics.player_assault_infos(player_info.id)
     let has_smuggler_offert = await craftsman_logics.player_smuggler_offert(player_info);
 
-    console.log("Sul contrabbando:\nesito:%s\nrisultato:%j", has_smuggler_offert.esit, has_smuggler_offert.results)
-
 
     // Testo del Mastro...
     menu_text += "«";
