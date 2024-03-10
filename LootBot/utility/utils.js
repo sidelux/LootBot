@@ -54,6 +54,15 @@ const db_structures = {
         team_id: "team_id",
         player_id: "player_id"
     },
+    ability:{
+        ability_id: "ability_id",
+        player_id: "player_id",
+        ability_level: "ability_level",
+    },
+    abiliti_list:{
+        ability_id: "id",
+        ability_power: "val"
+    },
     items: {
         key: "id",
         name: "name",

@@ -535,10 +535,10 @@ bot.on('message', async function (message) {
 			});
 		}
 
-		if (message.reply_to_message.from.id == 171514820) { // Risposta ad un messaggio inviato dal bot
+		if (message.reply_to_message && message.reply_to_message.from.id == 171514820) { // Risposta ad un messaggio inviato dal bot
 			let check_reply = await reply_manager.manage(message);
-			if (check_reply.response) {
-				return bot_response.manage(check_reply.response, bot);
+			if (check_reply) {
+				return bot_response.manage(check_reply, bot);
 			}
 		}
 	}

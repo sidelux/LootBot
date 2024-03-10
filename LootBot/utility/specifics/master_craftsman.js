@@ -6,15 +6,20 @@ module.exports = {
             stmp: "GUIDE",
 
         },
+        delete_message: {
+            stmp: "DEL_MESSAGE",
+        },
         menu: {
             stmp: "MENU",
-
         },
         smuggler: {
             stmp: "SMUGGLER",
             add_smuggler_to_list: {
                 stmp: "SMUG_ADD",
-            }
+            },
+            check_missing: {
+                stmp: "SM_MISSING",
+            },
         },
         assault: {
             stmp: "ASSAULT",
@@ -47,6 +52,12 @@ module.exports = {
             },
             show_list: {
                 stmp: "SHOW_LIST",
+            },
+            custom_list: {
+                stmp: "CUSTOM_LIST",
+            },
+            download_list: {
+                stmp: "DOWNLOAD_LIST",
             },
             clear_list: {
                 stmp: "CLEAR",
@@ -90,7 +101,9 @@ module.exports = {
                     stmp: "ALL_USED",
                 },
             },
-
+            print_manual_craft_line: {
+                stmp: "PRINT_MANUAL_LINE",
+            },
             craft_line_commit: {
                 stmp: "CRAFT_LINE_COMMIT",
             },

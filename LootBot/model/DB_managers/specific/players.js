@@ -13,6 +13,7 @@ const query_types = {
 module.exports = {
     player_info: load_player_info,
     team_id: get_player_team_id,
+    player_abilities: player_abilities,
     update_player_money: update_player_money,
     increase_player_craft_point: increase_player_craft_point,
 
@@ -86,6 +87,25 @@ async function get_player_team_id(player_id) {
             esit: true,
             results: player_team_id[0].team_id
         });
+    });
+}
+
+// Talenti del giocatore
+async function player_abilities(player_id){
+    let player_abilities = await db.query(db.queries.players.player_abilities(player_id));
+
+    if (player_abilities == false ||
+        utils.isNully(player_abilities) ||
+        !Array.isArray(player_abilities) ||
+        player_abilities.length <= 0) {
+        return ({
+            esit: false,
+            error_text: db.error_messages.print(db.error_messages.str.players.load_abilities, `${player_id}`)
+        });
+    }
+    return ({
+        esit: true,
+        results: player_abilities
     });
 }
 
@@ -168,7 +188,6 @@ async function get_current_offert(player_id){
         results: player_current_offert
     });
 }
-
 
 async function update_player_money(ammount, telegram_user_id, type) {
     return new Promise(async function (money_update_res) {

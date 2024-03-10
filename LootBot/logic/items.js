@@ -10,6 +10,7 @@ module.exports = {
 
     // ******** Funzioni generiche
     item_infos: item_infos_fromID,                                              // Tutte le informazioni item_infos per un item_id
+    search_craftable_item: craftable_infos_fromName,
 
     // ******** Funzioni oggetti creati
     craftables_ofRarity: craftables_list_fromRarity,                            // restituisce tutti i creabili di una rarità
@@ -76,13 +77,18 @@ async function normalize_itemsRawData(raw_data, target_array) {
 
 // ******** ACCESSORIE GENERICHE
 
-function item_infos_fromID(item_id){
-   return lootItems_array.find((item) => (item.id == item_id));
+function item_infos_fromID(item_id) {
+    return lootItems_array.find((item) => (item.id == item_id));
+}
+
+function craftable_infos_fromName(item_partial_name) {
+    return lootItems_array.filter((item) =>  (item.craftable== 1 && item.name.toLowerCase().match(item_partial_name.toLowerCase()))
+    );
 }
 
 // ******** ACCESSORIE CRAFTABLE = 1
 
-function all_craftables(){
+function all_craftables() {
     return lootItems_array.filter(item => item.craftable === 1);
 }
 
@@ -94,7 +100,7 @@ function all_craftables_forReborn(player_reborn) {
 function craftables_list_fromRarity(item_rarity, player_reborn = false) {
     return lootItems_array.filter((item) => player_reborn === false ? (item.craftable == 1 && item.rarity == item_rarity) : item.craftable == 1 && item.rarity == item_rarity && item.reborn <= parseInt(player_reborn));
 }
-  
+
 // I creati, ma da un array di rarità
 function craftables_list_fromRarities(rarity_array) {
     return lootItems_array.filter((item) => (item.craftable == 1 && rarity_array.indexOf(item.rarity) >= 0));
@@ -123,32 +129,32 @@ function get_craftable_array_groupedIndexes(craftable_array) {
     const groupedIndexes = [];
     let count = 0;
     let group = '';
-  
+
     for (let i = 0; i < indexes_array.length; i++) {
-      const currentIndex = indexes_array[i];
-      const occurrences = craftable_array.reduce((occurrences_counter, item_info) => {
-        if (item_info.name.charAt(0).toUpperCase() === currentIndex) {
-          occurrences_counter++;
+        const currentIndex = indexes_array[i];
+        const occurrences = craftable_array.reduce((occurrences_counter, item_info) => {
+            if (item_info.name.charAt(0).toUpperCase() === currentIndex) {
+                occurrences_counter++;
+            }
+            return occurrences_counter;
+        }, 0);
+
+        count += occurrences;
+        group += currentIndex;
+
+        if (count >= fixed_minimum || i === indexes_array.length - 1) {
+            groupedIndexes.push(group);
+            group = '';
+            count = 0;
         }
-        return occurrences_counter;
-      }, 0);
-  
-      count += occurrences;
-      group += currentIndex;
-  
-      if (count >= fixed_minimum || i === indexes_array.length - 1) {
-        groupedIndexes.push(group);
-        group = '';
-        count = 0;
-      }
     }
-  
+
     return groupedIndexes;
-  }
+}
 
 
 // Restituisce l'array delle rarità che hanno almeno un creabile
-function get_all_craftable_rarity(player_reborn= false) {
+function get_all_craftable_rarity(player_reborn = false) {
     const filteredItems = player_reborn === false ? all_craftables() : all_craftables_forReborn(player_reborn);
     const raritiesArray = filteredItems.map(item => item.rarity);
     const uniqueRarities = raritiesArray.filter((rarity, index) => raritiesArray.indexOf(rarity) === index);
