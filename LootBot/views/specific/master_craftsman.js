@@ -4,20 +4,25 @@ const sub_tree = query_util.query_tree.master_craftsman;
 module.exports = {
     title: "Maestro Artigiano",
     keyboard_buttons: {
+        delete_message: { text: "ⓧ", callback_data: query_util.generate_callback_rute(sub_tree.delete_message.stmp, sub_tree) },
+
         back_to_menu: { text: "↵", callback_data: query_util.generate_callback_rute(sub_tree.menu.stmp, sub_tree) },
         master_craftsman_guide: { text: "ⓘ", callback_data: query_util.generate_callback_rute(sub_tree.guide.stmp, sub_tree) },
         assault_view_main: { text: "🐺", callback_data: query_util.generate_callback_rute(sub_tree.assault.stmp, sub_tree) },// "Assalto",
-        assault_show_missing: { text: "Mancanti", callback_data: query_util.generate_callback_rute(sub_tree.assault.missing.stmp, sub_tree) },// "Assalto",
+        assault_show_missing: { text: "Controlla lo zaino", callback_data: query_util.generate_callback_rute(sub_tree.assault.missing.stmp, sub_tree) },// "Assalto",
         assault_show_all: { text: "Tutti", callback_data: query_util.generate_callback_rute(sub_tree.assault.all.stmp, sub_tree) },// "Assalto",
         assault_addMissing_to_list: { text: "Aggiungi alla lista", callback_data: query_util.generate_callback_rute(sub_tree.assault.missing.add_missing_to_list.stmp, sub_tree) },// "Assalto",
         assault_addAll_to_list: { text: "Aggiungi alla lista", callback_data: query_util.generate_callback_rute(sub_tree.assault.all.add_all_to_list.stmp, sub_tree) },// "Assalto",
         smuggler_view_main: { text: "🔩", callback_data: query_util.generate_callback_rute(sub_tree.smuggler.stmp, sub_tree) },// "Assalto",
         smuggler_add_offert: { text: "Aggiungi alla lista", callback_data: query_util.generate_callback_rute(sub_tree.smuggler.add_smuggler_to_list.stmp, sub_tree) },// "Assalto",
+        smugglier_check_missing: { text: "Controlla lo zaino", callback_data: query_util.generate_callback_rute(sub_tree.smuggler.check_missing.stmp, sub_tree) },// "Assalto",
 
-
+        // ↧
         list_view_main: { text: "📝", callback_data: query_util.generate_callback_rute(sub_tree.list.main_view.stmp, sub_tree) },// "Compila la lista",
         delete_list: { text: "🗑", callback_data: query_util.generate_callback_rute(sub_tree.list.clear_list.confirm.stmp, sub_tree) }, // "Cancella la lista",
-        add_to_list: { text: "", callback_data: query_util.generate_callback_rute(sub_tree.list.add_to_list.stmp, sub_tree) }, // "Cancella la lista",
+        download_list: { text: "↧", callback_data: query_util.generate_callback_rute(sub_tree.list.download_list.stmp, sub_tree) }, // "Cancella la lista",
+
+        add_to_list: { text: "", callback_data: query_util.generate_callback_rute(sub_tree.list.add_to_list.stmp, sub_tree) }, // "bottone oggetto aggiungi a lista",
         show_items_list: { text: "📋", callback_data: query_util.generate_callback_rute(sub_tree.list.show_list.stmp, sub_tree) }, // "Cancella la lista",
         validate_list: { text: "Consegna la Lista", callback_data: query_util.generate_callback_rute(sub_tree.validate.stmp, sub_tree) }, // "Cancella la lista",
         set_rarity: { text: "⭑", callback_data: query_util.generate_callback_rute(sub_tree.list.set_rarity.stmp, sub_tree) }, // "Cancella la lista",
@@ -30,7 +35,8 @@ module.exports = {
         censure_view_set: { text: "◉", callback_data: query_util.generate_callback_rute(sub_tree.list.censure.set_censure.stmp, sub_tree) }, // "Cancella la lista",
 
         show_craft_missing: { text: "Mancanti", callback_data: query_util.generate_callback_rute(sub_tree.validate.show_missing.stmp, sub_tree) }, // "Cancella la lista",
-        show_craft_used: { text: "Usati", callback_data: query_util.generate_callback_rute(sub_tree.validate.show_used.stmp, sub_tree) }, // "Cancella la lista",
+        show_craft_used: { text: "Consumati", callback_data: query_util.generate_callback_rute(sub_tree.validate.show_used.stmp, sub_tree) }, // "Cancella la lista",
+        print_manual_craft_line: { text: "Craft manuale", callback_data: query_util.generate_callback_rute(sub_tree.validate.print_manual_craft_line.stmp, sub_tree) }, // "Cancella la lista",
         show_craft_used_base: { text: "Base", callback_data: query_util.generate_callback_rute(sub_tree.validate.show_used.used_base.stmp, sub_tree) }, // "Cancella la lista",
         show_craft_used_base: { text: "Creati", callback_data: query_util.generate_callback_rute(sub_tree.validate.show_used.used_crafted.stmp, sub_tree) }, // "Cancella la lista",
         show_craft_used_base: { text: "Raccogli lista", callback_data: query_util.generate_callback_rute(sub_tree.validate.show_used.all_used.stmp, sub_tree) }, // "Cancella la lista",
@@ -54,8 +60,12 @@ module.exports = {
         wellcome_back: "Bentornat*",
         waiting_phrases: [
             "Hai bisogno d'aiuto? … Hai letto il cartello?",
+            "Rispondi a 📝 per una ricerca veloce per nomeogetto 💡",
+            "Rispondi a 📋 per modificare le quantità degli oggetti in lista 💡",
+            "Si si, stai pur qui ad ascoltarmi...\nSia mai che possa dire qualche perla di saggezza 💡",
             "Compila la tua lista, viandante",
             "Sto aspettando…",
+            "Questi nani sono tremendi…\nPosso fare qualcosa per te?",
             "Avrei da lavorare…",
             "Se hai qualche cosa da creare, aggiungilo alla lista…",
             "Ancora qui?",
@@ -110,6 +120,9 @@ module.exports = {
         title: "Offerte di Contrabbando 🔩",
         items_needed: "Richiesta:",
         items_added: "Aggiunte alla lista",
+        item_missing: "❌\nSembra tu non abbia",
+        has_item: "✅\nHai già",
+
 
         errors: {
             title: "🔩\nWoops!\n\n",
@@ -135,7 +148,9 @@ module.exports = {
 
     },
     list: {
-        title: "Oggetti da creare",
+        title: "Lista commissione",
+        edit_moji: "📝",
+        list_moji: "📋",
         empty_list: "• Ancora nessun oggetto in elenco",
         list_length: "• Oggetti nell'elenco:",
         list_total_quantity: "• Quantità totale:",
@@ -150,11 +165,24 @@ module.exports = {
         censure_set: "Ti saranno mostrati solo i creati compatibili con la tua rinascita",
         censure_remove: "Puoi scorrere liberamente tra tutti i creabili",
 
+        download_list: "• Scarica l'elenco ↧",
+
         rarity_select: "• Seleziona una rarità",
+        serarch_info: "o rispondi a questo messaggio con il nome (anche parziale) di un oggetto",
+
         prefix_select: "• Seleziona un prefisso indice",
 
     },
+    search: {
+        input: "• Input:",
+        match: "match",
+        no_match: "nessun match",
+    },
+    edit_quantity: {
+        guide: "_gestire le quantità_\n\nRispondi al messaggio specificando in ogni linea il nome (anche parziale) di un oggetto e la quantità che vuoi impostare.\nPuoi anche completare il comando con un operatore tra \`x\`, \`+\`, \`-\`"
+    },
     validate: {
+        give_list: "Consegni la lista commissione al mastro…",
         unable: {
             unable_moji: "❌",
             first_line: "Il Mastro ti osserva, sembra schifato…",
@@ -252,7 +280,25 @@ module.exports = {
         }
 
     },
+    manual_craft: {
+        quick_evade: [
+            "«Non che smaniassi dalla voglia di farlo io per te!»",
+            "«Noi qui siam lieti di aiutare»",
+            "«Ecco a te»",
+            "«Se proprio ci tieni…»",
+            "«Eppure questi gnomi hanno tanto bisogno di lavorare…»",
+            "«Fa sempre bene mettersi in gioco»",
+            "«Apprezzo chi preferisce farsi le cose da se»",
+            "«Non è un felice lavoro, va se va proprio fatto…»",
+            "Risparmierai qualcosina, che di questi tempi…",
+        ],
+    },
     list_print: {
+        current_list_file_name: "Lista Commissione.txt",
+        manual_craft_file_name: "Lista Commissione.txt",
+        manual_line: "Linee per il craft manuale",
+        manual_line_short: "Linee per il craft manuale",
+        manual_line_index: "Crea ",
         file_name: "Riepilogo.txt",
         target_items: "Obbiettivo craft",
         missing: "Mancanti",

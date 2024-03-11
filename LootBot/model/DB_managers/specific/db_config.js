@@ -14,6 +14,9 @@ db_config.tables = {
     craft: "craft",
     players: "player",
     team_player: "team_player",
+    ability: "ability",
+    ability_list: "ability_list",
+
     assault: "assault",
     smuggler_offerts: "merchant_offer",
     assault_places: "assault_place_player_id",

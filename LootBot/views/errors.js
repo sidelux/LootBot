@@ -9,6 +9,7 @@ const strings = {
         bad_input: `▸ Errore input: {#}`,
         load_mainInfo: `▸ Errore caricando player\\_main\\_info per account\\_id: {#}`,
         load_teamId: `▸ Errore cercando di ottenere team_id per player_id: {#}`,
+        load_abilities: `▸ Errore cercando di ottenere la lista talenti per player_id: {#}`,
         load_craftsman_info: `▸ Errore accedendo alle preferenze craft per account_id: {#}`,
         load_equipInfo: `▸ Errore caricando player_info per account_id: {#}`,
 

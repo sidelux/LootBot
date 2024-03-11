@@ -30,6 +30,7 @@ async function full_line_craft(toCraft_array, player_inventory, preserve_crafted
             base: [],                                                              // array di oggetti item_craftInfo <- È usato per l'output
             crafted: []                                                            // array di oggetti item_craftInfo <- È usato per l'output
         },
+        manual_craft: [],
         loops: 0,                                                                  // Intero, contatore sul numero di ripetizioni (o craft x1)   <- Può essere usato per limitare l'utimlizzo della funzione multicraft
         skipped: [],                                                                // Array con gli itemId che non è stato possibile processare. Idealmente è sempre vuoto
     }
@@ -38,8 +39,8 @@ async function full_line_craft(toCraft_array, player_inventory, preserve_crafted
     let process_startDate = Date.now();                                             // per il log qui sotto
     process_recoursiveCraft(flatten_toCraftIDs_array, player_inventory, preserve_crafted, response);
     console.log(`> Linea craft generata in ${Date.now() - process_startDate}ms`);   // log di test... non c'è ancora una classe log (test, errori…)
-
     check_if_is_partial(response);
+    response.manual_craft = clean_manual_craft_list(response.manual_craft.reverse());
 
     return response; // in response c'è tutto…
 }
@@ -96,18 +97,27 @@ function craft_logic(item, fromInventory_item, nextdeep_array, preserve_zaino, r
     }
 }
 
+// Accessoria di craft_logic() -> Inserisce i necessari per il creato in nextdeep_array ed aggiorna i contatori di response (craft_pnt, craft_cost)
+function update_craft(item, nextdeep_array, response) {
+    if (item.craftable == 1){
+        add_item_inList(response.manual_craft, item);
+    }
+    response.craft_point += item.craft_pnt;
+    response.craft_cost += item.craft_cost;
+    nextdeep_array.push(...item.needed);
+}
+
 // Accessoria di craft_logic() ->  gestisce la logica per oggetti (base o creati) usati per la prima volta all'interno della linea
-function craft_logic_newUsed(item, fromInventory_item, nextdeep_array, response) {
-    // Per gli oggetti base eseguo sempre il controllo sullo zaino
-    
+function craft_logic_newUsed(item, fromInventory_item, nextdeep_array, response) {    
     if (item.craftable == 0) {
+        // Per gli oggetti base eseguo sempre il controllo sullo zaino
         if (fromInventory_item.has_item == false) {                                         // se non è presente aggiorno la lista dei base mancanti
                 add_item_inList(response.missing_baseItems, item);
         } else {                                                                            // se è presente 
             add_item_inList(response.used_items.base, item);                                // aggiorno la lista dei consumati (base)
             response.used_items.ids.push(item.id);                                               // aggiorno la lista degli id (consumati)
         }
-    } else {                                                                                // se l'oggetto è un creato (e l'utilizzo di creati dallo zaino è abilitato)
+    } else {                                                                                // se l'oggetto è un creato (e l'utilizzo di creati dallo zaino è abilitato (controllo a monte in craft_logic))
         if (fromInventory_item.has_item == false || fromInventory_item.quantity < 1) {      // Non è presente o quantità insufficente 
             update_craft(item, nextdeep_array, response);                                   // -> aggiungo i necessari al prossimo livello ed aggiorno i contatori in response
         } else {                                                                            // Aggiorno la lista degli oggetti usati.
@@ -152,12 +162,6 @@ function add_item_inList(list, item) {
     return;
 }
 
-// Accessoria di craft_logic() -> Inserisce i necessari per il creato in nextdeep_array ed aggiorna i contatori di response (craft_pnt, craft_cost)
-function update_craft(item, nextdeep_array, response) {
-    response.craft_point += item.craft_pnt;
-    response.craft_cost += item.craft_cost;
-    nextdeep_array.push(...item.needed);
-}
 
 // Funzione utilizabile per fermare una linea craft in base ai dati contenuti in response
 // ad esempio valutando il numero del contatore loops o se il numero di copie di oggetti base supera "config.items_cap" (<- NOTA: al momento non esiste un oggetto che rappresenti globalmente il cap al numero di copie di un oggetto)
@@ -171,4 +175,14 @@ function check_if_is_partial(response){
             partial: response,
         };
     }
+}
+
+function clean_manual_craft_list(manual_craft_list){
+    let clean_list = [];
+    
+    manual_craft_list.forEach(item => {
+        clean_list.push({id: item.id, quantity: item.total_quantity});
+    });
+    return clean_list;
+
 }

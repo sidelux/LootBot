@@ -12,6 +12,7 @@ module.exports = {
         full_info: player_full_info,
         full_info_from_nickname: full_info_from_nickname,
         team_id: player_teamId,
+        player_abilities: player_abilities,
 
         //Soldi
         set_player_money: set_player_money,
@@ -60,6 +61,11 @@ function full_info_from_nickname (telegram_nickname) {
 
 function player_teamId (player_id) {
     return `SELECT ${tables_structs.teams.team_id} FROM ${tables_names.team_player} WHERE ${tables_structs.teams.player_id} = ${player_id}`;
+}
+
+
+function player_abilities(player_id){
+    return `SELECT ${tables_names.ability}.${tables_structs.ability.ability_id}, ${tables_names.ability}.${tables_structs.ability.ability_level}, ${tables_names.ability_list}.${tables_structs.abiliti_list.ability_power} AS ability_power FROM ${tables_names.ability}, ${tables_names.ability_list} WHERE ${tables_structs.ability.player_id} = ${player_id} `;
 }
 
 function player_assault_place (player_id) {

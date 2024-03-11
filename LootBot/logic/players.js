@@ -5,6 +5,7 @@ const model = require("../model/DB_managers/specific/players");
 module.exports = {
     player_full_infos: model.player_info,
     player_teamId: model.team_id,
+    player_abilities: model.player_abilities,
     increase_player_craft_point: model.increase_player_craft_point,
     assault: {
         infos: player_assault_infos,

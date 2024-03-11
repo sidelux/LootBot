@@ -140,7 +140,7 @@ async function manage_toDelete(bot_instance, response) {
     try {
         esit = await bot_instance.deleteMessage(
             response.toDelete.chat_id,
-            response.toDelete.mess_id
+            response.toDelete.message_id
         )
         stats.messages.delete++;
     } catch (err) {
