@@ -295,6 +295,9 @@ async function player_craft_abilities(player_id){
     } 
 
     let craft_quantity_ability = all_abilities.results.find(ability => ability.ability_id == 21);
+    if (!craft_quantity_ability || isNaN(craft_quantity_ability.ability_level) ||  isNaN(craft_quantity_ability.ability_power)){
+        return {craft_max_quantities: 3};
+    }
     return {
         craft_max_quantities: 3+parseInt(craft_quantity_ability.ability_level)*parseFloat(craft_quantity_ability.ability_power)
     }

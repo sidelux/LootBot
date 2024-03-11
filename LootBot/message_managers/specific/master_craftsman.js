@@ -1237,8 +1237,7 @@ async function validate_view_fail(response, craftsman_info, player_info, unavaib
 // Risponde al bottone "Craft manuale" (stampa un file.txt)
 async function print_manual_craft_view(response, player_info, craftsman_info){
     let craft_max_quantities = (await craftsman_logics.player_craft_abilities(player_info.id)).craft_max_quantities   // 3 o + (in base al talento)
-    const manual_list = craftsman_info.controll.manual_craft;
-    console.log(craft_max_quantities);
+    const manual_list = craftsman_info.controll.manual_craft ? craftsman_info.controll.manual_craft : craftsman_info.manual_craft;
     let print_list = manual_craft_print_list(manual_list, craft_max_quantities)
     let caption_text = `• ${craftsman_view.list_print.manual_line_short} ${print_list.craft_needed}\n`;
     let print_text = `${craftsman_view.list.title} ${craftsman_view.list.list_moji}\n\n`;
@@ -1258,7 +1257,7 @@ async function print_manual_craft_view(response, player_info, craftsman_info){
     }
 
     print_text += `${craftsman_view.list_print.manual_line} (${print_list.craft_needed})\n`;
-    print_text += `\n${craftsman_view.list_print.line.repeat(50)}\n\n`; // manual_line
+    print_text += `\n${craftsman_view.list_print.line.repeat(50)}\n\n`; // manual_line 
     print_text += `${print_list.manual_craft_text}`;
 
 

@@ -18,7 +18,7 @@ module.exports.manage = async (message) => {
         for (let tmp in handlers_register) {
             const { handler, triggers } = handlers_register[tmp];
             const message_title = message.reply_to_message.text.split("\n")[0];
-            if (triggers.some(trigger => message_title.toLowerCase().match(trigger.toLowerCase()) )) {
+            if (handler && triggers && triggers.some(trigger => message_title.toLowerCase().match(trigger.toLowerCase()) )) {
                 // Trovato un gestore che gestisce l'input: Sto!
                 return (await handler(message.reply_to_message, message));
             }
