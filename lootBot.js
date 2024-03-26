@@ -1340,13 +1340,12 @@ bot.onText(/testspam (.+)/i, function (message, match) {
 	}
 });
 
+/*
 bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
-	/*
-	if (message.from.id != config.phenix_id) {
-		bot.sendMessage(message.chat.id, "Manutenzione");
-		return;
-	}
-	*/
+	// if (message.from.id != config.phenix_id) {
+	// 	bot.sendMessage(message.chat.id, "Manutenzione");
+	// 	return;
+	// }
 
 	connection.query('SELECT id, token_last_use, token_streak FROM player WHERE nickname = "' + message.from.username + '"', function (err, rows, fields) {
 		if (err) throw err;
@@ -1426,6 +1425,7 @@ bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
 		});
 	});
 });
+*/
 
 bot.onText(/^\/miner/, function (message, match) {
 
@@ -1826,6 +1826,7 @@ bot.onText(/\/start (.+)|\/start/i, async function (message, match) {
 		}
 	}
 
+	/*
 	if (token != null) {
 		connection.query('SELECT id, token, token_used, token_streak FROM player WHERE nickname = "' + message.from.username + '"', async function (err, rows, fields) {
 			if (err) throw err;
@@ -1891,6 +1892,7 @@ bot.onText(/\/start (.+)|\/start/i, async function (message, match) {
 		});
 		return;
 	}
+	*/
 
 	var code = "Non disponibile";
 
@@ -51509,8 +51511,10 @@ function mainMenu(message) {
 															var last_use = new Date(token_last_use);
 															var last_use_date = last_use.getFullYear() + "-" + addZero(last_use.getMonth() + 1) + "-" + addZero(last_use.getDate());
 
+															/*
 															if (long_date > last_use_date)
 																msgtext += "\n💎 Ricompensa giornaliera disponibile!";
+															*/
 
 															if (achievement != "")
 																msgtext += achievement;
@@ -51615,7 +51619,7 @@ function getDefaultKeyboard() {
 	['Giocatore 👤', 'Imprese 🏋️', 'Team ⚜️'],
 	['Eventi 🎯', 'Esplorazioni 🧗‍♀'],
 	['Destino 🔮', 'Top 🔝', 'Lunari 🌕'],
-	['💎 Ricompensa Giornaliera 💎'],
+	// ['💎 Ricompensa Giornaliera 💎'],
 	['Info 📖']]
 
 	return kb;
