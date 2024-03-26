@@ -100,7 +100,13 @@ function craft_logic(item, fromInventory_item, nextdeep_array, preserve_zaino, r
 // Accessoria di craft_logic() -> Inserisce i necessari per il creato in nextdeep_array ed aggiorna i contatori di response (craft_pnt, craft_cost)
 function update_craft(item, nextdeep_array, response) {
     if (item.craftable == 1){
-        add_item_inList(response.manual_craft, item);
+        for (let i = 0; i < response.manual_craft.length; i++) {
+            if (response.manual_craft[i].id == item.id) {
+                item.total_quantity += response.manual_craft[i].total_quantity;
+                response.manual_craft.splice(i, 1);
+            }
+        }
+        response.manual_craft.push(item);
     }
     response.craft_point += item.craft_pnt;
     response.craft_cost += item.craft_cost;

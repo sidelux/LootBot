@@ -5,7 +5,7 @@ let handlers_register = [ // I moduli che vogliono intercettare un messaggio in 
     // Gli handler sono funzioni che accettano in ingresso il messaggio originale E il messaggio in risposta come parametri separati 
     
     {
-        triggers: ["Lista commissione"] ,
+        triggers: ["Lista commissione", "Liste craft"] ,
         handler: require("./specific/master_craftsman").replyDispatcher
     },
 ]
@@ -18,7 +18,7 @@ module.exports.manage = async (message) => {
         for (let tmp in handlers_register) {
             const { handler, triggers } = handlers_register[tmp];
             const message_title = message.reply_to_message.text.split("\n")[0];
-            if (triggers.some(trigger => message_title.toLowerCase().match(trigger.toLowerCase()) )) {
+            if (handler && triggers && triggers.some(trigger => message_title.toLowerCase().match(trigger.toLowerCase()) )) {
                 // Trovato un gestore che gestisce l'input: Sto!
                 return (await handler(message.reply_to_message, message));
             }

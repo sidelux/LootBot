@@ -60,9 +60,7 @@ module.exports = {
         wellcome_back: "Bentornat*",
         waiting_phrases: [
             "Hai bisogno d'aiuto? … Hai letto il cartello?",
-            "Rispondi a 📝 per una ricerca veloce per nomeogetto 💡",
-            "Rispondi a 📋 per modificare le quantità degli oggetti in lista 💡",
-            "Si si, stai pur qui ad ascoltarmi...\nSia mai che possa dire qualche perla di saggezza 💡",
+            "Si si, resta pure qui a guardarmi...",
             "Compila la tua lista, viandante",
             "Sto aspettando…",
             "Questi nani sono tremendi…\nPosso fare qualcosa per te?",
@@ -74,11 +72,12 @@ module.exports = {
         long_list_phrases: [
             "Ci vorrà un eternità a creare quella roba li…",
             "Urca!",
+            "Boja fauss!",
             "Che lista!\nE tu ha tutto il necessario?",
             "Spero tu non abbia altro da aggiungere…",
             "Prima iniziamo, prima finiamo…",
             "La tua lista sembra impegnativa, viandante…",
-
+            "Ne avranno da lavorare, i nanetti…"
         ],
         short_list_phrases: [
             "Se quello è quello che hai da creare, ci vorrà meno che un batter d'occhi",
