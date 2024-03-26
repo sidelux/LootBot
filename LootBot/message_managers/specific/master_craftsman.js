@@ -77,7 +77,6 @@ async function master_craftsman_queryDispatcher(callback_query) {
         }
         case sub_structure.assault.stmp: {
             await assault_view_dispatch(response, telegram_user_id, message_id, query_data.slice(1));
-            console.log(response.toEdit.options.reply_markup.inline_keyboard);
             break;
         }
         case sub_structure.list.stmp: {
@@ -577,7 +576,12 @@ function list_view(response, craftsman_info, player_info, query_data) {
     if (query_data[1] == sub_structure.custom_list.stmp) {
         list_view_custom_input(response, player_info, craftsman_info, [query_data[2], query_data[5]]);
     } else {
-        let craftables_array = craftsman_logics.get_craftables_ofRarity(craftsman_info.current_rarity, craftsman_info.censure_view);
+        let craftables_array;
+        if (craftsman_info.current_rarity.length > 0) {
+            craftables_array = craftsman_logics.get_craftables_ofRarity(craftsman_info.current_rarity, craftsman_info.censure_view);
+        } else {
+            craftables_array = craftsman_logics.get_craftables_forRebor(player_info.reborn)
+        }
         response.toEdit.new_text = list_view_message_text(craftables_array, craftsman_info, query_data);
         response.toEdit.options.reply_markup.inline_keyboard = list_view_buttons(craftables_array, craftsman_info, player_info, query_data);
     }
@@ -929,47 +933,53 @@ function list_view_custom_input(response, player_info, craftsman_info, query_dat
 
 // Funzione che gestisce l'input in risposta a messaggi di tipo mostra-lista (modifica le quantità)
 async function list_quantity_input(response, player_info, craftsman_info, input_data) {
-    const list_items_names = craftsman_info.items_list.map((item) => { 
+    const list_items_names = craftsman_info.items_list.map((item) => {
         let item_info = craftsman_logics.item_infos(item.id);
-        return {id: item.id, name: item_info.name, rarity: item_info.rarity, quantity: item.quantity } 
+        return { id: item.id, name: item_info.name, rarity: item_info.rarity, quantity: item.quantity }
     });
     const lines = input_data.trim().split('\n');
-    const first_line_no_operator = lines[0].toLowerCase().replace(/x|\+|\-/g, '').trim() 
+    const first_line_no_operator = lines[0].toLowerCase().replace(/x|\+|\-/g, '').trim()
     const result = [];
     const skipped = [];
     let new_items_list = [];
 
     // Il comando di solo quantità ed (eventualmente) operatore è verso ogni item
-    if (lines.length == 1 && first_line_no_operator.split(" ").length <= 1 && !isNaN(parseInt(first_line_no_operator))){
+    if (lines.length == 1 && first_line_no_operator.split(" ").length <= 1 && !isNaN(parseInt(first_line_no_operator))) {
         let global_operator = lines[0].match(/x|\+|\-/) ? lines[0].match(/x|\+|\-/)[0] : " ";
         let global_quantity = parseInt(first_line_no_operator);
 
         list_items_names.forEach(item => {
-            result.push({id: item.id, name: item.name, list_quantity: item.quantity, new_quantity: global_quantity, operator: global_operator});
+            result.push({ id: item.id, name: item.name, list_quantity: item.quantity, new_quantity: global_quantity, operator: global_operator });
         });
     } else { // Cerco di interpretare il comando
+
         lines.forEach(line => {
             let curr_quantity, curr_operator, curr_item;
-            const parts = line.trim().split(" ");
-            const operatorIndex = parts.findIndex(part => part.includes('x') || part.includes('+') || part.includes('-'));
-    
+            let parts = line.trim().split(" ");
+            let operatorIndex = parts.findIndex(part => part.includes('x') || part.includes('+') || part.includes('-'));
+            // const operatorIndex = parts.findIndex(part => /x|\+|\-/.test(part));
+
+
             if (operatorIndex !== -1) { // Cerco l'operatore
                 curr_operator = parts[operatorIndex].match(/x|\+|\-/)[0];
                 if (!isNaN(parseInt(parts[operatorIndex].replace(/x|\+|\-/g, '')))) {                     // controllo se la quantità è attaccata all'operatore
                     curr_quantity = parseInt(parts[operatorIndex].replace(/x|\+|\-/g, ''));
                 }
                 if (isNaN(curr_quantity)) {                                                               // controllo anche prima e dopo operatorIndex
-                    if (!isNaN(parts[operatorIndex+1])){
-                        curr_quantity = parseInt(parts[operatorIndex+1]);
-                        parts.splice(operatorIndex+1, 1); // Rimuovo la quantità dall'array
-                    } else if (!isNaN(parts[operatorIndex-1])){
-                        curr_quantity = parseInt(parts[operatorIndex-1]);
-                        parts.splice(operatorIndex-1, 1); // Rimuovo la quantità dall'array
+                    if (operatorIndex < parts.length - 1 && !isNaN(parts[operatorIndex + 1])) {
+                        curr_quantity = parseInt(parts[operatorIndex + 1]);
+                        parts.splice(operatorIndex + 1, 1); // Rimuovo la quantità dall'array
+                    } else if (operatorIndex > 0 && !isNaN(parts[operatorIndex - 1])) {
+                        curr_quantity = parseInt(parts[operatorIndex - 1]);
+                        parts.splice(operatorIndex - 1, 1); // Rimuovo la quantità dall'array
+                        operatorIndex--;
                     }
                 }
+
                 parts.splice(operatorIndex, 1); // Rimuovo l'operatore dall'array
+
             }
-    
+
             if (isNaN(curr_quantity)) { // Cerco la quantità in tutta la linea
                 const quantityIndex = parts.findIndex(part => !isNaN(parseInt(part.replace(/x|\+|\-/g, ''))));
                 if (quantityIndex !== -1) {
@@ -979,19 +989,28 @@ async function list_quantity_input(response, player_info, craftsman_info, input_
                     curr_quantity = 1;
                 }
             }
-    
-            curr_item = list_items_names.find((item) => item.name.toLowerCase().includes(parts.join(' ').toLowerCase().trim()));                        // Il resto delle parti costituisce il nome, che unisco di nuovo in una stringa e verifico sia un oggetto in lista
-            if (curr_item) {
-                result.push({id: curr_item.id, name: curr_item.name, list_quantity: curr_item.quantity, new_quantity: curr_quantity, operator: curr_operator || ' ' });                  // Aggiungo l'oggetto risultato all'array di output
 
-            } else { 
+            const matchingItems = list_items_names.filter(item => item.name.toLowerCase().includes(parts.join(' ').toLowerCase().trim()));
+
+            if (matchingItems.length > 0) {
+                matchingItems.forEach(curr_item => {
+                    result.push({
+                        id: curr_item.id,
+                        name: curr_item.name,
+                        list_quantity: curr_item.quantity,
+                        new_quantity: curr_quantity,
+                        operator: curr_operator || ' '
+                    });
+                });
+            } else {
                 skipped.push({ id: -1, name: parts.join(' ').trim(), list_quantity: 0, new_quantity: curr_quantity, operator: curr_operator || ' ' });                                   // Aggiorno la lista degli scarti
             }
+            
         });
     }
 
     // Posso fare qualche cosa sulla lista
-    if (result.length > 0){
+    if (result.length > 0) {
         list_items_names.forEach(old_item => {
             const indexToUpdate = result.findIndex(item => old_item.id === item.id);
             if (indexToUpdate !== -1) {
@@ -1018,20 +1037,20 @@ async function list_quantity_input(response, player_info, craftsman_info, input_
             }
 
             // Aggiorna l'elemento nell'array new_items_list
-            if (old_item.quantity > 0){
-                new_items_list.push({id: old_item.id, quantity: old_item.quantity});
+            if (old_item.quantity > 0) {
+                new_items_list.push({ id: old_item.id, quantity: old_item.quantity });
             }
 
         });
 
 
         // Aggiorno la persistenza
-        craftsman_info.items_list = [... new_items_list];
+        craftsman_info.items_list = [...new_items_list];
         await craftsman_logics.update_craftsman_info(player_info.account_id, craftsman_info);
         show_list_messageAndButtons(response, player_info, craftsman_info);
     } else { // comando completamente invalido, informo l'utente con una guida
         show_list_messageAndButtons(response, player_info, craftsman_info);
-        response.toEdit.options.reply_markup.inline_keyboard[0][response.toEdit.options.reply_markup.inline_keyboard[0].length-1] = craftsman_view.keyboard_buttons.show_items_list;
+        response.toEdit.options.reply_markup.inline_keyboard[0][response.toEdit.options.reply_markup.inline_keyboard[0].length - 1] = craftsman_view.keyboard_buttons.show_items_list;
         response.toEdit.new_text = `*${craftsman_view.list.title}* ${craftsman_view.list.list_moji}\n${craftsman_view.edit_quantity.guide}`
 
     }
@@ -1235,7 +1254,7 @@ async function validate_view_fail(response, craftsman_info, player_info, unavaib
 }
 
 // Risponde al bottone "Craft manuale" (stampa un file.txt)
-async function print_manual_craft_view(response, player_info, craftsman_info){
+async function print_manual_craft_view(response, player_info, craftsman_info) {
     let craft_max_quantities = (await craftsman_logics.player_craft_abilities(player_info.id)).craft_max_quantities   // 3 o + (in base al talento)
     const manual_list = craftsman_info.controll.manual_craft ? craftsman_info.controll.manual_craft : craftsman_info.manual_craft;
     let print_list = manual_craft_print_list(manual_list, craft_max_quantities)
@@ -1272,18 +1291,18 @@ async function print_manual_craft_view(response, player_info, craftsman_info){
 }
 
 // Accessoria di print_manual_craft_view
-function manual_craft_print_list(manual_list, craft_max_quantities){
-    let manual_craft_parse= {
+function manual_craft_print_list(manual_list, craft_max_quantities) {
+    let manual_craft_parse = {
         craft_needed: 0,
         manual_craft_text: ""
     }
     manual_list.forEach(raw_item => {
         let item = craftsman_logics.item_infos(raw_item.id);
         let line_quantity = Math.min(parseInt(raw_item.quantity), craft_max_quantities);
-        let over_quantity_text = raw_item.quantity >  craft_max_quantities ? `(x${Math.floor(raw_item.quantity/craft_max_quantities)}, ${raw_item.quantity})` : ``
-        
-        manual_craft_parse.craft_needed += raw_item.quantity <=  craft_max_quantities ? 1 : Math.floor(raw_item.quantity/craft_max_quantities) + Math.floor(raw_item.quantity%craft_max_quantities)
-        manual_craft_parse.manual_craft_text += `${craftsman_view.list_print.manual_line_index}${item.name}, ${line_quantity} ${over_quantity_text}\n`;   
+        let over_quantity_text = raw_item.quantity > craft_max_quantities ? `(x${Math.floor(raw_item.quantity / craft_max_quantities)}, ${raw_item.quantity})` : ``
+
+        manual_craft_parse.craft_needed += raw_item.quantity <= craft_max_quantities ? 1 : Math.floor(raw_item.quantity / craft_max_quantities) + Math.floor(raw_item.quantity % craft_max_quantities)
+        manual_craft_parse.manual_craft_text += `${craftsman_view.list_print.manual_line_index}${item.name}, ${line_quantity} ${over_quantity_text}\n`;
     })
 
     return manual_craft_parse;
@@ -1339,10 +1358,11 @@ function validate_used_items_view(response, player_info, craftsman_info, message
             })
         }
 
-        let can_proceed_controll = craftsman_logics.validate_can_proceed(craftsman_info.controll, player_info);
 
         response.toEdit.new_text = message_text;
-        response.toEdit.options.reply_markup.inline_keyboard = validate_view_keyboard(can_proceed_controll);
+        let button = {... craftsman_view.keyboard_buttons.validate_list}
+        button.text = craftsman_view.keyboard_buttons.back_to_menu.text;
+        response.toEdit.options.reply_markup.inline_keyboard = [[  button   ]];
         response.query.options.text = `«${craftsman_view.validate.show_used.quote}»`;
     } else {
         response.query.options.show_alert = true;

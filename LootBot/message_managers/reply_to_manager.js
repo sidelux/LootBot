@@ -5,7 +5,7 @@ let handlers_register = [ // I moduli che vogliono intercettare un messaggio in 
     // Gli handler sono funzioni che accettano in ingresso il messaggio originale E il messaggio in risposta come parametri separati 
     
     {
-        triggers: ["Lista commissione"] ,
+        triggers: ["Lista commissione", "Liste craft"] ,
         handler: require("./specific/master_craftsman").replyDispatcher
     },
 ]
