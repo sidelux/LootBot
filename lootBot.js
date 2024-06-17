@@ -7324,7 +7324,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 													connection.query(query, function (err, rows, fields) {
 														if (err) throw err;
 
-														if (Object.keys(rows).length < 50) {
+														if (Object.keys(rows).length < 20) {
 															bot.sendMessage(message.chat.id, "Ci sono ancora pochi trofei per poterne visualizzare una valida classifica...", kbLast).then(function () {
 																answerCallbacks[message.chat.id] = async function (answer) {
 																	if (answer.text == "Classifica ultima stagione")
@@ -7369,7 +7369,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 														var points = [];
 														var mypos = 0;
 
-														if (Object.keys(rows).length < 50) {
+														if (Object.keys(rows).length < 20) {
 															bot.sendMessage(message.chat.id, "Ci sono ancora pochi trofei per poterne visualizzare una valida classifica...", kbLast).then(function () {
 																answerCallbacks[message.chat.id] = async function (answer) {
 																	if (answer.text == "Classifica ultima stagione")
