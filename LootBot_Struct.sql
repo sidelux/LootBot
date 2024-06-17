@@ -1,8 +1,8 @@
--- MySQL dump 10.19  Distrib 10.3.39-MariaDB, for debian-linux-gnu (x86_64)
+-- MariaDB dump 10.19  Distrib 10.5.23-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: LootBot
 -- ------------------------------------------------------
--- Server version	10.3.39-MariaDB-0+deb10u2
+-- Server version	10.5.23-MariaDB-0+deb11u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;

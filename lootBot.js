@@ -214,7 +214,7 @@ var j5 = Schedule.scheduleJob('00 15 * * *', function () { 		// 15:00
 	else if (d.getDay() == 2)
 		resetSpecialItem();
 
-	checkResetGlobal();
+	// checkResetGlobal();
 });
 
 var j6 = Schedule.scheduleJob('00 10 * * 6', function () { 		// 10:00 sabato
@@ -49359,7 +49359,7 @@ bot.onText(/^\/checkResetGlobal (.+)/, function (message, match) {
 	var action = match[1];
 
 	if (message.from.id == config.phenix_id) {
-		if ((action != "close") && (action != "open")) {
+		if ((action != "close") && (action != "open") && (action != "custom")) {
 			bot.sendMessage(message.chat.id, "Azione non valida");
 			return;
 		}
@@ -49538,6 +49538,53 @@ function checkResetGlobal(action = null) {
 		connection.query('UPDATE config SET global_eventon = 1, global_eventwait = 0, global_eventhide = 0', function (err, rows, fields) {
 			if (err) throw err;
 			console.log("Globale rivelata");
+		});
+	} else if (action == "custom") {
+		// caso particolare in cui era già stata conclusa
+		connection.query('SELECT global_id, global_cap FROM config', function (err, rows, fields) {
+			if (err) throw err;
+			var global_id = rows[0].global_id;
+			var global_cap = rows[0].global_cap;
+			connection.query('SELECT SUM(value) As tot FROM achievement_global', async function (err, rows, fields) {
+				if (err) throw err;
+				var total_value = rows[0].tot;
+				var global_end_status = 0;
+				var tot = rows[0].tot;
+				connection.query('UPDATE global_history SET picked = 1 AND id = ' + global_id, function (err, rows, fields) {
+					if (err) throw err;
+					// Nuova globale
+					connection.query("SELECT 1 FROM global_history WHERE picked = 0", function (err, rows, fields) {
+						if (err) throw err;
+						var picked_filter = "";
+						if (Object.keys(rows).length > 0)
+							picked_filter = "WHERE picked = 0";
+						connection.query("SELECT id, description, cap, item1, item2, item3, treshold, end_message_win, end_message_lose FROM global_history " + picked_filter + " ORDER BY RAND()", function (err, rows, fields) {
+							if (err) throw err;
+							var new_global_id = rows[0].id;
+							var description = rows[0].description;
+							var cap = rows[0].cap;
+							var treshold = rows[0].treshold;
+							var end_message_win = rows[0].end_message_win;
+							var end_message_lose = rows[0].end_message_lose;
+							var item1 = rows[0].item1;
+							var item2 = rows[0].item2;
+							var item3 = rows[0].item3;
+
+							var next = new Date();
+							next.setMonth(next.getMonth() + 1, 1);
+							var next_string = toDate("en", next);
+
+							connection.query('UPDATE config SET global_id = ' + new_global_id + ', global_date = "' + next_string + '", global_cap = ' + cap + ', global_item1 = ' + item1 + ', global_item2 = ' + item2 + ', global_item3 = ' + item3 + ', global_treshold = ' + treshold + ', global_end_message = "' + end_message_win + '", global_end_message_fail = "' + end_message_lose + '", global_desc = "' + description + '", global_eventon = 1, global_eventwait = 0, global_eventhide = 1, global_end_status = ' + global_end_status, function (err, rows, fields) {
+								if (err) throw err;
+								connection.query('DELETE FROM achievement_global', function (err, rows, fields) {
+									if (err) throw err;
+									console.log("Nuova globale avviata");
+								});
+							});
+						});
+					});
+				});
+			});
 		});
 	}
 }
