@@ -65762,7 +65762,7 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 		}
 	} else
 		durability_query = ", durability = " + durability;
-
+	/*
 	var item = await connection.queryAsync('SELECT rarity FROM item WHERE id = ' + item_id);
 	var rarity = item[0].rarity;
 	var exclude_items = [646];	// Polvere
@@ -65793,7 +65793,7 @@ async function addItem(player_id, item_id, qnt = 1, durability = null, collected
 				qnt = max_quantity - inv_quantity;
 		}
 	}
-
+	*/
 	var collected_qnt = qnt;
 	if (!collected)
 		collected_qnt = 0;
