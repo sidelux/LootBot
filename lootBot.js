@@ -214,7 +214,7 @@ var j5 = Schedule.scheduleJob('00 15 * * *', function () { 		// 15:00
 	else if (d.getDay() == 2)
 		resetSpecialItem();
 
-	// checkResetGlobal();
+	checkResetGlobal();
 });
 
 var j6 = Schedule.scheduleJob('00 10 * * 6', function () { 		// 10:00 sabato
@@ -1221,7 +1221,7 @@ bot.onText(/^\/incremglobal/, function (message, match) {
 
 bot.onText(/^\/endglobal$/, function (message, match) {
 	if (message.from.id == config.phenix_id)
-		endglobal(message, 1);
+		await endglobal(null, 0);
 });
 
 bot.onText(/^\/failglobal/, async function (message, match) {
@@ -49493,7 +49493,7 @@ function checkResetGlobal(action = null) {
 				var tot = rows[0].tot;
 				if (tot >= global_cap) {
 					global_end_status = 1; // completata
-					endglobal(null, 0);
+					await endglobal(null, 0);
 				} else {
 					global_end_status = 2; // fallita
 					await failglobal(null, 0);
@@ -49690,8 +49690,10 @@ async function endglobal(message, output) {
 		});
 	} else {
 		await connection.queryAsync('UPDATE player SET global_end = 0');
+		console.log("global_end ok");
 
 		var rows = await connection.queryAsync('SELECT P.nickname, P.chat_id, A.player_id, A.value As val, P.reborn FROM achievement_global A INNER JOIN player P ON A.player_id = P.id WHERE P.account_id NOT IN (SELECT account_id FROM banlist) HAVING val > 0 ORDER BY val DESC');
+		console.log("select ok");
 
 		var text = "";
 		var global_limit_perc = 0;
@@ -49732,6 +49734,8 @@ async function endglobal(message, output) {
 				await connection.queryAsync('UPDATE player SET global_win = global_win+1 WHERE id = ' + rows[i].player_id);
 
 			text += "\n*Grazie per aver partecipato!*";
+
+			console.log(rows[i].player_id, rows[i].chat_id, text);
 
 			bot.sendMessage(rows[i].chat_id, "Per il completamento dell'*Impresa Globale* hai ricevuto:\n" + text, mark);
 		}
