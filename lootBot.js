@@ -1219,7 +1219,7 @@ bot.onText(/^\/incremglobal/, function (message, match) {
 	}
 });
 
-bot.onText(/^\/endglobal$/, function (message, match) {
+bot.onText(/^\/endglobal$/, async function (message, match) {
 	if (message.from.id == config.phenix_id)
 		await endglobal(null, 0);
 });
