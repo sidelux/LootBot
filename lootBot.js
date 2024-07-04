@@ -1340,6 +1340,10 @@ bot.onText(/testspam (.+)/i, function (message, match) {
 	}
 });
 
+bot.onText(/^\/privacy/i, function (message, match) {
+	bot.sendMessage(message.chat.id, "Consulta la nostra Privacy Policy qui: https://telegra.ph/Privacy-Policy-LootBot-07-04");
+});
+
 /*
 bot.onText(/ricompensa giornaliera|\/ricomp/i, function (message, match) {
 	// if (message.from.id != config.phenix_id) {
