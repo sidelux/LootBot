@@ -37641,7 +37641,7 @@ bot.onText(/utilizza polvere/i, function (message) {
 									if (await getPastGlobalStatus() == 1)
 										nec = Math.round(nec / 2);
 									else if (await getPastGlobalStatus() == 2)
-										nec = nec * 2;
+										nec += nec * 0.5;
 								}
 
 								bot.sendMessage(message.chat.id, "Quante copie dell'oggetto vuoi creare? Una copia di questo oggetto ti costerà " + nec + " unità di Polvere", kbNum).then(function () {
@@ -53562,7 +53562,7 @@ function setFinishedArena(element, index, array) {
 			if (err) throw err;
 
 			if (Object.keys(rows).length == 0) {
-				console.log("Drago non trovato: " + dragon1);
+				console.log("Drago non trovato (1): " + dragon1);
 				return;
 			}
 
@@ -53608,7 +53608,7 @@ function setFinishedArena(element, index, array) {
 					if (err) throw err;
 
 					if (Object.keys(rows).length == 0) {
-						console.log("Drago non trovato: " + dragon2);
+						console.log("Drago non trovato (2): " + dragon2);
 						return;
 					}
 
@@ -56409,7 +56409,7 @@ function mobKilled(team_id, team_name, final_report, is_boss, mob_count, boss_nu
 											chest7 = Math.floor(chest7);
 										}
 
-										if ((await getCurrentGlobal() == 14) && (global_end == 1)) {
+										if ((await getCurrentGlobal() == 14) && (rows[i].global_end == 1)) {
 											if (await getPastGlobalStatus() == 1) {
 												chest1 = chest1 * 2;
 												chest2 = chest2 * 2;
@@ -65875,19 +65875,21 @@ async function reduceDurability(player_id, weapon_type) {
 		if (item_rarity == "X") {
 			var tears = [674, 641, 691];
 			var rows = await connection.queryAsync('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item_id);
-			if (tears.includes(rows[0].material_1)) {
-				addItem(player_id, rows[0].material_1);
-				var rows = await connection.queryAsync('SELECT id, name FROM item WHERE id = ' + rows[0].material_1);
-			} else if (tears.includes(rows[0].material_2)) {
-				addItem(player_id, rows[0].material_2);
-				var rows = await connection.queryAsync('SELECT id, name FROM item WHERE id = ' + rows[0].material_2);
-			} else if (tears.includes(rows[0].material_3)) {
-				addItem(player_id, rows[0].material_3);
-				var rows = await connection.queryAsync('SELECT id, name FROM item WHERE id = ' + rows[0].material_3);
-			}
 			if (Object.keys(rows).length > 0) {
-				weapon_extra = " Hai ricevuto *" + rows[0].name + "* per poterla creare nuovamente.";
-				addItem(player_id, rows[0].id);
+				if (tears.includes(rows[0].material_1)) {
+					addItem(player_id, rows[0].material_1);
+					var rows = await connection.queryAsync('SELECT id, name FROM item WHERE id = ' + rows[0].material_1);
+				} else if (tears.includes(rows[0].material_2)) {
+					addItem(player_id, rows[0].material_2);
+					var rows = await connection.queryAsync('SELECT id, name FROM item WHERE id = ' + rows[0].material_2);
+				} else if (tears.includes(rows[0].material_3)) {
+					addItem(player_id, rows[0].material_3);
+					var rows = await connection.queryAsync('SELECT id, name FROM item WHERE id = ' + rows[0].material_3);
+				}
+				if (Object.keys(rows).length > 0) {
+					weapon_extra = " Hai ricevuto *" + rows[0].name + "* per poterla creare nuovamente.";
+					addItem(player_id, rows[0].id);
+				}
 			}
 		}
 		connection.query('UPDATE player SET ' + weapon_class + ' = 0, ' + weapon_class + '_id = 0 WHERE id = ' + player_id, function (err, rows, fields) {
