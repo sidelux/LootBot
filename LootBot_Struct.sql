@@ -1,9 +1,9 @@
 /*M!999999\- enable the sandbox mode */ 
--- MariaDB dump 10.19  Distrib 10.5.26-MariaDB, for debian-linux-gnu (x86_64)
+-- MariaDB dump 10.19  Distrib 10.5.28-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: LootBot
 -- ------------------------------------------------------
--- Server version	10.5.26-MariaDB-0+deb11u2
+-- Server version	10.5.28-MariaDB-0+deb11u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -22,7 +22,7 @@
 
 DROP TABLE IF EXISTS `ability`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ability` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL DEFAULT 0,
@@ -43,7 +43,7 @@ CREATE TABLE `ability` (
 
 DROP TABLE IF EXISTS `ability_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ability_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL,
@@ -62,7 +62,7 @@ CREATE TABLE `ability_list` (
 
 DROP TABLE IF EXISTS `achievement_daily`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `achievement_daily` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `achievement_id` int(11) NOT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE `achievement_daily` (
 
 DROP TABLE IF EXISTS `achievement_global`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `achievement_global` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -96,7 +96,7 @@ CREATE TABLE `achievement_global` (
 
 DROP TABLE IF EXISTS `achievement_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `achievement_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL,
@@ -122,7 +122,7 @@ CREATE TABLE `achievement_list` (
 
 DROP TABLE IF EXISTS `achievement_progressive_status`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `achievement_progressive_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -141,7 +141,7 @@ CREATE TABLE `achievement_progressive_status` (
 
 DROP TABLE IF EXISTS `achievement_status`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `achievement_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -163,7 +163,7 @@ CREATE TABLE `achievement_status` (
 
 DROP TABLE IF EXISTS `active_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `active_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `count` int(11) NOT NULL,
@@ -178,7 +178,7 @@ CREATE TABLE `active_history` (
 
 DROP TABLE IF EXISTS `active_monthly_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `active_monthly_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `count` int(11) NOT NULL,
@@ -193,7 +193,7 @@ CREATE TABLE `active_monthly_history` (
 
 DROP TABLE IF EXISTS `artifacts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `artifacts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `item_id` int(11) NOT NULL,
@@ -213,7 +213,7 @@ CREATE TABLE `artifacts` (
 
 DROP TABLE IF EXISTS `assault`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `assault` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
@@ -256,7 +256,7 @@ CREATE TABLE `assault` (
 
 DROP TABLE IF EXISTS `assault_increment_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `assault_increment_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
@@ -277,7 +277,7 @@ CREATE TABLE `assault_increment_history` (
 
 DROP TABLE IF EXISTS `assault_mob_weak`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `assault_mob_weak` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
@@ -301,7 +301,7 @@ CREATE TABLE `assault_mob_weak` (
 
 DROP TABLE IF EXISTS `assault_place`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `assault_place` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL,
@@ -319,7 +319,7 @@ CREATE TABLE `assault_place` (
 
 DROP TABLE IF EXISTS `assault_place_cons`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `assault_place_cons` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -341,7 +341,7 @@ CREATE TABLE `assault_place_cons` (
 
 DROP TABLE IF EXISTS `assault_place_item`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `assault_place_item` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
@@ -364,7 +364,7 @@ CREATE TABLE `assault_place_item` (
 
 DROP TABLE IF EXISTS `assault_place_magic`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `assault_place_magic` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -386,7 +386,7 @@ CREATE TABLE `assault_place_magic` (
 
 DROP TABLE IF EXISTS `assault_place_miniboost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `assault_place_miniboost` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
@@ -408,7 +408,7 @@ CREATE TABLE `assault_place_miniboost` (
 
 DROP TABLE IF EXISTS `assault_place_player_id`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `assault_place_player_id` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `place_id` int(11) NOT NULL,
@@ -433,7 +433,7 @@ CREATE TABLE `assault_place_player_id` (
 
 DROP TABLE IF EXISTS `assault_place_team`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `assault_place_team` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `place_id` int(11) NOT NULL,
@@ -457,7 +457,7 @@ CREATE TABLE `assault_place_team` (
 
 DROP TABLE IF EXISTS `auction_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `auction_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `creator_id` int(11) NOT NULL,
@@ -481,7 +481,7 @@ CREATE TABLE `auction_history` (
 
 DROP TABLE IF EXISTS `auction_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `auction_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `chat_id` bigint(32) NOT NULL,
@@ -507,7 +507,7 @@ CREATE TABLE `auction_list` (
 DROP TABLE IF EXISTS `auction_public`;
 /*!50001 DROP VIEW IF EXISTS `auction_public`*/;
 SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `auction_public` AS SELECT
  1 AS `id`,
   1 AS `creator`,
@@ -523,7 +523,7 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `banlist`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `banlist` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `account_id` bigint(16) NOT NULL,
@@ -539,7 +539,7 @@ CREATE TABLE `banlist` (
 
 DROP TABLE IF EXISTS `birth_gift`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `birth_gift` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -557,7 +557,7 @@ CREATE TABLE `birth_gift` (
 
 DROP TABLE IF EXISTS `boost_store`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `boost_store` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -579,7 +579,7 @@ CREATE TABLE `boost_store` (
 
 DROP TABLE IF EXISTS `boss`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `boss` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
@@ -594,7 +594,7 @@ CREATE TABLE `boss` (
 
 DROP TABLE IF EXISTS `bot_use`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `bot_use` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(32) NOT NULL,
@@ -609,7 +609,7 @@ CREATE TABLE `bot_use` (
 
 DROP TABLE IF EXISTS `card_inventory`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `card_inventory` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -629,7 +629,7 @@ CREATE TABLE `card_inventory` (
 
 DROP TABLE IF EXISTS `card_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `card_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL,
@@ -646,7 +646,7 @@ CREATE TABLE `card_list` (
 
 DROP TABLE IF EXISTS `card_rarity_reward`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `card_rarity_reward` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -663,7 +663,7 @@ CREATE TABLE `card_rarity_reward` (
 
 DROP TABLE IF EXISTS `card_trade`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `card_trade` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_from` int(11) NOT NULL,
@@ -683,7 +683,7 @@ CREATE TABLE `card_trade` (
 
 DROP TABLE IF EXISTS `card_trade_detail`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `card_trade_detail` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `trade_id` int(11) NOT NULL,
@@ -703,7 +703,7 @@ CREATE TABLE `card_trade_detail` (
 
 DROP TABLE IF EXISTS `cave`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cave` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
@@ -718,7 +718,7 @@ CREATE TABLE `cave` (
 
 DROP TABLE IF EXISTS `cave_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cave_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -737,7 +737,7 @@ CREATE TABLE `cave_history` (
 
 DROP TABLE IF EXISTS `chest`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `chest` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `name` varchar(32) NOT NULL,
@@ -755,7 +755,7 @@ CREATE TABLE `chest` (
 
 DROP TABLE IF EXISTS `class`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `class` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL,
@@ -769,7 +769,7 @@ CREATE TABLE `class` (
 
 DROP TABLE IF EXISTS `code_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `code_list` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `code` varchar(16) NOT NULL,
@@ -790,7 +790,7 @@ CREATE TABLE `code_list` (
 
 DROP TABLE IF EXISTS `config`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `config` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `map_season_end` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -835,7 +835,7 @@ CREATE TABLE `config` (
 
 DROP TABLE IF EXISTS `contest`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `contest` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -851,7 +851,7 @@ CREATE TABLE `contest` (
 
 DROP TABLE IF EXISTS `craft`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `craft` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `material_1` int(3) NOT NULL,
@@ -877,7 +877,7 @@ CREATE TABLE `craft` (
 DROP TABLE IF EXISTS `craft_public`;
 /*!50001 DROP VIEW IF EXISTS `craft_public`*/;
 SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `craft_public` AS SELECT
  1 AS `id`,
   1 AS `material_1`,
@@ -893,7 +893,7 @@ SET character_set_client = @saved_cs_client;
 DROP TABLE IF EXISTS `craft_public_id`;
 /*!50001 DROP VIEW IF EXISTS `craft_public_id`*/;
 SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `craft_public_id` AS SELECT
  1 AS `id`,
   1 AS `material_1`,
@@ -908,7 +908,7 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `daily_chest`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `daily_chest` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -927,7 +927,7 @@ CREATE TABLE `daily_chest` (
 
 DROP TABLE IF EXISTS `daily_msg`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `daily_msg` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `account_id` bigint(16) NOT NULL,
@@ -945,7 +945,7 @@ CREATE TABLE `daily_msg` (
 
 DROP TABLE IF EXISTS `direct_message`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `direct_message` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -966,7 +966,7 @@ CREATE TABLE `direct_message` (
 
 DROP TABLE IF EXISTS `donation_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `donation_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -985,7 +985,7 @@ CREATE TABLE `donation_history` (
 
 DROP TABLE IF EXISTS `dragon`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dragon` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `player_id` int(3) NOT NULL DEFAULT 0,
@@ -1024,7 +1024,7 @@ CREATE TABLE `dragon` (
 
 DROP TABLE IF EXISTS `dragon_dummy`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dragon_dummy` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
@@ -1055,7 +1055,7 @@ CREATE TABLE `dragon_dummy` (
 
 DROP TABLE IF EXISTS `dragon_move`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dragon_move` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `type` int(11) NOT NULL,
@@ -1076,7 +1076,7 @@ CREATE TABLE `dragon_move` (
 
 DROP TABLE IF EXISTS `dragon_name_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dragon_name_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL,
@@ -1090,7 +1090,7 @@ CREATE TABLE `dragon_name_list` (
 
 DROP TABLE IF EXISTS `dragon_top_dummy`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dragon_top_dummy` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `dragon_id` int(11) NOT NULL,
@@ -1116,7 +1116,7 @@ CREATE TABLE `dragon_top_dummy` (
 
 DROP TABLE IF EXISTS `dragon_top_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dragon_top_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
@@ -1131,7 +1131,7 @@ CREATE TABLE `dragon_top_list` (
 
 DROP TABLE IF EXISTS `dragon_top_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dragon_top_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -1161,7 +1161,7 @@ CREATE TABLE `dragon_top_log` (
 
 DROP TABLE IF EXISTS `dragon_top_rank`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dragon_top_rank` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -1185,7 +1185,7 @@ CREATE TABLE `dragon_top_rank` (
 
 DROP TABLE IF EXISTS `dragon_top_status`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dragon_top_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -1220,7 +1220,7 @@ CREATE TABLE `dragon_top_status` (
 DROP TABLE IF EXISTS `dragon_top_unlinked`;
 /*!50001 DROP VIEW IF EXISTS `dragon_top_unlinked`*/;
 SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `dragon_top_unlinked` AS SELECT
  1 AS `dragon_id`,
   1 AS `combat_id` */;
@@ -1232,7 +1232,7 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `dungeon_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dungeon_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(32) NOT NULL,
@@ -1259,7 +1259,7 @@ CREATE TABLE `dungeon_list` (
 
 DROP TABLE IF EXISTS `dungeon_map`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dungeon_map` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `room_id` int(11) NOT NULL,
@@ -1282,7 +1282,7 @@ CREATE TABLE `dungeon_map` (
 
 DROP TABLE IF EXISTS `dungeon_map_msg`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dungeon_map_msg` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `dungeon_id` int(11) NOT NULL,
@@ -1302,7 +1302,7 @@ CREATE TABLE `dungeon_map_msg` (
 
 DROP TABLE IF EXISTS `dungeon_market`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dungeon_market` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `room_id` int(11) NOT NULL DEFAULT 0,
@@ -1332,7 +1332,7 @@ CREATE TABLE `dungeon_market` (
 
 DROP TABLE IF EXISTS `dungeon_monsters`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dungeon_monsters` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `level` int(11) NOT NULL,
@@ -1358,7 +1358,7 @@ CREATE TABLE `dungeon_monsters` (
 
 DROP TABLE IF EXISTS `dungeon_rooms`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dungeon_rooms` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `room_id` int(11) NOT NULL DEFAULT 0,
@@ -1381,7 +1381,7 @@ CREATE TABLE `dungeon_rooms` (
 
 DROP TABLE IF EXISTS `dungeon_status`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dungeon_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -1418,7 +1418,7 @@ CREATE TABLE `dungeon_status` (
 
 DROP TABLE IF EXISTS `dungeon_trade`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dungeon_trade` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `room_id` int(11) NOT NULL DEFAULT 0,
@@ -1441,7 +1441,7 @@ CREATE TABLE `dungeon_trade` (
 
 DROP TABLE IF EXISTS `dungeon_well`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dungeon_well` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `dungeon_id` int(11) NOT NULL,
@@ -1458,7 +1458,7 @@ CREATE TABLE `dungeon_well` (
 
 DROP TABLE IF EXISTS `event_arena_dragon`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_arena_dragon` (
   `dragon_id` int(11) NOT NULL,
   `win` int(11) NOT NULL DEFAULT 0,
@@ -1474,7 +1474,7 @@ CREATE TABLE `event_arena_dragon` (
 
 DROP TABLE IF EXISTS `event_arena_status`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_arena_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -1500,7 +1500,7 @@ CREATE TABLE `event_arena_status` (
 
 DROP TABLE IF EXISTS `event_crafting_item`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_crafting_item` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `item_id` int(11) NOT NULL,
@@ -1526,7 +1526,7 @@ CREATE TABLE `event_crafting_item` (
 
 DROP TABLE IF EXISTS `event_crafting_status`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_crafting_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -1544,7 +1544,7 @@ CREATE TABLE `event_crafting_status` (
 
 DROP TABLE IF EXISTS `event_dust_status`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_dust_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -1568,7 +1568,7 @@ CREATE TABLE `event_dust_status` (
 
 DROP TABLE IF EXISTS `event_gnomorra`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_gnomorra` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -1602,7 +1602,7 @@ CREATE TABLE `event_gnomorra` (
 
 DROP TABLE IF EXISTS `event_halloween_status`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_halloween_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -1623,7 +1623,7 @@ CREATE TABLE `event_halloween_status` (
 
 DROP TABLE IF EXISTS `event_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `event_name` varchar(16) NOT NULL,
@@ -1639,7 +1639,7 @@ CREATE TABLE `event_history` (
 
 DROP TABLE IF EXISTS `event_lottery_coins`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_lottery_coins` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(3) NOT NULL,
@@ -1655,7 +1655,7 @@ CREATE TABLE `event_lottery_coins` (
 
 DROP TABLE IF EXISTS `event_lottery_prize`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_lottery_prize` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `item_id` int(3) NOT NULL DEFAULT 0,
@@ -1677,7 +1677,7 @@ CREATE TABLE `event_lottery_prize` (
 
 DROP TABLE IF EXISTS `event_mana_status`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_mana_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -1701,7 +1701,7 @@ CREATE TABLE `event_mana_status` (
 
 DROP TABLE IF EXISTS `event_mana_zone`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_mana_zone` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL,
@@ -1718,7 +1718,7 @@ CREATE TABLE `event_mana_zone` (
 
 DROP TABLE IF EXISTS `event_rotation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_rotation` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `event_name` varchar(16) NOT NULL,
@@ -1735,7 +1735,7 @@ CREATE TABLE `event_rotation` (
 
 DROP TABLE IF EXISTS `event_snowball_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_snowball_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -1753,7 +1753,7 @@ CREATE TABLE `event_snowball_list` (
 
 DROP TABLE IF EXISTS `event_snowball_status`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_snowball_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -1770,7 +1770,7 @@ CREATE TABLE `event_snowball_status` (
 
 DROP TABLE IF EXISTS `event_team_story`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_team_story` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
@@ -1790,7 +1790,7 @@ CREATE TABLE `event_team_story` (
 
 DROP TABLE IF EXISTS `event_villa_gift`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_villa_gift` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `from_id` int(11) NOT NULL,
@@ -1810,7 +1810,7 @@ CREATE TABLE `event_villa_gift` (
 
 DROP TABLE IF EXISTS `event_villa_status`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_villa_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -1827,7 +1827,7 @@ CREATE TABLE `event_villa_status` (
 
 DROP TABLE IF EXISTS `event_wanted_status`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `event_wanted_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -1848,7 +1848,7 @@ CREATE TABLE `event_wanted_status` (
 
 DROP TABLE IF EXISTS `game_house_stats`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `game_house_stats` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -1869,7 +1869,7 @@ CREATE TABLE `game_house_stats` (
 
 DROP TABLE IF EXISTS `global_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `global_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `description` varchar(256) NOT NULL,
@@ -1897,7 +1897,7 @@ CREATE TABLE `global_history` (
 
 DROP TABLE IF EXISTS `global_hourly`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `global_hourly` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `value` int(11) NOT NULL,
@@ -1913,7 +1913,7 @@ CREATE TABLE `global_hourly` (
 
 DROP TABLE IF EXISTS `global_msg`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `global_msg` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `chat_id` bigint(16) NOT NULL,
@@ -1927,7 +1927,7 @@ CREATE TABLE `global_msg` (
 
 DROP TABLE IF EXISTS `heist`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `heist` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `from_id` int(3) NOT NULL DEFAULT 0,
@@ -1952,7 +1952,7 @@ CREATE TABLE `heist` (
 
 DROP TABLE IF EXISTS `heist_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `heist_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `from_id` int(11) NOT NULL,
@@ -1975,7 +1975,7 @@ CREATE TABLE `heist_history` (
 
 DROP TABLE IF EXISTS `heist_progress`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `heist_progress` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `from_id` int(11) NOT NULL,
@@ -2004,7 +2004,7 @@ CREATE TABLE `heist_progress` (
 DROP TABLE IF EXISTS `heist_public`;
 /*!50001 DROP VIEW IF EXISTS `heist_public`*/;
 SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `heist_public` AS SELECT
  1 AS `id`,
   1 AS `from_nick`,
@@ -2021,7 +2021,7 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `help_message`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `help_message` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -2048,7 +2048,7 @@ CREATE TABLE `help_message` (
 
 DROP TABLE IF EXISTS `holiday`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `holiday` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `player_id` int(8) NOT NULL,
@@ -2065,7 +2065,7 @@ CREATE TABLE `holiday` (
 
 DROP TABLE IF EXISTS `house`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `house` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `name` varchar(32) DEFAULT NULL,
@@ -2082,7 +2082,7 @@ CREATE TABLE `house` (
 
 DROP TABLE IF EXISTS `house_game_3`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `house_game_3` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -2100,7 +2100,7 @@ CREATE TABLE `house_game_3` (
 
 DROP TABLE IF EXISTS `house_game_4`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `house_game_4` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -2120,7 +2120,7 @@ CREATE TABLE `house_game_4` (
 
 DROP TABLE IF EXISTS `house_room`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `house_room` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `house_id` int(3) NOT NULL DEFAULT 0,
@@ -2139,7 +2139,7 @@ CREATE TABLE `house_room` (
 
 DROP TABLE IF EXISTS `inventory`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `inventory` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -2163,7 +2163,7 @@ CREATE TABLE `inventory` (
 
 DROP TABLE IF EXISTS `inventory_chest`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `inventory_chest` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -2184,7 +2184,7 @@ CREATE TABLE `inventory_chest` (
 
 DROP TABLE IF EXISTS `item`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `item` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL,
@@ -2230,7 +2230,7 @@ CREATE TABLE `item` (
 
 DROP TABLE IF EXISTS `item_craft_presence`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `item_craft_presence` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `item_id` int(11) NOT NULL,
@@ -2247,7 +2247,7 @@ CREATE TABLE `item_craft_presence` (
 
 DROP TABLE IF EXISTS `last_command`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `last_command` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `account_id` bigint(16) NOT NULL,
@@ -2265,7 +2265,7 @@ CREATE TABLE `last_command` (
 
 DROP TABLE IF EXISTS `library`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `library` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(64) NOT NULL,
@@ -2283,7 +2283,7 @@ CREATE TABLE `library` (
 DROP TABLE IF EXISTS `lottery_public`;
 /*!50001 DROP VIEW IF EXISTS `lottery_public`*/;
 SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `lottery_public` AS SELECT
  1 AS `id`,
   1 AS `creator`,
@@ -2299,7 +2299,7 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `magic`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `magic` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -2319,7 +2319,7 @@ CREATE TABLE `magic` (
 
 DROP TABLE IF EXISTS `mana`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mana` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(16) NOT NULL,
@@ -2333,7 +2333,7 @@ CREATE TABLE `mana` (
 
 DROP TABLE IF EXISTS `map_bot`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `map_bot` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nickname` varchar(32) NOT NULL,
@@ -2350,7 +2350,7 @@ CREATE TABLE `map_bot` (
 
 DROP TABLE IF EXISTS `map_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `map_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `map_lobby_id` int(11) NOT NULL,
@@ -2377,7 +2377,7 @@ CREATE TABLE `map_history` (
 
 DROP TABLE IF EXISTS `map_lobby`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `map_lobby` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -2436,7 +2436,7 @@ CREATE TABLE `map_lobby` (
 
 DROP TABLE IF EXISTS `map_lobby_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `map_lobby_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `lobby_id` int(11) NOT NULL,
@@ -2460,7 +2460,7 @@ CREATE TABLE `map_lobby_list` (
 
 DROP TABLE IF EXISTS `market`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `market` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) DEFAULT NULL,
@@ -2479,7 +2479,7 @@ CREATE TABLE `market` (
 
 DROP TABLE IF EXISTS `market_direct`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `market_direct` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -2503,7 +2503,7 @@ CREATE TABLE `market_direct` (
 
 DROP TABLE IF EXISTS `market_direct_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `market_direct_history` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `item_id` int(3) NOT NULL,
@@ -2534,7 +2534,7 @@ CREATE TABLE `market_direct_history` (
 DROP TABLE IF EXISTS `market_direct_public`;
 /*!50001 DROP VIEW IF EXISTS `market_direct_public`*/;
 SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `market_direct_public` AS SELECT
  1 AS `id`,
   1 AS `item_id`,
@@ -2554,7 +2554,7 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `market_gift`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `market_gift` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -2577,7 +2577,7 @@ CREATE TABLE `market_gift` (
 
 DROP TABLE IF EXISTS `market_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `market_history` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `item_1` int(3) NOT NULL,
@@ -2607,7 +2607,7 @@ CREATE TABLE `market_history` (
 
 DROP TABLE IF EXISTS `market_pack`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `market_pack` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `pack_id` int(11) NOT NULL DEFAULT 0,
@@ -2626,7 +2626,7 @@ CREATE TABLE `market_pack` (
 DROP TABLE IF EXISTS `market_public`;
 /*!50001 DROP VIEW IF EXISTS `market_public`*/;
 SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `market_public` AS SELECT
  1 AS `id`,
   1 AS `item_1`,
@@ -2645,7 +2645,7 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `merchant_offer`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `merchant_offer` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -2667,7 +2667,7 @@ CREATE TABLE `merchant_offer` (
 
 DROP TABLE IF EXISTS `miner`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `miner` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -2683,7 +2683,7 @@ CREATE TABLE `miner` (
 
 DROP TABLE IF EXISTS `mission`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mission` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `name` varchar(128) NOT NULL,
@@ -2702,7 +2702,7 @@ CREATE TABLE `mission` (
 
 DROP TABLE IF EXISTS `mission_auto`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mission_auto` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `chest_id` int(3) NOT NULL,
@@ -2718,7 +2718,7 @@ CREATE TABLE `mission_auto` (
 
 DROP TABLE IF EXISTS `mission_event_choice`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mission_event_choice` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `text` text NOT NULL,
@@ -2738,7 +2738,7 @@ CREATE TABLE `mission_event_choice` (
 
 DROP TABLE IF EXISTS `mission_event_status`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mission_event_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -2764,7 +2764,7 @@ CREATE TABLE `mission_event_status` (
 
 DROP TABLE IF EXISTS `mission_event_text`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mission_event_text` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` text NOT NULL,
@@ -2783,7 +2783,7 @@ CREATE TABLE `mission_event_text` (
 
 DROP TABLE IF EXISTS `mission_team_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mission_team_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
@@ -2799,7 +2799,7 @@ CREATE TABLE `mission_team_history` (
 
 DROP TABLE IF EXISTS `mission_team_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mission_team_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(64) NOT NULL,
@@ -2822,7 +2822,7 @@ CREATE TABLE `mission_team_list` (
 
 DROP TABLE IF EXISTS `mission_team_list_part`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mission_team_list_part` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `list_id` int(11) NOT NULL,
@@ -2850,7 +2850,7 @@ CREATE TABLE `mission_team_list_part` (
 
 DROP TABLE IF EXISTS `mission_team_party`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mission_team_party` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `party_id` int(11) NOT NULL,
@@ -2879,7 +2879,7 @@ CREATE TABLE `mission_team_party` (
 
 DROP TABLE IF EXISTS `mission_team_party_player`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mission_team_party_player` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
@@ -2901,7 +2901,7 @@ CREATE TABLE `mission_team_party_player` (
 
 DROP TABLE IF EXISTS `mission_team_report`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mission_team_report` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `report_id` int(11) DEFAULT NULL,
@@ -2925,7 +2925,7 @@ CREATE TABLE `mission_team_report` (
 
 DROP TABLE IF EXISTS `mission_team_requirement`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mission_team_requirement` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `requirement_id` int(11) NOT NULL,
@@ -2943,7 +2943,7 @@ CREATE TABLE `mission_team_requirement` (
 
 DROP TABLE IF EXISTS `mission_zone`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mission_zone` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `rarity` varchar(3) NOT NULL,
@@ -2962,7 +2962,7 @@ CREATE TABLE `mission_zone` (
 
 DROP TABLE IF EXISTS `mission_zone_item`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mission_zone_item` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `zone_id` int(11) NOT NULL,
@@ -2984,7 +2984,7 @@ CREATE TABLE `mission_zone_item` (
 
 DROP TABLE IF EXISTS `necro_change`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `necro_change` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -3000,7 +3000,7 @@ CREATE TABLE `necro_change` (
 
 DROP TABLE IF EXISTS `necro_game`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `necro_game` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -3017,7 +3017,7 @@ CREATE TABLE `necro_game` (
 
 DROP TABLE IF EXISTS `one_time_gift`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `one_time_gift` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -3034,7 +3034,7 @@ CREATE TABLE `one_time_gift` (
 
 DROP TABLE IF EXISTS `pay_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `pay_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `from_id` int(11) NOT NULL,
@@ -3056,7 +3056,7 @@ CREATE TABLE `pay_history` (
 DROP TABLE IF EXISTS `pay_public`;
 /*!50001 DROP VIEW IF EXISTS `pay_public`*/;
 SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `pay_public` AS SELECT
  1 AS `id`,
   1 AS `from_nick`,
@@ -3071,7 +3071,7 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `payments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `payments` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -3088,7 +3088,7 @@ CREATE TABLE `payments` (
 
 DROP TABLE IF EXISTS `player`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `player` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `account_id` bigint(16) NOT NULL,
@@ -3292,7 +3292,7 @@ DELIMITER ;
 DROP TABLE IF EXISTS `player_public`;
 /*!50001 DROP VIEW IF EXISTS `player_public`*/;
 SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `player_public` AS SELECT
  1 AS `id`,
   1 AS `nickname`,
@@ -3307,7 +3307,7 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `plus_groups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `plus_groups` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `name` varchar(511) NOT NULL,
@@ -3336,7 +3336,7 @@ CREATE TABLE `plus_groups` (
 
 DROP TABLE IF EXISTS `plus_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `plus_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `account_id` int(11) NOT NULL,
@@ -3350,7 +3350,7 @@ CREATE TABLE `plus_history` (
 
 DROP TABLE IF EXISTS `plus_notify`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `plus_notify` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -3368,7 +3368,7 @@ CREATE TABLE `plus_notify` (
 
 DROP TABLE IF EXISTS `plus_players`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `plus_players` (
   `account_id` bigint(16) NOT NULL,
   `nickname` text NOT NULL,
@@ -3386,7 +3386,7 @@ CREATE TABLE `plus_players` (
 
 DROP TABLE IF EXISTS `plus_shop_timeout`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `plus_shop_timeout` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -3406,7 +3406,7 @@ CREATE TABLE `plus_shop_timeout` (
 
 DROP TABLE IF EXISTS `public_lottery`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `public_lottery` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `chat_id` bigint(32) NOT NULL,
@@ -3430,7 +3430,7 @@ CREATE TABLE `public_lottery` (
 
 DROP TABLE IF EXISTS `public_lottery_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `public_lottery_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `creator_id` int(11) NOT NULL,
@@ -3454,7 +3454,7 @@ CREATE TABLE `public_lottery_history` (
 
 DROP TABLE IF EXISTS `public_lottery_players`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `public_lottery_players` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `lottery_id` int(11) NOT NULL,
@@ -3473,7 +3473,7 @@ CREATE TABLE `public_lottery_players` (
 
 DROP TABLE IF EXISTS `public_shop`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `public_shop` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -3506,7 +3506,7 @@ CREATE TABLE `public_shop` (
 
 DROP TABLE IF EXISTS `rarity`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rarity` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `name` varchar(32) NOT NULL,
@@ -3523,7 +3523,7 @@ CREATE TABLE `rarity` (
 
 DROP TABLE IF EXISTS `reborn_save`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `reborn_save` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -3539,7 +3539,7 @@ CREATE TABLE `reborn_save` (
 
 DROP TABLE IF EXISTS `recover`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `recover` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -3555,7 +3555,7 @@ CREATE TABLE `recover` (
 
 DROP TABLE IF EXISTS `referral_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `referral_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `new_player` int(11) NOT NULL,
@@ -3576,7 +3576,7 @@ CREATE TABLE `referral_list` (
 
 DROP TABLE IF EXISTS `search_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `search_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -3595,7 +3595,7 @@ CREATE TABLE `search_history` (
 DROP TABLE IF EXISTS `search_public`;
 /*!50001 DROP VIEW IF EXISTS `search_public`*/;
 SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `search_public` AS SELECT
  1 AS `id`,
   1 AS `term`,
@@ -3608,7 +3608,7 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `set_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `set_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -3631,7 +3631,7 @@ CREATE TABLE `set_list` (
 
 DROP TABLE IF EXISTS `shop_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `shop_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -3652,7 +3652,7 @@ CREATE TABLE `shop_history` (
 
 DROP TABLE IF EXISTS `shop_limit`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `shop_limit` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -3673,7 +3673,7 @@ CREATE TABLE `shop_limit` (
 DROP TABLE IF EXISTS `shop_public`;
 /*!50001 DROP VIEW IF EXISTS `shop_public`*/;
 SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `shop_public` AS SELECT
  1 AS `nickname`,
   1 AS `code`,
@@ -3689,7 +3689,7 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `team`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `team` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
@@ -3735,7 +3735,7 @@ CREATE TABLE `team` (
 
 DROP TABLE IF EXISTS `team_boost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `team_boost` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL DEFAULT 0,
@@ -3753,7 +3753,7 @@ CREATE TABLE `team_boost` (
 
 DROP TABLE IF EXISTS `team_player`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `team_player` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `player_id` int(3) NOT NULL,
@@ -3778,7 +3778,7 @@ CREATE TABLE `team_player` (
 DROP TABLE IF EXISTS `team_player_public`;
 /*!50001 DROP VIEW IF EXISTS `team_player_public`*/;
 SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `team_player_public` AS SELECT
  1 AS `team_id`,
   1 AS `player_id`,
@@ -3793,7 +3793,7 @@ SET character_set_client = @saved_cs_client;
 DROP TABLE IF EXISTS `team_public`;
 /*!50001 DROP VIEW IF EXISTS `team_public`*/;
 SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `team_public` AS SELECT
  1 AS `team_id`,
   1 AS `name`,
@@ -3807,7 +3807,7 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `team_safe`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `team_safe` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
@@ -3827,7 +3827,7 @@ CREATE TABLE `team_safe` (
 
 DROP TABLE IF EXISTS `team_safe_get_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `team_safe_get_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
@@ -3847,7 +3847,7 @@ CREATE TABLE `team_safe_get_log` (
 
 DROP TABLE IF EXISTS `team_safe_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `team_safe_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
@@ -3868,7 +3868,7 @@ CREATE TABLE `team_safe_log` (
 
 DROP TABLE IF EXISTS `team_store`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `team_store` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
@@ -3891,7 +3891,7 @@ CREATE TABLE `team_store` (
 
 DROP TABLE IF EXISTS `team_store_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `team_store_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
@@ -3915,7 +3915,7 @@ CREATE TABLE `team_store_log` (
 
 DROP TABLE IF EXISTS `tear`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tear` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -3933,7 +3933,7 @@ CREATE TABLE `tear` (
 
 DROP TABLE IF EXISTS `token`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `token` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `player_id` int(11) NOT NULL,
@@ -3955,7 +3955,7 @@ CREATE TABLE `token` (
 
 DROP TABLE IF EXISTS `travel`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `travel` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,

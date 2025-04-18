@@ -93,6 +93,7 @@ var request = require('request').defaults({ strictSSL: false });
 var readline = require('readline');
 var mysql = require('mysql');
 var express = require('express');
+var morgan = require('morgan');
 var http = require('http');
 var https = require('https');
 var fs = require('fs');
@@ -111,6 +112,8 @@ async function init() {
 }
 init();
 const master_craftsman_controller = require("./LootBot/message_managers/specific/master_craftsman");
+
+const useWebhook = true;
 
 // Eventi
 var crazyMode;					// nulla
@@ -131,20 +134,26 @@ var autoEstrazione = 0;
 reloadEvents();
 
 var token = config.maintoken;
-var bot = new TelegramBot(token);
+var bot = new TelegramBot(token, {
+	polling: !useWebhook
+});
 var app = express();
 
 var path = "/loot/bot" + token;
 var port = 25001;
 
-var options = {
-	"max_connections": 80
+if (useWebhook) {
+	const options = {
+		"max_connections": 80
+	}
+	bot.setWebHook(config.server + path, options).then(r => console.log('Webhook set:', r));
 }
-bot.setWebHook(config.server + path, options);
+
 app.listen(port);
 
 app.use(express.json());
 app.post(path, function (req, res) {
+	console.log('Processing request...');
 	bot.processUpdate(req.body);
 	res.sendStatus(200);
 });
@@ -436,24 +445,23 @@ const connection = {
 
 process.on('SIGINT', function () {
 	console.log("Spegnimento bot...");
-	connection.end();
+	try {connection.end();}catch(err){console.error(err);}
 	process.exit();
 });
 
 process.on('SIGTERM', function () {
 	console.log("Spegnimento bot...");
-	connection.end();
+	try {connection.end();}catch(err){console.error(err);}
 	process.exit();
 });
 
 bot.on('polling_error', function (error) {
-	console.log(error);
+	console.log('polling error', error);
 });
 
 var d = new Date();
 
 bot.on('message', async function (message) {
-
 	// per recupero mana perso
 	/*
 	if (message.forward_from != undefined) {
@@ -11963,7 +11971,7 @@ bot.onText(/dungeon|^dg$/i, function (message) {
 																		if (Object.keys(rows).length > 0) {
 																			var lucky_player_id = rows[0].id;
 																			var lucky_chat_id = rows[0].chat_id;
-																			await addMoney(player_id, rand);
+																			await addMoney(lucky_player_id, rand);
 																			bot.sendMessage(lucky_chat_id, "Mentre percorri i corridoi del dungeon vedi un Varco Temporale, lasciato da un avventuriero, che si sta chiudendo. Temerario ci infili il braccio riuscendo ad agguantare un mucchietto di monete contenente " + formatNumber(rand) + "§");
 																			setAchievement(lucky_player_id, 83, rand);
 																		}
@@ -58332,7 +58340,8 @@ function globalAchievement(player_id, value = 1) {
 						});
 					}
 				});
-			}
+			} else
+				console.log("Punti globale non distribuiti perchè stato non valido");
 		}
 	});
 }

@@ -64,7 +64,7 @@ const options = {
 	allowed_updates: ['inline_query', 'chosen_inline_result', 'callback_query'],
 	max_connections: 80
 }
-bot.setWebHook(config.server + path, options)
+bot.setWebHook(config.server + path, options).then(r => console.log('Webhook set:', r))
 app.listen(port)
 
 app.use(express.json())
@@ -116,13 +116,13 @@ const connection = {
 
 process.on('SIGINT', function () {
 	console.log('Spegnimento bot...')
-	connection.end()
+	try{connection.end();}catch(err){console.error(err);}
 	process.exit()
 })
 
 process.on('SIGTERM', function () {
 	console.log('Spegnimento bot...')
-	connection.end()
+	try{connection.end();}catch(err){console.error(err);}
 	process.exit()
 })
 
