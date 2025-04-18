@@ -7853,9 +7853,9 @@ bot.onText(/attacca!/i, function (message) {
 						flari_line = "🔗 Flaridion: " + formatNumber(enemy_power_dmg) + " attacco, " + formatNumber(enemy_power_def) + " difesa";
 
 					if (conditions == 9) {
-						exp = 10000;
+						exp = 42500;
 						reborn = 5;
-						enemy_exp = 10000;
+						enemy_exp = 42500;
 						enemy_reborn = 5;
 					}
 
