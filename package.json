@@ -6,10 +6,7 @@
   "dependencies": {
     "body-parser": "^1.20.2",
     "express": "^4.18.2",
-    "fs": "0.0.2",
     "got": "^11.8.3",
-    "http": "0.0.1-security",
-    "https": "^1.0.0",
     "ini-builder": "^1.1.1",
     "isomorphic-fetch": "^3.0.0",
     "mathjs": "^11.7.0",
@@ -21,14 +18,13 @@
     "node-schedule": "^2.1.1",
     "node-telegram-bot-api": "^0.61.0",
     "nodejs-captcha": "^0.0.6",
-    "npm-check-updates": "^16.7.13",
     "pdfkit": "^0.13.0",
-    "readline": "^1.3.0",
     "request": "^2.88.2",
     "string-similarity": "^4.0.4",
     "sync-mysql": "^3.0.1"
   },
   "devDependencies": {
+    "npm-check-updates": "^16.7.13",
     "eslint": "^8.36.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",
@@ -39,10 +35,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Edoardo Cortese",
-  "license": "GPL-3.0",
+  "license": "AGPL-3.0",
   "repository": {
     "type": "git",
-    "url": "git+https://sidelux@bitbucket.org/sidelux/lootbot.git"
+    "url": "git+https://github.com/sidelux/LootBot.git"
   },
-  "homepage": "https://bitbucket.org/sidelux/lootbot#readme"
+  "homepage": "https://github.com/sidelux/LootBot#readme"
 }

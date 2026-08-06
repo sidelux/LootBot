@@ -42313,7 +42313,7 @@ bot.onText(/^Artefatti|Torna agli artefatti/i, function (message) {
 																return;
 															}
 
-															connection.query('SELECT achievement_count_all, global_event, power_pnt, rank, top_win, top_rank_count FROM player WHERE id = ' + player_id, function (err, rows, fields) {
+															connection.query('SELECT achievement_count_all, global_event, rank, reborn, exp, artifact_fragment, money, craft_count, moon_coin FROM player WHERE id = ' + player_id, function (err, rows, fields) {
 																if (err) throw err;
 
 																const realLevel = getRealLevel(rows[0].reborn, Math.floor(rows[0].exp / 10));
