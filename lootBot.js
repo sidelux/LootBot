@@ -58,6 +58,7 @@ var lobby_restric_min = 8;
 if (map_moves_mode == 1)
 	lobby_restric_min = 10;
 var moves_left_default = 10;
+var map_ranking = 20;
 var rankList = [20, 50, 75, 100, 150, 200, 500, 750, 1000, 1500];
 var progLev = [50, 100, 250, 450, 750, 1250, 1500, 1750, 2500, 3000, 3750, 4250];
 var progLevRew = [50000, 100000, 125000, 150000, 250000, 1000000, 2500000, 5000000, 5000000, 10000000, 20000000, 30000000];
@@ -7252,7 +7253,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 													connection.query(query, function (err, rows, fields) {
 														if (err) throw err;
 
-														if (Object.keys(rows).length < 50) {
+														if (Object.keys(rows).length < map_ranking) {
 															bot.sendMessage(message.chat.id, "Ci sono ancora poche uccisioni per poterne visualizzare una valida classifica...", kbBack);
 															return;
 														}
@@ -7290,7 +7291,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 														var points = [];
 														var mypos = 0;
 
-														if (Object.keys(rows).length < 50) {
+														if (Object.keys(rows).length < map_ranking) {
 															bot.sendMessage(message.chat.id, "Ci sono ancora poche uccisioni per poterne visualizzare una valida classifica...", kbBack);
 															return;
 														}
@@ -7336,7 +7337,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 													connection.query(query, function (err, rows, fields) {
 														if (err) throw err;
 
-														if (Object.keys(rows).length < 20) {
+														if (Object.keys(rows).length < map_ranking) {
 															bot.sendMessage(message.chat.id, "Ci sono ancora pochi trofei per poterne visualizzare una valida classifica...", kbLast).then(function () {
 																answerCallbacks[message.chat.id] = async function (answer) {
 																	if (answer.text == "Classifica ultima stagione")
@@ -7381,7 +7382,7 @@ bot.onText(/^map$|^mappa$|^mappe$|mappe di lootia|entra nella mappa|torna alla m
 														var points = [];
 														var mypos = 0;
 
-														if (Object.keys(rows).length < 20) {
+														if (Object.keys(rows).length < map_ranking) {
 															bot.sendMessage(message.chat.id, "Ci sono ancora pochi trofei per poterne visualizzare una valida classifica...", kbLast).then(function () {
 																answerCallbacks[message.chat.id] = async function (answer) {
 																	if (answer.text == "Classifica ultima stagione")
@@ -65883,7 +65884,16 @@ async function reduceDurability(player_id, weapon_type) {
 		var weapon_extra = "";
 		if (item_rarity == "X") {
 			var tears = [674, 641, 691];
-			var rows = await connection.queryAsync('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item_id);
+			var item_id_necro = 0;
+			if (item_id = 754) {
+				item_id_necro = 638;		//scambia la Necrolama di Phoenix con quella di Hoenir
+			} else if (item_id = 790) {
+				item_id_necro = 688;		//scambia la Corazza Necro di Phoenix con quella di Loki
+			} else if (item_id = 791) {
+				item_id_necro = 671;		//scambia lo Scudo Necro di Phoenix con quello di Zeus
+			} else
+				item_id_necro = item_id;
+			var rows = await connection.queryAsync('SELECT material_1, material_2, material_3 FROM craft WHERE material_result = ' + item_id_necro);
 			if (Object.keys(rows).length > 0) {
 				if (tears.includes(rows[0].material_1)) {
 					addItem(player_id, rows[0].material_1);
@@ -65896,7 +65906,7 @@ async function reduceDurability(player_id, weapon_type) {
 					var rows = await connection.queryAsync('SELECT id, name FROM item WHERE id = ' + rows[0].material_3);
 				}
 				if (Object.keys(rows).length > 0) {
-					weapon_extra = " Hai ricevuto *" + rows[0].name + "* per poterla creare nuovamente.";
+					weapon_extra = " Hai ricevuto *" + rows[0].name + "* per poter creare nuovamente l'oggetto.";
 					addItem(player_id, rows[0].id);
 				}
 			}
