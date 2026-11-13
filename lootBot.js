@@ -1,7 +1,12 @@
 process.env["NTBA_FIX_319"] = 1;
 process.env["NTBA_FIX_350"] = 1;
 
+// Se pm2 si chiude, stdout/stderr restano senza lettore (EPIPE): esci invece di bloccarti in un ciclo di errori
+process.stdout.on('error', function (err) { if (err.code === 'EPIPE') process.exit(1); });
+process.stderr.on('error', function (err) { if (err.code === 'EPIPE') process.exit(1); });
+
 process.on('uncaughtException', function (error) {
+	if (error && error.code === 'EPIPE') process.exit(1);
 	console.log("\x1b[31muncaughtException: " + error + "\x1b[0m");
 	console.log(error);
 });
@@ -421,7 +426,7 @@ const dbConnection = mysql.createPool({
 });
 
 const connection = {
-	end: dbConnection.end,
+	end: dbConnection.end.bind(dbConnection),
 	query: function (q, fn) {
 		const startTime = new Date()
 		return dbConnection.query(q, function (err, res, fields) {
